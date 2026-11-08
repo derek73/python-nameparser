@@ -395,13 +395,11 @@ reads from them; the 2.x set fields are internal. A caller states what
 a word is, and the lexicon derives which sets that puts it in, so
 making ``Guru`` a possible given name is ``add("guru", kind="given")``
 where 2.x needed ``remove(titles={"guru"}).add(titles_ambiguous={"guru"})``.
-Each 2.x spelling raises where it is written, translated for the words
-it names:
+Each 2.x spelling raises where it is written:
 
 - ``add(...)`` or ``remove(...)`` with a set field as a keyword raises
-  ``TypeError`` naming the calls for those words, so
-  ``Lexicon.default().add(titles={"dean"})`` names
-  ``.remove('dean', kind='given')``;
+  ``TypeError`` naming the field and pointing at the table below, which
+  gives the kind each field's words take;
 - ``Lexicon(titles=...)`` and ``dataclasses.replace(lexicon,
   titles=...)`` raise the same way;
 - reading ``lexicon.titles`` raises ``AttributeError``, naming
@@ -465,35 +463,12 @@ it names:
      - unchanged, fields still; ``add``/``remove`` no longer take the
        two lists, which join with ``lexicon | Lexicon(surnames={...})``
 
-A ``Lexicon`` pickled by 2.x holds the compiled sets, and loads where
-readings compile them back: as the default or empty lexicon with each
-word that differs replaced by the readings it compiles to, so a 2.8
-``Lexicon.empty().add(titles={"dean"})`` loads equal to 3.0's
-``Lexicon.empty().add("dean", kind="title")``. One no readings can
-express (a word in ``particles_ambiguous`` and ``suffix_acronyms`` but
-not ``suffix_acronyms_ambiguous``, say) is refused, naming the fields;
-so are a ``Parser`` and a ``Locale`` holding it. A loaded lexicon keeps
-the vocabulary it was pickled with, not 3.0's: a 2.8.0 pickle of
-``Lexicon.default()``, or of a ``Parser()``, loads as the 3.0 default
-with the credentials and case masks 3.0 added taken out again, so it reads
-``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
-vocabulary.
-
-Loading a 2.x pickle is deprecated: it emits a ``DeprecationWarning``,
-once for each ``Lexicon`` loaded, and 3.1 will refuse it. Load it under
-3.0 and pickle the loaded object again (``pickle.dumps(obj)``); that
-pickle loads without a warning, in 3.1 too. The errors a 2.x spelling
-raises in 3.0 name the calls that replace it word by word; in 3.1 they
-point at the table above instead.
-
-A 2.x call or pickle that took a word out of a set but left it in a
-marker over that set (``remove(titles={"air"})``, which left ``air`` in
-``title_modifiers``) reads as though the marker went with the word: in
-3.0 the marker is a property of the reading, and goes with it. 2.x still
-read such a leftover in two places, so two readings move:
-``"John Smith, AIR"`` gives suffix ``AIR`` where 2.8.0 gave given ``AIR``,
-family ``John Smith``, and after ``remove(titles={"sir"})``,
-``"Sir. Smith"`` gives family ``Smith`` where 2.8.0 gave given ``Smith``.
+A ``Lexicon`` pickled by 2.x holds the compiled sets, and 3.1 refuses
+it, as it refuses a ``Parser`` or a locale pack holding one, with a
+``ValueError``: load it under 3.0, which translates it onto readings,
+and pickle the loaded object again (``pickle.dumps(obj)``). The object
+keeps the vocabulary it was first pickled with, not this release's;
+build a new ``Parser()`` for that.
 
 Vocabulary constants → Lexicon.words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,7 +14,7 @@ import pytest
 
 from tests.checkout import HAS_DOCS, needs_docs
 
-from nameparser import Locale, LexiconReading, Parser, parser_for
+from nameparser import Locale, LexiconReading, Parser, locales, parser_for
 from nameparser._lexicon import (
     Lexicon, _ADDED_IN, _KIND_FIELDS, _LIST_FIELDS, _MaskValueError,
     _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon, _fields_of, _normalize,
@@ -912,13 +912,11 @@ def test_the_default_kind_sets_are_the_shipped_index_s() -> None:
             holds_kind(word, "saint") or holds_kind(word, "rank")), word
 
 
-# -- the 2.x spellings, refused with their translation ----------------------
+# -- the 2.x spellings, refused ----------------------
 
 #: (name, 2.x spelling, 3.0 spelling): the recipes the RFC's table
 #: carries (docs/design/vocabulary-model-rfc.md, item 1), each parsing
-#: every field alike under both. The 2.x side is built here from the
-#: sets the 2.x call would leave, through the translation a 2.x pickle
-#: loads by, which is itself under test below.
+#: every field alike under both.
 _RECIPES = [
     ("Dean Smith", lambda L: L.remove("dean", kind="given")),
     ("John Smith LEED AP", lambda L: L.add("leed", "ap", kind="credential")),
@@ -942,126 +940,6 @@ def test_each_recipe_moves_the_parse_it_names(
     # the recipe's own negative control: the default reads it otherwise
     configured = Parser(lexicon=spell(Lexicon.default())).parse(text)
     assert configured.as_dict() != Parser().parse(text).as_dict()
-
-
-#: A 2.x call per site: (site, call, the words it names). The refusal
-#: translates those words, and the translation runs.
-_REFUSED_CALLS = [
-    # the translation's property and kind branches, each reached by a
-    # 2.x spelling alone since 4i-c retired the choice's delta, the
-    # other path through them
-    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
-        titles={"zzq"}, given_name_titles={"zzq"}),
-     ".add('zzq', kind='title', addresses='given')"),
-    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
-        titles={"zzq"}, after_given_titles={"zzq"}),
-     ".add('zzq', kind='title', after_given=True)"),
-    ("remove", lambda: Lexicon.default().remove(  # type: ignore[call-arg]
-        suffix_words_ambiguous={"neto"}),
-     ".remove('neto', kind='agnomen').add('neto', kind='suffix')"),
-    # an agnomen's name reading comes first, as add() requires (found
-    # adding the rows above: the offered calls ran the agnomen first)
-    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
-        suffix_words={"zzq"}, suffix_words_ambiguous={"zzq"},
-        agnomens={"zzq"}),
-     ".add('zzq', kind='family').add('zzq', kind='agnomen')"),
-    ("add", lambda: Lexicon.default().add(titles={"dean"}),  # type: ignore[call-arg]
-     ".remove('dean', kind='given')"),
-    ("add", lambda: Lexicon.default().add(suffix_acronyms={"leed", "ap"}),  # type: ignore[call-arg]
-     ".add('ap', 'leed', kind='credential')"),
-    ("remove", lambda: Lexicon.default().remove(particles_ambiguous={"van"}),
-     ".remove('van', kind='given')"),
-    ("remove", lambda: Lexicon.default().remove(conjunctions_ambiguous={"e"}),
-     ".add('e', kind='conjunction', may_be_initial=False)"),
-    ("remove", lambda: Lexicon.default().remove(honorific_tails={"さん"}),
-     ".add('さん', kind='honorific', attached=None)"),
-    ("Lexicon()", lambda: Lexicon(titles={"dean"}),
-     "Lexicon.empty().add('dean', kind='title')"),
-    ("replace", lambda: dataclasses.replace(  # type: ignore[call-arg]
-        Lexicon.default(), maiden_markers={"geb", "formerly"}),
-     None),
-]
-
-
-@pytest.mark.parametrize(("site", "call", "translation"), _REFUSED_CALLS)
-def test_a_2x_spelling_is_refused_with_calls_that_run(
-        site: str, call: Callable[[], object], translation: str | None) -> None:
-    with pytest.raises(TypeError, match="since 3.0") as raised:
-        call()
-    message = str(raised.value)
-    if translation is not None:
-        assert message.endswith("write lexicon" + translation) or \
-            message.endswith("write " + translation), message
-    # the offered calls run, on the lexicon they name
-    code = message.rsplit("write ", 1)[1]
-    built = eval(code, {"Lexicon": Lexicon,  # noqa: S307
-                        "lexicon": Lexicon.default()})
-    assert isinstance(built, Lexicon)
-
-
-@pytest.mark.parametrize("call", [
-    lambda: Lexicon(surnames={"kim"}, titles={"dr"}),  # type: ignore[call-arg]
-    lambda: Lexicon(given_names={"luis"},  # type: ignore[call-arg]
-                    capitalization_exceptions={"phd": "PhD"}, titles={"dr"}),
-    lambda: Lexicon(titles={"dr"}),  # type: ignore[call-arg]
-])
-def test_a_2x_constructor_spelling_offers_calls_on_a_lexicon_it_names(
-        call: Callable[[], object]) -> None:
-    # a bare Lexicon(...) call binds no variable, so the offered code
-    # must build the lexicon it was asked for with no `lexicon` in scope
-    with pytest.raises(TypeError, match="since 3.0") as raised:
-        call()
-    code = str(raised.value).rsplit("write ", 1)[1]
-    assert not code.startswith("lexicon"), code
-    built = eval(code, {"Lexicon": Lexicon})  # noqa: S307
-    assert isinstance(built, Lexicon)
-    assert "dr" in built._sets.titles
-    # the lists and masks the call passed are kept
-    if "kim" in code:
-        assert built.surnames == frozenset({"kim"})
-    if "luis" in code:
-        assert built.given_names == frozenset({"luis"})
-        assert built.capitalization_exceptions == (("phd", "PhD"),)
-
-
-def test_a_2x_replace_of_an_edited_lexicon_offers_calls_on_that_lexicon(
-        ) -> None:
-    # dataclasses.replace shares Lexicon()'s refusal; an edited lexicon
-    # is the caller's variable, which no constructor call rebuilds
-    edited = Lexicon.empty().add("zzx", kind="title")
-    with pytest.raises(TypeError, match="since 3.0") as raised:
-        dataclasses.replace(edited, titles={"zzq"})  # type: ignore[call-arg]
-    code = str(raised.value).rsplit("write ", 1)[1]
-    assert code.startswith("lexicon."), code
-    built = eval(code, {"lexicon": edited})  # noqa: S307
-    assert built._sets.titles == frozenset({"zzq"})
-
-
-def test_a_2x_removal_keeps_another_files_reading_of_the_word() -> None:
-    # ma is a credential (en) and a Filipino given name written short for
-    # maría (fil): taking out the credential must not rewrite the
-    # Filipino reading's full name
-    with pytest.raises(TypeError, match="since 3.0") as raised:
-        Lexicon.default().remove(suffix_acronyms={"ma"})  # type: ignore[call-arg]
-    code = str(raised.value).rsplit("write ", 1)[1]
-    assert code == "lexicon.remove('ma', kind='credential')", code
-    built = eval(code, {"lexicon": Lexicon.default()})  # noqa: S307
-    assert "ma" not in built._sets.suffix_acronyms
-    assert "ma" in built._sets.given_name_abbreviations
-    assert any(r.kind == "given" and dict(r.properties).get("same_as")
-               == "maría" for r in built.readings_of("ma"))
-
-
-def test_a_2x_spelling_with_no_exact_reading_offers_the_nearest_that_runs(
-        ) -> None:
-    # `phd` both an acronym and a word in 2.x: a word has one suffix
-    # kind, so the nearest is the credential written as a word
-    with pytest.raises(TypeError, match="the nearest is") as raised:
-        Lexicon.default().add(suffix_words={"phd"})  # type: ignore[call-arg]
-    code = str(raised.value).split("the nearest is ", 1)[1].split(", and ")[0]
-    assert code == "lexicon.add('phd', kind='credential', acronym=False)"
-    built = eval(code, {"lexicon": Lexicon.default()})  # noqa: S307
-    assert "phd" in built._sets.suffix_words
 
 
 @pytest.mark.parametrize("field", _SET_FIELDS)
@@ -1117,11 +995,6 @@ def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
     pasted = eval(code[0], {"dataclasses": dataclasses,  # noqa: S307
                             "lexicon": Lexicon.default()})
     assert pasted.capitalization_exceptions_map["key"] == "KEY"
-
-
-def test_a_spelling_that_already_reads_so_says_no_call_is_needed() -> None:
-    with pytest.raises(TypeError, match="no call is needed"):
-        Lexicon.default().add(titles={"dr"})  # type: ignore[call-arg]
 
 
 # -- the title warning (decisions/vocabulary-model, 2026-11-01) -------------
@@ -1600,37 +1473,13 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
         Lexicon.__new__(Lexicon).__setstate__(state)
 
 
-def _state_2x(sets: dict[str, frozenset[str]],
-              masks: tuple[tuple[str, str], ...] = (),
-              **changed: frozenset[str]) -> dict[str, object]:
-    """A 2.8 Lexicon's pickled state: its 21 set fields, no
-    given_names (a 3.0 field), and its masks."""
-    state: dict[str, object] = {f: sets[f] for f in _VOCAB_FIELDS
-                                if f != "given_names"}
-    state.update(changed)
-    state["capitalization_exceptions"] = masks
-    return state
+#: The refusal of a 2.x Lexicon state, its remedy matched in full.
+_REFUSED_2X = re.escape(
+    "this Lexicon pickle was written by nameparser 2.x, which 3.1 no "
+    "longer loads: load it under 3.0 and pickle the loaded object again")
 
 
-#: The 2.x pickle load's DeprecationWarning, matched in full where a test
-#: loads one: the translation is deleted in 3.1 (decisions/
-#: vocabulary-model, 2026-11-02 #754, the 2.x translation's lifetime)
-_WARNED_2X = r"written by nameparser 2\.x.*3\.1 will refuse it.*pickle\.dumps"
-
-
-def _loaded(state: dict[str, object]) -> Lexicon:
-    """A 2.x state loaded, warning once; a refused one raises its error,
-    the warning coming only after a load succeeds."""
-    lex = Lexicon.__new__(Lexicon)
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        lex.__setstate__(state)
-    assert [(w.category, bool(re.search(_WARNED_2X, str(w.message))))
-            for w in caught] == [(DeprecationWarning, True)]
-    return lex
-
-
-def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
+def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
     """tests/v2/data/lexicon_v28.pickle is a dict of
     `Lexicon.empty().add(titles={"dean"})`, a `Parser` holding it and
     `locales.RU`, pickled (protocol 4) by the released 2.8.0 wheel.
@@ -1640,58 +1489,34 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
     comparison trap). pickle.load is safe here: a repo-controlled
     fixture.
 
-    A 2.x state holds the compiled sets, translated at load onto the
-    nearer named base and a per-word log (pickle option (b)): the
-    lexicon built from Lexicon.empty() loads as the one-entry log a
-    fresh 3.0 call writes. The pack and the policy are checked by
-    type and code, since whole equality with `locales.RU` or
-    `Parser().policy` would fail on any 3.0 change to their content."""
-    from nameparser import Locale, Policy
-    with open(Path(__file__).parent / "data" / "lexicon_v28.pickle",
-              "rb") as f, pytest.warns(DeprecationWarning, match=_WARNED_2X):
-        loaded = pickle.load(f)  # noqa: S301 -- our own fixture
-    lex = Lexicon.empty().add("dean", kind="title")
-    assert loaded["lexicon"] == lex
-    assert loaded["parser"].lexicon == lex
-    assert isinstance(loaded["parser"].policy, Policy)
-    assert isinstance(loaded["locale"], Locale)
-    assert loaded["locale"].code == "ru"
-    assert loaded["locale"].lexicon == Lexicon.empty()
-    # #959's given_names, added in 3.0, loads empty: no pack filled it
-    for loaded_lexicon in (loaded["lexicon"], loaded["parser"].lexicon,
-                           loaded["locale"].lexicon):
-        assert loaded_lexicon.given_names == frozenset()
-
-
-def test_a_2x_pickle_warns_once_per_lexicon_at_the_callers_line() -> None:
-    # the fixture's dict holds two Lexicons, the one its Parser shares
-    # and the pack's, so two loads; each warning names this file, the
-    # line calling pickle.loads, not the library
+    3.0 translated a 2.x state's compiled sets onto readings and
+    warned; 3.1 refuses it, naming the remedy (decisions/
+    vocabulary-model, 2026-11-08 #1003). A Parser and a Locale load
+    their Lexicon through the same __setstate__, so the dict is refused
+    at the first one it reaches."""
     data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
+    with pytest.raises(ValueError, match=_REFUSED_2X):
+        pickle.loads(data)  # noqa: S301 -- our own fixture
+    # a 2.x state alone: its 21 set fields, no given_names (a 3.0
+    # field), and its masks
+    state: dict[str, object] = {f: frozenset() for f in _VOCAB_FIELDS
+                                if f != "given_names"}
+    state["capitalization_exceptions"] = ()
+    with pytest.raises(ValueError, match=_REFUSED_2X):
+        Lexicon.__new__(Lexicon).__setstate__(state)
+
+
+@pytest.mark.parametrize("obj", [
+    Lexicon.default().remove("dean", kind="given"),
+    Parser(lexicon=Lexicon.default().add("leed", kind="credential")),
+    locales.RU,
+], ids=["lexicon", "parser", "locale"])
+def test_the_2x_refusals_remedy_runs(obj: object) -> None:
+    # what the message asks for: an object pickled under 3.0 loads,
+    # equal and with no warning
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        loaded = pickle.loads(data)  # noqa: S301 -- our own fixture
-    assert loaded["parser"].lexicon is loaded["lexicon"]
-    assert len(caught) == 2
-    for w in caught:
-        assert w.category is DeprecationWarning
-        assert str(w.message) == (
-            "this Lexicon pickle was written by nameparser 2.x; 3.0 "
-            "translates it onto readings, and nameparser 3.1 will refuse "
-            "it. Re-pickle the object you loaded under 3.0 "
-            "(pickle.dumps(obj)) and load that pickle instead")
-        assert w.filename == __file__
-
-
-def test_the_2x_pickle_warnings_remedy_runs() -> None:
-    # load, re-pickle as the message says, load again: no warning, and
-    # the same objects
-    data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
-    with pytest.warns(DeprecationWarning, match=_WARNED_2X):
-        obj = pickle.loads(data)  # noqa: S301 -- our own fixture
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        again = pickle.loads(pickle.dumps(obj))
+        again = pickle.loads(pickle.dumps(obj))  # noqa: S301
     assert caught == []
     assert again == obj
 
@@ -1708,50 +1533,7 @@ def test_a_pickle_written_by_3_0_does_not_warn() -> None:
     assert caught == also == []
 
 
-def test_a_2x_default_loads_as_the_default() -> None:
-    default = Lexicon.default()
-    sets = _fields_of(default._sets) | {"surnames": default.surnames}
-    loaded = _loaded(_state_2x(sets, default.capitalization_exceptions))
-    assert loaded == default
-
-
-def test_a_2x_title_listed_beside_its_gate_loads_as_a_title() -> None:
-    # the commonest 2.x customization, `add(titles={"dean",
-    # "chancellor"})`: a word in both titles and titles_ambiguous is
-    # compared as in titles alone, the two spellings parsing alike, and
-    # loads as the removal of its given reading
-    default = Lexicon.default()
-    sets = _fields_of(default._sets) | {"surnames": default.surnames}
-    loaded = _loaded(_state_2x(
-        sets, default.capitalization_exceptions,
-        titles=sets["titles"] | {"dean", "chancellor"}))
-    assert loaded == default.remove("chancellor", kind="given").remove(
-        "dean", kind="given")
-    for text in ("Dean Smith", "Chancellor Jones, Mary", "Smith, Dean"):
-        assert Parser(lexicon=loaded).parse(text).title.lower() in (
-            "dean", "chancellor")
-
-
-def test_a_2x_state_no_readings_express_is_refused_naming_the_fields() -> None:
-    # a given reading translated for particles_ambiguous also marks the
-    # acronym ambiguous, so the sets do not come back
-    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
-    with pytest.raises(ValueError, match="suffix_acronyms_ambiguous"):
-        _loaded(_state_2x(empty, particles={"xo"}, particles_ambiguous={"xo"},  # type: ignore[arg-type]
-                          suffix_acronyms={"xo"}))  # type: ignore[arg-type]
-
-
-def test_a_2x_state_missing_a_field_or_not_normalized_is_refused() -> None:
-    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
-    state = _state_2x(empty)
-    del state["titles_ambiguous"]  # a 2.6 pickle: added in 2.7
-    with pytest.raises(ValueError, match="missing fields: titles_ambiguous"):
-        _loaded(state)
-    with pytest.raises(ValueError, match=re.escape("not normalized (titles: DR.)")):
-        _loaded(_state_2x(empty, titles={"DR."}))  # type: ignore[arg-type]
-
-
-# -- the refusals and translation arms no other test reaches ----------------
+# -- the refusals no other test reaches ----------------
 
 @pytest.mark.parametrize(("call", "error", "match"), [
     (lambda: Lexicon(surnames={"."}), ValueError, "normalizes to empty"),
@@ -1782,139 +1564,9 @@ def test_union_with_a_non_lexicon_is_not_implemented() -> None:
     assert Lexicon.empty().__or__(5) is NotImplemented  # type: ignore[operator]
 
 
-def test_a_2x_state_with_a_malformed_field_is_refused() -> None:
-    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
-    with pytest.raises(ValueError, match="incompatible Lexicon pickle"):
-        _loaded(_state_2x(empty, titles=5))  # type: ignore[arg-type]
-
-
 def test_a_2x_spelling_with_a_malformed_value_still_says_since_3_0() -> None:
     with pytest.raises(TypeError, match="since 3.0"):
         Lexicon.default().add(titles=5)  # type: ignore[call-arg]
-
-
-@pytest.mark.parametrize(("sets", "kinds"), [
-    # an acronym reading on a word whose held suffix kind is a word kind
-    ({"suffix_acronyms": {"jr"}}, {"generation": (("acronym", True),)}),
-    # a credential the 2.x sets list as a word: acronym false
-    ({"suffix_words": {"zzc"}}, {"suffix": ()}),
-])
-def test_the_translation_keeps_a_held_suffix_kind(
-        sets: dict[str, set[str]], kinds: dict[str, tuple[object, ...]]) -> None:
-    from nameparser._lexicon import _edits_toward
-    lex = Lexicon.default()
-    current = _fields_of(lex._sets)
-    target = {f: frozenset(current[f] | w) for f, w in sets.items()}
-    (word,) = next(iter(sets.values()))
-    target |= {f: current[f] - {word} for f in _SET_FIELDS
-               if f not in sets and word in current[f]
-               and f not in ("suffix_acronyms_ambiguous",)}
-    edits = _edits_toward(lex._pool(), current, target)
-    built = dataclasses.replace(lex, _edits=edits)
-    got = {r.kind: r.properties for r in built.readings_of(word)
-           if r.category == "suffix"}
-    assert got == kinds
-
-
-def test_a_2x_multi_word_title_is_refused_as_a_pickle_3_0_cannot_express() -> None:
-    # 2.x warned on a multi-word entry in a per-word set and kept it; a
-    # reading of a phrase is a birth marker or a given-addressing title
-    # alone (the build's check 8), so the load names the pickle
-    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
-    with pytest.raises(ValueError, match="3.0 readings cannot express"):
-        _loaded(_state_2x(empty, titles=frozenset({"grand moff"})))
-
-
-@pytest.mark.parametrize(("field", "word", "spelled"), [
-    # 2.8 left the word in a marker its base no longer held, where no
-    # parse read it (the orphan contract): it loads as the removal
-    ("titles", "air", lambda L: L.remove("air", kind="modifier")),
-    ("conjunctions", "e", lambda L: L.remove("e", kind="conjunction")),
-])
-def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
-        field: str, word: str, spelled: Callable[[Lexicon], Lexicon]) -> None:
-    default = Lexicon.default()
-    sets = _fields_of(default._sets) | {"surnames": default.surnames}
-    loaded = _loaded(_state_2x(sets, default.capitalization_exceptions,
-                               **{field: sets[field] - {word}}))
-    assert loaded == spelled(default)
-    for text in ("Air Marshal John Smith", "ANA SILVA E SOUZA"):
-        assert Parser(lexicon=loaded).parse(text).as_dict() == \
-            Parser(lexicon=spelled(default)).parse(text).as_dict()
-
-
-@pytest.mark.parametrize(("call", "said"), [
-    (lambda: Lexicon.empty().add(titles={"zzq"}, title_modifiers={"zzq"}),  # type: ignore[call-arg]
-     "write lexicon.add('zzq', kind='modifier')"),
-    (lambda: Lexicon.empty().add(titles={"zzq"}, title_styles={"zzq"}),  # type: ignore[call-arg]
-     "write lexicon.add('zzq', kind='style')"),
-    (lambda: Lexicon.empty().add(conjunctions={"q"},  # type: ignore[call-arg]
-                                 conjunctions_ambiguous={"q"}),
-     "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
-    (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
-                                 suffix_words_ambiguous={"zzq"}),
-     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation', title_case_is_name=True)"),
-    (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
-                                 honorific_tails={"zzq"}),
-     "write lexicon.add('zzq', kind='suffix', attached='after')"),
-    # an agnomen taken out of its set is the gated class's generation
-    (lambda: Lexicon.default().remove(agnomens={"neto"}),  # type: ignore[call-arg]
-     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation', title_case_is_name=True)"),
-    # a phrase taken out of a kind's reach lists the words left, bounded
-    (lambda: Lexicon.default().remove(title_phrases={"chief justice"}),
-     "more]"),
-    # one suffix kind per word: no readings give an acronym and a word
-    (lambda: Lexicon.default().add(suffix_acronyms={"jr"}),  # type: ignore[call-arg]
-     "no readings give those words exactly those sets"),
-    # the given reading a possibly-given particle needs gates the
-    # credential too, so the nearest is offered
-    (lambda: Lexicon.empty().add(particles={"xo"},  # type: ignore[call-arg]
-                                 particles_ambiguous={"xo"},
-                                 suffix_acronyms={"xo"}),
-     "the nearest is lexicon.add('xo', kind='given').add('xo', kind='particle')"),
-    # a phrase no reading takes: the translation itself is refused
-    (lambda: Lexicon.empty().add(titles={"grand moff"}),  # type: ignore[call-arg]
-     "no readings give those words exactly those sets"),
-])
-def test_each_2x_spelling_is_translated_or_said_to_have_none(
-        call: Callable[[], object], said: str) -> None:
-    with pytest.raises(TypeError, match=re.escape(said)):
-        call()
-
-
-#: (field, word, text, the reading under the 2.x state with the word
-#: removed from its base set and left in a marker): the marker goes with
-#: the word, decided 2026-11-02 (decisions/vocabulary-model's #754, a
-#: marker left behind entry). 2.x read the orphan in two places, and
-#: each row pins the reading that changed, so a translation keeping the
-#: orphan's effect fails here, where the set compare above cannot see it.
-_LEFT_BEHIND = [
-    # given_name_titles: 2.x's orphan still made H2's period-shape title
-    # address the given name, reading given 'Smith'
-    ("titles", "sir", "Sir. Smith", {"title": "Sir.", "family": "Smith"}),
-    ("titles", "sir", "Smith, Sir.", {"title": "Sir.", "family": "Smith"}),
-    # title_modifiers: 2.x's orphan still counted as listed in the
-    # capitals shape, reading given 'AIR', family 'John Smith'
-    ("titles", "air", "John Smith, AIR",
-     {"given": "John", "family": "Smith", "suffix": "AIR"}),
-]
-
-
-@pytest.mark.parametrize(("field", "word", "text", "reads"), _LEFT_BEHIND)
-def test_a_marker_left_behind_goes_with_its_word(
-        field: str, word: str, text: str, reads: dict[str, str]) -> None:
-    default = Lexicon.default()
-    sets = _fields_of(default._sets) | {"surnames": default.surnames}
-    loaded = _loaded(_state_2x(sets, default.capitalization_exceptions,
-                               **{field: sets[field] - {word}}))
-    with pytest.raises(TypeError, match="since 3.0") as raised:
-        default.remove(**{field: {word}})  # type: ignore[arg-type]
-    spelled = eval(str(raised.value).rsplit("write ", 1)[1],  # noqa: S307
-                   {"lexicon": default})
-    for lexicon in (loaded, spelled):
-        parsed = Parser(lexicon=lexicon).parse(text).as_dict()
-        assert {f: parsed[f] for f in reads} == reads
-        assert not {f for f, v in parsed.items() if v and f not in reads}
 
 
 def _migrate_constant_rows() -> list[tuple[str, str]]:
