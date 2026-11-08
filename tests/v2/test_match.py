@@ -30,6 +30,9 @@ NAMES: tuple[str, ...] = (
     "김민준", "王小明", "王小", "John Smith Junior", "John A. B. Smith",
     "John Anne Beth Smith", "John A. Beth Smith", "John Anne Smith",
     "कुमार सिंह", "कमार सिंह", "हंस सिंह", "हस सिंह",
+    "Ana dos Santos", "Ana Dos", "Jan van der Berg", "Jan Van",
+    "Maria da Silva", "Maria Da", "John bin Laden", "John Bin",
+    "Ana Jo", "Ana José", "Ana Ma", "Ana María", "Maria Mà", "Maria Ma",
 )
 
 m = Matching(Parser())
@@ -308,3 +311,21 @@ def test_consistent_names_always_share_a_key() -> None:
     for a, b in itertools.product(NAMES, repeat=2):
         if m.check(a, b).consistent:
             assert m.keys(a) & m.keys(b), (a, b)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Ana dos Santos", "Ana Dos"), ("Jan van der Berg", "Jan Van"),
+    ("Maria da Silva", "Maria Da"), ("John bin Laden", "John Bin"),
+])
+def test_a_family_of_particles_alone_is_not_part_of_a_longer_one(
+        a: str, b: str) -> None:
+    assert not m.check(a, b).consistent
+    assert not m.check(b, a).consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Ana Jo", "Ana José"), ("Ana Ma", "Ana María"), ("Maria Mà", "Maria Ma"),
+])
+def test_listed_and_folded_spellings_share_a_key(a: str, b: str) -> None:
+    assert m.check(a, b).consistent
+    assert m.keys(a) & m.keys(b)

@@ -199,22 +199,29 @@ class Matching:
         each half of a hyphenated one beside its joined form, one key
         `word;g` where `g` is the first letter of the given name (empty
         where there is none). A word is keyed by its headword, so two
-        listed spellings of one surname share a key, and a given name by
-        the first letter of its text and of its headword. Under the
-        default settings two names `check` finds consistent always share
-        a key, so grouping by key and checking within each group loses no
-        match. A name with no family has no key."""
+        listed spellings of one surname share a key, each word under its
+        headword folded and its folded form's headword, and a given name
+        by the first letter of its text and of its headword. The
+        guarantee rests on this: every family-base word the default check
+        compares is keyed, under both headword orders, so two names it
+        finds consistent share a key and grouping by key loses no match.
+        A name with no family has no key."""
         parsed = self._parsed(name)
         lexicon = self.parser.lexicon
+
+        def heads(word: str) -> set[str]:
+            return {lexicon._headword(_fold(word)), _fold(lexicon._headword(word))}
+
         words: set[str] = set()
-        for word in _fold(parsed.family_base).split():
-            for form in (*word.split("-"), word.replace("-", "")):
-                if form:
-                    words.add(lexicon._headword(form))
-        given = _fold(parsed.given).split()
+        for raw in parsed.family_base.split():
+            for word in (raw, _fold(raw)):
+                for form in (*word.split("-"), word.replace("-", "")):
+                    if form:
+                        words |= heads(form)
+        given = parsed.given.split()
         initials = {""}
         if given:
-            initials = {given[0][:1], lexicon._headword(given[0])[:1]}
+            initials = {g[:1] for g in heads(given[0]) | {_fold(given[0])}}
         return frozenset(f"{w};{g}" for w in words for g in initials)
 
     def _parsed(self, name: object) -> ParsedName:
@@ -318,9 +325,9 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
     if family:
         if bases[0] and _fold(bases[0]) == _fold(bases[1]):
             return Outcome.PARTICLES_ASIDE
-        sa = set(_WORDS.split(_fold(a))) - {""}
-        sb = set(_WORDS.split(_fold(b))) - {""}
-        if sa <= sb or sb <= sa:
+        sa = set(_WORDS.split(_fold(bases[0]))) - {""}
+        sb = set(_WORDS.split(_fold(bases[1]))) - {""}
+        if sa and sb and (sa <= sb or sb <= sa):
             return Outcome.PART_OF_OTHER
     if len(wa) == len(wb):
         parts = [_part_agrees(x, y, lexicon) for x, y in zip(wa, wb)]
