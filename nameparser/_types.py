@@ -405,8 +405,8 @@ class Token:
     #: :attr:`Ambiguity.alternative`, which holds the reading NOT taken.
     #: None for a token the parse did not read: one
     #: :meth:`ParsedName.replace` or :meth:`Parser.revise` builds, or one
-    #: loaded from a pickle written before 3.0. Not compared:
-    #: two tokens equal without it, as before 3.0, and
+    #: loaded from a pickle written before 3.0. Not compared: two tokens
+    #: equal without it, as before 3.0, and
     #: :meth:`ParsedName.comparison_key` ignores it. Added in 3.0.
     reading: Reading | None = field(
         default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
@@ -1398,7 +1398,8 @@ class ParsedName:
             # nothing between them" -- the two halves of any word a
             # division cut (rules/W1, W5) that land in one field; the
             # suffix keeps its entries apart (decisions/W5, #845). `end`
-            # is -1 until a word reaches `parts`, so a match has one
+            # is -1 unless the last word kept went to `parts`, so a match
+            # always has a `parts[-1]` to join
             elif (not suffix_join and tok.span is not None
                   and tok.span.start == end):
                 parts[-1] += tok.text
@@ -1607,10 +1608,11 @@ class ParsedName:
         as two (``García`` in ``Gabriel García Márquez`` under
         ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
         Valle`` under it too), :attr:`surname2` being the other;
-        elsewhere the whole :attr:`family`. A middle name ``middle_as_family`` folds into
-        the family is in neither (``María García`` in ``Ana María García
-        López`` under ``middle_as_family``, whose surname1 is
-        ``López``). Added in 3.0."""
+        elsewhere the whole :attr:`family`. A middle name
+        ``middle_as_family`` folds into the family is in neither
+        (``María García`` in ``Ana María García López`` under
+        ``middle_as_family``, whose surname1 is ``López``). Added in
+        3.0."""
         return self._text_for(Role.FAMILY, first_unit=self._first_unit())
 
     @property

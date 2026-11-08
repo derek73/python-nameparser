@@ -74,8 +74,8 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes): any name holding a letter or a
-    digit, since the order moves every longer name a family comma does
-    not fix, and the choice's titles and the fragment's credentials
+    digit, since the order moves every name of two name words or more
+    that a family comma does not fix, and the choice's titles and the fragment's credentials
     reach comma names too, so no narrower predicate is worth stating by
     hand."""
     return any(c.isalnum() for c in name)
