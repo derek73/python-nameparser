@@ -518,18 +518,11 @@ def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
     period: the letter P13 links. Not a connective, the word P13 asks
     about, nor a lowercase letter in a name of mixed case, which S10
     reads as the generation by its writing."""
-    if len(piece) != 1:
+    if len(piece) != 1 or "conjunction" in tokens[piece[0]].tags:
         return False
-    tok = tokens[piece[0]]
-    letter = composed(tok.text.rstrip("."))
-    return ("conjunction" not in tok.tags
-            and len(letter) == 1 and letter.isalpha()
+    letter = composed(tokens[piece[0]].text.rstrip("."))
+    return (len(letter) == 1 and letter.isalpha()
             and not numeral_settled_by_case(letter, one_case))
-
-
-def _is_lone_connective(piece: Sequence[int],
-                        tokens: Sequence[WorkToken]) -> bool:
-    return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
 
 
 def _is_name_word(piece: Sequence[int], ptags: Set[str],
@@ -558,7 +551,10 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
     """P13's two joins at the end of the part holding the family name,
     made ahead of P3's carve-out. `keep_a_name` marks the whole name's
     part, where a piece past the title run must stand in front of the
-    join, so the name keeps a word for its given name."""
+    join, so the name keeps a word for its given name. The connective
+    is looked for before the title run is counted, so a part with no
+    connective where P13 looks pays only the walk back from the end,
+    not leading_titles' count."""
     # rules/P13: "A single-letter connective in front of a lone letter
     # ending the name words joins it to the word before" and "A
     # connective with nothing to link joins the word before it alone"
@@ -574,6 +570,12 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         if not (_is_trailing_title(piece, ptags[e], tokens)
                 or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
+                    # reads_as_generation's own first test, asked at C
+                    # level as _comma._whole_name and _group_segment's
+                    # P3 numeral count ask it, so a word that is no
+                    # numeral pays no frame for the call
+                    and ROMAN.match(tokens[piece[0]].text.rstrip("."))
+                    is not None
                     and ends_in_a_generation(
                         [tokens[pieces[e - 1][-1]].text,
                          tokens[piece[0]].text], one_case))):
@@ -581,26 +583,28 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         e -= 1
     if e < 1:
         return
-    floor = leading_titles(pieces, ptags, tokens) + keep_a_name
-    if lone:
-        link = composed(tokens[pieces[e - 1][0]].text)
-        if (e - 2 >= floor and _is_lone_connective(pieces[e - 1], tokens)
-                and len(link) == 1 and link.isalpha()
-                and _is_name_word(pieces[e - 2], ptags[e - 2], tokens)):
-            merge_pieces(pieces, ptags, e - 2, e + 1)
+    # the connective: in front of the lone letter, or the word the walk
+    # stopped at
+    at = e - 1 if lone else e
+    if (at < 1 or len(pieces[at]) != 1
+            or "conjunction" not in tokens[pieces[at][0]].tags):
         return
-    if not (e - 1 >= floor and _is_lone_connective(pieces[e], tokens)
-            and _is_name_word(pieces[e - 1], ptags[e - 1], tokens)):
-        return
-    word = tokens[pieces[e][0]]
+    word = tokens[pieces[at][0]]
     text = composed(word.text)
-    initial_shaped = (one_case and len(text) == 1
-                      and text.lower() != text.upper())
-    couple = (len(text) > 1 and e + 1 < len(pieces)
-              and _is_trailing_title(pieces[e + 1], ptags[e + 1], tokens))
-    if (text.isalpha() and not initial_shaped and not couple
-            and "vocab:suffix" not in word.tags):
-        merge_pieces(pieces, ptags, e - 1, e + 1)
+    if lone:
+        if not (len(text) == 1 and text.isalpha()):
+            return
+    elif not (text.isalpha()
+              and not (one_case and len(text) == 1
+                       and text.lower() != text.upper())
+              and "vocab:suffix" not in word.tags
+              and not (len(text) > 1 and e + 1 < len(pieces)
+                       and _is_trailing_title(pieces[e + 1], ptags[e + 1],
+                                              tokens))):
+        return
+    if (at - 1 >= leading_titles(pieces, ptags, tokens) + keep_a_name
+            and _is_name_word(pieces[at - 1], ptags[at - 1], tokens)):
+        merge_pieces(pieces, ptags, at - 1, e + 1)
 
 
 # rules/P3: "a word the rest of the parse reads as a name word
@@ -760,7 +764,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    site: ClauseSite,
                    reads: list[TailRead | None] | None = None,
                    phrase_heads: set[int] | None = None,
-                   given_first: bool = True,
+                   given_first: bool,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
