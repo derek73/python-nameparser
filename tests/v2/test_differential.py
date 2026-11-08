@@ -156,6 +156,14 @@ _BOTH = frozenset({"capitalized", "capitalized_force"})
     # a report's alternative (#752 phase 2m), which the worker records
     # in its own copy of snapshot.alternatives()
     ("Jack", None, frozenset()),
+    # 3.0's views, one row per view the default parse fills (surname2
+    # needs a policy the snapshot does not parse under): with none, the
+    # worker recorded no view and a bare compare.py against 3.0.0
+    # reported 669 of 7,107 entries moved in a tree that moved none
+    # (2026-11-08)
+    ("John Smith Jr., MD", None, frozenset()),
+    ("田中さん", None, frozenset()),
+    ("Mahathir bin Mohamad", None, frozenset()),
 ])
 def test_the_worker_reads_a_line_as_the_tree_does(
         name: str, order: str | None, views: frozenset[str]) -> None:
@@ -182,7 +190,29 @@ def test_a_baseline_without_alternatives_is_not_compared_on_them() -> None:
     assert compare.unrecorded(tell) == ()
     assert compare.unrecorded({**tell, "alternatives": False}) == (
         "alternatives",)
-    assert compare.unrecorded({"__version__": "2.6.0"}) == ("alternatives",)
+    assert compare.unrecorded({"__version__": "2.6.0"}) == (
+        "alternatives", "generation", "credentials", "honorifics",
+        "patronymic", "surname2")
+
+
+def test_a_baseline_without_the_views_is_not_compared_on_them() -> None:
+    # A 2.x wheel's ParsedName has no generation, honorifics, patronymic
+    # or surname2, so every name the tree fills one for would read as
+    # moved; a 3.0 wheel has all four and is compared on each.
+    tell, _ = _run_template({"name": "John Smith Jr., MD", "order": None})
+    assert tell["views"] == list(compare.VIEW_KEYS)
+    assert compare.unrecorded(tell) == ()
+    assert compare.unrecorded({**tell, "views": ["generation"]}) == (
+        "honorifics", "patronymic", "surname2")
+
+
+def test_the_worker_views_are_every_view_a_snapshot_records() -> None:
+    # A view snapshot.row records that the worker leaves out reads as a
+    # move in every name holding it, the shape that hid until 3.0.0
+    # became the baseline.
+    later = {k for keys, _ in snapshot.RECORDED_LATER for k in keys}
+    views = {k for keys in compare.VIEW_KEYS.values() for k in keys}
+    assert views == later - set(snapshot.CASE_VIEWS) - {"alternatives"}
 
 
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \

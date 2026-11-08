@@ -77,6 +77,7 @@ both sides. A snapshot without the header records no alternatives, so
 says it has no `Ambiguity.alternative`: a name the tree reports one
 for is not a name that moved (867 of the 1,088 entries `--baseline
 2.6.0` reported on 2026-10-26 were only that).
+3.0's views are left out the same way against a release whose `ParsedName` lacks them, the worker naming the views it has: on 2026-11-08 `--baseline 2.8.0` reported 1,669 of 7,107 entries moved with them compared and 1,155 without, and until the worker read them at all, a bare run against 3.0.0 reported 669 entries moved in a tree that moved none.
 
 `--tree PATH` reads with another checkout's `nameparser` (the corpus is
 always this checkout's), and checks that the import really came from
