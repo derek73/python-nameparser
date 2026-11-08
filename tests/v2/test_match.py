@@ -31,6 +31,11 @@ def test_accept_rejects_a_bare_string() -> None:
         Matching(Parser(), accept="initial")  # type: ignore[arg-type]
 
 
+def test_accept_rejects_a_mapping() -> None:
+    with pytest.raises(TypeError, match="iterable of outcome names"):
+        Matching(Parser(), accept={"initial": 1})  # type: ignore[arg-type]
+
+
 def test_accept_rejects_a_non_iterable() -> None:
     with pytest.raises(TypeError, match="iterable of outcome names"):
         Matching(Parser(), accept=3)  # type: ignore[arg-type]

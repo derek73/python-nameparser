@@ -13,7 +13,7 @@ only, `Parser` for typing alone.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
@@ -150,7 +150,7 @@ class Matching:
                 f"parser must be a Parser, got {type(self.parser).__name__}; "
                 f"pass Parser() or use Parser.matching()")
         accept = self.accept
-        if isinstance(accept, (str, bytes)) or not isinstance(accept, Iterable):
+        if isinstance(accept, (str, bytes, Mapping)) or not isinstance(accept, Iterable):
             raise TypeError(
                 f"accept must be an iterable of outcome names, got "
                 f"{type(accept).__name__} {accept!r}; pass e.g. "
