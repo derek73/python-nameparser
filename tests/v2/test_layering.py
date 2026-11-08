@@ -6,6 +6,8 @@ import pathlib
 
 import pytest
 
+from tests.checkout import ROOT
+
 import nameparser
 import nameparser._pipeline
 
@@ -397,8 +399,8 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
 
 #: The checkout these tests sit in, for tools/: not PKG.parent, which
 #: is site-packages when the suite runs against the installed package
-#: (tests/source_tree.py).
-_REPO = pathlib.Path(__file__).resolve().parents[2]
+#: (tests/checkout.py).
+_REPO = ROOT
 
 #: Where a parse reads vocabulary: every library module but `_lexicon`,
 #: which owns the fields and fills `_sets` from them. A vocabulary

@@ -17,13 +17,11 @@ from typing import Any
 
 import pytest
 
-from tests.checkout import require_checkout
+# @needs_checkout: the report's child refuses a nameparser imported from outside the checkout
+from tests.checkout import needs_checkout
 
 
 from ._differential_fixtures import checkout_copy, own_cache, plant_corpus
-
-# the report refuses a nameparser imported from outside the checkout
-require_checkout()
 
 _PATH = Path(__file__).parents[2] / "tools" / "vocab" / "word_report.py"
 
@@ -144,6 +142,7 @@ def test_the_ranking_puts_the_words_filed_most_as_forenames_first() -> None:
     assert lines[5].split() == ["w", "0", "0", "6", "6", "6", "0", "0", "-"]
 
 
+@needs_checkout
 def test_the_report_counts_the_corpora_and_quotes_no_name(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _plant(monkeypatch)
@@ -163,6 +162,7 @@ def test_the_report_counts_the_corpora_and_quotes_no_name(
     assert ranked[4].split() == ["bishop", "1", "1", "0", "0", "1", "0", "0", "-"]
 
 
+@needs_checkout
 def test_the_ranking_alone_reads_no_grid(monkeypatch: pytest.MonkeyPatch) -> None:
     _plant(monkeypatch)
     out = report.report(["sir"], _ROOT, None, rank_only=True, jobs=1)
@@ -170,6 +170,7 @@ def test_the_ranking_alone_reads_no_grid(monkeypatch: pytest.MonkeyPatch) -> Non
     assert out[-1].split() == ["sir", "3", "2", "1", "1", "3", "0", "0", "-"]
 
 
+@needs_checkout
 def test_a_base_check_reports_a_planted_change_and_none_across_a_copy(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # The harness must be able to report a difference: a base read with
@@ -188,6 +189,7 @@ def test_a_base_check_reports_a_planted_change_and_none_across_a_copy(
     assert "->" not in "\n".join(out).split("\ncorpora (")[1].split("usage")[0]
 
 
+@needs_checkout
 def test_a_child_refuses_a_package_from_outside_its_tree(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # The tree holds no nameparser, so the child's import falls through to
@@ -227,6 +229,7 @@ def test_the_command_refuses_a_rank_against_a_base_and_no_words(
     capsys.readouterr()
 
 
+@needs_checkout
 def test_a_ranking_over_no_fetched_corpus_says_its_counts_are_empty() -> None:
     # Unread corpora counted as zeros are a clean run's look-alike.
     out = report.report(["sir"], _ROOT, None, rank_only=True, jobs=1)
@@ -275,6 +278,7 @@ _FILED = [{"title": "Sir", "forename": "Zyx", "surname": "Qwv"},
           {"forename": "Sirius", "surname": "Zyx"}]
 
 
+@needs_checkout
 def test_a_corpus_of_filed_boxes_splits_the_names_by_the_box_the_word_was_typed_in(
         monkeypatch: pytest.MonkeyPatch) -> None:
     import importlib

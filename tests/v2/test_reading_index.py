@@ -33,7 +33,13 @@ def _load_build() -> ModuleType:
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except SystemExit as stop:
+        # the build exits 3 at import when a module it loads by path
+        # is broken; an exit would end the whole pytest session, so
+        # fail this module's collection instead
+        pytest.fail(f"tools/vocab/build.py exited {stop.code} at import", pytrace=False)
     return module
 
 

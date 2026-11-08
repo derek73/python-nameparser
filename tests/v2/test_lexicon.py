@@ -12,7 +12,7 @@ from types import MappingProxyType
 
 import pytest
 
-from tests.checkout import HAS_CHECKOUT, needs_checkout
+from tests.checkout import HAS_DOCS, needs_docs
 
 from nameparser import Locale, LexiconReading, Parser, parser_for
 from nameparser._lexicon import (
@@ -1920,8 +1920,8 @@ def test_a_marker_left_behind_goes_with_its_word(
 def _migrate_constant_rows() -> list[tuple[str, str]]:
     """docs/migrate.rst's "Vocabulary constants → Lexicon.words" rows
     whose replacement is code: (constant, expression); none outside a
-    checkout, where the test is skipped."""
-    if not HAS_CHECKOUT:
+    layout without the user docs, where the test is skipped."""
+    if not HAS_DOCS:
         return []
     text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
     section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
@@ -1930,7 +1930,7 @@ def _migrate_constant_rows() -> list[tuple[str, str]]:
     return rows
 
 
-@needs_checkout
+@needs_docs
 @pytest.mark.parametrize(("constant", "expression"), _migrate_constant_rows())
 def test_migrate_s_words_call_reproduces_each_2x_constant(
         constant: str, expression: str) -> None:
@@ -1949,7 +1949,7 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
         assert set(got) == set(expected)
 
 
-@needs_checkout
+@needs_docs
 def test_migrate_s_table_covers_every_compiled_constant() -> None:
     # every public 2.x constant has a row, code or prose: the private
     # sets 3.0 added (GENERATION_WORDS, ..., TITLE_CASE_NAME_WORDS) were

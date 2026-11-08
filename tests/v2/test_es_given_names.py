@@ -21,7 +21,7 @@ from types import ModuleType
 
 import pytest
 
-from tests.checkout import needs_checkout
+from tests.checkout import HAS_CHECKOUT, needs_docs
 
 import nameparser
 from nameparser import Lexicon
@@ -89,14 +89,18 @@ _UNGUARDED_EFFECT = {
 
 def test_the_tool_writes_one_module_a_list() -> None:
     assert set(tool.LISTS) == set(_MODULES)
-    # by its place in the package, which holds for the installed package
-    # too, where the module imported is not the file the tool writes
+    # In a checkout the tool writes the very file imported. Against the
+    # installed package (tests/checkout.py) the two are different copies,
+    # so the file is matched by its place in the package instead.
     package = _PATH.parents[1] / "nameparser"
     installed = Path(nameparser.__file__).parent
     for tag, module in _MODULES.items():
         assert module.__file__ is not None
-        assert (tool.LISTS[tag][0].relative_to(package)
-                == Path(module.__file__).relative_to(installed)), tag
+        if HAS_CHECKOUT:
+            assert tool.LISTS[tag][0] == Path(module.__file__), tag
+        else:
+            assert (tool.LISTS[tag][0].relative_to(package)
+                    == Path(module.__file__).relative_to(installed)), tag
 
 
 @pytest.mark.parametrize("tag", sorted(_MODULES))
@@ -232,7 +236,7 @@ def test_an_n_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
         ("zurine", 100, 50)]
 
 
-@needs_checkout
+@needs_docs
 def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:
     # The user docs state the list's size; the cutoff is the tool's TOP,
     # so a cutoff change fails here until the prose moves with it. The

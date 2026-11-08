@@ -16,15 +16,13 @@ from pathlib import Path
 
 import pytest
 
-from tests.checkout import require_checkout
+# @needs_checkout: the harness refuses a nameparser imported from outside the checkout
+from tests.checkout import needs_checkout
 
 
 from nameparser import Parser
 
 from ._differential_fixtures import checkout_copy, load_tool, own_cache, plant_corpus
-
-# the harness refuses a nameparser imported from outside the checkout
-require_checkout()
 
 agreement = load_tool("local_agreement")
 corpora = agreement.local_corpora
@@ -158,6 +156,7 @@ def test_a_stream_of_damaged_records_is_refused_once_read(
         list(agreement.records(loaded))
 
 
+@needs_checkout
 def test_a_rerun_reports_what_moved_since_the_record(
         monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -174,6 +173,7 @@ def test_a_rerun_reports_what_moved_since_the_record(
     assert "changed: 2 records" in out
 
 
+@needs_checkout
 def test_a_record_of_another_fetch_is_refused(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -186,6 +186,7 @@ def test_a_record_of_another_fetch_is_refused(
     assert set(header) == {"raw_sha256", "scorer", "data_date", "tree", "entries", "locale"}
 
 
+@needs_checkout
 def test_a_run_with_no_record_names_the_command_that_writes_one(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -255,6 +256,7 @@ def test_a_record_holding_a_value_that_is_not_text_is_refused_as_damage(
         list(agreement.records(loaded))
 
 
+@needs_checkout
 @pytest.mark.parametrize("body", ["", "{not json\n", '["a list"]\n',
                                   '{"raw_sha256": "x"}\n{"got": {}}\n'],
                          ids=["empty", "header not JSON", "header not an object",
@@ -268,6 +270,7 @@ def test_a_record_that_is_not_one_is_refused_naming_the_record_command(
         agreement.main([_PSC])
 
 
+@needs_checkout
 def test_a_record_written_by_another_scorer_is_refused(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -306,6 +309,7 @@ def test_a_record_written_by_another_scorer_is_refused(
         agreement.main([_PSC])
 
 
+@needs_checkout
 def test_progress_is_reported_where_a_disagreement_now_agrees(
         monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -320,6 +324,7 @@ def test_progress_is_reported_where_a_disagreement_now_agrees(
     assert f"  progress: {agreement.key(_AGREES)}" in out
 
 
+@needs_checkout
 def test_a_tree_that_is_not_the_imported_package_is_refused(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -338,6 +343,7 @@ def _kept(cache: Path) -> list[Path]:
     return sorted((cache / "local" / _PSC / agreement.KEPT).glob("*.jsonl"))
 
 
+@needs_checkout
 def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_copy(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -357,6 +363,7 @@ def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_cop
     assert len(_kept(_own_cache)) == 2
 
 
+@needs_checkout
 def test_a_base_check_never_touches_the_shared_record(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -371,6 +378,7 @@ def test_a_base_check_never_touches_the_shared_record(
     assert (shared.stat().st_mtime_ns, shared.read_bytes()) == before
 
 
+@needs_checkout
 def test_a_kept_base_record_is_reused_and_a_damaged_one_scored_again(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -405,6 +413,7 @@ def test_a_kept_base_record_is_reused_and_a_damaged_one_scored_again(
         monkeypatch.setattr(agreement, "_score_base", unscored)
 
 
+@needs_checkout
 def test_a_base_that_changed_while_it_was_scored_keeps_no_record(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -431,6 +440,7 @@ def test_a_base_that_changed_while_it_was_scored_keeps_no_record(
     assert not list((_own_cache / "local" / _PSC / agreement.KEPT).glob(".base-*"))
 
 
+@needs_checkout
 def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -441,6 +451,7 @@ def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
     assert not _kept(_own_cache)
 
 
+@needs_checkout
 def test_a_base_whose_import_fails_is_refused_with_the_childs_output(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -461,6 +472,7 @@ def test_a_base_check_refuses_to_record(
         assert raised.value.code == 2 and "--base compares" in capsys.readouterr().err
 
 
+@needs_checkout
 def test_record_writes_where_out_says_and_leaves_the_shared_record(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _corpus(monkeypatch, *_ALL)
@@ -606,6 +618,7 @@ def test_the_report_of_a_source_with_a_suffix_box_counts_by_election(
     assert not any("set-aside" in line for line in lines)
 
 
+@needs_checkout
 def test_a_locale_scores_its_pack_s_parser_against_a_record_of_its_own(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -646,6 +659,7 @@ def test_a_score_in_workers_reads_with_the_locale_s_parser(
         agreement.score(rows, _VOLBY_FIELDS, Parser(), jobs=2, locale="cs")
 
 
+@needs_checkout
 def test_an_unknown_locale_is_refused_naming_the_packs(
         monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     plant_corpus(monkeypatch, corpora, _VOLBY, [_candidate("Ing.", "Eva", "Malá")],
@@ -660,6 +674,7 @@ def test_an_unknown_locale_is_refused_naming_the_packs(
         assert "no such pack; the packs are" in capsys.readouterr().err, extra
 
 
+@needs_checkout
 def test_a_base_check_under_a_locale_scores_the_base_under_it(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
