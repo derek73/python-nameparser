@@ -400,7 +400,8 @@ class Token:
     #: The reading the parse took for this word: what it was read as,
     #: the field it landed in (always this token's :attr:`role`), and
     #: why -- a listed word, a declared name, a shape, or position
-    #: alone. The twin of :attr:`Ambiguity.alternative`, which holds
+    #: alone -- and the shipped files whose reading of it is on in the
+    #: parse's lexicon (:attr:`Reading.languages`). The twin of :attr:`Ambiguity.alternative`, which holds
     #: the reading NOT taken. None for a token the parse did not read:
     #: one :meth:`ParsedName.replace` or :meth:`Parser.revise` builds,
     #: or one loaded from a pickle written before 3.0. Not compared:
@@ -1224,7 +1225,10 @@ class ParsedName:
     fields as strings (``.given``, ``.family``, ...); inspect structure
     through :attr:`tokens` / :meth:`tokens_for`; correct a parse with
     :meth:`replace` (returns a new value; Parser.revise is the
-    tag-preserving form); produce output with
+    tag-preserving form); read the views derived from the fields
+    (:attr:`given_names`, :attr:`family_base`, :attr:`generation`,
+    :attr:`credentials`, :attr:`honorifics`, :attr:`patronymic`,
+    :attr:`surname1`, :attr:`surname2`, ...); produce output with
     :meth:`render`, :meth:`initials`, :meth:`capitalized`, or ``str()``.
 
     Constructor-enforced invariants: spans ascending, non-overlapping,
@@ -1597,7 +1601,7 @@ class ParsedName:
         """The family's first name unit where the parse read the family
         as two (``García`` in ``Gabriel García Márquez`` under
         ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
-        Valle``), :attr:`surname2` being the other; elsewhere the whole
+        Valle`` under it too), :attr:`surname2` being the other; elsewhere the whole
         :attr:`family`. A middle name ``middle_as_family`` folds into
         the family is in neither (``María García`` in ``Ana María García
         López`` under ``middle_as_family``, whose surname1 is
@@ -1802,9 +1806,12 @@ class ParsedName:
 
     def initials(self, spec: str = "{given} {middle} {family}",
                  delimiter: str = ".", separator: str = " ") -> str:
-        """Initials per group; v1's initials_format/_delimiter/_separator
-        become call-site arguments instead of Config-wide settings.
-        Each group is ordered the way its own field is ordered, so a
+        """The initials of the given, middle and family names, laid
+        out by `spec`, a format string whose keys are the groups:
+        each initial is followed by `delimiter`, and the initials of
+        one group are joined by `separator` (so
+        ``initials(spec="{given}{middle}{family}", separator="")``
+        runs them together). Each group is ordered the way its own field is ordered, so a
         name whose middle words fold into the family initials them
         before the family's own words, as `family` renders them.
         Valid spec keys: given, middle, family."""

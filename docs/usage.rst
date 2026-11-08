@@ -175,7 +175,8 @@ reading kind is what :meth:`Lexicon.words(kind=...)
      - Field
      - Example
    * - Titles (``title``)
-     - adjacent titles
+     - adjacent titles; a title that is also a given name, only inside
+       a title phrase (:ref:`titles-also-given-names`)
      - ``title``
      - ``Asst. Vice Chancellor John`` → ``Asst. Vice Chancellor``
    * - Suffixes (``suffix``)
@@ -191,6 +192,11 @@ reading kind is what :meth:`Lexicon.words(kind=...)
        (``del Carmen``), which is ``middle``
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
+   * - Ranks (``rank``)
+     - the following surname, inside the name; opening it, most are
+       titles (below)
+     - ``family``
+     - ``Jan Freiherr von Berg`` → ``Freiherr von Berg``
    * - Maiden markers (``birth_marker``)
      - the following name
      - ``maiden``
@@ -211,11 +217,63 @@ names together as easily as two surnames:
     >>> parse("Juan de la Vega y Rodriguez").family
     'de la Vega y Rodriguez'
 
-One shipped vocabulary works the other way round and so is not in the
-table above: the Korean surnames (``Lexicon.default().surnames``) *split* a
-word instead of merging two, and is covered under `East Asian names`_.
-:doc:`customize` covers how to change which words are in each of these
-sets.
+Most ranks (``Freiherr``, ``Graf``, ``Prinz``) are titles as well as
+particles, and read by where they stand: opening the name each is a
+title, and inside it the surname takes it in. ``Freiherrin`` holds no
+title reading, so opening a name it is a name word. ``St`` reads the same
+way, a title and a ``saint`` particle; the other ``saint`` words
+(``San``, ``Sta``, ...) hold no title reading, so opening a name none
+of them is a title:
+
+.. doctest::
+
+    >>> parse("Freiherr Hans von Berg").title
+    'Freiherr'
+    >>> parse("Jan Freiherr von Berg").family
+    'Freiherr von Berg'
+    >>> parse("St John Smith").title, parse("John St Clair").family
+    ('St', 'St Clair')
+
+Two shipped vocabularies work the other way round and so are not in
+the table above: they *split* a word instead of merging two. The
+Korean surnames (``Lexicon.default().surnames``) divide an unspaced
+hangul name, and the glued honorifics, the ``honorific`` readings
+carrying ``attached`` (``Lexicon.default().words(kind="honorific",
+attached="after")`` lists them), split off the end of a Chinese,
+Japanese or Korean name. Both are covered under `East Asian names`_.
+:doc:`customize` covers how to add and remove the readings behind each
+of these rows.
+
+Inspecting the vocabulary
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two questions explain why a word read as it did, and each has its own
+call. What a word *may* be read as is the lexicon's answer,
+:meth:`Lexicon.readings_of <nameparser.Lexicon.readings_of>`, each
+reading naming the language files that hold it. What the parse *did*
+read it as is the token's, :attr:`Token.reading
+<nameparser.Token.reading>` (see :ref:`reading-taken`):
+
+.. doctest::
+
+    >>> from nameparser import Lexicon
+    >>> [(r.kind, r.languages) for r in Lexicon.default().readings_of("van")]
+    [('preposition', ('nl',)), ('given', ('nl',))]
+    >>> parse("Ludwig van Beethoven").tokens[1].reading
+    Reading('particle' as 'family', 'vocabulary', in nl)
+
+A lexicon answers for the readings it has on. A reading its file holds
+off until a caller chooses the language (:ref:`choosing-languages`) is not among
+the default lexicon's: ``Lady`` is a given name only under a Spanish
+choice, and only that parser's lexicon lists the reading:
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> [r.kind for r in Lexicon.default().readings_of("lady")]
+    ['nobility']
+    >>> [r.kind for r in parser_for(locales.ES).lexicon.readings_of("lady")]
+    ['nobility', 'given']
 
 A particle at the start of a name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -721,6 +779,8 @@ and prints a note naming the install. :func:`~nameparser.parser_for` never
 does this on its own, so the same code parses alike wherever it runs.
 :doc:`customize` covers turning any of these behaviors off.
 
+.. _aggregate-views:
+
 Aggregate views
 ----------------
 
@@ -791,9 +851,11 @@ name written without the particle has none:
 
 ``surname2`` is the family's second name, where the parse read the
 family as two: with ``two_family_names`` on
-(:ref:`two-family-names`), or for a Chinese name opening with two
-surnames under ``zh`` (:ref:`east-asian-names`), and ``family`` keeps both. Every other name
-has none, a family comma's and a hyphenated one included:
+(:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs`` and ``sk``
+packs turn it on (:doc:`locales`), or for a Chinese name opening with
+two surnames under ``zh`` (:ref:`east-asian-names`), and ``family``
+keeps both. Every other name has none, a family comma's and a
+hyphenated one included:
 
 .. doctest::
 
@@ -1278,7 +1340,10 @@ The reading each word took
 
 Since 3.0 every token also says how the parse read it, whether or not
 a fork was reported. ``Token.reading`` is a :class:`~nameparser.Reading`
-of the same three parts, its role the token's own field:
+with the same parts, its role the token's own field, and two flags
+besides, ``first_surname`` and ``second_surname``, marking the words
+``surname1`` and ``surname2`` hold where the family was read as two,
+or had middle names folded into it (``middle_as_family``):
 
 .. doctest::
 
