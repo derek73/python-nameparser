@@ -215,14 +215,28 @@ _initialless = _script_matcher(*_NO_INITIALS, whole=True)
 _RANK = {o: i for i, o in enumerate(Outcome)}
 
 
+_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
+
+
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
-    away: NFC then NFD, combining marks (Mn) dropped, casefolded, `.`
-    and `'` removed. Hyphens and spaces are kept."""
+    away: NFC then NFD, casefolded, `.` and `'` removed. Hyphens and
+    spaces are kept. A combining mark (Mn) is dropped only where the
+    letter it attaches to is Latin, Greek or Cyrillic, where it is an
+    accent; in another script (a Devanagari virama, anusvara or vowel
+    sign) it is spelling and is kept."""
     decomposed = unicodedata.normalize(
         "NFD", unicodedata.normalize("NFC", text))
-    bare = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
-    return bare.casefold().translate(_DROPPED)
+    kept = []
+    accented = False
+    for c in decomposed:
+        if unicodedata.category(c) == "Mn":
+            if accented:
+                continue
+        else:
+            accented = unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
+        kept.append(c)
+    return "".join(kept).casefold().translate(_DROPPED)
 
 
 def _weakest(outcomes: Iterable[Outcome]) -> Outcome:

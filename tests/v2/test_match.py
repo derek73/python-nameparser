@@ -29,6 +29,7 @@ NAMES: tuple[str, ...] = (
     "Mr. John Smith", "John Smith PhD", "James Smith", "Suharto", "",
     "김민준", "王小明", "王小", "John Smith Junior", "John A. B. Smith",
     "John Anne Beth Smith", "John A. Beth Smith", "John Anne Smith",
+    "कुमार सिंह", "कमार सिंह", "हंस सिंह", "हस सिंह",
 )
 
 m = Matching(Parser())
@@ -274,3 +275,19 @@ def test_a_middle_name_compares_word_by_word_taking_the_weakest() -> None:
     assert role(r, Role.MIDDLE).outcome is Outcome.INITIAL
     r = m.check("John A. Beth Smith", "John Anne Smith")
     assert role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE
+
+
+def test_fold_keeps_a_mark_that_spells_an_indic_letter() -> None:
+    # the virama, anusvara and vowel signs are Mn but spelling, not accent
+    assert _fold("क्ष") != _fold("कष")
+    assert _fold("Ελένη") == _fold("Ελενη") and _fold("Йо") == _fold("Ио")
+
+
+def test_a_devanagari_vowel_sign_is_not_folded_away() -> None:
+    r = m.check("कुमार सिंह", "कमार सिंह")
+    assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+
+
+def test_a_devanagari_anusvara_is_not_folded_away() -> None:
+    r = m.check("हंस सिंह", "हस सिंह")
+    assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
