@@ -11,6 +11,16 @@ why the split is drawn there.
 Vocabulary: Lexicon
 --------------------
 
+When your data is in a known language, choosing it is the first thing
+to try, before editing words one at a time. A choice of languages
+(:ref:`choosing-languages`) settles the words its file lists as one
+kind of vocabulary and another language's as another (a particle in
+one, a credential in the other), and turns on the readings the file
+holds off by default; a strict choice (:ref:`strict-choice`) also drops
+the other languages' words. The edits below are for what a choice
+leaves open, and for data whose language you cannot declare, which the
+default vocabulary, reading every language at once, already serves.
+
 Configuring by reading
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -425,6 +435,12 @@ when it appears alone, and the parse reports the fork as an ambiguity.
 A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
+A choice of languages does not settle these words. A reading that a
+word is borne as a name keeps the name around it in charge under any
+choice, strict ones included, so a strict English parser still reads
+``JOHN SMITH MA`` by the count and reports it. The recipes in this
+section are the way to settle them.
+
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -518,6 +534,12 @@ free:
   one adds it back with ``Lexicon.default().add("cha",
   kind="credential")``.
 
+A clash between two languages' readings is a different case, with no
+name reading in it: English lists ``DO`` as a credential and Portuguese
+``do`` as a particle. Choosing the language settles that one
+(``parser_for(locales.PT)`` reads ``do`` as the particle; see
+:ref:`choosing-languages`), with no edit.
+
 .. _titles-also-given-names:
 
 Titles that are also given names
@@ -544,6 +566,13 @@ a title only inside a title phrase: behind a style
     'Dean of Students'
     >>> parse("Major General John Smith").title
     'Major General'
+
+A language can run the other way, holding a given-name reading of a
+title that its file leaves off until the language is chosen. ``Lady``
+is a given name under a Spanish choice (``locales.ES``), ``Hon`` under
+a Chinese one, and ``Guru`` under ``locales.NE``, each staying a title
+inside a phrase; :ref:`choosing-languages` shows the first two, and the table of shipped
+packs in :doc:`locales` the third.
 
 Where such a word opens the name and a listed phrase could have held
 it, the parse reports a ``title-or-name`` ambiguity, its alternative
@@ -929,8 +958,11 @@ right and then reverses the remaining two, so
 
 Nothing keys this order to a script the way the East Asian defaults
 below do — Vietnamese is written in the Latin alphabet, which carries
-no order of its own — so it applies only where you set it, and there
-is no ``vn`` locale pack.
+no order of its own — so it applies only where you set it. For
+Vietnamese data, the ``vi`` pack (``parser_for(locales.VI)``) sets this
+order and also keeps the syllables other languages read as particles,
+connectives or credentials as name words (see :ref:`vietnamese-names`);
+the bare ``Policy`` above is for data that wants the order alone.
 
 Declaring the order settles where a surname ends
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1041,7 +1073,8 @@ consulted at all:
   obvious ``"Nguyen Van Minh"``: ``Van`` is the Dutch particle ``van``,
   so that name reads family ``Nguyen`` with ``Van Minh`` given under
   *both* family-first orders, and the choice between them makes no
-  difference.
+  difference. The ``vi`` pack takes the particle reading out, so under
+  it the name reads middle ``Van``, given ``Minh``.
 - **A never-given particle opening the name** overrides the declared
   order outright: where a particle that can never be a given name
   stands alone as the opening piece, the whole name is the surname, in

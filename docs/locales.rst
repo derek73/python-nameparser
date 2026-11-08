@@ -504,7 +504,9 @@ A Czech or Slovak woman who keeps her own surname beside her
 husband's writes the two without a hyphen, ``Alena Pešová Řehořová``,
 which the default reads as a middle name and a family name. The two
 packs read two family names (``two_family_names``, see
-:ref:`two-family-names`), so the double surname stays whole. Two given
+:ref:`two-family-names`), so the double surname stays whole, each
+name in its own view (``surname1`` ``Pešová``, ``surname2``
+``Řehořová``). Two given
 names pay for it: with no Czech or Slovak given-name list to keep a
 given name out of the family (none is published for the whole
 population), ``Petr Pavel Novák`` reads family ``Pavel Novák``. A family
@@ -612,7 +614,7 @@ Shipped packs
        ``mjr.``) and the degrees written
        after the name, and reads two
        family names (``Alena Pešová Řehořová`` → family ``Pešová
-       Řehořová``), so two given names read as a given name and a family
+       Řehořová``, ``surname2`` ``Řehořová``), so two given names read as a given name and a family
        name (see :ref:`west-south-slavic-packs`).
    * - ``sl``, ``hr``
      - Slovenian and Croatian vocabulary — a choice of that one
@@ -626,7 +628,8 @@ Shipped packs
        ``Lady`` as a given name (``Lady Heidenreich`` → given ``Lady``), and
        reads two family names, a list of Spanish given names keeping a
        given name out of the family (``Gabriel García Márquez`` →
-       family ``García Márquez``, ``José Luis Pérez`` → family
+       family ``García Márquez``, ``surname2`` ``Márquez``;
+       ``José Luis Pérez`` → family
        ``Pérez``). See `Spanish and Portuguese titles`_.
    * - ``es_ar``
      - Argentine Spanish — ``es`` with a longer given-name list, one
@@ -901,6 +904,19 @@ stays out of it:
     >>> spain.parse("José Luis Pérez").family
     'Pérez'
 
+``family`` keeps both names, and the parse gives each its own view:
+``surname1`` and ``surname2``, with ``surname1_base`` for filing by
+the first surname without its particles (see the aggregate views in
+:doc:`usage`):
+
+.. doctest::
+
+    >>> marquez_es = spain.parse("Gabriel García Márquez")
+    >>> marquez_es.surname1, marquez_es.surname2
+    ('García', 'Márquez')
+    >>> spain.parse("Juan Pérez de la Vega").surname1_base
+    'Pérez'
+
 Data from systems without the letter ñ writes ``Begoña`` as
 ``Begona``, so each listed name written with ñ is listed with n too,
 where that spelling is still mostly a given name. A name written with ñ
@@ -1017,6 +1033,8 @@ Hindi choice, which reads no Odia names, reads ``Sushri`` as the title:
 of a name by default, packs or no. ``Pandit``, ``Sardar``, ``Kumari``,
 ``Babu``, ``Acharya`` and ``Begum`` are titles under no pack: each opens
 far more names as a given name or a surname than as the title.
+
+.. _vietnamese-names:
 
 Vietnamese names
 ^^^^^^^^^^^^^^^^

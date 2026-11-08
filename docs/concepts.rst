@@ -129,9 +129,9 @@ three places, and which one is decided by a single question: what does
 this setting vary with?
 
 * :class:`~nameparser.Lexicon` holds everything that varies by
-  **language**: the vocabulary — titles, particles, suffixes,
-  conjunctions, and the rest of the word lists the parser matches
-  against.
+  **language**: the vocabulary, written as readings — what each word
+  may be read as (a title, a particle, a credential, a given name...),
+  each held in the file of the language whose names it occurs in.
 * :class:`~nameparser.Policy` holds everything that varies by
   **data source or application**: the behavior switches — name order,
   patronymic rules, delimiters, strip flags — anything that changes
@@ -155,6 +155,15 @@ wanting names formatted as "Family, Given" while every other consumer
 of the same parsed data wants "Given Family" is a fact about where the
 string is going next, decided at the moment you render it — that's a
 rendering argument, not something baked into how the name was parsed.
+
+The default lexicon reads every language's words at once, which is
+why it serves data whose language nobody can declare. Where you can
+declare it, a :class:`~nameparser.Locale` carries the declaration: a
+choice of languages, which selects among the shipped readings by the
+files they are written in, beside a lexicon fragment and a policy
+patch, applied together by :func:`~nameparser.parser_for`. A locale
+pack is a :class:`~nameparser.Locale` that nameparser ships; see
+:ref:`choosing-languages`.
 
 This replaces 1.x's single configuration object, which mixed all three
 concerns — vocabulary, behavior, and output formatting — into one
