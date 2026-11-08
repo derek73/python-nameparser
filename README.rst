@@ -267,7 +267,7 @@ Speed and testing
   pandas, scipy and lightgbm among them), for dividing unspaced Japanese kanji names.
 * **Build one Parser and reuse it.** The first parser for a choice of
   languages in a process compiles the choice and, unless a parse has
-  already loaded it, the reading index, about two thirds of the cost:
+  already loaded it, loads the reading index, about two thirds of the cost:
   together tens of milliseconds the same day, several hundred parses.
   Another choice after it took a few milliseconds, and a later
   build of the same choice about 1 ms. Its ``Lexicon`` and
