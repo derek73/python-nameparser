@@ -552,8 +552,9 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
     made ahead of P3's carve-out. `keep_a_name` marks the whole name's
     part, where a piece past the title run must stand in front of the
     join, so the name keeps a word for its given name. The connective
-    is looked for before the title run is counted, so a part with no
-    connective where P13 looks pays the walk alone."""
+    is looked for before the title run is counted, so a part whose
+    connective stands anywhere but where P13 looks pays only the walk
+    back from the end, not leading_titles' count."""
     # rules/P13: "A single-letter connective in front of a lone letter
     # ending the name words joins it to the word before" and "A
     # connective with nothing to link joins the word before it alone"
@@ -569,8 +570,10 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         if not (_is_trailing_title(piece, ptags[e], tokens)
                 or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
-                    # the predicate's own first test, asked at C level
-                    # as _comma._whole_name asks it
+                    # reads_as_generation's own first test, asked at C
+                    # level as _comma._whole_name and the numeral count
+                    # below ask it, so a word that is no numeral pays no
+                    # frame for the call
                     and ROMAN.match(tokens[piece[0]].text.rstrip("."))
                     is not None
                     and ends_in_a_generation(

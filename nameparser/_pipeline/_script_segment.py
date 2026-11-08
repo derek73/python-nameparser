@@ -565,10 +565,11 @@ def _split_candidate(state: ParseState) -> int | None:
 def _surname_pair(state: ParseState, i: int, core: str,
                   surnames: frozenset[str]) -> tuple[int, ...] | None:
     """rules/W5: "whose first two are each a listed single surname" --
-    the cuts dividing token `i`, whose longest listed surname is its
-    first character, so that no listed compound opens it, where it
-    holds a second single surname that is the family's second unit
-    (#845), else None.
+    the offsets at which `_split` divides token `i` into the family's
+    two surnames, (1, 2) written undivided and (1,) with the given name
+    after the space, or None where no second single surname stands
+    (#845). Token `i`'s longest listed surname is its first character,
+    so no listed compound opens it.
 
     Four characters written undivided, or two with a word of two
     written after the space: a Han given name is nearly always one or
@@ -587,8 +588,9 @@ def _surname_pair(state: ParseState, i: int, core: str,
     script, a Latin title included, keeps W1's division, which reads
     the same under any order, so the stage never cuts a name the order
     then reads otherwise. History: decisions/W5 (#845)."""
-    # the length tests first: they are C-level, and refuse the commonest
-    # Han and hangul length, three, before the script walk below
+    # the length tests first: they are C-level, and refuse a
+    # three-character token, the usual single surname and given name,
+    # before the script walk below
     if core[1] not in surnames or len(core) not in (2, 4):
         return None
     run = state.segments[0]

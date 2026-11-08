@@ -2386,8 +2386,8 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     short that may be a given name is one too, H5's chain taking it
     as it takes a listed title (#999), and so is a title listed whole
     with a period inside it, which the chain takes without a final one
-    (#1104). A connective join is one name word, P3's own count. The tests inline:
-    this asks once per word behind a particle run."""
+    (#1104). A connective join is one name word, P3's own count. The
+    tests are inline: this asks once per word behind a particle run."""
     if len(piece) > 1:
         return False
     tok = tokens[piece[0]]
@@ -2398,9 +2398,9 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
             and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 
 
-#: the tags `_weighed` reads a word by alone: the trailing reading's
-#: lone-word tags, an initial, and a title listed whole with a period
-#: inside it (#1104)
+#: the tags any one of which makes `_weighed`'s answer True: the
+#: trailing reading's lone-word tags, an initial, and a title listed
+#: whole with a period inside it (#1104)
 _WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial", JOINED_TITLE_TAG}
 
 
