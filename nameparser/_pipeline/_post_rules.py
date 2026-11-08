@@ -753,7 +753,8 @@ def _set_apart_clauses(state: ParseState,
         kinds: list[SetApartKind] = []
         member = False
         unsettled = settled = False
-        # the words a credential settling a member may be among
+        # the clause's credential words, asked `settles_a_member` only
+        # where an unsettled member needs one
         others: list[str] = []
         for i in range(lo, hi):
             token = tokens[i]

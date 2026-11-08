@@ -150,9 +150,9 @@ def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
     `seg_idx`, every other word read as the parse read it: the family
     before a family comma, the given part's given or middle name after
     one, and otherwise the order the main segment's read set. `lone`
-    is the field a lone name word takes there, as `_assign_main` sets
-    it, None for `Policy.lone_name_word`: the caller says whether a
-    script decided it."""
+    is the field a lone name word takes there: `_assign_main` passes
+    the field it placed (a script's order where W4 decided), and None
+    reads `Policy.lone_name_word`."""
     if state.structure is Structure.FAMILY_COMMA:
         return (Role.FAMILY if seg_idx == 0
                 else Role.GIVEN if pos == 0 else Role.MIDDLE)
@@ -558,8 +558,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     # this line is where the library picks one of two equally
     # consistent readings and picks it the same way every time. A
     # script that settles the order decides a lone word's field too
-    # (O5's W4 Except). The rules that DO decide such a name (H1, N3,
-    # M4) run after this and retag (decisions/O5, #1111).
+    # (O5's W4 Except). The rules that DO decide such a name (H1, M4
+    # and N3's suffix clause; N3's bare shape returns before reaching
+    # here) run after this and retag (decisions/O5, #1111).
     lone_field = (order[0] if resolved.by_script
                   else state.policy.lone_name_word)
     roles = ([lone_field] if len(name_pieces) == 1
@@ -691,8 +692,9 @@ def _assign_main(seg_idx: int, state: ParseState,
                 # peel has set the suffix aside and O5's clauses have
                 # said nothing else decided the word (decisions/N3,
                 # #815). The early count's scan, behind
-                # `state.extracted` as there, so a name with no clause
-                # pays no frame for it.
+                # `state.extracted` as at N3's bare site above (a
+                # nickname is only ever a clause extract), so a name
+                # with no clause pays no frame for it.
                 if state.extracted and any(t.role is Role.NICKNAME
                                            for t in tokens):
                     _set_roles(tokens, head, Role.FAMILY)
