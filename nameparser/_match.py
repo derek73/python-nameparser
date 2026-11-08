@@ -194,6 +194,29 @@ class Matching:
         roles = tuple(_compare_role(role, left, right, lexicon) for role in Role)
         return MatchResult(all(r.outcome in self.accept for r in roles), roles)
 
+    def keys(self, name: str | ParsedName) -> frozenset[str]:
+        """Grouping keys: for each word of the folded family base, and
+        each half of a hyphenated one beside its joined form, one key
+        `word;g` where `g` is the first letter of the given name (empty
+        where there is none). A word is keyed by its headword, so two
+        listed spellings of one surname share a key, and a given name by
+        the first letter of its text and of its headword. Under the
+        default settings two names `check` finds consistent always share
+        a key, so grouping by key and checking within each group loses no
+        match. A name with no family has no key."""
+        parsed = self._parsed(name)
+        lexicon = self.parser.lexicon
+        words: set[str] = set()
+        for word in _fold(parsed.family_base).split():
+            for form in (*word.split("-"), word.replace("-", "")):
+                if form:
+                    words.add(lexicon._headword(form))
+        given = _fold(parsed.given).split()
+        initials = {""}
+        if given:
+            initials = {given[0][:1], lexicon._headword(given[0])[:1]}
+        return frozenset(f"{w};{g}" for w in words for g in initials)
+
     def _parsed(self, name: object) -> ParsedName:
         if isinstance(name, ParsedName):
             return name

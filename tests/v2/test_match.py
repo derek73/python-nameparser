@@ -291,3 +291,20 @@ def test_a_devanagari_vowel_sign_is_not_folded_away() -> None:
 def test_a_devanagari_anusvara_is_not_folded_away() -> None:
     r = m.check("हंस सिंह", "हस सिंह")
     assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+
+
+def test_default_keys_are_family_words_with_the_given_initial() -> None:
+    assert m.keys("Jane A. de la Vega") == {"vega;j"}
+    assert m.keys("Ann Smith-Jones") == {"smith;a", "jones;a", "smithjones;a"}
+    assert m.keys("Suharto") == frozenset()
+
+
+def test_consistent_names_always_share_a_key() -> None:
+    """The guarantee, over every ordered pair of NAMES: under the default
+    settings a consistent pair shares a key, so grouping by key never
+    separates names `check` accepts. Negative control: with the hyphen
+    halves removed from `keys`, this fails on ("Ann Smith-Jones",
+    "Ann Smith")."""
+    for a, b in itertools.product(NAMES, repeat=2):
+        if m.check(a, b).consistent:
+            assert m.keys(a) & m.keys(b), (a, b)
