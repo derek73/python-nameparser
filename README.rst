@@ -249,6 +249,52 @@ from 49.5% to 96.7% (Mexico 33.6% to 96.9%). The pack costs where people
 file a single surname: Argentine patent inventors agree 93.8% by default,
 86.2% under ``ES`` and 92.7% under ``ES_AR``.
 
+Speed and testing
+-----------------
+
+* **About 90 µs a name**, some 11,000 names a second. Measured
+  2026-11-07 against the 3.0 development tree, on an Apple M3 Pro, one
+  core, Python 3.11, with one ``Parser`` reading the 7,106 entries of
+  the committed `corpus snapshot`_ (6,897 distinct names, some read
+  under more than one name order), the median of seven passes after a
+  warm-up.
+* **Linear in the input, on the shapes the scaling tests repeat.** The
+  clock-timed ones ran 32 costly input shapes on 2026-11-07, each with
+  its repeated part four times as long, and fail when the cost grows
+  more than six times.
+* **Pure Python, with no runtime dependencies.** Only the optional
+  ``ja`` extra adds any: namedivider-python and what it brings (numpy,
+  pandas, scipy and lightgbm among them), for dividing unspaced Japanese kanji names.
+* **Build one Parser and reuse it.** The first parser for a choice of
+  languages in a process loads the reading index and compiles the
+  choice, which took tens of milliseconds the same day, several hundred
+  parses. Another choice after it took a few milliseconds, and a later
+  build of the same choice about 1 ms. Its ``Lexicon`` and
+  ``Policy`` are frozen and a parse never writes to them, so one parser
+  can be shared across threads without locking, and it pickles for
+  ``multiprocessing``. A segmenter you supply has to be thread-safe and
+  picklable too, and the ``ja`` extra's segmenter does not pickle.
+
+And the tests that hold the readings in place:
+
+* **40,256 tests** (collected 2026-11-07), run in CI on each of Python
+  3.11 through 3.15, save the 25 that need the ``ja`` extra, which a job
+  with the extra installed runs with the rest of the 39,652 tests then
+  under ``tests/v2/``. Another job runs the suite from a source export
+  without nameparser installed.
+* **Every corpus name's reading is recorded** in the snapshot, and a
+  test fails when the parser reads one differently, so a change that
+  moves a reading lists every name it moved in its pull request.
+* **Every interactive example runs.** Each one with a ``>>>`` prompt, in
+  this README and in the documentation, is a doctest run in CI.
+* **The parsing rules** are written down with examples the suite runs, in
+  `docs/design/rules <https://github.com/derek73/python-nameparser/tree/master/docs/design/rules>`__.
+  Where the parser is known to fall short of a rule, the example carries
+  a ``deviates:`` marker naming its issue, and the suite fails once the
+  gap closes until the marker comes off.
+
+.. _corpus snapshot: https://github.com/derek73/python-nameparser/blob/master/tools/differential/README.md
+
 Coming from 1.x or 2.x
 ----------------------
 
