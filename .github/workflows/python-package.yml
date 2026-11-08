@@ -142,9 +142,11 @@ jobs:
       run: |
         uv sync --group dev --no-install-project
         uv pip install "$RUNNER_TEMP"/wheel/*.whl
-        # The import check first: a nameparser read from the layout
-        # would make this the source-tree job again.
-        uv run --no-sync python -P -c "import nameparser, pathlib, sys; sys.exit(pathlib.Path(nameparser.__file__).resolve().is_relative_to(pathlib.Path.cwd().resolve()))"
+        # The import check first: a nameparser read from the layout's
+        # nameparser/ would make this the source-tree job again. The
+        # venv sits in the layout too (.venv), so the check names the
+        # folder, not the layout.
+        uv run --no-sync python -P -c "import nameparser, pathlib, sys; sys.exit(pathlib.Path(nameparser.__file__).resolve().parent == pathlib.Path.cwd().resolve() / 'nameparser')"
         uv run --no-sync pytest
 
   # The optional nameparser[ja] segmenter (#272). Its own job, not a
