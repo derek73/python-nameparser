@@ -30,11 +30,12 @@ configuration is the baseline, each other compared with it.
 this file (snapshot.corpus_entries, each name under its shape's order);
 `--local SOURCE` (repeatable, or `all`) a fetched local corpus's
 distinct names. With neither, the committed corpora. `--group` keeps a
-fielded local corpus's records of that country or nationality
-(local_agreement.FIELDED names the key, matched exactly as the corpus
-writes it), and needs `--local`: with `--committed` beside it, which
+grouped local corpus's records of that country or nationality, or for
+opensanctions-parliaments that dataset (local_agreement.FIELDED names
+the key, and Source.group for a corpus with no fields; matched exactly
+as the corpus writes it), and needs `--local`: with `--committed` beside it, which
 has no groups, it is refused, as is a group no record read holds; with
-`--local all` it reads the fielded corpora alone, saying so. `--match`
+`--local all` it reads the grouped corpora alone, saying so. `--match`
 keeps the names a regular expression finds anywhere in them, `--sample
 N` one name in N (snapshot.sampled, by a hash of the name, so a sample
 is the same in every tree and run). `--spelling` rewrites every name
@@ -415,22 +416,31 @@ def format_tally(spec: str, base: str, t: Tally, top: int) -> list[str]:
 
 # --- inputs -----------------------------------------------------------------
 
+def group_keys() -> dict[str, str]:
+    """The record key naming each grouped local corpus's group: a fielded
+    corpus's (local_agreement.FIELDED), then a source's own
+    (Source.group, opensanctions-parliaments' dataset)."""
+    keys = {source: fielded.group for source, fielded in local_agreement.FIELDED.items()}
+    return keys | {source: s.group for source, s in local_corpora.SOURCES.items()
+                   if s.group and source not in keys}
+
+
 def local_names(source: str, groups: Sequence[str]) -> tuple[list[str], set[str]]:
     """A fetched local corpus's names: every distinct one, or with
-    `groups` those of a fielded corpus's records in them, beside the
+    `groups` those of a grouped corpus's records in them, beside the
     groups that held a record."""
-    fielded = local_agreement.FIELDED.get(source)
-    if groups and fielded is None:
-        raise SystemExit(f"--group needs a fielded corpus ({', '.join(local_agreement.FIELDED)}),"
+    key = group_keys().get(source)
+    if groups and key is None:
+        raise SystemExit(f"--group needs a grouped corpus ({', '.join(group_keys())}),"
                          f" not {source}")
     corpus = local_corpora.require(source)
-    if not groups or fielded is None:
+    if not groups or key is None:
         return list(dict.fromkeys(json.loads(line) for line in snapshot.jsonl_lines(
             local_corpora.corpus_path(source).read_text(encoding="utf-8")))), set()
     wanted, found = set(groups), set()
     names: dict[str, None] = {}
     for r in local_agreement.records(corpus):
-        group = r.get(fielded.group, "")
+        group = r.get(key, "")
         if group in wanted:
             found.add(group)
             names[r["name"]] = None
@@ -444,14 +454,14 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
     sources = list(local_corpora.SOURCES) if every else args.local or []
     if args.group:
         if not sources:
-            raise SystemExit(f"--group filters a fielded local corpus; give --local "
-                             f"{' or '.join(local_agreement.FIELDED)}")
+            raise SystemExit(f"--group filters a grouped local corpus; give --local "
+                             f"{' or '.join(group_keys())}")
         if args.committed:
             raise SystemExit("--group filters local corpora only, and the committed corpora "
                              "have no groups: drop --committed, or --group")
         if every:
-            sources = [s for s in sources if s in local_agreement.FIELDED]
-            print(f"(--group: reading the fielded corpora only: {', '.join(sources)})")
+            sources = [s for s in sources if s in group_keys()]
+            print(f"(--group: reading the grouped corpora only: {', '.join(sources)})")
     if args.committed or not sources:
         for text, order in snapshot.corpus_entries():
             found[(text, order)].add("committed")
@@ -470,10 +480,11 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
         for text in texts:
             found[(text, None)].add(source)
     if missing := sorted(set(args.group) - held):
-        keys = "; ".join(f"{s} by {f.group}" for s, f in local_agreement.FIELDED.items())
+        keys = "; ".join(f"{s} by {k}" for s, k in group_keys().items())
         raise SystemExit(f"--group {', '.join(missing)}: no record read holds it; a group is "
                          f"matched as the corpus writes it, ORCID and PatentsView an ISO code "
-                         f"such as BR, PSC a nationality such as Brazilian ({keys})")
+                         f"such as BR, PSC a nationality such as Brazilian, "
+                         f"opensanctions-parliaments a dataset such as kz_mazhilis ({keys})")
     if args.spelling:
         respelled: defaultdict[tuple[str, str | None], set[str]] = defaultdict(set)
         for (text, order), where in found.items():
@@ -1113,8 +1124,8 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("specs", nargs="+", metavar="SPEC")
     d.add_argument("--committed", action="store_true", help="the committed corpus*.jsonl")
     d.add_argument("--local", action="append", metavar="SOURCE", help="a local corpus, or all")
-    d.add_argument("--group", action="append", default=[], help="a fielded corpus's country "
-                   "or nationality, as the corpus writes it (repeatable; needs --local)")
+    d.add_argument("--group", action="append", default=[], help="a grouped corpus's country, "
+                   "nationality or dataset, as the corpus writes it (repeatable; needs --local)")
     d.add_argument("--match", help="keep the names this regular expression finds")
     d.add_argument("--sample", type=int, help="one name in N, by a hash of the name")
     d.add_argument("--spelling", type=_spellings, help="rewrite every name before it is "

@@ -37,18 +37,17 @@ committed.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import sys
 import unicodedata
 from collections import Counter
-from collections.abc import Callable
 from typing import Any
 
 import corpus_build
 import local_uit
-from local_core import Fetched, _get_json, _pinned, _retried
+from local_core import (Fetched, _get_json, _is_count, _listed_resource, _pinned,
+                        _retried, _sha1_checked)
 from local_uit import split
 
 
@@ -84,33 +83,6 @@ def title_of(education: str) -> str:
     rank = next((short for words, short in RANKS if words.search(text)), "")
     degree = next((short for words, short in DEGREES if words.search(text)), "")
     return "".join(f"{short}." for short in (rank, degree) if short)
-
-
-def _is_count(value: object) -> bool:
-    """An int that is not a bool, which JSON's true would be."""
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def _resource(index: dict[str, Any]) -> tuple[str, str, int]:
-    """The FtM file's URL, sha1 and size, as the dataset's index states."""
-    for resource in index.get("resources", []):
-        if isinstance(resource, dict) and resource.get("name") == VN_RESOURCE:
-            url, sha1, size = (resource.get(k) for k in ("url", "checksum", "size"))
-            if isinstance(url, str) and isinstance(sha1, str) and _is_count(size):
-                return url, sha1, size
-    raise ValueError(f"{VN_INDEX} lists no {VN_RESOURCE} with its url, checksum and size")
-
-
-def _checked(sha1: str, size: int) -> Callable[[bytes], bytes]:
-    """A reader refusing a body of another size or sha1, which _retried
-    takes for a body cut short in transit."""
-    def read(body: bytes) -> bytes:
-        digest = hashlib.sha1(body).hexdigest()
-        if len(body) != size or digest != sha1:
-            raise ValueError(f"the file is {len(body):,} bytes of sha1 {digest}, not "
-                             f"the {size:,} of {sha1} the index states")
-        return body
-    return read
 
 
 def _first(properties: dict[str, Any], key: str) -> str:
@@ -165,9 +137,9 @@ def fetch_vn() -> Fetched:
     index = _get_json(VN_INDEX)
     if not _is_count(index.get("target_count")):
         raise ValueError(f"{VN_INDEX} states no target_count")
-    url, sha1, size = _resource(index)
+    url, sha1, size = _listed_resource(index, VN_RESOURCE, VN_INDEX)
     print(f"downloading {url} ...", file=sys.stderr)
-    body = _retried(url, _checked(sha1, size), 0)
+    body = _retried(url, _sha1_checked(sha1, size), 0)
     records, counts = _vn_read(body, index["target_count"])
     return Fetched(records, str(index.get("updated_at", "")), {
         "version": index.get("version", ""), "title_version": TITLE_VERSION,
