@@ -19,7 +19,7 @@ a word it lists as vocabulary, switching off another language's
 and turns on the readings its file holds off by default; a strict
 choice (:ref:`strict-choice`) also drops the readings other languages'
 files hold of words written in Latin letters, name readings included,
-keeping the shared ``mul`` words. The edits below are for what a choice
+keeping the readings of the shared ``mul`` file. The edits below are for what a choice
 leaves open, and for data whose language you cannot declare, which the
 default vocabulary, reading every language at once, already serves.
 
@@ -439,16 +439,16 @@ inside a phrase (:ref:`titles-also-given-names`).
 
 A plain choice of languages keeps every name reading, and a strict one
 (:ref:`strict-choice`) every reading its chosen files hold, so neither
-settles these words where the chosen language's own file holds both
-readings. English lists ``ma`` as a credential and as a surname, so a
+settles these words where the chosen language's own file, or the shared
+``mul`` file, holds both readings. English lists ``ma`` as a credential and as a surname, so a
 strict English choice still reads ``JOHN SMITH MA`` by the count and
 reports it, and Dutch lists ``van`` as a particle and as a given name.
 A choice ends such a fork where it switches off another language's
 vocabulary reading of the word (below), and a strict choice also
-wherever one of the two readings sits in another language's file
-written in Latin letters, which it drops, name readings included (it
-keeps the shared ``mul`` words and words in other scripts whatever
-file holds them): a strict Dutch choice reads
+wherever another language's file holds one of the two readings of a
+word written in Latin letters, which it drops, name readings included
+(it keeps the shared ``mul`` file's readings, and the readings of a
+word written in another script whatever file holds them): a strict Dutch choice reads
 ``JOHN SMITH MA`` family ``MA``, and a strict Portuguese one ``Do
 Smith`` family ``Do Smith``, both unreported. The recipes in this
 section are the way to settle the rest.

@@ -386,9 +386,10 @@ def is_native_script(text: str) -> bool:
 
 def strict_pool(chosen: frozenset[str]) -> list[IndexReading]:
     """The readings a strict choice of the file tags `chosen` compiles
-    from, before :func:`choose`: the chosen files', mul.toml's and
-    the native-script readings, name readings among them, and nothing
-    else, und.toml's included
+    from, before :func:`choose`: the chosen files' and mul.toml's
+    readings and every reading of a native-script word
+    (:func:`is_native_script`) whatever file holds it, name readings
+    included; no other file's, und.toml's among them
     (file-strict; decisions/vocabulary-model, 2026-10-30, and
     2026-11-02 #1005 for mul.toml)."""
     return strict_kept(index(), chosen)
