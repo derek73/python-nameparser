@@ -64,6 +64,8 @@ ALLOWED = {
     # Lexicon compiles its readings)
     "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
+    # name matching: the types and settings only; Parser is TYPE_CHECKING
+    "_match.py": ("nameparser._types", "nameparser._lexicon"),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since
@@ -366,6 +368,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
 
     import nameparser._lexicon
     import nameparser._locale
+    import nameparser._match
     import nameparser._parser
     import nameparser._policy
     import nameparser._types
@@ -374,7 +377,8 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     # _pipeline internals (ParseState, WorkToken, ...) are exempt: they
     # are never pickled and are not public API.
     modules = (nameparser._types, nameparser._lexicon,
-               nameparser._policy, nameparser._locale, nameparser._parser)
+               nameparser._policy, nameparser._locale, nameparser._parser,
+               nameparser._match)
     for module in modules:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__:
