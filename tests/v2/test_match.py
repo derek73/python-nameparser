@@ -41,7 +41,10 @@ NAMES: tuple[str, ...] = (
     "J. Edgar Hoover", "Edgar Hoover", 'William "Bill" Clinton',
     "Bill Clinton", "Jane Doe (née Smith)", "Jane Smith", "John E. Hoover",
     "Allan Hoover", "Jane Brown", "Jane Doe", "Jane S", "Hong-Yi Hoover",
-    "John Hong Hoover",
+    "John Hong Hoover", "Alice Smith", "Ann A. Smith", "E. Hoover",
+    "John Edgar Hoover", "Edgar E. Hoover", "John Edgar Allan Hoover",
+    "Edgar Allan Hoover", 'Robert "Bobby Joe" Smith', "Bobby Joe Smith",
+    "Bobby Smith", "John Wm. Smith",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -504,7 +507,8 @@ def test_a_middle_name_used_as_given_matches_across_roles() -> None:
     given = role(r, Role.GIVEN)
     assert (given.outcome, given.left, given.right) == (
         Outcome.ACROSS_ROLES, "J.", "Edgar")
-    assert role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE
+    # the middle word used as the given name leaves the middle comparison
+    assert role(r, Role.MIDDLE).outcome is Outcome.SAME
 
 
 def test_a_nickname_used_as_given_matches_across_roles() -> None:
@@ -535,10 +539,45 @@ def test_the_default_reports_cross_role_pairs_as_parsed(
         assert role(r, conflicting).outcome is Outcome.CONFLICT
 
 
-def test_a_cross_role_match_runs_the_word_ladder() -> None:
-    r = _across.check("John E. Hoover", "Edgar Hoover")
+def test_a_cross_role_match_counts_a_listed_spelling() -> None:
+    r = _across.check("John Wm. Smith", "William Smith")
     assert r.consistent and r.across == (CrossRoleMatch(
-        Role.MIDDLE, Role.GIVEN, Outcome.INITIAL, "E.", "Edgar"),)
+        Role.MIDDLE, Role.GIVEN, Outcome.LISTED_SPELLING, "Wm.", "William"),)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("John A. Smith", "Alice Smith"), ("John A. Smith", "Ann Smith"),
+    ("J. Edgar Hoover", "E. Hoover"), ("John E. Hoover", "Edgar Hoover"),
+    ("John E. Hoover", "E. Hoover"), ("John A. Smith", "Ann A. Smith"),
+])
+def test_a_cross_role_match_never_counts_an_initial(a: str, b: str) -> None:
+    # a full name on both sides, or the roles are not matched across
+    for x, y in ((a, b), (b, a)):
+        r = _across.check(x, y)
+        assert not r.consistent and r.across == (), (x, y)
+
+
+def test_a_middle_word_matched_as_given_leaves_the_middle_comparison() -> None:
+    r = _across.check("John Edgar Hoover", "Edgar E. Hoover")
+    assert r.consistent and r.across == (CrossRoleMatch(
+        Role.MIDDLE, Role.GIVEN, Outcome.SAME, "Edgar", "Edgar"),)
+    middle = role(r, Role.MIDDLE)
+    assert (middle.outcome, middle.left, middle.right, middle.more) == (
+        Outcome.ONE_SIDE, "Edgar", "E.", Side.RIGHT)
+
+
+def test_the_middle_words_left_over_compare_role_to_role() -> None:
+    r = _across.check("John Edgar Allan Hoover", "Edgar Allan Hoover")
+    assert r.consistent
+    assert role(r, Role.MIDDLE).outcome is Outcome.SAME
+
+
+def test_a_nickname_of_two_words_meets_a_given_name_whole() -> None:
+    # known miss: the nickname is compared whole, never split over the
+    # other's given and middle names
+    for other in ("Bobby Joe Smith", "Bobby Smith"):
+        r = _across.check('Robert "Bobby Joe" Smith', other)
+        assert not r.consistent and r.across == (), other
 
 
 def test_a_cross_role_match_reads_in_either_direction() -> None:
@@ -565,12 +604,12 @@ def test_a_cross_role_match_does_not_hide_a_conflict(a: str, b: str) -> None:
         assert not r.consistent and r.across == ()
 
 
-def test_a_cross_role_match_through_an_opt_in_needs_that_opt_in() -> None:
-    # middle Hong against given Hong-Yi is hyphenated-part, an opt-in
-    assert not _across.check("John Hong Hoover", "Hong-Yi Hoover").consistent
-    r = _with(Outcome.ACROSS_ROLES, Outcome.HYPHENATED_PART).check(
-        "John Hong Hoover", "Hong-Yi Hoover")
-    assert r.consistent and r.across[0].outcome is Outcome.HYPHENATED_PART
+def test_a_cross_role_match_never_counts_an_opt_in_outcome() -> None:
+    # middle Hong against given Hong-Yi is hyphenated-part, never a
+    # cross-role match even where hyphenated-part is accepted
+    for matching in (_across, _with(Outcome.ACROSS_ROLES, Outcome.HYPHENATED_PART)):
+        r = matching.check("John Hong Hoover", "Hong-Yi Hoover")
+        assert not r.consistent and r.across == ()
 
 
 def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
