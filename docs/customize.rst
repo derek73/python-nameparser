@@ -436,17 +436,19 @@ when it appears alone, and the parse reports the fork as an ambiguity.
 A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
-A choice of languages keeps the chosen files' name readings, so it
-settles none of these words where the chosen language's own file holds
-both readings. English lists ``ma`` as a credential and as a surname,
-so a strict English choice (:ref:`strict-choice`) still reads ``JOHN
-SMITH MA`` by the count and reports it, and Dutch lists ``van`` as a
-particle and as a given name. A choice ends such a fork where it
-switches off another language's reading of the word (below), and a
-strict choice also where no chosen file holds the word at all, every
-reading of it leaving: a strict Dutch choice reads ``JOHN SMITH MA``
-family ``MA``, unreported. The recipes in this section are the way to
-settle the rest.
+A plain choice of languages keeps every name reading, and a strict one
+(:ref:`strict-choice`) every reading its chosen files hold, so neither
+settles these words where the chosen language's own file holds both
+readings. English lists ``ma`` as a credential and as a surname, so a
+strict English choice still reads ``JOHN SMITH MA`` by the count and
+reports it, and Dutch lists ``van`` as a particle and as a given name.
+A choice ends such a fork where it switches off another language's
+vocabulary reading of the word (below), and a strict choice also
+wherever one of the two readings sits in a file it does not choose,
+which it drops, name readings included: a strict Dutch choice reads
+``JOHN SMITH MA`` family ``MA``, and a strict Portuguese one ``Do
+Smith`` family ``Do Smith``, both unreported. The recipes in this
+section are the way to settle the rest.
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

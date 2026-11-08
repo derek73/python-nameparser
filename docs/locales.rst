@@ -192,8 +192,11 @@ alone, reads the other's names by its own word:
 Choosing both keeps both readings, as the default does. A reading
 that a word is borne as a name never settles anything: it keeps the
 name around the word in charge, under any plain choice. A strict
-choice drops a name reading with the rest of the word where no chosen
-file holds it (`Reading one language only`_).
+choice keeps only the readings its chosen files hold, beside the
+shared words and those in other scripts, so it drops a name reading
+written in Latin letters in another language's file, as it drops any
+other
+(`Reading one language only`_).
 
 A name reading held off by default is how a language claims a word
 another language's titles use. ``Hon`` is the British style (the
