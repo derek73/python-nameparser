@@ -565,11 +565,13 @@ def _split_candidate(state: ParseState) -> int | None:
 def _surname_pair(state: ParseState, i: int, core: str,
                   surnames: frozenset[str]) -> tuple[int, ...] | None:
     """rules/W5: "whose first two are each a listed single surname" --
-    the offsets at which `_split` divides token `i` into the family's
-    two surnames, (1, 2) written undivided and (1,) with the given name
-    after the space, or None where no second single surname stands
-    (#845). Token `i`'s longest listed surname is its first character,
-    so no listed compound opens it.
+    the offsets at which `_split` divides token `i` into its two
+    surnames and, written undivided, the given name behind them: (1, 2)
+    for four characters, (1,) for two with the given name after the
+    space; or None where it holds no second single surname the family
+    can take, by the length, script and order tests below (#845). Token
+    `i`'s longest listed surname is its first character, so no listed
+    compound opens it.
 
     Four characters written undivided, or two with a word of two
     written after the space: a Han given name is nearly always one or

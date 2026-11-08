@@ -2398,9 +2398,9 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
             and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 
 
-#: the tags any one of which makes `_weighed`'s answer True: the
-#: trailing reading's lone-word tags, an initial, and a title listed
-#: whole with a period inside it (#1104)
+#: the tags any one of which makes `_weighed` True for a one-word
+#: piece: the trailing reading's lone-word tags, an initial, and a
+#: title listed whole with a period inside it (#1104)
 _WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial", JOINED_TITLE_TAG}
 
 
