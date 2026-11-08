@@ -6,9 +6,11 @@ import pickle
 
 import pytest
 
+import nameparser
 from nameparser import ParsedName, Parser, Role
 from nameparser._match import (
     DEFAULT_ACCEPT,
+    CrossRoleMatch,
     Matching,
     MatchResult,
     Outcome,
@@ -36,6 +38,10 @@ NAMES: tuple[str, ...] = (
     "Hong Guo", "Hong-Yi Guo", "Yi Guo", "Mr. S", "John Stallbaum",
     "Van Gogh", "Gogh", "Vincent Van Gogh", "JOHN SMITH MA", "Sukarno",
     "Dean Gogh", "Dean Smith", "Della Smith", "Mary Smith",
+    "J. Edgar Hoover", "Edgar Hoover", 'William "Bill" Clinton',
+    "Bill Clinton", "Jane Doe (née Smith)", "Jane Smith", "John E. Hoover",
+    "Allan Hoover", "Jane Brown", "Jane Doe", "Jane S", "Hong-Yi Hoover",
+    "John Hong Hoover",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -45,7 +51,7 @@ PARSED: tuple[ParsedName, ...] = tuple(Parser().parse(n) for n in NAMES)
 #: The opt-in outcomes this module's settings sweep adds to the default.
 OPT_INS: tuple[Outcome, ...] = (
     Outcome.FAMILY_INITIAL, Outcome.GIVEN_ONE_SIDE,
-    Outcome.HYPHENATED_PART, Outcome.OTHER_READING,
+    Outcome.HYPHENATED_PART, Outcome.OTHER_READING, Outcome.ACROSS_ROLES,
 )
 
 #: The settings the guarantee and the symmetry are held under: the
@@ -138,8 +144,16 @@ def test_outcomes_are_declared_strongest_first() -> None:
 
 def test_match_types_round_trip_through_pickle() -> None:
     matching = Matching(Parser(), accept={"initial"})  # type: ignore[arg-type]
-    for obj in (matching, _result(), _result().roles[0]):
+    across = _with(Outcome.ACROSS_ROLES).check("J. Edgar Hoover", "Edgar Hoover")
+    assert across.across
+    for obj in (matching, _result(), _result().roles[0], across,
+                across.across[0]):
         assert pickle.loads(pickle.dumps(obj)) == obj
+
+
+def test_cross_role_match_is_exported_beside_the_other_match_types() -> None:
+    assert nameparser.CrossRoleMatch is CrossRoleMatch
+    assert "CrossRoleMatch" in nameparser.__all__
 
 
 def test_mirrored_swaps_text_and_sides() -> None:
@@ -149,6 +163,15 @@ def test_mirrored_swaps_text_and_sides() -> None:
     assert (first.left, first.right, first.more) == ("John", "J.", Side.LEFT)
     assert [m.role for m in mirrored.roles] == list(Role)
     assert mirrored.mirrored() == _result()
+
+
+def test_mirrored_swaps_the_roles_and_texts_of_a_cross_role_match() -> None:
+    cross = CrossRoleMatch(Role.MIDDLE, Role.GIVEN, Outcome.SAME, "Edgar", "Ed")
+    result = MatchResult(True, _result().roles, (cross,))
+    assert result.mirrored().across == (
+        CrossRoleMatch(Role.GIVEN, Role.MIDDLE, Outcome.SAME, "Ed", "Edgar"),)
+    assert result.mirrored().mirrored() == result
+    assert _result().across == ()
 
 
 def test_mirrored_keeps_neither() -> None:
@@ -460,3 +483,96 @@ def test_the_other_reading_does_not_make_conflicting_given_names_agree(
     opted = _with(Outcome.OTHER_READING)
     assert not opted.check(a, b).consistent
     assert not opted.check(b, a).consistent
+
+
+# -- across roles ----------------------------------------------------------
+
+_across = _with(Outcome.ACROSS_ROLES)
+
+
+def test_a_middle_name_used_as_given_matches_across_roles() -> None:
+    r = Parser().matching(accept=DEFAULT_ACCEPT | {"across-roles"}).check(  # type: ignore[arg-type]
+        "J. Edgar Hoover", "Edgar Hoover")
+    assert r.consistent and (r.across[0].left_role, r.across[0].right_role) == (
+        Role.MIDDLE, Role.GIVEN)
+    assert r.across == (CrossRoleMatch(
+        Role.MIDDLE, Role.GIVEN, Outcome.SAME, "Edgar", "Edgar"),)
+    given = role(r, Role.GIVEN)
+    assert (given.outcome, given.left, given.right) == (
+        Outcome.ACROSS_ROLES, "J.", "Edgar")
+    assert role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE
+
+
+def test_a_nickname_used_as_given_matches_across_roles() -> None:
+    r = _across.check('William "Bill" Clinton', "Bill Clinton")
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.ACROSS_ROLES
+    assert r.across == (CrossRoleMatch(
+        Role.NICKNAME, Role.GIVEN, Outcome.SAME, "Bill", "Bill"),)
+
+
+def test_a_birth_name_used_as_family_matches_across_roles() -> None:
+    r = _across.check("Jane Doe (née Smith)", "Jane Smith")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.ACROSS_ROLES
+    assert r.across == (CrossRoleMatch(
+        Role.MAIDEN, Role.FAMILY, Outcome.SAME, "Smith", "Smith"),)
+
+
+@pytest.mark.parametrize("a, b, conflicting", [
+    ("J. Edgar Hoover", "Edgar Hoover", Role.GIVEN),
+    ('William "Bill" Clinton', "Bill Clinton", Role.GIVEN),
+    ("Jane Doe (née Smith)", "Jane Smith", Role.FAMILY),
+])
+def test_the_default_reports_cross_role_pairs_as_parsed(
+        a: str, b: str, conflicting: Role) -> None:
+    # no cross-role search runs unless across-roles is accepted
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert not r.consistent and r.across == ()
+        assert role(r, conflicting).outcome is Outcome.CONFLICT
+
+
+def test_a_cross_role_match_runs_the_word_ladder() -> None:
+    r = _across.check("John E. Hoover", "Edgar Hoover")
+    assert r.consistent and r.across == (CrossRoleMatch(
+        Role.MIDDLE, Role.GIVEN, Outcome.INITIAL, "E.", "Edgar"),)
+
+
+def test_a_cross_role_match_reads_in_either_direction() -> None:
+    r = _across.check("Edgar Hoover", "J. Edgar Hoover")
+    assert r.consistent and r.across == (CrossRoleMatch(
+        Role.GIVEN, Role.MIDDLE, Outcome.SAME, "Edgar", "Edgar"),)
+    assert r == _across.check("J. Edgar Hoover", "Edgar Hoover").mirrored()
+
+
+def test_a_cross_role_match_resolves_only_a_role_that_needs_it() -> None:
+    r = _across.check("John Smith", "John Smith")
+    assert r.consistent and r.across == ()
+    r = _across.check("John A. Smith", "John Smith")
+    assert r.across == () and role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE
+
+
+@pytest.mark.parametrize("a, b", [
+    ("J. Edgar Hoover", "Allan Hoover"), ("Jane Doe (née Smith)", "Jane Brown"),
+    ('William "Bill" Clinton', "James Smith"),
+])
+def test_a_cross_role_match_does_not_hide_a_conflict(a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = _across.check(x, y)
+        assert not r.consistent and r.across == ()
+
+
+def test_a_cross_role_match_through_an_opt_in_needs_that_opt_in() -> None:
+    # middle Hong against given Hong-Yi is hyphenated-part, an opt-in
+    assert not _across.check("John Hong Hoover", "Hong-Yi Hoover").consistent
+    r = _with(Outcome.ACROSS_ROLES, Outcome.HYPHENATED_PART).check(
+        "John Hong Hoover", "Hong-Yi Hoover")
+    assert r.consistent and r.across[0].outcome is Outcome.HYPHENATED_PART
+
+
+def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
+    assert "hoover;e" in _across.keys("J. Edgar Hoover")
+    assert "hoover;e" not in m.keys("J. Edgar Hoover")
+    assert "clinton;b" in _across.keys('William "Bill" Clinton')
+    assert "clinton;b" not in m.keys('William "Bill" Clinton')
+    assert _across.keys("Jane Doe (née Smith)") == {"doe;j", "smith;j"}
+    assert m.keys("Jane Doe (née Smith)") == {"doe;j"}

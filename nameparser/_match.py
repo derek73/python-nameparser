@@ -3,8 +3,8 @@
 Not a stage: nothing here runs inside a parse. `Matching` carries a
 `Parser` and the set of outcomes the caller accepts, and its `check`
 compares two parsed names role by role.
-Produces: `Outcome`, `Side`, `RoleMatch`, `MatchResult`, `DEFAULT_ACCEPT`
-and `Matching`.
+Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
+`DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headword`, and its `revise`, for a name's other
 readings (`other-reading`); no `Policy` field.
@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 
 from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
+    UNJOINED_TAG,
     ParsedName,
     Role,
     _guarded_getstate,
@@ -91,22 +92,48 @@ class RoleMatch:
 
 
 @dataclass(frozen=True, slots=True)
+class CrossRoleMatch:
+    """A role of one name matched against a different role of the
+    other (`across-roles`): the left name's role and text, the right
+    name's role and text, and the outcome of comparing the two texts."""
+
+    left_role: Role
+    right_role: Role
+    outcome: Outcome
+    left: str
+    right: str
+
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def mirrored(self) -> CrossRoleMatch:
+        """The same match with the two names swapped."""
+        return CrossRoleMatch(self.right_role, self.left_role, self.outcome,
+                              self.right, self.left)
+
+
+@dataclass(frozen=True, slots=True)
 class MatchResult:
     """The result of comparing two names: whether nothing in them
-    contradicts the match under the accepted outcomes, and one
-    `RoleMatch` per `Role`, in `Role` order."""
+    contradicts the match under the accepted outcomes, one `RoleMatch`
+    per `Role`, in `Role` order, and the `CrossRoleMatch` behind each
+    role reading `across-roles`, in `Role` order of the role it
+    resolved (empty unless `across-roles` is accepted)."""
 
     consistent: bool
     roles: tuple[RoleMatch, ...]
+    across: tuple[CrossRoleMatch, ...] = ()
 
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
     def mirrored(self) -> MatchResult:
         """The same result with the two names swapped: each role's left
-        and right text exchanged and its `more` side flipped."""
+        and right text exchanged and its `more` side flipped, and each
+        cross-role match's roles and texts exchanged."""
         return MatchResult(self.consistent,
-                           tuple(m.mirrored() for m in self.roles))
+                           tuple(m.mirrored() for m in self.roles),
+                           tuple(c.mirrored() for c in self.across))
 
 
 #: The outcomes accepted when a caller states none.
@@ -201,7 +228,18 @@ class Matching:
         is the one with the strongest outcomes, every role the
         alternative moved a word into or out of that would otherwise be
         accepted reading `other-reading`, so the pair is consistent
-        through it only where `other-reading` is accepted."""
+        through it only where `other-reading` is accepted.
+
+        Where `across-roles` is accepted, a given or family role whose
+        outcome is not accepted is compared with a different role of
+        the other name: a given name with each word of the other's
+        middle name and with its nickname, a family name with the
+        other's maiden name, each by the same outcomes the role itself
+        compares by. The strongest accepted match resolves the role,
+        which then reads `across-roles`, and is recorded in the
+        result's `across`; no cross-role match is tried where
+        `across-roles` is not accepted. The family role must still
+        agree, here directly or through the maiden name."""
         left, right = self._parsed(a), self._parsed(b)
         best = self._result(left, right, frozenset())
         if best.consistent or Outcome.OTHER_READING not in self.accept:
@@ -231,8 +269,10 @@ class Matching:
         Each accepted opt-in adds the keys its outcome needs:
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
-        family part keyed, and `other-reading` the keys of each other
-        reading `check` tries."""
+        family part keyed, `other-reading` the keys of each other
+        reading `check` tries, and `across-roles` the maiden name's
+        words without particles as family words, and the first letter
+        of each middle word and of the nickname as given letters."""
         parsed = self._parsed(name)
         if Outcome.OTHER_READING not in self.accept:
             return self._keys(parsed)
@@ -245,12 +285,48 @@ class Matching:
         alternative reading moved a word into or out of, reads
         `other-reading` where its own outcome is accepted."""
         lexicon = self.parser.lexicon
-        roles = tuple(_compare_role(role, left, right, lexicon) for role in Role)
-        roles = tuple(
+        roles = [_compare_role(role, left, right, lexicon) for role in Role]
+        roles = [
             dataclasses.replace(r, outcome=Outcome.OTHER_READING)
             if r.role in moved and r.outcome in self.accept else r
-            for r in roles)
-        return MatchResult(all(r.outcome in self.accept for r in roles), roles)
+            for r in roles]
+        across: list[CrossRoleMatch] = []
+        if Outcome.ACROSS_ROLES in self.accept:
+            for i, r in enumerate(roles):
+                if r.outcome in self.accept or r.role not in _ACROSS:
+                    continue
+                cross = self._across(r.role, left, right)
+                if cross is not None:
+                    roles[i] = dataclasses.replace(
+                        r, outcome=Outcome.ACROSS_ROLES, more=_more(r.left, r.right))
+                    across.append(cross)
+        return MatchResult(all(r.outcome in self.accept for r in roles),
+                           tuple(roles), tuple(across))
+
+    def _across(self, role: Role, left: ParsedName,
+                right: ParsedName) -> CrossRoleMatch | None:
+        """The strongest accepted match of `role` on one side against
+        one of its cross roles (`_ACROSS`) on the other, or `None`: a
+        middle name word by word, the other roles whole, a family and a
+        maiden name with their particles set aside as the family role
+        sets them aside. The pick is by outcome, then by texts and
+        roles named without a side, so it is the same with the names
+        swapped."""
+        lexicon = self.parser.lexicon
+        family = role is Role.FAMILY
+        found: list[tuple[tuple[object, ...], CrossRoleMatch]] = []
+        for other in _ACROSS[role]:
+            for lrole, rrole in ((other, role), (role, other)):
+                for la, lb in _cross_texts(left, lrole):
+                    for ra, rb in _cross_texts(right, rrole):
+                        outcome = _text_outcome(la, ra, lexicon, family=family,
+                                                bases=(lb, rb))
+                        if outcome is Outcome.CONFLICT or outcome not in self.accept:
+                            continue
+                        theirs, mine = (la, ra) if lrole is other else (ra, la)
+                        found.append(((_RANK[outcome], _RANK_ROLE[other], theirs, mine),
+                                      CrossRoleMatch(lrole, rrole, outcome, la, ra)))
+        return min(found, key=lambda f: f[0])[1] if found else None
 
     def _readings(self, name: ParsedName
                   ) -> list[tuple[ParsedName, frozenset[Role]]]:
@@ -285,8 +361,13 @@ class Matching:
         def heads(word: str) -> set[str]:
             return {lexicon._headword(_fold(word)), _fold(lexicon._headword(word))}
 
+        across = Outcome.ACROSS_ROLES in self.accept
+        bases = parsed.family_base.split()
+        maiden = parsed.maiden.split()
+        if across:
+            bases += _maiden_base(parsed).split()
         words: set[str] = set()
-        for raw in parsed.family_base.split():
+        for raw in bases:
             for word in (raw, _fold(raw)):
                 for form in (*word.split("-"), word.replace("-", "")):
                     if form:
@@ -294,10 +375,17 @@ class Matching:
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in heads(family[0]) | {_fold(family[0])}} - {""}
+        if maiden and words and across and Outcome.FAMILY_INITIAL in self.accept:
+            words |= {f[:1] for f in heads(maiden[0]) | {_fold(maiden[0])}} - {""}
+
+        def initials_of(word: str) -> set[str]:
+            return {g[:1] for g in heads(word) | {_fold(word)}}
+
         given = parsed.given.split()
-        initials = {""}
-        if given:
-            initials = {g[:1] for g in heads(given[0]) | {_fold(given[0])}}
+        initials = initials_of(given[0]) if given else {""}
+        if across:
+            for word in (*parsed.middle.split(), *parsed.nickname.split()[:1]):
+                initials |= initials_of(word)
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
@@ -325,6 +413,36 @@ _RANK = {o: i for i, o in enumerate(Outcome)}
 #: The roles whose outcome is never a conflict; an alternative reading
 #: moving a word into one of them is not tried.
 _NEVER_CONFLICT = frozenset({Role.TITLE, Role.SUFFIX})
+#: The roles a cross-role match may resolve, each with the roles of the
+#: other name it is tried against (`across-roles`).
+_ACROSS: Mapping[Role, tuple[Role, ...]] = {
+    Role.GIVEN: (Role.MIDDLE, Role.NICKNAME),
+    Role.FAMILY: (Role.MAIDEN,),
+}
+_RANK_ROLE = {r: i for i, r in enumerate(Role)}
+
+
+def _maiden_base(name: ParsedName) -> str:
+    """The maiden name without its particles, as `family_base` writes
+    the family's."""
+    return name._text_for(Role.MAIDEN, without_tag="particle",
+                          unless_tag=UNJOINED_TAG)
+
+
+def _cross_texts(name: ParsedName, role: Role) -> list[tuple[str, str]]:
+    """The texts of `role` a cross-role match compares, each with its
+    base: a middle name's words one by one, a family or maiden name
+    whole beside its base without particles, any other role whole."""
+    if role is Role.MIDDLE:
+        return [(w, "") for w in name.middle.split()]
+    text = getattr(name, role)
+    if not text:
+        return []
+    if role is Role.FAMILY:
+        return [(text, name.family_base)]
+    if role is Role.MAIDEN:
+        return [(text, _maiden_base(name))]
+    return [(text, "")]
 
 
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
@@ -354,12 +472,15 @@ def _fold(text: str) -> str:
 def _strength(candidate: tuple[MatchResult, int]) -> tuple[object, ...]:
     """The order `check` picks a table by, best first: consistent, then
     the weakest outcome strongest (then the next weakest, and so on),
-    then fewer sides read another way, then each role's text pair,
-    which keeps the pick the same with the names swapped."""
+    then fewer sides read another way, then each role's text pair and
+    each cross-role match's, which keeps the pick the same with the
+    names swapped."""
     result, sides = candidate
     ranks = sorted((_RANK[r.outcome] for r in result.roles), reverse=True)
     texts = tuple(tuple(sorted((r.left, r.right))) for r in result.roles)
-    return (not result.consistent, ranks, sides, texts)
+    across = tuple(sorted(((c.left, c.left_role), (c.right, c.right_role)))
+                   for c in result.across)
+    return (not result.consistent, ranks, sides, texts, across)
 
 
 def _weakest(outcomes: Iterable[Outcome]) -> Outcome:

@@ -7,7 +7,14 @@ __url__ = "https://github.com/derek73/python-nameparser"
 
 from nameparser._lexicon import Lexicon, LexiconReading
 from nameparser._locale import Locale
-from nameparser._match import MatchResult, Matching, Outcome, RoleMatch, Side
+from nameparser._match import (
+    CrossRoleMatch,
+    MatchResult,
+    Matching,
+    Outcome,
+    RoleMatch,
+    Side,
+)
 from nameparser._parser import Parser, parse, parser_for
 from nameparser._policy import (
     DEFAULT_NICKNAME_DELIMITERS,
@@ -46,5 +53,6 @@ __all__ = [
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
     "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",
     "Parser", "parse", "parser_for",
-    "Matching", "MatchResult", "RoleMatch", "Outcome", "Side",
+    "Matching", "MatchResult", "RoleMatch", "CrossRoleMatch", "Outcome",
+    "Side",
 ]
