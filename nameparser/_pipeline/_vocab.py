@@ -451,18 +451,20 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
 # rules/S1: "a clause wholly of words the vocabulary reads as no name
 # is set apart from the name" -- the word's half; `set_apart` is the
 # clause's. Its suffix half is `suffix_as_written`'s, so a credential
-# joined by a slash or a hyphen is one here as it is bare, a dotted
-# member asked first, and a joined word holding a member after the
-# suffix test, each left to S13's position test (decisions/S1, #792,
-# #1088; decisions/S3, #1138)
+# joined by a slash or a hyphen is one here as it is bare; a word its
+# periods join is asked first, then a dotted member, and a joined word
+# holding a member after the suffix test, each member left to S13's
+# position test (decisions/S1, #792, #1088; decisions/S3, #1131, #1138)
 def set_apart_kind(word: str, lexicon: Lexicon,
                    ) -> SetApartKind | Literal["member"] | None:
     """What a word in a delimited clause is to S1's set-apart reading:
     a title, a suffix (a word `suffix_as_written` reads, joined
-    credentials included), both, a member of the ambiguous class
-    written with a period inside it (`dotted_member`) or a joined word
-    holding one (`joined_member`, 'MA/PhD'), which S13 settles after the
-    name only, or None where the vocabulary reads it as a name or not at
+    credentials included, or one its periods join,
+    `period_joined_credential`), both, a member of the ambiguous class
+    written with a period inside it (`dotted_member`), a joined word
+    holding one (`joined_member`, 'MA/PhD') or a word its periods join
+    holding one ('Msc.Ed'), which S13 settles after the name only, or
+    None where the vocabulary reads it as a name or not at
     all. A comma the clause keeps on its word is no part of it
     (rules/N1)."""
     bare = word.strip(",")
@@ -961,8 +963,9 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     """Counts as a suffix as written, with NO initial veto (the veto
-    differs by caller): unambiguous suffix vocabulary, or an ambiguous
-    acronym written with periods ('M.A.' yes, 'Ma' no). `n` is
+    differs by caller): unambiguous suffix vocabulary, an ambiguous
+    acronym written with periods ('M.A.' yes, 'Ma' no), or a credential
+    joined by '-' or '/' (`_joined_credential`, 'MD/PhD'). `n` is
     _normalize(text), passed in so callers normalize once.
 
     Single source for classify's "vocab:suffix" tag and the segment/
@@ -990,7 +993,7 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
 
 #: What joins the letter chunks of the caps shape's joined spelling
 #: ('PU-PH', `_joined_capitals`); a joined credential is cut by
-#: `_JOINER_SPLIT`, which keeps them.
+#: `_JOINER_SPLIT`, which keeps the joiners.
 _JOINERS = re.compile(r"[-/]")
 
 
@@ -1145,8 +1148,8 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     and not a bare member of the ambiguous class, a run listed whole
     counting as one chunk) or is a member of that class however
     written, where one chunk at least settles every such member
-    (`_settles`), not every one a single ASCII character, and -- joined by a hyphen -- not written
-    as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'MA/PhD',
+    (`_settles`), and not every chunk a single ASCII character, and --
+    joined by a hyphen -- not written as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'MA/PhD',
     'M.A/PhD', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not 'MA/MBA',
     'MA/Jones', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
     writing is read first, so a hyphenated name ('Smith-Jones') is
@@ -1196,15 +1199,16 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
 # written" -- the joined words' every chunk, the periods being the one
 # sign the word is joined at all (decisions/S3, #1131)
 def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
-    """Whether TEXT, cut at its periods, is two or more chunks that
-    each count as a suffix as written or are a member of the ambiguous
+    """Whether TEXT, cut at its periods (`_period_chunks`), is chunks
+    that each count as a suffix as written or are a member of the ambiguous
     class, one chunk at least settling every such member (`_settles`),
     and not every chunk the vocabulary matches a single ASCII character
     ('Msc.Ed', 'JD.CPA'; not 'Bob.PhD', 'Ma.Ed' or 'X.Y.I.'). A word
     whose last chunk is a glued honorific ('J.씨') reads as one too:
     the honorific is the suffix there and the chunk before it the
-    initial it is written as (rules/W2). The chunks are
-    `_period_chunks`'."""
+    initial it is written as (rules/W2). The chunks are two or more,
+    save one where the period meets only an ampersand or a semicolon
+    at the word's edge ('MD.&', as 'MD.& PhD' writes it)."""
     chunks = _period_chunks(text)
     if chunks is None:
         return False
@@ -1218,7 +1222,8 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
             continue
         # rules/S11: "the word is part of that one word and is weighed
         # only by the shape the joined word wears" -- no chunk claim
-        # for a suffix word that is also a name ('M.Filho')
+        # for a suffix word that is also a name ('MD.Filho', which MD
+        # would otherwise settle as a member)
         if folded in sets.suffix_words_ambiguous or not _member(c, lexicon):
             return False
         unsettled = True
@@ -1230,7 +1235,9 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
 
 
 def _period_chunks(text: str) -> list[str] | None:
-    """TEXT cut at its periods, or None where it holds none inside it.
+    """TEXT cut at its periods, or None where it holds none inside it
+    (one chunk where only an edge '&' or ';' follows the period,
+    'MD.&').
     ASCII punctuation beside an interior period is no part of the chunk
     ('MD.&PhD'); at the word's outer edges only its periods, a glued
     semicolon (rules/C10, 'Jr.;') and an ampersand joining the next
@@ -1263,7 +1270,8 @@ def _holds_a_member(text: str, lexicon: Lexicon) -> bool:
 
 
 def period_member(word: str, lexicon: Lexicon) -> bool:
-    """Whether WORD, a word with interior periods not listed whole, is
+    """Whether WORD, a word with interior periods that is no acronym
+    listed once its periods are removed, is
     a period-joined credential (`period_joined_credential`) holding a
     member of the ambiguous class ('Msc.Ed'): `joined_member`'s
     question for a word the periods join (rules/S3, #1131)."""

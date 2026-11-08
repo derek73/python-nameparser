@@ -101,7 +101,8 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # #544: the chunked sibling of _DOTTED ('M.Eng.'), S3's period gate
     # for a member with a lower-case tail
     ("_vocab", "_CHUNKED"): None,
-    # the joiners of a joined credential ('MD/PhD', rules/S3, #752)
+    # the joiners of the caps shape's joined spelling ('PU-PH',
+    # rules/S9, #752); a joined credential is cut by _JOINER_SPLIT (#1103)
     ("_vocab", "_JOINERS"): None,
     # the same joiners, kept by the split, for S3's cut of a joined
     # credential into listed runs (#1103)
