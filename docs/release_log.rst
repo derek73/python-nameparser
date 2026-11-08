@@ -2,10 +2,10 @@ Release Log
 ===========
 * 3.0.0 - November 8, 2026
 
-    **nameparser 3.0** removes ``HumanName``, ``Constants`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and rebuilds the vocabulary as readings of words, each kept in the file of the language that uses it. A parser can be built for a choice of languages, the suffix and the family name split by kind, and every parsed word records the reading it took. :doc:`migrate` gives the 3.0 call for each 1.x and 2.x one. Highlights:
+    **nameparser 3.0** removes ``HumanName``, ``Constants`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and rebuilds the vocabulary as readings of words, kept in files by language. A parser can be built for a choice of languages, the suffix splits by kind and the family name into two surnames, and every parsed word records the reading it took. :doc:`migrate` gives the 3.0 call for each 1.x and 2.x one. Highlights:
 
-    - **Build a parser for a choice of languages.** ``parser_for(locales.ES).parse("Gabriel García Márquez")`` gives family ``García Márquez``, where the default gives middle ``García``, family ``Márquez``. Spanish, Portuguese, Vietnamese, Czech, Slovak, Irish, Scottish Gaelic, Nepali and other packs are new, and ``strict=True`` reads only the chosen languages' words.
-    - **Read the suffix and the family name by kind.** ``parse("John Smith Jr., MD")`` gives generation ``Jr.`` and credentials ``MD``, and ``surname1`` and ``surname2`` give the two family names a pack that reads two of them finds.
+    - **Build a parser for a choice of languages.** ``parser_for(locales.ES).parse("Gabriel García Márquez")`` gives family ``García Márquez``, where the default gives middle ``García``, family ``Márquez``. Spanish, Portuguese, Vietnamese, Czech, Slovak, Irish, Scottish Gaelic, Nepali and other packs are new, and ``strict=True`` reads only the chosen languages' words and those every language shares.
+    - **Read the suffix by kind and the family name as two surnames.** ``parse("John Smith Jr., MD")`` gives generation ``Jr.`` and credentials ``MD``, and ``surname1`` and ``surname2`` give the two family names ``two_family_names`` finds.
     - **See how each word was read.** ``parse("Dr. Juan de la Vega III").tokens[2].reading`` says ``de`` was read as a particle in the family name, from the vocabulary of the files that list it.
 
     **Additions**
