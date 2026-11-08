@@ -34,7 +34,7 @@ from collections.abc import Mapping
 from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_BASELINE = "2.8.0"
+DEFAULT_BASELINE = "3.0.0"
 REPO_ROOT = HERE.parents[1]
 
 
@@ -124,10 +124,15 @@ WANT_V2 = @@WANT_V2@@
 # whether this release reports the reading a fork did not take (2.7,
 # #752 phase 2m): compare() compares the alternatives only where it does
 _AMBIGUITY = getattr(nameparser, "Ambiguity", None)
+# the views this release's ParsedName has (3.0's suffix, patronymic and
+# second-surname views): compare() compares a view only where it does
+_PARSED = getattr(nameparser, "ParsedName", None)
 print(json.dumps({"__version__": nameparser.__version__,
                   "__file__": nameparser.__file__,
                   "alternatives": "alternative" in getattr(
-                      _AMBIGUITY, "__dataclass_fields__", {})}), flush=True)
+                      _AMBIGUITY, "__dataclass_fields__", {}),
+                  "views": [v for v in @@VIEWS@@
+                            if hasattr(_PARSED, v)]}), flush=True)
 
 if WANT_V2:
     from nameparser import Parser, Policy, parse
@@ -163,6 +168,9 @@ def _v2_row(p):
     forced = str(p.capitalized(force=True))
     row["_capitalized"] = plain if plain != rendered else ""
     row["_capitalized_force"] = forced if forced != plain else ""
+    # 3.0's views, as snapshot.read() records them: empty before 3.0
+    for key in @@VIEW_ROW_KEYS@@:
+        row[f"_{key}"] = getattr(p, key, "") or ""
     return row
 
 
@@ -201,6 +209,9 @@ def _worker_source(version: str, want_v2: bool) -> str:
     """
     return (_WORKER_TEMPLATE
             .replace("@@VERSION@@", version)
+            .replace("@@VIEWS@@", repr(tuple(VIEW_KEYS)))
+            .replace("@@VIEW_ROW_KEYS@@",
+                     repr(tuple(k for ks in VIEW_KEYS.values() for k in ks)))
             .replace("@@WANT_V2@@", "True" if want_v2 else "False"))
 
 
@@ -329,11 +340,25 @@ class Result(NamedTuple):
     unrecorded: tuple[str, ...] = ()  # keys the baseline cannot read
 
 
+#: The ParsedName views a row records (3.0), each with the row keys it
+#: fills: `generation` fills `credentials` beside it (snapshot.row).
+#: test_differential holds this to snapshot.RECORDED_LATER.
+VIEW_KEYS = {"generation": ("generation", "credentials"),
+             "honorifics": ("honorifics",),
+             "patronymic": ("patronymic",),
+             "surname2": ("surname2",)}
+
+
 def unrecorded(tell: Mapping[str, object]) -> tuple[str, ...]:
     """The row keys the baseline worker's release cannot record, which
     compare() leaves out of both sides: the alternatives before 2.7,
+    and each view before the release whose ParsedName has it (3.0),
     since a tree reporting one is not a name that moved."""
-    return () if tell.get("alternatives") else ("alternatives",)
+    has = tell.get("views") or ()
+    assert isinstance(has, (list, tuple))
+    return ((() if tell.get("alternatives") else ("alternatives",))
+            + tuple(k for view, keys in VIEW_KEYS.items()
+                    if view not in has for k in keys))
 
 
 def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
