@@ -401,11 +401,12 @@ class Token:
     #: the field it landed in (always this token's :attr:`role`), and
     #: why -- a listed word, a declared name, a shape, or position
     #: alone -- and the shipped files whose reading of it is on in the
-    #: parse's lexicon (:attr:`Reading.languages`). The twin of :attr:`Ambiguity.alternative`, which holds
-    #: the reading NOT taken. None for a token the parse did not read:
-    #: one :meth:`ParsedName.replace` or :meth:`Parser.revise` builds,
-    #: or one loaded from a pickle written before 3.0. Not compared:
-    #: two tokens equal without it, as before 3.0, and
+    #: parse's lexicon (:attr:`Reading.languages`). The twin of
+    #: :attr:`Ambiguity.alternative`, which holds the reading NOT taken.
+    #: None for a token the parse did not read: one
+    #: :meth:`ParsedName.replace` or :meth:`Parser.revise` builds, or one
+    #: loaded from a pickle written before 3.0. Not compared: two tokens
+    #: equal without it, as before 3.0, and
     #: :meth:`ParsedName.comparison_key` ignores it. Added in 3.0.
     reading: Reading | None = field(
         default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
@@ -1389,18 +1390,19 @@ class ParsedName:
             # view's ", " join does not split one credential in two
             if suffix_join and "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
-            # rules/R1: "words the writer wrote together join with
-            # nothing between them" -- the two halves of any word a
-            # division cut (rules/W1, W5) that land in one field; the
-            # suffix keeps its entries apart (decisions/W5, #845)
-            elif (not suffix_join and parts and tok.span is not None
-                  and tok.span.start == end
-                  and FOLDED_TAG not in tok.tags):
-                parts[-1] += tok.text
             elif FOLDED_TAG in tok.tags:
                 # middle_as_family fold: v1 PREPENDED middle_list to
                 # last_list; spans cannot reorder, so the view does
                 folded.append(tok.text)
+            # rules/R1: "words the writer wrote together join with
+            # nothing between them" -- the two halves of any word a
+            # division cut (rules/W1, W5) that land in one field; the
+            # suffix keeps its entries apart (decisions/W5, #845). `end`
+            # is -1 unless the last word kept went to `parts`, so a match
+            # always has a `parts[-1]` to join
+            elif (not suffix_join and tok.span is not None
+                  and tok.span.start == end):
+                parts[-1] += tok.text
             else:
                 parts.append(tok.text)
             # a folded word went to `folded`, not to the end of `parts`
@@ -1411,20 +1413,23 @@ class ParsedName:
     @property
     def title(self) -> str:
         """The words read as titles ("Dr.", "Sir"), wherever in the
-        name they stand, space-joined in written order, save words written with nothing between them, which stay so; ``''`` for a
+        name they stand, space-joined in written order, save words
+        written with nothing between them, which stay so; ``''`` for a
         name with none."""
         return self._text_for(Role.TITLE)
 
     @property
     def given(self) -> str:
-        """The given name's words, space-joined in written order, save words written with nothing between them, which stay so;
-        ``''`` for a name with none ("de la Vega")."""
+        """The given name's words, space-joined in written order, save
+        words written with nothing between them, which stay so; ``''``
+        for a name with none ("de la Vega")."""
         return self._text_for(Role.GIVEN)
 
     @property
     def middle(self) -> str:
-        """The middle names' words, space-joined in written order, save words written with nothing between them, which stay so;
-        ``''`` for a name with none."""
+        """The middle names' words, space-joined in written order, save
+        words written with nothing between them, which stay so; ``''``
+        for a name with none."""
         return self._text_for(Role.MIDDLE)
 
     @property
@@ -1496,7 +1501,8 @@ class ParsedName:
     def surnames(self) -> str:
         """The middle names and the family name together ("Q. Xavier
         de la Vega" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("Williams")."""
+        written order, save words written with nothing between them,
+        which stay so; ``''`` for a name with neither ("Williams")."""
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
@@ -1529,8 +1535,8 @@ class ParsedName:
     def given_names(self) -> str:
         """The given name and the middle names together ("Juan Q.
         Xavier" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("de la
-        Vega")."""
+        written order, save words written with nothing between them,
+        which stay so; ``''`` for a name with neither ("de la Vega")."""
         return self._text_for(Role.GIVEN, Role.MIDDLE)
 
     @property
@@ -1590,9 +1596,9 @@ class ParsedName:
     # makes the first-surname view" (history: decisions/R11, #1022)
     def _first_unit(self) -> bool:
         """Whether the parse marked a first unit: where O6 read two
-        units, W5 divided a Han surname pair or O3 folded middles in. A family whose words carry no
-        reading (replace(), Parser.revise, a 2.x pickle) is unmarked
-        and reads whole."""
+        units, W5 divided a Han surname pair or O3 folded middles in. A
+        family whose words carry no reading (replace(), Parser.revise,
+        a 2.x pickle) is unmarked and reads whole."""
         return any(tok.role is Role.FAMILY and tok.reading is not None
                    and tok.reading.first_surname for tok in self.tokens)
 
@@ -1601,11 +1607,12 @@ class ParsedName:
         """The family's first name unit where the parse read the family
         as two (``García`` in ``Gabriel García Márquez`` under
         ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
-        Valle`` under it too), :attr:`surname2` being the other; elsewhere the whole
-        :attr:`family`. A middle name ``middle_as_family`` folds into
-        the family is in neither (``María García`` in ``Ana María García
-        López`` under ``middle_as_family``, whose surname1 is
-        ``López``). Added in 3.0."""
+        Valle`` under it too), :attr:`surname2` being the other;
+        elsewhere the whole :attr:`family`. A middle name
+        ``middle_as_family`` folds into the family is in neither
+        (``María García`` in ``Ana María García López`` under
+        ``middle_as_family``, whose surname1 is ``López``). Added in
+        3.0."""
         return self._text_for(Role.FAMILY, first_unit=self._first_unit())
 
     @property
@@ -1811,9 +1818,10 @@ class ParsedName:
         each initial is followed by `delimiter`, and the initials of
         one group are joined by `separator` (so
         ``initials(spec="{given}{middle}{family}", separator="")``
-        runs them together). Each group is ordered the way its own field is ordered, so a
-        name whose middle words fold into the family initials them
-        before the family's own words, as `family` renders them.
+        runs them together). Each group is ordered the way its own
+        field is ordered, so a name whose middle words fold into the
+        family initials them before the family's own words, as
+        `family` renders them.
         Valid spec keys: given, middle, family."""
         import nameparser._render as _render
         return _render.initials(self, spec, delimiter, separator)

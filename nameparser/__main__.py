@@ -53,15 +53,16 @@ _SWITCHES = {
     "unlisted_dotted_suffixes": "read an unlisted X.Y.Z. ending a name "
                                 "as a suffix",
 }
-_CHOICES = {"unlisted_caps_suffixes": CapsSuffixes}
+# each an enum field, with the help its flag offers
+_CHOICES = {
+    "unlisted_caps_suffixes": (CapsSuffixes,
+                               "where an unlisted all-caps word reads as "
+                               "a credential: nowhere, after a comma (the "
+                               "default), or ending a name too"),
+}
 # the two fields Policy.lone_name_word accepts, a flag of their own as
 # --order is, since a choice of every Role would offer the ones it refuses
 _LONE_NAME_WORD = {"given": Role.GIVEN, "family": Role.FAMILY}
-_CHOICE_HELP = {
-    "unlisted_caps_suffixes": "where an unlisted all-caps word reads as a "
-                              "credential: nowhere, after a comma (the "
-                              "default), or ending a name too",
-}
 _NOT_ON_THE_COMMAND_LINE = {
     # each needs a mapping, a set of scripts or rules, bracket pairs or
     # separator strings
@@ -119,10 +120,10 @@ def main(argv: list[str] | None = None) -> int:
         rules.add_argument("--" + field.replace("_", "-"),
                            action=argparse.BooleanOptionalAction,
                            help=what)
-    for field, enum in _CHOICES.items():
+    for field, (enum, what) in _CHOICES.items():
         rules.add_argument("--" + field.replace("_", "-"),
                            choices=[member.value for member in enum],
-                           help=_CHOICE_HELP[field])
+                           help=what)
     args = ap.parse_args(argv)
     if args.strict and args.locale is None:
         ap.error("--strict needs --locale: it keeps only the chosen "
@@ -184,13 +185,13 @@ def main(argv: list[str] | None = None) -> int:
     # so each replaces a pack's setting without a two-pack conflict
     # warning, and the parser is built once, parser_for re-emitting its
     # warnings (#337)
+    chosen = vars(args)
     updates: dict[str, Any] = {
-        field: getattr(args, field) for field in _SWITCHES
-        if getattr(args, field) is not None}
+        field: chosen[field] for field in _SWITCHES
+        if chosen[field] is not None}
     updates.update({
-        field: enum(getattr(args, field))
-        for field, enum in _CHOICES.items()
-        if getattr(args, field) is not None})
+        field: enum(chosen[field]) for field, (enum, _) in _CHOICES.items()
+        if chosen[field] is not None})
     if args.order is not None:
         updates["name_order"] = _ORDERS[args.order]
     if args.lone_name_word is not None:
