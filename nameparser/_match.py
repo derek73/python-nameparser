@@ -6,7 +6,8 @@ compares two parsed names role by role.
 Produces: `Outcome`, `Side`, `RoleMatch`, `MatchResult`, `DEFAULT_ACCEPT`
 and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
-through `Lexicon._headword`; no `Policy` field.
+through `Lexicon._headword`, and its `revise`, for a name's other
+readings (`other-reading`); no `Policy` field.
 
 Consistent means nothing in the two names contradicts it, under the
 outcomes the caller accepts. The module imports `_types` and `_policy`
@@ -15,6 +16,7 @@ typing alone.
 """
 from __future__ import annotations
 
+import dataclasses
 import re
 import unicodedata
 from collections.abc import Iterable, Mapping
@@ -188,11 +190,28 @@ class Matching:
         check is symmetric: swapping the names gives the mirrored
         result. It is not transitive: `J. Smith` is consistent with
         `John Smith` and with `Jane Smith`, which are not consistent
-        with each other."""
+        with each other.
+
+        Where the names as parsed are not consistent, each side's other
+        readings are tried too: one per `Ambiguity` with an
+        `alternative`, its words moved to the alternative's role, one
+        ambiguity at a time and never two together. The table reported
+        is the one with the strongest outcomes, every role the
+        alternative moved a word into or out of that would otherwise be
+        accepted reading `other-reading`, so the pair is consistent
+        through it only where `other-reading` is accepted."""
         left, right = self._parsed(a), self._parsed(b)
-        lexicon = self.parser.lexicon
-        roles = tuple(_compare_role(role, left, right, lexicon) for role in Role)
-        return MatchResult(all(r.outcome in self.accept for r in roles), roles)
+        best = self._result(left, right, frozenset())
+        if best.consistent:
+            return best
+        readings_a, readings_b = self._readings(left), self._readings(right)
+        if len(readings_a) == len(readings_b) == 1:
+            return best
+        candidates = [
+            (self._result(ra, rb, ta | tb), int(bool(ta)) + int(bool(tb)))
+            for ra, ta in readings_a for rb, tb in readings_b
+        ]
+        return min(candidates, key=_strength)[0]
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
         """Grouping keys: for each word of the folded family base, and
@@ -205,8 +224,57 @@ class Matching:
         guarantee rests on this: every family-base word the default check
         compares is keyed, under both headword orders, so two names it
         finds consistent share a key and grouping by key loses no match.
-        A name with no family has no key."""
+        A name with no family has no key.
+
+        Each accepted opt-in adds the keys its outcome needs:
+        `family-initial` a key `f;g` for the first letter `f` of the
+        family's first word, `given-one-side` a bare key for every
+        family part keyed, and `other-reading` the keys of each other
+        reading `check` tries."""
         parsed = self._parsed(name)
+        if Outcome.OTHER_READING not in self.accept:
+            return self._keys(parsed)
+        return frozenset().union(
+            *(self._keys(reading) for reading, _ in self._readings(parsed)))
+
+    def _result(self, left: ParsedName, right: ParsedName,
+                moved: frozenset[Role]) -> MatchResult:
+        """The table of two readings; each role in `moved`, which an
+        alternative reading moved a word into or out of, reads
+        `other-reading` where its own outcome is accepted."""
+        lexicon = self.parser.lexicon
+        roles = tuple(_compare_role(role, left, right, lexicon) for role in Role)
+        roles = tuple(
+            dataclasses.replace(r, outcome=Outcome.OTHER_READING)
+            if r.role in moved and r.outcome in self.accept else r
+            for r in roles)
+        return MatchResult(all(r.outcome in self.accept for r in roles), roles)
+
+    def _readings(self, name: ParsedName
+                  ) -> list[tuple[ParsedName, frozenset[Role]]]:
+        """The name as parsed, with no role moved, then one other
+        reading per ambiguity whose `alternative` moves a word: that
+        ambiguity's words moved to the alternative's role by
+        `Parser.revise`, with the roles it changed."""
+        readings: list[tuple[ParsedName, frozenset[Role]]] = [(name, frozenset())]
+        for ambiguity in name.ambiguities:
+            if ambiguity.alternative is None:
+                continue
+            target = ambiguity.alternative.role
+            words = [t for t in ambiguity.tokens if t.role is not target]
+            if not words:
+                continue
+            moved = frozenset({target, *(t.role for t in words)})
+            # the moved name's texts, read off its own views so a word
+            # a division cut keeps its halves joined
+            laid_out = ParsedName(name.original, tuple(
+                dataclasses.replace(t, role=target, reading=None)
+                if t in words else t for t in name.tokens))
+            readings.append((self.parser.revise(
+                name, **{r.value: getattr(laid_out, r) for r in moved}), moved))
+        return readings
+
+    def _keys(self, parsed: ParsedName) -> frozenset[str]:
         lexicon = self.parser.lexicon
 
         def heads(word: str) -> set[str]:
@@ -218,11 +286,17 @@ class Matching:
                 for form in (*word.split("-"), word.replace("-", "")):
                     if form:
                         words |= heads(form)
+        family = parsed.family.split()
+        if family and words and Outcome.FAMILY_INITIAL in self.accept:
+            words |= {f[:1] for f in heads(family[0]) | {_fold(family[0])}} - {""}
         given = parsed.given.split()
         initials = {""}
         if given:
             initials = {g[:1] for g in heads(given[0]) | {_fold(given[0])}}
-        return frozenset(f"{w};{g}" for w in words for g in initials)
+        keys = {f"{w};{g}" for w in words for g in initials}
+        if Outcome.GIVEN_ONE_SIDE in self.accept:
+            keys |= words
+        return frozenset(keys)
 
     def _parsed(self, name: object) -> ParsedName:
         if isinstance(name, ParsedName):
@@ -267,6 +341,17 @@ def _fold(text: str) -> str:
             accented = unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
         kept.append(c)
     return "".join(kept).casefold().translate(_DROPPED)
+
+
+def _strength(candidate: tuple[MatchResult, int]) -> tuple[object, ...]:
+    """The order `check` picks a table by, best first: consistent, then
+    the weakest outcome strongest (then the next weakest, and so on),
+    then fewer sides read another way, then each role's text pair,
+    which keeps the pick the same with the names swapped."""
+    result, sides = candidate
+    ranks = sorted((_RANK[r.outcome] for r in result.roles), reverse=True)
+    texts = tuple(tuple(sorted((r.left, r.right))) for r in result.roles)
+    return (not result.consistent, ranks, sides, texts)
 
 
 def _weakest(outcomes: Iterable[Outcome]) -> Outcome:
@@ -336,7 +421,18 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
     if _initials_only(a) and _initials_only(b) and (
             _WORDS.split(_fold(a)) == _WORDS.split(_fold(b))):
         return Outcome.INITIALS_AGREE
+    if not family and len(wa) == len(wb) == 1 and (
+            _first_half(a, b) or _first_half(b, a)):
+        return Outcome.HYPHENATED_PART
     return Outcome.CONFLICT
+
+
+def _first_half(word: str, hyphenated: str) -> bool:
+    """`word` is the first half of `hyphenated` once folded (`Hong` /
+    `Hong-Yi`): the first half only, which shares the given initial a
+    key is cut on."""
+    w, parts = _fold(word), _fold(hyphenated).split("-")
+    return len(parts) > 1 and "-" not in w and bool(w) and parts[0] == w
 
 
 def _middle_outcome(a: str, b: str, lexicon: Lexicon) -> Outcome:

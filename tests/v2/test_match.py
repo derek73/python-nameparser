@@ -33,7 +33,24 @@ NAMES: tuple[str, ...] = (
     "Ana dos Santos", "Ana Dos", "Jan van der Berg", "Jan Van",
     "Maria da Silva", "Maria Da", "John bin Laden", "John Bin",
     "Ana Jo", "Ana José", "Ana Ma", "Ana María", "Maria Mà", "Maria Ma",
+    "Hong Guo", "Hong-Yi Guo", "Yi Guo", "Mr. S", "John Stallbaum",
+    "Van Gogh", "Gogh", "Vincent Van Gogh", "JOHN SMITH MA", "Sukarno",
 )
+
+#: The opt-in outcomes this module's settings sweep adds to the default.
+OPT_INS: tuple[Outcome, ...] = (
+    Outcome.FAMILY_INITIAL, Outcome.GIVEN_ONE_SIDE,
+    Outcome.HYPHENATED_PART, Outcome.OTHER_READING,
+)
+
+#: The settings the guarantee and the symmetry are held under: the
+#: default, each opt-in added to it alone, and all of them together.
+SETTINGS: tuple[frozenset[Outcome], ...] = (
+    DEFAULT_ACCEPT,
+    *(DEFAULT_ACCEPT | {o} for o in OPT_INS),
+    DEFAULT_ACCEPT | set(OPT_INS),
+)
+_SETTING_IDS = ["default", *(o.value for o in OPT_INS), "all"]
 
 m = Matching(Parser())
 
@@ -249,9 +266,11 @@ def test_cjk_names_compare_as_same_and_never_as_initials() -> None:
     assert role(m.check("王小明", "王小"), Role.GIVEN).outcome is not Outcome.INITIAL
 
 
-def test_the_check_is_symmetric() -> None:
+@pytest.mark.parametrize("accept", SETTINGS, ids=_SETTING_IDS)
+def test_the_check_is_symmetric(accept: frozenset[Outcome]) -> None:
+    matching = Matching(Parser(), accept)
     for a, b in itertools.product(NAMES, repeat=2):
-        assert m.check(b, a) == m.check(a, b).mirrored(), (a, b)
+        assert matching.check(b, a) == matching.check(a, b).mirrored(), (a, b)
 
 
 def test_a_single_han_character_is_never_an_initial() -> None:
@@ -302,15 +321,24 @@ def test_default_keys_are_family_words_with_the_given_initial() -> None:
     assert m.keys("Suharto") == frozenset()
 
 
-def test_consistent_names_always_share_a_key() -> None:
-    """The guarantee, over every ordered pair of NAMES: under the default
-    settings a consistent pair shares a key, so grouping by key never
-    separates names `check` accepts. Negative control: with the hyphen
-    halves removed from `keys`, this fails on ("Ann Smith-Jones",
-    "Ann Smith")."""
+@pytest.mark.parametrize("accept", SETTINGS, ids=_SETTING_IDS)
+def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None:
+    """The guarantee, over every ordered pair of NAMES, under the default,
+    each opt-in added to it alone and all of them together: a consistent
+    pair shares a key, so grouping by key never separates names `check`
+    accepts. Negative controls: with the hyphen halves removed from
+    `keys`, the default fails on ("Ann Smith-Jones", "Ann Smith"); with
+    the family-initial key removed, family-initial fails on
+    ("Cristiane S", "Cristiane Stallbaum"); with the bare family keys
+    removed, given-one-side fails on ("John A. Smith", "Mr. Smith"); with
+    the alternative readings' keys removed, other-reading fails on
+    ("Suharto", "Suharto"). Each is the first pair to fail, measured
+    2026-11-08; hyphenated-part adds no key, its halves sharing the
+    given initial."""
+    matching = Matching(Parser(), accept)
     for a, b in itertools.product(NAMES, repeat=2):
-        if m.check(a, b).consistent:
-            assert m.keys(a) & m.keys(b), (a, b)
+        if matching.check(a, b).consistent:
+            assert matching.keys(a) & matching.keys(b), (a, b)
 
 
 @pytest.mark.parametrize("a, b", [
@@ -329,3 +357,74 @@ def test_a_family_of_particles_alone_is_not_part_of_a_longer_one(
 def test_listed_and_folded_spellings_share_a_key(a: str, b: str) -> None:
     assert m.check(a, b).consistent
     assert m.keys(a) & m.keys(b)
+
+
+def _with(*outcomes: Outcome) -> Matching:
+    return Matching(Parser(), DEFAULT_ACCEPT | set(outcomes))
+
+
+def test_a_family_initial_is_consistent_where_accepted() -> None:
+    assert not m.check("Cristiane S", "Cristiane Stallbaum").consistent
+    opted = _with(Outcome.FAMILY_INITIAL)
+    r = opted.check("Cristiane S", "Cristiane Stallbaum")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.FAMILY_INITIAL
+    assert "s;c" in opted.keys("Cristiane Stallbaum")
+    assert "s;c" not in m.keys("Cristiane Stallbaum")
+
+
+def test_a_given_name_on_one_side_is_consistent_where_accepted() -> None:
+    assert not m.check("Mr. Smith", "John Smith").consistent
+    opted = _with(Outcome.GIVEN_ONE_SIDE)
+    r = opted.check("Mr. Smith", "John Smith")
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
+    assert "smith" in opted.keys("John Smith") and "smith" in opted.keys("Mr. Smith")
+    assert "smith" not in m.keys("John Smith")
+
+
+def test_a_given_name_against_the_first_half_of_a_hyphenated_one() -> None:
+    r = m.check("Hong Guo", "Hong-Yi Guo")
+    assert not r.consistent
+    assert role(r, Role.GIVEN).outcome is Outcome.HYPHENATED_PART
+    assert role(r, Role.GIVEN).more is Side.RIGHT
+    r = _with(Outcome.HYPHENATED_PART).check("Hong Guo", "Hong-Yi Guo")
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.HYPHENATED_PART
+
+
+def test_a_given_name_against_the_second_half_still_conflicts() -> None:
+    # the second half does not share the given initial a key is cut on
+    r = _with(Outcome.HYPHENATED_PART).check("Yi Guo", "Hong-Yi Guo")
+    assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+
+
+def test_the_other_reading_is_consistent_where_accepted() -> None:
+    r = m.check("Suharto", "Suharto")
+    assert not r.consistent
+    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
+    opted = _with(Outcome.OTHER_READING)
+    r = opted.check("Suharto", "Suharto")
+    assert r.consistent
+    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
+    assert role(r, Role.GIVEN).outcome is Outcome.OTHER_READING
+    assert (role(r, Role.FAMILY).left, role(r, Role.FAMILY).right) == ("Suharto", "Suharto")
+    assert "suharto;" in opted.keys("Suharto")
+    assert m.keys("Suharto") == frozenset()
+
+
+def test_the_other_reading_does_not_hide_a_conflict() -> None:
+    r = _with(Outcome.OTHER_READING).check("Suharto", "Sukarno")
+    assert not r.consistent
+    assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
+
+
+def test_the_other_reading_of_one_side_meets_the_other_as_parsed() -> None:
+    # "Van Gogh" read with Van as a particle has the family "Van Gogh"
+    # and no given name, so the given role also needs given-one-side
+    r = _with(Outcome.OTHER_READING).check("Van Gogh", "Vincent Van Gogh")
+    assert not r.consistent
+    assert role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
+    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
+    r = _with(Outcome.OTHER_READING, Outcome.GIVEN_ONE_SIDE).check(
+        "Van Gogh", "Vincent Van Gogh")
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.OTHER_READING
+    assert (role(r, Role.FAMILY).left, role(r, Role.FAMILY).right) == (
+        "Van Gogh", "Van Gogh")
