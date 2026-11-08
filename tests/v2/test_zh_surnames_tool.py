@@ -133,13 +133,15 @@ def test_each_ranking_contributes_only_its_top() -> None:
 
 def test_the_shipped_block_is_what_the_tool_writes_for_its_own_contents() -> None:
     # A hand edit inside the generated block, or a block the tool could
-    # not have written, is caught here without the sources.
-    text = tool.ZH_MODULE.read_text(encoding="utf-8")
+    # not have written, is caught here without the sources. The module
+    # read is the one imported, not tool.ZH_MODULE's path into a source
+    # tree: Debian's autopkgtest runs these against the installed package.
+    text = Path(zh.__file__).read_text(encoding="utf-8")
     assert tool.rewrite(text, tool.render(list(zh._SINGLE_RANKED))) == text
 
 
 def test_the_block_repeats_no_census_row_and_holds_only_single_ideographs() -> None:
     by_hand = set(zh._SINGLE) | set(zh._SINGLE_TRADITIONAL)
-    assert tool.listed_by_hand(tool.ZH_MODULE.read_text(encoding="utf-8")) == by_hand
+    assert tool.listed_by_hand(Path(zh.__file__).read_text(encoding="utf-8")) == by_hand
     assert not by_hand & set(zh._SINGLE_RANKED)
     assert all(tool.is_han(c) for c in zh._SINGLE_RANKED)
