@@ -21,6 +21,9 @@ from types import ModuleType
 
 import pytest
 
+from tests.checkout import HAS_CHECKOUT, needs_docs
+
+import nameparser
 from nameparser import Lexicon
 from nameparser._pipeline._vocab import given_name_key
 from nameparser.locales import _es_ar_given_names, _es_given_names
@@ -86,9 +89,18 @@ _UNGUARDED_EFFECT = {
 
 def test_the_tool_writes_one_module_a_list() -> None:
     assert set(tool.LISTS) == set(_MODULES)
+    # In a checkout the tool writes the very file imported. Against the
+    # installed package (tests/checkout.py) the two are different copies,
+    # so the file is matched by its place in the package instead.
+    package = _PATH.parents[1] / "nameparser"
+    installed = Path(nameparser.__file__).parent
     for tag, module in _MODULES.items():
         assert module.__file__ is not None
-        assert tool.LISTS[tag][0] == Path(module.__file__), tag
+        if HAS_CHECKOUT:
+            assert tool.LISTS[tag][0] == Path(module.__file__), tag
+        else:
+            assert (tool.LISTS[tag][0].relative_to(package)
+                    == Path(module.__file__).relative_to(installed)), tag
 
 
 @pytest.mark.parametrize("tag", sorted(_MODULES))
@@ -139,7 +151,11 @@ def test_an_n_spelling_is_a_listed_word_with_its_tilde_dropped(tag: str) -> None
 def test_the_module_block_is_what_the_tool_renders(tag: str) -> None:
     # The block is the tool's output, so a hand edit, or a list the tool
     # would render differently, fails here.
-    path = tool.LISTS[tag][0]
+    # the module imported, not the tool's path into a checkout: Debian's
+    # autopkgtest runs these against the installed package
+    module = _MODULES[tag]
+    assert module.__file__ is not None
+    path = Path(module.__file__)
     text = path.read_text(encoding="utf-8")
     block = tool.render(list(_MODULES[tag]._RANKED),
                         list(_MODULES[tag]._N_SPELLINGS))
@@ -220,6 +236,7 @@ def test_an_n_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
         ("zurine", 100, 50)]
 
 
+@needs_docs
 def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:
     # The user docs state the list's size; the cutoff is the tool's TOP,
     # so a cutoff change fails here until the prose moves with it. The

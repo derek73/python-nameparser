@@ -12,6 +12,10 @@ from pathlib import Path
 
 import pytest
 
+# @needs_checkout: the harness refuses a nameparser imported from outside the checkout
+from tests.checkout import needs_checkout
+
+
 from ._differential_fixtures import load_tool, own_cache
 
 measure = load_tool("measure")
@@ -113,6 +117,7 @@ def test_a_step_is_run_from_the_checkout_and_its_output_kept(tmp_path: Path) -> 
     assert measure.Done(step, 3, 0.0, "").status == "FAILED (exit 3)"
 
 
+@needs_checkout
 def test_a_base_that_is_this_checkout_is_refused() -> None:
     with pytest.raises(SystemExit, match="is the tree being read"):
         measure.main(["--base", str(measure.HERE.parents[1])])

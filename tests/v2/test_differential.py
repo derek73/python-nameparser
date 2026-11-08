@@ -20,6 +20,10 @@ from typing import Any
 
 import pytest
 
+# @needs_checkout: the harness refuses a nameparser imported from outside the checkout
+from tests.checkout import needs_checkout
+
+
 from ._differential_fixtures import _TOOLS, load_tool
 
 compare = load_tool("compare")
@@ -424,6 +428,7 @@ def _fake_compare(monkeypatch: pytest.MonkeyPatch, baseline: str,
     return compare.compare(baseline), sent[0]
 
 
+@needs_checkout
 def test_compare_reports_no_move_when_the_baseline_reads_like_the_tree(
         monkeypatch: pytest.MonkeyPatch) -> None:
     result, sent = _fake_compare(monkeypatch, "2.4.0")
@@ -434,6 +439,7 @@ def test_compare_reports_no_move_when_the_baseline_reads_like_the_tree(
     assert [e["order"] for e in sent] == [None, "FAMILY_FIRST"]
 
 
+@needs_checkout
 def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
     """A clean run and a broken comparison print the same thing; this
     is the control that the comparison can see a difference."""
@@ -446,6 +452,7 @@ def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "'Smyth' -> 'Smith'" in moves[1]
 
 
+@needs_checkout
 def test_compare_counts_a_moved_name_only_cldr_holds(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A release figure counts CLDR's fictional renderings out, so the
@@ -458,6 +465,7 @@ def test_compare_counts_a_moved_name_only_cldr_holds(
     assert (r.moved, r.cldr) == (1, 1)
 
 
+@needs_checkout
 def test_compare_reads_humanname_below_2_0(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """1.4 has no 2.0 surface, so its HumanName reading is compared
