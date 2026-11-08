@@ -1201,7 +1201,7 @@ def test_an_unmapped_site_is_a_loud_failure_rather_than_a_default(
     with pytest.raises(AssertionError):
         _group_segment(state.segments[0], 0, state.tokens,
                        ambiguities=[], one_case=state.one_case,
-                       site=cast(ClauseSite, 99),
+                       site=cast(ClauseSite, 99), given_first=True,
                        )
 
 

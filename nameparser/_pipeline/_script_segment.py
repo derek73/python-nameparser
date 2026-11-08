@@ -563,11 +563,12 @@ def _split_candidate(state: ParseState) -> int | None:
 
 
 def _surname_pair(state: ParseState, i: int, core: str,
-                  surnames: frozenset[str]) -> bool:
+                  surnames: frozenset[str]) -> tuple[int, ...] | None:
     """rules/W5: "whose first two are each a listed single surname" --
-    whether token `i`, whose longest listed surname is its first
-    character, so that no listed compound opens it, holds a second
-    single surname that is the family's second unit (#845).
+    the cuts dividing token `i`, whose longest listed surname is its
+    first character, so that no listed compound opens it, where it
+    holds a second single surname that is the family's second unit
+    (#845), else None.
 
     Four characters written undivided, or two with a word of two
     written after the space: a Han given name is nearly always one or
@@ -586,14 +587,21 @@ def _surname_pair(state: ParseState, i: int, core: str,
     script, a Latin title included, keeps W1's division, which reads
     the same under any order, so the stage never cuts a name the order
     then reads otherwise. History: decisions/W5 (#845)."""
-    if core[1] not in surnames:
-        return False
+    # the length tests first: they are C-level, and refuse the commonest
+    # Han and hangul length, three, before the script walk below
+    if core[1] not in surnames or len(core) not in (2, 4):
+        return None
     run = state.segments[0]
+    at = run.index(i)
+    if len(core) == 2 and (
+            at + 1 == len(run)
+            or len(state.tokens[run[at + 1]].text.rstrip(FULL_STOPS)) != 2):
+        return None
     # post-nominals ending the name, a peeled honorific among them, are
     # no name pieces of assign's, so they key no order (王李小明さん,
     # 王李小明 PhD); anything before them does
     end = len(run)
-    while (end > run.index(i) + 1
+    while (end > at + 1
            and (_PEELED_TAG in state.tokens[run[end - 1]].tags
                 or _is_post_nominal(state, run[end - 1]))):
         end -= 1
@@ -601,34 +609,28 @@ def _surname_pair(state: ParseState, i: int, core: str,
     for j in run[:end]:
         script = effective_script(state.tokens[j].text)
         if script is None:
-            return False
+            return None
         found.add(script)
-    resolved = resolve_script_set(found)
-    if resolved is not Script.HAN:
-        return False
+    if resolve_script_set(found) is not Script.HAN:
+        return None
     order = next((o for s, o in state.policy.script_orders
                   if s is Script.HAN), state.policy.name_order)
     if order[0] is Role.GIVEN:
-        return False
+        return None
     if len(core) == 4:
-        return True
-    if len(core) != 2:
-        return False
-    at = run.index(i)
-    if at + 1 == len(run):
-        return False
-    j = run[at + 1]
-    return (len(state.tokens[j].text.rstrip(FULL_STOPS)) == 2
-            and not _is_post_nominal(state, j))
+        return (1, 2)
+    return None if _is_post_nominal(state, run[at + 1]) else (1,)
 
 
-def _split_surname_pair(state: ParseState, i: int, core: str) -> ParseState:
-    """Token `i` divided into its two surnames and, unspaced, the given
-    name behind them, the second surname tagged for post_rules to read
-    as the family's second unit. No report here: whether the pair is
-    read is post_rules' decision, under the order the name is read in,
-    so it reports there (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE)."""
-    state = _split(state, i, (1, 2) if len(core) == 4 else (1,), None)
+def _split_surname_pair(state: ParseState, i: int,
+                        splits: tuple[int, ...]) -> ParseState:
+    """Token `i` divided at `_surname_pair`'s cuts into its two surnames
+    and, unspaced, the given name behind them, the second surname
+    tagged for post_rules to read as the family's second unit. No
+    report here: whether the pair is read is post_rules' decision,
+    under the order the name is read in, so it reports there
+    (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE)."""
+    state = _split(state, i, splits, None)
     second = state.tokens[i + 1]
     tokens = list(state.tokens)
     tokens[i + 1] = copy_with(second, tags=second.tags | {SURNAME_PAIR_TAG})
@@ -684,8 +686,10 @@ def _split_surname_site(state: ParseState) -> ParseState:
                    if core[:length] in surnames]
     if matches:
         take = matches[0]
-        if take == 1 and _surname_pair(state, i, core, surnames):
-            return _split_surname_pair(state, i, core)
+        if take == 1:
+            pair = _surname_pair(state, i, core, surnames)
+            if pair is not None:
+                return _split_surname_pair(state, i, pair)
         detail = None
         if len(matches) > 1:
             # more than one vocabulary-supported split: longest-first

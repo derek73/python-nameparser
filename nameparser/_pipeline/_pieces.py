@@ -2394,12 +2394,14 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
-            or JOINED_TITLE_TAG in tok.tags
             or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
             and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 
 
-_WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial"}
+#: the tags `_weighed` reads a word by alone: the trailing reading's
+#: lone-word tags, an initial, and a title listed whole with a period
+#: inside it (#1104)
+_WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial", JOINED_TITLE_TAG}
 
 
 def read_trailing_run(pieces: Sequence[Sequence[int]],
