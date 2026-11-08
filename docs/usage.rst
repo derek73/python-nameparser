@@ -1390,7 +1390,7 @@ file does hold turns that file's reading on, and names it:
 
 ``mul`` is the file of words shared across languages on purpose. The
 first parse in a process that meets a listed word loads the index of
-those files once: about a millisecond, or about 16 ms where Python
+those files once: about a millisecond, or about 20 ms where Python
 writes no bytecode cache (``PYTHONDONTWRITEBYTECODE``).
 
 A token the parse did not read has no reading: one that
