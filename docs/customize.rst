@@ -438,19 +438,20 @@ A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
 A plain choice of languages keeps every name reading, and a strict one
-(:ref:`strict-choice`) every reading its chosen files hold, so neither
-settles these words where the chosen language's own file, or the shared
-``mul`` file, holds both readings. English lists ``ma`` as a credential and as a surname, so a
-strict English choice still reads ``JOHN SMITH MA`` by the count and
-reports it, and Dutch lists ``van`` as a particle and as a given name.
-A choice ends such a fork where it switches off another language's
-vocabulary reading of the word (below), and a strict choice also
-wherever another language's file holds one of the two readings of a
-word written in Latin letters, which it drops, name readings included
-(it keeps the shared ``mul`` file's readings, and the readings of a
-word written in another script whatever file holds them): a strict Dutch choice reads
-``JOHN SMITH MA`` family ``MA``, and a strict Portuguese one ``Do
-Smith`` family ``Do Smith``, both unreported. The recipes in this
+(:ref:`strict-choice`) every reading its chosen files and the shared
+``mul`` file hold, so neither settles these words where the chosen
+language's own file, or the ``mul`` file, holds both readings. English
+lists ``ma`` as a credential and as a surname, so a strict English
+choice still reads ``JOHN SMITH MA`` by the count and reports it, and
+Dutch lists ``van`` as a particle and as a given name. A choice ends
+such a fork where it switches off another language's vocabulary
+reading of the word (below), and a strict choice also wherever one of
+the two readings of a word in Latin letters sits in another language's
+file: it drops that file's readings, name readings included, keeping
+only the ``mul`` file's and, for a word in another script, every
+file's. A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
+and a strict Portuguese one ``Do Smith`` family ``Do Smith``, both
+unreported. The recipes in this
 section are the way to settle the rest.
 
 Credentials that are also surnames

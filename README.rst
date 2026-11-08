@@ -253,31 +253,34 @@ Speed and testing
 -----------------
 
 * **About 90 µs a name**, some 11,000 names a second. Measured
-  2026-11-07 against the 3.0 development tree on an Apple M3 Pro, one
+  2026-11-07 against the tree that became 3.0, on an Apple M3 Pro, one
   core, Python 3.11, with one ``Parser`` reading the 7,106 entries of
   the committed `corpus snapshot`_ (6,897 distinct names, some read
   under more than one name order), the median of seven passes after a
   warm-up.
-* **Linear in the input, on the shapes the scaling tests repeat.** Those
-  tests ran 32 costly input shapes on 2026-11-07, each at four times
-  its length, and fail when the cost grows well past four times.
+* **Linear in the input, on the shapes the scaling tests repeat.** The
+  clock-timed ones ran 32 costly input shapes on 2026-11-07, each with
+  its repeated part four times as long, and fail when the cost grows
+  more than six times.
 * **Pure Python, with no runtime dependencies.** Only the optional
-  ``ja`` extra adds any: namedivider-python and its numeric stack, for
-  dividing unspaced Japanese kanji names.
-* **Build one Parser and reuse it.** A parser for a locale costs about
-  as much as twenty parses to build (``parser_for(locales.ES)`` took
-  1.7 ms the same day). Its ``Lexicon`` and ``Policy`` are frozen and
-  a parse never writes to them, so one parser can be shared across
-  threads without locking, and it pickles for ``multiprocessing``. A
-  segmenter you supply has to be thread-safe and picklable too, and the
-  ``ja`` extra's segmenter does not pickle.
+  ``ja`` extra adds any: namedivider-python and what it brings (numpy,
+  pandas, scipy, lightgbm), for dividing unspaced Japanese kanji names.
+* **Build one Parser and reuse it.** The first parser for a choice of
+  languages in a process compiles that choice: ``parser_for(locales.ES)``
+  took tens of milliseconds the same day, over a hundred parses, and a
+  later build of the same choice about 1 ms. Its ``Lexicon`` and
+  ``Policy`` are frozen and a parse never writes to them, so one parser
+  can be shared across threads without locking, and it pickles for
+  ``multiprocessing``. A segmenter you supply has to be thread-safe and
+  picklable too, and the ``ja`` extra's segmenter does not pickle.
 
 And the tests that hold the readings in place:
 
-* **40,256 tests** (collected 2026-11-07), all run in CI on each of
-  Python 3.11 through 3.15. A job with the ``ja`` extra reruns the 39,652
-  under ``tests/v2/``, and another runs the suite from a source export without
-  nameparser installed.
+* **40,256 tests** (collected 2026-11-07), run in CI on each of Python
+  3.11 through 3.15, save the 25 that need the ``ja`` extra, which a job
+  with the extra installed runs with the rest of the 39,652 under
+  ``tests/v2/`` that day. Another job runs the suite from a source export
+  without nameparser installed.
 * **Every corpus name's reading is recorded** in the snapshot, and a
   test fails when the parser reads one differently, so a change that
   moves a reading lists every name it moved in its pull request.
