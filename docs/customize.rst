@@ -447,9 +447,9 @@ Dutch lists ``van`` as a particle and as a given name. A choice ends
 such a fork where it switches off another language's vocabulary
 reading of the word (below), and a strict choice also wherever one of
 the two readings of a word in Latin letters sits in another language's
-file: it drops that file's readings, name readings included, keeping
-only the ``mul`` file's and, for a word in another script, every
-file's. A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
+file: it keeps only the chosen files' and the ``mul`` file's readings
+of such a word, dropping the others, name readings included (a word
+written in another script keeps every file's). A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
 and a strict Portuguese one ``Do Smith`` family ``Do Smith``, both
 unreported. The recipes in this
 section are the way to settle the rest.

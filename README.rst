@@ -253,7 +253,7 @@ Speed and testing
 -----------------
 
 * **About 90 µs a name**, some 11,000 names a second. Measured
-  2026-11-07 against the tree that became 3.0, on an Apple M3 Pro, one
+  2026-11-07 against the 3.0 development tree, on an Apple M3 Pro, one
   core, Python 3.11, with one ``Parser`` reading the 7,106 entries of
   the committed `corpus snapshot`_ (6,897 distinct names, some read
   under more than one name order), the median of seven passes after a
@@ -264,11 +264,12 @@ Speed and testing
   more than six times.
 * **Pure Python, with no runtime dependencies.** Only the optional
   ``ja`` extra adds any: namedivider-python and what it brings (numpy,
-  pandas, scipy, lightgbm), for dividing unspaced Japanese kanji names.
+  pandas, scipy and lightgbm among them), for dividing unspaced Japanese kanji names.
 * **Build one Parser and reuse it.** The first parser for a choice of
-  languages in a process compiles that choice: ``parser_for(locales.ES)``
-  took tens of milliseconds the same day, over a hundred parses, and a
-  later build of the same choice about 1 ms. Its ``Lexicon`` and
+  languages in a process loads the reading index and compiles the
+  choice, which took tens of milliseconds the same day, several hundred
+  parses. Another choice after it took a few milliseconds, and a later
+  build of the same choice about 1 ms. Its ``Lexicon`` and
   ``Policy`` are frozen and a parse never writes to them, so one parser
   can be shared across threads without locking, and it pickles for
   ``multiprocessing``. A segmenter you supply has to be thread-safe and
@@ -278,8 +279,8 @@ And the tests that hold the readings in place:
 
 * **40,256 tests** (collected 2026-11-07), run in CI on each of Python
   3.11 through 3.15, save the 25 that need the ``ja`` extra, which a job
-  with the extra installed runs with the rest of the 39,652 under
-  ``tests/v2/`` that day. Another job runs the suite from a source export
+  with the extra installed runs with the rest of the 39,652 tests then
+  under ``tests/v2/``. Another job runs the suite from a source export
   without nameparser installed.
 * **Every corpus name's reading is recorded** in the snapshot, and a
   test fails when the parser reads one differently, so a change that

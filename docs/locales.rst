@@ -356,10 +356,10 @@ ancestors' as above, plus every reading of a word written in a script
 other than Latin (the Korean, Japanese and Chinese honorifics, the
 Cyrillic and Devanagari titles), which selects itself by its script,
 and the readings of the shared ``mul`` file, which every language
-writes alike: ``Dr``, ``Prof``, ``Mr``, ``Mrs``, ``Ms`` (the salutation
-and the degree), ``Miss``, ``Mister``, ``Madam``, the degrees ``PhD``,
-``MSc``, ``MBA``, ``MPH`` and ``BSc``, the numerals and ``Jr`` among
-them. Every other file's readings leave, even of a word ``mul`` also
+writes alike, among them ``Dr``, ``Prof``, ``Mr``, ``Mrs``, ``Ms`` (the
+salutation and the degree), ``Miss``, ``Mister``, ``Madam``, the degrees
+``PhD``, ``MSc``, ``MBA``, ``MPH`` and ``BSc``, the numerals and
+``Jr``. Every other file's readings leave, even of a word ``mul`` also
 holds (Catalan's and Polish's conjunction ``i`` beside the numeral), and
 a word none of these holds is read as a name word:
 
