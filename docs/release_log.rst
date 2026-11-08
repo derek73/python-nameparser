@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 3.1.0 - Unreleased
+
+    nameparser 3.1 is under development. It refuses a ``Lexicon``, ``Parser`` or locale pack pickled by 2.x, which 3.0 loads with a ``DeprecationWarning``.
+
 * 3.0.0 - November 8, 2026
 
     **nameparser 3.0** removes ``HumanName``, ``Constants`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and rebuilds the vocabulary as readings of words, kept in files by language. A parser can be built for a choice of languages, the suffix splits by kind and the family name into two surnames, and every parsed word records the reading it took. :doc:`migrate` gives the 3.0 call for each 1.x and 2.x one. Highlights:
