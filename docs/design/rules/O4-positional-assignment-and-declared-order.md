@@ -5,7 +5,8 @@
 **Then:** words no vocabulary has claimed read by position.
 
 - **In the default given-first order** the first name word is the given name, the last is the family name, and everything between is middle names.
-- **In a family-first order** the first name word is the family; in family-first-given-last the given name comes from the end, the middles from between. A name of one name word is O5's under every order.
+- **In a family-first order** the first name word is the family; in family-first-given-last the given name comes from the end, the middles from between.
+- **A name of one name word** is O5's under every order.
 
 **Because:** what no vocabulary claims can only be read by where it stands, under the order the caller declared.
 
