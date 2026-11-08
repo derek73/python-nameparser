@@ -1,4 +1,8 @@
+from collections.abc import Generator
+
 import pytest
+
+from tests.checkout import HAS_CHECKOUT
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
@@ -28,3 +32,33 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter,
         "serial tests (tests/v2/test_benchmark.py) do not run in parallel; "
         "run them with: uv run pytest -n0 -m serial", yellow=True)
 
+
+
+# How the differential harness fails outside a checkout, each a prefix
+# that survives pytest's truncation of a long message: check_source,
+# refusing a nameparser imported from elsewhere; the --base check,
+# refusing a checkout with no package in it; and reading or recording a
+# base copied from the checkout's nameparser/, which is not there.
+_HARNESS_REFUSALS = ("imported nameparser from", "no nameparser package at",
+                     "reading the base ", "recording the base ")
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(
+        item: pytest.Item, call: pytest.CallInfo[None],
+) -> Generator[None, pytest.TestReport, pytest.TestReport]:
+    """Name the missing mark when a harness test fails outside a checkout.
+
+    Run against the installed package (tests/checkout.py), a test that
+    goes through the differential harness fails on its refusal, a
+    message about PYTHONPATH and editable installs that is right for a
+    developer and wrong here: the test needs @needs_checkout."""
+    report: pytest.TestReport = yield
+    if (report.failed and not HAS_CHECKOUT
+            and any(r in str(report.longrepr) for r in _HARNESS_REFUSALS)):
+        report.sections.append((
+            "installed-package layout",
+            "This test goes through the differential harness, which refuses "
+            "a nameparser imported from outside the checkout. Mark it "
+            "@needs_checkout (tests/checkout.py)."))
+    return report

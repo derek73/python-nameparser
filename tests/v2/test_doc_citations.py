@@ -25,6 +25,10 @@ from typing import NamedTuple
 
 import pytest
 
+# @needs_checkout: the citations it reads are comments in the source package
+from tests.checkout import needs_checkout
+
+
 from tests.v2.design_docs import (
     DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
     read_decision_files, read_rules_text)
@@ -225,6 +229,7 @@ def test_citations_are_verbatim_excerpts() -> None:
     assert not problems, "\n".join(problems)
 
 
+@needs_checkout
 def test_the_sweep_reaches_every_citation_shape() -> None:
     # Each half of the sweep decides its own scope -- a glob, a lead
     # grammar, an elision, the decisions routing -- and one matching
@@ -371,6 +376,7 @@ def test_retired_excerpts_stay_rejected() -> None:
         assert not _is_excerpt(_norm(old), statements[cid]), (cid, old)
 
 
+@needs_checkout
 def test_implemented_matches_citing_modules() -> None:
     citing: dict[str, set[str]] = {}
     for c in _citations():

@@ -6,6 +6,8 @@ import pathlib
 
 import pytest
 
+from tests.checkout import ROOT
+
 import nameparser
 import nameparser._pipeline
 
@@ -395,7 +397,10 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
 
 # -- the compiled sets are read through Lexicon._sets (#754, 4i-a) --------
 
-_REPO = PKG.parent
+#: The checkout these tests sit in, for tools/: not PKG.parent, which
+#: is site-packages when the suite runs against the installed package
+#: (tests/checkout.py).
+_REPO = ROOT
 
 #: Where a parse reads vocabulary: every library module but `_lexicon`,
 #: which owns the fields and fills `_sets` from them. A vocabulary
@@ -567,7 +572,7 @@ def test_no_reader_takes_a_vocabulary_field_off_a_lexicon(field: str) -> None:
     # vocabulary sets through Lexicon._sets (_lexicon._LexiconSets),
     # never the public fields 4i-b makes internal. Per field, so that
     # the field a stray read names is the failing test's id.
-    stray = [f"{path.relative_to(_REPO)}:{line}"
+    stray = [f"{path.relative_to(PKG.parent if library else _REPO)}:{line}"
              for path, library in _readers()
              for line, name in _direct_reads(path.read_text(), library)
              if name in (field, "getattr", "sets =")]

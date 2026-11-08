@@ -30,22 +30,21 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import require_checkout
+
 from nameparser._lexicon import Lexicon
+
+from ._differential_fixtures import load_by_path
 
 _BUILD = Path(__file__).resolve().parents[2] / "tools" / "vocab" / "build.py"
 
 
 def _load_build() -> ModuleType:
-    # tools/ is outside testpaths (see _differential_fixtures.load_tool)
-    spec = importlib.util.spec_from_file_location("vocab_build", _BUILD)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    # registered before it runs: its dataclasses look their module up
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_by_path("vocab_build", _BUILD)
 
 
+# the build reads the TOML and writes the generated modules in the tree
+require_checkout()
 build = _load_build()
 
 

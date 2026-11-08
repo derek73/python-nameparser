@@ -35,6 +35,10 @@ from typing import Any
 
 import pytest
 
+# @needs_checkout: the harness refuses a nameparser imported from outside the checkout
+from tests.checkout import needs_checkout
+
+
 from ._differential_fixtures import (
     _Response,
     checkout_copy,
@@ -2108,6 +2112,7 @@ def test_a_nepal_fetch_writes_no_field_but_the_two_names(
     assert "पुरुष" not in raw and "99" not in raw
 
 
+@needs_checkout
 def test_a_nepal_corpus_holds_both_scripts_names_for_the_snapshot(
         site: _Site, monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
     # The romanized name is the record's "name"; the Devanagari one is
@@ -3736,6 +3741,7 @@ def test_the_pairs_command_reports_a_fetched_corpus(
 
 # -- snapshot.py --local -----------------------------------------------------------
 
+@needs_checkout
 def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -3763,6 +3769,7 @@ def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(
     assert snapshot.RECORD_COMMAND not in out and "corpus_cldr" not in out
 
 
+@needs_checkout
 def test_snapshot_refuses_a_corpus_fetched_after_its_snapshot(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Fetched again, the registry has gained and lost names; compared
@@ -3777,6 +3784,7 @@ def test_snapshot_refuses_a_corpus_fetched_after_its_snapshot(
     assert snapshot.main(["--local", _SOURCE]) == 0
 
 
+@needs_checkout
 def test_snapshot_records_a_local_snapshot_where_out_says(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _fetched(monkeypatch, tmp_path)
@@ -3814,6 +3822,7 @@ def test_snapshot_refuses_since_with_local(
     assert "--since reads a committed snapshot" in capsys.readouterr().err
 
 
+@needs_checkout
 def test_snapshot_reads_a_local_name_holding_a_line_break(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # The first fix escaped the cache's files; snapshot.py's own dump and
@@ -3823,6 +3832,7 @@ def test_snapshot_reads_a_local_name_holding_a_line_break(
     assert snapshot.main(["--local", _SOURCE]) == 0
 
 
+@needs_checkout
 @pytest.mark.parametrize("sidecar", ["{", "[]", None], ids=["not json", "not a dict", "missing"])
 def test_snapshot_refuses_a_snapshot_with_no_readable_fetch_before_reading_names(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sidecar: str | None) -> None:
@@ -3853,6 +3863,7 @@ def test_snapshot_refuses_a_check_with_no_snapshot_before_reading_names(
         snapshot.main(["--local", _SOURCE])
 
 
+@needs_checkout
 def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -3872,6 +3883,7 @@ def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
 _MANY = tuple(f"Ann Lee{i}, MD" for i in range(40))
 
 
+@needs_checkout
 def test_a_sample_reads_against_a_snapshot_of_its_own(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -3887,6 +3899,7 @@ def test_a_sample_reads_against_a_snapshot_of_its_own(
         snapshot.main(["--local", _SOURCE])
 
 
+@needs_checkout
 def test_a_sample_is_never_compared_with_a_snapshot_of_another(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     folder = _fetched(monkeypatch, tmp_path, *_MANY)
@@ -3906,6 +3919,7 @@ def test_snapshot_refuses_a_sample_it_cannot_take(
     assert raised.value.code == 2
 
 
+@needs_checkout
 def test_a_local_recording_and_check_run_in_workers(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -3932,6 +3946,7 @@ def _baselines(folder: Path) -> list[Path]:
     return sorted((folder / "baselines").glob("*.jsonl.gz"))
 
 
+@needs_checkout
 def test_a_recording_is_reused_for_the_same_package_and_fetch(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -3953,6 +3968,7 @@ def test_a_recording_is_reused_for_the_same_package_and_fetch(
     assert snapshot.main(["--local", _SOURCE]) == 0
 
 
+@needs_checkout
 def test_a_recording_is_not_reused_for_another_package_sample_or_fetch(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _fetched(monkeypatch, tmp_path)
@@ -3970,6 +3986,7 @@ def test_a_recording_is_not_reused_for_another_package_sample_or_fetch(
         snapshot.main(["--local", _SOURCE, "--record"])
 
 
+@needs_checkout
 def test_the_baseline_key_is_taken_from_the_tree_that_is_read(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Keyed by the checkout running the tool instead of --tree's, a base
@@ -3990,6 +4007,7 @@ def test_the_baseline_key_is_taken_from_the_tree_that_is_read(
     assert asked[-1] == base
 
 
+@needs_checkout
 def test_a_package_that_changes_during_the_read_keeps_no_baseline(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4000,6 +4018,7 @@ def test_a_package_that_changes_during_the_read_keeps_no_baseline(
     assert (folder / "snapshot.jsonl").exists() and not _baselines(folder)
 
 
+@needs_checkout
 @pytest.mark.parametrize("damage", ["truncated", "corrupt", "short", "empty"])
 def test_a_damaged_baseline_is_deleted_and_the_names_read(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
@@ -4030,6 +4049,7 @@ def test_a_damaged_baseline_is_deleted_and_the_names_read(
         assert f.read() == recorded
 
 
+@needs_checkout
 def test_a_baseline_that_cannot_be_kept_leaves_the_recording(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4045,6 +4065,7 @@ def test_a_baseline_that_cannot_be_kept_leaves_the_recording(
     assert (folder / "snapshot.jsonl").exists() and not _baselines(folder)
 
 
+@needs_checkout
 def test_the_least_recently_used_baselines_and_stale_partials_are_dropped(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     folder = _fetched(monkeypatch, tmp_path)
@@ -4109,6 +4130,7 @@ def _shared(folder: Path) -> dict[str, tuple[int, bytes]]:
             for p in sorted(folder.glob("snapshot*"))}
 
 
+@needs_checkout
 def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_copy(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4128,6 +4150,7 @@ def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_cop
     assert len(_baselines(folder)) == 2
 
 
+@needs_checkout
 def test_a_base_check_never_touches_the_shared_snapshot(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     folder = _fetched(monkeypatch, tmp_path)
@@ -4147,6 +4170,7 @@ def test_a_base_check_never_touches_the_shared_snapshot(
     assert not list((folder / "baselines").glob(".base-*"))  # the child's scratch is gone
 
 
+@needs_checkout
 def test_a_kept_base_is_reused_without_reading_it_again(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4167,6 +4191,7 @@ def test_a_kept_base_is_reused_without_reading_it_again(
         snapshot.main(["--local", _SOURCE, "--base", str(base)])
 
 
+@needs_checkout
 def test_a_base_check_composes_with_a_sample(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4180,6 +4205,7 @@ def test_a_base_check_composes_with_a_sample(
     assert kept.name.endswith("-sample-2.jsonl.gz")
 
 
+@needs_checkout
 def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _fetched(monkeypatch, tmp_path)
@@ -4258,6 +4284,7 @@ def test_a_base_check_needs_a_local_corpus(capsys: pytest.CaptureFixture[str]) -
     assert raised.value.code == 2 and "--base reads a local corpus" in capsys.readouterr().err
 
 
+@needs_checkout
 def test_a_baseline_another_run_pruned_is_not_reported_as_unkept(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4371,6 +4398,7 @@ def test_alike_reads_a_pair_under_a_choice_of_languages() -> None:
         "0": True, "1": True, "2": False, "3": True}
 
 
+@needs_checkout
 def test_alike_under_languages_counts_the_moves_against_the_default(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4386,6 +4414,7 @@ def test_alike_under_languages_counts_the_moves_against_the_default(
         local.main(["alike", _NEPAL, "--languages", " , "])
 
 
+@needs_checkout
 def test_alike_against_a_planted_base_reports_moves_and_none_across_a_copy(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4407,6 +4436,7 @@ def test_alike_against_a_planted_base_reports_moves_and_none_across_a_copy(
     assert len(_alike_kept(_own_cache)) == 2
 
 
+@needs_checkout
 def test_a_kept_base_is_reused_and_a_damaged_one_read_again(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -4440,6 +4470,7 @@ def test_a_kept_base_is_reused_and_a_damaged_one_read_again(
         monkeypatch.setattr(local, "_alike_base", unread)
 
 
+@needs_checkout
 def test_a_base_that_changed_while_it_was_read_keeps_no_flags(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
     _nepal(monkeypatch)

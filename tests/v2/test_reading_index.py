@@ -11,30 +11,29 @@ implementations.
 from __future__ import annotations
 
 import ast
-import importlib.util
-import sys
 import unicodedata
 from pathlib import Path
 from types import ModuleType
 
 import pytest
+
+from tests.checkout import require_checkout
 from typing import Any
 
 from nameparser import _reading_index as ri
 from nameparser.config import _compiled, _index
 
+from ._differential_fixtures import load_by_path
+
 _BUILD = Path(__file__).resolve().parents[2] / "tools" / "vocab" / "build.py"
 
 
 def _load_build() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("vocab_build_for_index", _BUILD)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_by_path("vocab_build_for_index", _BUILD)
 
 
+# the build reads the TOML and writes the generated modules in the tree
+require_checkout()
 build = _load_build()
 
 
