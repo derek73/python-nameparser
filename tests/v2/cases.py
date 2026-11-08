@@ -9129,9 +9129,10 @@ CASES: tuple[Case, ...] = (
          ambiguities=(),
          classification="fix(#613)",
          notes="decision (4) of #613: the part after the comma is a "
-               "suffix behind 'Smith Jr.', whose one name word reads "
-               "positionally as 'Smith Jr.' alone does, with nothing to "
-               "report. b547c247 read given 'Smith' and reported "
+               "suffix behind 'Smith Jr.', and the comma settles its one "
+               "name word as the family, with nothing to report, where "
+               "'Smith Jr.' alone reads given 'Smith' and reports "
+               "given-or-family (rules/O5). b547c247 read given 'Smith' and reported "
                "given-or-family, assign's second count having made the "
                "comma's positional read of one word"),
     Case("a_title_chain_after_the_comma_stays_one_title",

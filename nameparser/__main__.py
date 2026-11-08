@@ -45,8 +45,9 @@ _ORDERS = {
 # tables, --order or _NOT_ON_THE_COMMAND_LINE.
 _SWITCHES = {
     "two_given_names": "join a middle name to the given name",
-    "two_family_names": "read the last two name words as the family "
-                        "(two family names)",
+    "two_family_names": "read two name words as the family (two "
+                        "family names): the last two, or the first two "
+                        "under a family-first --order",
     "middle_as_family": "fold the middle names into the family",
     "lenient_comma_suffixes": "read a lone V or I after a comma as a "
                               "numeral suffix (John Smith, V)",

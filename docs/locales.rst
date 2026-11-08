@@ -1083,8 +1083,10 @@ name words are name words there too (``Beethoven, Ludwig van`` gives
 middle ``van``). ``DO`` or ``BA`` written after a Vietnamese name as a
 credential, for English-language readers, reads as a name word, with a
 comma or without (``Nguyen Van Anh, DO`` gives family ``Nguyen Van
-Anh``, given ``DO``), and ``CHI`` without a comma; other credentials,
-and ``CHI`` after a comma, stay suffixes (``Nguyen Van Anh, PhD``).
+Anh``, given ``DO``), and ``CHI`` without a comma or in a name written
+wholly in capitals (``NGUYEN VAN ANH, CHI`` gives given ``CHI``); other
+credentials, and ``CHI`` after a comma in a name written in mixed case,
+stay suffixes (``Nguyen Van Anh, PhD``).
 
 .. _segmenter-contract:
 
