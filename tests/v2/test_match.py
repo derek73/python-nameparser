@@ -1355,3 +1355,30 @@ def test_a_planted_accented_pair_is_found_from_either_name() -> None:
     for x, y in (("Mari K", "Maria K"), ("Maria K", "Mari K")):
         assert matching.check(x, y).consistent
         assert matching.keys(x) & matching.keys(y)
+
+
+@pytest.mark.parametrize("accepted, consistent, outcome", [
+    ((), False, Outcome.FAMILIAR_FORM),
+    ((Outcome.HYPHENATED_PART,), True, Outcome.HYPHENATED_PART),
+    ((Outcome.FAMILIAR_FORM,), True, Outcome.FAMILIAR_FORM),
+    ((Outcome.FAMILIAR_FORM, Outcome.HYPHENATED_PART), True,
+     Outcome.FAMILIAR_FORM),
+])
+def test_a_row_reports_the_strongest_accepted_outcome_that_holds(
+        accepted: tuple[Outcome, ...], consistent: bool,
+        outcome: Outcome) -> None:
+    # Jean / Jean-Paul is a hyphenated part and, with this caller's
+    # pair, a familiar form: the stronger one, unaccepted, must not hide
+    # the weaker one accepted; where neither is, the stronger is shown
+    lexicon = Lexicon.default().add("jean", kind="familiar",
+                                    short_for=["jean-paul"])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | set(accepted))
+    for x, y in (("Jean Smith", "Jean-Paul Smith"),
+                 ("Jean-Paul Smith", "Jean Smith")):
+        r = matching.check(x, y)
+        assert r.consistent is consistent
+        assert role(r, Role.GIVEN).outcome is outcome
+        assert matching.check(y, x) == r.mirrored()
+        if consistent:
+            assert matching.keys(x) & matching.keys(y)

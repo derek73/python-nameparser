@@ -24,7 +24,7 @@ from __future__ import annotations
 import dataclasses
 import re
 import unicodedata
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
@@ -406,7 +406,8 @@ class Matching:
         ambiguity whose other reading it is, `None` for a name as
         parsed."""
         lexicon = self.parser.lexicon
-        roles = [_compare_role(role, left, right, lexicon) for role in Role]
+        roles = [_compare_role(role, left, right, lexicon, self.accept)
+                 for role in Role]
         across: list[CrossRoleMatch] = []
         if Outcome.ACROSS_ROLES in self.accept:
             middles = [left.middle.split(), right.middle.split()]
@@ -432,7 +433,7 @@ class Matching:
                     del middles[0 if cross.left_role is Role.MIDDLE
                                 else 1][index]
                     la, lb = (" ".join(words) for words in middles)
-                    outcome = _middle_outcome(la, lb, lexicon)
+                    outcome = _middle_outcome(la, lb, lexicon, self.accept)
                     roles[_MIDDLE] = dataclasses.replace(
                         roles[_MIDDLE], outcome=outcome,
                         more=(Side.NEITHER if outcome is Outcome.CONFLICT
@@ -773,42 +774,70 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
     return None
 
 
-def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
-                  bases: tuple[str, str] | None = None) -> Outcome:
-    """Two non-empty texts of one role, by the strongest outcome that
-    holds: a full-name outcome (`_full_outcome`), then for a family,
-    given its two `bases`, particles set aside and part of the other,
-    then initial against name (family initial in the family role), then
-    initials agree, then in the `given` group a familiar form, then
-    a hyphenated part, else conflict."""
+def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
+                   bases: tuple[str, str] | None = None) -> Iterator[Outcome]:
+    """The outcomes that hold for two non-empty texts of one role,
+    strongest first, lazily: a full-name outcome (`_full_outcome`), then
+    for a family, given its two `bases`, particles set aside and part
+    of the other, then initial against name (family initial in the
+    family role), then initials agree, then in the `given` group a
+    familiar form, then a hyphenated part, and last conflict, which
+    always holds."""
     if a == b:
-        return Outcome.SAME
+        yield Outcome.SAME
+        return
     fa, fb = _fold(a), _fold(b)
     outcome = _full_outcome(a, b, fa, fb, lexicon, group)
     if outcome is not None:
-        return outcome
+        yield outcome
     family = bases is not None
     wa, wb = a.split(), b.split()
     if bases is not None:
         if bases[0] and _fold(bases[0]) == _fold(bases[1]):
-            return Outcome.PARTICLES_ASIDE
+            yield Outcome.PARTICLES_ASIDE
         sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
         if sa and sb and (sa <= sb or sb <= sa):
-            return Outcome.PART_OF_OTHER
+            yield Outcome.PART_OF_OTHER
     if len(wa) == len(wb):
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
-            return Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
+            yield Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
     if _initials_only(fa) and _initials_only(fb) and (
             _WORDS.split(fa) == _WORDS.split(fb)):
-        return Outcome.INITIALS_AGREE
+        yield Outcome.INITIALS_AGREE
     if not family and group == "given" and (
             familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
-        return familiar
+        yield familiar
     if not family and len(wa) == len(wb) == 1 and (
             _first_half(fa, fb) or _first_half(fb, fa)):
-        return Outcome.HYPHENATED_PART
-    return Outcome.CONFLICT
+        yield Outcome.HYPHENATED_PART
+    yield Outcome.CONFLICT
+
+
+def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
+    """The outcome a row reports: the strongest that holds and is
+    accepted, else, where none of those holding is accepted, the
+    strongest that holds, so an unaccepted outcome still says what the
+    pair needed (`Jack` / `John` reads `familiar-form` under the
+    default) and an accepted weaker one is never hidden behind it
+    (decisions/name-matching, 2026-11-08 FAMILIAR FORMS). `outcomes`
+    run strongest first and end in `conflict`, never accepted."""
+    strongest = None
+    for outcome in outcomes:
+        if outcome in accept:
+            return outcome
+        if strongest is None:
+            strongest = outcome
+    assert strongest is not None
+    return strongest
+
+
+def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
+                  accept: frozenset[Outcome],
+                  bases: tuple[str, str] | None = None) -> Outcome:
+    """Two non-empty texts of one role, by `_pick` over the outcomes
+    that hold (`_text_outcomes`)."""
+    return _pick(_text_outcomes(a, b, lexicon, group, bases), accept)
 
 
 def _particle_half(folded: str, lexicon: Lexicon) -> bool:
@@ -854,14 +883,16 @@ def _first_half(w: str, hyphenated: str) -> bool:
     return len(parts) > 1 and "-" not in w and bool(w) and parts[0] == w
 
 
-def _middle_outcome(a: str, b: str, lexicon: Lexicon) -> Outcome:
+def _middle_outcome(a: str, b: str, lexicon: Lexicon,
+                    accept: frozenset[Outcome]) -> Outcome:
     """The middle role word by word, in order: each aligned pair by
     `_text_outcome`, each word past the shorter side one-sided, the role
     taking the weakest; `same` where both are empty."""
     wa, wb = a.split(), b.split()
     if not wa and not wb:
         return Outcome.SAME
-    outcomes = [_text_outcome(x, y, lexicon, "given") for x, y in zip(wa, wb)]
+    outcomes = [_text_outcome(x, y, lexicon, "given", accept)
+                for x, y in zip(wa, wb)]
     if len(wa) != len(wb):
         outcomes.append(Outcome.ONE_SIDE)
     return _weakest(outcomes)
@@ -902,7 +933,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
 
 
 def _compare_role(role: Role, left: ParsedName, right: ParsedName,
-                  lexicon: Lexicon) -> RoleMatch:
+                  lexicon: Lexicon, accept: frozenset[Outcome]) -> RoleMatch:
     a, b = getattr(left, role), getattr(right, role)
     if role is Role.SUFFIX:
         outcome = _suffix_outcome(left, right, lexicon)
@@ -913,12 +944,12 @@ def _compare_role(role: Role, left: ParsedName, right: ParsedName,
     elif not a and not b:
         outcome = Outcome.SAME
     elif role is Role.MIDDLE:
-        outcome = _middle_outcome(a, b, lexicon)
+        outcome = _middle_outcome(a, b, lexicon, accept)
     elif not (a and b):
         outcome = Outcome.GIVEN_ONE_SIDE if role is Role.GIVEN else Outcome.ONE_SIDE
     else:
         outcome = _text_outcome(
-            a, b, lexicon, _GROUP[role],
+            a, b, lexicon, _GROUP[role], accept,
             (left.family_base, right.family_base)
             if role is Role.FAMILY else None)
     more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)
