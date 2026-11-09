@@ -1,3 +1,5 @@
+import pytest
+
 from nameparser import PatronymicRule, parse
 from nameparser._pipeline._vocab import (
     _EAST_SLAVIC,
@@ -70,6 +72,26 @@ class TurkicPatronymicNameOrderReorderTests(FlaggedPolicyTestBase):
         assert n.given == "Aziz"
         assert n.middle == "Karim o’g’li"
         assert n.family == "Yusupov"
+
+    # #1186: the other apostrophes Uzbek text writes the marker with --
+    # U+2018 (a word processor's smart quote), U+02BC and the backtick
+    @pytest.mark.parametrize("mark", ["\u2018", "\u02bc", "`"])
+    def test_ogli_other_apostrophes_rotate(self, mark: str) -> None:
+        marker = f"o{mark}g{mark}li"
+        n = self.hn(f"Sa'dullayev Alisher Zafar {marker}")
+        assert (n.given, n.middle, n.family) == (
+            "Alisher", f"Zafar {marker}", "Sa'dullayev")
+        assert n.patronymic == f"Zafar {marker}"
+
+    @pytest.mark.parametrize("mark", ["'", "\u2019", "\u02bb", "\u2018",
+                                      "\u02bc", "`"])
+    def test_ogli_in_spoken_order_is_the_patronymic(self, mark: str) -> None:
+        # the issue's first table: no rotation (the marker is not last),
+        # and the marker is read with the father's name (rules/R9)
+        marker = f"o{mark}g{mark}li"
+        n = self.hn(f"Otabek Sobirjon {marker} Musurmonov")
+        assert (n.given, n.family) == ("Otabek", "Musurmonov")
+        assert n.patronymic == f"Sobirjon {marker}"
 
     def test_qizi(self) -> None:
         n = self.hn("Aliyeva Mehriban Arif qizi")

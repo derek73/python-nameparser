@@ -33,10 +33,11 @@ if TYPE_CHECKING:
     from nameparser._pipeline._pieces import TailRead
 
 
-# The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
-# tokenize (separators/segmentation) and extract (close-quote
-# boundaries) cannot drift apart.
-COMMA_CHARS = frozenset({",", "\u060c", "\uff0c"})
+# The comma characters (ASCII/Arabic/fullwidth, #265; Ethiopic and
+# Burmese, #1202). Shared here so tokenize (separators/segmentation),
+# extract (close-quote boundaries, a listed particle's word end) and
+# _vocab cannot drift apart.
+COMMA_CHARS = frozenset({",", "\u060c", "\uff0c", "\u1363", "\u104a"})
 
 
 def comma_bucket(start: int, comma_offsets: Sequence[int]) -> int:

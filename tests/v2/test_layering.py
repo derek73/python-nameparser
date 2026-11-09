@@ -679,7 +679,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: honorific tail, the titles and the acronyms its set-apart word
 #: asks first, its S11 guard and the initials test of a word the
 #: periods join, 134 -> 139; #1006's name matching dropping a hyphen
-#: half that is a listed particle, the particles, 139 -> 140);
+#: half that is a listed particle, the particles, 139 -> 140;
+#: #1241's apostrophe opening a listed particle, the particles,
+#: 140 -> 141);
 #: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -690,7 +692,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 140, "tools": 19}
+_UNGUARDED_READS = {"library": 141, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
