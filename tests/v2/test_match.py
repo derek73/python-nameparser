@@ -258,15 +258,20 @@ def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
     # The key guarantee rests on these two: keys fold a spelling set's
     # members again, and a family word's hyphen halves are cut from the
     # raw word by position (_spelling_keys, _family_words). Every
-    # assigned code point is folded alone, after a letter, and beside a
-    # hyphen (an unassigned one has no decomposition, case or mark to
-    # fold). Measured 2026-11-08: about 1.2 s serial on py3.11.
+    # assigned code point is folded alone, after a letter, beside a
+    # hyphen on either side, and with a combining mark after it behind a
+    # Latin letter, a hyphen and a Devanagari letter (an unassigned one
+    # has no decomposition, case or mark to fold). The mark contexts
+    # found the micro sign U+00B5 and U+2183, which casefold into Greek
+    # and Latin, and a full stop or apostrophe before a mark (review of
+    # #1221). Measured 2026-11-08: about 3.5 s serial on py3.11.
     bad = []
     for i in range(0x110000):
         c = chr(i)
         if unicodedata.category(c) in ("Cn", "Cs"):
             continue
-        for text in (c, "a" + c, c + "-a"):
+        for text in (c, "a" + c, c + "-a", "-" + c, "a" + c + "\u0301",
+                     "-" + c + "\u0301", "\u0915" + c + "\u0301"):
             folded = _fold(text)
             if _fold(folded) != folded or folded.count("-") != text.count("-"):
                 bad.append((hex(i), text, folded))
