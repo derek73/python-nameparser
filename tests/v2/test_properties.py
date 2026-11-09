@@ -3955,3 +3955,64 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     # comma the shape never fires (rules/H6)
     assert fired == set(_ABBREVIATION_SLOTS) - {"{} SMITH, XYZ"}, (
         set(_ABBREVIATION_SLOTS) - fired)
+
+
+# --- #1202: every script's comma reads as the ASCII comma does ------
+# The corpus names holding an ASCII comma, each with every ASCII comma
+# swapped for one other member of COMMA_CHARS, the member rotating by
+# the name's place, so each member is asked of a tenth of the names
+# (184 or 185 of 1,847 with ten members on 2026-11-08): the sites read the set, not one member, so one swap a name
+# keeps the walk at two parses a name (measured 2026-11-08 on py3.11
+# with five members: 1,847 names, about 2 s; all four non-ASCII members
+# on every name took 8 s). The twin is read with its comma written back
+# as ASCII, since a nickname, and so a clause S1 leaves alone, keeps
+# its text as written: its fields, each ambiguity's kind and words, and
+# str() but for the full-width comma, which R6 writes with no space
+# after it.
+
+def _other_comma_findings() -> list[str]:
+    from nameparser._pipeline._state import COMMA_CHARS
+    others = sorted(COMMA_CHARS - {","})
+    parser = Parser()
+
+    def reading(name: ParsedName, comma: str) -> tuple[object, ...]:
+        def ascii_(text: str) -> str:
+            return text.replace(comma, ",")
+        return ({field: ascii_(value)
+                 for field, value in name.as_dict().items()},
+                [(a.kind, [ascii_(t.text) for t in a.tokens])
+                 for a in name.ambiguities],
+                None if comma == "\uff0c" else ascii_(str(name)))
+
+    out: list[str] = []
+    for i, text in enumerate(t for t in _FORK_CORPUS if "," in t):
+        comma = others[i % len(others)]
+        got = reading(parser.parse(text.replace(",", comma)), comma)
+        want = reading(parser.parse(text), comma)
+        if comma == "\uff0c":
+            want = (*want[:2], None)
+        if got != want:
+            out.append(f"{text!r} with {comma!r}: {got} != {want}")
+    return out
+
+
+def test_every_comma_reads_as_the_ascii_comma_does() -> None:
+    """rules/C's Background as an invariant: "Which characters COUNT
+    as the comma is part of the rule", so a name reads alike whichever
+    member of COMMA_CHARS divides it, where it divides the name and
+    where it divides the words of a clause rules/S1 sets apart.
+
+    Recorded negative controls, measured 2026-11-08 on this walk with
+    eleven members in COMMA_CHARS. With every clause site put back to
+    the ASCII comma alone, as they stood before #1202's follow-up, it
+    fails on 24 names, every one inside a bracketed clause ('(PhD, Sr)
+    John Smith' reading a nickname rather than title 'Sr', suffix
+    'PhD'). With only `dotted_member`'s strip put back, which moves
+    only a report, it fails on 2 names ('(M.A., PhD)' and 'Jean
+    (M.A,) Smith', the members their place in the rotation gives them);
+    with render's space-before-comma reading the ASCII comma alone, on
+    2 ('Jane (née , Jones) Smith' and 'Jane (née ,Jones) Smith')."""
+    failures = _other_comma_findings()
+    assert not failures, (
+        f"{len(failures)} name(s) read differently with another comma:\n"
+        + "\n".join(failures[:10]))

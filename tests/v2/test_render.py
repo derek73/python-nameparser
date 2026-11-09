@@ -1,6 +1,7 @@
 import dataclasses
 import unicodedata
 import warnings
+from collections.abc import Callable
 
 import pytest
 
@@ -71,6 +72,24 @@ def _delavega() -> ParsedName:
         Token("Vega", Span(15, 19), Role.FAMILY),
         Token("III", Span(20, 23), Role.SUFFIX),
     ])
+
+
+@pytest.mark.parametrize("make, want", [
+    # the collapse reads every comma the parse does (#1202's follow-up):
+    # leading debris an empty field leaves, and a space before a comma
+    (lambda: parse("، John").render("{family}، {given}"), "John"),
+    (lambda: parse("፣ Ana García López").initials(
+        spec="{family}، {given}"), "A."),
+    (lambda: parse("Gore، Al، Jr.").render("{family} ، {given} ، {suffix}"),
+     "Gore، Al، Jr."),
+    # the ASCII twins, read so before it
+    (lambda: parse(", John").render("{family}, {given}"), "John"),
+    (lambda: parse("Gore, Al, Jr.").render("{family} , {given} , {suffix}"),
+     "Gore, Al, Jr."),
+])
+def test_collapse_reads_every_comma(make: Callable[[], str],
+                                    want: str) -> None:
+    assert make() == want
 
 
 def test_render_fills_fields_and_collapses() -> None:

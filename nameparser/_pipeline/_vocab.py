@@ -60,7 +60,7 @@ from nameparser._lexicon import (
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS, COMMA_STRIP,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     TITLE_AMBIGUOUS_TAG, PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
@@ -459,7 +459,7 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
     ambiguous class (S4) written with a period inside it ('M.A',
     'M.A.'), a comma the clause keeps on it left off (rules/N1). A
     period ending the clause is extract's escape, not this."""
-    bare = word.strip(",")
+    bare = word.strip(COMMA_STRIP)
     return ("." in bare.strip(".")
             and _normalize(bare).replace(".", "")
             in lexicon._sets.suffix_acronyms_ambiguous)
@@ -484,7 +484,7 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     None where the vocabulary reads it as a name or not at
     all. A comma the clause keeps on its word is no part of it
     (rules/N1)."""
-    bare = word.strip(",")
+    bare = word.strip(COMMA_STRIP)
     folded = _normalize(bare)
     acronym = folded.replace(".", "")
     sets = lexicon._sets
@@ -557,7 +557,7 @@ def reads_as_initials(word: str, kind: SetApartKind,
     ('PhD/NP-C' is 'PhD', 'NP-C', as `_joined_chunks` cuts it). A
     chunk is asked as the word it is, with no further cut by this
     function, so its loop is one level deep."""
-    bare = word.strip(",")
+    bare = word.strip(COMMA_STRIP)
     # a credential the vocabulary lists whole ('NP-C', 'SHRM-CP') is one
     # word, not two S3 joins, and has no other spelling written apart
     if kind == "suffix" and ("/" in bare or "-" in bare) and not (
@@ -616,7 +616,7 @@ def set_apart(words: Sequence[str],
     word in front of the clause was read as a suffix, which extract,
     running before any word is read, passes as False."""
     sets = lexicon._sets
-    folded = [_normalize(w.strip(",")) for w in words]
+    folded = [_normalize(w.strip(COMMA_STRIP)) for w in words]
     if all(f in sets.title_modifiers or f in sets.title_styles
            for f in folded):
         return False
@@ -1043,7 +1043,7 @@ def settles_a_member(word: str, lexicon: Lexicon) -> bool:
     (a member its periods settle, 'M.A.', included) and is no
     generation, no honorific and no title. A joined word not listed
     whole is one where a chunk of its cut is ('PhD/Jr', not 'Jr/Sr')."""
-    bare = word.strip(",")
+    bare = word.strip(COMMA_STRIP)
     if ("/" in bare or "-" in bare) and not _listed_whole(bare, lexicon):
         return any(_settles(c, lexicon)
                    for c in _joined_chunks(bare, lexicon) or ())
@@ -1075,7 +1075,7 @@ def member_word(word: str, lexicon: Lexicon) -> bool:
     """Whether a word of a delimited clause, a comma the clause keeps
     on it left off (rules/N1), is a member of the ambiguous class (S4),
     however written."""
-    return _member(word.strip(","), lexicon)
+    return _member(word.strip(COMMA_STRIP), lexicon)
 
 
 def _listed_whole(word: str, lexicon: Lexicon) -> bool:
@@ -1292,7 +1292,7 @@ def period_member(word: str, lexicon: Lexicon) -> bool:
     a period-joined credential (`period_joined_credential`) holding a
     member of the ambiguous class ('Msc.Ed'): `joined_member`'s
     question for a word the periods join (rules/S3, #1131)."""
-    bare = word.strip(",")
+    bare = word.strip(COMMA_STRIP)
     folded = _normalize(bare)
     return ("." in folded
             and folded.replace(".", "") not in lexicon._sets.suffix_acronyms
