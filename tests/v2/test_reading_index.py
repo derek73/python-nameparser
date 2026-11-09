@@ -330,7 +330,8 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
     empty = ri.files() - ri.tags()
     assert empty and ri.tags() <= ri.files()
     for tag in sorted(empty):
-        with pytest.raises(ValueError, match=f"{tag}.toml holds no reading"):
+        with pytest.raises(ValueError,
+                           match=f"{tag}.toml holds no reading a parse reads"):
             ri.selected([tag])
         assert ri.selected([tag], strict=True) == {tag}
         # nothing Latin is left to compile but mul.toml's and the file's

@@ -489,7 +489,7 @@ def test_cli_a_language_with_no_reading_needs_strict(
     # hu.toml holds only exclusions and familiar forms (vi.toml held
     # only exclusions until #1108)
     err = _usage_error(capsys, "--locale", "hu")
-    assert "hu.toml holds no reading yet" in err
+    assert "hu.toml holds no reading a parse reads yet" in err
     assert "(--strict) accepts it" in err
 
 

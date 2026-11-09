@@ -441,7 +441,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     recorded strictness, ``False`` on a strict base raises ValueError, a
     strict choice not being undone by a later call, and ``True`` on a
     plain one makes the whole choice strict. A strict choice accepts a
-    language whose file holds no reading yet (``hu``), which a plain
+    language whose file holds no reading a parse reads yet (``hu``,
+    whose familiar forms only name matching reads), which a plain
     one refuses as changing nothing, and raises ValueError when the
     packs choose no language, since it would then keep no language's
     own words, only mul.toml's and native-script words' readings

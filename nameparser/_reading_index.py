@@ -363,9 +363,9 @@ def selected(languages: Iterable[str], *,
                            if t.casefold() in _ancestors(tag))
             if empty:
                 raise ValueError(
-                    f"{empty[0]}.toml holds no reading yet, so a plain "
-                    f"choice of {tag!r} would change nothing; a strict one "
-                    f"(strict=True) accepts it")
+                    f"{empty[0]}.toml holds no reading a parse reads yet, "
+                    f"so a plain choice of {tag!r} would change nothing; a "
+                    f"strict one (strict=True) accepts it")
             raise ValueError(
                 f"no vocabulary file holds the language {tag!r} or one it "
                 f"belongs to; the languages that have one: "

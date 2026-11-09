@@ -3324,7 +3324,8 @@ def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
     # reads (vi.toml held only exclusions until #1108)
     for tag in ("hu", "mt", "sq"):
         with pytest.raises(ValueError, match=rf"{tag}\.toml holds no "
-                                             r"reading yet.*strict=True"):
+                                             r"reading a parse reads yet"
+                                             r".*strict=True"):
             parser_for(_choosing(tag))
     assert "do" not in parser_for(_choosing("hu"), strict=True).lexicon._sets.particles
 
