@@ -2237,10 +2237,12 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
                   one_case: bool | None = None) -> int:
     """Where the chain run opened by the particle `pieces[k]` ends: past
     the particles straight behind it, then past the name words up to
-    `end`, a suffix piece, a member its capitals settle as the
-    credential where the caller passes `one_case` (ParseState's), or
-    the next particle. `pieces[k:j]` is the one name unit P2 makes of
-    them; `j == k + 1` where it makes none.
+    `end`, a member its capitals settle as the credential where the
+    caller passes `one_case` (ParseState's), or the next particle.
+    `pieces[k:j]` is the one name unit P2 makes of them; `j == k + 1`
+    where it makes none. A suffix piece before `end` is no stop: group
+    passes the trailing run's start as `end`, so a suffix word behind
+    which a name word stands is the chain's (rules/P2, #1177).
 
     Only the given part after a family comma passes `one_case`: there
     the member starts S8's run behind the given word whatever stands
@@ -2262,7 +2264,6 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
     while (j < end and "prefix" not in ptags[j]
            and not (len(pieces[j]) == 1
                     and "particle" in tokens[pieces[j][0]].tags)
-           and not is_suffix_piece(pieces[j], ptags[j], tokens)
            # rules/S6: "a clash settled by the writing is not reported"
            # -- and the chain does not take the settled credential in
            and not (len(pieces[j]) == 1

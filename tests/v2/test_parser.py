@@ -1058,8 +1058,11 @@ def test_a_fork_is_reported_by_exactly_one_stage() -> None:
     # 'Do' rather than the 'Dr.' this used until 2.2, for the reason
     # above: with a plain title the chain loop never fires at all now,
     # so the double-report it guards against is out of reach there.
+    # Since #1177 the suffix word with a name behind it no longer stops
+    # the chain (rules/P2), so group's chain reports the fork here and
+    # assign, which would report the lone particle, must not as well.
     n = _overlap_parser().parse("Do Van Jr Smith")
-    assert n.given == "Van"
+    assert (n.given, n.family) == ("", "Van Jr Smith")
     assert len(n.ambiguities) == 1
 
 

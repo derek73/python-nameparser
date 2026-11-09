@@ -21,6 +21,17 @@
   "Freiherr von Berg MA"      →  suffix="MA"
   "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
   ```
+- **A suffix word with a name word behind it begins no trailing suffix, and the chain takes it** like any name word, as names write `Abd` for Abdul and `Md` for Muhammad; before a family comma the part reads it so behind a particle too, and a suffix word with nothing but suffixes behind it is still the trailing run.
+  ```
+  "Ahmad bin Abd Rahman"      →  family="bin Abd Rahman"
+  "Mariam binti Md Salleh"    →  family="binti Md Salleh"
+  "Juan de Md Rahman"         →  family="de Md Rahman"
+  "bin Abd Rahman, Ahmad"     →  family="bin Abd Rahman"
+  "Rahman, Ahmad bin Abd Ali"  →  middle="bin Abd Ali"
+  "Ahmad bin Md"              →  suffix="Md"  · boundary
+  "bin Abd Jr., Ahmad"        →  suffix="Abd Jr."  · boundary
+  "Hasan, Ali bin Ahmad Jr. Smith"  →  suffix="Jr. Smith"  · boundary
+  ```
 - **The same acronym written Title-case in a mixed-case name ends nothing** and joins the chain as any name word does, words to spare or not, and the fork the chain called is reported there exactly as it is where no particle stands (S4).
   ```
   "John van der Berg Ma"      →  family="van der Berg Ma"
@@ -70,4 +81,4 @@
 
 ---
 **Signal:** neighbor: the words following a particle, up to the next particle, suffix run or marker
-**history:** decisions/P2 · **implemented:** nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+**history:** decisions/P2 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py

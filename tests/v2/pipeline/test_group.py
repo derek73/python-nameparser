@@ -2110,3 +2110,54 @@ def test_an_absorbed_particle_run_reports_as_the_one_word_the_chain_makes(
     assert reported("John Smith Esq. von und zu Mc") == [
         ["von", "und", "zu", "Mc"]]
     assert reported("John Smith PhD van mc Dr.") == [["van", "mc"]]
+
+
+# rules/P13 reads "a trailing title H5 reads" behind a connective with
+# nothing to link, so the title word test is H5's own; #1168 found a
+# hand copy missing #999's arm for a gated title written short. The
+# grid holds the shape the clause covers: a single-letter connective in
+# a name of mixed case, since a word connective before a period-marked
+# title is left to P3 as the couple's formula and a cased letter in a
+# one-case name keeps its reading (decisions/P13).
+_P13_HEADS = ("John Smith", "John Paul Smith", "Juan García")
+_P13_CONNECTIVES = ("y", "e")
+_P13_WORDS = ("Prof.", "Dr.", "Maj.", "Gen.", "Col.", "Capt.", "Lt.",
+              "Sgt.", "Dott.ssa", "Priv.-Doz.", "Lt.Gov.", "Mrs.", "Rev.",
+              "Xyz.", "Pope.", "Maj", "Prof", "Sir", "Jr.", "III")
+
+
+def _p13_misses() -> tuple[list[str], int]:
+    misses: list[str] = []
+    titled = 0
+    for head in _P13_HEADS:
+        for word in _P13_WORDS:
+            plain = parse(f"{head} {word}")
+            if plain.title != word:
+                continue
+            for conn in _P13_CONNECTIVES:
+                titled += 1
+                linked = parse(f"{head} {conn} {word}")
+                if (linked.title, linked.family) != (
+                        word, f"{plain.family} {conn}"):
+                    misses.append(f"{head} {conn} {word}")
+    return misses, titled
+
+
+def test_a_connective_steps_over_every_title_the_trailing_run_takes(
+) -> None:
+    """Wherever H5's run reads a word ending 'John Smith <word>' as the
+    title, P13 steps over it behind a connective with nothing to link:
+    'John Smith y <word>' reads the same title and family 'Smith y'.
+    The oracle is H5's own reading of the name without the connective,
+    so a word test P13 writes for itself that drifts from the chain's
+    fails here (#1168). The count of rows the oracle holds guards the
+    grid against a vocabulary change emptying it.
+
+    RECORDED NEGATIVE CONTROL, measured 2026-11-08 on this grid: P13's
+    copy of the test as 3.0.1 shipped it (`_group._is_trailing_title`,
+    a period-marked word `is_title_piece` lists or a title listed whole
+    with a period inside it) misses 12 of the 78 rows, every one 'Maj.' or
+    'Gen.', the titles written short that may be given names (#999)."""
+    misses, titled = _p13_misses()
+    assert misses == []
+    assert titled == 78, titled

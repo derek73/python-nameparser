@@ -1168,8 +1168,14 @@ _MAF = Policy(middle_as_family=True)
     # P6 attaching two particles: the family's own words, not the
     # other folded particle, are the parent's name
     (Policy(name_order=FAMILY_FIRST), "Ahmad Ahmad de bin", "bin Ahmad"),
-    # a suffix ends the run, so a family word behind it is not in it
-    (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad"),
+    # a suffix ends the run, so a word behind it is not in it: S8's
+    # run in the given part takes the generation and the word behind it
+    (Policy(), "Hasan, Ali bin Ahmad Jr. Smith", "bin Ahmad"),
+    # a suffix word with a family word behind it stays in the family
+    # behind a particle (rules/P2, #1177), and so in the run
+    (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad Jr. Hasan"),
+    (Policy(), "Mariam binti Md Salleh", "binti Md Salleh"),
+    (Policy(), "Mariam binti Haji Abd Talib", "binti Haji Abd Talib"),
     # P6 attaching a patronymic particle with another particle after
     # it: the attached words and the family they attach to, the second
     # review's D1

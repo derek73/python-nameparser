@@ -1985,6 +1985,9 @@ def assign(state: ParseState) -> ParseState:
         # 0 is with no title ('Dr. PhD Smith, John' as 'PhD Smith, John').
         # A piece at or past the floor is already known to be a suffix
         # with nothing but suffixes behind it, so it is not asked again.
+        # whether a particle read as family stands in front of the
+        # piece the loop is at, for P2's arm below
+        chained = False
         for k in range(lead, len(fam_pieces)):
             piece = fam_pieces[k]
             if k >= floor:
@@ -2025,10 +2028,24 @@ def assign(state: ParseState) -> ParseState:
                              and "particle" in tokens[piece[0]].tags
                              and not is_suffix_piece(
                                  fam_pieces[k + 1], fam_tags[k + 1],
-                                 tokens))):
+                                 tokens))
+                    # rules/P2: "the join running until the next
+                    # particle starts a group of its own, a trailing
+                    # suffix begins" -- behind a particle, a suffix word
+                    # with a name word behind it is the particle's
+                    # group's ('bin Abd Rahman, Ahmad'), as the chain
+                    # reads it with no comma (decisions/P2, #1177)
+                    and not (chained and not all(
+                        is_suffix_piece(fam_pieces[j], fam_tags[j], tokens)
+                        for j in range(k + 1, len(fam_pieces))))):
                 _set_roles(tokens, piece, Role.SUFFIX)
             else:
                 _set_roles(tokens, piece, Role.FAMILY)
+                # the tag tests are is_prefix_piece's own arms, inline
+                # so a family word pays no frame
+                chained = chained or ("prefix" in fam_tags[k]
+                                      or "particle"
+                                      in tokens[piece[0]].tags)
         tail = 2
     # rules/C2: segments past the structure's name segments are
     # consumed as suffixes, except "a word of the title vocabulary there
