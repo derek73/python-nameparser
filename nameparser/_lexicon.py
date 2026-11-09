@@ -648,6 +648,52 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
 SameAsNamed = Mapping[str, frozenset[str]]
 
 
+# -- the name match's fold, which the familiar-form index shares --------
+
+#: Full stops and apostrophes: the typed one, the typographic U+2019
+#: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`.
+_DROPPED = str.maketrans("", "", ".'\u2019\u02bc")
+#: The scripts whose combining marks `_fold` drops as accents.
+_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
+
+def _fold(text: str) -> str:
+    """The text with case, accents, full stops and apostrophes folded
+    away: NFC, `.` and the apostrophes `'`, U+2019 and U+02BC removed,
+    NFD, casefolded, then NFC again, so the folded text, and every key
+    cut from it, is precomposed (a Hangul syllable, never a conjoining
+    jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped
+    only where the letter it attaches to is Latin, Greek or Cyrillic,
+    where it is an accent; in another script (a Devanagari virama,
+    anusvara or vowel sign) it is spelling and is kept. A letter counts
+    as in those scripts where it or its casefolded form is, so a letter
+    that casefolds into one (the micro sign U+00B5 into Greek mu, U+2183
+    into Latin) loses its mark on the first fold, which keeps the fold
+    idempotent; so does removing the full stops and apostrophes before
+    the marks are read, a mark after one then attaching to the letter
+    before it, and again after casefolding, which can write one (U+0149
+    `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
+    other, so `ᾳ` folds to `α`."""
+    if text.isascii():
+        # no accent, no composition, and no apostrophe but the typed one
+        return text.casefold().translate(_DROPPED)
+    decomposed = unicodedata.normalize(
+        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
+    kept = []
+    accented = False
+    for c in decomposed:
+        if unicodedata.category(c) == "Mn":
+            if accented:
+                continue
+        else:
+            accented = (unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
+                        or unicodedata.name(c.casefold()[:1] or c, "")
+                        .startswith(_ACCENTED_SCRIPTS))
+        kept.append(c)
+    # again after casefolding, which can write an apostrophe (U+0149)
+    return unicodedata.normalize(
+        "NFC", "".join(kept).casefold().translate(_DROPPED))
+
+
 #: A given name -> every name it is paired with as a familiar form, in
 #: either direction (`FAMILIAR`, read both ways).
 Familiar = Mapping[str, frozenset[str]]
@@ -660,12 +706,16 @@ def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
     does not always write the shorter name first (nam_dict's `Maria` /
     `Masha`), so the match reads a pair whichever way it was written,
     and never chains two pairs (decisions/name-matching, 2026-11-08
-    FAMILIAR FORMS)."""
+    FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
+    the match's own), so a pair written accented (`józsi`, `józsef`)
+    is found from either name written without its accents."""
     paired: dict[str, set[str]] = {}
     for short, longs in compiled["FAMILIAR"].items():
         for long in longs:
-            paired.setdefault(short, set()).add(long)
-            paired.setdefault(long, set()).add(short)
+            for key in {short, _fold(short)}:
+                paired.setdefault(key, set()).add(long)
+            for key in {long, _fold(long)}:
+                paired.setdefault(key, set()).add(short)
     return MappingProxyType({w: frozenset(ns) for w, ns in paired.items()})
 
 

@@ -1200,9 +1200,6 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
         assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
         assert matching.keys(a) & matching.keys(b)
     assert _familiar.check("Masha Ivanova", "Maria Ivanova").consistent
-    # a pair written accented reaches its unaccented spelling from the
-    # familiar form's side (hu `mari` of `mária`)
-    assert _familiar.check("Mari Kovács", "Maria Kovács").consistent
 
 
 @pytest.mark.parametrize("a, b", [
@@ -1301,3 +1298,60 @@ def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     assert plain._familiar_forms("max") == {"maksim", "maxim", "maximilian"}
     assert strict._familiar_forms("max") == {"maximilian"}
     assert not strict._familiar_forms("bill")
+
+
+@pytest.mark.parametrize("a, b", [
+    # an accented pair (hu `józsi` of `józsef`) in each of its four
+    # spellings: as written, the short name folded, the long name
+    # folded, both folded
+    ("Józsi Kovács", "József Kovács"), ("Jozsi Kovacs", "József Kovács"),
+    ("Józsi Kovács", "Jozsef Kovacs"), ("Jozsi Kovacs", "Jozsef Kovacs"),
+    ("Klára Nagy", "Klári Nagy"), ("Klara Nagy", "Klári Nagy"),
+    ("Klára Nagy", "Klari Nagy"), ("Klara Nagy", "Klari Nagy"),
+    ("Mari Kovács", "Mária Kovács"), ("Mari Kovács", "Maria Kovács"),
+])
+def test_a_familiar_form_holds_whatever_the_accents(a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = _familiar.check(x, y)
+        assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
+        assert _familiar.keys(x) & _familiar.keys(y)
+
+
+#: The shipped pairs whose short name reads as a title in front of a
+#: name, so the pair is never compared as two given names: a pair is
+#: inert while its short form reads as a title.
+_TITLE_SHORT_FORMS = {("nanny", "nannette"), ("timi", "tímea")}
+
+
+def test_every_shipped_pair_is_consistent_in_every_spelling() -> None:
+    # every FAMILIAR pair, each name as written and folded, as given
+    # names before one family name: consistent under the opt-in, with
+    # a shared key; the pairs whose short name parses as a title are
+    # the ones listed, and none else is skipped
+    from nameparser.config._compiled import FAMILIAR
+    parser = _familiar.parser
+    skipped = set()
+    for short, longs in FAMILIAR.items():
+        for long in longs:
+            for a in dict.fromkeys((short, _fold(short))):
+                for b in dict.fromkeys((long, _fold(long))):
+                    x = parser.parse(f"{a.capitalize()} Kovacs")
+                    y = parser.parse(f"{b.capitalize()} Kovacs")
+                    if (x.given.casefold(), y.given.casefold()) != (a, b):
+                        skipped.add((short, long))
+                        continue
+                    assert _familiar.check(x, y).consistent, (a, b)
+                    assert _familiar.keys(x) & _familiar.keys(y), (a, b)
+    assert skipped == _TITLE_SHORT_FORMS
+
+
+def test_a_planted_accented_pair_is_found_from_either_name() -> None:
+    # the pair written on the familiar form, accented; the lookup from
+    # the unaccented long name reaches it through the fold index
+    lexicon = Lexicon.default().remove("mari", kind="familiar").add(
+        "mari", kind="familiar", short_for=["mária"])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for x, y in (("Mari K", "Maria K"), ("Maria K", "Mari K")):
+        assert matching.check(x, y).consistent
+        assert matching.keys(x) & matching.keys(y)
