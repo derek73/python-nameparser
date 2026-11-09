@@ -304,6 +304,11 @@ def rewrite(text: str, words: Mapping[str, Mapping[str, Mapping[str, int]]],
     return "\n".join(lines) + "\n"
 
 
+def _read(path: Path) -> str | None:
+    """The file's text, None where it does not exist."""
+    return path.read_text(encoding="utf-8") if path.exists() else None
+
+
 def expected(placements: Placements,
              vocab: Path = VOCAB) -> dict[Path, str | None]:
     """Every vocabulary file the tool writes or would remove, with the
@@ -312,19 +317,14 @@ def expected(placements: Placements,
     tags = {p.name[:-5] for p in vocab.glob("*.toml")} | set(placements)
     for tag in sorted(tags):
         path = vocab / f"{tag}.toml"
-        text = path.read_text(encoding="utf-8") if path.exists() else None
-        out[path] = rewrite(text, placements.get(tag, {}), path.name)
+        out[path] = rewrite(_read(path), placements.get(tag, {}), path.name)
     return out
 
 
 def stale(placements: Placements, vocab: Path = VOCAB) -> list[Path]:
     """The files whose text differs from what the tool writes."""
-    out = []
-    for path, text in expected(placements, vocab).items():
-        now = path.read_text(encoding="utf-8") if path.exists() else None
-        if now != text:
-            out.append(path)
-    return out
+    return [path for path, text in expected(placements, vocab).items()
+            if _read(path) != text]
 
 
 def _shown(path: Path) -> str:
@@ -357,8 +357,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(pairs)} pairs read", file=sys.stderr)
     if args.write:
         for path, text in expected(placements, VOCAB).items():
-            now = path.read_text(encoding="utf-8") if path.exists() else None
-            if now == text:
+            if _read(path) == text:
                 continue
             if text is None:
                 path.unlink()
