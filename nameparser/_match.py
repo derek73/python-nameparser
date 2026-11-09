@@ -768,9 +768,13 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     set. Read whichever way the source wrote the pair, since nam_dict
     does not always write the shorter name first, and never chained, so
     two longer names paired with one short name (`Maximilian` /
-    `Maxim`) are no pair; symmetric in its two arguments."""
+    `Maxim`) are no pair. Asked from both sides, since the pairs are
+    keyed as written (`mária`) and a spelling set reaches a word's fold
+    but not its accented form (`Maria` / `Mari`, Mária's familiar
+    form); symmetric in its two arguments."""
     sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
-    return not _paired_forms(sa, lexicon).isdisjoint(sb)
+    return (not _paired_forms(sa, lexicon).isdisjoint(sb)
+            or not _paired_forms(sb, lexicon).isdisjoint(sa))
 
 
 def _familiar_outcome(wa: list[str], wb: list[str],

@@ -1199,6 +1199,9 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
         assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
         assert matching.keys(a) & matching.keys(b)
     assert _familiar.check("Masha Ivanova", "Maria Ivanova").consistent
+    # a pair written accented reaches its unaccented spelling from the
+    # familiar form's side (hu `mari` of `mária`)
+    assert _familiar.check("Mari Kovács", "Maria Kovács").consistent
 
 
 @pytest.mark.parametrize("a, b", [
