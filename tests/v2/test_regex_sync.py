@@ -239,6 +239,11 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
     from nameparser._pipeline._state import COMMA_CHARS
 
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
+    assert set(_render._COMMAS) == set(COMMA_CHARS)
+    # the space-before-comma collapse reads every member too (#1202's
+    # follow-up: it read the ASCII comma alone)
+    for comma in COMMA_CHARS:
+        assert _render._SPACE_BEFORE_COMMA.sub(r"\1", f"a {comma}b") == f"a{comma}b"
 
 
 def test_render_writes_back_every_comma_and_divider_tokenize_reads() -> None:
