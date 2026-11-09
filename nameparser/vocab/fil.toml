@@ -71,7 +71,7 @@ issue = 725
 
 [[word]]
 text = "jo"
-given = { same_as = "josé", note = "José written short, in Philippine usage; no source counts the abbreviation apart from Jo, a given name of its own and a Korean surname, whose given reading and counts are en.toml's, so a period-marked Jo. opening the given part is a given name on every reading (#789)" }
+given = { same_as = "josé", note = "José written short, in Philippine usage; no source counts the abbreviation apart from Jo, a given name of its own and a Korean surname, whose given reading and counts are en.toml's, so a period-marked Jo. opening the given part is a given name on every reading (#789); under a strict Filipino-only choice, which leaves en.toml out, the name match reads the link written bare too, Jo there being José written short (decisions/name-matching, 2026-11-08)" }
 
 [[word]]
 text = "ma"

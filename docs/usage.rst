@@ -1380,8 +1380,9 @@ its period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia``
 / ``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while
 ``Wm Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm``
 being no name of its own. It is read with accents folded too, so
-``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A middle name is compared word by word, in order,
-and takes the weakest of its words' outcomes. A different generation conflicts
+``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A
+middle name is compared word by word, in order, and takes the weakest
+of its words' outcomes. A different generation conflicts
 (``Jr.`` / ``Sr.``), and a generation on one side only reads
 ``generation-one-side`` whatever credentials either side carries
 (``John Smith Jr.`` / ``John Smith, PhD``); a credential or title

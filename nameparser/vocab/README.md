@@ -204,7 +204,9 @@ Two of these need more than their row:
 
 ### Derived markers
 
-Five sets mark a clash with a name, and all five are derived: a word is in one when it carries the clashing reading and a name reading on by default, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote two of them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write; the third, a suffix word that is also a name, arrived with phase 2h, the fourth, a title that may be a given name, with phase 2i, and the fifth, a name written short that is a name of its own too, with the name match ([decisions/name-matching](../../docs/design/decisions/name-matching.md), 2026-11-08).
+Four sets mark a clash with a name, and all four are derived: a word is in one when it carries the clashing reading and a name reading on by default, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote two of them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write; the third, a suffix word that is also a name, arrived with phase 2h, and the fourth, a title that may be a given name, with phase 2i.
+
+A fifth derived set marks no clash: a word whose name reading carries `same_as` beside a plain name reading of the same kind, in any of its files, a name written short that is a name of its own too, is in `SAME_AS_NAMED`, which only the name match reads ([decisions/name-matching](../../docs/design/decisions/name-matching.md), 2026-11-08). It shares the table below.
 
 | Marker | Readings | Compiled into | Effect |
 |---|---|---|---|

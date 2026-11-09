@@ -5480,7 +5480,7 @@ given = { us_ssa = 1324, wikidata = 47, as_of = 2026-10-26, same_as = "george", 
 
 [[word]]
 text = "jas"
-given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", note = "James written short; US SSA births summed over both sexes (F 13, M 111); also a Punjabi given name of its own (pa.toml), so the name match reads Jas as James only written Jas. (decisions/name-matching, 2026-11-08), and a surname (US Census 2010 117 bearers, Wikidata 25), which a period-marked word opening the given part is not; Wikidata is a lower bound" }
+given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", note = "James written short; US SSA births summed over both sexes (F 13, M 111); also a Punjabi given name of its own (pa.toml), so the name match reads Jas as James only written Jas. unless pa.toml is left out (a strict en choice) (decisions/name-matching, 2026-11-08), and a surname (US Census 2010 117 bearers, Wikidata 25), which a period-marked word opening the given part is not; Wikidata is a lower bound" }
 
 [[word]]
 text = "jo"

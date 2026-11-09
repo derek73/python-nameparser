@@ -1940,7 +1940,11 @@ class Lexicon:
             middle name and nickname, a ``family`` reading's in the
             family and maiden names, a title's and a suffix's in theirs),
             and which on a ``given`` reading also marks a given name
-            written short); a property
+            written short; written on a word, it applies to the word's
+            given readings, so the word keeps no plain given reading
+            and its link counts written bare, where a word the
+            vocabulary also holds as a name of its own counts only
+            written with its period); a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no

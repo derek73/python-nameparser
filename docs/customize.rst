@@ -145,15 +145,15 @@ and property means. ``same_as="..."`` is accepted on a reading of
 every kind: it names the word this one is a spelling of (``jnr`` is
 ``jr``), and :ref:`name matching <matching-names>` reads two words
 whose ``same_as`` links reach a common word as a ``listed-spelling``
-and gives them the same grouping key; a short form that is also a
+and gives them the same grouping key. A short form that is also a
 given name of its own in the vocabulary (``jo``, José written short
-and the name Jo) only where it is written with its period. That rule
-reads the vocabulary as you edited it: your ``same_as`` on a word
-applies to its given readings, so the word then has no plain reading
-and its link counts written bare
+and the name Jo) counts only where it is written with its period.
+That rule reads the vocabulary as you edited it: your ``same_as`` on
+a word applies to its given readings, so the word then has no plain
+reading and its link counts written bare
 (``add("dean", kind="given", same_as="deanna")`` makes ``Dean Smith``
 and ``Deanna Smith`` a listed spelling), and you cannot currently mark
-a word of your own as a name of its own. It moves no word between kinds,
+a word of your own as a name of its own. ``same_as`` moves no word between kinds,
 save on a ``given`` reading, where it also marks the word as a given
 name written short (``chas`` is ``charles``), so ``Chas. Smith`` reads
 given ``Chas.`` rather than a title. A property given its unwritten

@@ -367,7 +367,10 @@ class Matching:
         set among surnames (itself and the words it is listed as a
         spelling of, read as written and folded, each folded), and a
         given name by the first letter of every word in its set among
-        given names. The guarantee rests on this: two words the check
+        given names, where a word that is a name of its own as well
+        (`jo`) contributes only itself unless written with its trailing
+        period, the one spelling set the check reads (`_spellings`).
+        The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
         check compares is keyed, so two names it finds consistent share
@@ -566,8 +569,8 @@ _RANK_ROLE = {r: i for i, r in enumerate(Role)}
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
 #: The `same_as` group each role reads its listed spellings in: the
 #: readings of the kind that stands there (`Lexicon._headwords`), so a
-#: given name's spelling never matches a surname (`Ma` / `María` agree
-#: as given names, never as surnames).
+#: given name's spelling never matches a surname (`Ma.` / `María` agree
+#: as given names; the surname Ma never matches María).
 _GROUP: Mapping[Role, str] = {
     Role.TITLE: "title",
     Role.GIVEN: "given",
