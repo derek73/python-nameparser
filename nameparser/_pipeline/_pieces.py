@@ -64,7 +64,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, _ROMAN, _TRAILING_TITLE_SHAPE, Lean, ambiguous_lean,
+    _INDIC_BRAHMIC, _PERIOD_ABBREV, _ROMAN, _TRAILING_TITLE_SHAPE, Lean, ambiguous_lean,
     in_initialless_script,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
     numeral_settled_by_case, reads_as_generation, tag_marker_runs,
@@ -448,7 +448,8 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # own test file) checks it over the union of both predicates'
     # example tables rather than leaving it to a sentence.
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not in_initialless_script(text))
+            and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
+                                        or in_initialless_script(text)))
             # rules/H2's precedence: a given name written short outranks
             # the shape ('Chas.', #789) -- classify's tag, a C-level test
             and GIVEN_ABBREVIATION_TAG not in tokens[piece[0]].tags)
@@ -1551,9 +1552,9 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
     of a script with no case, or a cased word not written in lower case
     (Title case or capitals, title vocabulary included), that is no
     suffix word and no member its own capitals settle. A credential
-    merged across a space ('Pharm D', 'Ph. D.') is no name word. Only
-    `run_start` asks it, of a settled member or a credential acronym
-    written in Title case (`acronym_in_title_case`)."""
+    merged across a space ('Pharm D', 'Ph. D.') is no name word. Asked
+    only through `declined_by_the_name_behind`, of a settled member or a
+    credential acronym written in Title case (`acronym_in_title_case`)."""
     if "suffix" in ptags or "split" in ptags:
         return False
     tok = tokens[piece[0]]
@@ -1609,7 +1610,8 @@ def generation_word_before_a_name(token: WorkToken,
     capitals there are a credential's writing as likely as a name's
     ('de Planta jr. CF'), and lower case is no name word's. A credential
     merged across a space is no name word. The numerals are S10's, read
-    by their own predicate, and stay out. Only `run_start` asks it."""
+    by their own predicate, and stay out. Asked only through
+    `declined_by_the_name_behind`."""
     if (GENERATION_WORD_TAG not in token.tags
             or _ROMAN.match(token.text.rstrip(".")) is not None
             or "suffix" in ptags or "split" in ptags):
@@ -1635,10 +1637,38 @@ _NOT_A_NAME_BEHIND = frozenset({"vocab:suffix", SHAPE_ACRONYM_TAG,
                                 "vocab:maiden-marker"})
 
 
+# rules/S8: "not where a name word stands behind it" -- the three
+# writings that decline the run there, one predicate for `run_start`,
+# P2's chain stop (`starts_the_run_here`) and the family part's suffix
+# pass in assign, which borrows it under rules/P2 before a family comma,
+# where S8's declines do not apply (decisions/P2, #1177)
+def declined_by_the_name_behind(token: WorkToken, piece: Sequence[int],
+                                ptags: Set[str],
+                                tokens: Sequence[WorkToken],
+                                one_case: bool | None) -> bool:
+    """Whether a word that would start #602's run declines it because
+    of the word behind it, `piece`: a member its capitals settle, or a
+    credential acronym written in Title case, with a word of the name
+    behind it (`_name_word_behind`), or a generation word written out
+    before a name (`generation_word_before_a_name`). The caller asks
+    whether the word starts a run at all."""
+    return ((AMBIGUOUS_ACRONYM_TAG in token.tags
+             and settled_by_case(token, one_case)
+             # rules/S8: "nor does a credential acronym written in
+             # Title case" -- the writing of a name word
+             or acronym_in_title_case(token))
+            and _name_word_behind(piece, ptags, tokens, one_case)
+            # rules/S8: "nor does a generation word written out" -- a
+            # filer's middle-name box, the family name behind it
+            or generation_word_before_a_name(token, piece, ptags, tokens,
+                                             one_case))
+
+
 # rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
-# reader of the trailing run (assign, P5's reserve, P2's chain stop,
-# the maiden take) sees one answer.
+# reader of the trailing run (assign, P5's reserve, the maiden take)
+# sees one answer; P2's chain stop also asks the run's start word by
+# word (`starts_the_run_here`), the count of name words aside.
 def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
@@ -1702,25 +1732,9 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and ((AMBIGUOUS_ACRONYM_TAG in tags
-                                   and settled_by_case(tokens[pieces[q][0]],
-                                                       one_case)
-                                   # rules/S8: "nor does a credential
-                                   # acronym written in Title case" --
-                                   # the writing of a name word
-                                   or acronym_in_title_case(
-                                       tokens[pieces[q][0]]))
-                                  and _name_word_behind(pieces[rest[p + 1]],
-                                                        ptags[rest[p + 1]],
-                                                        tokens, one_case)
-                                  # rules/S8: "nor does a generation word
-                                  # written out" -- a filer's middle-name
-                                  # box, the family name behind it
-                                  or generation_word_before_a_name(
-                                      tokens[pieces[q][0]],
-                                      pieces[rest[p + 1]],
-                                      ptags[rest[p + 1]], tokens,
-                                      one_case)))):
+                             and declined_by_the_name_behind(
+                                 tokens[pieces[q][0]], pieces[rest[p + 1]],
+                                 ptags[rest[p + 1]], tokens, one_case))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
@@ -1944,7 +1958,8 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 # and "a title the vocabulary lists whole with a period inside it
 # chains without a final one" -- one word's half of that, for a caller
 # asking it of a piece the chain did not walk to: the maiden take,
-# choosing the words the clause-free view is read over (#601).
+# choosing the words the clause-free view is read over (#601), and
+# P13's walk back to a connective ending the name words (#1168).
 # `trailing_titles` asks the same five tests INLINE, in the same order,
 # for the frame budget its docstring states, and adds its `salutations`
 # arm, which no caller of this one asks; keep the two in step.
@@ -2234,20 +2249,31 @@ class TailRead(NamedTuple):
 def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken], end: int,
-                  one_case: bool | None = None) -> int:
+                  one_case: bool | None = None,
+                  given_slot: bool = False) -> int:
     """Where the chain run opened by the particle `pieces[k]` ends: past
     the particles straight behind it, then past the name words up to
-    `end`, a suffix piece, a member its capitals settle as the
-    credential where the caller passes `one_case` (ParseState's), or
-    the next particle. `pieces[k:j]` is the one name unit P2 makes of
-    them; `j == k + 1` where it makes none.
+    `end`, a suffix piece S8 would start its run at, a member its
+    capitals settle as the credential in the given part after a family
+    comma, or the next particle. `pieces[k:j]` is the one name unit P2
+    makes of them; `j == k + 1` where it makes none. `one_case` is
+    ParseState's.
 
-    Only the given part after a family comma passes `one_case`: there
-    the member starts S8's run behind the given word whatever stands
-    in front, so the chain leaves it to the run. Elsewhere the trailing
-    read's `end` stops the chain at a member the read takes, and a
-    stop at one it declines would strand it as a name word between the
-    particle run and the words behind it (#785's review).
+    A suffix piece stops it only where `starts_the_run_here` says S8
+    would start its run there, so a suffix word S8 starts no run at
+    ('Abd') or declines for its writing with a name word behind it
+    ('Md', 'Jr.') is the chain's (rules/P2, #1177), save the second in
+    the given part after a family comma (`given_slot`), where S8's run
+    starts behind the given word whatever stands behind it; and a
+    particle that is suffix vocabulary too opens no chain over a suffix
+    word right behind it.
+
+    Only the given part after a family comma stops at a settled member:
+    there the member starts S8's run behind the given word whatever
+    stands in front, so the chain leaves it to the run. Elsewhere the
+    trailing read's `end` stops the chain at a member the read takes,
+    and a stop at one it declines would strand it as a name word between
+    the particle run and the words behind it (#785's review).
 
     The particle test is `is_prefix_piece`'s definition written inline:
     the walk runs per piece of every chained name (AGENTS.md's frame
@@ -2259,17 +2285,53 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
                          or len(pieces[j]) == 1
                          and "particle" in tokens[pieces[j][0]].tags):
         j += 1
+    settled_case = one_case if given_slot else None
     while (j < end and "prefix" not in ptags[j]
            and not (len(pieces[j]) == 1
                     and "particle" in tokens[pieces[j][0]].tags)
-           and not is_suffix_piece(pieces[j], ptags[j], tokens)
+           # rules/P2: "a trailing suffix begins" -- at a suffix word
+           # S8 would start its run at; one it declines, a name word
+           # behind it, is the chain's (decisions/P2, #1177)
+           and not (is_suffix_piece(pieces[j], ptags[j], tokens)
+                    # rules/P2: "a particle that is suffix vocabulary
+                    # too opens no chain over a suffix word right behind
+                    # it" -- P9's reading before a comma, kept wherever
+                    # the chain runs (decisions/P2, #1177)
+                    and (j == k + 1 and len(pieces[k]) == 1
+                         and "vocab:suffix" in tokens[pieces[k][0]].tags
+                         or starts_the_run_here(j, pieces, ptags, tokens,
+                                                one_case, given_slot)))
            # rules/S6: "a clash settled by the writing is not reported"
            # -- and the chain does not take the settled credential in
            and not (len(pieces[j]) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[pieces[j][0]].tags
-                    and settled_by_case(tokens[pieces[j][0]], one_case))):
+                    and settled_by_case(tokens[pieces[j][0]],
+                                        settled_case))):
         j += 1
     return j
+
+
+def starts_the_run_here(j: int, pieces: Sequence[Sequence[int]],
+                        ptags: Sequence[Set[str]],
+                        tokens: Sequence[WorkToken],
+                        one_case: bool | None,
+                        given_slot: bool) -> bool:
+    """Whether the suffix piece `pieces[j]` would start #602's run
+    where it stands, as `run_start` asks it, the count of name words in
+    front aside: it starts one (`starts_a_credential_run`) and, outside
+    the given part after a family comma, the word behind it, if any,
+    does not decline it (`declined_by_the_name_behind`). A word written
+    as a name ('Md', 'Abd', 'Jr.' before a name) is no stop for P2's
+    chain there, and none for assign's family-part pass behind a
+    particle, the two callers."""
+    if not starts_a_credential_run(pieces[j], ptags[j], tokens,
+                                   tokens[pieces[j - 1][0]].text,
+                                   one_case):
+        return False
+    if given_slot or j + 1 == len(pieces) or len(pieces[j]) != 1:
+        return True
+    return not declined_by_the_name_behind(
+        tokens[pieces[j][0]], pieces[j + 1], ptags[j + 1], tokens, one_case)
 
 
 # rules/P2: "A particle joins the words after it into one name part"
@@ -2327,7 +2389,8 @@ def merge_particle_runs(pieces: list[list[int]], ptags: list[set[str]],
 def _chain_units(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 n: int, lead: int | None = None) -> list[int] | None:
+                 n: int, lead: int | None = None,
+                 one_case: bool | None = None) -> list[int] | None:
     """The name units P2's chain will make of `pieces`, as a mark per
     piece -- OPENS where a piece opens a unit, and JOINED where the
     chain will join a name word to the run in front of it and the
@@ -2360,12 +2423,21 @@ def _chain_units(pieces: Sequence[Sequence[int]],
          else lead) + 1
     while k < count:
         if prefix[k]:
-            j = chain_run_end(k, pieces, ptags, tokens, count)
+            j = chain_run_end(k, pieces, ptags, tokens, count, one_case)
             q = k + 1
             # a split credential is weighed as the class it is a
-            # member of (rules/S12)
+            # member of (rules/S12); a suffix word with an unweighed
+            # word behind it inside the chain's run is one the chain
+            # took because S8 starts no run there or declines one, so
+            # the peel cannot reach it and it is no word of its own
+            # (rules/P2, #1177's
+            # review: 'Freiherr von Md Berg V' as 'Freiherr von Abdul
+            # Berg V')
             while (q < j and "split" not in ptags[q]
-                   and not _weighed(pieces[q], tokens)):
+                   and (not _weighed(pieces[q], tokens)
+                        or q + 1 < j
+                        and not _weighed(pieces[q + 1], tokens)
+                        and is_suffix_piece(pieces[q], ptags[q], tokens))):
                 units[q] = JOINED
                 q += 1
             k = j
@@ -2434,7 +2506,7 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     mc mc' in the family."""
     if n == len(pieces):
         return None
-    units = _chain_units(pieces, ptags, tokens, n, lead)
+    units = _chain_units(pieces, ptags, tokens, n, lead, one_case)
     rest, titled, peel = tail_reading(peel_walk(n, ptags), pieces, ptags,
                                       tokens, one_case, units)
     tail: set[int] = set()

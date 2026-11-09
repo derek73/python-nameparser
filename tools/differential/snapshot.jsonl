@@ -143,9 +143,11 @@
 {"name": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan Abu Bakar Riayatuddin Al-Mu’azzam Shah", "given": "Ahmad", "middle": "Shah Al-Musta’in Billah ibni Almarhum Sultan", "family": "Abu Bakar Riayatuddin Al-Mu’azzam Shah", "initials": "A. S. A. B. i. A. S. B. R. A. S.", "capitalized_force": "Ahmad Shah Al-Musta’In Billah Ibni Almarhum Sultan abu Bakar Riayatuddin Al-Mu’Azzam Shah"}
 {"name": "Ahmad al-ʿAbbas", "given": "Ahmad", "family": "al-ʿAbbas", "initials": "A. a.", "capitalized_force": "Ahmad Al-ʿAbbas"}
 {"name": "Ahmad ben Husain", "given": "Ahmad", "middle": "ben", "family": "Husain", "initials": "A. b. H.", "capitalized_force": "Ahmad Ben Husain"}
+{"name": "Ahmad bin Abd Rahman", "given": "Ahmad", "family": "bin Abd Rahman", "initials": "A. A. R.", "patronymic": "bin Abd Rahman"}
 {"name": "Ahmad bin Abdul Rahman", "given": "Ahmad", "family": "bin Abdul Rahman", "initials": "A. A. R.", "patronymic": "bin Abdul Rahman"}
 {"name": "Ahmad bin Ali bin Hassan", "given": "Ahmad", "middle": "bin Ali", "family": "bin Hassan", "initials": "A. A. H.", "patronymic": "bin Ali bin Hassan"}
 {"name": "Ahmad bin Dr. Ali", "given": "Ahmad", "family": "bin Dr. Ali", "initials": "A. D. A.", "patronymic": "bin Dr. Ali"}
+{"name": "Ahmad bin Md", "given": "Ahmad", "family": "bin", "suffix": "Md", "initials": "A. b.", "capitalized_force": "Ahmad Bin MD"}
 {"name": "Ahmad bin “Bob” Ali", "given": "Ahmad", "family": "bin Ali", "nickname": "Bob", "initials": "A. A.", "patronymic": "bin Ali"}
 {"name": "Ahmad ibn-Ali", "given": "Ahmad", "family": "ibn-Ali", "initials": "A. i.", "capitalized_force": "Ahmad Ibn-Ali"}
 {"name": "Ahmad, bin Ali", "given": "bin", "middle": "Ali", "family": "Ahmad", "initials": "b. A. A.", "capitalized_force": "Bin Ali Ahmad"}
@@ -191,6 +193,7 @@
 {"name": "Ali Hassan bin Ahmad", "given": "Ali", "middle": "Hassan", "family": "bin Ahmad", "initials": "A. H. A.", "patronymic": "bin Ahmad"}
 {"name": "Ali Juma Hamisi", "given": "Ali", "middle": "Juma", "family": "Hamisi", "initials": "A. J. H."}
 {"name": "Ali Kara Oğlu", "given": "Ali", "middle": "Kara", "family": "Oğlu", "initials": "A. K. O."}
+{"name": "Ali bin Ahmad Jr. Hasan", "given": "Ali", "family": "bin Ahmad Jr. Hasan", "initials": "A. A. J. H.", "patronymic": "bin Ahmad Jr. Hasan"}
 {"name": "Ali bin Ahmad bin Hasan", "given": "Ali", "middle": "bin Ahmad", "family": "bin Hasan", "initials": "A. A. H.", "patronymic": "bin Ahmad bin Hasan"}
 {"name": "Ali née oglu", "family": "Ali", "maiden": "oglu", "initials": "A.", "capitalized_force": "Ali (Oglu)"}
 {"name": "Ali oglu", "given": "Ali", "family": "oglu", "initials": "A. o.", "capitalized_force": "Ali Oglu"}
@@ -1343,6 +1346,7 @@
 {"name": "Harpreet Kaur Dhillon", "given": "Harpreet", "middle": "Kaur", "family": "Dhillon", "initials": "H. K. D."}
 {"name": "Harpreet Simran Kaur", "given": "Harpreet", "middle": "Simran", "family": "Kaur", "initials": "H. S. K."}
 {"name": "Harrieta Keōpūolani Nāhiʻenaʻena", "given": "Harrieta", "middle": "Keōpūolani", "family": "Nāhiʻenaʻena", "initials": "H. K. N."}
+{"name": "Hasan, Ali bin Ahmad Jr. Smith", "given": "Ali", "middle": "bin Ahmad", "family": "Hasan", "suffix": "Jr. Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "A. A. H.", "generation": "Jr.", "credentials": "Smith", "patronymic": "bin Ahmad"}
 {"name": "Hasani Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Hasani", "initials": "M. H."}
 {"name": "Hasani, Maria", "given": "Maria", "family": "Hasani", "initials": "M. H."}
 {"name": "Hase, Karl August von", "given": "Karl", "middle": "August", "family": "von Hase", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "K. A. H."}
@@ -1715,7 +1719,7 @@
 {"name": "Jane van der Berg nee Smith Prof.", "title": "Prof.", "given": "Jane", "family": "van der Berg", "maiden": "Smith", "initials": "J. B."}
 {"name": "Jane van der Berg née", "given": "Jane", "family": "van der Berg née", "initials": "J. B. n.", "capitalized_force": "Jane van der Berg Née"}
 {"name": "Jane van der Berg née Jones", "given": "Jane", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
-{"name": "Jane van der Berg née Jr Jones", "given": "Jane", "middle": "van der Berg née Jr", "family": "Jones", "initials": "J. B. n. J. J.", "capitalized_force": "Jane van der Berg Née Jr Jones"}
+{"name": "Jane van der Berg née Jr Jones", "given": "Jane", "family": "van der Berg née Jr Jones", "initials": "J. B. n. J. J.", "capitalized_force": "Jane van der Berg Née Jr Jones"}
 {"name": "Jane van der Berg née PhD", "given": "Jane", "family": "van der Berg née", "suffix": "PhD", "initials": "J. B. n.", "capitalized_force": "Jane van der Berg Née PhD"}
 {"name": "Jane van der Berg née y Jones", "given": "Jane", "family": "van der Berg", "maiden": "y Jones", "initials": "J. B."}
 {"name": "Jane van der Berg 旧姓 Jones", "given": "Jane", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
@@ -2061,6 +2065,7 @@
 {"name": "John Smith vi", "given": "John", "family": "Smith", "suffix": "vi", "initials": "J. S.", "capitalized_force": "John Smith VI", "generation": "vi"}
 {"name": "John Smith y", "given": "John", "family": "Smith y", "initials": "J. S."}
 {"name": "John Smith y III", "given": "John", "family": "Smith y", "suffix": "III", "initials": "J. S.", "generation": "III"}
+{"name": "John Smith y Maj.", "title": "Maj.", "given": "John", "family": "Smith y", "initials": "J. S."}
 {"name": "John Smith y V", "given": "John", "family": "Smith y V", "initials": "J. S. V."}
 {"name": "John Smith y V Jr.", "given": "John", "family": "Smith y V", "suffix": "Jr.", "initials": "J. S. V.", "generation": "Jr."}
 {"name": "John Smith y VI", "given": "John", "family": "Smith y", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "generation": "VI"}
@@ -2209,6 +2214,7 @@
 {"name": "John van der Berg née Jones", "given": "John", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
 {"name": "John van der J. V", "given": "John", "family": "van der J. V", "initials": "J. J. V."}
 {"name": "John van der V, M.J.", "given": "M.J.", "family": "John van der V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. V."}
+{"name": "John vd Jr Smith", "given": "John", "middle": "vd Jr", "family": "Smith", "initials": "J. J. S."}
 {"name": "John von PhD Jones", "given": "John", "family": "von", "suffix": "PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. v.", "capitalized_force": "John Von PhD Jones"}
 {"name": "John y Jane", "given": "John", "middle": "y", "family": "Jane", "initials": "J. y. J."}
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
@@ -2366,6 +2372,7 @@
 {"name": "Juan de Ayolas", "given": "Juan", "family": "de Ayolas", "initials": "J. A."}
 {"name": "Juan de Courten y González", "given": "Juan", "family": "de Courten y González", "initials": "J. C. G."}
 {"name": "Juan de Dios Sierra y Velásquez", "given": "Juan", "family": "de Dios Sierra y Velásquez", "initials": "J. D. S. V."}
+{"name": "Juan de Md Rahman", "given": "Juan", "family": "de Md Rahman", "initials": "J. M. R."}
 {"name": "Juan de la Vega", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Juan de la Vega III", "given": "Juan", "family": "de la Vega", "suffix": "III", "initials": "J. V.", "generation": "III"}
 {"name": "Juan de la Vega Rodríguez", "given": "Juan", "family": "de la Vega Rodríguez", "initials": "J. V. R."}
@@ -2791,6 +2798,8 @@
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
 {"name": "Maria do Socorro Silva", "given": "Maria", "middle": "do Socorro", "family": "Silva", "initials": "M. S. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
+{"name": "Mariam binti MD Salleh", "given": "Mariam", "family": "binti", "suffix": "MD Salleh", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "M. b.", "capitalized_force": "Mariam Binti MD Salleh"}
+{"name": "Mariam binti Md Salleh", "given": "Mariam", "family": "binti Md Salleh", "initials": "M. M. S.", "patronymic": "binti Md Salleh"}
 {"name": "Mariana Duque Mariño", "given": "Mariana", "middle": "Duque", "family": "Mariño", "initials": "M. D. M."}
 {"name": "Marianne Schmidt", "given": "Marianne", "family": "Schmidt", "initials": "M. S."}
 {"name": "Mariano Aguilar Barrera", "given": "Mariano", "middle": "Aguilar", "family": "Barrera", "initials": "M. A. B."}
@@ -3366,6 +3375,8 @@
 {"name": "Rafael Viciana Aráez", "given": "Rafael", "middle": "Viciana", "family": "Aráez", "initials": "R. V. A."}
 {"name": "Ragnar Bjarnason", "given": "Ragnar", "family": "Bjarnason", "initials": "R. B."}
 {"name": "Rahman, Abdul MB ChB", "given": "Abdul", "family": "Rahman", "suffix": "MB ChB", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "A. R."}
+{"name": "Rahman, Ahmad bin Abd Ali", "given": "Ahmad", "middle": "bin Abd Ali", "family": "Rahman", "initials": "A. A. A. R.", "patronymic": "bin Abd Ali"}
+{"name": "Rahman, Ahmad bin Md Ali", "given": "Ahmad", "family": "bin Rahman", "suffix": "Md Ali", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. R.", "capitalized_force": "Ahmad bin Rahman MD Ali", "patronymic": "bin Rahman"}
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
@@ -4271,6 +4282,8 @@
 {"name": "and van Buren", "given": "and van", "family": "Buren", "initials": "a. v. B.", "capitalized_force": "and Van Buren"}
 {"name": "anh van do", "given": "anh", "family": "van do", "initials": "a. v. d.", "capitalized": "Anh Van Do"}
 {"name": "anh van mc", "given": "anh", "family": "van mc", "initials": "a. v. m.", "capitalized": "Anh Van Mc"}
+{"name": "bin Abd Rahman, Ahmad", "given": "Ahmad", "family": "bin Abd Rahman", "initials": "A. A. R.", "patronymic": "bin Abd Rahman"}
+{"name": "bin Md Rahman, Ahmad", "given": "Ahmad", "family": "bin Md Rahman", "initials": "A. M. R.", "patronymic": "bin Md Rahman"}
 {"name": "bin Mohamad", "given": "bin", "family": "Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "b. M.", "capitalized_force": "Bin Mohamad"}
 {"name": "bin Mohamad, Mahathir", "given": "Mahathir", "family": "bin Mohamad", "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "bin Stromae Elizabeth Windsor Maria Teresa MP", "order": "FAMILY_FIRST", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S.", "patronymic": "bin Stromae"}
@@ -4553,6 +4566,7 @@
 {"name": "van den Wolf Prof. Dr. Ada Cornelia Eva Sophia Jr, M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "Prof.", "middle": "Dr. Ada Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "Jr, M.D. Ph.D.", "initials": "P. D. A. C. E. S. W.", "generation": "Jr", "credentials": "M.D. Ph.D."}
 {"name": "van den Wolf, Prof. Dr. Anna Cornelia Eva Sophia jr. M.D. Ph.D.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. M.D. Ph.D.", "initials": "A. C. E. S. W.", "capitalized_force": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf Jr. M.D. Ph.D.", "generation": "jr.", "credentials": "M.D. Ph.D."}
 {"name": "van den Wolf, prof. dr. Anna Cornelia Eva Sophia jr. m.d. ph.d.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W.", "capitalized_force": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf Jr. M.D. Ph.D.", "generation": "jr.", "credentials": "m.d. ph.d."}
+{"name": "van der Berg PhD Jones, John", "given": "John", "family": "van der Berg Jones", "suffix": "PhD", "initials": "J. B. J."}
 {"name": "van der Berg, MA", "family": "van der Berg", "suffix": "MA", "initials": "B."}
 {"name": "van der Berg, PhD", "family": "van der Berg", "suffix": "PhD", "initials": "B."}
 {"name": "van der Berg, Sir", "title": "Sir", "family": "van der Berg", "initials": "B."}
@@ -5885,6 +5899,7 @@
 {"name": "आलिया हमीश हेमंत", "given": "आलिया", "middle": "हमीश", "family": "हेमंत", "initials": "आ. ह. ह."}
 {"name": "उत्तम कुँवर", "given": "उत्तम", "family": "कुँवर", "initials": "उ. क."}
 {"name": "एडा कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी डिडिएस", "given": "एडा", "middle": "कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी", "family": "डिडिएस", "initials": "ए. क. स. म. भ. ब. ए. ड."}
+{"name": "एम. एस. वर्मा", "given": "एम.", "middle": "एस.", "family": "वर्मा", "initials": "ए. ए. व."}
 {"name": "ऐश्वर्या राय", "given": "ऐश्वर्या", "family": "राय", "initials": "ऐ. र."}
 {"name": "काठे मुलर", "given": "काठे", "family": "मुलर", "initials": "क. म."}
 {"name": "काथा बाउमान", "given": "काथा", "family": "बाउमान", "initials": "क. ब."}
@@ -5903,6 +5918,7 @@
 {"name": "जोनस मैरी सिलविया", "order": "FAMILY_FIRST", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "जोनस, मैरी सिलविया", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "ज्ञानेन्द्र वीर विक्रम शाहदेव", "given": "ज्ञानेन्द्र", "middle": "वीर विक्रम", "family": "शाहदेव", "initials": "ज. व. व. श."}
+{"name": "डा. राम वर्मा", "title": "डा.", "given": "राम", "family": "वर्मा", "initials": "र. व."}
 {"name": "दिशा", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}
 {"name": "दिशा", "order": "FAMILY_FIRST", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}
 {"name": "दीपा मेहता", "given": "दीपा", "family": "मेहता", "initials": "द. म."}
@@ -5911,7 +5927,7 @@
 {"name": "दे सोजा ए मेनेजेस श्री फ्रांसिस शावियेर जुआंव आंतोन धा., एमपी", "order": "FAMILY_FIRST", "given": "एमपी", "family": "दे सोजा ए मेनेजेस श्री फ्रांसिस शावियेर जुआंव आंतोन धा.", "initials": "ए. द. स. ए. म. श. फ. श. ज. आ. ध."}
 {"name": "देवकी पंडित", "given": "देवकी", "family": "पंडित", "initials": "द. प."}
 {"name": "देशपांडे धिरज", "order": "FAMILY_FIRST", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
-{"name": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क., एम. पी.", "order": "FAMILY_FIRST", "title": "एम.", "given": "पी.", "family": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क.", "initials": "प. द. श. ध. द. व. द. क."}
+{"name": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क., एम. पी.", "order": "FAMILY_FIRST", "given": "एम.", "middle": "पी.", "family": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क.", "initials": "ए. प. द. श. ध. द. व. द. क."}
 {"name": "देशपांडे, धिरज", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
 {"name": "देशपांडे, धिरज देशपांडे विजय देशपांडे", "given": "धिरज", "middle": "देशपांडे विजय देशपांडे", "family": "देशपांडे", "initials": "ध. द. व. द. द."}
 {"name": "धिरज देशपांडे", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
@@ -5935,7 +5951,7 @@
 {"name": "प्रीति झंगियानी", "given": "प्रीति", "family": "झंगियानी", "initials": "प. झ."}
 {"name": "प्रेमप्रसाद हिमलाल वास्तोला", "given": "प्रेमप्रसाद", "middle": "हिमलाल", "family": "वास्तोला", "initials": "प. ह. व."}
 {"name": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी", "title": "प्रो. डॉ.", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर", "initials": "ब. ए. आ. क. स. म. व. ब. ग. ड. ज."}
-{"name": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.", "title": "प्रोफे.डॉ. एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु.", "initials": "ड. ड. ड. ए. अ. श. स. म. व. ब. ज."}
+{"name": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.", "title": "प्रोफे.डॉ.", "given": "एम.", "middle": "डी. डी. डी. एस.", "family": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु.", "initials": "ए. ड. ड. ड. ए. अ. श. स. म. व. ब. ज."}
 {"name": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर, एम॰डी॰, पी॰एच॰डी॰", "given": "एम॰डी॰", "family": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "ए. प. ड. म. ज. व. व. च."}
 {"name": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन, एम॰डी॰, पी॰एच॰डी॰", "order": "FAMILY_FIRST", "given": "एम॰डी॰", "family": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "ए. प. ड. व. व. म. ज."}
 {"name": "फडके रिधान समीर", "order": "FAMILY_FIRST", "given": "रिधान", "middle": "समीर", "family": "फडके", "initials": "र. स. फ."}
@@ -6011,7 +6027,7 @@
 {"name": "वुस्टर, बर्ट्राम विलबरफोर्स हेनरी रोबर्ट", "given": "बर्ट्राम", "middle": "विलबरफोर्स हेनरी रोबर्ट", "family": "वुस्टर", "initials": "ब. व. ह. र. व."}
 {"name": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन जेआर, बी.ए. एल.एल.बी", "order": "FAMILY_FIRST", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन जेआर", "initials": "ब. ए. व. ब. ग. ड. प. ड. आ. क. स. म. ज."}
 {"name": "वॉन वॉटसन, माइकल जॉन एम॰डी॰, पी॰एच॰डी॰", "given": "माइकल", "middle": "जॉन एम॰डी॰", "family": "वॉन वॉटसन", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "म. ज. ए. व. व."}
-{"name": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु., एम. डी. डी. डी. एस.", "order": "FAMILY_FIRST", "title": "एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु.", "initials": "ड. ड. ड. ए. व. ब. प. अ. श. स. म. ज."}
+{"name": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु., एम. डी. डी. डी. एस.", "order": "FAMILY_FIRST", "given": "एम.", "middle": "डी. डी. डी. एस.", "family": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु.", "initials": "ए. ड. ड. ड. ए. व. ब. प. अ. श. स. म. ज."}
 {"name": "शरद कपूर", "given": "शरद", "family": "कपूर", "initials": "श. क."}
 {"name": "शरद जोशी", "given": "शरद", "family": "जोशी", "initials": "श. ज."}
 {"name": "शरद पवार", "given": "शरद", "family": "पवार", "initials": "श. प."}
@@ -6029,7 +6045,7 @@
 {"name": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी", "title": "श्री", "given": "एमपी", "family": "फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा.", "initials": "ए. फ. श. ज. आ. द. स. ए. म. ध."}
 {"name": "श्री ललित कुमार शर्मा एम॰डी॰", "title": "श्री", "given": "ललित", "middle": "कुमार शर्मा", "family": "एम॰डी॰", "initials": "ल. क. श. ए."}
 {"name": "श्री शर्मा ललित कुमार, एम॰डी॰", "order": "FAMILY_FIRST", "title": "श्री", "given": "एम॰डी॰", "family": "शर्मा ललित कुमार", "initials": "ए. श. ल. क."}
-{"name": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.", "title": "श्री. एम.", "given": "पी.", "family": "धिरज देशपांडे विजय देशपांडे देशपांडे क.", "initials": "प. ध. द. व. द. द. क."}
+{"name": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.", "title": "श्री.", "given": "एम.", "middle": "पी.", "family": "धिरज देशपांडे विजय देशपांडे देशपांडे क.", "initials": "ए. प. ध. द. व. द. द. क."}
 {"name": "संजय ख़ान", "given": "संजय", "family": "ख़ान", "initials": "स. ख."}
 {"name": "सिंदबाद", "given": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
 {"name": "सिंदबाद", "order": "FAMILY_FIRST", "given": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
@@ -6063,6 +6079,7 @@
 {"name": "আবদুল করিম শাহ", "given": "আবদুল", "middle": "করিম", "family": "শাহ", "initials": "আ. ক. শ."}
 {"name": "আহমেদ কিরণ", "order": "FAMILY_FIRST", "given": "কিরণ", "family": "আহমেদ", "initials": "ক. আ."}
 {"name": "উদয় চোপড়া", "given": "উদয়", "family": "চোপড়া", "initials": "উ. চ."}
+{"name": "এম. আবদুল লতিফ", "given": "এম.", "middle": "আবদুল", "family": "লতিফ", "initials": "এ. আ. ল."}
 {"name": "কাকতি নৰেন কলিতা ৰুমী বৰুৱা এম. পি.", "order": "FAMILY_FIRST", "given": "নৰেন", "middle": "কলিতা ৰুমী বৰুৱা এম. পি.", "family": "কাকতি", "initials": "ন. ক. ৰ. ব. এ. প. ক."}
 {"name": "কাকতি, নৰেন কলিতা ৰুমী বৰুৱা", "given": "নৰেন", "middle": "কলিতা ৰুমী বৰুৱা", "family": "কাকতি", "initials": "ন. ক. ৰ. ব. ক."}
 {"name": "কামাল হোসেন", "given": "কামাল", "family": "হোসেন", "initials": "ক. হ."}
@@ -6132,6 +6149,7 @@
 {"name": "ਆਰੀਨ ਐਡਲਰ", "given": "ਆਰੀਨ", "family": "ਐਡਲਰ", "initials": "ਆ. ਐ."}
 {"name": "ਐਡਲਰ ਆਰੀਨ", "order": "FAMILY_FIRST", "given": "ਆਰੀਨ", "family": "ਐਡਲਰ", "initials": "ਆ. ਐ."}
 {"name": "ਐਡਲਰ, ਆਰੀਨ", "given": "ਆਰੀਨ", "family": "ਐਡਲਰ", "initials": "ਆ. ਐ."}
+{"name": "ਐਮ. ਸਿੰਘ", "given": "ਐਮ.", "family": "ਸਿੰਘ", "initials": "ਐ. ਸ."}
 {"name": "ਕੈਥੀ ਮੂਲਰ", "given": "ਕੈਥੀ", "family": "ਮੂਲਰ", "initials": "ਕ. ਮ."}
 {"name": "ਜ਼ਜ਼ਿਲੀਆ ਹੇਮਿਸ਼ ਸਟੋਬਰ", "given": "ਜ਼ਜ਼ਿਲੀਆ", "middle": "ਹੇਮਿਸ਼", "family": "ਸਟੋਬਰ", "initials": "ਜ. ਹ. ਸ."}
 {"name": "ਜ਼ੈਨਡਿਆ", "given": "ਜ਼ੈਨਡਿਆ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ਜ."}
@@ -6310,11 +6328,13 @@
 {"name": "กล้าหาญ, ไอริณ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "กุลวุฒิ วิทิตศานต์", "given": "กุลวุฒิ", "family": "วิทิตศานต์", "initials": "ก. ว."}
 {"name": "คุณ ปรีชา กล้าหาญ แสงระวี", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี", "initials": "ค. ป. ก. แ."}
+{"name": "คุณ. สมชาย", "given": "คุณ.", "family": "สมชาย", "initials": "ค. ส."}
 {"name": "ชวเลิศ ชุ่มคำ", "given": "ชวเลิศ", "family": "ชุ่มคำ", "initials": "ช. ช."}
 {"name": "ชัชวาลย์ แท่งทอง", "given": "ชัชวาลย์", "family": "แท่งทอง", "initials": "ช. แ."}
 {"name": "ซาซิเลีย ฮามิช สโตเบอร์", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "ซินแบด", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
 {"name": "ซินแบด", "order": "FAMILY_FIRST", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
+{"name": "ดร. สมชาย ใจดี", "title": "ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
 {"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
 {"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
@@ -6346,6 +6366,7 @@
 {"name": "ຊິນແບດ", "order": "FAMILY_FIRST", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຊ."}
 {"name": "ດຣ. ປອ. ວອນ ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "title": "ດຣ. ປອ.", "given": "ບຣູລ", "middle": "ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "family": "ວອນ", "initials": "ບ. ສ. ປ. ເ. ຄ. ເ. ມ. ຮ. ວ."}
 {"name": "ດຣ. ປອ. ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ ຮຸ່ນລູກ", "title": "ດຣ. ປອ. ສຈ. ປອ.", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ", "family": "ຮຸ່ນລູກ", "initials": "ເ. ຄ. ເ. ມ. ວ. ບ. ຮ."}
+{"name": "ດຣ. ສົມ", "title": "ດຣ.", "family": "ສົມ", "initials": "ສ."}
 {"name": "ນາລິນ ເອກະພົນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
 {"name": "ບຣູລ, ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "family": "ບຣູລ", "initials": "ເ. ຄ. ເ. ມ. ວ. ບ."}
 {"name": "ມະນີ ມະນີຈັນ ວັດທະນາ", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ", "initials": "ມ. ມ. ວ."}
@@ -6580,6 +6601,7 @@
 {"name": "〆木 ひろ", "given": "ひろ", "family": "〆木"}
 {"name": "〆木 太郎", "given": "太郎", "family": "〆木"}
 {"name": "〆木太郎", "family": "〆木太郎"}
+{"name": "あいさわいちろう", "family": "あいさわいちろう"}
 {"name": "あ゙い たろう", "given": "たろう", "family": "あ゙い"}
 {"name": "さん", "family": "さん"}
 {"name": "みなみ", "family": "みなみ"}
@@ -6703,6 +6725,7 @@
 {"name": "山田　太郎", "given": "太郎", "family": "山田"}
 {"name": "山田「タロ」太郎", "given": "太郎", "family": "山田", "nickname": "タロ"}
 {"name": "山田トーマス太郎", "order": "FAMILY_FIRST", "family": "山田トーマス太郎"}
+{"name": "山田太郎", "family": "山田太郎"}
 {"name": "山田太郎様", "family": "山田太郎", "suffix": "様", "honorifics": "様"}
 {"name": "山田花子 旧姓 佐藤", "family": "山田花子", "maiden": "佐藤"}
 {"name": "山田｢ﾀﾛｰ｣太郎", "given": "太郎", "family": "山田", "nickname": "ﾀﾛｰ"}

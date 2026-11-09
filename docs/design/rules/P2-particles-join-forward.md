@@ -21,6 +21,21 @@
   "Freiherr von Berg MA"      →  suffix="MA"
   "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
   ```
+- **A suffix word ends the chain where S8 would start its run at it**, and is a name word to the chain where S8 starts none there: at a word S8 starts no run at, such as one that is also bound given-name vocabulary (`Abd` for Abdul), or one whose run S8 declines for its writing with a name word behind it (`Md` for Muhammad). In the given part after a family comma S8's run starts behind the given word whatever stands behind it, so there only the first is the chain's; before a family comma the part keeps either in the family behind a particle, as the chain does.
+  ```
+  "Ahmad bin Abd Rahman"      →  family="bin Abd Rahman"
+  "Mariam binti Md Salleh"    →  family="binti Md Salleh"
+  "Juan de Md Rahman"         →  family="de Md Rahman"
+  "Ali bin Ahmad Jr. Hasan"   →  family="bin Ahmad Jr. Hasan"
+  "bin Abd Rahman, Ahmad"     →  family="bin Abd Rahman"
+  "bin Md Rahman, Ahmad"      →  family="bin Md Rahman"
+  "Rahman, Ahmad bin Abd Ali"  →  middle="bin Abd Ali"
+  "Mariam binti MD Salleh"    →  suffix="MD Salleh"  · boundary
+  "Rahman, Ahmad bin Md Ali"  →  suffix="Md Ali"  · boundary
+  "Hasan, Ali bin Ahmad Jr. Smith"  →  suffix="Jr. Smith"  · boundary
+  "van der Berg PhD Jones, John"  →  suffix="PhD"  · boundary
+  "Ahmad bin Md"              →  suffix="Md"  · boundary
+  ```
 - **The same acronym written Title-case in a mixed-case name ends nothing** and joins the chain as any name word does, words to spare or not, and the fork the chain called is reported there exactly as it is where no particle stands (S4).
   ```
   "John van der Berg Ma"      →  family="van der Berg Ma"
@@ -51,10 +66,11 @@
 
 **Accepted:**
 
-- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's.
+- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word opening that run, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's. And a particle that is suffix vocabulary too opens no chain over a suffix word right behind it, as P9 reads it before a family comma.
   ```
   "John Smith Mc V"           →  suffix="Mc V"
   "John van Mc"               →  family="van Mc"
+  "John vd Jr Smith"          →  middle="vd Jr"  · boundary
   ```
 - The same carve-out covers `do`, the one word that is both a particle and an AMBIGUOUS credential acronym: where a particle run takes it, the word is the run's and the chain reports nothing, whatever case it is written in — so `Anh van Do` is silent where `Anh Do`, with no particle standing, reports. A word that is both belongs to the particle run and to P6's fork, not to S4's.
   ```
@@ -70,4 +86,4 @@
 
 ---
 **Signal:** neighbor: the words following a particle, up to the next particle, suffix run or marker
-**history:** decisions/P2 · **implemented:** nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+**history:** decisions/P2 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py

@@ -764,8 +764,10 @@ the name would merely look undivided.
 
 The shipped ``ja_segmenter()`` does decline, returning ``None`` and
 leaving the token whole, for the cases that are *not* protocol
-violations: text outside the Japanese repertoire, text too short to
-divide, an answer that fails to reconstruct its input, and a score
+violations: text outside the Japanese repertoire, text with no kanji
+(namedivider divides by kanji statistics, so ``あいさわいちろう`` stays
+whole rather than splitting after its first character), text too short
+to divide, an answer that fails to reconstruct its input, and a score
 outside [0, 1].
 
 Exceptions are the one thing that does *not* stay inside the parse: a
@@ -1092,6 +1094,12 @@ The rule is bounded so it doesn't swallow ordinary names:
   even with a period,
   since those scripts write no abbreviation with one (``"田中. 太郎"``
   has family ``田中.``).
+- **A word in one of the ten Brahmic scripts from Devanagari to Sinhala**
+  (Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada,
+  Malayalam, Sinhala) is a name word even with a period, since writers in
+  them spell a Latin initial out by its sound
+  (``"एम. एस. वर्मा"`` has given ``एम.``, middle ``एस.``). A listed title
+  there (``डा.``) is still a title.
 - **Before a family comma** the inference does not run, since that
   slot holds a surname too: ``Xyz. Smith, John`` keeps family
   ``Xyz. Smith``. A listed title is still read there, so

@@ -19,6 +19,8 @@
 "柯洁"  [zh]                →  family="柯"
 "钟离小凤"  [zh]            →  family="钟离"
 "张简"  [zh]                →  family="张简"
+"山田太郎"  [ja+segmenter]  →  family="山田"
+"あいさわいちろう"  [ja+segmenter]  →  family="あいさわいちろう"
 ```
 
 **Except:**

@@ -2067,7 +2067,7 @@ CASES: tuple[Case, ...] = (
                "family 'JONES'"),
     Case("a_generational_word_before_a_title_case_vi_keeps_the_name",
          "Nguyen Van Jr. Vi",
-         {"given": "Nguyen", "middle": "Van Jr.", "family": "Vi"},
+         {"given": "Nguyen", "family": "Van Jr. Vi"},
          classification="fix(#1023)",
          ambiguities=("suffix-or-name",),
          notes="S8: the numeral behind the generation word is refused "
@@ -2075,7 +2075,9 @@ CASES: tuple[Case, ...] = (
                "'Vi' in a name of mixed case leans to the name (the "
                "second review found the shape alone taking it). 1.4.0 "
                "read family 'Jr.', suffix 'Vi'; 2.3.0 through 2.8.0 read "
-               "family 'Van', suffix 'Jr. Vi'"),
+               "family 'Van', suffix 'Jr. Vi'; 3.0.0 through 3.0.1 middle "
+               "'Van Jr.', family 'Vi', the particle's chain stopping at "
+               "the 'Jr.' it now takes (P2, #1177)"),
     Case("a_generational_word_before_an_unsettled_member",
          "John Smith Jr. Ma Jones",
          {"given": "John", "middle": "Smith Jr. Ma", "family": "Jones"},
@@ -2870,6 +2872,61 @@ CASES: tuple[Case, ...] = (
          notes="where the carve-out did not hold, the join took the "
                "title as the name it links. 1.4.0 through 2.8.2 read "
                "family 'Smith y Prof.'"),
+    # #1168: P13 steps over every title H5's trailing run takes,
+    # a gated title written short included (#999).
+    Case("a_connective_before_a_gated_title_written_short_joins_the_word_before",
+         "John Smith y Maj.",
+         {"title": "Maj.", "given": "John", "family": "Smith y"},
+         classification="fix(#1168)",
+         notes="P13 reads the name words past a trailing title H5 "
+               "reads, 'Maj.' as 'Prof.', as 'John Smith Maj.' reads "
+               "title 'Maj.'. 3.0.0 through 3.0.1 read family 'Smith y "
+               "Maj.'; 1.4.0 middle 'Smith y', last 'Maj.'"),
+    Case("a_connective_before_another_gated_title_joins_the_word_before",
+         "John Smith y Gen.",
+         {"title": "Gen.", "given": "John", "family": "Smith y"},
+         classification="fix(#1168)",
+         notes="3.0.0 through 3.0.1 read family 'Smith y Gen.'; 1.4.0 "
+               "middle 'Smith y', last 'Gen.'"),
+    Case("a_joined_connective_before_a_gated_title_joins_the_word_before",
+         "John Paul Smith y Maj.",
+         {"title": "Maj.", "given": "John", "middle": "Paul",
+          "family": "Smith y"},
+         classification="fix(#1168)",
+         notes="where the carve-out does not hold. 1.4.0 through 3.0.1 "
+               "read family 'Smith y Maj.'"),
+    Case("a_linked_letter_reads_through_a_gated_title",
+         "John Smith y V Maj.",
+         {"title": "Maj.", "given": "John", "family": "Smith y V"},
+         classification="fix(#1098)",
+         notes="#1168's boundary: the lone letter is found before the "
+               "title test is asked, so 3.0.0 through 3.0.1 read the "
+               "same; 1.4.0 read middle 'Smith y V', last 'Maj.'"),
+    Case("a_connective_before_a_listed_rank_the_run_refuses_links_it",
+         "John Paul Smith y 10th.",
+         {"given": "John", "middle": "Paul", "family": "Smith y 10th."},
+         notes="#1168's boundary, found by its code review: H5's run "
+               "takes no '10th.', its digits refused by the abbreviation "
+               "shape ('John Smith 10th.' reads family '10th.'), so P13 "
+               "has no title to step over either. 3.0.0 through 3.0.1 "
+               "read middle 'Paul Smith y', family '10th.', P13's own "
+               "title test stopping there; 1.4.0 through 2.8.2 read as "
+               "here"),
+    Case("a_word_connective_before_a_gated_title_is_the_couples_formula",
+         "John Smith and Maj.",
+         {"given": "John", "family": "Smith and Maj."},
+         notes="#1168's boundary, found by the PR's test review: a word "
+               "connective with a period-marked title behind it is left "
+               "to P3 as the couple's formula, a gated title as 'John "
+               "Smith and Prof.', so P13's two sites ask one word test"),
+    Case("a_connective_before_a_bare_gated_title_keeps_the_name",
+         "John Smith y Maj",
+         {"given": "John", "family": "Smith y Maj"},
+         classification="fix(#1098)",
+         notes="#1168's boundary: H5's run takes a title written short "
+               "with its period only, so P13 has no title to step over "
+               "and links 'Maj' as the name it is. 1.4.0 read middle "
+               "'Smith y', last 'Maj'"),
     Case("a_word_connective_before_a_suffix_joins_the_word_before",
          "John Smith and Jr.",
          {"given": "John", "family": "Smith and", "suffix": "Jr."},
@@ -7117,11 +7174,277 @@ CASES: tuple[Case, ...] = (
                "read family 'Hisham', suffix 'Md Yusoff' (#602's run)"),
     Case("title_case_credential_after_a_patronymic_stays_a_name",
          "Ahmad Faiz Bin Md Sapir",
-         {"given": "Ahmad", "middle": "Faiz Bin Md", "family": "Sapir"},
+         {"given": "Ahmad", "middle": "Faiz", "family": "Bin Md Sapir"},
+         classification="fix(#1177)",
          notes="S8 (#1019): as title_case_credential_before_a_name_"
-               "word_stays_a_name, behind a particle. 1.4.0 through "
-               "2.3.0 read the same; 2.4.0 through 2.8.0 read family "
-               "'Bin', suffix 'Md Sapir'"),
+               "word_stays_a_name, behind a particle, whose chain then "
+               "takes it with the name behind it (P2, #1177). 1.4.0 "
+               "through 2.3.0 and 3.0.0 through 3.0.1 read middle "
+               "'Faiz Bin Md', family 'Sapir'; 2.4.0 through 2.8.0 "
+               "family 'Bin', suffix 'Md Sapir'"),
+    # #1177: P2's chain stops at a suffix word only where S8 would
+    # start its run there, so one S8 starts no run at (`Abd` for Abdul)
+    # or declines for its writing with a name word behind it (`Md` for
+    # Muhammad, a generation word written out) is the chain's.
+    Case("a_suffix_word_inside_a_patronymic_chain_is_the_chains",
+         "Ahmad bin Abd Rahman",
+         {"given": "Ahmad", "family": "bin Abd Rahman"},
+         classification="fix(#1177)",
+         notes="#1177's example: 'Abd' is Abdul written short, as 'Ahmad "
+               "bin Abdul Rahman' reads. 1.4.0 through 3.0.1 read middle "
+               "'bin Abd', family 'Rahman'"),
+    Case("a_credential_spelling_inside_a_patronymic_chain_is_the_chains",
+         "Mariam binti Md Salleh",
+         {"given": "Mariam", "family": "binti Md Salleh"},
+         classification="fix(#1177)",
+         notes="'Md' is Muhammad written short. 1.4.0 through 3.0.1 read "
+               "middle 'binti Md', family 'Salleh'"),
+    Case("a_suffix_word_inside_an_ibn_chain_is_the_chains",
+         "Ahmad ibn Abd Rahman",
+         {"given": "Ahmad", "family": "ibn Abd Rahman"},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'ibn Abd', family "
+               "'Rahman'"),
+    Case("a_suffix_word_further_into_the_chain_is_the_chains",
+         "Mariam binti Haji Abd Talib",
+         {"given": "Mariam", "family": "binti Haji Abd Talib"},
+         classification="fix(#1177)",
+         notes="five of #1177's 55 chains stopped past their first "
+               "word, as this one did. 1.4.0 through 3.0.1 read middle 'binti Haji Abd', "
+               "family 'Talib'"),
+    Case("a_period_marked_suffix_word_inside_the_chain_is_the_chains",
+         "Ahmad bin Abd. Rahman",
+         {"given": "Ahmad", "family": "bin Abd. Rahman"},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'bin Abd.', family "
+               "'Rahman'"),
+    Case("a_suffix_word_inside_a_plain_particle_chain_is_the_chains",
+         "Juan de Md Rahman",
+         {"given": "Juan", "family": "de Md Rahman"},
+         classification="fix(#1177)",
+         notes="the chain is P2's for any particle, not the patronymic "
+               "ones alone. 1.4.0 through 3.0.1 read middle 'de Md', "
+               "family 'Rahman'"),
+    Case("a_suffix_word_inside_a_one_case_chain_is_the_chains",
+         "AHMAD BIN ABD RAHMAN",
+         {"given": "AHMAD", "family": "BIN ABD RAHMAN"},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'BIN ABD', family "
+               "'RAHMAN'"),
+    Case("a_suffix_word_inside_a_family_first_chain_is_the_chains",
+         "Ahmad bin Abd Rahman",
+         {"given": "bin Abd Rahman", "family": "Ahmad"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1177)",
+         notes="3.0.1 read given 'bin', middle 'Abd Rahman'"),
+    Case("a_suffix_word_inside_the_chain_before_a_family_comma_is_family",
+         "bin Abd Rahman, Ahmad",
+         {"given": "Ahmad", "family": "bin Abd Rahman"},
+         classification="fix(#1177)",
+         notes="the family part's own suffix pass reads it behind the "
+               "particle the fold takes (P1), as the chain does with no "
+               "comma. 1.4.0 through 3.0.1 read family 'bin Rahman', "
+               "suffix 'Abd'"),
+    Case("a_suffix_word_inside_the_chain_before_a_family_first_comma",
+         "bin Abd Rahman, Ahmad",
+         {"given": "Ahmad", "family": "bin Abd Rahman"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1177)",
+         notes="3.0.1 read family 'bin Rahman', suffix 'Abd'"),
+    Case("a_suffix_word_inside_a_plain_chain_before_a_family_comma",
+         "van Jr Berg, John",
+         {"given": "John", "family": "van Jr Berg"},
+         classification="fix(#1177)",
+         notes="as 'John van Jr Berg' reads. 1.4.0 through 3.0.1 read "
+               "family 'van Berg', suffix 'Jr'"),
+    Case("a_suffix_word_inside_the_given_parts_chain_is_the_chains",
+         "Rahman, Ahmad bin Abd Ali",
+         {"given": "Ahmad", "middle": "bin Abd Ali", "family": "Rahman"},
+         classification="fix(#1177)",
+         notes="a word that is also bound given-name vocabulary "
+               "starts no run (S8), so the chain takes it even in the "
+               "given part after a family comma, where 'Md' would end "
+               "it. 1.4.0 through 3.0.1 read middle 'bin Ali', suffix "
+               "'Abd'"),
+    Case("a_suffix_word_inside_the_chain_after_an_empty_head_is_the_chains",
+         ", Ahmad bin Abd Rahman",
+         {"given": "Ahmad", "middle": "bin Abd Rahman"},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'bin Rahman', suffix "
+               "'Abd'"),
+    Case("a_suffix_word_inside_the_chain_before_a_suffix_comma_is_the_chains",
+         "Ahmad bin Abd Rahman, Jr.",
+         {"given": "Ahmad", "family": "bin Abd Rahman", "suffix": "Jr."},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'bin Abd', family "
+               "'Rahman'"),
+    Case("a_suffix_word_inside_the_chain_keeps_the_trailing_credential",
+         "Ahmad bin Md Salleh PhD",
+         {"given": "Ahmad", "family": "bin Md Salleh", "suffix": "PhD"},
+         classification="fix(#1177)",
+         notes="1.4.0 through 3.0.1 read middle 'bin Md', family "
+               "'Salleh'"),
+    Case("a_credential_after_the_chain_stays_the_suffix",
+         "Ahmad bin Ismail PhD",
+         {"given": "Ahmad", "family": "bin Ismail", "suffix": "PhD"},
+         classification="parity",
+         notes="#1177's boundary: the trailing run ends the chain, as P2 "
+               "says"),
+    Case("a_generation_after_the_chain_stays_the_suffix",
+         "Ahmad bin Rahman Jr.",
+         {"given": "Ahmad", "family": "bin Rahman", "suffix": "Jr."},
+         classification="parity",
+         notes="#1177's boundary"),
+    Case("a_credential_after_a_particle_run_stays_the_suffix",
+         "Juan de la Vega MD",
+         {"given": "Juan", "family": "de la Vega", "suffix": "MD"},
+         classification="parity",
+         notes="#1177's boundary"),
+    Case("a_suffix_word_ending_the_chain_stays_the_suffix",
+         "Ahmad bin Md",
+         {"given": "Ahmad", "family": "bin", "suffix": "Md"},
+         classification="parity",
+         notes="#1177's boundary: with no name word behind it the word "
+               "begins the trailing run, so it is the suffix and the "
+               "chain has nothing to join"),
+    Case("a_suffix_word_ending_the_family_part_stays_the_suffix",
+         "bin Abd Jr., Ahmad",
+         {"given": "Ahmad", "family": "bin", "suffix": "Abd Jr."},
+         classification="parity",
+         notes="#1177's boundary: before a family comma, a suffix word "
+               "with nothing but suffixes behind it stays the suffix "
+               "behind a particle too. 1.4.0 read suffix 'Abd, Jr.'"),
+    Case("a_generation_in_the_given_parts_run_ends_the_chain",
+         "Hasan, Ali bin Ahmad Jr. Smith",
+         {"given": "Ali", "middle": "bin Ahmad", "family": "Hasan",
+          "suffix": "Jr. Smith"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#1177's boundary: in the given part after a family comma "
+               "the run S8 starts behind the given word takes the "
+               "generation and the words behind it, ending the chain "
+               "there (P2). 1.4.0 read middle 'bin Ahmad Smith', suffix "
+               "'Jr.'"),
+    Case("a_generation_word_before_a_name_inside_the_chain_is_the_chains",
+         "Ali bin Ahmad Jr. Hasan",
+         {"given": "Ali", "family": "bin Ahmad Jr. Hasan"},
+         classification="fix(#1177)",
+         notes="a generation word written out before a name starts no "
+               "run (S8), so the chain takes it. 1.4.0 through 3.0.1 "
+               "read middle 'bin Ahmad Jr.', family 'Hasan'"),
+    Case("a_credential_in_capitals_inside_the_chain_starts_the_run",
+         "Mariam binti MD Salleh",
+         {"given": "Mariam", "family": "binti", "suffix": "MD Salleh"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#1177's boundary: written in capitals the credential "
+               "starts S8's run, which the chain stops in front of, "
+               "where it takes a Title-case 'Md' as a name word. 1.4.0 "
+               "read middle 'binti MD', last 'Salleh'"),
+    Case("a_credential_in_capitals_inside_the_family_part_stays_the_suffix",
+         "binti MD Salleh, Mariam",
+         {"given": "Mariam", "family": "binti Salleh", "suffix": "MD"},
+         notes="#1177's boundary: before a family comma the family "
+               "part keeps behind a particle only a suffix word S8 "
+               "starts no run at or declines for its writing"),
+    Case("a_degree_inside_a_particle_family_part_stays_the_suffix",
+         "van der Berg PhD Jones, John",
+         {"given": "John", "family": "van der Berg Jones", "suffix": "PhD"},
+         notes="#1177's boundary, found by its docs review"),
+    Case("a_title_case_credential_in_the_given_parts_chain_starts_the_run",
+         "Rahman, Ahmad bin Md Ali",
+         {"given": "Ahmad", "family": "bin Rahman", "suffix": "Md Ali"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "particle-or-given"),
+         notes="#1177's boundary: in the given part after a family comma "
+               "S8's run starts behind the given word whatever its "
+               "writing, so the chain stops before 'Md' there. 1.4.0 "
+               "read middle 'bin Ali', suffix 'Md'"),
+    Case("a_generation_in_the_given_part_behind_a_title_particle_starts_the_run",
+         "Smith, Freiherr von Berg Jr. Jones",
+         {"title": "Freiherr", "given": "von Berg", "family": "Smith",
+          "suffix": "Jr. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#1177's boundary, found by its code review: behind a "
+               "title-particle the given part's chain stops where S8's "
+               "run starts, as behind a given word. 1.4.0 read first "
+               "'von Berg', middle 'Jones', suffix 'Jr.'"),
+    Case("a_generation_in_the_given_part_behind_do_starts_the_run",
+         "Smith, Do van Jr. Jones",
+         {"given": "Do", "middle": "van", "family": "Smith",
+          "suffix": "Jr. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#1177's boundary, found by its code review. 1.4.0 read "
+               "title 'Do', first 'van', middle 'Jones', suffix 'Jr.'"),
+    Case("a_dual_particle_before_a_generation_keeps_both_suffixes",
+         "DE SMITH VD JR JONES, JOHN",
+         {"given": "JOHN", "family": "DE SMITH JONES", "suffix": "VD JR"},
+         notes="#1177's boundary, found by its docs review: a particle "
+               "that is suffix vocabulary too opens no chain over the "
+               "suffix word behind it (P9), and the word behind the "
+               "suffix it reads as stays in that suffix"),
+    Case("a_suffix_word_the_chain_takes_is_no_word_to_spare",
+         "Freiherr von Md Berg V",
+         {"title": "Freiherr", "family": "von Md Berg V"},
+         classification="fix(#1177)",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="the words-to-spare count reads the chain's unit as the "
+               "chain makes it, 'Md' inside it, so the numeral reads as "
+               "in 'Freiherr von Abdul Berg V' (P2's boundary, S10); "
+               "found by the PR review. 1.4.0 through 3.0.1 read given "
+               "'von', middle 'Md', family 'Berg', suffix 'V'"),
+    Case("a_suffix_word_the_chain_takes_is_no_word_to_spare_for_an_acronym",
+         "Freiherr von Abd Berg X.Y.Z.",
+         {"title": "Freiherr", "family": "von Abd Berg X.Y.Z."},
+         classification="fix(#1177)",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="as the row above, for an unlisted dotted acronym (S3). "
+               "3.0.0 through 3.0.1 read given 'von', middle 'Abd', "
+               "family 'Berg', suffix 'X.Y.Z.'; 1.4.0 middle 'Abd "
+               "Berg', last 'X.Y.Z.'"),
+    Case("a_dual_particle_opens_no_chain_over_a_suffix_word",
+         "John vd Jr Smith",
+         {"given": "John", "middle": "vd Jr", "family": "Smith"},
+         notes="#1177's boundary: a particle that is suffix vocabulary "
+               "too opens no chain over a suffix word right behind it, "
+               "as P9 reads it before a family comma (P2's Accepted)"),
+    Case("a_lowercase_bound_given_word_inside_the_family_part_is_family",
+         "bin abd Rahman, Ahmad",
+         {"given": "Ahmad", "family": "bin abd Rahman"},
+         classification="fix(#1177)",
+         notes="the family part's arm for a word S8 starts no run at, "
+               "bound given-name vocabulary, written in lower case so no "
+               "Title-case decline covers it; found by the PR's test "
+               "review. 1.4.0 through 3.0.1 read family 'bin Rahman', "
+               "suffix 'abd'"),
+    Case("a_one_case_bound_given_word_inside_the_family_part_is_family",
+         "BIN ABD RAHMAN, AHMAD",
+         {"given": "AHMAD", "family": "BIN ABD RAHMAN"},
+         classification="fix(#1177)",
+         notes="the row above in one case. 1.4.0 through 3.0.1 read "
+               "family 'BIN RAHMAN', suffix 'ABD'"),
+    Case("a_one_case_generation_word_inside_the_chain_is_the_chains",
+         "AHMAD BIN JR RAHMAN",
+         {"given": "AHMAD", "family": "BIN JR RAHMAN"},
+         classification="fix(#1177)",
+         notes="the chain asks the generation word's decline with the "
+               "name's case, a one-case word behind it being a name "
+               "word (S8); found by the PR's test review. 1.4.0 through "
+               "3.0.1 read middle 'BIN JR', family 'RAHMAN'"),
+    Case("a_mixed_case_dual_particle_before_a_generation_keeps_both_suffixes",
+         "de Smith vd Jr Jones, John",
+         {"given": "John", "family": "de Smith Jones", "suffix": "vd Jr"},
+         notes="#1177's boundary in mixed case, as 'DE SMITH VD JR "
+               "JONES, JOHN' reads (P9)"),
+    Case("a_suffix_word_inside_a_family_part_with_no_particle_stays_the_suffix",
+         "Smith Jr Jones, John",
+         {"given": "John", "family": "Smith Jones", "suffix": "Jr"},
+         classification="parity",
+         notes="#1177's boundary: the family part reads a suffix word "
+               "between two family words as the suffix where no particle "
+               "stands in front of it"),
     Case("title_case_credential_before_a_suffix_comma_stays_a_name",
          "Badrul Hisham Md Yusoff, Jr.",
          {"given": "Badrul", "middle": "Hisham Md", "family": "Yusoff",
@@ -11459,10 +11782,9 @@ CASES: tuple[Case, ...] = (
                "it takes nothing and 'Jr Smith' is the middle name, as for "
                "'John Jr Smith Berg'"),
     Case("bound_given_join_takes_a_chain_carrying_a_declined_marker",
-         "Abd van der Berg née Jr Jones",
-         {"given": "Abd van der Berg née", "middle": "Jr",
-          "family": "Jones"},
-         classification="fix(#417)",
+         "Abd van der Berg née Jr de Jones",
+         {"given": "Abd van der Berg née Jr", "family": "de Jones"},
+         classification="fix(#1177)",
          notes="the field-level face of #417. The consumer declines "
                "(a suffix follows the marker), the particle chain "
                "takes the declined marker as the word M2 says it is, "
@@ -11474,12 +11796,27 @@ CASES: tuple[Case, ...] = (
                "lone-piece reading is the nicer-looking one: a "
                "marker test widened to match inside a piece would "
                "give given 'Abd', middle 'van der Berg née Jr' with "
-               "the whole suite otherwise green. 2.4.0 through 2.8.0 "
-               "read given 'Abd', family 'van der Berg née', suffix "
-               "'Jr Jones', #602's run started at 'Jr', which a "
+               "the whole suite otherwise green. The row read 'Abd van "
+               "der Berg née Jr Jones' until #1177, whose chain runs "
+               "on past the 'Jr' (the row below); the 'de' here starts "
+               "a group of its own (P2), so the chain still stops in "
+               "front of a family word; 3.0.0 through 3.0.1 read this "
+               "text given 'Abd van der Berg née', middle 'Jr'. For "
+               "the old text 2.4.0 through "
+               "2.8.0 read given 'Abd', family 'van der Berg née', "
+               "suffix 'Jr Jones', #602's run started at 'Jr', which a "
                "generation word before a name word no longer starts "
                "(S8); bound_given_join_reserves_nothing_behind_a_"
                "credential_run holds that path"),
+    Case("a_chain_carrying_a_declined_marker_runs_past_the_suffix_word",
+         "Abd van der Berg née Jr Jones",
+         {"given": "Abd", "family": "van der Berg née Jr Jones"},
+         classification="fix(#1177)",
+         notes="P2: the chain runs past a suffix word with a name word "
+               "behind it, so it ends the name and P5 reserves it as "
+               "the family. 3.0.0 through 3.0.1 read given 'Abd van der "
+               "Berg née', middle 'Jr', family 'Jones'; 1.4.0 given "
+               "'Abd', middle 'van der Berg née Jr', last 'Jones'"),
     Case("bound_given_join_reserves_nothing_behind_a_credential_run",
          "Abd van der Berg née Esq Jones",
          {"given": "Abd", "family": "van der Berg née",
@@ -16891,6 +17228,43 @@ CASES: tuple[Case, ...] = (
                "2.2.0 read title 김민준., family 지, given 훈 -- "
                "hangul segmentation ran on the trailing word.",
          tolerated=True),
+    Case('brahmic_spelled_initials_are_not_a_title', 'एम. एस. वर्मा',
+         {'given': 'एम.', 'middle': 'एस.', 'family': 'वर्मा'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 1.4.0 through 3.0.1 read title 'एम. एस.'."),
+    Case('brahmic_spelled_initial_after_a_listed_title_and_a_comma', 'मूर्ति, श्री एम. राजशेखर',
+         {'title': 'श्री', 'given': 'एम.', 'middle': 'राजशेखर', 'family': 'मूर्ति'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 2.0.0 through 3.0.1 read title 'श्री एम.' (1.4.0 no title, श्री not yet listed)."),
+    Case('brahmic_spelled_initials_ending_a_comma_part', 'कृष्णा, श्री एस. एम.',
+         {'title': 'श्री', 'given': 'एस.', 'middle': 'एम.', 'family': 'कृष्णा'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 3.0.1 read title 'श्री एस. एम.' and 2.0.0 'श्री एस.' (1.4.0 no title, श्री not yet listed)."),
+    Case('bengali_spelled_initial_is_not_a_title', 'এম. আবদুল লতিফ',
+         {'given': 'এম.', 'middle': 'আবদুল', 'family': 'লতিফ'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 1.4.0 through 3.0.1 read title 'এম.'."),
+    Case('gurmukhi_spelled_initial_is_not_a_title', 'ਐਮ. ਸਿੰਘ',
+         {'given': 'ਐਮ.', 'family': 'ਸਿੰਘ'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 1.4.0 through 3.0.1 read title 'ਐਮ.'."),
+    Case('brahmic_spelled_initial_after_a_head_modifier_before_a_comma', 'Vice एम. वर्मा, राम',
+         {'given': 'राम', 'family': 'Vice एम. वर्मा'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191) reaches H9's head run through the shape test: with no head title after it, Vice is a name word, as in the Latin 'Vice J. Smith, John'; 3.0.1 read title 'Vice', family 'एम. वर्मा'."),
+    Case('brahmic_lone_spelled_initial', 'एम.',
+         {'given': 'एम.'},
+         ambiguities=("given-or-family",),
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191): a lone spelled initial is a lone name word, reported given-or-family as a lone 'J.' is; 3.0.1 read title 'एम.'."),
+    Case('brahmic_spelled_initial_after_a_family_comma', 'वर्मा, एम.',
+         {'given': 'एम.', 'family': 'वर्मा'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191) at the head of the part after a family comma, as 'Smith, J.' reads; 3.0.1 read title 'एम.'."),
+    Case('brahmic_spelled_initial_before_a_suffix_comma', 'एम. वर्मा, जूनियर',
+         {'given': 'एम.', 'family': 'वर्मा', 'suffix': 'जूनियर'},
+         classification="fix(#1191)",
+         notes="rules/H2's Brahmic veto (#1191) on the suffix-comma path; 3.0.1 read title 'एम.'."),
     Case("ja_lone_name_with_a_period_is_not_a_title", "田中.",
          {"family": "田中."},
          classification="fix(#323)",

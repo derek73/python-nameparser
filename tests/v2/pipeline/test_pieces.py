@@ -649,8 +649,18 @@ def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
     ("たなか.", False),     # nor kana
     ("Kim김.", False),        # contains-any, not wholly-of: one CJK char vetoes
     ("J.", False),          # a bare initial never was (H2 boundary)
+    # #1191: nor a Brahmic script, where a spelled initial with no vowel
+    # sign (M. written एम.) is a run of two letters
+    ("एम.", False),         # Devanagari
+    ("এম.", False),         # Bengali
+    ("ਐਮ.", False),         # Gurmukhi
+    ("એમ.", False),         # Gujarati
+    ("ଏମ.", False),         # Odia
+    ("එම.", False),         # Sinhala, the range's far end
+    ("ດຣ.", True),          # Lao, outside the range, as Thai is
+    ("Mएम.", False),        # contains-any, as Kim김. is
 ])
-def test_leading_title_shape_refuses_an_initialless_script(
+def test_leading_title_shape_refuses_a_script_it_does_not_read(
         text: str, expected: bool) -> None:
     # Xyz. rather than Rev. for the Latin side: Rev. is LISTED, so
     # is_title_piece claims it before the shape is asked
@@ -661,7 +671,7 @@ def test_leading_title_shape_refuses_an_initialless_script(
 
 @pytest.mark.parametrize("text", [
     "Xyz.", "Dr.", "Xyz", "X.", "田中.", "김민준.", "たなか.", "Kim김.", "J.",
-    "Chas.", "MA.",
+    "Chas.", "MA.", "एम.", "এম.", "ਐਮ.", "Mएम.", "એમ.", "ଏମ.", "එම.", "ດຣ.",
 ])
 def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
     # The two spellings of H2's shape test -- `is_title_shaped`'s own

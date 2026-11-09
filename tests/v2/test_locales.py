@@ -804,6 +804,26 @@ def test_ja_adapter_declines_shime_tokens(
     assert calls == []          # the decline sits before divide_name
 
 
+@pytest.mark.parametrize("text", ["あいさわいちろう", "なかやめぐ", "さくらエミ"])
+def test_ja_adapter_declines_a_token_with_no_kanji(
+        monkeypatch: pytest.MonkeyPatch, text: str) -> None:
+    # #1193: namedivider reads kanji statistics, and a token with none
+    # comes back cut after its first character, so the adapter declines
+    # before divide_name; a token holding a kanji still reaches it
+    calls: list[str] = []
+
+    def divide(name: str) -> _FakeDivided:
+        calls.append(name)
+        return _FakeDivided(name[:1], name[1:], 0.2)
+
+    _fake_namedivider(monkeypatch, divide)
+    seg = locales.ja_segmenter()
+    assert seg(text) is None
+    assert calls == []
+    assert seg("山田たろう") is not None
+    assert calls == ["山田たろう"]
+
+
 def test_ja_adapter_defensive_branches_against_a_stub(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # reconstruction failure -> decline; an empty side -> the stated
@@ -949,6 +969,24 @@ def test_ja_segmenter_declines_a_lone_character() -> None:
 
 
 @_needs_ja
+@pytest.mark.parametrize(("text", "family", "given"), [
+    ("あいさわいちろう", "あいさわいちろう", ""),
+    ("なかやめぐ", "なかやめぐ", ""),
+    ("山田たろう", "山田", "たろう"),
+    ("あいさわ　いちろう", "あいさわ", "いちろう"),
+])
+def test_ja_leaves_a_name_with_no_kanji_whole(
+        text: str, family: str, given: str) -> None:
+    # #1193, through the real divider: a hiragana name stays whole, as
+    # it does with the pack and no segmenter, where namedivider cut it
+    # after its first character with a SEGMENTATION report; a kanji
+    # still reaches the divider, and a written space still divides
+    n = _PACKED["ja"].parse(text)
+    assert (n.family, n.given) == (family, given)
+    assert n.ambiguities == ()
+
+
+@_needs_ja
 def test_ja_leaves_spaced_names_to_the_default_order() -> None:
     # the segmenter's precondition (see test_parser.py): a spaced name
     # is already divided, and the kana/Han family-first defaults read
@@ -1043,19 +1081,17 @@ def test_ja_reports_statistical_divisions_and_not_rule_based_ones() -> None:
 
 
 @_needs_ja
-def test_ja_divides_a_lone_hiragana_token() -> None:
-    # The whole-name presumption, applied to hiragana: at token level a
-    # bare given name is indistinguishable from a full name, so the
-    # stage gates みなみ in and namedivider divides it -- み + なみ,
-    # which is wrong if the writer meant the given name alone and right
-    # if they meant a (rare) all-kana full name. Exactly the acceptance
-    # 田中 -> 田 + 中 already carries for kanji, pinned here so the kana
-    # path's version is a recorded consequence rather than a surprise.
-    # The statistical score puts a SEGMENTATION report on it, which is
-    # the caller's handle for routing it to review.
+def test_ja_leaves_a_lone_hiragana_token_whole() -> None:
+    # The whole-name presumption no longer reaches hiragana: until #1193
+    # the stage gated みなみ in and namedivider cut it み + なみ with a
+    # SEGMENTATION report, wrong where the writer meant the given name
+    # alone. A token with no kanji now declines at the adapter, so it
+    # reads as the pack with no segmenter reads it, the lone name word
+    # a family. The kanji version of the presumption (田中 -> 田 + 中)
+    # still stands, namedivider having kanji to read there.
     n = _PACKED["ja"].parse("みなみ")
-    assert (n.family, n.given) == ("み", "なみ")
-    assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+    assert (n.family, n.given) == ("みなみ", "")
+    assert n.ambiguities == ()
 
 
 @_needs_ja
