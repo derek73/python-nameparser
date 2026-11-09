@@ -1000,6 +1000,9 @@ class _RoleRule:
     across: tuple[Role, ...] = ()
     tried_into: bool = True
 
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
 
 def _compare_text(a: str, b: str, left: ParsedName, right: ParsedName,
                   lexicon: Lexicon, accept: frozenset[Outcome],
