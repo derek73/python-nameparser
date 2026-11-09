@@ -486,6 +486,18 @@ def test_the_other_reading_is_consistent_where_accepted() -> None:
     assert m.keys("Suharto") == frozenset()
 
 
+def test_an_ambiguity_with_no_alternative_reading_is_skipped() -> None:
+    # an unbalanced delimiter reports a shape, not a fork between two
+    # readings, so it offers no other reading to try; the pair conflicts
+    # as parsed, so the search runs and finds nothing else to read
+    name = parse("John (Smith Doe")
+    assert [a.alternative for a in name.ambiguities] == [None]
+    r = _with(Outcome.OTHER_READING).check(name, "James (Smith Doe")
+    assert not r.consistent
+    assert r == m.check(name, "James (Smith Doe")
+    assert (r.left_alternative, r.right_alternative) == (None, None)
+
+
 def test_the_other_reading_does_not_hide_a_conflict() -> None:
     r = _with(Outcome.OTHER_READING).check("Suharto", "Sukarno")
     assert not r.consistent
