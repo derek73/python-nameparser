@@ -220,9 +220,9 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **How it works.** The purest case is a recorded expectation whose only consumer is the check that compares it, re-derived by nothing: tools/differential/snapshot.jsonl records every corpus name's reading, and tests/v2/test_snapshot.py compares the tree against it.
 
-**Lives in.** tools/differential/snapshot.jsonl, tests/v2/test_benchmark.py (_CALL_BASELINE), tests/v2/rules_budget.json (each rule's recorded size).
+**Lives in.** tools/differential/snapshot.jsonl, tests/v2/test_benchmark.py (_CALL_BASELINE).
 
-**Reach for it when.** Writing a check whose expected value is computed by the code under test, or a comment that enumerates ids/counts — make it data the suite asserts. And when a roster row carries anything the check CONSUMES rather than compares, ask what measures that half.
+**Reach for it when.** Writing a check whose expected value is computed by the code under test, or a comment that enumerates ids/counts — make it data the suite asserts. And when a roster row carries anything the check CONSUMES rather than compares, ask what measures that half. Not for a measure with no wrong answer, one a failing check can only answer by re-recording, that nearly every change in a busy area moves: its record of one sorted line per item puts every such PR in one file, where branches touching neighbouring items conflict, and a report measured against the merge-base shows the reviewer the same moves with nothing committed (decisions/rules-size-record, whose rule-size record was this entry's case until 2026-11-09). A record whose move can be a bug, as snapshot.jsonl's and `_CALL_BASELINE`'s are, stays a record: the conflict is the price of the check.
 
 ## COMPILED-DATA-COMMITTED — compile the data at build time, hold the artifact to a fresh compile
 
