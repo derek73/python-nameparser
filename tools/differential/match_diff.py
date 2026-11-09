@@ -13,12 +13,18 @@ settings, and every pair whose result or keys differ between two trees.
 THE PAIRS, drawn once by the parent from its own checkout and handed to
 both sides, so the base and the head read the same pairs whatever their
 tests hold: every pair of names a row of tests/v2/test_match.py writes,
-a seeded draw of pairings of those names, and from the local corpora in
-$NAMEPARSER_TOOLS_CACHE (~/.cache/nameparser-tools) that are fetched,
-jrc-names spellings of one entity and of different entities sharing a
-last word, tse-donors' filed and registry names, and PatentsView
-inventors' spellings of themselves. A corpus not fetched is left out
-with a note; the pairs are counted by source in the report.
+a seeded draw of pairings of those names, and from $NAMEPARSER_TOOLS_CACHE
+(~/.cache/nameparser-tools) where present: jrc-names spellings of one
+entity and of different entities sharing a last word (mostly different
+people, where a key-guarantee miss would show), tse-donors' filed and
+registry names (both local corpora, `local_corpora.py fetch`), and
+PatentsView inventors' spellings of themselves, read from the raw table
+PatentsView publishes (PATENTSVIEW_RAW), which the patentsview-inventors
+fetch reads and does not keep. A source not present is left out with a
+note saying how to get it; one present but unreadable stops the run. Each
+source draws with a generator of its own seeded by SEED and its name, so
+for the same sources present the pairs are the same, and the report
+counts them by source.
 
 THE SETTINGS (SETTINGS): the default accept set, each opt-in added
 alone, every opt-in, each default outcome but `same` taken out, the
@@ -33,7 +39,9 @@ status is 1 where any moved. Either way, every pair the head reads
 consistent that shares no key, the guarantee `keys` gives.
 
 A base's results are kept in the cache under a hash of its package's
-files, the pairs and this tool (snapshot.py's kept baselines), so a
+files, the pairs, the interpreter's minor version and this tool's code
+with the snapshot.py and corpus_build.py it reads (snapshot.py's kept
+baselines), so a
 second run reads only the head. Nothing here is committed: the corpora
 are cache-only, and jrc-names' licence keeps even a reading out of the
 tree.
@@ -68,13 +76,22 @@ import snapshot  # noqa: E402
 from corpus_build import jsonl_line, jsonl_lines  # noqa: E402
 
 REPO_ROOT = HERE.parents[1]
-#: The seed of every draw: the pairs depend on nothing but the sources.
+#: The seed of every draw, each source's generator seeded by it and the
+#: source's name.
 SEED = 1278
 #: How many pairs each draw takes at most.
 GRID_PAIRS = 15_000
 CORPUS_PAIRS = 4_000
-#: PatentsView's raw lines read, of its millions: enough for CORPUS_PAIRS.
+#: PatentsView's raw rows read, of its 24 million: 400,000 held 27,594
+#: inventors with two spellings or more on 2026-11-08.
 PATENTSVIEW_LINES = 400_000
+#: Where PatentsView's raw table is read from: the file
+#: `local_patentsview.PV_RAW` of its pinned release, put there by hand
+#: (the fetch of patentsview-inventors downloads it, reads it, and keeps
+#: only its extract, which holds no inventor's id), and checked against
+#: the size `local_patentsview.PV_FILES` pins.
+PATENTSVIEW_RAW = Path("patentsview-probe") / "g_inventor_not_disambiguated.tsv.zip"
+PATENTSVIEW_MEMBER = "g_inventor_not_disambiguated.tsv"
 OPT_INS = ("familiar-form", "family-initial", "given-one-side",
            "hyphenated-part", "across-roles")
 Setting = tuple[str, tuple[str, ...], tuple[str, ...], bool, "str | None"]
@@ -157,46 +174,70 @@ def _tse(rng: random.Random) -> Iterator[tuple[str, str, str]]:
 
 
 def _patentsview(rng: random.Random) -> Iterator[tuple[str, str, str]]:
-    path = cache_dir() / "patentsview-probe" / "g_inventor_not_disambiguated.tsv.zip"
+    import local_patentsview
+    path = cache_dir() / PATENTSVIEW_RAW
+    size = local_patentsview.PV_FILES[local_patentsview.PV_RAW][0]
+    if (got := path.stat().st_size) != size:
+        raise ValueError(f"{path} is {got:,} bytes, not the pinned release's "
+                         f"{size:,}")
     spellings: dict[str, set[str]] = {}
     with zipfile.ZipFile(path) as z:
-        with z.open(z.namelist()[0]) as raw:
+        with z.open(PATENTSVIEW_MEMBER) as raw:
             text = io.TextIOWrapper(raw, encoding="utf-8", newline="")
             reader = csv.DictReader(text, delimiter="\t")
             for n, row in enumerate(reader):
                 if n >= PATENTSVIEW_LINES:
                     break
+                if None in row.values() or None in row:
+                    raise ValueError(f"{path} row {n + 2} is not as wide as "
+                                     f"its header: {row!r}")
                 name = " ".join(filter(None, (
-                    (row["raw_inventor_name_first"] or "").strip(),
-                    (row["raw_inventor_name_last"] or "").strip())))
-                spellings.setdefault(row["inventor_id"], set()).add(name)
+                    row["raw_inventor_name_first"].strip(),
+                    row["raw_inventor_name_last"].strip())))
+                if name:
+                    spellings.setdefault(row["inventor_id"], set()).add(name)
     ids = sorted(i for i in spellings if len(spellings[i]) > 1)
     for i in rng.sample(ids, min(CORPUS_PAIRS, len(ids))):
         a, b = sorted(spellings[i])[:2]
         yield ("PatentsView, one inventor", a, b)
 
 
-CORPORA = (("jrc-names", _jrc), ("tse-donors", _tse),
-           ("patentsview", _patentsview))
+#: Each source, its draw and how to get it where it is not present.
+CORPORA = (
+    ("jrc-names", _jrc,
+     "uv run python tools/differential/local_corpora.py fetch jrc-names"),
+    ("tse-donors", _tse,
+     "uv run python tools/differential/local_corpora.py fetch tse-donors"),
+    ("patentsview", _patentsview,
+     f"put PatentsView's {PATENTSVIEW_RAW.name} (release "
+     f"2025-12-31, the USPTO Open Data Portal's PVGPATDIS product) at "
+     f"$NAMEPARSER_TOOLS_CACHE/{PATENTSVIEW_RAW}"),
+)
 
 
 def draw_pairs(tests: Path) -> tuple[list[tuple[str, str, str]], list[str]]:
-    """Every pair, each with its source, and a note for each corpus not
-    read. One `random.Random(SEED)` draws them in a fixed order."""
-    rng = random.Random(SEED)
+    """Every pair, each with its source, and a note for each source not
+    present. Each draw has a generator of its own, seeded by SEED and
+    its name, so a source absent moves no other source's pairs. Raises
+    SystemExit naming the source where one present cannot be read: a
+    source that changed its columns or was cut is a broken measurement,
+    not a missing one."""
     written = test_pairs(tests)
     pairs = [("tests, as written", a, b) for a, b in written]
     names = sorted({n for p in written for n in p if len(n) < 60})
     grid = [(a, b) for a in names for b in names if a != b]
-    rng.shuffle(grid)
+    random.Random(f"{SEED}-tests").shuffle(grid)
     pairs += [("tests, paired", a, b) for a, b in grid[:GRID_PAIRS]]
     notes = []
-    for name, draw in CORPORA:
+    for name, draw, how in CORPORA:
         try:
-            pairs += list(draw(rng))
-        except (OSError, KeyError, zipfile.BadZipFile) as e:
-            notes.append(f"{name}: not read ({type(e).__name__}: {e}); fetch "
-                         f"it with tools/differential/local_corpora.py")
+            pairs += list(draw(random.Random(f"{SEED}-{name}")))
+        except FileNotFoundError as e:
+            notes.append(f"{name}: not present ({e.filename}); {how}")
+        except (OSError, KeyError, ValueError, zipfile.BadZipFile) as e:
+            raise SystemExit(f"{name}: present but unreadable "
+                             f"({type(e).__name__}: {e}); fetch it again "
+                             f"({how}) or move it aside") from e
     return pairs, notes
 
 
@@ -267,9 +308,11 @@ def _run_side(tree: Path, pairs_file: Path, out: Path, jobs: int) -> str:
 
 def _kept_path(pairs_text: str, digest: str) -> Path:
     """Where a base's results are kept: keyed by its package's files, the
-    pairs, the interpreter's minor version and this tool's own code."""
-    tool = hashlib.sha256(
-        Path(__file__).read_bytes() + (HERE / "snapshot.py").read_bytes()
+    pairs, the interpreter's minor version, and the code that writes a
+    row (this tool, snapshot.py and corpus_build.py)."""
+    tool = hashlib.sha256(b"".join(
+        (HERE / f).read_bytes()
+        for f in ("match_diff.py", "snapshot.py", "corpus_build.py"))
     ).hexdigest()[:12]
     pairs = hashlib.sha256(pairs_text.encode("utf-8")).hexdigest()[:12]
     py = f"py{sys.version_info[0]}{sys.version_info[1]}"
@@ -307,21 +350,28 @@ def base_side(root: Path, pairs_file: Path, pairs_text: str, rows: int,
 # -- the report --------------------------------------------------------------
 
 def what_moved(old: dict[str, Any], new: dict[str, Any]) -> list[str]:
-    """What differs between two rows of one pair and setting."""
+    """What differs between two rows of one pair and setting, never
+    nothing where the rows differ."""
     moved = []
     if old["consistent"] != new["consistent"]:
         moved.append(f"verdict {old['consistent']} -> {new['consistent']}")
-    for (role, o, *rest), (_, n, *rest2) in zip(old["roles"], new["roles"]):
-        if o != n:
-            moved.append(f"{role}: {o} -> {n}")
-        elif rest != rest2:
-            moved.append(f"{role}: texts or side")
+    if [r[0] for r in old["roles"]] != [r[0] for r in new["roles"]]:
+        moved.append("roles listed")
+    else:
+        for (role, o, *rest), (_, n, *rest2) in zip(old["roles"], new["roles"]):
+            if o != n:
+                moved.append(f"{role}: {o} -> {n}")
+            elif rest != rest2:
+                moved.append(f"{role}: texts or side")
     if old["across"] != new["across"]:
         moved.append("across-roles matches")
     if old["alternatives"] != new["alternatives"]:
         moved.append("reading used")
     if old["keys"] != new["keys"]:
         moved.append("keys")
+    if not moved and old != new:
+        # a part this function does not name: never a move under no heading
+        moved.append("other")
     return moved
 
 
@@ -408,7 +458,14 @@ def main(argv: list[str] | None = None) -> int:
         rows = len(pairs) * len(SETTINGS)
         base = (base_side(base_root, pairs_file, pairs_text, rows, args.jobs)
                 if base_root else None)
+        before = snapshot._source_digest(head_root)
         head = _run_side(head_root, pairs_file, work / "head.jsonl", args.jobs)
+        if snapshot._source_digest(head_root) != before:
+            raise SystemExit(f"{head_root / 'nameparser'} changed while it "
+                             f"was read; run again")
+        if (got := len(jsonl_lines(head))) != rows:
+            raise SystemExit(f"the head wrote {got} rows, not the {rows} "
+                             f"its pairs and settings make")
     finally:
         shutil.rmtree(work, ignore_errors=True)
     print(snapshot.head_line(head_root, base_root) if base_root
