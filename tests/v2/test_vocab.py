@@ -450,6 +450,14 @@ MUTATIONS = [
     ("familiar-short-for-not-normalized", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["Zzr"], note = "x" }')}, "written normalized"),
     ("familiar-without-note", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"] }')}, "needs a `note`"),
     ("familiar-with-same-as", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x", same_as = "zzr" }')}, "unknown key 'same_as'"),
+    ("familiar-short-for-a-string", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = "zzr", note = "x" }')}, "short_for must be a non-empty list"),
+    ("familiar-short-for-empty", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = [], note = "x" }')}, "short_for must be a non-empty list"),
+    ("familiar-short-for-twice", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr", "zzr"], note = "x" }')}, "each once"),
+    ("familiar-short-for-two-words", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zz r"], note = "x" }')}, "one word"),
+    ("familiar-unknown-key", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x", expands = "y" }')}, "unknown key 'expands'"),
+    # check 13 is not suppressed by a familiar reading beside the
+    # mul.toml vocabulary reading
+    ("mul-word-with-a-familiar-reading-and-a-name-elsewhere", {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\nfamiliar = { short_for = ["zzr"], note = "x" }'), "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }')}, "en.toml: 'zzq' given: .* a strict choice reads where it drops"),
     # 7: same_as and cased
     ("same-as-missing-target", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as 'jr'"),
     ("same-as-its-own-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jr" }')}, "names the word itself"),
@@ -550,6 +558,13 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
         {"und.toml": _w('[[word]]\ntext = "abu"\ngiven = { note = "x" }\nparticle = {}\nbound_given = {}')},
+        # check 13 exempts a familiar reading, which no parse reads: one
+        # in mul.toml beside a name reading elsewhere, and one elsewhere
+        # beside a mul.toml vocabulary reading, each build
+        {"mul.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x" }'),
+         "en.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\ngiven = { note = "x" }')},
+        {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}'),
+         "en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x" }')},
         # check 13 met: a mul.toml word's name reading in mul.toml itself,
         # as `ing`'s, and MUL_SHARED's `i` read by another file too
         {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\ngiven = { note = "x" }')},
@@ -1467,3 +1482,13 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
         assert getattr(locales, attr).policy == rules_patch(tag), attr
     with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ru, sk, tr"):
         rules_patch("en")
+
+
+def test_a_familiar_reading_feeds_no_set_but_familiar() -> None:
+    # no set a parse reads: the word is in FAMILIAR alone, and as a key
+    assert _sets_fed("familiar") == {"FAMILIAR"}
+    c = _compile({"en.toml": _w('[[word]]\ntext = "zzq"\n'
+                                'familiar = { short_for = ["zzr"], note = "x" }')})
+    assert c["FAMILIAR"] == {"zzq": ("zzr",)}
+    assert not any("zzr" in v for k, v in c.items()
+                   if k != "FAMILIAR" and isinstance(v, frozenset))
