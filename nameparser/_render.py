@@ -36,10 +36,13 @@ from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
 _MONGOLIAN_LETTER = "[\u180B-\u180F\u181A-\u18AF]"
 _SPACES = re.compile(
     rf"(?:(?!(?<={_MONGOLIAN_LETTER})\u202F(?={_MONGOLIAN_LETTER}))\s)+")
-_SPACE_BEFORE_COMMA = re.compile(r"\s+,")
 #: ASCII, Arabic, fullwidth, Ethiopic, Burmese, then N'Ko, Mongolian,
-#: Manchu, Lisu, Vai and Bamum: _pipeline._state.COMMA_CHARS
-_COMMA_CHAR = re.compile("[,\u060c\uff0c\u1363\u104a\u07f8\u1802\u1808\ua4fe\ua60d\ua6f5]")
+#: Manchu, Lisu, Vai and Bamum: _pipeline._state.COMMA_CHARS, which
+#: render may not import (tests/v2/test_regex_sync.py holds the copy)
+_COMMAS = ",\u060c\uff0c\u1363\u104a\u07f8\u1802\u1808\ua4fe\ua60d\ua6f5"
+_COMMA_CHAR = re.compile(f"[{_COMMAS}]")
+#: a space written before a comma of any script, which keeps the comma
+_SPACE_BEFORE_COMMA = re.compile(rf"\s+([{_COMMAS}])")
 _MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
 _NAME_RUN = re.compile(r"\w+")
@@ -134,16 +137,16 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
 def _collapse(rendered: str) -> str:
     """The #254 collapse: empty fields substitute '' and every artifact
     of that is removed -- dangling empty-nickname wrappers, space runs,
-    space-before-comma, one trailing comma character (any script),
-    leading/trailing ', ' debris."""
+    space-before-comma and leading or trailing commas and spaces, the
+    comma of any script whose comma the parse reads."""
     rendered = (rendered.replace(" ()", "")
                         .replace(" ''", "")
                         .replace(' ""', ""))
-    rendered = _SPACE_BEFORE_COMMA.sub(",", rendered)
+    rendered = _SPACE_BEFORE_COMMA.sub(r"\1", rendered)
     rendered = _SPACES.sub(" ", rendered.strip())
     if rendered and _COMMA_CHAR.fullmatch(rendered[-1]):
         rendered = rendered[:-1]
-    return rendered.strip(", ")
+    return rendered.strip(_COMMAS + " ")
 
 
 def _format_spec(spec: str, values: dict[str, str], noun: str,
@@ -287,7 +290,7 @@ def _default_render(name: ParsedName,
         out.append(prev_close)
     # a comma that is a word of its own (a delimited nickname's) keeps
     # no space before it, as 2.x's collapse wrote it
-    return _SPACE_BEFORE_COMMA.sub(",", "".join(out))
+    return _SPACE_BEFORE_COMMA.sub(r"\1", "".join(out))
 
 
 def _side_by_side(name: ParsedName, a: Token, b: Token,

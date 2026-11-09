@@ -17875,6 +17875,16 @@ CASES: tuple[Case, ...] = (
                "as two entries (rules/R1), as the ASCII one does; "
                "str() writes it back as written. 1.4.0 read nickname "
                "'Jr， PhD'"),
+    Case("period_joined_member_before_an_arabic_comma_reports",
+         "John Smith (Msc.Ed، Bob)",
+         {"given": "John", "family": "Smith", "nickname": "Msc.Ed، Bob"},
+         ambiguities=("suffix-or-nickname",),
+         classification="fix(#1202)",
+         notes="a period-joined word holding a member (rules/S3) "
+               "reports beside a non-ASCII comma as beside ',': "
+               "`period_member` takes the comma off with the whole set. "
+               "No corpus name has this shape, so the comma invariant "
+               "in test_properties cannot see it"),
     Case("burmese_comma_inside_a_set_apart_clause",
          "John Smith (MBA၊ PhD)",
          {"given": "John", "family": "Smith", "suffix": "MBA, PhD"},

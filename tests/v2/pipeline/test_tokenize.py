@@ -376,6 +376,10 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
     # a variation selector or the vowel separator beside it joins
     ("ᠴᠣᠢ\u1803\u202fᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u1803", "ᠪᠠ", "ᠴᠣᠢ"]),
     ("ᠴᠣᠢ\u202f\u1803ᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "\u1803ᠪᠠ", "ᠴᠣᠢ"]),
+    # and the comma divides on either side of U+202F, which it was
+    # read glued to before it joined COMMA_CHARS
+    ("ᠴᠣᠢ\u1802\u202fᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "ᠪᠠ", "ᠴᠣᠢ"]),
+    ("ᠴᠣᠢ\u202f\u1802ᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "ᠪᠠ", "ᠴᠣᠢ"]),
     ("ᠴᠣᠢ\u180b\u202fᠢᠨ ᠴᠣᠢ", ["ᠴᠣᠢ\u180b\u202fᠢᠨ", "ᠴᠣᠢ"]),
     ("ᠴᠣᠢ\u202f\u180eᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u202f\u180eᠠ", "ᠴᠣᠢ"]),
     # a run holding U+202F is whitespace, and one at the string's start
@@ -412,6 +416,35 @@ def test_ethiopic_and_burmese_comma_shapes(order: tuple[Role, Role, Role], text:
     ascii_twin = text.replace("\u1363", ",").replace("\u104a", ",")
     assert name.as_dict() == Parser(policy=Policy(
         name_order=order)).parse(ascii_twin).as_dict()
+
+
+def _non_ascii_commas() -> list[str]:
+    from nameparser._pipeline._state import COMMA_CHARS
+    return sorted(COMMA_CHARS - {","})
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST,
+                                   FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("comma", _non_ascii_commas())
+@pytest.mark.parametrize("shape", [
+    # root AGENTS.md's comma shapes, glued and spaced: a full name, one
+    # word and nothing before the comma, a third part, and a clause
+    # S1 sets apart, a particle surname and a title before the comma
+    "Smith Jones{c} John", "Smith{c}John", "Smith{c} John", "{c} John",
+    "de la Vega{c} Juan", "Dr. Smith{c} John",
+    "Smith{c} John{c} Jr.", "John Smith{c} Jr.", "John Smith (Dr.{c} PhD)",
+])
+def test_every_comma_reads_its_shapes_as_the_ascii_comma_does(
+        order: tuple[Role, Role, Role], comma: str, shape: str) -> None:
+    # every member of COMMA_CHARS, so a member added later is swept
+    # without a row of its own (#1202's follow-up)
+    parser = Parser(policy=Policy(name_order=order))
+    twin = parser.parse(shape.format(c=comma))
+    plain = parser.parse(shape.format(c=","))
+    assert {k: v.replace(comma, ",") for k, v in twin.as_dict().items()} \
+        == plain.as_dict()
+    assert [(a.kind, a.alternative) for a in twin.ambiguities] \
+        == [(a.kind, a.alternative) for a in plain.ambiguities]
 
 
 @pytest.mark.parametrize("order, expect", [
