@@ -23,9 +23,11 @@ rather than transcribed by hand:
 - names.csv of the nicknames list by Old Dominion University's Web
   Science and Digital Libraries Research Group (Apache License 2.0;
   github.com/carltonnorthern/nicknames, pinned to one commit by
-  NICKNAMES_URL and NICKNAMES_SHA256), rows of (name, "has_nickname",
-  nickname) drawn from US records and genealogy, with no country or
-  band. It is noisy, mixing familiar forms with spellings of one name
+  NICKNAMES_URL and NICKNAMES_SHA256), a lookup of English given
+  names' nicknames and diminutives as rows of (name, "has_nickname",
+  nickname), with no country or band, some pairs written both ways
+  round (`babs` / `barbara` and `barbara` / `babs`), each imported as
+  written. It is noisy, mixing familiar forms with spellings of one name
   (Allan, Allen), other languages' forms (John, Ivan) and other names
   (Aaron, Erin), so each pair it holds was reviewed, and the pairs
   refused are listed with their reasons in nicknames_excluded.tsv
@@ -33,8 +35,8 @@ rather than transcribed by hand:
   LIST). The rest go in NICKNAMES_TAG's file, US English usage, with a
   note naming the list alone, as the list gives no evidence per pair.
 
-Each pair goes in the file of every language whose country column
-attests it (COUNTRY_LANGUAGE, the column's language; a multilingual
+Each nam_dict pair goes in the file of every language whose country
+column attests it (COUNTRY_LANGUAGE, the column's language; a multilingual
 country is mapped by what its column holds, or not at all), a pair
 with no band, or one in "other countries" only, in mul.toml. The
 lines the "+" sort flag marks are the umlaut-expanded duplicates the
@@ -105,9 +107,11 @@ NICKNAMES_TAG = "en"
 #: The list's pairs refused on review, each with its reason.
 NICKNAMES_EXCLUDED = Path(__file__).with_name("nicknames_excluded.tsv")
 #: Why a pair was refused: two spellings of one name, a form of another
-#: language, a name of its own, or a pair the review could not settle.
+#: language, a name of its own, two forms of one name neither made from
+#: the other (which would reach each other through that name, as pairs
+#: never chain), or a pair the review could not settle.
 EXCLUSION_CATEGORIES = frozenset({
-    "spelling", "translation", "different-name", "unclear"})
+    "spelling", "translation", "different-name", "sibling", "unclear"})
 
 #: nam_dict's country columns, as its legend names them, each with the
 #: BCP 47 tag of the language its names are written in. A country of
@@ -231,6 +235,9 @@ def read_nicknames(text: str) -> list[tuple[str, str]]:
         if len(row) != 3 or row[1] != "has_nickname":
             raise ValueError(f"nicknames list line {number} is not "
                              f"'name,has_nickname,nickname': {row!r}")
+        if not row[0] or not row[2]:
+            raise ValueError(f"nicknames list line {number} has an empty "
+                             f"name: {row!r}")
         out.append((row[0], row[2]))
     if len(set(out)) != len(out):
         raise ValueError("the nicknames list repeats a row")
@@ -276,8 +283,8 @@ def load_nicknames() -> list[tuple[str, str]]:
 
 
 def read_exclusions(text: str) -> dict[tuple[str, str], str]:
-    """The reviewed refusals, (name, nickname) -> category, from the
-    TSV's name, nickname, category and reason columns. Raises
+    """The reviewed refusals, (full, nickname) -> category, from the
+    TSV's full, nickname, category and reason columns. Raises
     ValueError for a header other than those four, a row of another
     width, an unknown category, an empty reason, or a pair listed
     twice."""
@@ -323,28 +330,58 @@ def keep_nicknames(rows: Iterable[tuple[str, str]],
                    placements: Placements) -> Nicknames:
     """The list's pairs less the refused ones, and less those nam_dict
     already places in NICKNAMES_TAG's file either way, keyed by the
-    nickname. Raises ValueError for a refusal naming no row of the list,
-    which a new commit of the list would leave stale, and for a pair
-    whose two names normalize alike."""
+    nickname. A refusal is of the pair, whichever way round, as the
+    match reads a pair either way. Raises ValueError for a refusal
+    naming no row of the list, which a new commit of the list would
+    leave stale; for a pair the list holds both ways round with one row
+    refused and the other not, which the review must settle; for a
+    refused pair nam_dict also places, which no refusal here reaches;
+    for a kept name that is not letters alone (an initial, `k.c.`); and
+    for a pair whose two names normalize alike."""
     rows = list(rows)
-    stale_refusals = sorted(set(excluded) - set(rows))
+    listed = set(rows)
+    stale_refusals = sorted(set(excluded) - listed)
     if stale_refusals:
         shown = ", ".join(f"{f} = {n}" for f, n in stale_refusals[:5])
         raise ValueError(f"{NICKNAMES_EXCLUDED.name} refuses "
                          f"{len(stale_refusals)} pairs the list does not "
                          f"hold: {shown}")
-    held = placements.get(NICKNAMES_TAG, {})
+    halves = sorted((f, n) for f, n in excluded
+                    if (n, f) in listed and (n, f) not in excluded)
+    if halves:
+        shown = ", ".join(f"{f} = {n}" for f, n in halves[:5])
+        raise ValueError(f"{NICKNAMES_EXCLUDED.name} refuses {shown} but "
+                         f"not the list's row the other way round, which "
+                         f"the match reads as the same pair; refuse both "
+                         f"rows or neither")
     placed = {(short, build._normalize(long))
+              for tag in placements.values()
+              for short, longs in tag.items() for long in longs}
+    unreached = sorted(
+        (f, n) for f, n in excluded
+        if {(build._normalize(n), build._normalize(f)),
+            (build._normalize(f), build._normalize(n))} & placed)
+    if unreached:
+        shown = ", ".join(f"{f} = {n}" for f, n in unreached[:5])
+        raise ValueError(f"{NICKNAMES_EXCLUDED.name} refuses {shown}, "
+                         f"which nam_dict pairs too; a refusal here does "
+                         f"not reach nam_dict's pairs")
+    held = placements.get(NICKNAMES_TAG, {})
+    in_tag = {(short, build._normalize(long))
               for short, longs in held.items() for long in longs}
     out: Nicknames = {}
     for full, nickname in rows:
         if (full, nickname) in excluded:
             continue
+        if not (full.isalpha() and nickname.isalpha()):
+            raise ValueError(f"{nickname} = {full}: a name of the list "
+                             f"that is not letters alone; refuse it in "
+                             f"{NICKNAMES_EXCLUDED.name}")
         short, long = build._normalize(nickname), build._normalize(full)
         if short == long:
             raise ValueError(f"{nickname} = {full}: the two names "
                              f"normalize alike")
-        if (short, long) in placed or (long, short) in placed:
+        if (short, long) in in_tag or (long, short) in in_tag:
             continue
         out.setdefault(short, set()).add(long)
     return out
@@ -418,9 +455,11 @@ def reading_line(longs: Mapping[str, Mapping[str, int]],
 
 
 def _owned(line: str) -> bool:
-    return line.startswith("familiar = {") and any(
-        f"note = {_toml_str(source)[:-1]}" in line
-        for source in (SOURCE, NICKNAMES_SOURCE))
+    """A familiar line the tool wrote: its note nam_dict's (SOURCE and
+    the words note() writes after it) or the nicknames list's alone."""
+    return line.startswith("familiar = {") and (
+        f"note = {_toml_str(SOURCE + ' pairs it with')[:-1]}" in line
+        or line.endswith(f"note = {_toml_str(NICKNAMES_SOURCE)} }}"))
 
 
 def strip(text: str, name: str = "the file") -> str:
@@ -581,6 +620,7 @@ def main(argv: list[str] | None = None) -> int:
                 path.write_text(text, encoding="utf-8")
             print(f"wrote {_shown(path)}", file=sys.stderr)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -61,11 +61,11 @@ bedelia	bridgit	different-name	distinct Irish form
 bella	belle	spelling	spellings of one short form
 benjamin	jamie	different-name	Jamie is from James
 berney	bernie	spelling	spellings of one short form
-bert	bob	different-name	chained through Robert
-bert	bobby	different-name	chained through Robert
+bert	bob	sibling	chained through Robert
+bert	bobby	sibling	chained through Robert
 bertrand	randy	different-name	Randy is from Randall; obscure link
-beth	betsy	different-name	sibling forms of Elizabeth, chained
-beth	betty	different-name	sibling forms of Elizabeth, chained
+beth	betsy	sibling	sibling forms of Elizabeth, chained
+beth	betty	sibling	sibling forms of Elizabeth, chained
 biddie	biddy	spelling	spellings of one short form
 bill	fred	different-name	distinct name; no link
 bill	robert	different-name	Bill is from William
@@ -87,9 +87,7 @@ bryanna	briana	spelling	spellings of one name
 bryanna	brianna	spelling	spellings of one name
 bryant	bryan	different-name	distinct name
 carla	karla	spelling	spellings of one name
-carol	carolann	different-name	distinct compound name
 carol	carole	spelling	spellings of one name
-carol	caroline	different-name	distinct name
 carol	cassie	different-name	Cassie is from Cassandra
 carol	kara	different-name	distinct name; resemblance only
 carol	kari	different-name	distinct name; resemblance only
@@ -112,7 +110,7 @@ chelsea	chelsie	spelling	spellings of one name
 chelsey	chelsie	spelling	spellings of one name
 chris	kris	spelling	spellings of one short form
 christiana	ann	different-name	distinct name; obscure link
-christy	crissy	different-name	two forms of Christina, neither formed from the other; pairs do not chain
+christy	crissy	sibling	two forms of Christina, neither formed from the other; pairs do not chain
 claire	clair	spelling	spellings of one name
 claire	clara	different-name	distinct related name
 claire	clare	spelling	spellings of one name
@@ -287,6 +285,10 @@ jonathon	john	different-name	distinct name; Jonathan is not John
 jonathon	johnathan	spelling	spellings of one name
 jonathon	johnathon	spelling	spellings of one name
 jonathon	jonathan	spelling	spellings of one name
+josey	josophine	unclear	corrupt entry: Josophine for Josephine
+josophine	jo	unclear	corrupt entry: Josophine for Josephine
+josophine	joey	unclear	corrupt entry: Josophine for Josephine
+josophine	josey	unclear	corrupt entry: Josophine for Josephine
 joyce	joy	different-name	distinct name; resemblance only
 judah	juder	spelling	variant spelling of Judah
 judith	juda	different-name	Juda is Judah, a distinct name
@@ -298,6 +300,7 @@ justin	justus	different-name	distinct name; resemblance only
 kalli	cali	spelling	spellings of one name
 kalli	kali	spelling	spellings of one name
 karla	carla	spelling	spellings of one name
+kasey	k.c.	spelling	initials spelling of one name
 katarina	catherine	translation	Slavic/German form of Catherine
 katherine	cassie	different-name	Cassie is Cassandra's; obscure link
 katherine	lena	different-name	Lena is Helena/Magdalena; obscure link
@@ -305,7 +308,7 @@ kathleen	cassie	different-name	Cassie is Cassandra's; obscure link
 kathleen	lena	different-name	Lena is Helena/Magdalena; obscure link
 katia	kate	translation	Russian diminutive, not an English short form
 katia	katie	spelling	near-spelling of different diminutives
-katy	kathy	different-name	sibling diminutives of Katherine
+katy	kathy	sibling	sibling diminutives of Katherine
 katy	katie	spelling	spellings of one name
 kelley	kelli	spelling	spellings of one name
 kelley	kellie	spelling	spellings of one name
@@ -322,7 +325,7 @@ kimberly	kimberley	spelling	spellings of one name
 kimberly	kimberli	spelling	spellings of one name
 kris	chris	spelling	spellings of one short form
 kristina	christina	spelling	spellings of one name
-kristy	chris	different-name	two forms of Christine, neither formed from the other; pairs do not chain
+kristy	chris	sibling	two forms of Christine, neither formed from the other; pairs do not chain
 laurence	lorne	different-name	Lorne is a distinct Scottish name
 laurinda	lawrence	different-name	male name; resemblance only
 laverne	vernon	different-name	distinct male name
@@ -332,6 +335,7 @@ leo	leon	different-name	distinct name
 leonard	lineau	unclear	unrecognized form
 leonore	elenor	different-name	Eleanor is a distinct name
 leonore	honor	different-name	Honor is a distinct name
+leroy	l.r.	spelling	initials spelling of one name
 letitia	lettice	different-name	vernacular variant, not a short form
 lilly	lily	spelling	spellings of one name
 lily	lilly	spelling	spellings of one name
@@ -341,7 +345,8 @@ lindsay	lindsie	spelling	spellings of one name
 lindsay	lindsy	spelling	spellings of one name
 lindy	lynn	different-name	Lynn is an independent name; weak link
 lionel	leon	different-name	distinct name; Lionel derives from Leon
-lisa	liz	different-name	two forms of Elizabeth, neither formed from the other; pairs do not chain
+lisa	liz	sibling	two forms of Elizabeth, neither formed from the other; pairs do not chain
+littleberry	l.b.	spelling	initials spelling of one name
 lois	louise	different-name	distinct name; resemblance only
 lorenzo	loren	different-name	Loren is an independent name
 lou	lu	spelling	spellings of one short form
@@ -431,7 +436,7 @@ orlando	roland	translation	Italian form of Roland
 ossy	ozzy	spelling	spellings of one pet form
 parmelia	amelia	different-name	Amelia is an independent name
 patrick	peter	different-name	distinct name
-patsy	patty	different-name	sibling diminutives, not one of the other
+patsy	patty	sibling	sibling diminutives, not one of the other
 paul	polly	different-name	Polly is Mary's; obscure link
 paula	lina	different-name	no familiar-form link
 pheriba	pherbia	spelling	spelling variant
@@ -441,13 +446,13 @@ philomena	menaalmena	unclear	corrupt entry
 rachel	rachael	spelling	spellings of one name
 rachel	shelly	different-name	Shelly is an independent name; obscure link
 raphael	ralph	different-name	distinct name; resemblance only
-reba	becca	different-name	sibling diminutives of Rebecca
-reba	beck	different-name	sibling diminutives of Rebecca
+reba	becca	sibling	sibling diminutives of Rebecca
+reba	beck	sibling	sibling diminutives of Rebecca
 reynold	reginald	different-name	distinct name, related origin
-rich	dick	different-name	sibling diminutives of Richard
-rich	rick	different-name	sibling diminutives of Richard
-ricky	dick	different-name	sibling diminutives of Richard
-ricky	rich	different-name	sibling diminutives of Richard
+rich	dick	sibling	sibling diminutives of Richard
+rich	rick	sibling	sibling diminutives of Richard
+ricky	dick	sibling	sibling diminutives of Richard
+ricky	rich	sibling	sibling diminutives of Richard
 robert	bill	different-name	Bill is William's
 robert	billy	different-name	Billy is William's
 robert	rupert	different-name	distinct name, related origin
@@ -525,7 +530,7 @@ virginia	jane	different-name	Jane is an independent name
 virginia	jennie	different-name	Jennie is Jane/Jennifer's
 waldo	ossy	different-name	Ossy is Oswald's
 waldo	ozzy	different-name	Ozzy is Oswald's
-wally	walt	different-name	sibling diminutives of Walter
+wally	walt	sibling	sibling diminutives of Walter
 westley	farmboy	different-name	fictional joke, not a nickname
 will	fred	different-name	Fred is Frederick's
 william	bela	different-name	Béla is a distinct Hungarian name

@@ -952,22 +952,25 @@ def test_a_listed_spelling_with_its_period_or_of_no_name_of_its_own(
     assert m.keys(a) & m.keys(b)
 
 
-@pytest.mark.parametrize("a, b", [
-    ("Jo Garcia", "José Garcia"), ("Jo Garcia", "Jose Garcia"),
-    ("Jo Garcia", "Joanne Garcia"), ("Ma Santos", "María Santos"),
-    ("Jas Singh", "James Singh"), ("JAS SINGH", "JAMES SINGH"),
-    ("Garcia, Jo", "Garcia, José"),
+@pytest.mark.parametrize("a, b, outcome", [
+    ("Jo Garcia", "José Garcia", Outcome.CONFLICT),
+    ("Jo Garcia", "Jose Garcia", Outcome.CONFLICT),
+    # the nicknames list pairs `jo` with Joanne: a familiar form, which
+    # the table reports and the default does not accept
+    ("Jo Garcia", "Joanne Garcia", Outcome.FAMILIAR_FORM),
+    ("Ma Santos", "María Santos", Outcome.CONFLICT),
+    ("Jas Singh", "James Singh", Outcome.CONFLICT),
+    ("JAS SINGH", "JAMES SINGH", Outcome.CONFLICT),
+    ("Garcia, Jo", "Garcia, José", Outcome.CONFLICT),
 ])
-def test_a_name_of_its_own_written_bare_is_itself(a: str, b: str) -> None:
+def test_a_name_of_its_own_written_bare_is_itself(
+        a: str, b: str, outcome: Outcome) -> None:
     # `jo`, `ma` and `jas` are given names of their own as well as
     # spellings of José, María and James, so written without the period
-    # each is the name, not a listed spelling of the long form (the
-    # nicknames list pairs `jo` with Joanne as a familiar form, which
-    # the table reports and the default does not accept)
+    # each is the name, not a listed spelling of the long form
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
-        assert not r.consistent
-        assert r["given"].outcome in (Outcome.CONFLICT, Outcome.FAMILIAR_FORM)
+        assert not r.consistent and r["given"].outcome is outcome
 
 
 def test_a_bare_middle_name_of_its_own_is_itself() -> None:

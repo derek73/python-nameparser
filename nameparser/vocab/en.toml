@@ -5495,7 +5495,7 @@ given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", not
 
 [[word]]
 text = "jo"
-familiar = { short_for = ["joan", "joann", "joanna", "joanne", "jocelyn", "jody", "johanna", "johannah", "josephine", "josophine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["joan", "joann", "joanna", "joanne", "jocelyn", "jody", "johanna", "johannah", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 given = { us_ssa = 180911, wikidata = 975, as_of = 2026-11-08, note = "Jo, a given name of its own: US SSA births summed over both sexes (F 179,057, M 1,854); nam_dict band 6 in the Netherlands and Korea, 5 in the U.S.A.; Wikidata (a lower bound) United States 143, United Kingdom 118, the Netherlands 106; also a Korean surname (US Census 2010 3,588 bearers, Wikidata 1,322, South Korea 1,116). Beside fil.toml's José written short, it makes the name match read Jo as José only written Jo. (decisions/name-matching, 2026-11-08)" }
 
 [[word]]
@@ -6261,12 +6261,16 @@ text = "carol"
 familiar = { short_for = ["carolann", "caroline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "carolann"
+familiar = { short_for = ["carol"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "carole"
 familiar = { short_for = ["carolann", "caroline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "caroline"
-familiar = { short_for = ["chick"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["carol", "chick"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "carri"
@@ -7698,7 +7702,7 @@ familiar = { short_for = ["joey", "joseph", "joshua"], note = "nam_dict (Jörg M
 
 [[word]]
 text = "joey"
-familiar = { short_for = ["joe", "joseph", "josephine", "josophine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["joe", "joseph", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "john"
@@ -7738,7 +7742,7 @@ familiar = { short_for = ["pheney"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "josey"
-familiar = { short_for = ["josephine", "josophine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "josh"
@@ -7747,10 +7751,6 @@ familiar = { short_for = ["joshua"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "josie"
 familiar = { short_for = ["josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "josophine"
-familiar = { short_for = ["josey"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "joss"
@@ -7803,10 +7803,6 @@ familiar = { short_for = ["junior"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "junie"
 familiar = { short_for = ["junior"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "k.c"
-familiar = { short_for = ["kasey"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kait"
@@ -7927,14 +7923,6 @@ familiar = { short_for = ["christiana", "christina", "christine", "kristine"], n
 [[word]]
 text = "kym"
 familiar = { short_for = ["kymberly"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "l.b"
-familiar = { short_for = ["littleberry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "l.r"
-familiar = { short_for = ["leroy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "laffie"

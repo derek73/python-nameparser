@@ -312,6 +312,10 @@ def test_check_reports_stale_until_write_brings_the_files_current(
     assert by_text["will"]["familiar"] == {
         "short_for": ["william"], "note": tool.NICKNAMES_SOURCE}
     assert "erin" not in by_text
+    # the list's pairs go in en.toml alone
+    de = tomllib.loads(written["de.toml"])["word"]
+    assert {e["text"] for e in de} == {"sepp"}
+    assert not any(tool.NICKNAMES_SOURCE in e["familiar"]["note"] for e in de)
 
 
 def test_a_cache_file_of_another_hash_is_refused(
@@ -348,6 +352,7 @@ def test_the_lists_rows_read_as_name_and_nickname() -> None:
      "header"),
     (_LIST + "richard,is_spelling_of,rychard\r\n", "line 5"),
     (_LIST + "richard,has_nickname\r\n", "line 5"),
+    (_LIST + "richard,has_nickname,\r\n", "empty name"),
     (_LIST + "richard,has_nickname,ricky\r\n", "repeats a row"),
     ("name1,relationship,name2\r\n", "holds no row"),
     # cut inside a row: csv would read it as a short last row
@@ -406,7 +411,7 @@ def test_a_refusal_naming_no_row_of_the_list_is_refused() -> None:
 
 def test_a_listed_pair_whose_names_normalize_alike_is_refused() -> None:
     with pytest.raises(ValueError, match="normalize alike"):
-        tool.keep_nicknames([("ann", "ann.")], {}, {})
+        tool.keep_nicknames([("Ann", "ann")], {}, {})
 
 
 def test_a_word_both_sources_pair_takes_one_reading_noting_both() -> None:
@@ -455,3 +460,69 @@ def test_a_missing_list_names_the_command_that_fetches_it(
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     with pytest.raises(SystemExit, match="familiar.py --fetch"):
         tool.load_nicknames()
+
+
+def test_a_refusal_is_of_the_pair_whichever_way_round() -> None:
+    both_ways = [("caroline", "carol"), ("carol", "caroline"),
+                 ("aaron", "erin"), ("erin", "aaron")]
+    refused = {("aaron", "erin"): "different-name",
+               ("erin", "aaron"): "different-name"}
+    assert tool.keep_nicknames(both_ways, refused, {}) == {
+        "carol": {"caroline"}, "caroline": {"carol"}}
+    # one row refused and the other kept is the review's to settle: the
+    # match reads both as one pair, so the refusal would reach nothing
+    with pytest.raises(ValueError, match="carol = caroline but not"):
+        tool.keep_nicknames(both_ways, {("carol", "caroline"): "unclear"}, {})
+
+
+def test_a_refusal_nam_dict_also_pairs_is_refused() -> None:
+    placements = {"de": {"erin": {"Aaron": {"Germany": 1}}}}
+    with pytest.raises(ValueError, match="which nam_dict pairs too"):
+        tool.keep_nicknames([("aaron", "erin")],
+                            {("aaron", "erin"): "different-name"}, placements)
+
+
+def test_a_kept_name_that_is_not_letters_alone_is_refused() -> None:
+    rows = [("casey", "k.c."), ("kasey", "k.c.")]
+    with pytest.raises(ValueError, match="k.c. = kasey: a name"):
+        tool.keep_nicknames(rows, {("casey", "k.c."): "spelling"}, {})
+    assert tool.keep_nicknames(
+        rows, {r: "spelling" for r in rows}, {}) == {}
+
+
+def test_a_list_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
+    out = tool.rewrite(_FILE, {}, "en.toml", {"jr": {"junior"}})
+    assert out is not None
+    data = tomllib.loads(out)
+    assert data["word"][0] == {
+        "text": "jr", "generation": {},
+        "familiar": {"short_for": ["junior"], "note": tool.NICKNAMES_SOURCE}}
+    assert tool.BEGIN not in out
+    assert tool.strip(out) == _FILE
+
+
+def test_a_hand_note_opening_with_a_source_is_not_the_tools() -> None:
+    hand = _FILE.replace(
+        'given = { note = "x" }',
+        'familiar = { short_for = ["edgar"], '
+        f'note = "{tool.NICKNAMES_SOURCE}, and a census I read" }}')
+    with pytest.raises(ValueError, match="does not own"):
+        tool.rewrite(hand, {"ed": {"Edward": {}}}, "en.toml")
+
+
+def test_a_cached_list_of_another_hash_is_refused(
+        planted: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "NICKNAMES_SHA256", "0" * 64)
+    with pytest.raises(SystemExit, match="not the pinned"):
+        tool.load_nicknames()
+
+
+def test_no_refused_pair_is_shipped() -> None:
+    # offline, from the committed files alone: every refusal is of a
+    # pair the default lexicon does not pair, whichever way round
+    from nameparser import Lexicon
+    lexicon = Lexicon.default()
+    shipped = [(full, nickname) for full, nickname in tool.load_exclusions()
+               if tool.build._normalize(full)
+               in lexicon._familiar_forms(tool.build._normalize(nickname))]
+    assert shipped == []
