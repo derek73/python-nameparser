@@ -1342,26 +1342,38 @@ def _refusal(where: str, removed: Mapping[str, object]) -> TypeError:
         f"gives the kind for each 2.x field")
 
 
+#: The keys of the one 2.x `Lexicon` layout 3.0 loaded, 2.7's and
+#: 2.8's, read off a 2.8.0 `Lexicon.default()` state; 3.0 admitted
+#: `given_names` beside them. A record of what shipped, so it never
+#: follows `_VOCAB_FIELDS`, which a new vocabulary field joins.
+_LAYOUT_3_0_LOADED = frozenset({
+    "after_given_titles", "agnomens", "bound_given_names",
+    "capitalization_exceptions", "conjunctions", "conjunctions_ambiguous",
+    "given_name_abbreviations", "given_name_titles", "honorific_tails",
+    "maiden_markers", "particles", "particles_ambiguous", "suffix_acronyms",
+    "suffix_acronyms_ambiguous", "suffix_words", "suffix_words_ambiguous",
+    "surnames", "title_modifiers", "title_phrases", "title_styles",
+    "titles", "titles_ambiguous"})
+
+
 def _refused_2x(state: Mapping[str, object]) -> ValueError:
     """The ValueError for a 2.x `Lexicon` state, its remedy told by the
-    state's layout, since the caller holding an old pickle seldom knows
-    which release wrote it. 3.0 loaded a state holding every 2.x field
-    but `given_names` (3.0's) and no other, which only 2.7 and 2.8
-    wrote: measured 2026-11-08, `Lexicon.default()` pickled by each
-    wheel from 2.0.0 to 2.6.0 fails under 3.0.1, by 2.7.0, 2.8.0 and
-    2.8.2 loads (decisions/vocabulary-model, 2026-11-08 #1003). It is
-    raised wherever the `Lexicon` is, so a `Parser` or locale pack
-    holding one is named too."""
-    layout = set(_VOCAB_FIELDS) | {"capitalization_exceptions"}
+    state's layout, since a caller holding an old pickle seldom knows
+    which release wrote it (decisions/vocabulary-model, 2026-11-08
+    #1003). It is raised wherever the `Lexicon` is, so a `Parser` or
+    locale pack holding one is named too."""
     held = "the Lexicon, or the Parser or locale pack holding it"
-    if layout - {"given_names"} <= set(state) <= layout:
+    if _LAYOUT_3_0_LOADED <= set(state) <= _LAYOUT_3_0_LOADED | {
+            "given_names"}:
         return ValueError(
             f"this Lexicon was pickled by nameparser 2.7 or 2.8, which "
             f"3.1 no longer loads: load the pickle under 3.0 and pickle "
-            f"the loaded object ({held}) again")
+            f"the loaded object ({held}) again, or build it again if 3.0 "
+            f"refuses it too")
     return ValueError(
-        f"this Lexicon was pickled by nameparser 2.6 or earlier, which no "
-        f"3.x release loads: build the object ({held}) again")
+        f"this Lexicon was pickled by nameparser 2.x in a layout no 3.x "
+        f"release loads, 2.6's or an earlier one: build the object "
+        f"({held}) again")
 
 
 # -- the public types ----------------------------------------------------

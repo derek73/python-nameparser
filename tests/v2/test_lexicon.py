@@ -17,8 +17,8 @@ from tests.checkout import HAS_DOCS, needs_docs
 from nameparser import Locale, LexiconReading, Parser, locales, parser_for
 from nameparser._lexicon import (
     Lexicon, _ADDED_IN, _KIND_FIELDS, _LIST_FIELDS, _MaskValueError,
-    _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon, _fields_of, _normalize,
-    _title_key,
+    _LAYOUT_3_0_LOADED, _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon,
+    _fields_of, _normalize, _title_key,
 )
 from nameparser._policy import _HANGUL_SYLLABLES
 from nameparser.config._compiled import SUFFIX_ACRONYMS, SUFFIX_WORDS
@@ -1495,18 +1495,26 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
 _REFUSED_2X = re.escape(
     "this Lexicon was pickled by nameparser 2.7 or 2.8, which 3.1 no "
     "longer loads: load the pickle under 3.0 and pickle the loaded object "
-    "(the Lexicon, or the Parser or locale pack holding it) again")
+    "(the Lexicon, or the Parser or locale pack holding it) again, or "
+    "build it again if 3.0 refuses it too")
 _REFUSED_OLDER = re.escape(
-    "this Lexicon was pickled by nameparser 2.6 or earlier, which no 3.x "
-    "release loads: build the object (the Lexicon, or the Parser or "
-    "locale pack holding it) again")
+    "this Lexicon was pickled by nameparser 2.x in a layout no 3.x release "
+    "loads, 2.6's or an earlier one: build the object (the Lexicon, or the "
+    "Parser or locale pack holding it) again")
 
 #: The fields a 2.6.0 Lexicon state lacks against 2.8's, read off the
 #: ValueError 3.0.1 raised loading `Lexicon.default()` pickled by the
 #: 2.6.0 wheel (2026-11-08).
-_NOT_IN_2_6 = ("agnomens", "given_name_abbreviations", "suffix_words_ambiguous",
-               "title_modifiers", "title_phrases", "title_styles",
-               "titles_ambiguous")
+_NOT_IN_2_6 = ("agnomens", "given_name_abbreviations",
+               "suffix_words_ambiguous", "title_modifiers", "title_phrases",
+               "title_styles", "titles_ambiguous")
+
+
+def _state_2_8() -> dict[str, object]:
+    """A bare 2.8 Lexicon state: the layout 3.0 loaded, as recorded."""
+    state: dict[str, object] = {f: frozenset() for f in _LAYOUT_3_0_LOADED}
+    state["capitalization_exceptions"] = ()
+    return state
 
 
 def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
@@ -1527,22 +1535,31 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
     data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
     with pytest.raises(ValueError, match=_REFUSED_2X):
         pickle.loads(data)  # noqa: S301 -- our own fixture
-    # a 2.x state alone: its 21 set fields, no given_names (a 3.0
-    # field), and its masks
-    state: dict[str, object] = {f: frozenset() for f in _VOCAB_FIELDS
-                                if f != "given_names"}
-    state["capitalization_exceptions"] = ()
+    # a 2.x state alone, and one holding given_names, which 3.0 admitted
+    for state in (_state_2_8(), {**_state_2_8(), "given_names": frozenset()}):
+        with pytest.raises(ValueError, match=_REFUSED_2X):
+            Lexicon.__new__(Lexicon).__setstate__(state)
+
+
+def test_a_2_8_pickle_is_still_told_to_re_pickle_after_a_field_joins(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the 2.7/2.8 layout is a record, not the current roster: a field a
+    # later release adds to _VOCAB_FIELDS is one no 2.8 pickle holds
+    from nameparser import _lexicon
+    monkeypatch.setattr(_lexicon, "_VOCAB_FIELDS",
+                        (*_lexicon._VOCAB_FIELDS, "later_words"))
+    data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
     with pytest.raises(ValueError, match=_REFUSED_2X):
-        Lexicon.__new__(Lexicon).__setstate__(state)
+        pickle.loads(data)  # noqa: S301 -- our own fixture
+    with pytest.raises(ValueError, match=_REFUSED_2X):
+        Lexicon.__new__(Lexicon).__setstate__(_state_2_8())
 
 
 @pytest.mark.parametrize("layout", ["2.6", "unknown field"])
 def test_a_2x_layout_3_0_never_loaded_is_told_to_rebuild(layout: str) -> None:
     # 3.0 refused any 2.x state but 2.7's and 2.8's, so re-pickling under
     # it cannot help them: the remedy is to build the object again
-    state: dict[str, object] = {f: frozenset() for f in _VOCAB_FIELDS
-                                if f != "given_names"}
-    state["capitalization_exceptions"] = ()
+    state = _state_2_8()
     if layout == "2.6":
         for f in _NOT_IN_2_6:
             del state[f]
