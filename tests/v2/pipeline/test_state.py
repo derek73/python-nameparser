@@ -251,11 +251,12 @@ def _assert_comma_trim(original: str, old: WorkToken, new: WorkToken) -> None:
     """The text or span change post_rules may make: rules/S1's comma
     trim, made only where its set-apart pass turns a clause's word
     from the nickname or maiden name into a title or the suffix, the
-    token's text with its edge commas off, its span the sub-slice of
-    the original that text still is."""
+    token's text with its edge commas off (any member of COMMA_CHARS,
+    #1202), its span the sub-slice of the original that text still is."""
+    from nameparser._pipeline._state import COMMA_STRIP
     assert old.role in (Role.NICKNAME, Role.MAIDEN), (old, new)
     assert new.role in (Role.TITLE, Role.SUFFIX), (old, new)
-    assert new.text == old.text.strip(",") != old.text, (old, new)
+    assert new.text == old.text.strip(COMMA_STRIP) != old.text, (old, new)
     assert old.span.start <= new.span.start <= new.span.end <= old.span.end
     assert original[new.span.start:new.span.end] == new.text, (old, new)
 

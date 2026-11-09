@@ -424,12 +424,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # FAMILY_FIRST, and 'Anh,'), one claim each; 1672 -> 1675 on
     # 2026-11-07, #1138's 'John (MA/PhD) Smith' reporting
     # suffix-or-nickname under three orders; 1675 -> 1678 on
-    # 2026-11-08, #1177's 'Hasan, Ali bin Ahmad Jr. Smith' reporting
-    # suffix-or-name under three orders; 1678 -> 1696 the same day, the
-    # six reports of its reviews' boundary rows under three orders;
-    # 1696 -> 1699 the same day, its PR review's words-to-spare rows.
-    assert claims == 1699, (
-        f"the field sweep checks {claims} claims, recorded as 1699 on "
+    # 2026-11-08, #1202's 'John Smith (Msc.Ed، Bob)' reporting
+    # suffix-or-nickname under three orders; 1678 -> 1681 the same day,
+    # #1177's 'Hasan, Ali bin Ahmad Jr. Smith' reporting suffix-or-name
+    # under three orders; 1681 -> 1699 the same day, the six reports of
+    # its reviews' boundary rows under three orders; 1699 -> 1702 the
+    # same day, its PR review's words-to-spare rows.
+    assert claims == 1702, (
+        f"the field sweep checks {claims} claims, recorded as 1702 on "
         f"2026-11-08")
 
 

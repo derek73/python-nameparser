@@ -28,6 +28,7 @@
 {"name": "(MPH)", "suffix": "MPH"}
 {"name": "(PhD, Sr) John Smith", "title": "Sr", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "(PhD/Sr) John Smith", "given": "John", "family": "Smith", "suffix": "PhD/Sr", "initials": "J. S."}
+{"name": "(PhD، Sr) John Smith", "title": "Sr", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "J. S."}
 {"name": ","}
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
@@ -1880,6 +1881,7 @@
 {"name": "John Smith (Dr)", "title": "Dr", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith (Dr, Ma)", "given": "John", "family": "Smith", "nickname": "Dr, Ma", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "John Smith (Dr., PhD)", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
+{"name": "John Smith (Dr.፣ PhD)", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "John Smith (Ed)", "given": "John", "family": "Smith", "nickname": "Ed", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "John Smith (Ed, Jr/Sr)", "given": "John", "family": "Smith", "nickname": "Ed, Jr/Sr", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "John Smith (Hon)", "given": "John", "family": "Smith", "nickname": "Hon", "initials": "J. S."}

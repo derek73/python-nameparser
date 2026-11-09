@@ -34,10 +34,19 @@ if TYPE_CHECKING:
 
 
 # The comma characters (ASCII/Arabic/fullwidth, #265; Ethiopic and
-# Burmese, #1202). Shared here so tokenize (separators/segmentation),
-# extract (close-quote boundaries, a listed particle's word end) and
-# _vocab cannot drift apart.
-COMMA_CHARS = frozenset({",", "\u060c", "\uff0c", "\u1363", "\u104a"})
+# Burmese, #1202; N'Ko, Mongolian, Manchu, Lisu, Vai and Bamum, #1202's
+# follow-up -- not the Armenian U+055D, which is no comma, decisions/C1).
+# Shared here so tokenize (separators/segmentation), extract
+# (close-quote boundaries, a listed particle's word end) and _vocab
+# cannot drift apart.
+COMMA_CHARS = frozenset({",", "\u060c", "\uff0c", "\u1363", "\u104a",
+                         "\u07f8", "\u1802", "\u1808", "\ua4fe",
+                         "\ua60d", "\ua6f5"})
+#: The same characters as one string, for str.strip: a word of a
+#: set-apart clause keeps the comma written against it (rules/N1), and
+#: every site reading that word without it strips this, so a clause
+#: reads alike whichever script's comma divides it (decisions/C1, #1202).
+COMMA_STRIP = "".join(sorted(COMMA_CHARS))
 
 
 def comma_bucket(start: int, comma_offsets: Sequence[int]) -> int:
