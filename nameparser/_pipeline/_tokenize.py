@@ -117,7 +117,7 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isascii():
         # both strip classes and the unconditional separators are
         # entirely non-ASCII (bidi >= U+061C, emoji >= U+2600, the
-        # invisibles >= U+200B, dots >= U+30FB): skip the checks below
+        # invisibles >= U+200B, dividers >= U+1361): skip the checks below
         # for every ASCII letter
         return False
     # unconditional, like whitespace -- not policy-gated, so this sits

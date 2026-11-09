@@ -2,7 +2,7 @@ import dataclasses
 
 import pytest
 
-from nameparser import parse
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
@@ -265,6 +265,10 @@ def test_unbalanced_delimiter_points_at_its_token(
     "Pieter 't Hart", "Pieter van 't Hof", "Hart, Pieter 't",
     "Gerard 't Hooft", "'t Hooft, Gerard", "Pieter 'T Hart",
     "Pieter 't, Hart", "Pieter 't. Hart",
+    # the word ends where tokenize ends it: a zero-width space, a
+    # nakaguro, the Ethiopic wordspace, a stripped bidi mark or emoji
+    "Pieter 't\u200bHart", "Pieter 't\u30fbHart", "Pieter 't\u1361Hart",
+    "Pieter 't\u200f Hart", "Pieter 't\U0001F600 Hart",
 ])
 def test_apostrophe_opening_a_listed_particle_reports_nothing(
         text: str) -> None:
@@ -281,6 +285,23 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
 def test_apostrophe_opening_an_unlisted_word_still_reports(text: str) -> None:
     kinds = [a.kind for a in parse(text).ambiguities]
     assert kinds == [AmbiguityKind.UNBALANCED_DELIMITER]
+
+
+_CURLY = Policy(nickname_delimiters=frozenset(
+    {("\u2019", "\u2019"), ('"', '"'), ("'", "'")}))
+
+
+@pytest.mark.parametrize("text, nickname", [
+    # the curly \u2019t is listed too, so a caller who quotes with the
+    # curly apostrophe gets the same reading (the family guard)
+    ("Pieter \u2019t Hart", ""),
+    ("Jan van \u2019t Hof \u2019Jantje\u2019", "Jantje"),
+])
+def test_curly_apostrophe_particle_under_a_curly_quote(text: str,
+                                                       nickname: str) -> None:
+    name = Parser(policy=_CURLY).parse(text)
+    assert name.nickname == nickname
+    assert name.ambiguities == ()
 
 
 def test_listed_particle_check_reads_the_parses_lexicon() -> None:
@@ -304,3 +325,12 @@ def test_quote_beside_a_listed_apostrophe_particle(text: str,
     name = parse(text)
     assert name.nickname == nickname
     assert name.ambiguities == ()
+
+
+def test_maiden_quote_opening_at_a_listed_particle_is_no_quote() -> None:
+    # accepted, as for the nickname pair: the configured maiden quote
+    # opening at 't is read as the word
+    name = Parser(policy=Policy(maiden_delimiters=frozenset({("'", "'")}))
+                  ).parse("Anna 't Hart' Jansen")
+    assert name.maiden == ""
+    assert name.family == "'t Hart' Jansen"

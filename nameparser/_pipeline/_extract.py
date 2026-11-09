@@ -41,6 +41,7 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
+from nameparser._pipeline._tokenize import _ignorable
 from nameparser._pipeline._vocab import (
     comma_follows_marker, maiden_marker_run, set_apart, set_apart_kind,
 )
@@ -119,21 +120,22 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
 # rules/N2: "a quote whose open and close are the same character
 # opens only at a word start and closes only at a word end, so an
 # apostrophe inside or at the end of a word is literal"
-def _open_ok(text: str, i: int, lexicon: Lexicon) -> bool:
+def _open_ok(text: str, i: int, state: ParseState) -> bool:
     return ((i == 0 or text[i - 1].isspace())
-            and not _listed_apostrophe_word(text, i, lexicon))
+            and not _opens_a_listed_particle(text, i, state))
 
 
 # rules/N2: "An apostrophe opening a word the vocabulary lists as a
 # particle" -- the Except clause: it opens no quote, so Dutch 't
-# reports nothing (decisions/N2, #1241).
-def _listed_apostrophe_word(text: str, i: int, lexicon: Lexicon) -> bool:
-    if text[i] not in WORD_INTERNAL_DELIMITERS:
-        return False
+# reports nothing (decisions/N2, #1241). Asked of any same-character
+# open, the curly ’t being listed too; the word ends where tokenize
+# would end it, by its own predicate.
+def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
     k = i + 1
-    while k < len(text) and not (text[k].isspace() or text[k] in COMMA_CHARS):
+    while k < len(text) and not (text[k] in COMMA_CHARS
+                                 or _ignorable(text[k], state)):
         k += 1
-    return _normalize(text[i:k]) in lexicon._sets.particles
+    return _normalize(text[i:k]) in state.lexicon._sets.particles
 
 
 def _close_ok(text: str, j: int, width: int) -> bool:
@@ -243,7 +245,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             if i != -1 and i < pos:
                 i = text.find(open_, pos)
                 while (i != -1 and open_ == close
-                       and not _open_ok(text, i, state.lexicon)):
+                       and not _open_ok(text, i, state)):
                     i = text.find(open_, i + 1)
                 cursors[key] = i
             if i != -1 and (best is None or i < best[0]):
@@ -264,7 +266,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             unbalanced.append(_unmatched(open_, i))
             scan = i + len(open_)
             while (k := text.find(open_, scan)) != -1:
-                if open_ != close or _open_ok(text, k, state.lexicon):
+                if open_ != close or _open_ok(text, k, state):
                     unbalanced.append(_unmatched(open_, k))
                 scan = k + 1
             exhausted.add((role, open_, close))

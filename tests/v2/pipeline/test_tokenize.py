@@ -369,9 +369,8 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
     ("Smith ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", ["Smith", "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
     ("Jean : Dupont", ["Jean", ":", "Dupont"]),
     (" ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ ", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
-    # Mongolian punctuation and digits are no letters: the comma U+1802
-    # and the digit one U+1811 beside it leave it a space
-    ("ᠴᠣᠢ᠂ ᠪᠠᠯ", ["ᠴᠣᠢ᠂", "ᠪᠠᠯ"]),
+    # a Mongolian digit is no letter: the digit one U+1811 beside it
+    # leaves it a space
     ("ᠴᠣᠢ ᠑", ["ᠴᠣᠢ", "᠑"]),
     # a plain space before the suffix still divides (decisions/T1)
     (f"{_KHORLOO} {_YIN}", [_KHORLOO, _YIN]),

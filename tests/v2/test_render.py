@@ -2118,3 +2118,22 @@ def test_a_caller_word_of_a_capitalized_kind_keeps_its_capital(
     lex = Lexicon.default().add("zaint", kind=kind)
     name = Parser(lexicon=lex).parse("JOHN ZAINT SMITH")
     assert name.capitalized(lex).family == written
+
+
+@pytest.mark.parametrize("spec", [None, "{given} {family}", "{family} {given}"])
+def test_a_joined_mongolian_suffix_renders_joined(spec: str | None) -> None:
+    # the T6 join: the collapse makes whitespace one space, but a U+202F
+    # between two Mongolian letters is inside a word, so it stays
+    name = parse("\u182a\u1820\u1832\u1824\u202f\u1836\u1822\u1828 "
+                 "\u1833\u1823\u1837\u1835\u1822")
+    out = str(name) if spec is None else name.render(spec)
+    assert "\u182a\u1820\u1832\u1824\u202f\u1836\u1822\u1828" in out
+    assert len(parse(out).tokens) == 2
+
+
+def test_lexicon_cannot_list_a_joined_mongolian_word() -> None:
+    # accepted for the T6 join: the vocabulary folds U+202F as a space, so a
+    # joined word is a phrase to Lexicon.add and is refused there
+    with pytest.raises(ValueError, match="phrase"):
+        Lexicon.default().add("\u182a\u1820\u1832\u1824\u202f"
+                              "\u1836\u1822\u1828", kind="family")

@@ -13,6 +13,7 @@
 
 **Accepted:**
 
+- A word joined this way cannot be listed in the vocabulary, which reads U+202F as a space between two words, so a caller's entry for it is refused as a phrase.
 - A case suffix written after an ordinary space is a word of its own, since only the connector marks it.
   ```
   "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"  family-first  →  given="ᠶ᠋ᠢᠨ"
@@ -20,4 +21,4 @@
 
 ---
 **Signal:** neighbor: the characters on each side of a narrow no-break space
-**history:** decisions/T6 · **implemented:** nameparser/_pipeline/_tokenize.py
+**history:** decisions/T6 · **implemented:** nameparser/_pipeline/_tokenize.py, nameparser/_render.py

@@ -27,7 +27,15 @@ from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
                                UNJOINED_TAG, Ambiguity, ParsedName, Role,
                                Token)
 
-_SPACES = re.compile(r"\s+")
+#: Whitespace runs the collapse makes one space, save a U+202F inside a
+#: word. rules/T6: "a narrow no-break space between two Mongolian
+#: letters joins them into one word" -- the render side, so a spec's
+#: collapse writes the word as str() does (decisions/T6, #1236). The
+#: class is _tokenize._mongolian_letter, held to it by
+#: tests/v2/test_regex_sync.py.
+_MONGOLIAN_LETTER = "[\u180B-\u180F\u181A-\u18AF]"
+_SPACES = re.compile(
+    rf"(?:(?!(?<={_MONGOLIAN_LETTER})\u202F(?={_MONGOLIAN_LETTER}))\s)+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
 _COMMA_CHAR = re.compile(r"[,،，፣၊]")  # ASCII, Arabic, fullwidth, Ethiopic, Burmese
 _MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)

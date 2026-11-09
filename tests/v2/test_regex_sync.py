@@ -263,3 +263,16 @@ def test_every_declared_pattern_still_exists() -> None:
                    if not isinstance(getattr(_MODULES[where[0]], where[1],
                                              None), re.Pattern))
     assert not stale, f"_SOURCES entries naming no compiled pattern: {stale}"
+
+
+def test_render_mongolian_letter_class_matches_tokenize() -> None:
+    # render's collapse keeps a U+202F between two Mongolian letters
+    # (the T6 join); its class is a hand copy of tokenize's predicate
+    import re
+    from nameparser._pipeline import _tokenize
+
+    letter = re.compile(_render._MONGOLIAN_LETTER)
+    for cp in range(0x1700, 0x1900):
+        ch = chr(cp)
+        assert bool(letter.fullmatch(ch)) == _tokenize._mongolian_letter(ch), (
+            hex(cp))

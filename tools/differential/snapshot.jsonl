@@ -2062,6 +2062,7 @@
 {"name": "John Smith y V Jr.", "given": "John", "family": "Smith y V", "suffix": "Jr.", "initials": "J. S. V.", "generation": "Jr."}
 {"name": "John Smith y VI", "given": "John", "family": "Smith y", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "generation": "VI"}
 {"name": "John Smith «MA»", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
+{"name": "John Smith ၊ Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith 「MA」", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
 {"name": "John Smith 博. 士.", "given": "John", "middle": "Smith 博.", "family": "士.", "initials": "J. S."}
 {"name": "John Smith 田.中.", "given": "John", "middle": "Smith", "family": "田.中.", "initials": "J. S."}
@@ -6471,6 +6472,7 @@
 {"name": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "order": "FAMILY_FIRST", "given": "ሓኪም", "middle": "መጥባሕቲ ስኒ", "family": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ", "initials": "ሓ. መ. ስ. ቮ. ብ. ፕ. ዶ. ኣ. ኮ. ሲ. ማ. ማ."}
 {"name": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "order": "FAMILY_FIRST", "given": "ብሩህል", "middle": "ጎንዛሌዝ ዶሚንጎ ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "family": "ቮን", "initials": "ብ. ጎ. ዶ. ፕ. ዶ. አ. ኮ. ሴ. ማ. ዶ. የ. ዶ. ቮ."}
 {"name": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ, ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "given": "ፕ/ር", "middle": "ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "family": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ", "initials": "ፕ. ዶ. አ. ኮ. ሴ. ማ. ዶ. የ. ዶ. ቮ. ብ. ጎ. ዶ."}
+{"name": "አበበ ፡ ከበደ", "given": "አበበ", "family": "ከበደ", "initials": "አ. ከ."}
 {"name": "አበበ፡ከበደ፡ተሰማ", "given": "አበበ", "middle": "ከበደ", "family": "ተሰማ", "initials": "አ. ከ. ተ."}
 {"name": "አቶ በርትራም ዊልበርፎርስ ሄነሪ ሮበርት ዉስተር የፓርላማ አባል", "given": "አቶ", "middle": "በርትራም ዊልበርፎርስ ሄነሪ ሮበርት ዉስተር የፓርላማ", "family": "አባል", "initials": "አ. በ. ዊ. ሄ. ሮ. ዉ. የ. አ."}
 {"name": "አይሪን አድለር", "given": "አይሪን", "family": "አድለር", "initials": "አ. አ."}
