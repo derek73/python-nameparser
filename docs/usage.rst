@@ -1504,9 +1504,11 @@ Free Documentation License 1.2) are each in the vocabulary file of the
 languages whose countries it lists them for. The pairs of Old Dominion
 University's nicknames list (Apache License 2.0), a lookup of English
 given names' nicknames and diminutives (``Ricky`` / ``Richard``,
-``Peggy`` / ``Margaret``), are in the English file, less the pairs a review refused as spellings of one name
-(``Allan`` / ``Allen``), another language's form (``Ivan`` / ``John``)
-or another name (``Erin`` / ``Aaron``). A plain choice of languages
+``Peggy`` / ``Margaret``), are in the English file, less the pairs a
+review refused as spellings of one name (``Allan`` / ``Allen``),
+another language's form (``Ivan`` / ``John``), another name (``Erin`` /
+``Aaron``) or two forms of one name neither made from the other
+(``Lisa`` / ``Liz``). A plain choice of languages
 keeps every file's, and a strict one only its own files' (strict
 ``es`` holds five pairs: ``Cesc``, ``Koldo``, ``Xabi`` and ``Xavi``). A
 pair whose short name reads as a title in front of a name (``Timi``,

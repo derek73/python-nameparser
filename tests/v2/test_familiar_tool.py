@@ -501,11 +501,13 @@ def test_a_list_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
     assert tool.strip(out) == _FILE
 
 
-def test_a_hand_note_opening_with_a_source_is_not_the_tools() -> None:
+@pytest.mark.parametrize("source", [tool.SOURCE, tool.NICKNAMES_SOURCE])
+def test_a_hand_note_opening_with_a_source_is_not_the_tools(
+        source: str) -> None:
     hand = _FILE.replace(
         'given = { note = "x" }',
         'familiar = { short_for = ["edgar"], '
-        f'note = "{tool.NICKNAMES_SOURCE}, and a census I read" }}')
+        f'note = "{source}, and a census I read" }}')
     with pytest.raises(ValueError, match="does not own"):
         tool.rewrite(hand, {"ed": {"Edward": {}}}, "en.toml")
 

@@ -72,7 +72,7 @@ bill	robert	different-name	Bill is from William
 billy	fred	different-name	distinct name; no link
 billy	robert	different-name	Billy is from William
 blanche	bea	unclear	no evident link
-brad	ford	unclear	chained through Bradford
+brad	ford	sibling	two forms of Bradford, neither formed from the other; pairs do not chain
 brady	brody	different-name	distinct names; resemblance only
 brenda	brandy	different-name	distinct name; resemblance only
 brian	bryan	spelling	spellings of one name

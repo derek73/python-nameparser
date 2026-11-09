@@ -727,9 +727,8 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     spelling set is paired with directly meets the other's spelling
     set. Read whichever way the source wrote the pair, since the
     sources do not always write the shorter name first, and never
-    chained, so
-    two longer names paired with one short name (`Maximilian` /
-    `Maxim`) are no pair. Symmetric in its two arguments by
+    chained, so two longer names paired with one short name
+    (`Maximilian` / `Maxim`) are no pair. Symmetric in its two arguments by
     construction: the lexicon pairs each name both ways and under its
     fold as well (`Lexicon._familiar_forms`), and a spelling set holds
     each member's fold, so asking from the second side finds nothing the
