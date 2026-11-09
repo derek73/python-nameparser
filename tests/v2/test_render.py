@@ -28,6 +28,17 @@ def test_collapse_is_the_254_algorithm() -> None:
     assert _collapse("John Smith ()") == "John Smith"
     assert _collapse("John Smith ''") == "John Smith"
     assert _collapse('John Smith ""') == "John Smith"
+    # a U+202F joins only between two Mongolian letters (the T6 join);
+    # beside anything else, or in a run, it is whitespace like any other
+    assert _collapse("Jean\u202fDupont") == "Jean Dupont"
+    assert _collapse("\u1834\u1823\u1822\u202fSmith") == "\u1834\u1823\u1822 Smith"
+    assert _collapse("Smith\u202f\u1834\u1823\u1822") == "Smith \u1834\u1823\u1822"
+    assert _collapse("\u1834\u1823\u1822\u202f \u182a\u1820") == (
+        "\u1834\u1823\u1822 \u182a\u1820")
+    assert _collapse("\u1834\u1823\u1822 \u202f\u182a\u1820") == (
+        "\u1834\u1823\u1822 \u182a\u1820")
+    assert _collapse("\u1834\u1823\u1822\u202f\u182a\u1820") == (
+        "\u1834\u1823\u1822\u202f\u182a\u1820")
     assert _collapse("") == ""
 
 
@@ -133,10 +144,14 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     ("威廉·莎士比亚", None, "威廉·莎士比亚"),
     ("ジョン ・ スミス", None, "ジョン・スミス"),
     ("ｼﾞｮﾝ･ｽﾐｽ", None, "ｼﾞｮﾝ･ｽﾐｽ"),
+    ("አበበ፡ከበደ፡ተሰማ", None, "አበበ፡ከበደ፡ተሰማ"),
+    ("አበበ፡ ከበደ፡ ተሰማ", None, "አበበ፡ከበደ፡ተሰማ"),
     ("John Smith ,Jr.", None, "John Smith, Jr."),
     ("John Smith,Jr.", None, "John Smith, Jr."),
     ("John Smith， Jr.", None, "John Smith，Jr."),
     ("محمد علي، الابن", None, "محمد علي، الابن"),
+    ("አበበ ከበደ፣Jr.", None, "አበበ ከበደ፣ Jr."),
+    ("John Smith၊Jr.", None, "John Smith၊ Jr."),
     # comma shapes: no comma, a full name, one word and nothing before
     # it, and a third part
     ("John Smith Jr.", None, "John Smith Jr."),
@@ -2232,3 +2247,22 @@ def test_a_caller_word_of_a_capitalized_kind_keeps_its_capital(
     lex = Lexicon.default().add("zaint", kind=kind)
     name = Parser(lexicon=lex).parse("JOHN ZAINT SMITH")
     assert name.capitalized(lex).family == written
+
+
+@pytest.mark.parametrize("spec", [None, "{given} {family}", "{family} {given}"])
+def test_a_joined_mongolian_suffix_renders_joined(spec: str | None) -> None:
+    # the T6 join: the collapse makes whitespace one space, but a U+202F
+    # between two Mongolian letters is inside a word, so it stays
+    name = parse("\u182a\u1820\u1832\u1824\u202f\u1836\u1822\u1828 "
+                 "\u1833\u1823\u1837\u1835\u1822")
+    out = str(name) if spec is None else name.render(spec)
+    assert "\u182a\u1820\u1832\u1824\u202f\u1836\u1822\u1828" in out
+    assert len(parse(out).tokens) == 2
+
+
+def test_lexicon_cannot_list_a_joined_mongolian_word() -> None:
+    # accepted for the T6 join: the vocabulary folds U+202F as a space, so a
+    # joined word is a phrase to Lexicon.add and is refused there
+    with pytest.raises(ValueError, match="phrase"):
+        Lexicon.default().add("\u182a\u1820\u1832\u1824\u202f"
+                              "\u1836\u1822\u1828", kind="family")

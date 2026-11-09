@@ -114,9 +114,11 @@ Entry conventions:
 ## Tokens, initials & punctuation (T)
 
 - [T1 — separators, not joiners](T1-separators-not-joiners.md)
+- [T2 — a script's own word divider divides like a space](T2-scripts-own-word-divider-divides-like-a-space.md)
 - [T3 — the interpunct's flank guard](T3-interpuncts-flank-guard.md)
 - [T4 — the bare letter as an initial](T4-bare-letter-as-an-initial.md)
 - [T5 — the written shape of an initial](T5-written-shape-of-an-initial.md)
+- [T6 — a narrow no-break space between Mongolian letters joins them](T6-narrow-no-break-space-between-mongolian-letters-joins-them.md)
 
 ## Ambiguity & tie-breaking (A)
 

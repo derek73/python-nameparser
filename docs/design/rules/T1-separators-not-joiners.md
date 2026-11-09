@@ -19,6 +19,10 @@
   ```
   "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
   ```
+- **Between two Mongolian letters**, a narrow no-break space joins them, as T6 states.
+  ```
+  "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"  →  given="ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ"
+  ```
 
 **Accepted:**
 

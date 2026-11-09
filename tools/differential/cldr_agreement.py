@@ -198,9 +198,9 @@ def _has_space(text: str) -> bool:
 
 
 #: Commas a rendering may carry: nameparser's own COMMA_CHARS (ASCII,
-#: Arabic U+060C, fullwidth U+FF0C) plus the Myanmar U+104A and
-#: Ethiopic U+1363 marks CLDR's sorting forms use, and the ideographic
-#: U+3001, which no CLDR 48 rendering holds -- defensive. A comma
+#: Arabic U+060C, fullwidth U+FF0C, and since #1202 the Myanmar U+104A
+#: and Ethiopic U+1363 marks CLDR's sorting forms use), and the
+#: ideographic U+3001, which no CLDR 48 rendering holds -- defensive. A comma
 #: left glued to a word hides that word from occurs(), and CLDR's field
 #: is then expected empty -- a disagreement no parser fix could resolve.
 _COMMAS = str.maketrans({c: " " for c in ",\u060c\uff0c\u104a\u1363\u3001"})
