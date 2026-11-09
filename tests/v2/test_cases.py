@@ -426,9 +426,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-nickname under three orders; 1675 -> 1678 on
     # 2026-11-08, #1177's 'Hasan, Ali bin Ahmad Jr. Smith' reporting
     # suffix-or-name under three orders; 1678 -> 1696 the same day, the
-    # six reports of its reviews' boundary rows under three orders.
-    assert claims == 1696, (
-        f"the field sweep checks {claims} claims, recorded as 1696 on "
+    # six reports of its reviews' boundary rows under three orders;
+    # 1696 -> 1699 the same day, its PR review's words-to-spare rows.
+    assert claims == 1699, (
+        f"the field sweep checks {claims} claims, recorded as 1699 on "
         f"2026-11-08")
 
 
@@ -835,8 +836,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 335 -> 338 on 2026-11-08, #1177's 'Hasan, Ali bin Ahmad Jr. Smith'
     # under the three orders, each stand-in keeping the taken one;
     # 537 -> 540 and 338 -> 350 the same day, its reviews' boundary
-    # rows under the three orders
-    assert (checked, skipped) == (540, 350), (checked, skipped)
+    # rows under the three orders; 540 -> 542 and 350 -> 354 the same
+    # day, its PR review's two words-to-spare rows under the three orders
+    assert (checked, skipped) == (542, 354), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

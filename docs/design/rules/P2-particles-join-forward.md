@@ -66,10 +66,11 @@
 
 **Accepted:**
 
-- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word opening that run, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's.
+- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word opening that run, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's. And a particle that is suffix vocabulary too opens no chain over a suffix word right behind it, as P9 reads it before a family comma.
   ```
   "John Smith Mc V"           →  suffix="Mc V"
   "John van Mc"               →  family="van Mc"
+  "John vd Jr Smith"          →  middle="vd Jr"  · boundary
   ```
 - The same carve-out covers `do`, the one word that is both a particle and an AMBIGUOUS credential acronym: where a particle run takes it, the word is the run's and the chain reports nothing, whatever case it is written in — so `Anh van Do` is silent where `Anh Do`, with no particle standing, reports. A word that is both belongs to the particle run and to P6's fork, not to S4's.
   ```

@@ -2209,6 +2209,7 @@
 {"name": "John van der Berg née Jones", "given": "John", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
 {"name": "John van der J. V", "given": "John", "family": "van der J. V", "initials": "J. J. V."}
 {"name": "John van der V, M.J.", "given": "M.J.", "family": "John van der V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. V."}
+{"name": "John vd Jr Smith", "given": "John", "middle": "vd Jr", "family": "Smith", "initials": "J. J. S."}
 {"name": "John von PhD Jones", "given": "John", "family": "von", "suffix": "PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. v.", "capitalized_force": "John Von PhD Jones"}
 {"name": "John y Jane", "given": "John", "middle": "y", "family": "Jane", "initials": "J. y. J."}
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}

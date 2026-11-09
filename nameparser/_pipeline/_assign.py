@@ -113,13 +113,12 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import (
     split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
-    _NOT_A_RUN_START, declined_by_the_name_behind, has_name_content,
-    is_lone_never_given_particle,
+    _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     is_lowercase_ambiguous_particle,
     Peel, TailRead, is_prefix_piece, is_suffix_piece, is_title_piece,
     leading_titles,
     particle_tail, listed_lean, peel_walk, settled_by_case,
-    starts_a_credential_run,
+    starts_a_credential_run, starts_the_run_here,
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -1986,9 +1985,10 @@ def assign(state: ParseState) -> ParseState:
         # 0 is with no title ('Dr. PhD Smith, John' as 'PhD Smith, John').
         # A piece at or past the floor is already known to be a suffix
         # with nothing but suffixes behind it, so it is not asked again.
-        # whether a particle read as family stands in front of the
+
+        # Whether a particle read as family stands in front of the
         # piece the loop is at, and whether the piece right in front was
-        # read as family, for P2's arm below
+        # read as family, for P2's arm below.
         chained = False
         family_before = False
         for k in range(lead, len(fam_pieces)):
@@ -2032,36 +2032,30 @@ def assign(state: ParseState) -> ParseState:
                              and not is_suffix_piece(
                                  fam_pieces[k + 1], fam_tags[k + 1],
                                  tokens))
-                    # rules/P2: "the join running until the next
-                    # particle starts a group of its own, a trailing
-                    # suffix begins" -- behind a particle, a suffix word
-                    # S8 starts no run at, with a name word behind it,
-                    # is the particle's group's ('bin Abd Rahman,
-                    # Ahmad'), as the chain reads it with no comma; a
-                    # particle that is suffix vocabulary too is P9's
-                    # (decisions/P2, #1177)
+                    # rules/P2: "before a family comma the part keeps
+                    # either in the family behind a particle, as the
+                    # chain does" -- a suffix word S8 starts no run at
+                    # or declines for its writing, anything but
+                    # suffixes behind it ('bin Abd Rahman, Ahmad',
+                    # 'bin Md Rahman, Ahmad'); a particle that is suffix
+                    # vocabulary too is P9's (decisions/P2, #1177)
                     and not (chained and family_before
                              and "particle" not in tokens[piece[0]].tags
-                             and k + 1 < len(fam_pieces)
                              and not all(
                                  is_suffix_piece(fam_pieces[j], fam_tags[j],
                                                  tokens)
                                  for j in range(k + 1, len(fam_pieces)))
-                             and (not starts_a_credential_run(
-                                      piece, fam_tags[k], tokens,
-                                      tokens[fam_pieces[k - 1][0]].text,
-                                      state.one_case)
-                                  or declined_by_the_name_behind(
-                                      tokens[piece[0]], fam_pieces[k + 1],
-                                      fam_tags[k + 1], tokens,
-                                      state.one_case)))):
+                             and not starts_the_run_here(
+                                 k, fam_pieces, fam_tags, tokens,
+                                 state.one_case, False))):
                 _set_roles(tokens, piece, Role.SUFFIX)
             else:
                 _set_roles(tokens, piece, Role.FAMILY)
                 # the tag tests are is_prefix_piece's own arms, inline
                 # so a family word pays no frame
                 chained = chained or ("prefix" in fam_tags[k]
-                                      or "particle"
+                                      or len(piece) == 1
+                                      and "particle"
                                       in tokens[piece[0]].tags)
             family_before = tokens[piece[0]].role is Role.FAMILY
         tail = 2

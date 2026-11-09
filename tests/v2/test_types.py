@@ -1171,8 +1171,9 @@ _MAF = Policy(middle_as_family=True)
     # a suffix ends the run, so a word behind it is not in it: S8's
     # run in the given part takes the generation and the word behind it
     (Policy(), "Hasan, Ali bin Ahmad Jr. Smith", "bin Ahmad"),
-    # a suffix word with a family word behind it stays in the family
-    # behind a particle (rules/P2, #1177), and so in the run
+    # a suffix word S8 starts no run at or declines for its writing,
+    # with a family word behind it, stays in the family behind a
+    # particle (rules/P2, #1177), and so in the run
     (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad Jr. Hasan"),
     (Policy(), "Mariam binti Md Salleh", "binti Md Salleh"),
     (Policy(), "Mariam binti Haji Abd Talib", "binti Haji Abd Talib"),
