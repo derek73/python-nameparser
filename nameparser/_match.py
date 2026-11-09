@@ -869,14 +869,11 @@ def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
     default) and an accepted weaker one is never hidden behind it
     (decisions/name-matching, 2026-11-08 FAMILIAR FORMS). `outcomes`
     run strongest first and end in `conflict`, never accepted."""
-    strongest = None
-    for outcome in outcomes:
-        if outcome in accept:
-            return outcome
-        if strongest is None:
-            strongest = outcome
-    assert strongest is not None
-    return strongest
+    holding = iter(outcomes)
+    strongest = next(holding)
+    if strongest in accept:
+        return strongest
+    return next((o for o in holding if o in accept), strongest)
 
 
 def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
