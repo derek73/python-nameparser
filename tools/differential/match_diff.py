@@ -19,8 +19,8 @@ entity and of different entities sharing a last word (mostly different
 people, where a key-guarantee miss would show), tse-donors' filed and
 registry names (both local corpora, `local_corpora.py fetch`), and
 PatentsView inventors' spellings of themselves, read from the raw table
-PatentsView publishes (PATENTSVIEW_RAW), which the patentsview-inventors
-fetch reads and does not keep. A source not present is left out with a
+PatentsView publishes (PATENTSVIEW_RAW), put there by hand: the
+patentsview-inventors fetch reads that table and does not keep it. A source not present is left out with a
 note saying how to get it; one present but unreadable stops the run. Each
 source draws with a generator of its own seeded by SEED and its name, so
 for the same sources present the pairs are the same, and the report
