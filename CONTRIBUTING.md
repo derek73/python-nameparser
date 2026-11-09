@@ -1,41 +1,52 @@
 Contributing
 ==============
 
-Ask before you open a pull request
-------------------------------------
+Issues, not pull requests
+---------------------------
 
 Bug reports, questions and proposals are welcome as issues. Pull requests are
-not, unless one was agreed first. Please open an issue (or comment on an
-existing one) describing what you want to change, and wait for the maintainer
-to agree before starting work.
+open to collaborators only.
+
+The most useful thing you can bring is what the code cannot know: the name
+that reads wrong, how it should read, and the convention behind it (who
+writes names that way, and where). Tell us what you use the parser for, too:
+what your names look like, where they come from, and what you need from the
+result. The maintainer can only guess how people use it, and knowing why you
+want a reading often changes how it is built. Put that in an issue. A few
+real examples are worth more than a fix.
 
 Open issues are not a list of tasks waiting for a volunteer. Every issue is
-assigned to the maintainer, and most are already being worked on. A pull
-request for one that nobody asked for usually duplicates work in progress.
+assigned to the maintainer, and most are already being worked on.
+
+Why the maintainer makes the changes
+--------------------------------------
 
 Most changes here also move documented rules, the design records and a
-snapshot of thousands of parsed names, so a pull request takes more of the
-maintainer's time to review and correct than it saves. That is why the
-discussion comes first. Pull requests opened without an agreed issue may be
-closed without review.
+snapshot of thousands of parsed names. The maintainer checks every change
+against about 30 million records of real names from thirteen sources
+(election candidates, donors, researchers, patent inventors, company filings).
+The tools that fetch them are in this repository, but the names are not: the
+cache is about 12 GB, and one source alone takes about twelve hours to
+download. A change that passes the committed tests can still move thousands
+of those names, for better or worse, and the committed snapshot sees none of
+them. So a change made outside that setup needs several rounds of review
+before it is done, and that costs both of us more than the maintainer making
+it.
 
-Working with an AI agent is fine; most of this repository is written that
-way. Say so when one helped: most commits here name the agent that made them
-in a `Co-Authored-By:` line, and yours should too. What matters is that
-someone is steering.
+You are welcome to review the pull request that fixes your issue. Comments on
+it are open to everyone, and that is where your knowledge of the names counts
+most.
 
-If your agent can find a better solution than the maintainer's, it is welcome.
-Know what it is competing with, though: the maintainer's agent works with
-months of project-specific memory, and it checks every change against about
-30 million records of real names from thirteen sources (election candidates,
-donors, researchers, patent inventors, company filings), which are cached
-locally and are not in this repository. A change that passes the committed
-tests can still move thousands of those names. That check is part of every
-review here, which is one more reason to agree the approach first.
+If you already have a fix
+---------------------------
 
-Once a change is agreed, a pull request that answers
-review promptly is a help, and one that waits days for each round is slower
-for both of us than the maintainer making the change.
+Push it to a branch on your fork and link the branch in the issue. The
+maintainer may build on it, or take a different route once the corpora show
+what it moves. Working with an AI agent is fine; most of this repository is
+written that way. Every commit an agent helped write names it in a
+`Co-Authored-By:` line, here and in yours, so that a commit without one can
+be read as written by a person alone. If your commits do, you will be
+credited the same way on the commit that lands your work.
 
 Development Environment Setup
 --------------------------------
