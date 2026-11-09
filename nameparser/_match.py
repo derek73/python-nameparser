@@ -513,10 +513,12 @@ _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
     away: NFC then NFD, casefolded, `.` and the apostrophes `'`, U+2019
-    and U+02BC removed. Hyphens and spaces are kept. A combining mark
-    (Mn) is dropped only where the letter it attaches to is Latin, Greek
-    or Cyrillic, where it is an accent; in another script (a Devanagari
-    virama, anusvara or vowel sign) it is spelling and is kept."""
+    and U+02BC removed, then NFC again, so the folded text, and every key
+    cut from it, is precomposed (a Hangul syllable, never a conjoining
+    jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped
+    only where the letter it attaches to is Latin, Greek or Cyrillic,
+    where it is an accent; in another script (a Devanagari virama,
+    anusvara or vowel sign) it is spelling and is kept."""
     decomposed = unicodedata.normalize(
         "NFD", unicodedata.normalize("NFC", text))
     kept = []
@@ -528,7 +530,8 @@ def _fold(text: str) -> str:
         else:
             accented = unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
         kept.append(c)
-    return "".join(kept).casefold().translate(_DROPPED)
+    return unicodedata.normalize(
+        "NFC", "".join(kept).casefold().translate(_DROPPED))
 
 
 def _strength(result: MatchResult) -> tuple[object, ...]:

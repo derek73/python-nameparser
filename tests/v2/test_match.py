@@ -727,3 +727,15 @@ def test_a_typographic_apostrophe_folds_like_a_typed_one(apostrophe: str) -> Non
     r = m.check(written, "Pat O'Brien")
     assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.FOLDED
     assert m.keys(written) == m.keys("Pat O'Brien") == {"obrien;p"}
+
+
+def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:
+    # the fold decomposes to filter the marks, then recomposes, so a
+    # key never holds a conjoining jamo however the name was encoded
+    import unicodedata
+    assert m.keys("김민준") == {"김;민"}
+    decomposed = m.keys(unicodedata.normalize("NFD", "김민준"))
+    assert decomposed and all(
+        k == unicodedata.normalize("NFC", k) for k in decomposed)
+    assert _fold("Máría") == unicodedata.normalize("NFC", _fold("Máría"))
+    assert _fold("क्ष") == unicodedata.normalize("NFC", "क्ष")
