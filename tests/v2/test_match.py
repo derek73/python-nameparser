@@ -1120,7 +1120,6 @@ def test_strength_ranks_the_outcomes_in_declaration_order() -> None:
     # from conflict's 0 to same's
     assert sorted(o.strength for o in Outcome) == list(range(len(Outcome)))
     assert Outcome.CONFLICT.strength == 0
-    assert Outcome.ACROSS_ROLES.strength == 1
 
 
 def test_weakest_is_the_weakest_rows_outcome() -> None:

@@ -1304,10 +1304,14 @@ What the default accepts
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The outcomes, in the order ``check()`` ranks them, strongest first.
-``Outcome.strength`` gives that rank as a number, larger for a stronger
-outcome; rank outcomes by it, since ``<`` on an
-:class:`~nameparser.Outcome` compares the names as strings (``folded``
-sorts before ``same``). The default accepts the writing
+``Outcome.strength`` gives that rank as an ordinal, larger for a
+stronger outcome and 0 for ``conflict``; compare outcomes by it, since
+``<`` on an :class:`~nameparser.Outcome` compares the names as strings
+(``folded`` sorts before ``same``), but never store one: the values
+change when an outcome is added. A row reports the strongest outcome
+that holds and is accepted, and where none of those holding is
+accepted, the strongest that holds, so an unaccepted one shows what
+the pair needed. The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
 conflict until you accept them. ``familiar-form``, ``family-initial``,
 ``given-one-side`` and ``hyphenated-part`` are reported in the table
@@ -1394,10 +1398,19 @@ a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
-Typos (``Slvatore`` / ``Salvatore``) and transliterations are
-conflicts, and so is a familiar form until you accept it (below): the
-table names the conflicting role, so you can run your own fuzzy
-comparison on that role alone.
+Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
+transliterations unless the vocabulary lists the pair as a familiar
+form (``Igor`` / ``Ihor`` is one, below). A familiar form you have not
+accepted keeps the pair inconsistent though its row reads
+``familiar-form``. The rows that kept a pair inconsistent are the
+ones whose outcome you did not accept, and the table names their
+roles, so you can run your own fuzzy comparison on those alone:
+
+.. doctest::
+
+    >>> igor = matcher.check("Igor Petrov", "Ihor Petrov")
+    >>> [(r.role.value, r.outcome.value) for r in igor.roles if r.outcome not in matcher.accept]
+    [('given', 'familiar-form')]
 
 Accepting more
 ~~~~~~~~~~~~~~
@@ -1479,8 +1492,12 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
 
 The shipped familiar forms are the 736 pairs of Jörg Michael's
 nam_dict (2008, GNU Free Documentation License 1.2), each in the
-vocabulary file of the languages whose countries it lists them for,
-so a choice of languages reads its own. It is a selection and has
+vocabulary file of the languages whose countries it lists them for.
+A plain choice of languages keeps every file's, and a strict one only
+its own files' (strict ``es`` holds five pairs: ``Cesc``, ``Koldo``,
+``Xabi`` and ``Xavi``). A pair whose short name reads as a title in
+front of a name (``Timi``, ``Nanny``) is never compared as a given
+name, so it stays inert while the title reading stands. It is a selection and has
 gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
 ``William`` are not in it); add your own with a ``familiar`` reading,
 which extends the names the word's shipped readings list (to replace

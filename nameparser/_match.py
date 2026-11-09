@@ -48,9 +48,10 @@ if TYPE_CHECKING:
 class Outcome(StrEnum):
     """How one role of one name compares with the same role of another,
     listed in the order `check` ranks them, strongest first. `strength`
-    is that rank as a number, larger for a stronger outcome and lowest
-    for `conflict`; rank outcomes by it, since `<` on an Outcome
-    compares the names as strings (`folded` sorts before `same`).
+    is that rank as an ordinal, larger for a stronger outcome and 0 for
+    `conflict`; compare outcomes by it, since `<` on an Outcome
+    compares the names as strings (`folded` sorts before `same`), but
+    never store one: the values change when an outcome is added.
     `conflict` is the one outcome that is never accepted. The search
     for each side's other readings is not an outcome but a switch,
     `Matching.other_readings`, and the reading used is named in
@@ -75,9 +76,10 @@ class Outcome(StrEnum):
 
     @property
     def strength(self) -> int:
-        """The outcome's rank as a number: `conflict` is 0, and each
-        outcome declared before another is stronger than it, `same`
-        the strongest."""
+        """The outcome's rank as an ordinal to compare outcomes by:
+        `conflict` is 0, and each outcome declared before another is
+        stronger than it, `same` the strongest. The values change when
+        an outcome is added, so compare them, never store one."""
         return _STRENGTH[self]
 
 
@@ -373,8 +375,8 @@ class Matching:
         period, the one spelling set the check reads (`_spellings`),
         and where `familiar-form` is accepted also by the first letter
         of every name a word of that set is paired with directly as a
-        familiar form, in either direction (`Bill` keys `w` for William
-        beside `b`, and `William` keys `b`).
+        familiar form, in either direction (`Bill` and `William` each
+        key both `b` and `w`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -383,6 +385,7 @@ class Matching:
         has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
+        `familiar-form` the given letters of the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
