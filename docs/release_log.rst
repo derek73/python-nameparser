@@ -9,6 +9,8 @@ Release Log
     - **Fix case repair capitalizing the vowel after a Ukrainian or Belarusian apostrophe.** ``parse("БЕЗУГЛА МАР'ЯНА").capitalized()`` gives ``Безугла Мар'яна``, where 1.4.0 through 3.0.1 gave ``Мар'Яна``. An apostrophe before any other letter still starts a capital (``О'Коннор``), in Latin script too (``Dem'Yan``). :issue:`1214`
     - **Fix case repair of Georgian written in Mtavruli capitals.** ``parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").capitalized()`` gives ``ნინო ბურჯანაძე``, where 1.4.0 through 3.0.1 kept a Mtavruli first letter (``Ნინო Ბურჯანაძე``). :issue:`1223`
     - **Change case repair to capitalize a particle that opens a hyphenated word.** ``parse("LEVON TER-PETROSYAN").capitalized()`` gives ``Levon Ter-Petrosyan``, where 1.4.0 through 3.0.1 gave ``ter-Petrosyan``. A spaced particle keeps its lowercase (``Levon ter Petrosyan``), and ``capitalized(force=True)`` now capitalizes an Arabic article written lowercase (``Mūsā al-Kāẓīm`` gives ``Mūsā Al-Kāẓīm``). :issue:`1224`
+    - **Fix a particle's family name stopping at a credential that spells a name.** ``parse("Ahmad bin Abd Rahman")`` gives family ``bin Abd Rahman``, where 1.4.0 through 3.0.1 gave middle ``bin Abd``, family ``Rahman``; ``Md`` for Muhammad reads the same way, and before a family comma too (``bin Abd Rahman, Ahmad``). A credential written as one (``Mariam binti MD Salleh``) still ends the name. :issue:`1177`
+    - **Fix a connective before a military title written short.** ``parse("John Smith y Maj.")`` gives title ``Maj.``, family ``Smith y``, as ``John Smith y Prof.`` does, where 3.0.0 and 3.0.1 gave family ``Smith y Maj.``. :issue:`1168`
 
 * 3.0.1 - November 8, 2026
 
