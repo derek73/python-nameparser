@@ -335,3 +335,33 @@ def test_maiden_quote_opening_at_a_listed_particle_is_no_quote() -> None:
                   ).parse("Anna 't Hart' Jansen")
     assert name.maiden == ""
     assert name.family == "'t Hart' Jansen"
+
+
+
+@pytest.mark.parametrize("text, token", [
+    # the bulk pass that records every remaining open once a pair has no
+    # close asks the same test: an unmatched quote before the particle
+    # is reported once, the particle not at all
+    ("'Bob 't Hart", "'Bob"),
+    ("Jan 'Piet van 't Hof", "'Piet"),
+])
+def test_unmatched_quote_before_a_listed_particle_reports_once(
+        text: str, token: str) -> None:
+    ambiguities = parse(text).ambiguities
+    assert [a.kind for a in ambiguities] == [AmbiguityKind.UNBALANCED_DELIMITER]
+    assert [t.text for t in ambiguities[0].tokens] == [token]
+
+
+def test_a_particle_a_caller_adds_opens_no_quote() -> None:
+    name = Parser(lexicon=Lexicon.default().add("'s", kind="particle")
+                  ).parse("Jan 's Jacob")
+    assert name.ambiguities == ()
+    assert name.family == "'s Jacob"
+
+
+def test_a_whole_quoted_particle_is_still_a_nickname() -> None:
+    # the scan reads the word with its closing quote, "'t'", which is
+    # no listed particle, so the pair quotes as before
+    name = parse("Jan 't' Smith")
+    assert name.nickname == "t"
+    assert name.ambiguities == ()

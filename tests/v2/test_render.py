@@ -28,6 +28,17 @@ def test_collapse_is_the_254_algorithm() -> None:
     assert _collapse("John Smith ()") == "John Smith"
     assert _collapse("John Smith ''") == "John Smith"
     assert _collapse('John Smith ""') == "John Smith"
+    # a U+202F joins only between two Mongolian letters (the T6 join);
+    # beside anything else, or in a run, it is whitespace like any other
+    assert _collapse("Jean\u202fDupont") == "Jean Dupont"
+    assert _collapse("\u1834\u1823\u1822\u202fSmith") == "\u1834\u1823\u1822 Smith"
+    assert _collapse("Smith\u202f\u1834\u1823\u1822") == "Smith \u1834\u1823\u1822"
+    assert _collapse("\u1834\u1823\u1822\u202f \u182a\u1820") == (
+        "\u1834\u1823\u1822 \u182a\u1820")
+    assert _collapse("\u1834\u1823\u1822 \u202f\u182a\u1820") == (
+        "\u1834\u1823\u1822 \u182a\u1820")
+    assert _collapse("\u1834\u1823\u1822\u202f\u182a\u1820") == (
+        "\u1834\u1823\u1822\u202f\u182a\u1820")
     assert _collapse("") == ""
 
 
@@ -133,10 +144,14 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     ("威廉·莎士比亚", None, "威廉·莎士比亚"),
     ("ジョン ・ スミス", None, "ジョン・スミス"),
     ("ｼﾞｮﾝ･ｽﾐｽ", None, "ｼﾞｮﾝ･ｽﾐｽ"),
+    ("አበበ፡ከበደ፡ተሰማ", None, "አበበ፡ከበደ፡ተሰማ"),
+    ("አበበ፡ ከበደ፡ ተሰማ", None, "አበበ፡ከበደ፡ተሰማ"),
     ("John Smith ,Jr.", None, "John Smith, Jr."),
     ("John Smith,Jr.", None, "John Smith, Jr."),
     ("John Smith， Jr.", None, "John Smith，Jr."),
     ("محمد علي، الابن", None, "محمد علي، الابن"),
+    ("አበበ ከበደ፣Jr.", None, "አበበ ከበደ፣ Jr."),
+    ("John Smith၊Jr.", None, "John Smith၊ Jr."),
     # comma shapes: no comma, a full name, one word and nothing before
     # it, and a third part
     ("John Smith Jr.", None, "John Smith Jr."),

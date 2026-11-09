@@ -8,7 +8,8 @@ from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline import _tokenize
 from nameparser._pipeline._tokenize import tokenize
-from nameparser import _policy
+from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+                        Parser, _policy)
 from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
@@ -369,8 +370,17 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
     ("Smith ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", ["Smith", "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
     ("Jean : Dupont", ["Jean", ":", "Dupont"]),
     (" ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ ", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
-    # a Mongolian digit is no letter: the digit one U+1811 beside it
-    # leaves it a space
+    # a Mongolian digit or punctuation mark is no letter: the digit one
+    # U+1811 or the comma U+1802 beside it leaves it a space, while a
+    # variation selector or the vowel separator beside it joins
+    ("ᠴᠣᠢ\u1802\u202fᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u1802", "ᠪᠠ", "ᠴᠣᠢ"]),
+    ("ᠴᠣᠢ\u202f\u1802ᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "\u1802ᠪᠠ", "ᠴᠣᠢ"]),
+    ("ᠴᠣᠢ\u180b\u202fᠢᠨ ᠴᠣᠢ", ["ᠴᠣᠢ\u180b\u202fᠢᠨ", "ᠴᠣᠢ"]),
+    ("ᠴᠣᠢ\u202f\u180eᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u202f\u180eᠠ", "ᠴᠣᠢ"]),
+    # a run holding U+202F is whitespace, and one at the string's start
+    # reads no neighbour across the end
+    ("ᠴᠣᠢ\u202f\u202fᠪᠠ", ["ᠴᠣᠢ", "ᠪᠠ"]),
+    ("\u202fᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
     ("ᠴᠣᠢ ᠑", ["ᠴᠣᠢ", "᠑"]),
     # a plain space before the suffix still divides (T6's Accepted)
     (f"{_KHORLOO} {_YIN}", [_KHORLOO, _YIN]),
@@ -378,3 +388,37 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
 def test_narrow_no_break_space_joins_only_between_mongolian_letters(
         text: str, words: list[str]) -> None:
     assert [t.text for t in _tokenized(text).tokens] == words
+
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST,
+                                   FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text, expect", [
+    # #1202's comma shapes, read as the ASCII comma reads them under
+    # every order: a full name before a suffix comma, a two-word family
+    # before a family comma, nothing before the comma, a third part
+    ("ከበደ ተሰማ፣ አበበ", {"family": "ከበደ ተሰማ", "given": "አበበ"}),
+    ("အောင် ဆန်း၊ ဦး", {"family": "အောင် ဆန်း", "given": "ဦး"}),
+    ("፣ አበበ", {"given": "አበበ"}),
+    ("၊ ဦး", {"given": "ဦး"}),
+    ("ከበደ፣ አበበ፣ Jr.", {"family": "ከበደ", "given": "አበበ", "suffix": "Jr."}),
+])
+def test_ethiopic_and_burmese_comma_shapes(order: tuple[Role, Role, Role], text: str,
+                                           expect: dict[str, str]) -> None:
+    name = Parser(policy=Policy(name_order=order)).parse(text)
+    assert {k: v for k, v in name.as_dict().items() if v} == expect
+    ascii_twin = text.replace("\u1363", ",").replace("\u104a", ",")
+    assert name.as_dict() == Parser(policy=Policy(
+        name_order=order)).parse(ascii_twin).as_dict()
+
+
+@pytest.mark.parametrize("order, expect", [
+    (GIVEN_FIRST, {"given": "አበበ", "family": "ከበደ", "suffix": "Jr."}),
+    (FAMILY_FIRST, {"family": "አበበ", "given": "ከበደ", "suffix": "Jr."}),
+    (FAMILY_FIRST_GIVEN_LAST,
+     {"family": "አበበ", "given": "ከበደ", "suffix": "Jr."}),
+])
+def test_full_name_before_an_ethiopic_suffix_comma(
+        order: tuple[Role, Role, Role], expect: dict[str, str]) -> None:
+    name = Parser(policy=Policy(name_order=order)).parse("አበበ ከበደ፣ Jr.")
+    assert {k: v for k, v in name.as_dict().items() if v} == expect
