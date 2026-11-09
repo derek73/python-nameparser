@@ -1396,8 +1396,8 @@ Accepting more
 ``accept`` takes outcome names or :class:`~nameparser.Outcome`
 members, and *replaces* the default set rather than adding to it, so
 extend the default with the ``accept`` of a default matcher. The keys
-follow what is accepted, so one matcher's ``keys()`` and ``check()``
-always agree; never group with one matcher and check with another:
+follow what is accepted and the ``other_readings`` switch, so one
+matcher's ``keys()`` and ``check()`` always agree; never group with one matcher and check with another:
 
 .. doctest::
 
