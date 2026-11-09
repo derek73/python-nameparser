@@ -96,8 +96,8 @@ UNPREFERRED = frozenset({"name", "familiar"})
 #: (the shipped ones on `family` readings, #1014), `shared`, which
 #: rules/P10, O6 and O7 read, and `after_particle`, which P10 and O6 read
 #: (#704): its other keys are evidence. A particle reading's
-#: `capital_opening` is rules/R4's: the particle takes a capital where it
-#: opens the surname spaced, the Armenian `Ter` and `Der`.
+#: `capital_opening` is rules/R12's: the particle takes a capital where
+#: it opens the family name, the Armenian `Ter` and `Der`.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),
@@ -818,8 +818,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # lowercase, rules/R4 (#1069)
         CAPITALIZED_PARTICLES=frozenset(capitalized),
         # the particles written `capital_opening` (`ter`, `der`), which
-        # case repair writes with a capital where one opens the surname
-        # spaced, no particle before it, rules/R4
+        # case repair writes with a capital where one opens the family
+        # name, no particle before it there, rules/R12
         CAPITAL_OPENING_PARTICLES=frozenset(capital_opening),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),

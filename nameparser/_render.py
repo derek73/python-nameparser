@@ -512,8 +512,8 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
 def _cap_word(word: str, role: Role, tags: frozenset[str],
               lex: Lexicon, *, particle: bool = True) -> str:
     # `particle=False` is the first word of the hyphen clause's opening
-    # part (_cap_text), or a particle opening the surname spaced that
-    # its reading writes with a capital (capitalized): the particle arm
+    # part (_cap_text), or a particle opening the family name that its
+    # reading writes with a capital (_capital_openings): the particle arm
     # is not asked, every other clause is.
     # Clause order: the particle/connective arm, then the exceptions
     # map as a mask, then the acronym clause (listed or by shape),
@@ -862,7 +862,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # would have had.
     # `particle=False` leaves _cap_word's particle arm out of every
     # word of the token, and the whole-token test below with it
-    # (capitalized, _opens_with_a_capital).
+    # (capitalized, _capital_openings).
     def cap(word: str) -> str:
         return _cap_word(word, role, tags, lex, particle=particle)
 
@@ -941,20 +941,46 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         for at, part in enumerate(parts))
 
 
-def _opens_with_a_capital(before: Token | None, token: Token,
-                          lex: Lexicon) -> bool:
-    """`token`, a particle, is one its reading writes with a capital
-    where it opens the surname (`ter`, `der`, `lex._sets.
-    capital_opening_particles`), and it does: the token before it is
-    no particle, by its tag or, in a hyphenated word, by the vocabulary
-    of the word's last part (`Maitland-van der Zee`)."""
-    if _normalize(token.text) not in lex._sets.capital_opening_particles:
-        return False
-    if before is None:
-        return True
-    return not ("particle" in before.tags
-                or _normalize(before.text.rsplit("-", 1)[-1])
-                in lex._sets.particles)
+def _capital_openings(tokens: Sequence[Token],
+                      lex: Lexicon) -> frozenset[int]:
+    """The indexes in `tokens` of the family words repaired without the
+    particle arm: a particle its reading writes with a capital
+    (`lex._sets.capital_opening_particles`, `ter`, `der`) whose word
+    before it in the family name, as the view joins the family's words
+    (_ordered), is no particle -- by its tag or, in a hyphenated word,
+    by the vocabulary of the word's last part. Opening the family, it
+    asks the last middle word that hyphen question alone, a surname's
+    first half the parse read as a middle name (`Maitland-van der
+    Zee`); a word of another role is no particle of the family's.
+    A token spliced in unread (UNCLASSIFIED_TAG) carries no tag, so the
+    vocabulary answers for it, as revise() would."""
+    capital = lex._sets.capital_opening_particles
+    particles = lex._sets.particles
+
+    def is_particle(t: Token) -> bool:
+        if UNCLASSIFIED_TAG in t.tags:
+            return _normalize(t.text) in particles
+        return "particle" in t.tags
+
+    def ends_in_particle(t: Token) -> bool:
+        return ("-" in t.text
+                and _normalize(t.text.rsplit("-", 1)[-1]) in particles)
+
+    middle = [t for t in tokens if t.role is Role.MIDDLE]
+    family = [(i, t) for i, t in enumerate(tokens) if t.role is Role.FAMILY]
+    out: set[int] = set()
+    before: Token | None = None
+    for i, t in ([(i, t) for i, t in family if FOLDED_TAG in t.tags]
+                 + [(i, t) for i, t in family if FOLDED_TAG not in t.tags]):
+        if before is None:
+            follows = bool(middle) and ends_in_particle(middle[-1])
+        else:
+            follows = is_particle(before) or ends_in_particle(before)
+        if (not follows and is_particle(t)
+                and _normalize(t.text) in capital):
+            out.add(i)
+        before = t
+    return frozenset(out)
 
 
 def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
@@ -1084,20 +1110,24 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     # business re-spelling it ('EdD' stays 'EdD', where the acronym
     # clause would write 'EDD'). The cost is the garbled spelling kept
     # with the deliberate one ('Iii' stays 'Iii'); force repairs both.
-    # rules/R4: "a spaced particle its reading writes with a capital
-    # opening the surname" -- `ter`, `der` with no particle before them
-    # are repaired with the particle arm left out; asked only of a
-    # token tagged a particle, so a name with none pays no frame for
-    # it. decisions/R4 (2026-11-09).
+    # rules/R12: "the word is written as a name word is where the word
+    # before it in the family name" is no particle -- repaired with the
+    # particle arm left out; a loop over the family's tags first, so a
+    # name with no family particle pays no frame for it. decisions/R12
+    # (#1224).
+    openings: frozenset[int] = frozenset()
+    for t in name.tokens:
+        if t.role is Role.FAMILY and ("particle" in t.tags
+                                      or UNCLASSIFIED_TAG in t.tags):
+            openings = _capital_openings(name.tokens, lex)
+            break
     new_tokens = tuple(
         t if (not force and t.role is Role.SUFFIX
               and not _in_one_case(t.text))
         else Token(_cap_text(t.text, t.role, t.tags, lex,
-                             particle=not ("particle" in t.tags
-                                           and _opens_with_a_capital(
-                                               before, t, lex))),
+                             particle=i not in openings),
                    t.span, t.role, t.tags, t.reading)
-        for before, t in zip((None, *name.tokens), name.tokens))
+        for i, t in enumerate(name.tokens))
     # rules/R4: "Repair changes case and nothing else" -- and a
     # credential split across a space (rules/S12) is repaired as its
     # one-word twin is, the pair's fold asked once; a loop over the

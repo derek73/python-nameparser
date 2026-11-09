@@ -53,7 +53,7 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase — save a spaced particle its reading writes with a capital opening the surname, the Armenian priestly prefix (`Ter Petrosyan`, `Der Kiureghian`), which takes its capital where no particle stands before it, and keeps its lowercase after one (`van der Berg`, `van ter Horst`), a particle closing the hyphenated word before it counting as one (`Maitland-van der Zee`).
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase, save one R12 gives a capital as it opens the family name (`Ter Petrosyan`).
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
@@ -61,14 +61,7 @@
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
   "maria da-silva"            →  capitalized="Maria Da-Silva"
   "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
-  "LEVON TER PETROSYAN"       →  capitalized="Levon Ter Petrosyan"
-  "ARMEN DER KIUREGHIAN"      →  capitalized="Armen Der Kiureghian"
-  "TER PETROSYAN, LEVON"      →  capitalized="Levon Ter Petrosyan"
-  "Levon ter Petrosyan"       →  capitalized_forced="Levon Ter Petrosyan"
-  "JAN VAN DER BERG"          →  capitalized="Jan van der Berg"  · boundary
-  "VAN DER BERG, JAN"         →  capitalized="Jan van der Berg"  · boundary
   "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
-  "ANKE MAITLAND-VAN DER ZEE"  →  capitalized="Anke Maitland-van der Zee"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
@@ -170,12 +163,6 @@
   ```
   "ВАЛЕРІ Д'ЕСТЕН"            →  capitalized="Валері Д'естен"  · boundary
   ```
-- A spaced `ter` or `der` opening a surname takes its capital whatever language it is written in, since nothing in the spelling tells the Armenian prefix from the Dutch and German particle: a Dutch surname opened by `ter` is written with a capital, and a German `der` behind a word the vocabulary does not list as a particle (`aus der`) opens the surname as far as repair can tell. A Taiwanese given-name syllable `Der`, which the parse places in the family name, takes the capital its writers give it.
-  ```
-  "GERARD TER BORCH"          →  capitalized="Gerard Ter Borch"  · boundary
-  "KAREN AUS DER FÜNTEN"      →  capitalized="Karen Aus Der Fünten"  · boundary
-  "JA DER LIANG"              →  capitalized="Ja Der Liang"  · boundary
-  ```
 - A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
   ```
   "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary
@@ -192,5 +179,5 @@
 - The boundary is drawn per question rather than per field: the conjunction carve-out reaches a word the parse read as a conjunction, and where the parse read nothing at all it reaches what the vocabulary says. A word of that vocabulary standing at either end of a longer written word is not a conjunction there, because the hyphen clause reaches only a worded part with a worded part on each side, and an edge part is outside that reach — but a field spliced in as raw text was read by nobody, so repair asks the vocabulary and a family set to "de y" keeps its "y" lowercase. Whether a word is the conjunction or an initial is a property of the word, which a vocabulary can answer; whether a particle is acting as a particle is a property of the whole part, which the parse settles and records; re-deriving it needs a reading on every word of the part, and a spliced field has none on any, so that half falls through to particle treatment and the spliced "de la" boundary of the bullet before stands. Initials are the contrast worth knowing, and R3 states it: that view is handed no vocabulary at all, so it falls back on neither question and a spliced field's every word initials. revise() classifies the value and crosses both questions, in both of the parsed name's views: a middle revised to "e-f" repairs to "E-F" as the parsed name does, where splicing the same text in gives "e-F".
 
 ---
-**Signal:** shape + neighbor: a word's own spelling: its recorded casing, the Mc convention and its punctuation, and for a particle written with a capital where it opens the surname, whether the word before it is a particle
+**Signal:** shape + script: a word's own spelling: its recorded casing, the Mc convention and its punctuation, and the script it is written in, which decides whether an apostrophe divides it and whether it takes an initial capital at all
 **history:** decisions/R4 · **implemented:** nameparser/_render.py, nameparser/_lexicon.py

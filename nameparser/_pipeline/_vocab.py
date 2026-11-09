@@ -1961,7 +1961,7 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
 #: particle starts a surname unit, and a suffix word stops it -- any
 #: suffix word, a wider stop than group's particle chain makes, which
 #: a suffix word ends only where a suffix run would start at it
-#: (decisions/P2, #1177); the difference moves no reading (#1259). A word
+#: (decisions/P2, #1177); #1259 left this count as it was. A word
 #: that is ALSO title vocabulary ('Freiherr', 'St') LEADING the part is
 #: not a particle here: in front of a name it reads as the title it
 #: also is (rules/H1), so 'Freiherr von Berg, PhD' keeps its title,

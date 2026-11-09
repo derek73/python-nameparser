@@ -968,7 +968,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     if "capital_opening" in p and p["capital_opening"] is not True:
         # unwritten is false, so only true says anything; a key of the
         # particle category alone (BEHAVIORAL), so only a particle
-        # reading takes one (rules/R4)
+        # reading takes one (rules/R12)
         raise VocabError(f"{where}: capital_opening must be true, or left "
                          f"unwritten")
     _check_default(where, p)

@@ -1021,14 +1021,16 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
 
 
-def test_a_spaced_ter_or_der_opening_the_surname_takes_a_capital() -> None:
-    """rules/R4 (decisions/R4, 2026-11-09): a spaced particle written
-    `capital_opening` (`ter`, `der`) is repaired with the particle arm
-    left out where no particle stands before it, by its tag or by the
-    last part of a hyphenated word before it; after one it keeps its
-    lowercase. Every comma shape, a title before, the middle role, a
-    full stop on the word and the repair of the repaired name."""
-    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
+    """rules/R12 (decisions/R12): a family word whose particle reading
+    is written `capital_opening` (`ter`, `der`) is repaired with the
+    particle arm left out where the word before it in the family name,
+    in the order the family view joins them, is no particle -- by its
+    tag, or as the last part of a hyphenated word; opening the family,
+    a last middle word ending in such a part counts too. A word of
+    another role is no particle of the family's, and a middle `ter`
+    keeps its lowercase. Every comma shape, a title before, a full stop
+    on the word and the repair of the repaired name."""
     for text, repaired in (
             ("LEVON TER PETROSYAN", "Levon Ter Petrosyan"),
             ("ARMEN DER KIUREGHIAN", "Armen Der Kiureghian"),
@@ -1038,20 +1040,37 @@ def test_a_spaced_ter_or_der_opening_the_surname_takes_a_capital() -> None:
             ("DR LEVON TER PETROSYAN", "Dr Levon Ter Petrosyan"),
             ("LEVON TER PETROSYAN, PHD", "Levon Ter Petrosyan, PhD"),
             ("LEVON TER. PETROSYAN", "Levon Ter. Petrosyan"),
-            # the Dutch cost and the Taiwanese given-name syllable
+            # the costs: a Dutch ter, the Taiwanese given-name syllable,
+            # a der behind an unlisted word, a German epithet
             ("GERARD TER BORCH", "Gerard Ter Borch"),
             ("JA DER LIANG", "Ja Der Liang"),
-            # aus is no particle, so der opens: the German cost
             ("KAREN AUS DER FÜNTEN", "Karen Aus Der Fünten"),
-            # after a particle, by its tag
+            ("ALEXANDRE DUMAS DER ÄLTERE", "Alexandre Dumas Der Ältere"),
+            ("JOHANN DER JÜNGERE", "Johann Der Jüngere"),
+            # the word before is another role's: ter opens the family
+            ("VAN TER HORST", "Van Ter Horst"),
+            ("DR. VAN TER HORST", "Dr. Van Ter Horst"),
+            ('JAN "VAN" TER HORST', 'Jan "Van" Ter Horst'),
+            # after a particle in the family, by its tag
             ("JAN VAN DER BERG", "Jan van der Berg"),
             ("JAN VAN TER HORST", "Jan van ter Horst"),
             ("URSULA VON DER LEYEN", "Ursula von der Leyen"),
+            ("LEVON TER DER PETROSYAN", "Levon Ter der Petrosyan"),
+            # a particle written with its hyphen: the tag alone says so
+            ("ANNA AZ- DER BERG", "Anna az- der Berg"),
+            # the family's order, not the written one: a folded particle
+            # after the comma comes first
             ("VAN DER BERG, JAN", "Jan van der Berg"),
             ("BERG, JAN VAN DER", "Jan van der Berg"),
-            ("LEVON TER DER PETROSYAN", "Levon Ter der Petrosyan"),
+            ("DER BERG, JAN VAN", "Jan van der Berg"),
+            ("TER HORST, JAN VAN", "Jan van ter Horst"),
+            ("TER HORST, ANNA VAN", "Anna van ter Horst"),
             # after a particle closing a hyphenated word, untagged
+            ("ANNA SMITH-VAN DER BERG", "Anna Smith-van der Berg"),
             ("ANKE MAITLAND-VAN DER ZEE", "Anke Maitland-van der Zee"),
+            ("DER ZEE, ANKE MAITLAND-VAN", "Anke Maitland-van der Zee"),
+            # a middle ter is no family word
+            ("JAN TER HORST VAN DER BERG", "Jan ter Horst van der Berg"),
             # an all-particle part was name text already
             ("ANH DO", "Anh Do"),
             ("TER DER", "Ter Der"),
@@ -1062,16 +1081,36 @@ def test_a_spaced_ter_or_der_opening_the_surname_takes_a_capital() -> None:
         assert once.capitalized(force=True) == once, text
     assert _repairs("Levon ter Petrosyan", True) == "Levon Ter Petrosyan"
     assert _repairs("Jan van der Berg", True) == "Jan van der Berg"
-    # the middle role, which the family-first order puts it in
+    # the middle role under a family-first order keeps its lowercase
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
     middle = family_first.parse("PETROSYAN LEVON TER ARAM")
     assert [t.role for t in middle.tokens if t.text == "TER"] == [Role.MIDDLE]
-    assert str(family_first.capitalized(middle)) == "Petrosyan Levon Ter Aram"
+    assert str(family_first.capitalized(middle)) == "Petrosyan Levon ter Aram"
     # a caller's reading takes the property; without it, lowercase
     lex = Lexicon.default().add("zu", kind="preposition",
                                 capital_opening=True)
     zu = Parser(lexicon=lex)
     assert str(zu.capitalized(zu.parse("HANS ZU SALM"))) == "Hans Zu Salm"
     assert _repairs("HANS ZU SALM", False) == "Hans zu Salm"
+
+
+def test_a_spliced_ter_reads_as_a_revised_one() -> None:
+    """rules/R12 (#1224): a family spliced in as raw text carries no tags, so
+    the vocabulary answers whether it and the word before it are
+    particles, and replace() repairs as revise() and a fresh parse
+    do."""
+    parser = Parser()
+    base = parse("JAN VAN BERG")
+    for family, repaired in (("TER PETROSYAN", "Jan Ter Petrosyan"),
+                             ("VAN TER HORST", "Jan van ter Horst"),
+                             ("VAN DER BERG", "Jan van der Berg")):
+        spliced = str(base.replace(family=family).capitalized())
+        revised = str(parser.revise(base, family=family).capitalized())
+        fresh = str(parse(f"JAN {family}").capitalized())
+        assert spliced == revised == fresh == repaired, family
+    # the word before in another role, revised in: ter opens the family
+    revised_given = parser.revise(parse("JAN TER BERG"), given="JAN VAN")
+    assert str(revised_given.capitalized()) == "Jan Van Ter Berg"
 
 
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:

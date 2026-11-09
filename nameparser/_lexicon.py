@@ -569,8 +569,9 @@ class _LexiconSets:
     #: writes one as a name word, not in lowercase (#1069)
     capitalized_particles: frozenset[str]
     #: the particles written `capital_opening=True` (`ter`, `der`):
-    #: rules/R4's case repair writes one with a capital where it opens
-    #: the surname spaced, no particle before it (`Levon Ter Petrosyan`)
+    #: rules/R12's case repair writes one with a capital where it opens
+    #: the family name, no particle before it there (`Levon Ter
+    #: Petrosyan`)
     capital_opening_particles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
