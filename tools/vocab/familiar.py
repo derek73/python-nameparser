@@ -113,8 +113,11 @@ class Pair:
 def read_pairs(text: str) -> list[Pair]:
     """The equivalence lines of nam_dict's text, in file order, those
     the "+" sort flag marks left out. Raises ValueError unless the
-    legend is the one COUNTRY_LANGUAGE maps, every line is fixed-width
-    and every pair two names."""
+    legend is the one COUNTRY_LANGUAGE maps, every line is fixed-width,
+    every pair two names, every "+" line a duplicate of a pair kept
+    (the header's umlaut-expanded copies), and at least one pair read:
+    a file cut before its equivalence lines would otherwise read as
+    one holding none."""
     lines = text.splitlines()
     countries = name_usage._legend([line for line in lines
                                     if line.startswith("#")])
@@ -123,24 +126,35 @@ def read_pairs(text: str) -> list[Pair]:
                          f"columns COUNTRY_LANGUAGE maps")
     start = name_usage._BANDS_START
     pairs = []
+    expanded: list[tuple[int, list[str]]] = []
     for number, line in enumerate(lines, 1):
         if not line.startswith("="):
             continue
         if not name_usage._fixed_width(line, len(countries)):
             raise ValueError(f"nam_dict line {number} is not fixed-width: "
                              f"{line!r}")
-        if line[name_usage._SORT_FLAG] == "+":
-            continue
         names = line[name_usage._NAME_START:name_usage._SORT_FLAG].split()
         if len(names) != 2:
             raise ValueError(f"nam_dict line {number} is not "
                              f"'=  short long': {line!r}")
+        if line[name_usage._SORT_FLAG] == "+":
+            expanded.append((number, names))
+            continue
         bands = {}
         for country, digit in zip(countries,
                                   line[start:start + len(countries)]):
             if digit != " ":
                 bands[country] = int(digit, 16)
         pairs.append(Pair(names[0], names[1], bands))
+    kept = {(p.short, p.long) for p in pairs}
+    for number, names in expanded:
+        if (names[0], names[1]) not in kept:
+            raise ValueError(f"nam_dict line {number} is marked as an "
+                             f"umlaut-expanded duplicate ('+'), but no "
+                             f"pair kept is {names[0]} = {names[1]}")
+    if not pairs:
+        raise ValueError("nam_dict holds no equivalence line ('=  short "
+                         "long'); the file is cut or not nam_dict")
     return pairs
 
 
@@ -220,11 +234,19 @@ def _owned(line: str) -> bool:
             and f"note = {_toml_str(SOURCE)[:-1]}" in line)
 
 
-def strip(text: str) -> str:
+def strip(text: str, name: str = "the file") -> str:
     """The file without what the tool wrote: its generated block and
-    every familiar line it owns."""
+    every familiar line it owns. Raises ValueError, naming the file,
+    where the block's markers are not one BEGIN before one END."""
     lines = text.split("\n")
-    if BEGIN in lines:
+    begins, ends = lines.count(BEGIN), lines.count(END)
+    if (begins, ends) not in ((0, 0), (1, 1)) or (
+            begins and lines.index(BEGIN) > lines.index(END)):
+        raise ValueError(f"{name}: the generated block's markers are "
+                         f"not one BEGIN line before one END line; "
+                         f"restore them, or delete the block and run "
+                         f"tools/vocab/familiar.py --write")
+    if begins:
         start, end = lines.index(BEGIN), lines.index(END)
         # the blank line the block was set off by goes with it
         cut = start - 1 if start and not lines[start - 1] else start
@@ -255,7 +277,7 @@ def rewrite(text: str, words: Mapping[str, Mapping[str, Mapping[str, int]]],
     readings of `words` written in, or None where the file would hold
     nothing. Raises ValueError where a word holds a familiar reading
     the tool does not own."""
-    base = strip(text) if text is not None else "schema = 1\n"
+    base = strip(text, name) if text is not None else "schema = 1\n"
     if not words:
         # untouched but for what the tool wrote; a file only the tool
         # wrote goes with it
@@ -305,6 +327,11 @@ def stale(placements: Placements, vocab: Path = VOCAB) -> list[Path]:
     return out
 
 
+def _shown(path: Path) -> str:
+    return (str(path.relative_to(build.ROOT))
+            if path.is_relative_to(build.ROOT) else str(path))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     mode = parser.add_mutually_exclusive_group()
@@ -317,9 +344,9 @@ def main(argv: list[str] | None = None) -> int:
     pairs = load_pairs()
     placements = place(pairs)
     if args.check:
-        files = stale(placements)
+        files = stale(placements, VOCAB)
         for path in files:
-            print(f"{path.relative_to(build.ROOT)} is stale; run "
+            print(f"{_shown(path)} is stale; run "
                   f"uv run python tools/vocab/familiar.py --write",
                   file=sys.stderr)
         return 1 if files else 0
@@ -329,7 +356,7 @@ def main(argv: list[str] | None = None) -> int:
               f"{sum(len(v) for v in words.values())} pairs")
     print(f"{len(pairs)} pairs read", file=sys.stderr)
     if args.write:
-        for path, text in expected(placements).items():
+        for path, text in expected(placements, VOCAB).items():
             now = path.read_text(encoding="utf-8") if path.exists() else None
             if now == text:
                 continue
@@ -337,7 +364,7 @@ def main(argv: list[str] | None = None) -> int:
                 path.unlink()
             else:
                 path.write_text(text, encoding="utf-8")
-            print(f"wrote {path.relative_to(build.ROOT)}", file=sys.stderr)
+            print(f"wrote {_shown(path)}", file=sys.stderr)
     return 0
 
 
