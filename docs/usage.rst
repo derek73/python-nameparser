@@ -1353,7 +1353,7 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``noted``: titles and credentials, which never conflict
      - ``Dr. John Smith`` / ``John Smith, PhD``
      - yes
-   * - ``familiar-form``: a short given name the vocabulary lists as standing for the other, one way
+   * - ``familiar-form``: two given names the vocabulary lists as a familiar-form pair, either way round, never chained
      - ``Bill Smith`` / ``William Smith``
      - no
    * - ``family-initial``: the family name written as an initial
@@ -1456,10 +1456,12 @@ with another.
 ``familiar-form`` reads a short given name as standing for the longer
 ones the vocabulary lists it under: ``Max`` for Maximilian, Maxim and
 Maksim, ``Bill`` for William, ``Sepp`` for Josef. It is read in the
-given name, middle name and nickname, never the family name, and it
-runs one way, so two longer names one short name stands for do not
-agree with each other. The keys follow: a familiar form is keyed by
-its longer names' first letters too, so ``Bill Smith`` meets
+given name, middle name and nickname, never the family name. A pair
+is read whichever way the vocabulary wrote it, since its source does
+not always write the shorter name first (``Maria`` / ``Masha``), but
+never chained, so two longer names paired with one short name do not
+agree with each other. The keys follow: a name is keyed by the first
+letters of the names it is paired with too, so ``Bill Smith`` meets
 ``William Smith`` in a group:
 
 .. doctest::
@@ -1480,8 +1482,9 @@ nam_dict (2008, GNU Free Documentation License 1.2), each in the
 vocabulary file of the languages whose countries it lists them for,
 so a choice of languages reads its own. It is a selection and has
 gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
-``William`` are not in it); add your own with a ``familiar`` reading,
-which replaces the word's listed longer names, so name them all:
+``William`` are not in it); add your own with a ``familiar`` reading.
+An add replaces the longer names the word's shipped readings list
+rather than extending them, so to extend, name the shipped ones too:
 
 .. doctest::
 

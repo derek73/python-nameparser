@@ -648,8 +648,25 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
 SameAsNamed = Mapping[str, frozenset[str]]
 
 
-#: A familiar form -> the longer given names it stands for (`FAMILIAR`).
+#: A given name -> every name it is paired with as a familiar form, in
+#: either direction (`FAMILIAR`, read both ways).
 Familiar = Mapping[str, frozenset[str]]
+
+
+def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
+    """The compile's `FAMILIAR`, a familiar form -> the longer names its
+    `short_for` lists, read both ways: each word with every name it is
+    paired with directly, as the shorter name or the longer. The source
+    does not always write the shorter name first (nam_dict's `Maria` /
+    `Masha`), so the match reads a pair whichever way it was written,
+    and never chains two pairs (decisions/name-matching, 2026-11-08
+    FAMILIAR FORMS)."""
+    paired: dict[str, set[str]] = {}
+    for short, longs in compiled["FAMILIAR"].items():
+        for long in longs:
+            paired.setdefault(short, set()).add(long)
+            paired.setdefault(long, set()).add(short)
+    return MappingProxyType({w: frozenset(ns) for w, ns in paired.items()})
 
 
 #: What a lexicon's readings compile to: the vocabulary sets by
@@ -662,8 +679,7 @@ _Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed,
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
     return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
             MappingProxyType(dict(compiled["SAME_AS_NAMED"])),
-            MappingProxyType({w: frozenset(longs) for w, longs
-                              in compiled["FAMILIAR"].items()}))
+            _familiar_of(compiled))
 
 
 @functools.cache
@@ -1597,8 +1613,9 @@ class Lexicon:
     # (`_headwords`); built like `_same_as`
     _same_as_named: SameAsNamed = field(
         init=False, repr=False, compare=False, hash=False)
-    # a familiar form -> the longer given names it stands for (`max` ->
-    # {`maxim`, `maximilian`}), from every `familiar` reading's
+    # a given name -> every name it is paired with as a familiar form,
+    # either way (`max` -> {`maksim`, `maxim`, `maximilian`},
+    # `maximilian` -> {`max`}), from every `familiar` reading's
     # `short_for`, read by the name match alone (`_familiar_forms`);
     # built like `_same_as`
     _familiar: Familiar = field(
@@ -2079,10 +2096,11 @@ class Lexicon:
         return frozenset(seen)
 
     def _familiar_forms(self, word: str) -> frozenset[str]:
-        """The longer given names `word`, normalized, is a familiar
-        form of (`max` -> {`maksim`, `maxim`, `maximilian`}), empty for
-        a word that is none: one way, so a long form reaches no short
-        one and two long forms of one short form do not reach each
+        """The given names `word`, normalized, is paired with directly
+        as a familiar form, in either direction (`max` -> {`maksim`,
+        `maxim`, `maximilian`}, `maximilian` -> {`max`}), empty for a
+        word in no pair. Never chained: two longer names paired with
+        one shorter one (`maximilian`, `maxim`) do not reach each
         other. Read by the name match alone, never by a parse."""
         return self._familiar.get(_normalize(word), frozenset())
 

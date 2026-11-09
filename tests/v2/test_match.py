@@ -62,7 +62,7 @@ NAMES: tuple[str, ...] = (
     "Max Smith", "Maximilian Smith", "Maxim Smith", "Maxwell Smith",
     "Bill Smith", "BILL SMITH", "Sepp Huber", "Josef Huber", "Bob Smith",
     "Robert Smith", "John Bill Smith", "John William Smith",
-    'Robert "Bob" Smith', "Smith, Bill",
+    'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -1176,13 +1176,33 @@ def test_a_familiar_form_is_consistent_where_accepted(
 def test_the_default_keys_a_familiar_form_by_its_own_letter_alone() -> None:
     assert m.keys("Bill Smith") == {"smith;b"}
     assert _familiar.keys("Bill Smith") == {"smith;b", "smith;w"}
-    # the long side needs no key of the short one's: the short side
-    # carries the long one's letter
-    assert _familiar.keys("William Smith") == m.keys("William Smith")
+    # a name keys through every name it is paired with, either way
+    assert m.keys("William Smith") == {"smith;w"}
+    assert _familiar.keys("William Smith") == {"smith;b", "smith;w"}
+
+
+@pytest.mark.parametrize("short, long", [("maria", "masha"),
+                                         ("masha", "maria")])
+def test_a_pair_reads_whichever_way_the_source_wrote_it(
+        short: str, long: str) -> None:
+    # nam_dict writes some pairs long first (`Maria` / `Masha`), so a
+    # pair is read either way: written either way round here, on a
+    # lexicon holding no other familiar reading, it matches and keys alike
+    lexicon = Lexicon.default().remove(kind="familiar", every=True).add(
+        short, kind="familiar", short_for=[long])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for a, b in (("Masha Ivanova", "Maria Ivanova"),
+                 ("Maria Ivanova", "Masha Ivanova")):
+        r = matching.check(a, b)
+        assert r.consistent, (short, a)
+        assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
+        assert matching.keys(a) & matching.keys(b)
+    assert _familiar.check("Masha Ivanova", "Maria Ivanova").consistent
 
 
 @pytest.mark.parametrize("a, b", [
-    # one way: Max stands for both, and they do not stand for each other
+    # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
     # a pair nam_dict does not list
     ("Max Smith", "Maxwell Smith"),

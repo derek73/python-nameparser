@@ -373,8 +373,9 @@ class Matching:
         (`jo`) contributes only itself unless written with its trailing
         period, the one spelling set the check reads (`_spellings`),
         and where `familiar-form` is accepted also by the first letter
-        of every longer name a word of that set is a familiar form of
-        (`Bill` keys `w` for William beside `b`).
+        of every name a word of that set is paired with directly as a
+        familiar form, in either direction (`Bill` keys `w` for William
+        beside `b`, and `William` keys `b`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -524,10 +525,10 @@ class Matching:
         initials = ({g[:1] for g in _spelling_keys(given[0], "given", lexicon)}
                     if given else {""})
         if given and Outcome.FAMILIAR_FORM in self.accept:
-            # the longer names the check reaches from a familiar form
-            # (`_familiar`), so `Bill` shares William's key: the long
-            # side's own letter is in its spelling keys already
-            initials |= {g[:1] for g in _long_forms(
+            # every name the check pairs with it as a familiar form,
+            # either way (`_familiar`), so `Bill` and `William` share
+            # each other's keys
+            initials |= {g[:1] for g in _paired_forms(
                 _spellings(given[0], "given", lexicon), lexicon)} - {""}
         if across:
             # the texts the check matches against a given name, each
@@ -751,24 +752,25 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
-def _long_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
-    """The longer given names any member of a spelling set is a
-    familiar form of, each folded and as normalized."""
-    longs = {long for word in spellings
-             for long in lexicon._familiar_forms(word)}
-    return longs | {_fold(long) for long in longs}
+def _paired_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
+    """The given names any member of a spelling set is paired with
+    directly as a familiar form, in either direction, each folded and
+    as normalized."""
+    paired = {name for word in spellings
+              for name in lexicon._familiar_forms(word)}
+    return paired | {_fold(name) for name in paired}
 
 
 def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
-    """One given-name word is a familiar form of the other (`Bill` /
-    `William`, `Max` / `Maximilian`): the longer names one word's
-    spelling set reaches through the familiar forms meet the other's
-    spelling set. One way, so two longer names one short name stands
-    for (`Maximilian` / `Maxim`) are not familiar forms of each other;
-    symmetric in its two arguments."""
+    """One given-name word and the other are a listed familiar-form
+    pair (`Bill` / `William`, `Masha` / `Maria`): a name one word's
+    spelling set is paired with directly meets the other's spelling
+    set. Read whichever way the source wrote the pair, since nam_dict
+    does not always write the shorter name first, and never chained, so
+    two longer names paired with one short name (`Maximilian` /
+    `Maxim`) are no pair; symmetric in its two arguments."""
     sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
-    return (not _long_forms(sa, lexicon).isdisjoint(sb)
-            or not _long_forms(sb, lexicon).isdisjoint(sa))
+    return not _paired_forms(sa, lexicon).isdisjoint(sb)
 
 
 def _familiar_outcome(wa: list[str], wb: list[str],
