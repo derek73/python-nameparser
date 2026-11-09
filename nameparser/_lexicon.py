@@ -174,9 +174,10 @@ def _title_key(words: Iterable[str]) -> str:
 
     Defined once because it is built at match time
     (_run_addresses_by_given, which is how post_rules' H1 and group's
-    P5 licence both reach it) and at construction (_make_edit's fold
-    of a phrase reading), and a divergence between them fails silently:
-    the entry simply stops matching."""
+    P5 licence both reach it) and wherever a caller's word is stored or
+    looked up (_edit_words, which folds every word add() and remove()
+    take, a phrase included, and readings_of), and a divergence between
+    them fails silently: the entry simply stops matching."""
     return " ".join(_fold_words(words))
 
 
@@ -303,9 +304,9 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
         # A list is matched one word at a time, so a multi-word entry
         # can never match -- the library itself shipped eight such dead
         # entries for years (repaired 2026-07-26). Warn, never raise: an
-        # inert entry produces nothing, and the given_name_titles
-        # precedent says a raise here costs working configurations (see
-        # __post_init__). split() covers all Unicode whitespace.
+        # inert entry produces nothing, while a raise costs a working
+        # configuration (AGENTS.md's gotcha on given-name title runs,
+        # the precedent). split() covers all Unicode whitespace.
         if n != "".join(n.split()):
             _warn_at_caller(
                 f"Lexicon.{field_name} entries are matched one word at "
@@ -1341,6 +1342,28 @@ def _refusal(where: str, removed: Mapping[str, object]) -> TypeError:
         f"gives the kind for each 2.x field")
 
 
+def _refused_2x(state: Mapping[str, object]) -> ValueError:
+    """The ValueError for a 2.x `Lexicon` state, its remedy told by the
+    state's layout, since the caller holding an old pickle seldom knows
+    which release wrote it. 3.0 loaded a state holding every 2.x field
+    but `given_names` (3.0's) and no other, which only 2.7 and 2.8
+    wrote: measured 2026-11-08, `Lexicon.default()` pickled by each
+    wheel from 2.0.0 to 2.6.0 fails under 3.0.1, by 2.7.0, 2.8.0 and
+    2.8.2 loads (decisions/vocabulary-model, 2026-11-08 #1003). It is
+    raised wherever the `Lexicon` is, so a `Parser` or locale pack
+    holding one is named too."""
+    layout = set(_VOCAB_FIELDS) | {"capitalization_exceptions"}
+    held = "the Lexicon, or the Parser or locale pack holding it"
+    if layout - {"given_names"} <= set(state) <= layout:
+        return ValueError(
+            f"this Lexicon was pickled by nameparser 2.7 or 2.8, which "
+            f"3.1 no longer loads: load the pickle under 3.0 and pickle "
+            f"the loaded object ({held}) again")
+    return ValueError(
+        f"this Lexicon was pickled by nameparser 2.6 or earlier, which no "
+        f"3.x release loads: build the object ({held}) again")
+
+
 # -- the public types ----------------------------------------------------
 
 @dataclass(frozen=True, slots=True)
@@ -1640,11 +1663,7 @@ class Lexicon:
         # built through the constructor, which validates every value as
         # for a caller's.
         if "titles" in state:
-            raise ValueError(
-                "this Lexicon pickle was written by nameparser 2.x, which "
-                "3.1 no longer loads: if 2.7 or 2.8 wrote it, load it under "
-                "3.0 and pickle the loaded object again; no 3.x release "
-                "loads an older one, so build the Lexicon again")
+            raise _refused_2x(state)
         fields = [f for f in dataclasses.fields(Lexicon) if f.init]
         expected = {f.name for f in fields}
         added = {f.name: f.default for f in fields

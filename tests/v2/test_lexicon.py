@@ -1490,12 +1490,23 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
         Lexicon.__new__(Lexicon).__setstate__(state)
 
 
-#: The refusal of a 2.x Lexicon state, its remedy matched in full.
+#: The refusals of a 2.x Lexicon state, each remedy matched in full:
+#: a layout 3.0 loaded (2.7's and 2.8's), and an older one.
 _REFUSED_2X = re.escape(
-    "this Lexicon pickle was written by nameparser 2.x, which 3.1 no "
-    "longer loads: if 2.7 or 2.8 wrote it, load it under 3.0 and pickle "
-    "the loaded object again; no 3.x release loads an older one, so build "
-    "the Lexicon again")
+    "this Lexicon was pickled by nameparser 2.7 or 2.8, which 3.1 no "
+    "longer loads: load the pickle under 3.0 and pickle the loaded object "
+    "(the Lexicon, or the Parser or locale pack holding it) again")
+_REFUSED_OLDER = re.escape(
+    "this Lexicon was pickled by nameparser 2.6 or earlier, which no 3.x "
+    "release loads: build the object (the Lexicon, or the Parser or "
+    "locale pack holding it) again")
+
+#: The fields a 2.6.0 Lexicon state lacks against 2.8's, read off the
+#: ValueError 3.0.1 raised loading `Lexicon.default()` pickled by the
+#: 2.6.0 wheel (2026-11-08).
+_NOT_IN_2_6 = ("agnomens", "given_name_abbreviations", "suffix_words_ambiguous",
+               "title_modifiers", "title_phrases", "title_styles",
+               "titles_ambiguous")
 
 
 def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
@@ -1525,14 +1536,31 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
         Lexicon.__new__(Lexicon).__setstate__(state)
 
 
+@pytest.mark.parametrize("layout", ["2.6", "unknown field"])
+def test_a_2x_layout_3_0_never_loaded_is_told_to_rebuild(layout: str) -> None:
+    # 3.0 refused any 2.x state but 2.7's and 2.8's, so re-pickling under
+    # it cannot help them: the remedy is to build the object again
+    state: dict[str, object] = {f: frozenset() for f in _VOCAB_FIELDS
+                                if f != "given_names"}
+    state["capitalization_exceptions"] = ()
+    if layout == "2.6":
+        for f in _NOT_IN_2_6:
+            del state[f]
+    else:
+        state["no_such_field"] = frozenset()
+    with pytest.raises(ValueError, match=_REFUSED_OLDER):
+        Lexicon.__new__(Lexicon).__setstate__(state)
+
+
 @pytest.mark.parametrize("obj", [
     Lexicon.default().remove("dean", kind="given"),
     Parser(lexicon=Lexicon.default().add("leed", kind="credential")),
     locales.RU,
 ], ids=["lexicon", "parser", "locale"])
 def test_a_3x_pickle_is_not_mistaken_for_a_2x_one(obj: object) -> None:
-    # the refusal's test reads no field a 3.x state holds: an object
-    # pickled by this release loads, equal and with no warning
+    # the 2.x check (`"titles" in state`) reads a key no 3.x state
+    # holds: an object pickled by this release loads, equal and with no
+    # warning
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         again = pickle.loads(pickle.dumps(obj))  # noqa: S301
@@ -1627,7 +1655,9 @@ def test_migrate_s_table_has_a_row_for_every_refused_field() -> None:
     # with nowhere to go (#1003)
     text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
     section = text.split("Lexicon fields → readings\n", 1)[1]
-    section = section.split("\nA ``Lexicon`` pickled by 2.x", 1)[0]
+    end = "\nA ``Lexicon`` pickled by 2.x"
+    assert end in section  # else the slice runs on to every later table
+    section = section.split(end, 1)[0]
     rows = set(re.findall(r"^   \* - ``([a-z_]+)``$", section, re.M))
     assert set(_SET_FIELDS) <= rows, set(_SET_FIELDS) - rows
 
