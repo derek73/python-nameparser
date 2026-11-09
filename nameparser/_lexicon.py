@@ -799,6 +799,15 @@ def _unwritten(kind: str, prop: str) -> object:
     return bare.flag(prop)
 
 
+#: The properties whose value is a list of words, each with what its
+#: entries are and an example, for the messages refusing a value.
+_LIST_PROPS: Mapping[str, str] = MappingProxyType({
+    "attaches": "title kinds or title words, e.g. attaches=['military']",
+    "completed_by": "single words, e.g. completed_by=['الله']",
+    "short_for": "given names, e.g. short_for=['maxwell']",
+})
+
+
 def _prop_value(kind: str, prop: str, value: object) -> object:
     """`value` canonical for the log, None where it is the unwritten
     one (which removes the property)."""
@@ -821,12 +830,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"off the end of a name token) or None, "
                              f"got {value!r}")
         return value
-    if prop in ("attaches", "completed_by", "short_for"):
-        what = ("title kinds or title words, e.g. attaches=['military']"
-                if prop == "attaches" else
-                "single words, e.g. completed_by=['الله']"
-                if prop == "completed_by" else
-                "given names, e.g. short_for=['maxwell']")
+    if prop in _LIST_PROPS:
+        what = _LIST_PROPS[prop]
         if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
             raise TypeError(f"{prop} must be an iterable of {what}, "
                             f"got {value!r}")
