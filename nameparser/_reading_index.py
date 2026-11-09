@@ -117,11 +117,37 @@ HONORIFIC_KINDS = frozenset({"honorific", "professional_honorific"})
 CAPITALIZED_PARTICLE_KINDS = frozenset({"saint", "rank"})
 
 
+#: The group a reading's `same_as` is read in, by the reading's
+#: category, a name reading's being its kind (`given`, `family`): the
+#: roles of a name each read one group (decisions/name-matching,
+#: 2026-11-08), so a given name's listed spelling is not a surname's
+#: (`ma`, María written short, beside the surname Ma). A bound given
+#: name stands in the given name and a particle in the surname, so
+#: theirs are read there; a conjunction's and a birth marker's stand in
+#: no role a match compares, and compile to no group.
+SAME_AS_GROUPS: dict[str, str] = {
+    "given": "given",
+    "bound_given": "given",
+    "family": "family",
+    "particle": "family",
+    "title": "title",
+    "suffix": "suffix",
+}
+
+
+def same_as_group(kind: str) -> str | None:
+    """The `SAME_AS` group a `kind` reading's `same_as` compiles into,
+    or None where it compiles into none."""
+    category = CATEGORY[kind]
+    return SAME_AS_GROUPS.get(kind if category == "name" else category)
+
+
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
     category's behavioral ones, and on every kind `same_as`, the word a
-    spelling stands for, which compiles into SAME_AS and on a `given`
-    reading also into GIVEN_NAME_ABBREVIATIONS (#789). Everything else
+    spelling stands for, which compiles into SAME_AS (in the group of
+    `same_as_group`) and on a `given` reading also into
+    GIVEN_NAME_ABBREVIATIONS (#789). Everything else
     a reading carries is evidence, compiled to nothing."""
     return BEHAVIORAL[CATEGORY[kind]] | {"same_as"}
 
@@ -553,7 +579,7 @@ class Compiled(TypedDict):
     SAINT_PARTICLES: frozenset[str]
     CAPITALIZED_PARTICLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
-    SAME_AS: dict[str, str]
+    SAME_AS: dict[str, dict[str, tuple[str, ...]]]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -602,11 +628,12 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     after_particle: set[str] = set()
     bound_phrases: set[str] = set()
     cased: dict[str, str] = {}
-    same_as: dict[str, str] = {}
+    same_as: dict[str, dict[str, set[str]]] = {
+        g: {} for g in SAME_AS_GROUPS.values()}
     for r, t in texts:
         p = r.props
-        if "same_as" in p:
-            same_as.setdefault(t, p["same_as"])
+        if "same_as" in p and (group := same_as_group(r.kind)) is not None:
+            same_as[group].setdefault(t, set()).add(p["same_as"])
         if "cased" in p:
             cased[t] = p["cased"]
         if r.category == "name" and r.flag("shared"):
@@ -749,10 +776,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)
         BOUND_PHRASES=frozenset(bound_phrases),
-        # every reading's `same_as`, of any kind: the word it is a
-        # listed spelling of (`wm` of `william`, `junior` of `jr`,
-        # `capt` of `captain`), which no set above records
-        SAME_AS=dict(sorted(same_as.items())),
+        # every reading's `same_as` in the group of its kind: the words
+        # it is a listed spelling of (`wm` of `william` among given
+        # names, `junior` of `jr` among suffixes, `sr` of both `señor`
+        # and `senhor` among titles), which no set above records
+        SAME_AS={g: {w: tuple(sorted(heads))
+                     for w, heads in sorted(same_as[g].items())}
+                 for g in sorted(same_as)},
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

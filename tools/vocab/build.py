@@ -1484,7 +1484,16 @@ def render(compiled: Compiled) -> str:
     for name in CONSTANTS:
         v = values[name]
         out.append("")
-        if isinstance(v, dict):
+        if isinstance(v, dict) and all(isinstance(g, dict) for g in v.values()):
+            # SAME_AS: group -> word -> the words it is a spelling of
+            out.append(f"{name}: dict[str, dict[str, tuple[str, ...]]] = {{")
+            for group in sorted(v):
+                out.append(f"    {group!r}: {{")
+                out += [f"        {k!r}: {v[group][k]!r},"
+                        for k in sorted(v[group])]
+                out.append("    },")
+            out.append("}")
+        elif isinstance(v, dict):
             out.append(f"{name}: dict[str, str] = {{")
             out += [f"    {k!r}: {v[k]!r}," for k in sorted(v)]
             out.append("}")

@@ -6,7 +6,8 @@ compares two parsed names role by role.
 Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 `DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
-through `Lexicon._headword` and for `Lexicon.particles`, a hyphen half
+through `Lexicon._headwords`, each role in the group of its kind
+(`_GROUP`), and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
 name's other readings (`other-reading`); no `Policy` field.
 
@@ -33,6 +34,7 @@ from nameparser._types import (
     Ambiguity,
     ParsedName,
     Role,
+    _coerce_enum,
     _guarded_getstate,
     _guarded_setstate,
 )
@@ -44,7 +46,11 @@ if TYPE_CHECKING:
 
 class Outcome(StrEnum):
     """How one role of one name compares with the same role of another,
-    strongest first. `conflict` is the one outcome that is never accepted.
+    listed in the order `check` ranks them, strongest first. `strength`
+    is that rank as a number, larger for a stronger outcome and lowest
+    for `conflict`; rank outcomes by it, since `<` on an Outcome
+    compares the names as strings (`folded` sorts before `same`).
+    `conflict` is the one outcome that is never accepted.
     `other-reading` is never a role's outcome: accepting it switches on
     the search for each side's other readings, and the reading used is
     named in `MatchResult.left_alternative` and `right_alternative`."""
@@ -65,6 +71,18 @@ class Outcome(StrEnum):
     OTHER_READING = "other-reading"
     ACROSS_ROLES = "across-roles"
     CONFLICT = "conflict"
+
+    @property
+    def strength(self) -> int:
+        """The outcome's rank as a number: `conflict` is 0, and each
+        outcome declared before another is stronger than it, `same`
+        the strongest."""
+        return _STRENGTH[self]
+
+
+#: Each outcome's strength, from its declaration order.
+_STRENGTH: Mapping[Outcome, int] = {
+    o: len(Outcome) - 1 - i for i, o in enumerate(Outcome)}
 
 
 class Side(StrEnum):
@@ -131,7 +149,10 @@ class MatchResult:
     side the `Ambiguity` whose other reading the table used, or `None`
     where that side is read as parsed (always `None` unless
     `other-reading` is accepted). A side uses one other reading at a
-    time; each row keeps its own outcome under it."""
+    time; each row keeps its own outcome under it.
+
+    A row is read by its role, a `Role` member or its name
+    (`result["suffix"]`), and `weakest` is the weakest row's outcome."""
 
     consistent: bool
     roles: tuple[RoleMatch, ...]
@@ -141,6 +162,35 @@ class MatchResult:
 
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
+
+    def __post_init__(self) -> None:
+        order = ", ".join(r.value for r in Role)
+        if not isinstance(self.roles, tuple):
+            raise TypeError(
+                f"roles must be a tuple of RoleMatch, one per Role, got "
+                f"{type(self.roles).__name__}; pass tuple(rows)")
+        for row in self.roles:
+            if not isinstance(row, RoleMatch):
+                raise TypeError(
+                    f"roles must hold RoleMatch rows, got "
+                    f"{type(row).__name__} {row!r}; build each row as "
+                    f"RoleMatch(role, outcome, left, right, more)")
+        held = [row.role for row in self.roles]
+        if held != list(Role):
+            raise ValueError(
+                f"roles must hold one RoleMatch per Role, in Role order "
+                f"({order}), got {', '.join(str(r) for r in held) or 'none'}; "
+                f"pass a row for every role, in that order")
+
+    def __getitem__(self, role: Role | str) -> RoleMatch:
+        """The row of one role: a `Role` member or its name; anything
+        else raises ValueError naming the valid roles."""
+        return self.roles[_RANK_ROLE[_coerce_enum(role, Role, "Role", "roles")]]
+
+    @property
+    def weakest(self) -> Outcome:
+        """The weakest row's outcome, by `Outcome.strength`."""
+        return _weakest(r.outcome for r in self.roles)
 
     def mirrored(self) -> MatchResult:
         """The same result with the two names swapped: each role's left
@@ -364,13 +414,14 @@ class Matching:
         outcome, then by texts and roles named without a side, so it is
         the same with the names swapped."""
         lexicon = self.parser.lexicon
+        group = _GROUP[role]
         found: list[tuple[tuple[object, ...],
                           tuple[CrossRoleMatch, int | None, int]]] = []
         for other in _ACROSS[role]:
             for lrole, rrole in ((other, role), (role, other)):
                 for li, la in enumerate(_cross_texts(left, lrole)):
                     for ri, ra in enumerate(_cross_texts(right, rrole)):
-                        outcome = _text_outcome(la, ra, lexicon)
+                        outcome = _text_outcome(la, ra, lexicon, group)
                         if (outcome not in _ACROSS_OUTCOMES
                                 or outcome not in self.accept
                                 or _initials_only(la) or _initials_only(ra)):
@@ -415,8 +466,10 @@ class Matching:
     def _keys(self, parsed: ParsedName) -> frozenset[str]:
         lexicon = self.parser.lexicon
 
-        def heads(word: str) -> set[str]:
-            return {lexicon._headword(_fold(word)), _fold(lexicon._headword(word))}
+        def heads(word: str, group: str) -> set[str]:
+            # the folded members suffice: every spelling set holds each
+            # member's folded form, so two sets that meet share one
+            return {_fold(h) for h in _spellings(word, group, lexicon)}
 
         across = Outcome.ACROSS_ROLES in self.accept
         bases = parsed.family_base.split()
@@ -429,18 +482,18 @@ class Matching:
             # the raw and the folded word drop the same ones
             drop = {i for i, h in enumerate(folded.split("-"))
                     if "-" in folded and _particle_half(h, lexicon)}
-            for word in (raw, folded):
-                halves = [h for i, h in enumerate(word.split("-"))
-                          if i not in drop]
-                for form in (*halves, word.replace("-", "")):
-                    if form:
-                        words |= heads(form)
+            halves = [h for i, h in enumerate(raw.split("-")) if i not in drop]
+            # the whole word too: a hyphenated word may itself be the
+            # full form another word is listed as a spelling of
+            for form in {*halves, raw.replace("-", ""), raw}:
+                if form:
+                    words |= heads(form, "family")
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
-            words |= {f[:1] for f in heads(family[0]) | {_fold(family[0])}} - {""}
+            words |= {f[:1] for f in heads(family[0], "family")} - {""}
 
         def initials_of(word: str) -> set[str]:
-            return {g[:1] for g in heads(word) | {_fold(word)}}
+            return {g[:1] for g in heads(word, "given")}
 
         given = parsed.given.split()
         initials = initials_of(given[0]) if given else {""}
@@ -485,6 +538,19 @@ _ACROSS: Mapping[Role, tuple[Role, ...]] = {
     Role.FAMILY: (Role.MAIDEN,),
 }
 _RANK_ROLE = {r: i for i, r in enumerate(Role)}
+#: The `same_as` group each role reads its listed spellings in: the
+#: readings of the kind that stands there (`Lexicon._headwords`), so a
+#: given name's spelling never matches a surname (`Ma` / `María` agree
+#: as given names, never as surnames).
+_GROUP: Mapping[Role, str] = {
+    Role.TITLE: "title",
+    Role.GIVEN: "given",
+    Role.MIDDLE: "given",
+    Role.FAMILY: "family",
+    Role.SUFFIX: "suffix",
+    Role.NICKNAME: "given",
+    Role.MAIDEN: "family",
+}
 #: The outcomes a cross-role match counts at: a full name on both sides,
 #: never an initial or an opt-in outcome.
 _ACROSS_OUTCOMES = frozenset({Outcome.SAME, Outcome.FOLDED,
@@ -562,7 +628,7 @@ def _ambiguity_key(ambiguity: Ambiguity | None) -> tuple[str, ...]:
 
 
 def _weakest(outcomes: Iterable[Outcome]) -> Outcome:
-    return max(outcomes, key=_RANK.__getitem__)
+    return min(outcomes, key=_STRENGTH.__getitem__)
 
 
 def _letters(text: str) -> int:
@@ -578,20 +644,38 @@ def _is_initial(folded: str) -> bool:
     return len(folded) == 1 and folded.isalpha() and not _initialless(folded)
 
 
-def _part_agrees(a: str, b: str, lexicon: Lexicon) -> Outcome | None:
+def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
+    """The words `word` is a listed spelling of in `group`, the word
+    itself included, read from the word as written and from it folded,
+    each member beside its folded form: `Jose` among given names reaches
+    `jo`'s full form `josé` folded, so `Jo` and `Jose` meet."""
+    heads = (lexicon._headwords(word, group)
+             | lexicon._headwords(_fold(word), group))
+    return heads | {_fold(h) for h in heads}
+
+
+def _listed(a: str, b: str, group: str, lexicon: Lexicon) -> bool:
+    """Two words are listed spellings of one word in `group`: their
+    spelling sets meet."""
+    return not _spellings(a, group, lexicon).isdisjoint(
+        _spellings(b, group, lexicon))
+
+
+def _part_agrees(a: str, b: str, lexicon: Lexicon,
+                 group: str) -> Outcome | None:
     """One word against one word: `same` where they are equal once
-    folded or listed as one spelling, `initial` where one is an initial
-    of the other's first letter, else `None`. A hyphenated word is
-    compared part by part against the other's hyphen-split parts
-    (`J.-P.` / `Jean-Pierre`)."""
+    folded or listed as one spelling in `group`, `initial` where one is
+    an initial of the other's first letter, else `None`. A hyphenated
+    word is compared part by part against the other's hyphen-split
+    parts (`J.-P.` / `Jean-Pierre`)."""
     fa, fb = _fold(a), _fold(b)
-    if fa == fb or lexicon._headword(a) == lexicon._headword(b):
+    if fa == fb or _listed(a, b, group, lexicon):
         return Outcome.SAME
     if (_is_initial(fa) and fb[:1] == fa) or (_is_initial(fb) and fa[:1] == fb):
         return Outcome.INITIAL
     pa, pb = a.split("-"), b.split("-")
     if len(pa) > 1 and len(pa) == len(pb):
-        parts = [_part_agrees(x, y, lexicon) for x, y in zip(pa, pb)]
+        parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(pa, pb)]
         if None not in parts:
             return _weakest(p for p in parts if p is not None)
     return None
@@ -601,10 +685,12 @@ def _initials_only(text: str) -> bool:
     return all(_is_initial(w) for w in _WORDS.split(_fold(text)) if w)
 
 
-def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
+def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str, *,
+                  family: bool = False,
                   bases: tuple[str, str] = ("", "")) -> Outcome:
     """Two non-empty texts of one role, by the strongest outcome that
-    holds: same, folded, listed spelling, then for a family particles
+    holds: same, folded, listed spelling (in the role's `same_as`
+    `group`), then for a family particles
     set aside and part of the other, then initial against name (family
     initial in the family role), then initials agree, else conflict."""
     if a == b:
@@ -613,7 +699,7 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
         return Outcome.FOLDED
     wa, wb = a.split(), b.split()
     if len(wa) == len(wb) and all(
-            lexicon._headword(x) == lexicon._headword(y) for x, y in zip(wa, wb)):
+            _listed(x, y, group, lexicon) for x, y in zip(wa, wb)):
         return Outcome.LISTED_SPELLING
     if family:
         if bases[0] and _fold(bases[0]) == _fold(bases[1]):
@@ -622,7 +708,7 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
         if sa and sb and (sa <= sb or sb <= sa):
             return Outcome.PART_OF_OTHER
     if len(wa) == len(wb):
-        parts = [_part_agrees(x, y, lexicon) for x, y in zip(wa, wb)]
+        parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
             return Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
     if _initials_only(a) and _initials_only(b) and (
@@ -667,18 +753,18 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon) -> Outcome:
     `_text_outcome`, each word past the shorter side one-sided, the role
     taking the weakest."""
     wa, wb = a.split(), b.split()
-    outcomes = [_text_outcome(x, y, lexicon) for x, y in zip(wa, wb)]
+    outcomes = [_text_outcome(x, y, lexicon, "given") for x, y in zip(wa, wb)]
     if len(wa) != len(wb):
         outcomes.append(Outcome.ONE_SIDE)
     return _weakest(outcomes)
 
 
-def _noted(a: str, b: str, lexicon: Lexicon) -> Outcome:
+def _noted(a: str, b: str, lexicon: Lexicon, group: str) -> Outcome:
     """A role that never conflicts: equal by any spelling, else noted."""
     if not a and not b:
         return Outcome.SAME
     if a and b:
-        outcome = _text_outcome(a, b, lexicon)
+        outcome = _text_outcome(a, b, lexicon, group)
         if outcome in (Outcome.SAME, Outcome.FOLDED, Outcome.LISTED_SPELLING):
             return outcome
     return Outcome.NOTED
@@ -694,7 +780,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         return Outcome.SAME
     ga, gb = left.generation, right.generation
     if ga and gb:
-        generation = _noted(ga, gb, lexicon)
+        generation = _noted(ga, gb, lexicon, "suffix")
         if generation is Outcome.NOTED:
             return Outcome.CONFLICT
     elif ga or gb:
@@ -703,7 +789,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         generation = Outcome.SAME
     rest = _noted(" ".join(filter(None, (left.credentials, left.honorifics))),
                   " ".join(filter(None, (right.credentials, right.honorifics))),
-                  lexicon)
+                  lexicon, "suffix")
     return _weakest((generation, rest))
 
 
@@ -713,7 +799,7 @@ def _compare_role(role: Role, left: ParsedName, right: ParsedName,
     if role is Role.SUFFIX:
         outcome = _suffix_outcome(left, right, lexicon)
     elif role is Role.TITLE:
-        outcome = _noted(a, b, lexicon)
+        outcome = _noted(a, b, lexicon, "title")
     elif role is Role.FAMILY and not (a and b):
         outcome = Outcome.CONFLICT
     elif not a and not b:
@@ -724,7 +810,7 @@ def _compare_role(role: Role, left: ParsedName, right: ParsedName,
         outcome = Outcome.GIVEN_ONE_SIDE if role is Role.GIVEN else Outcome.ONE_SIDE
     else:
         outcome = _text_outcome(
-            a, b, lexicon, family=role is Role.FAMILY,
+            a, b, lexicon, _GROUP[role], family=role is Role.FAMILY,
             bases=(left.family_base, right.family_base))
     more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)
     return RoleMatch(role, outcome, a, b, more)

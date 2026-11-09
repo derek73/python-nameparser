@@ -611,11 +611,24 @@ _COMPILED_FIELDS = {
 }
 
 
-def _same_as_of(compiled: Mapping[str, Any]) -> Mapping[str, str]:
-    """The compile's `SAME_AS` as the lexicon keeps it: each headword
-    normalized, as a caller's `same_as` is written free-form."""
-    return MappingProxyType(
-        {w: _normalize(h) for w, h in compiled["SAME_AS"].items()})
+#: The groups `SAME_AS` is keyed by, one per kind of role a name match
+#: compares (`_reading_index.SAME_AS_GROUPS` maps a reading's kind to
+#: one; tests/v2/test_lexicon.py holds the two to one list).
+_SAME_AS_GROUPS = frozenset({"given", "family", "title", "suffix"})
+
+#: A group -> word -> the words it is a listed spelling of.
+SameAs = Mapping[str, Mapping[str, frozenset[str]]]
+
+
+def _same_as_of(compiled: Mapping[str, Any]) -> SameAs:
+    """The compile's `SAME_AS` as the lexicon keeps it: per group, each
+    word's full forms normalized, as a caller's `same_as` is written
+    free-form."""
+    return MappingProxyType({
+        group: MappingProxyType({
+            w: frozenset(_normalize(h) for h in heads)
+            for w, heads in words.items()})
+        for group, words in compiled["SAME_AS"].items()})
 
 
 def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
@@ -640,7 +653,7 @@ def _default_compiled() -> Mapping[str, frozenset[str]]:
 
 
 @functools.cache
-def _default_same_as() -> Mapping[str, str]:
+def _default_same_as() -> SameAs:
     import nameparser.config._compiled as compiled
     return _same_as_of(vars(compiled))
 
@@ -1003,7 +1016,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
            strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
-                                  Mapping[str, str]]:
+                                  SameAs]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1058,19 +1071,20 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
 
 def _same_as_for(base: object, edits: tuple[_Edit, ...],
                  chosen: frozenset[str] = frozenset(),
-                 strict: bool = False) -> Mapping[str, str]:
-    """`_compiled_for`'s twin for the word -> headword map."""
+                 strict: bool = False) -> SameAs:
+    """`_compiled_for`'s twin for the listed-spelling map."""
     if not edits and base == "default":
         return (_choice_same_as(chosen, strict) if chosen
                 else _default_same_as())
     if not edits and not chosen and base == "empty":
-        return MappingProxyType({})
+        return MappingProxyType({g: MappingProxyType({})
+                                 for g in sorted(_SAME_AS_GROUPS)})
     return _built(base, edits, chosen, strict)[2]
 
 
 @functools.lru_cache(maxsize=32)
 def _choice_same_as(chosen: frozenset[str],
-                    strict: bool) -> Mapping[str, str]:
+                    strict: bool) -> SameAs:
     ri = _index_module()
     return _same_as_of(ri.compile_choice(chosen, strict))
 
@@ -1566,10 +1580,10 @@ class Lexicon:
         init=False, repr=False, compare=False, hash=False)
     _sets: _LexiconSets = field(
         init=False, repr=False, compare=False, hash=False)
-    # word -> the word it is a listed spelling of (`wm` -> `william`),
-    # from every reading's `same_as`; built at construction, never
-    # pickled, like `_cap_map`
-    _same_as: Mapping[str, str] = field(
+    # group -> word -> the words it is a listed spelling of (`given`:
+    # `wm` -> {`william`}), from every reading's `same_as` in the group
+    # of its kind; built at construction, never pickled, like `_cap_map`
+    _same_as: SameAs = field(
         init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
@@ -1996,19 +2010,31 @@ class Lexicon:
     def _pool(self) -> Pool:
         return self._files.pool()
 
-    def _headword(self, word: str) -> str:
-        """The word `word` is a listed spelling of, followed through
-        its `same_as` chain (`Wm.` -> `william`, `Junior` -> `jr`), or
-        the word itself, normalized, where it names none; two words are
-        listed spellings of each other where their headwords agree. A
-        chain that loops, which a caller's edits can write where the
-        build refuses it in the files, ends at the word that closes it."""
-        w = _normalize(word)
-        seen = {w}
-        while (head := self._same_as.get(w)) is not None and head not in seen:
-            w = head
-            seen.add(w)
-        return w
+    def _headwords(self, word: str, group: str) -> frozenset[str]:
+        """Every word reachable from `word`, normalized, through the
+        `same_as` links of `group` (`given`, `family`, `title` or
+        `suffix`, the group of the readings' kinds), the word itself
+        included: `Wm.` among given names is {`wm`, `william`}, and `sr`
+        among titles {`sr`, `señor`, `senhor`}. A word's readings of
+        another kind are another group's (`ma` is María written short
+        among given names and only itself among surnames), and a word
+        with no listed spelling is itself alone. A loop, which a
+        caller's edits can write where the build refuses it in the
+        files, yields every word in it. The name match reads two words
+        as listed spellings of each other where their sets meet."""
+        links = self._same_as.get(group)
+        if links is None:
+            raise ValueError(f"unknown same_as group {group!r}; the groups "
+                             f"are {', '.join(sorted(_SAME_AS_GROUPS))}")
+        start = _normalize(word)
+        seen = {start}
+        todo = [start]
+        while todo:
+            for head in links.get(todo.pop(), ()):
+                if head not in seen:
+                    seen.add(head)
+                    todo.append(head)
+        return frozenset(seen)
 
     def _deltas_from(self, other: Lexicon) -> tuple[
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:

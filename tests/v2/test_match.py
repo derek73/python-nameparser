@@ -9,7 +9,7 @@ import pickle
 import pytest
 
 import nameparser
-from nameparser import ParsedName, Parser, Role, parse
+from nameparser import Lexicon, ParsedName, Parser, Role, parse
 from nameparser._match import (
     DEFAULT_ACCEPT,
     CrossRoleMatch,
@@ -49,6 +49,10 @@ NAMES: tuple[str, ...] = (
     "Bobby Smith", "John Wm. Smith", "John Smith, PhD",
     "Ahmed Al", "Ahmed Al-Saud", "Ahmed Saud",
     "Pat O'Brien", "O\u2019Brien, Pat", "Pat O\u02bcBrien",
+    "Jo Garcia", "Jose Garcia", "José Garcia", "Ma. Santos", "Maria Santos",
+    "Ma. Cruz", "MARIA CRUZ", "Ma, Jack", "María, Jack", "Ma Cruz",
+    "María Cruz", "Junior Smith", "Jr Smith", "Sr. John Smith",
+    "Señor John Smith", "Senhor John Smith",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -182,9 +186,9 @@ def test_mirrored_swaps_the_roles_and_texts_of_a_cross_role_match() -> None:
 
 
 def test_mirrored_keeps_neither() -> None:
-    both = RoleMatch(Role.GIVEN, Outcome.SAME, "a", "a", Side.NEITHER)
-    assert both.__class__ is RoleMatch
-    result = MatchResult(True, (both,))
+    rows = tuple(RoleMatch(r, Outcome.SAME, "a", "a", Side.NEITHER)
+                 for r in Role)
+    result = MatchResult(True, rows)
     assert result.mirrored().roles[0].more is Side.NEITHER
 
 
@@ -365,7 +369,9 @@ def test_a_devanagari_anusvara_is_not_folded_away() -> None:
 
 def test_default_keys_are_family_words_with_the_given_initial() -> None:
     assert m.keys("Jane A. de la Vega") == {"vega;j"}
-    assert m.keys("Ann Smith-Jones") == {"smith;a", "jones;a", "smithjones;a"}
+    # a hyphenated word is keyed by each half, joined, and whole
+    assert m.keys("Ann Smith-Jones") == {
+        "smith;a", "jones;a", "smithjones;a", "smith-jones;a"}
     assert m.keys("Suharto") == frozenset()
 
 
@@ -414,7 +420,7 @@ def test_a_family_of_particles_alone_is_not_part_of_a_longer_one(
 
 
 def test_a_hyphen_half_that_is_a_particle_is_not_a_family_word() -> None:
-    assert m.keys("Ahmed Al-Saud") == {"saud;a", "alsaud;a"}
+    assert m.keys("Ahmed Al-Saud") == {"saud;a", "alsaud;a", "al-saud;a"}
     r = m.check("Ahmed Al", "Ahmed Al-Saud")
     assert not r.consistent and role(r, Role.FAMILY).outcome is Outcome.CONFLICT
     r = m.check("Ahmed Al-Saud", "Ahmed Saud")
@@ -425,9 +431,13 @@ def test_a_hyphen_half_that_is_a_particle_is_not_a_family_word() -> None:
 
 
 @pytest.mark.parametrize("a, b", [
-    ("Ana Jo", "Ana José"), ("Ana Ma", "Ana María"), ("Maria Mà", "Maria Ma"),
+    ("Jo Garcia", "José Garcia"), ("Jo Garcia", "Jose Garcia"),
+    ("Ma. Santos", "Maria Santos"), ("Ma. Cruz", "MARIA CRUZ"),
+    ("Ma Cruz", "María Cruz"), ("Maria Mà", "Maria Ma"),
 ])
 def test_listed_and_folded_spellings_share_a_key(a: str, b: str) -> None:
+    # a listed spelling is read with the accent fold on both sides: `jo`
+    # is listed as `josé`, so `Jose` is one of its spellings too
     assert m.check(a, b).consistent
     assert m.keys(a) & m.keys(b)
 
@@ -753,3 +763,106 @@ def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:
         k == unicodedata.normalize("NFC", k) for k in decomposed)
     assert _fold("Máría") == unicodedata.normalize("NFC", _fold("Máría"))
     assert _fold("क्ष") == unicodedata.normalize("NFC", "क्ष")
+
+
+# -- listed spellings, read per role (decisions/name-matching, 2026-11-08)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Jo Garcia", "Jose Garcia"), ("Ma. Santos", "Maria Santos"),
+    ("Ma. Cruz", "MARIA CRUZ"), ("Ma Cruz", "María Cruz"),
+])
+def test_a_listed_spelling_holds_whatever_the_accents(a: str, b: str) -> None:
+    r = m.check(a, b)
+    assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
+    assert m.keys(a) & m.keys(b)
+
+
+@pytest.mark.parametrize("a, b", [("Ma, Jack", "María, Jack"),
+                                  ("Ana Ma", "Ana María")])
+def test_a_given_names_spelling_does_not_reach_the_family(a: str, b: str) -> None:
+    # `ma` is listed as a spelling of the given name María; the surname
+    # Ma is another word
+    r = m.check(a, b)
+    assert not r.consistent and r["family"].outcome is Outcome.CONFLICT
+
+
+def test_a_generations_spelling_does_not_reach_the_given_name() -> None:
+    r = m.check("Junior Smith", "Jr Smith")
+    assert r["given"].outcome is not Outcome.LISTED_SPELLING
+    assert not r.consistent
+
+
+def test_a_title_listed_as_two_words_spells_each() -> None:
+    # `sr` is listed under both `señor` and `senhor`, so it reads as a
+    # spelling of each; the two full forms share no listed word and are
+    # only noted, as different titles are
+    assert m.check("Sr. John Smith", "Señor John Smith")["title"].outcome is (
+        Outcome.LISTED_SPELLING)
+    assert m.check("Sr. John Smith", "Senhor John Smith")["title"].outcome is (
+        Outcome.LISTED_SPELLING)
+    assert m.check("Señor John Smith", "Senhor John Smith")["title"].outcome is (
+        Outcome.NOTED)
+
+
+def _matching_with(lexicon: Lexicon) -> Matching:
+    return Matching(Parser(lexicon=lexicon))
+
+
+def test_a_callers_same_as_loop_makes_its_words_spellings_of_each_other() -> None:
+    lexicon = (Lexicon.default().add("bob", kind="given", same_as="robert")
+               .add("robert", kind="given", same_as="bob"))
+    matching = _matching_with(lexicon)
+    r = matching.check("Bob Smith", "Robert Smith")
+    assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
+    assert matching.keys("Bob Smith") & matching.keys("Robert Smith")
+
+
+def test_a_callers_reverse_same_as_keeps_the_shipped_one() -> None:
+    lexicon = Lexicon.default().add("william", kind="given", same_as="wm")
+    r = _matching_with(lexicon).check("Wm. Smith", "William Smith")
+    assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
+
+
+def test_a_hyphenated_listed_spelling_shares_a_key() -> None:
+    lexicon = Lexicon.default().add("Dd", kind="family", same_as="Ee-Ff")
+    matching = _matching_with(lexicon)
+    r = matching.check("aa Dd", "aa Ee-Ff")
+    assert r.consistent and r["family"].outcome is Outcome.LISTED_SPELLING
+    assert matching.keys("aa Dd") & matching.keys("aa Ee-Ff")
+
+
+# -- ranking outcomes and reading a row by role
+
+
+def test_strength_ranks_the_outcomes_in_declaration_order() -> None:
+    # `<` on an Outcome compares names: `folded` sorts before `same`
+    assert min(Outcome.SAME, Outcome.FOLDED) is Outcome.FOLDED
+    assert Outcome.SAME.strength > Outcome.FOLDED.strength
+    assert min(Outcome, key=lambda o: o.strength) is Outcome.CONFLICT
+    assert sorted(Outcome, key=lambda o: o.strength, reverse=True) == list(Outcome)
+
+
+def test_weakest_is_the_weakest_rows_outcome() -> None:
+    assert m.check("John Smith", "John Smith").weakest is Outcome.SAME
+    assert m.check("John A. Smith", "John Smith").weakest is Outcome.ONE_SIDE
+    assert m.check("John Smith", "Jane Smith").weakest is Outcome.CONFLICT
+
+
+def test_a_result_is_read_by_role() -> None:
+    r = m.check("John Smith Jr.", "John Smith Junior")
+    assert r["suffix"] is r[Role.SUFFIX] is r.roles[list(Role).index(Role.SUFFIX)]
+    with pytest.raises(ValueError):
+        r["surname"]
+
+
+def test_a_result_holds_one_row_per_role_in_role_order() -> None:
+    rows = _result().roles
+    with pytest.raises(ValueError, match="one RoleMatch per Role"):
+        MatchResult(True, rows[:-1])
+    with pytest.raises(ValueError, match="one RoleMatch per Role"):
+        MatchResult(True, rows[::-1])
+    with pytest.raises(TypeError, match="RoleMatch"):
+        MatchResult(True, ("x",) * len(rows))  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="tuple"):
+        MatchResult(True, list(rows))  # type: ignore[arg-type]
