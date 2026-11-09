@@ -279,4 +279,4 @@ def test_a_corpus_fetched_another_way_is_refused_on_load(
 def test_the_source_pairs_spellings_and_names_its_group() -> None:
     assert _SOURCE in local.ALIKE_SOURCES
     assert local.SOURCES[_SOURCE].group == "dataset"
-    assert len(parl.DATASETS) == len(set(parl.DATASETS)) == 17
+    assert len(parl.DATASETS) == len(set(parl.DATASETS)) == 21
