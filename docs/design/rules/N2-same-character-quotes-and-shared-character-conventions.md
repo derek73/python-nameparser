@@ -19,25 +19,23 @@
 
 **Except:**
 
-- **An apostrophe opening a word the vocabulary lists as a particle** is part of that word, so it opens no quote.
+- **An apostrophe opening a word the vocabulary lists as a particle**, alone or hyphened to the name after it, is part of that word, so it opens no quote, unless the next apostrophe of the same character in the name stands after a character other than whitespace, where it could close one.
   ```
-  "Jan van 't Hof 'Jantje'"  →  nickname="Jantje"
-  ```
-- **An apostrophe opening a listed particle hyphened to the name after it** opens none either, unless the next apostrophe of the same character in the name stands after a character other than whitespace, where it could close a quote.
-  ```
+  "Jan van 't Hof 'Jantje'"   →  nickname="Jantje"
   "Arent van 's-Gravesande"   →  family="van 's-Gravesande"
+  "Bob 'T Bone' Smith"        →  nickname="T Bone"
   "Bob 'T-Bone Jones' Smith"  →  nickname="T-Bone Jones"
   ```
 
 **Accepted:**
 
-- A quote that does open at such a word is read as the word, its close staying in the word it ends.
-  ```
-  "Pieter 't Hart' Smith"  →  family="'t Hart' Smith"
-  ```
-- A quote with no possible close opening at a listed particle hyphened to a word is read as the word, with no report.
+- A quote with no possible close opening at a listed particle is read as the word, with no report.
   ```
   "Aaron 'T-Bone Walker"  →  middle="'T-Bone"
+  ```
+- An apostrophe inside a later word is a possible close, so a listed particle before it opens a quote, which reports as it did before the particle was listed.
+  ```
+  "Gerard 't Hooft d'Hondt"  →  family="'t Hooft d'Hondt"
   ```
 
 ---

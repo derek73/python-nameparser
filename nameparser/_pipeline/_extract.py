@@ -149,21 +149,22 @@ def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
         if ch in COMMA_CHARS or _ignorable(ch, state):
             break
         k += 1
+    # Only where the NEXT same character cannot close the quote, being
+    # absent or after whitespace: 'T Bone' and 'T-Bone Jones' keep their
+    # nicknames though 't is listed (decisions/N2). Asked first, a C call,
+    # so a closed quoted nickname pays no _normalize frame.
+    j = text.find(text[i], i + 1)
+    if j >= 0 and not text[j - 1].isspace():
+        return False
     word = text[i:k]
     particles = state.lexicon._sets.particles
     if _normalize(word) in particles:
         return True
-    # a particle hyphened to its surname ('s-Gravesande) opens none
-    # either, unless the same character stands later after a non-space,
-    # where it could close the quote: 'T-Bone' and 'T-Bone Jones' keep
-    # their nicknames (decisions/N2). The hyphen test comes first so a
-    # word without one pays no second _normalize frame.
+    # a particle hyphened to its surname ('s-Gravesande), its head the
+    # word before the FIRST hyphen; a word without one pays no second
+    # _normalize frame
     head, hyphen, _ = word.partition("-")
-    if not hyphen:
-        return False
-    j = text.find(text[i], i + 1)
-    return ((j < 0 or text[j - 1].isspace())
-            and _normalize(head) in particles)
+    return bool(hyphen) and _normalize(head) in particles
 
 
 def _close_ok(text: str, j: int, width: int) -> bool:

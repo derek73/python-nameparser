@@ -291,12 +291,13 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
     # was listed and a hyphen ended the particle (decisions/N2)
     "'Bob Smith", "Pieter 'x Hart", "Pieter 'tje Hart",
     "Pieter 'tje-Hart", "Pieter 'x-Hart", 'Jon "Nick Smith',
-    # a listed particle hyphened to a word still opens where the same
-    # character stands later after a non-space, a possible close: a
-    # close the punctuation after it refuses, and d' (accepted, no
-    # measured name writes the pair)
+    # a listed particle, spaced or hyphened to a word, still opens
+    # where the next same character stands after a non-space, a
+    # possible close: a close the punctuation after it refuses, and d'
+    # or O' (accepted, no measured name writes the pair)
     "Aaron 'T-Bone'. Walker", "Aaron 'T-Bone'; Walker",
     "Arent van 's-Gravesande d'Ancona", "Maria 's-Gravesande O'Neill",
+    "Gerard 't Hooft d'Hondt",
     # after any non-space, a bracket included
     "Jan 's-Gravesande ('Jantje')",
 ])
@@ -348,13 +349,15 @@ def test_listed_particle_check_reads_the_parses_lexicon() -> None:
     # a quote after a hyphened particle pairs with its own close
     ("Jan van 's-Gravesande 'Jantje'", "Jantje"),
     ("Pieter 't-Hart 'Piet'", "Piet"),
-    # accepted: a quote that does open at 't is no longer read as one,
-    # nor an unclosed one at 'T- (decisions/N2)
-    ("Pieter 't Hart' Smith", ""),
+    # a quote opening at a listed particle, spaced, is still one where
+    # the next apostrophe can close it: a quoted clause opening with
+    # the bare letter T or S, and 't itself (as before #1241)
+    ("Bob 'T Bone' Smith", "T Bone"),
+    ("John 'S Dog' Smith", "S Dog"),
+    ("Pieter 't Hart' Smith", "t Hart"),
+    # accepted: a quote with no possible close opening at 'T- is the
+    # word, and reports nothing (decisions/N2)
     ("Aaron 'T-Bone Walker", ""),
-    # and, 's being listed, a quoted clause opening with the bare
-    # letter S, as with T
-    ("John 'S Dog' Smith", ""),
 ])
 def test_quote_beside_a_listed_apostrophe_particle(text: str,
                                                    nickname: str) -> None:
@@ -374,13 +377,13 @@ def test_only_the_next_apostrophe_is_asked_as_a_close() -> None:
         a.kind for a in name.ambiguities]
 
 
-def test_maiden_quote_opening_at_a_listed_particle_is_no_quote() -> None:
-    # accepted, as for the nickname pair: the configured maiden quote
-    # opening at 't is read as the word
+def test_maiden_quote_opening_at_a_listed_particle_with_a_close() -> None:
+    # as for the nickname pair: the configured maiden quote opening at
+    # 't is still one where its close follows
     name = Parser(policy=Policy(maiden_delimiters=frozenset({("'", "'")}))
                   ).parse("Anna 't Hart' Jansen")
-    assert name.maiden == ""
-    assert name.family == "'t Hart' Jansen"
+    assert name.maiden == "t Hart"
+    assert name.family == "Jansen"
 
 
 
