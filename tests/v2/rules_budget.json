@@ -83,7 +83,7 @@
   "T3": {"words": 84, "then_words": 51, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "T4": {"words": 334, "then_words": 236, "because_sentences": 2, "except": 0, "precedence": 1, "accepted": 1, "accepted_words": 56},
   "T5": {"words": 149, "then_words": 95, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 97},
-  "T6": {"words": 75, "then_words": 23, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 51},
+  "T6": {"words": 96, "then_words": 23, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 51},
   "W1": {"words": 215, "then_words": 105, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "W2": {"words": 99, "then_words": 56, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 192},
   "W3": {"words": 651, "then_words": 348, "because_sentences": 1, "except": 1, "precedence": 3, "accepted": 0, "accepted_words": 0},

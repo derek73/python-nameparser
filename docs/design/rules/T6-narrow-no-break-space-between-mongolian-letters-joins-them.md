@@ -1,6 +1,6 @@
 # T6 — a narrow no-break space between Mongolian letters joins them
 
-**When:** a name in Mongolian script holds the narrow no-break space U+202F between two of its letters, as in "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ".
+**When:** a name in Mongolian script holds the narrow no-break space U+202F between two of its letters, a letter here being any character of the script but its punctuation and digits, its variation selectors and vowel separator included, as in "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ".
 
 **Then:** a narrow no-break space between two Mongolian letters joins them into one word; anywhere else it divides the name like any other whitespace.
 

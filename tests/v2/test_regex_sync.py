@@ -242,8 +242,8 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 
 
 def test_render_writes_back_every_comma_and_divider_tokenize_reads() -> None:
-    # rules/R6 keeps the separator as written, so each character the
-    # tokenizer divides at needs a written form in _render; a comma
+    # rules/R6 keeps the separator as written, so each comma and dot
+    # divider the tokenizer divides at needs a written form in _render; a comma
     # added to COMMA_CHARS without one renders as a space (#1202)
     from nameparser._pipeline import _tokenize
     from nameparser._pipeline._state import COMMA_CHARS

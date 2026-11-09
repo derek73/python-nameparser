@@ -32,5 +32,5 @@
   ```
 
 ---
-**Signal:** position: where a same-character quote stands in its word, and a listed particle the apostrophe opens, tagged by where it stands as P1's is
+**Signal:** position: where a same-character quote stands in its word + neighbor: the word the apostrophe opens, looked up as a particle
 **history:** decisions/N2 · **implemented:** nameparser/_pipeline/_extract.py
