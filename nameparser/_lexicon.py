@@ -650,19 +650,18 @@ SameAsNamed = Mapping[str, frozenset[str]]
 
 # -- the name match's fold, which the familiar-form index shares --------
 
-#: Full stops and apostrophes: the typed one, the typographic U+2019
-#: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`, and
-#: the three Uzbek Latin writes its `oʻ` and `gʻ` with beside them: the
-#: okina U+02BB of the official orthography, the left quote U+2018 a
-#: word processor turns a typed `'` after a letter into, and the
-#: backtick, so `Gʻofurov` and `G'ofurov` fold alike (#1186's sweep).
+#: Full stops and apostrophes: the typed one, the typographic U+2019,
+#: the modifier letter U+02BC, and Uzbek Latin's other spellings of
+#: the `ʻ` in `oʻ` and `gʻ` (U+02BB, U+2018, the backtick), so
+#: `O’Brien` folds to `obrien` and `Gʻofurov` to `gofurov`
+#: (decisions/name-matching, 2026-11-09).
 _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018")
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
-    away: NFC, `.` and the apostrophes (`_DROPPED`) removed,
+    away: NFC, `.` and the apostrophes and their stand-ins (`_DROPPED`) removed,
     NFD, casefolded, then NFC again, so the folded text, and every key
     cut from it, is precomposed (a Hangul syllable, never a conjoining
     jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped

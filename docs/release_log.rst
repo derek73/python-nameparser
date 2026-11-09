@@ -18,7 +18,7 @@ Release Log
     - **Fix ja_segmenter cutting a name with no kanji after its first character.** ``parser_for(locales.JA, segmenter=locales.ja_segmenter()).parse("あいさわいちろう")`` gives family ``あいさわいちろう``, as the pack with no segmenter does, where 2.1.0 through 3.0.1 gave family ``あ``, given ``いさわいちろう``. A name holding a kanji still divides (``山田たろう`` gives family ``山田``). :issue:`1193`
     - **Fix a particle's family name stopping at a credential that spells a name.** ``parse("Ahmad bin Abd Rahman")`` gives family ``bin Abd Rahman``, where 1.4.0 through 3.0.1 gave middle ``bin Abd``, family ``Rahman``; ``Md`` for Muhammad reads the same way, and before a family comma too (``bin Abd Rahman, Ahmad``). A credential written as one (``Mariam binti MD Salleh``) still ends the name. :issue:`1177`
     - **Fix a connective before a military title written short.** ``parse("John Smith y Maj.")`` gives title ``Maj.``, family ``Smith y``, as ``John Smith y Prof.`` does, where 3.0.0 and 3.0.1 gave family ``Smith y Maj.``. :issue:`1168`
-    - **Fix Token.reading naming a title phrase's object a title by shape where the shape refuses it.** ``parse("Member of Chas. John Smith").tokens[2].reading`` is ``Reading('title' as 'title', 'position')``, where 3.0.0 and 3.0.1 gave source ``shape``; a CJK or Brahmic-script word there (``田中.``, ``एम.``) reads ``position`` too. :issue:`1191`
+    - **Fix Token.reading naming a title phrase's object a title by shape where the shape refuses it.** ``parse("Member of Chas. John Smith").tokens[2].reading`` is ``Reading('title' as 'title', 'position')``, where 3.0.0 and 3.0.1 gave source ``shape``; a CJK word there (``田中.``) reads ``position`` too. :issue:`1191`
 
 * 3.0.1 - November 8, 2026
 

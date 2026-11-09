@@ -257,12 +257,13 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     being a separate lookup at each caller's own site
     (is_title_piece/lexicon._sets.titles), and the one vocabulary read here
     the given name written short, which outranks the shape (rules/H2,
-    #789: 'Chas.' is no title). `name_word_count` and `title_readings`
-    below are its callers, and `_assemble`'s, naming the source of a
-    title no vocabulary tags; `_pieces.is_leading_title` asks the same
-    question but keeps this body inline, its path being hot (every
-    leading piece of every parse) where this one is cold (comma names,
-    and a title token no vocabulary tags, one frame each)
+    #789: 'Chas.' is no title). `name_word_count`, `title_readings`
+    (classify's rules/H9 phrase test) and `_assemble`'s source of a
+    title no vocabulary tags are its callers; `_pieces.is_leading_title`
+    asks the same question but keeps this body inline, its path being
+    hot (every leading piece of every parse) where these run only on a
+    comma name, a name holding a contested title or modifier, or an
+    untagged title token
     -- the measured figure lives at that inline copy and is not
     restated here, two homes for one measurement being how they come
     to disagree. Touch one, touch both:

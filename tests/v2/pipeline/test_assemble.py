@@ -278,13 +278,18 @@ _EXPECTED_READINGS = [
     ("Member of Parliament John Smith", None, "Parliament", "title",
      "position"),
     # a connective's object H2's shape refuses reads by its place, not
-    # by the shape: a given name written short, and words in scripts
-    # with no period abbreviations (rules/H2's Except), beside an
-    # unlisted abbreviation the shape does take
+    # by the shape: a given name written short (H2's Precedence), a
+    # Brahmic word (its Except) and a word in a script with no
+    # initials (its Accepted clause), beside an unlisted abbreviation
+    # the shape does take
     ("Member of Xyz. John Smith", None, "Xyz.", "title", "shape"),
     ("Member of Chas. John Smith", None, "Chas.", "title", "position"),
     ("Member of 田中. John Smith", None, "田中.", "title", "position"),
     ("Member of एम. John Smith", None, "एम.", "title", "position"),
+    # a script outside H2's refusals keeps the shape: Cyrillic, and Lao,
+    # an abugida beyond the ten Brahmic scripts H2 refuses
+    ("Member of Ивн. John Smith", None, "Ивн.", "title", "shape"),
+    ("Member of ດຣ. John Smith", None, "ດຣ.", "title", "shape"),
     ("Dr. Juan de la Vega III", None, "Juan", "name", "position"),
     ("Dr. Juan de la Vega III", None, "de", "particle", "vocabulary"),
     ("Dr. Juan de la Vega III", None, "III", "generation", "vocabulary"),
@@ -374,6 +379,19 @@ def test_a_token_carries_the_reading_the_parse_took(
     pn = (Parser(policy=policy) if policy else Parser()).parse(text)
     (tok,) = [t for t in pn.tokens if t.text == word][:1]
     assert tok.reading == Reading(kind, tok.role, source)  # type: ignore[arg-type]
+
+
+def test_a_callers_given_name_written_short_reads_a_title_object_by_position(
+        ) -> None:
+    # the source asks the PARSE's lexicon, so a caller's own given name
+    # written short is no shape title either (decisions/A1, 2026-11-09)
+    lex = Lexicon.default().add("xyz", kind="given", same_as="xavier")
+    pn = Parser(lexicon=lex).parse("Member of Xyz. John Smith")
+    (tok,) = [t for t in pn.tokens if t.text == "Xyz."]
+    assert tok.reading == Reading("title", Role.TITLE, "position")  # type: ignore[arg-type]
+    plain = Parser().parse("Member of Xyz. John Smith")
+    (tok,) = [t for t in plain.tokens if t.text == "Xyz."]
+    assert tok.reading == Reading("title", Role.TITLE, "shape")  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
