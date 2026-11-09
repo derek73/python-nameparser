@@ -290,9 +290,11 @@ class Parser:
         so its ``check`` and ``keys`` parse str arguments with this
         parser's lexicon and policy. A ParsedName argument is compared
         as given, whatever parser produced it. ``accept`` is the
-        iterable of outcomes counted as consistent; None takes
-        ``DEFAULT_ACCEPT``, and any other value is validated by
-        ``Matching``, which raises for a bad one."""
+        iterable of outcomes counted as consistent; None takes the
+        default set, and any other value replaces it, so extend the
+        default with ``parser.matching(accept=parser.matching().accept
+        | {"family-initial"})``. A value is validated by ``Matching``,
+        which raises for a bad one."""
         from nameparser._match import DEFAULT_ACCEPT, Matching
         return Matching(
             self, DEFAULT_ACCEPT if accept is None else accept)  # type: ignore[arg-type]

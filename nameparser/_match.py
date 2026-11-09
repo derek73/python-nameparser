@@ -170,8 +170,9 @@ class Matching:
 
     `accept` takes any iterable of `Outcome` members or their names and is
     stored as a frozenset with `same` always present. Passing it replaces
-    the default set rather than extending it, so extend with
-    `DEFAULT_ACCEPT | {"family-initial"}`. `conflict` cannot be accepted.
+    the default set rather than extending it, so extend the default
+    matcher's set: `parser.matching(accept=parser.matching().accept |
+    {"family-initial"})`. `conflict` cannot be accepted.
     """
 
     parser: Parser
