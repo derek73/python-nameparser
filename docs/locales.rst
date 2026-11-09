@@ -270,7 +270,7 @@ checked in one of four ways:
 - **A region or other subtag of a language that has a file** (``pt-PT``)
   is accepted and reads that language's file, there being none of its
   own.
-- **A language whose file holds no reading yet** (``hu``, whose file
+- **A language whose file holds no reading yet** (``zu``, whose file
   only records words kept out) raises ``ValueError``, a choice of it
   changing nothing; a strict choice accepts it (`Reading one language
   only`_).
@@ -419,7 +419,7 @@ drops from every name:
   add. A pack's own word list and policy are applied after the strict
   choice, untouched, and so is the Korean surname list.
 - **A language whose file holds no reading yet is accepted.**
-  ``hu.toml`` holds none, so a plain ``hu`` choice is refused; a
+  ``zu.toml`` holds none, so a plain ``zu`` choice is refused; a
   strict one reads the other scripts' words and, in Latin letters,
   only the shared ones.
 - **Your own words stay.** A word a strict choice drops is kept where

@@ -320,7 +320,7 @@ def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
     assert cd.gap_specs("tr") == ("plain:TR_AZ+tr", "strict:TR_AZ+tr")
     assert cd.gap_specs("pt-BR") == ("plain:PT_BR", "strict:PT_BR")
     assert cd.gap_specs("vi") == ("plain:VI", "strict:VI")
-    assert cd.gap_specs("hu")[0] == "default"  # hu.toml holds no reading
+    assert cd.gap_specs("zu")[0] == "default"  # zu.toml holds no reading
 
 
 def test_a_group_is_placed_by_country_or_nationality() -> None:

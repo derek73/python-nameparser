@@ -1309,9 +1309,9 @@ outcome; rank outcomes by it, since ``<`` on an
 :class:`~nameparser.Outcome` compares the names as strings (``folded``
 sorts before ``same``). The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
-conflict until you accept them. ``family-initial``, ``given-one-side``
-and ``hyphenated-part`` are reported in the table either way, so an
-unaccepted one shows what the pair needed. ``across-roles`` is
+conflict until you accept them. ``familiar-form``, ``family-initial``,
+``given-one-side`` and ``hyphenated-part`` are reported in the table
+either way, so an unaccepted one shows what the pair needed. ``across-roles`` is
 searched only where accepted, and each side's other readings only where
 the search is switched on (below): otherwise the table shows the names
 as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
@@ -1353,6 +1353,9 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``noted``: titles and credentials, which never conflict
      - ``Dr. John Smith`` / ``John Smith, PhD``
      - yes
+   * - ``familiar-form``: a short given name the vocabulary lists as standing for the other, one way
+     - ``Bill Smith`` / ``William Smith``
+     - no
    * - ``family-initial``: the family name written as an initial
      - ``John S.`` / ``John Stallbaum``
      - no
@@ -1391,10 +1394,10 @@ a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
-Typos (``Slvatore`` / ``Salvatore``), transliterations and
-nicknames the vocabulary does not list as the same name (``Bill`` /
-``William``) are conflicts: the table names the conflicting role, so
-you can run your own fuzzy comparison on that role alone.
+Typos (``Slvatore`` / ``Salvatore``) and transliterations are
+conflicts, and so is a familiar form until you accept it (below): the
+table names the conflicting role, so you can run your own fuzzy
+comparison on that role alone.
 
 Accepting more
 ~~~~~~~~~~~~~~
@@ -1449,6 +1452,48 @@ family reading as its alternative:
 An alternative that would move words into the title or the suffix is
 not tried, so a given name cannot vanish into one of them to agree
 with another.
+
+``familiar-form`` reads a short given name as standing for the longer
+ones the vocabulary lists it under: ``Max`` for Maximilian, Maxim and
+Maksim, ``Bill`` for William, ``Sepp`` for Josef. It is read in the
+given name, middle name and nickname, never the family name, and it
+runs one way, so two longer names one short name stands for do not
+agree with each other. The keys follow: a familiar form is keyed by
+its longer names' first letters too, so ``Bill Smith`` meets
+``William Smith`` in a group:
+
+.. doctest::
+
+    >>> with_familiar = Parser().matching(accept=matcher.accept | {"familiar-form"})
+    >>> bill = with_familiar.check("Bill Smith", "William Smith")
+    >>> bill.consistent, bill["given"].outcome.value
+    (True, 'familiar-form')
+    >>> matcher.check("Bill Smith", "William Smith")["given"].outcome.value
+    'familiar-form'
+    >>> with_familiar.check("Maximilian Smith", "Maxim Smith").consistent
+    False
+    >>> sorted(with_familiar.keys("Bill Smith"))
+    ['smith;b', 'smith;w']
+
+The shipped familiar forms are the 736 pairs of Jörg Michael's
+nam_dict (2008, GNU Free Documentation License 1.2), each in the
+vocabulary file of the languages whose countries it lists them for,
+so a choice of languages reads its own. It is a selection and has
+gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
+``William`` are not in it); add your own with a ``familiar`` reading,
+which replaces the word's listed longer names, so name them all:
+
+.. doctest::
+
+    >>> maxwell = Lexicon.default().add(
+    ...     "max", kind="familiar", short_for=["maximilian", "maxim", "maksim", "maxwell"])
+    >>> mine = Parser(lexicon=maxwell).matching(accept=matcher.accept | {"familiar-form"})
+    >>> mine.check("Max Smith", "Maxwell Smith").consistent
+    True
+
+A familiar form is outside the default because it is many-valued and
+often a name of its own: ``Max`` is a given name in its own right, as
+``Bill`` and ``Sepp`` are.
 
 ``across-roles`` compares a given name with each word of the other
 name's middle name and with its nickname, and a family name with the
@@ -1907,7 +1952,7 @@ form to pipe somewhere:
 Add ``--locale`` to parse with a locale pack (for example ``--locale
 ru``); see :doc:`locales`. A code no pack has that is a language whose
 vocabulary file holds readings (``--locale ko``) chooses that language
-alone; one whose file holds none yet (``hu``) needs ``--strict``, and
+alone; one whose file holds none yet (``zu``) needs ``--strict``, and
 a pack's language with a region or script subtag (``zh-CN``,
 ``zh-Hant``) exits naming the pack to use.
 ``--strict`` reads only that language's words and the shared ones (see

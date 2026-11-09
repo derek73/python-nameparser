@@ -443,6 +443,13 @@ MUTATIONS = [
     # a reason written as a table reaches the refusal too
     ("excluded-kind-with-a-table-reason", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = { reason = "TABLE REASON", issue = 684 } }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "TABLE REASON"),
     ("excluded-property-in-another-file", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, excluded = { attached = "Hiroshi" } }'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, attached = { side = "after" } }')}, "Hiroshi"),
+    # 3, a familiar reading (decisions/name-matching, 2026-11-08 FAMILIAR
+    # FORMS): its longer names, a note, and no spelling of its own
+    ("familiar-without-short-for", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { note = "x" }')}, "short_for must be a non-empty list"),
+    ("familiar-short-for-itself", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzq"], note = "x" }')}, "never the word itself"),
+    ("familiar-short-for-not-normalized", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["Zzr"], note = "x" }')}, "written normalized"),
+    ("familiar-without-note", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"] }')}, "needs a `note`"),
+    ("familiar-with-same-as", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x", same_as = "zzr" }')}, "unknown key 'same_as'"),
     # 7: same_as and cased
     ("same-as-missing-target", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as 'jr'"),
     ("same-as-its-own-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jr" }')}, "names the word itself"),
@@ -1080,6 +1087,8 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
     name reading gets the note a count-less one carries."""
     if build.CATEGORY.get(kind) == "name" and props == "{}":
         props = '{ note = "probe" }'
+    if build.CATEGORY.get(kind) == "familiar" and props == "{}":
+        props = '{ short_for = ["zzr"], note = "probe" }'
     entry = f'{kind} = {props}'
     if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
         entry = 'given = { note = "probe" }\n' + entry
@@ -1149,10 +1158,20 @@ def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
     stated = {p for ps in build.STATED.values() for p in ps}
     assert {_code(r[0])[0]: r[1] for r in rows} == (
         {p: "behavioral" for p in behavioral} | {p: "stated" for p in stated}
-        | {p: "descriptive" for p in build.DESCRIPTIVE})
-    assert len(rows) == len(behavioral | stated | build.DESCRIPTIVE)
+        | {p: "descriptive" for p in build.DESCRIPTIVE}
+        | {p: "matching" for p in build.MATCHING})
+    assert len(rows) == len(behavioral | stated | build.DESCRIPTIVE
+                            | build.MATCHING)
     for prop, kind_of, applies, *_ in rows:
         name = _code(prop)[0]
+        if kind_of == "matching":
+            # a matching property is a familiar reading's alone
+            assert set(_code(applies)) == {"familiar"}, name
+            continue
+        # a familiar reading takes only the descriptive keys in FAMILIAR_KEYS
+        if kind_of == "descriptive":
+            assert ("`familiar`" in applies) == (
+                name not in build.FAMILIAR_KEYS), name
         if kind_of in ("behavioral", "stated"):
             table = build.BEHAVIORAL if kind_of == "behavioral" else build.STATED
             assert set(_code(applies)) == {

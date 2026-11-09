@@ -170,6 +170,9 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         # group -> the words of SAME_AS that are a name of their own too,
         # read once into each Lexicon's `_same_as_named` beside it
         "_compiled.SAME_AS_NAMED",
+        # a familiar form -> the given names it stands for, read once
+        # into each Lexicon's `_familiar` beside them, by the match alone
+        "_compiled.FAMILIAR",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent

@@ -551,7 +551,7 @@ def _spellings(value: str) -> tuple[str, ...]:
 #: reach. Each tag is one a choice can name (test_config_diff holds it);
 #: a country none of whose languages has a file maps to ().
 LANGUAGES_OF: dict[str, tuple[str, ...]] = {
-    "AD": ("ca",), "AE": ("ar", "en"), "AF": ("fa",), "AG": ("en",), "AL": (),
+    "AD": ("ca",), "AE": ("ar", "en"), "AF": ("fa",), "AG": ("en",), "AL": ("sq",),
     "AM": ("hy",), "AO": ("pt",), "AQ": (), "AR": ("es",), "AS": ("en",),
     "AT": ("de",), "AU": ("en",), "AW": ("nl",), "AX": ("sv",), "AZ": ("tr",),
     "BA": ("bs", "hr", "sr"), "BB": ("en",), "BD": ("bn",), "BE": ("nl", "fr", "de"),
@@ -581,7 +581,7 @@ LANGUAGES_OF: dict[str, tuple[str, ...]] = {
     "LT": ("lt",), "LU": ("fr", "de"), "LV": ("lv",), "LY": ("ar",), "MA": ("ar", "fr"),
     "MC": ("fr",), "MD": ("ro", "ru"), "ME": ("sr",), "MG": ("fr",), "MK": ("mk",),
     "ML": ("fr",), "MM": ("my", "shn"), "MN": ("mn",), "MO": ("zh", "pt"),
-    "MQ": ("fr",), "MR": ("ar",), "MT": ("en",), "MU": ("en", "fr"), "MV": (),
+    "MQ": ("fr",), "MR": ("ar",), "MT": ("mt", "en"), "MU": ("en", "fr"), "MV": (),
     "MW": ("en",), "MX": ("es",), "MY": ("ms", "zh", "ta", "en"), "MZ": ("pt",),
     "NA": ("en",), "NC": ("fr",), "NE": ("fr", "ha"), "NG": ("en", "yo", "ha", "bin"),
     "NI": ("es",), "NL": ("nl",), "NO": ("nb", "nn"), "NP": ("ne",), "NZ": ("en", "mi"),

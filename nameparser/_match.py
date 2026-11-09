@@ -8,7 +8,8 @@ Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 `DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headwords`, each role in the group of its kind
-(`_GROUP`), and for `Lexicon.particles`, a hyphen half
+(`_GROUP`), for the familiar forms (`short_for`) through
+`Lexicon._familiar_forms`, and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
 name's other readings (`Matching.other_readings`); no `Policy` field.
 
@@ -66,6 +67,7 @@ class Outcome(StrEnum):
     ONE_SIDE = "one-side"
     GENERATION_ONE_SIDE = "generation-one-side"
     NOTED = "noted"
+    FAMILIAR_FORM = "familiar-form"
     FAMILY_INITIAL = "family-initial"
     GIVEN_ONE_SIDE = "given-one-side"
     HYPHENATED_PART = "hyphenated-part"
@@ -369,7 +371,10 @@ class Matching:
         given name by the first letter of every word in its set among
         given names, where a word that is a name of its own as well
         (`jo`) contributes only itself unless written with its trailing
-        period, the one spelling set the check reads (`_spellings`).
+        period, the one spelling set the check reads (`_spellings`),
+        and where `familiar-form` is accepted also by the first letter
+        of every longer name a word of that set is a familiar form of
+        (`Bill` keys `w` for William beside `b`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -518,6 +523,12 @@ class Matching:
         given = parsed.given.split()
         initials = ({g[:1] for g in _spelling_keys(given[0], "given", lexicon)}
                     if given else {""})
+        if given and Outcome.FAMILIAR_FORM in self.accept:
+            # the longer names the check reaches from a familiar form
+            # (`_familiar`), so `Bill` shares William's key: the long
+            # side's own letter is in its spelling keys already
+            initials |= {g[:1] for g in _long_forms(
+                _spellings(given[0], "given", lexicon), lexicon)} - {""}
         if across:
             # the texts the check matches against a given name, each
             # refused as it refuses them: a cross-role match is never
@@ -740,6 +751,43 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
+def _long_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
+    """The longer given names any member of a spelling set is a
+    familiar form of, each folded and as normalized."""
+    longs = {long for word in spellings
+             for long in lexicon._familiar_forms(word)}
+    return longs | {_fold(long) for long in longs}
+
+
+def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
+    """One given-name word is a familiar form of the other (`Bill` /
+    `William`, `Max` / `Maximilian`): the longer names one word's
+    spelling set reaches through the familiar forms meet the other's
+    spelling set. One way, so two longer names one short name stands
+    for (`Maximilian` / `Maxim`) are not familiar forms of each other;
+    symmetric in its two arguments."""
+    sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
+    return (not _long_forms(sa, lexicon).isdisjoint(sb)
+            or not _long_forms(sb, lexicon).isdisjoint(sa))
+
+
+def _familiar_outcome(wa: list[str], wb: list[str],
+                      lexicon: Lexicon) -> Outcome | None:
+    """Two given texts' words, pair by pair, each the same once folded,
+    a listed spelling or a familiar form, and at least one a familiar
+    form: `familiar-form`, else `None`."""
+    if len(wa) != len(wb):
+        return None
+    found = False
+    for x, y in zip(wa, wb):
+        if _fold(x) == _fold(y) or _listed(x, y, "given", lexicon):
+            continue
+        if not _familiar(x, y, lexicon):
+            return None
+        found = True
+    return Outcome.FAMILIAR_FORM if found else None
+
+
 def _initials_only(folded: str) -> bool:
     """A folded text is initials alone."""
     return all(_is_initial(w) for w in _WORDS.split(folded) if w)
@@ -767,7 +815,8 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
     holds: a full-name outcome (`_full_outcome`), then for a family,
     given its two `bases`, particles set aside and part of the other,
     then initial against name (family initial in the family role), then
-    initials agree, else conflict."""
+    initials agree, then in the `given` group a familiar form, then
+    a hyphenated part, else conflict."""
     if a == b:
         return Outcome.SAME
     fa, fb = _fold(a), _fold(b)
@@ -789,6 +838,9 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
     if _initials_only(fa) and _initials_only(fb) and (
             _WORDS.split(fa) == _WORDS.split(fb)):
         return Outcome.INITIALS_AGREE
+    if not family and group == "given" and (
+            familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+        return familiar
     if not family and len(wa) == len(wb) == 1 and (
             _first_half(fa, fb) or _first_half(fb, fa)):
         return Outcome.HYPHENATED_PART

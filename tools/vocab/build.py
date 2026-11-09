@@ -48,7 +48,10 @@ at fault:
    allowed value (a date, never a date-time; `as_of` only beside a
    count), an acronym's text free of periods (it is matched with them
    removed), a `note` on a name reading with no count, saying why it
-   is declared, and no entry without a reading or an exclusion;
+   is declared, and no entry without a reading or an exclusion; a
+   `familiar` reading's `short_for` a non-empty list of given names,
+   each once, written normalized, one word each and never the word
+   itself, beside a `note` saying where it is attested;
 4. one suffix kind per word, across files;
 5. the same category of the same word agrees on every behavioral
    property in every file, whatever kind each file gives it;
@@ -278,6 +281,16 @@ COUNT_SOURCES = frozenset({"us_census_2010", "us_ssa", "wikidata"})
 #: where the name match reads the two as listed spellings, only written
 #: with the period where the word is a name of its own too (SAME_AS_NAMED)
 NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
+#: Matching properties: compiled into a map only the name match reads,
+#: never a set a parse reads. `short_for`, on a `familiar` reading, the
+#: longer given names the word stands for (`max` of `maximilian`), which
+#: compiles into FAMILIAR (decisions/name-matching, 2026-11-08 FAMILIAR
+#: FORMS).
+MATCHING = frozenset({"short_for"})
+#: What a `familiar` reading may carry: its matching property, `default`,
+#: and its evidence. It takes no `same_as`: a familiar form is a name of
+#: its own, not a spelling of one.
+FAMILIAR_KEYS = MATCHING | {"default", "note", "issue", "decided"}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
@@ -594,9 +607,10 @@ def _sort_kind(e: Mapping[str, Any]) -> str:
     refusal (`fils`, `senior`), the earliest kind it excludes, a
     category counting as its first kind; else its earliest name reading.
     A name reading is evidence for something else, so it places the
-    entry only alone."""
+    entry only alone, and so does a familiar reading, which no parse
+    reads: an entry gaining one keeps its place."""
     kinds = [k for k in e if k in CATEGORY]
-    vocabulary = [k for k in kinds if CATEGORY[k] != "name"]
+    vocabulary = [k for k in kinds if CATEGORY[k] not in _ri.UNPREFERRED]
     if vocabulary:
         return min(vocabulary, key=KIND_ORDER.__getitem__)
     refused = [k if k in CATEGORY else next(c for c in CATEGORY if CATEGORY[c] == k)
@@ -864,6 +878,27 @@ def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> Non
 def _check_reading(r: Reading, pool: Pool) -> None:
     where = r.where()
     p = r.props
+    if r.category == "familiar":
+        for k in p:
+            if k not in FAMILIAR_KEYS:
+                raise _reserved_or_unknown(where, k, FAMILIAR_KEYS)
+        _check_default(where, p)
+        _check_descriptive(where, p)
+        longs = p.get("short_for")
+        if (not isinstance(longs, list) or not longs
+                or not all(isinstance(w, str) and w and " " not in w
+                           and _normalize(w) == w and w != r.text
+                           for w in longs)
+                or len(set(longs)) != len(longs)):
+            raise VocabError(f"{where}: short_for must be a non-empty list "
+                             f"of the given names the word stands for, "
+                             f"each once, one word, written normalized and "
+                             f"never the word itself")
+        if "note" not in p:
+            raise VocabError(f"{where}: a familiar reading needs a `note` "
+                             f"saying where it is attested")
+        pool.readings.append(r)
+        return
     if r.category == "name":
         allowed_here = NAME_KEYS | BEHAVIORAL["name"]
         for k in p:
@@ -1298,11 +1333,15 @@ def check_pool(pool: Pool) -> None:
     # them, so a name reading in another file would leave under a strict
     # choice that drops it, ungating the word, and another file's
     # reading of the word could not be preferred against mul.toml's
+    # A familiar reading moves no parse, so it ungates nothing and
+    # competes with no reading: it neither triggers the check nor is held
+    # to it
     for text, rs in by_text.items():
-        if not any(r.tag == "mul" and r.category != "name" for r in rs):
+        if not any(r.tag == "mul" and r.category not in _ri.UNPREFERRED
+                   for r in rs):
             continue
         for r in rs:
-            if r.tag == "mul":
+            if r.tag == "mul" or r.category == "familiar":
                 continue
             # an off name reading is off under the plain and the strict
             # choice of every other tag alike, and on under both of its
@@ -1399,6 +1438,7 @@ CONSTANTS = (
     "BOUND_PHRASES",
     "SAME_AS",
     "SAME_AS_NAMED",
+    "FAMILIAR",
 )
 
 
@@ -1494,7 +1534,13 @@ def render(compiled: Compiled) -> str:
     for name in CONSTANTS:
         v = values[name]
         out.append("")
-        if isinstance(v, dict) and all(isinstance(g, dict) for g in v.values()):
+        if name == "FAMILIAR":
+            # a familiar form -> the given names it stands for
+            assert isinstance(v, dict), (name, type(v))
+            out.append(f"{name}: dict[str, tuple[str, ...]] = {{")
+            out += [f"    {k!r}: {v[k]!r}," for k in sorted(v)]
+            out.append("}")
+        elif isinstance(v, dict) and all(isinstance(g, dict) for g in v.values()):
             # SAME_AS: group -> word -> the words it is a spelling of
             out.append(f"{name}: dict[str, dict[str, tuple[str, ...]]] = {{")
             for group in sorted(v):

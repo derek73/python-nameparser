@@ -3320,11 +3320,12 @@ def test_a_strict_call_choosing_no_language_is_refused_with_a_fix_that_runs(
 
 
 def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
-    # hu.toml holds only exclusions (vi.toml did until #1108)
-    with pytest.raises(ValueError, match=r"hu\.toml holds no reading yet.*"
+    # zu.toml holds only exclusions (vi.toml did until #1108, hu.toml
+    # until its familiar forms, 2026-11-08)
+    with pytest.raises(ValueError, match=r"zu\.toml holds no reading yet.*"
                                          r"strict=True"):
-        parser_for(_choosing("hu"))
-    assert "do" not in parser_for(_choosing("hu"), strict=True).lexicon._sets.particles
+        parser_for(_choosing("zu"))
+    assert "do" not in parser_for(_choosing("zu"), strict=True).lexicon._sets.particles
 
 
 def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:

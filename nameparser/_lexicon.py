@@ -648,15 +648,22 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
 SameAsNamed = Mapping[str, frozenset[str]]
 
 
+#: A familiar form -> the longer given names it stands for (`FAMILIAR`).
+Familiar = Mapping[str, frozenset[str]]
+
+
 #: What a lexicon's readings compile to: the vocabulary sets by
-#: `_LexiconSets` name, the listed-spelling map, and the words in it
-#: that are a name of their own as well.
-_Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed]
+#: `_LexiconSets` name, the listed-spelling map, the words in it that
+#: are a name of their own as well, and the familiar forms.
+_Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed,
+                  Familiar]
 
 
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
     return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
-            MappingProxyType(dict(compiled["SAME_AS_NAMED"])))
+            MappingProxyType(dict(compiled["SAME_AS_NAMED"])),
+            MappingProxyType({w: frozenset(longs) for w, longs
+                              in compiled["FAMILIAR"].items()}))
 
 
 @functools.cache
@@ -674,7 +681,8 @@ _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
 #: What the empty base compiles to: no sets and no listed spellings.
 _NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
     {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}),
-    MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}))
+    MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}),
+    MappingProxyType({}))
 
 
 # -- readings ------------------------------------------------------------
@@ -747,10 +755,12 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"off the end of a name token) or None, "
                              f"got {value!r}")
         return value
-    if prop in ("attaches", "completed_by"):
+    if prop in ("attaches", "completed_by", "short_for"):
         what = ("title kinds or title words, e.g. attaches=['military']"
                 if prop == "attaches" else
-                "single words, e.g. completed_by=['الله']")
+                "single words, e.g. completed_by=['الله']"
+                if prop == "completed_by" else
+                "given names, e.g. short_for=['maxwell']")
         if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
             raise TypeError(f"{prop} must be an iterable of {what}, "
                             f"got {value!r}")
@@ -769,6 +779,10 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
             raise ValueError(f"completed_by entries must be single words, "
                              f"got {value!r}; list each completing word "
                              f"on its own")
+        if prop == "short_for" and any(" " in w for w in folded):
+            # the match compares a given name word by word
+            raise ValueError(f"short_for entries must be single given "
+                             f"names, got {value!r}; list each on its own")
         return folded or None
     # same_as: the word this one is a listed spelling of, a given name
     # written short's full name (#789) or a title's or suffix's full form
@@ -1030,7 +1044,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
            strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
-                                  SameAs, SameAsNamed]:
+                                  SameAs, SameAsNamed, Familiar]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1079,8 +1093,8 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
         return _NOTHING_COMPILED
-    _, sets, same_as, named = _built(base, edits, chosen, strict)
-    return sets, same_as, named
+    _, sets, same_as, named, familiar = _built(base, edits, chosen, strict)
+    return sets, same_as, named, familiar
 
 
 @functools.lru_cache(maxsize=32)
@@ -1583,6 +1597,12 @@ class Lexicon:
     # (`_headwords`); built like `_same_as`
     _same_as_named: SameAsNamed = field(
         init=False, repr=False, compare=False, hash=False)
+    # a familiar form -> the longer given names it stands for (`max` ->
+    # {`maxim`, `maximilian`}), from every `familiar` reading's
+    # `short_for`, read by the name match alone (`_familiar_forms`);
+    # built like `_same_as`
+    _familiar: Familiar = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -1626,11 +1646,12 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled, same_as, named = _compiled_for(
+        compiled, same_as, named, familiar = _compiled_for(
             self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
         put("_same_as", same_as)
         put("_same_as_named", named)
+        put("_familiar", familiar)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -1944,7 +1965,12 @@ class Lexicon:
             given readings, so the word keeps no plain given reading
             and its link counts written bare, where a word the
             vocabulary also holds as a name of its own counts only
-            written with its period); a property
+            written with its period), and ``short_for=[...]`` on a
+            ``familiar`` reading, the longer given names a familiar
+            form stands for, which name matching reads as a
+            ``familiar-form`` where that outcome is accepted and no
+            parse reads (``add("max", kind="familiar",
+            short_for=["maxwell"])``); a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
@@ -2051,6 +2077,14 @@ class Lexicon:
                     seen.add(head)
                     todo.append(head)
         return frozenset(seen)
+
+    def _familiar_forms(self, word: str) -> frozenset[str]:
+        """The longer given names `word`, normalized, is a familiar
+        form of (`max` -> {`maksim`, `maxim`, `maximilian`}), empty for
+        a word that is none: one way, so a long form reaches no short
+        one and two long forms of one short form do not reach each
+        other. Read by the name match alone, never by a parse."""
+        return self._familiar.get(_normalize(word), frozenset())
 
     def _deltas_from(self, other: Lexicon) -> tuple[
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:
