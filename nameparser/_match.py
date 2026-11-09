@@ -219,6 +219,8 @@ _ACCEPT_HINT = ('pass e.g. parser.matching(accept=parser.matching().accept'
 
 
 def _outcome(value: object) -> Outcome:
+    # not _coerce_enum: its message would list `conflict` among the
+    # valid values, which accept refuses
     if isinstance(value, Outcome):
         return value
     if isinstance(value, str):
@@ -294,8 +296,9 @@ class Matching:
         not consistent, each side's other readings are tried too: one
         per `Ambiguity` with an `alternative`, its words moved to the
         alternative's role, one ambiguity at a time and never two
-        together, save an alternative into the title or suffix, roles
-        that never conflict, which could only empty a role that does.
+        together, save an alternative into the title or suffix, which
+        is not tried: a title never conflicts and a suffix only on its
+        generation, so the move could only empty a role that does.
         The table reported is the one with the strongest outcomes, each
         row keeping its own outcome, and the result names in
         `left_alternative` and `right_alternative` the ambiguity whose
@@ -432,7 +435,7 @@ class Matching:
                         side = (None if other is not Role.MIDDLE
                                 else 0 if lrole is other else 1)
                         found.append((
-                            (_RANK[outcome], _RANK_ROLE[other], theirs, mine),
+                            (-_STRENGTH[outcome], _RANK_ROLE[other], theirs, mine),
                             (CrossRoleMatch(lrole, rrole, outcome, la, ra),
                              side, li if side == 0 else ri)))
         return min(found, key=lambda f: f[0])[1] if found else None
@@ -441,7 +444,7 @@ class Matching:
                   ) -> list[tuple[ParsedName, Ambiguity | None]]:
         """The name as parsed, with no ambiguity, then one other
         reading per ambiguity whose `alternative` moves a word into a
-        role that can conflict (not the title or suffix): that
+        role other than the title or suffix (`_NOT_TRIED_INTO`): that
         ambiguity's words moved to the alternative's role by
         `Parser.revise`, with the ambiguity."""
         readings: list[tuple[ParsedName, Ambiguity | None]] = [(name, None)]
@@ -449,7 +452,7 @@ class Matching:
             if ambiguity.alternative is None:
                 continue
             target = ambiguity.alternative.role
-            if target in _NEVER_CONFLICT:
+            if target in _NOT_TRIED_INTO:
                 continue
             words = [t for t in ambiguity.tokens if t.role is not target]
             if not words:
@@ -525,14 +528,16 @@ class Matching:
 #: Full stops and apostrophes: the typed one, the typographic U+2019
 #: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`.
 _DROPPED = str.maketrans("", "", ".'\u2019\u02bc")
+#: The scripts whose combining marks `_fold` drops as accents.
+_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 _WORDS = re.compile(r"[\s-]+")
 #: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
 #: single character in one of them is a whole word, never an initial.
 _initialless = _script_matcher(*_NO_INITIALS, whole=True)
-_RANK = {o: i for i, o in enumerate(Outcome)}
-#: The roles whose outcome is never a conflict; an alternative reading
-#: moving a word into one of them is not tried.
-_NEVER_CONFLICT = frozenset({Role.TITLE, Role.SUFFIX})
+#: The roles an alternative reading is not tried into: a title never
+#: conflicts and a suffix only on its generation, so a word moved there
+#: could only empty a role that does.
+_NOT_TRIED_INTO = frozenset({Role.TITLE, Role.SUFFIX})
 #: The roles a cross-role match may resolve, each with the roles of the
 #: other name it is tried against (`across-roles`).
 _ACROSS: Mapping[Role, tuple[Role, ...]] = {
@@ -575,8 +580,6 @@ def _cross_texts(name: ParsedName, role: Role) -> list[str]:
     return [text] if text else []
 
 
-_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
-
 
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
@@ -610,7 +613,8 @@ def _strength(result: MatchResult) -> tuple[object, ...]:
     without its sides, which keeps the pick the same with the names
     swapped."""
     alternatives = (result.left_alternative, result.right_alternative)
-    ranks = sorted((_RANK[r.outcome] for r in result.roles), reverse=True)
+    ranks = sorted((-_STRENGTH[r.outcome] for r in result.roles),
+                   reverse=True)
     sides = sum(a is not None for a in alternatives)
     texts = tuple(tuple(sorted((r.left, r.right))) for r in result.roles)
     across = tuple(sorted(((c.left, c.left_role), (c.right, c.right_role)))
@@ -726,6 +730,8 @@ def _particle_half(folded: str, lexicon: Lexicon) -> bool:
     """A folded half of a hyphenated family word that is a listed
     particle (`al` in `Al-Saud`): set aside like a spaced particle, so it
     is neither a family-base word for `part-of-other` nor a key."""
+    # _normalize is the lexicon's own key normalizer, so the half is
+    # looked up as the particle set's keys are written
     return _normalize(folded) in lexicon._sets.particles
 
 
