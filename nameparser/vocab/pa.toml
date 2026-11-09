@@ -31,4 +31,4 @@ attached = "जी ends बनर्जी, मुखर्जी, चटर्�
 
 [[word]]
 text = "jas"
-given = { wikidata = 1, as_of = 2026-11-08, note = "Jas, a Punjabi given name of its own: nam_dict band 2 in India/Sri Lanka, the one country it bands; ORCID given boxes 94 (GB 8, US 5, IN 2) and PatentsView's 14 (US 8, GB 4, IN 0); Wikidata is a lower bound. Beside en.toml's James written short, it makes the name match read Jas as James only written Jas. (decisions/name-matching, 2026-11-08)" }
+given = { wikidata = 1, as_of = 2026-11-08, note = "Jas, a Punjabi given name of its own: nam_dict band 2 in India/Sri Lanka, the one country it bands; ORCID given boxes 94 (GB 8, US 5, IN 2) and PatentsView's 14 (US 8, GB 4, IN 0), so its bearers recorded are mostly in GB and the US; Wikidata is a lower bound. Written here because en.toml already holds jas's given reading, James written short, and a file holds one reading of a kind per word; beside it, it makes the name match read Jas as James only written Jas. (decisions/name-matching, 2026-11-08), so a strict en choice, which does not read this file, leaves jas unmarked, accepted" }
