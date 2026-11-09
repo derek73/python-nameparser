@@ -296,7 +296,9 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
     # close the punctuation after it refuses, and d' (accepted, no
     # measured name writes the pair)
     "Aaron 'T-Bone'. Walker", "Aaron 'T-Bone'; Walker",
-    "Arent van 's-Gravesande d'Ancona",
+    "Arent van 's-Gravesande d'Ancona", "Maria 's-Gravesande O'Neill",
+    # after any non-space, a bracket included
+    "Jan 's-Gravesande ('Jantje')",
 ])
 def test_apostrophe_opening_an_unlisted_word_still_reports(text: str) -> None:
     kinds = [a.kind for a in parse(text).ambiguities]
@@ -359,6 +361,17 @@ def test_quote_beside_a_listed_apostrophe_particle(text: str,
     name = parse(text)
     assert name.nickname == nickname
     assert name.ambiguities == ()
+
+
+def test_only_the_next_apostrophe_is_asked_as_a_close() -> None:
+    # the next apostrophe opens 'Ace', so the hyphened 'T- is the word
+    # (master: nickname "T-Bone Walker 'Ace"); 'Ace' is also a suffix
+    # word, a report this test does not read
+    name = parse("Aaron 'T-Bone Walker 'Ace'")
+    assert name.nickname == "Ace"
+    assert name.middle == "'T-Bone"
+    assert AmbiguityKind.UNBALANCED_DELIMITER not in [
+        a.kind for a in name.ambiguities]
 
 
 def test_maiden_quote_opening_at_a_listed_particle_is_no_quote() -> None:
