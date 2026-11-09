@@ -2363,10 +2363,13 @@ class Lexicon:
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
             ``may_be_initial=True``, ``completed_by=[...]`` on a
-            ``bound_given`` reading, ``same_as=...`` and
-            ``after_particle=True`` on a ``given`` reading, ``shared=True``
-            on a name reading); a property given its unwritten value (``None``,
-            ``False``) is removed. Where the word holds a reading of `kind`
+            ``bound_given`` reading, ``after_particle=True`` on a
+            ``given`` reading, ``shared=True`` on a name reading, and
+            ``same_as=...`` on a reading of any kind: the word this one
+            is a spelling of, which name matching reads as a
+            ``listed-spelling`` and keys alike, and which on a ``given``
+            reading also marks a given name written short); a property
+            given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
             file. Warns where it makes a title reading that a ``given``
