@@ -377,16 +377,20 @@ def test_the_summary_counts_each_role_and_matches_the_record() -> None:
     assert f"ZH     zh-cn, zh-tw: {before}/{len(zh)} default" in native
 
 
-@pytest.mark.parametrize("text", [
-    "ستوبر، زيزينيا هاميش",   # Arabic comma, as nameparser's COMMA_CHARS has
-    "Smith， John",            # fullwidth comma glued to the word
-])
-def test_a_word_beside_a_non_ascii_comma_still_occurs(text: str) -> None:
+def _comma_chars() -> list[str]:
+    from nameparser._pipeline._state import COMMA_CHARS
+    return sorted(COMMA_CHARS)
+
+
+@pytest.mark.parametrize("comma", _comma_chars())
+def test_a_word_beside_any_comma_still_occurs(comma: str) -> None:
     # Only ',' was stripped at first, so the word glued to the comma did
     # not occur and CLDR's field was expected empty -- a false
-    # disagreement the parser could never resolve.
-    first = text.split()[0].rstrip("،，")
-    assert agreement.occurs(first, text)
+    # disagreement the parser could never resolve. Every member of
+    # nameparser's COMMA_CHARS, so _COMMAS cannot fall behind it.
+    text = f"Smith{comma} John"
+    assert agreement.occurs("Smith", text)
+    assert agreement.occurs("John", text)
 
 
 def test_an_unspaced_role_is_expected_in_text_order() -> None:

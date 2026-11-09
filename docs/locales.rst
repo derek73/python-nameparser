@@ -694,14 +694,17 @@ Shipped packs
      - East Slavic patronymic order — detects the formal
        family/given/patronymic shape (three name words, the last ending
        like a patronymic — Cyrillic and transliterated
-       ``-ovich``/``-ovna``-style endings — and the middle not) and
-       assigns it accordingly. A middle name with the ending fills
+       ``-ovich``/``-ovna``-style endings — the middle not, and no
+       initial before the last: ``И. Б. Зубкевич`` keeps family
+       ``Зубкевич``) and assigns it accordingly. A middle name with the
+       ending fills
        ``patronymic`` too (``Ivan Ivanovich Ivanov`` → middle and
        patronymic ``Ivanovich``).
    * - ``tr_az``
      - Turkic patronymic markers — detects a name of four words ending
        in a standalone marker token (``oglu``, ``qizi``, ``uulu``, and
-       their Latin- and Cyrillic-script variants) and reads its first
+       their Latin- and Cyrillic-script variants, ``o‘g‘li`` with any
+       apostrophe Uzbek text writes) and reads its first
        word as the family name (``Aliyev Ilham Heydar oglu`` → family
        ``Aliyev``). A marker and the name before it fill
        ``patronymic`` (``Heydar oglu`` there).

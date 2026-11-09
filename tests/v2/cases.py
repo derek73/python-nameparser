@@ -17807,6 +17807,89 @@ CASES: tuple[Case, ...] = (
                "Burmese Wikipedia titles write 'Name၊ honorific', and "
                "with no Burmese title listed the honorific reads given "
                "(#1233). 1.4.0: first 'မောင်မောင်ခ၊' last 'ဦး'"),
+    # #1202's follow-up: the other scripts' commas count; the Armenian
+    # U+055D, which marks an apposition, does not (decisions/C1)
+    Case("mongolian_comma_is_a_family_comma", "ᠪᠠᠲᠤ᠂ ᠪᠣᠯᠣᠳ",
+         {"family": "ᠪᠠᠲᠤ", "given": "ᠪᠣᠯᠣᠳ"},
+         classification="fix(#1202)",
+         notes="U+1802 is traditional Mongolian's comma; 1.4.0 kept it "
+               "glued, first 'ᠪᠠᠲᠤ᠂' last 'ᠪᠣᠯᠣᠳ'"),
+    Case("manchu_comma_is_a_family_comma", "Smith᠈ John",
+         {"family": "Smith", "given": "John"},
+         classification="fix(#1202)",
+         notes="U+1808, Manchu's comma; 1.4.0 first 'Smith᠈' last "
+               "'John'"),
+    Case("nko_comma_is_a_family_comma", "ߞߊߣߕߋ߸ ߛߎߟߊߡߊߣ",
+         {"family": "ߞߊߣߕߋ", "given": "ߛߎߟߊߡߊߣ"},
+         classification="fix(#1202)",
+         notes="U+07F8, the comma N'Ko text writes most; 1.4.0 first "
+               "'ߞߊߣߕߋ߸' last 'ߛߎߟߊߡߊߣ'"),
+    Case("lisu_comma_is_a_family_comma", "ꓡꓲ꓾ ꓫꓵ",
+         {"family": "ꓡꓲ", "given": "ꓫꓵ"},
+         classification="fix(#1202)",
+         notes="U+A4FE, Lisu's comma (its ASCII ',' is a tone letter); "
+               "1.4.0 first 'ꓡꓲ꓾' last 'ꓫꓵ'"),
+    Case("vai_comma_is_a_family_comma", "Smith꘍ John",
+         {"family": "Smith", "given": "John"},
+         classification="fix(#1202)",
+         notes="U+A60D; 1.4.0 first 'Smith꘍' last 'John'"),
+    Case("bamum_comma_is_a_family_comma", "Smith꛵ John",
+         {"family": "Smith", "given": "John"},
+         classification="fix(#1202)",
+         notes="U+A6F5; 1.4.0 first 'Smith꛵' last 'John'"),
+    Case("armenian_bowt_is_no_comma", "Ալոյիս՝ Լիխտենշտայնի թագաժառանգ",
+         {"given": "Ալոյիս՝", "middle": "Լիխտենշտայնի",
+          "family": "թագաժառանգ"},
+         notes="U+055D ARMENIAN COMMA marks an apposition or pause; "
+               "Armenian's comma is ASCII ','. Wikidata's label of "
+               "Alois of Liechtenstein, a name and its epithet, reads "
+               "as positional as it always has: read as a comma it "
+               "would make the given name the family (decisions/C1)"),
+    Case("ethiopic_semicolon_is_no_suffix_delimiter",
+         "John Smith, MD፤ PhD",
+         {"given": "MD፤", "family": "John Smith", "suffix": "PhD"},
+         notes="U+1364 is not C10's built-in delimiter, which the "
+               "ASCII ';' is: no source writes it between credentials "
+               "or names (decisions/C1). The reading is the one any "
+               "unlisted glued word gets"),
+    # A set-apart clause's words read the comma family too (rules/S1):
+    # each site taking the comma off a clause word strips every member
+    Case("arabic_comma_inside_a_set_apart_clause", "(PhD، Sr) John Smith",
+         {"title": "Sr", "given": "John", "family": "Smith",
+          "suffix": "PhD"},
+         classification="fix(#1202)",
+         notes="read as '(PhD, Sr) John Smith' is; 1.4.0 read "
+               "nickname 'PhD، Sr', as did 3.0.1, whose clause sites "
+               "stripped only the ASCII comma"),
+    Case("ethiopic_comma_inside_a_set_apart_clause",
+         "John Smith (Dr.፣ PhD)",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "PhD"},
+         classification="fix(#1202)",
+         notes="1.4.0 read nickname 'Dr.፣ PhD'"),
+    Case("fullwidth_comma_parts_a_set_apart_suffix_run",
+         "John Smith (Jr， PhD)",
+         {"given": "John", "family": "Smith", "suffix": "Jr, PhD"},
+         classification="fix(#1202)",
+         notes="the comma between the clause's two words parts them "
+               "as two entries (rules/R1), as the ASCII one does; "
+               "str() writes it back as written. 1.4.0 read nickname "
+               "'Jr， PhD'"),
+    Case("period_joined_member_before_an_arabic_comma_reports",
+         "John Smith (Msc.Ed، Bob)",
+         {"given": "John", "family": "Smith", "nickname": "Msc.Ed، Bob"},
+         ambiguities=("suffix-or-nickname",),
+         classification="fix(#1202)",
+         notes="a period-joined word holding a member (rules/S3) "
+               "reports beside a non-ASCII comma as beside ',': "
+               "`period_member` takes the comma off with the whole set. "
+               "No corpus name has this shape, so the comma invariant "
+               "in test_properties cannot see it"),
+    Case("burmese_comma_inside_a_set_apart_clause",
+         "John Smith (MBA၊ PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MBA, PhD"},
+         classification="fix(#1202)",
+         notes="1.4.0 read nickname 'MBA၊ PhD'"),
     Case("ethiopic_wordspace_divides_like_a_space", "አበበ፡ከበደ፡ተሰማ",
          {"given": "አበበ", "middle": "ከበደ", "family": "ተሰማ"},
          classification="fix(#1202)",

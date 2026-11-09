@@ -65,7 +65,8 @@ from nameparser._pipeline._pieces import (
     settled_by_case,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, COMMA_CHARS, COMMA_STRIP, NAME_ROLES,
+    PATRONYMIC_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG, SURNAME_PAIR_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
@@ -160,10 +161,10 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
             # comma bucket holds and S1's pass trimmed off the word;
             # decisions/S1 (#792)
             state.original[tokens[previous].span.end:
-                           tokens[previous].span.end + 1] == ","
+                           tokens[previous].span.end + 1] in COMMA_CHARS
             or state.original[tokens[previous].span.end:
                               tokens[current].span.start].replace(" ", "")
-            == ",")
+            in COMMA_CHARS)
         if same_part and not parted:
             tokens[current] = copy_with(
                 tokens[current], tags=tokens[current].tags | {"joined"})
@@ -818,7 +819,7 @@ def _set_apart_clauses(state: ParseState,
                 # R1's entry pass reads the comma left between two
                 # suffix words
                 token = tokens[i]
-                text = token.text.strip(",")
+                text = token.text.strip(COMMA_STRIP)
                 start = token.span.start + token.text.index(text)
                 tokens[i] = copy_with(
                     token, role=Role.TITLE if title else Role.SUFFIX,
@@ -1077,7 +1078,15 @@ def post_rules(state: ParseState) -> ParseState:
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
-        if has_patronymic_ending(tail) and not has_patronymic_ending(mid):
+        # rules/O1: "T5 wins, and T4 in a name written wholly in one
+        # case" -- an initial first or in the middle keeps the order,
+        # read off classify's tag, which carries both rules' reading
+        # (so a one-case name's two spellings read alike, a letter P8
+        # reads as a connective rotating in either; decisions/O1,
+        # #1185, #1217)
+        if (has_patronymic_ending(tail) and not has_patronymic_ending(mid)
+                and "initial" not in tokens[givens[0]].tags
+                and "initial" not in tokens[middles[0]].tags):
             g, m, f = givens[0], middles[0], families[0]
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
