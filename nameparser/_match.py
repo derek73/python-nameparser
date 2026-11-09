@@ -419,11 +419,13 @@ class Matching:
                           tuple[CrossRoleMatch, int | None]]] = []
         for other in _ACROSS[role]:
             for lrole, rrole in ((other, role), (role, other)):
+                rights = [(t, _fold(t)) for t in _cross_texts(right, rrole)]
                 for li, la in enumerate(_cross_texts(left, lrole)):
-                    for ri, ra in enumerate(_cross_texts(right, rrole)):
-                        outcome = _full_outcome(la, ra, lexicon, group)
+                    fla = _fold(la)
+                    for ri, (ra, fra) in enumerate(rights):
+                        outcome = _full_outcome(la, ra, fla, fra, lexicon, group)
                         if (outcome is None or outcome not in self.accept
-                                or _initials_only(la) or _initials_only(ra)):
+                                or _initials_only(fla) or _initials_only(fra)):
                             continue
                         theirs, mine = (la, ra) if lrole is other else (ra, la)
                         index = (None if other is not Role.MIDDLE
@@ -570,6 +572,9 @@ def _fold(text: str) -> str:
     only where the letter it attaches to is Latin, Greek or Cyrillic,
     where it is an accent; in another script (a Devanagari virama,
     anusvara or vowel sign) it is spelling and is kept."""
+    if text.isascii():
+        # no accent, no composition, and no apostrophe but the typed one
+        return text.casefold().translate(_DROPPED)
     decomposed = unicodedata.normalize(
         "NFD", unicodedata.normalize("NFC", text))
     kept = []
@@ -622,6 +627,8 @@ def _letters(text: str) -> int:
 
 
 def _more(left: str, right: str) -> Side:
+    if left == right:
+        return Side.NEITHER
     a, b = _letters(left), _letters(right)
     return Side.LEFT if a > b else Side.RIGHT if b > a else Side.NEITHER
 
@@ -677,18 +684,19 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
-def _initials_only(text: str) -> bool:
-    return all(_is_initial(w) for w in _WORDS.split(_fold(text)) if w)
+def _initials_only(folded: str) -> bool:
+    """A folded text is initials alone."""
+    return all(_is_initial(w) for w in _WORDS.split(folded) if w)
 
 
-def _full_outcome(a: str, b: str, lexicon: Lexicon,
+def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
                   group: str) -> Outcome | None:
-    """Two non-empty texts as full names: same, folded, or listed
-    spelling (word by word, in the role's `same_as` `group`), else
-    `None`."""
+    """Two non-empty texts, `fa` and `fb` their folded forms, as full
+    names: same, folded, or listed spelling (word by word, in the role's
+    `same_as` `group`), else `None`."""
     if a == b:
         return Outcome.SAME
-    if _fold(a) == _fold(b):
+    if fa == fb:
         return Outcome.FOLDED
     wa, wb = a.split(), b.split()
     if len(wa) == len(wb) and all(
@@ -704,7 +712,10 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
     given its two `bases`, particles set aside and part of the other,
     then initial against name (family initial in the family role), then
     initials agree, else conflict."""
-    outcome = _full_outcome(a, b, lexicon, group)
+    if a == b:
+        return Outcome.SAME
+    fa, fb = _fold(a), _fold(b)
+    outcome = _full_outcome(a, b, fa, fb, lexicon, group)
     if outcome is not None:
         return outcome
     family = bases is not None
@@ -719,11 +730,11 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
             return Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
-    if _initials_only(a) and _initials_only(b) and (
-            _WORDS.split(_fold(a)) == _WORDS.split(_fold(b))):
+    if _initials_only(fa) and _initials_only(fb) and (
+            _WORDS.split(fa) == _WORDS.split(fb)):
         return Outcome.INITIALS_AGREE
     if not family and len(wa) == len(wb) == 1 and (
-            _first_half(a, b) or _first_half(b, a)):
+            _first_half(fa, fb) or _first_half(fb, fa)):
         return Outcome.HYPHENATED_PART
     return Outcome.CONFLICT
 
@@ -762,11 +773,11 @@ def _base_words(base: str, lexicon: Lexicon) -> set[str]:
     return {_fold(w) for w in _family_words(base, lexicon)} - {""}
 
 
-def _first_half(word: str, hyphenated: str) -> bool:
-    """`word` is the first half of `hyphenated` once folded (`Hong` /
-    `Hong-Yi`): the first half only, which shares the given initial a
-    key is cut on."""
-    w, parts = _fold(word), _fold(hyphenated).split("-")
+def _first_half(w: str, hyphenated: str) -> bool:
+    """The folded word `w` is the first half of the folded `hyphenated`
+    (`hong` / `hong-yi`): the first half only, which shares the given
+    initial a key is cut on."""
+    parts = hyphenated.split("-")
     return len(parts) > 1 and "-" not in w and bool(w) and parts[0] == w
 
 
@@ -788,7 +799,8 @@ def _noted(a: str, b: str, lexicon: Lexicon, group: str) -> Outcome:
     if not a and not b:
         return Outcome.SAME
     if a and b:
-        return _full_outcome(a, b, lexicon, group) or Outcome.NOTED
+        return (_full_outcome(a, b, _fold(a), _fold(b), lexicon, group)
+                or Outcome.NOTED)
     return Outcome.NOTED
 
 
@@ -802,7 +814,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         return Outcome.SAME
     ga, gb = left.generation, right.generation
     if ga and gb:
-        full = _full_outcome(ga, gb, lexicon, "suffix")
+        full = _full_outcome(ga, gb, _fold(ga), _fold(gb), lexicon, "suffix")
         if full is None:
             return Outcome.CONFLICT
         generation = full
