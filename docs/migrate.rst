@@ -1268,3 +1268,17 @@ with what 1.4 read:
     ['MUDr', 'Licenciado', 'Assist Prof', 'Engr', 'Dipl.-Psych.']
     >>> parse("Mary Smith, Mst").suffix
     'Mst'
+
+Changed in 3.1
+~~~~~~~~~~~~~~
+
+Case repair keeps a Ukrainian or Belarusian apostrophe inside its word,
+writes Georgian set in Mtavruli capitals in plain Mkhedruli, and
+capitalizes a particle that opens a hyphenated word. 1.4 through 3.0
+gave ``Мар'Яна``, ``Ნინო`` and ``ter-Petrosyan``:
+
+.. doctest::
+
+    >>> [str(parse(n).capitalized()) for n in ("БЕЗУГЛА МАР'ЯНА",
+    ...     "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "LEVON TER-PETROSYAN")]
+    ["Безугла Мар'яна", 'ნინო ბურჯანაძე', 'Levon Ter-Petrosyan']

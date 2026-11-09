@@ -13,8 +13,8 @@
   ```
   "j.r.r. tolkien"            →  capitalized="J.R.R. Tolkien"
   "A.B. Vajpayee"             →  capitalized_forced="A.B. Vajpayee"
-  "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad ibn-ʿAlī"
-  "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad al-ʿAbbas"
+  "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad Ibn-ʿAlī"
+  "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad Al-ʿAbbas"
   "ʻIOLANI KAMAKA"            →  capitalized="ʻIolani Kamaka"
   "LT.GOV. JOHN DOE"          →  capitalized="Lt.Gov. John Doe"
   "lt.gov john doe"           →  capitalized="Lt.Gov John Doe"
@@ -25,6 +25,20 @@
   "m.ʿali smith"              →  capitalized="M.ʿAli Smith"
   "É.J. DUPONT"               →  capitalized="É.J. Dupont"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
+  ```
+- **An apostrophe between a Cyrillic letter and one of the vowels я, ю, є, ї, е, ё or і is part of the word's spelling**: it is the Ukrainian and Belarusian apostrophe, which marks the vowel as pronounced apart and never divides a prefix from a name, so the vowel keeps the word's lowercase. Any other apostrophe written as a punctuation mark (', ‘ or ’) divides the word, and the letter after it takes a capital, as in O'Brien and its Cyrillic spelling; the modifier letter apostrophe ʼ is a letter of the word and divides nothing.
+  ```
+  "БЕЗУГЛА МАР'ЯНА"           →  capitalized="Безугла Мар'яна"
+  "ІВАН П'ЯТАК"               →  capitalized="Іван П'ятак"
+  "ДЗМІТРЫЙ ЮР’ЕВІЧ"          →  capitalized="Дзмітрый Юр’евіч"
+  "Мар’яна Безугла"           →  capitalized_forced="Мар’яна Безугла"
+  "ЛЮДМИЛА О'КОННОР"          →  capitalized="Людмила О'Коннор"  · boundary
+  "DEM'YAN SMITH"             →  capitalized="Dem'Yan Smith"  · boundary
+  ```
+- **A script that writes no initial capital is written in its lower case throughout**: Georgian writes its Mtavruli capitals only for a whole word set in capitals, so a name written in them repairs to plain Mkhedruli.
+  ```
+  "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ"            →  capitalized="ნინო ბურჯანაძე"
+  "Ნინო Ბურჯანაძე"            →  capitalized_forced="ნინო ბურჯანაძე"
   ```
 - **A vocabulary entry records casing as a mask** — its word's letters, each in the case it takes — and repair lays it over the word as the writer punctuated it, so the one entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask applies wherever the word stands, whatever the parse read it as. A run of two or more letters beside a full stop takes the mask's case letter by letter and is never an initial.
   ```
@@ -39,13 +53,15 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them.
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase.
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
   "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
-  "maria da-silva"            →  capitalized="Maria da-Silva"
+  "maria da-silva"            →  capitalized="Maria Da-Silva"
+  "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
+  "LEVON TER PETROSYAN"       →  capitalized="Levon ter Petrosyan"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
@@ -143,6 +159,10 @@
 
 **Accepted:**
 
+- A Cyrillic spelling of an elided prefix before е or і, such as French d' (Д'Естен), loses the capital after its apostrophe, since the Belarusian apostrophe stands before those vowels inside a word and nothing in the letters tells the two apart.
+  ```
+  "ВАЛЕРІ Д'ЕСТЕН"            →  capitalized="Валері Д'естен"  · boundary
+  ```
 - A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
   ```
   "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary

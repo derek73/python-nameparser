@@ -874,6 +874,119 @@ def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
             == f"{lead}Abd"
 
 
+def _nfd(text: str) -> str:
+    return unicodedata.normalize("NFD", text)
+
+
+def _repairs(text: str, force: bool) -> str:
+    """`text` parsed and repaired, read composed, so a row typed
+    decomposed compares with its composed twin (#542)."""
+    return unicodedata.normalize(
+        "NFC", str(parse(text).capitalized(force=force)))
+
+
+def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
+    """rules/R4 (#1214): the Ukrainian and Belarusian apostrophe before
+    я, ю, є, ї, е, ё or і is part of the word, so the vowel after it
+    keeps the word's lowercase, in each spelling of the apostrophe that
+    is no word character, typed composed or decomposed, plain or
+    forced. Any other apostrophe still divides the word: before a
+    consonant (О'Коннор) or a vowel outside the set (Д'Артаньян), and
+    after a Latin letter, whose question #1214 leaves open (Dem'Yan).
+    U+02BC is a modifier letter, a word character, so it never divided
+    the word."""
+    rows: tuple[tuple[str, str], ...] = (
+        ("БЕЗУГЛА МАР{a}ЯНА ВОЛОДИМИРІВНА", "Безугла Мар{a}яна Володимирівна"),
+        ("ІВАН П{a}ЯТАК", "Іван П{a}ятак"),
+        ("ар{a}єв володимир ігорович", "Ар{a}єв Володимир Ігорович"),
+        ("ДЗМІТРЫЙ ЮР{a}ЕВІЧ КАМЫШЫК", "Дзмітрый Юр{a}евіч Камышык"),
+        # a letter that decomposes on either side of the apostrophe
+        ("ІВАН ВОРОБЙ{a}ЇВ", "Іван Воробй{a}їв"),
+        ("ГАННА Б{a}ЁРН", "Ганна Б{a}ёрн"),
+        ("ОЛЕНА В{a}ЮН", "Олена В{a}юн"),
+        # the boundaries
+        ("ЛЮДМИЛА О{a}КОННОР", "Людмила О{a}Коннор"),
+        ("ЛЮДМИЛА Д{a}АРТАНЬЯН", "Людмила Д{a}Артаньян"),
+        # the accepted cost: an elision before a vowel only Belarusian
+        # writes after its apostrophe
+        ("ВАЛЕРІ Д{a}ЕСТЕН", "Валері Д{a}естен"),
+        ("DEM{a}YAN SMITH", "Dem{a}Yan Smith"),
+        ("JOHN O{a}BRIEN", "John O{a}Brien"),
+        # a Latin (or Greek) letter before the apostrophe, a Cyrillic
+        # vowel after it: no Cyrillic word to join
+        ("ІВАН O{a}ЯРОШ", "Іван O{a}Ярош"),
+        ("ΑΝΝΑ Μ{a}ЯНА", "Αννα Μ{a}Яна"),
+        # two apostrophes are not one
+        ("БЕЗУГЛА МАР{a}{a}ЯНА", "Безугла Мар{a}{a}Яна"),
+    )
+    for apostrophe in ("'", "‘", "’"):
+        for text, repaired in rows:
+            text, repaired = (s.format(a=apostrophe) for s in (text, repaired))
+            for written in (text, _nfd(text)):
+                for force in (False, True):
+                    assert _repairs(written, force) == repaired, \
+                        (written, force)
+    assert _repairs("БЕЗУГЛА МАРʼЯНА", False) == "Безугла Марʼяна"
+    # a name written correctly is a fixpoint of the forced repair
+    assert _repairs("Мар'яна Безугла", True) == "Мар'яна Безугла"
+
+
+def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
+    """rules/R4 (#1223): Georgian writes no initial capital, and a
+    Mtavruli letter's title case is itself, so a name written in
+    Mtavruli repairs to Mkhedruli throughout rather than keeping a
+    Mtavruli first letter. initials() reads the letters as written, as
+    it reads any capital, so it gives Mkhedruli after the repair. The
+    first-letter lowering reaches no other script: a letter whose lower
+    case is longer than it keeps str.capitalize()'s answer."""
+    for text, repaired in (("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "ნინო ბურჯანაძე"),
+                           ("ᲣᲩᲐ ᲒᲝᲒᲝᲚᲐᲫᲔ", "უჩა გოგოლაძე"),
+                           ("ნინო ბურჯანაძე", "ნინო ბურჯანაძე")):
+        for force in (False, True):
+            assert _repairs(text, force) == repaired, (text, force)
+    assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").initials() == "Ნ. Ბ."
+    assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").capitalized().initials() == "ნ. ბ."
+    # a Mtavruli first letter on Mkhedruli is mixed case: kept as
+    # written on the default path (rules/R5), repaired under force
+    assert _repairs("Ნინო Ბურჯანაძე", False) == "Ნინო Ბურჯანაძე"
+    assert _repairs("Ნინო Ბურჯანაძე", True) == "ნინო ბურჯანაძე"
+    assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
+    # the other cased scripts the repair reaches keep their title case
+    assert _repairs("ΟΔΥΣΣΕΑΣ ΕΛΥΤΗΣ", False) == "Οδυσσεας Ελυτης"
+    assert _repairs("ԼԵՎՈՆ ՏԵՐ-ՊԵՏՐՈՍՅԱՆ", False) == "Լեվոն Տեր-Պետրոսյան"
+
+
+def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
+    """rules/R4 (#1224): a particle that opens a hyphenated word is
+    written as a name word, whichever particle it is, the particle arm
+    being the only clause left out for it; one inside the word
+    keeps its lowercase, as does a spaced one, and a particle written
+    with its hyphen and nothing after it ('az-') is one word, asked
+    whole as before (#700)."""
+    for text, repaired in (
+            ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
+            ("levon ter-petrosyan", "Levon Ter-Petrosyan"),
+            ("AHMAD AL-AHMARI", "Ahmad Al-Ahmari"),
+            ("AHMAD IBN-ʿALĪ", "Ahmad Ibn-ʿAlī"),
+            ("ARMAND VAN-DEN BERGH", "Armand Van-den Bergh"),
+            ("MARIA VAN-DER", "Maria Van-der"),
+            # only the opening part's first word leaves the particle arm
+            ("JUAN D'LA-VEGA", "Juan D'la-Vega"),
+            # punctuation is no first word: the particle after it opens
+            ("juan .'de-vega", "Juan .'De-Vega"),
+            # one named part is no hyphenated word to open
+            ("MARIA VAN-", "Maria van-"),
+            ("jose -de", "Jose -de"),
+            ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
+            ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
+            ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),
+            ("zaʿīm, ḥusnī az-", "Ḥusnī az- Zaʿīm")):
+        for written in (text, _nfd(text)):
+            assert _repairs(written, False) == repaired, written
+    assert _repairs("Levon Ter-Petrosyan", True) == "Levon Ter-Petrosyan"
+    assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
+
+
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
     """rules/R4's Accepted cost (#838): an unlisted abbreviation's
     ending after its full stop is written as a word ('Dut.Ra'), and a
@@ -975,7 +1088,7 @@ def test_a_joined_acronym_repairs_whole_and_a_recorded_casing_wins() -> None:
         == "OTR/L"
     for text, whole in (("john smith-jones", "John Smith-Jones"),
                         ("jean-luc picard", "Jean-Luc Picard"),
-                        ("maria da-silva", "Maria da-Silva"),
+                        ("maria da-silva", "Maria Da-Silva"),
                         ("dipl.-ing john smith", "Dipl.-Ing John Smith")):
         assert str(parse(text).capitalized()) == whole, text
     default = Lexicon.default()
@@ -1551,9 +1664,10 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             ("juan y-garcia", "Juan Y-Garcia"),
             ("jose ortega-y-", "Jose Ortega-Y-"),
             ("jose -y-gasset", "Jose -Y-Gasset"),
-            # no connective, and the particle arm's own per-word answer
+            # no connective; a particle opening the word is name text
+            # (#1224)
             ("donovan mcnabb-smith", "Donovan McNabb-Smith"),
-            ("maria da-silva", "Maria da-Silva"),
+            ("maria da-silva", "Maria Da-Silva"),
             # three worded parts on the ambiguous side of `first < at
             # < last`, so a mutant dropping that bound cannot pass
             ("juan y-garcia-lopez", "Juan Y-Garcia-Lopez"),
