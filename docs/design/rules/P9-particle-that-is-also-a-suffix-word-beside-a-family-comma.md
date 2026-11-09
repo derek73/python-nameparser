@@ -36,4 +36,4 @@
 
 ---
 **Signal:** neighbor: the words beside a particle that is also suffix vocabulary, on either side of a family comma
-**history:** decisions/P9 · **implemented:** nameparser/_pipeline/_assign.py
+**history:** decisions/P9 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py

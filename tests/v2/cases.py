@@ -2902,6 +2902,16 @@ CASES: tuple[Case, ...] = (
          notes="#1168's boundary: the lone letter is found before the "
                "title test is asked, so 3.0.0 through 3.0.1 read the "
                "same; 1.4.0 read middle 'Smith y V', last 'Maj.'"),
+    Case("a_connective_before_a_listed_rank_the_run_refuses_links_it",
+         "John Paul Smith y 10th.",
+         {"given": "John", "middle": "Paul", "family": "Smith y 10th."},
+         notes="#1168's boundary, found by its code review: H5's run "
+               "takes no '10th.', its digits refused by the abbreviation "
+               "shape ('John Smith 10th.' reads family '10th.'), so P13 "
+               "has no title to step over either. 3.0.0 through 3.0.1 "
+               "read middle 'Paul Smith y', family '10th.', P13's own "
+               "title test stopping there; 1.4.0 through 2.8.2 read as "
+               "here"),
     Case("a_connective_before_a_bare_gated_title_keeps_the_name",
          "John Smith y Maj",
          {"given": "John", "family": "Smith y Maj"},
@@ -7296,14 +7306,75 @@ CASES: tuple[Case, ...] = (
                "behind a particle too. 1.4.0 read suffix 'Abd, Jr.'"),
     Case("a_generation_in_the_given_parts_run_ends_the_chain",
          "Hasan, Ali bin Ahmad Jr. Smith",
-         {"given": "Ali", "middle": "bin Ahmad", "family": "Hasan", "suffix": "Jr. Smith"},
-         classification="parity",
-         ambiguities=('suffix-or-name',),
+         {"given": "Ali", "middle": "bin Ahmad", "family": "Hasan",
+          "suffix": "Jr. Smith"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
          notes="#1177's boundary: in the given part after a family comma "
                "the run S8 starts behind the given word takes the "
                "generation and the words behind it, ending the chain "
                "there (P2). 1.4.0 read middle 'bin Ahmad Smith', suffix "
                "'Jr.'"),
+    Case("a_generation_word_before_a_name_inside_the_chain_is_the_chains",
+         "Ali bin Ahmad Jr. Hasan",
+         {"given": "Ali", "family": "bin Ahmad Jr. Hasan"},
+         classification="fix(#1177)",
+         notes="a generation word written out before a name starts no "
+               "run (S8), so the chain takes it. 1.4.0 through 3.0.1 "
+               "read middle 'bin Ahmad Jr.', family 'Hasan'"),
+    Case("a_credential_in_capitals_inside_the_chain_starts_the_run",
+         "Mariam binti MD Salleh",
+         {"given": "Mariam", "family": "binti", "suffix": "MD Salleh"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#1177's boundary: written in capitals the credential "
+               "starts S8's run, which the chain stops in front of, "
+               "where it takes a Title-case 'Md' as a name word. 1.4.0 "
+               "read middle 'binti MD', last 'Salleh'"),
+    Case("a_credential_in_capitals_inside_the_family_part_stays_the_suffix",
+         "binti MD Salleh, Mariam",
+         {"given": "Mariam", "family": "binti Salleh", "suffix": "MD"},
+         notes="#1177's boundary: before a family comma the family "
+               "part keeps behind a particle only a suffix word S8 "
+               "would start no run at"),
+    Case("a_degree_inside_a_particle_family_part_stays_the_suffix",
+         "van der Berg PhD Jones, John",
+         {"given": "John", "family": "van der Berg Jones", "suffix": "PhD"},
+         notes="#1177's boundary, found by its docs review"),
+    Case("a_title_case_credential_in_the_given_parts_chain_starts_the_run",
+         "Rahman, Ahmad bin Md Ali",
+         {"given": "Ahmad", "family": "bin Rahman", "suffix": "Md Ali"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "particle-or-given"),
+         notes="#1177's boundary: in the given part after a family comma "
+               "S8's run starts behind the given word whatever its "
+               "writing, so the chain stops before 'Md' there. 1.4.0 "
+               "read middle 'bin Ali', suffix 'Md'"),
+    Case("a_generation_in_the_given_part_behind_a_title_particle_starts_the_run",
+         "Smith, Freiherr von Berg Jr. Jones",
+         {"title": "Freiherr", "given": "von Berg", "family": "Smith",
+          "suffix": "Jr. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#1177's boundary, found by its code review: behind a "
+               "title-particle the given part's chain stops where S8's "
+               "run starts, as behind a given word. 1.4.0 read first "
+               "'von Berg', middle 'Jones', suffix 'Jr.'"),
+    Case("a_generation_in_the_given_part_behind_do_starts_the_run",
+         "Smith, Do van Jr. Jones",
+         {"given": "Do", "middle": "van", "family": "Smith",
+          "suffix": "Jr. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#1177's boundary, found by its code review. 1.4.0 read "
+               "title 'Do', first 'van', middle 'Jones', suffix 'Jr.'"),
+    Case("a_dual_particle_before_a_generation_keeps_both_suffixes",
+         "DE SMITH VD JR JONES, JOHN",
+         {"given": "JOHN", "family": "DE SMITH JONES", "suffix": "VD JR"},
+         notes="#1177's boundary, found by its docs review: a particle "
+               "that is suffix vocabulary too opens no chain over the "
+               "suffix word behind it (P9), and the word behind the "
+               "suffix it reads as stays in that suffix"),
     Case("a_suffix_word_inside_a_family_part_with_no_particle_stays_the_suffix",
          "Smith Jr Jones, John",
          {"given": "John", "family": "Smith Jones", "suffix": "Jr"},
@@ -11650,7 +11721,7 @@ CASES: tuple[Case, ...] = (
     Case("bound_given_join_takes_a_chain_carrying_a_declined_marker",
          "Abd van der Berg née Jr de Jones",
          {"given": "Abd van der Berg née Jr", "family": "de Jones"},
-         classification="fix(#417)",
+         classification="fix(#1177)",
          notes="the field-level face of #417. The consumer declines "
                "(a suffix follows the marker), the particle chain "
                "takes the declined marker as the word M2 says it is, "
@@ -11666,7 +11737,9 @@ CASES: tuple[Case, ...] = (
                "der Berg née Jr Jones' until #1177, whose chain runs "
                "on past the 'Jr' (the row below); the 'de' here starts "
                "a group of its own (P2), so the chain still stops in "
-               "front of a family word. For that text 2.4.0 through "
+               "front of a family word; 3.0.0 through 3.0.1 read this "
+               "text given 'Abd van der Berg née', middle 'Jr'. For "
+               "the old text 2.4.0 through "
                "2.8.0 read given 'Abd', family 'van der Berg née', "
                "suffix 'Jr Jones', #602's run started at 'Jr', which a "
                "generation word before a name word no longer starts "
@@ -15968,16 +16041,14 @@ CASES: tuple[Case, ...] = (
                "middle 'der la Jr. Prof.')"),
     Case("a_joined_name_word_is_no_word_before_a_credential",
          "van la Smith Secretary Jr. Dr. Smith",
-         {"given": "van", "family": "la Smith Secretary Jr. Dr. Smith"},
+         {"given": "van", "middle": "la Smith Secretary Jr. Dr.",
+          "family": "Smith"},
          ambiguities=("particle-or-given",),
-         classification="fix(#1177)",
+         classification="parity",
          notes="'la Smith Secretary' is one name word, the chain "
                "joining the two after the particle, and the leading "
                "'van' is a lone particle: one name word before 'Jr.', "
-               "so #602's run does not start (#620), and the chain "
-               "runs on past the 'Jr.' it leaves a name word (P2, "
-               "#1177). 1.4.0 through 3.0.1 read middle 'la Smith "
-               "Secretary Jr. Dr.', family 'Smith'"),
+               "so #602's run does not start (#620)"),
     Case("a_lone_particle_before_the_run_is_the_surname",
          "John von PhD Jones",
          {"given": "John", "family": "von", "suffix": "PhD Jones"},
@@ -15991,18 +16062,16 @@ CASES: tuple[Case, ...] = (
                "behind it (1.4.0 and 2.3.0 middle 'von PhD')"),
     Case("a_particle_run_before_the_run_stays_one_name_word",
          "Freiherr von vd PhD Jones",
-         {"title": "Freiherr", "family": "von vd PhD Jones"},
+         {"title": "Freiherr", "given": "von vd", "middle": "PhD",
+          "family": "Jones"},
          ambiguities=("particle-or-given",),
-         classification="fix(#1177)",
+         classification="parity",
          notes="the row above with a particle run: 'von vd' is one "
                "name word, 'vd' a particle the run took, so only one "
                "name word stands before 'PhD' and #602's run does not "
                "start -- the lone-particle count is asked only of a "
                "piece that opens a unit, not of 'vd' standing right "
-               "before the credential (#627's review) -- and the chain "
-               "takes the 'PhD' it leaves a name word, as 'Freiherr "
-               "von vd Jones' reads (P2, #1177). 1.4.0 through 3.0.1 "
-               "read given 'von vd', middle 'PhD', family 'Jones'"),
+               "before the credential (#627's review)"),
     Case("a_dual_in_the_chain_stays_a_name_word_behind_a_title",
          "John van mc Prof.",
          {"title": "Prof.", "given": "John", "family": "van mc"},

@@ -113,7 +113,8 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import (
     split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
-    _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
+    _NOT_A_RUN_START, declined_by_the_name_behind, has_name_content,
+    is_lone_never_given_particle,
     is_lowercase_ambiguous_particle,
     Peel, TailRead, is_prefix_piece, is_suffix_piece, is_title_piece,
     leading_titles,
@@ -1986,8 +1987,10 @@ def assign(state: ParseState) -> ParseState:
         # A piece at or past the floor is already known to be a suffix
         # with nothing but suffixes behind it, so it is not asked again.
         # whether a particle read as family stands in front of the
-        # piece the loop is at, for P2's arm below
+        # piece the loop is at, and whether the piece right in front was
+        # read as family, for P2's arm below
         chained = False
+        family_before = False
         for k in range(lead, len(fam_pieces)):
             piece = fam_pieces[k]
             if k >= floor:
@@ -2032,12 +2035,26 @@ def assign(state: ParseState) -> ParseState:
                     # rules/P2: "the join running until the next
                     # particle starts a group of its own, a trailing
                     # suffix begins" -- behind a particle, a suffix word
-                    # with a name word behind it is the particle's
-                    # group's ('bin Abd Rahman, Ahmad'), as the chain
-                    # reads it with no comma (decisions/P2, #1177)
-                    and not (chained and not all(
-                        is_suffix_piece(fam_pieces[j], fam_tags[j], tokens)
-                        for j in range(k + 1, len(fam_pieces))))):
+                    # S8 starts no run at, with a name word behind it,
+                    # is the particle's group's ('bin Abd Rahman,
+                    # Ahmad'), as the chain reads it with no comma; a
+                    # particle that is suffix vocabulary too is P9's
+                    # (decisions/P2, #1177)
+                    and not (chained and family_before
+                             and "particle" not in tokens[piece[0]].tags
+                             and k + 1 < len(fam_pieces)
+                             and not all(
+                                 is_suffix_piece(fam_pieces[j], fam_tags[j],
+                                                 tokens)
+                                 for j in range(k + 1, len(fam_pieces)))
+                             and (not starts_a_credential_run(
+                                      piece, fam_tags[k], tokens,
+                                      tokens[fam_pieces[k - 1][0]].text,
+                                      state.one_case)
+                                  or declined_by_the_name_behind(
+                                      tokens[piece[0]], fam_pieces[k + 1],
+                                      fam_tags[k + 1], tokens,
+                                      state.one_case)))):
                 _set_roles(tokens, piece, Role.SUFFIX)
             else:
                 _set_roles(tokens, piece, Role.FAMILY)
@@ -2046,6 +2063,7 @@ def assign(state: ParseState) -> ParseState:
                 chained = chained or ("prefix" in fam_tags[k]
                                       or "particle"
                                       in tokens[piece[0]].tags)
+            family_before = tokens[piece[0]].role is Role.FAMILY
         tail = 2
     # rules/C2: segments past the structure's name segments are
     # consumed as suffixes, except "a word of the title vocabulary there

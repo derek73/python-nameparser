@@ -425,9 +425,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 2026-11-07, #1138's 'John (MA/PhD) Smith' reporting
     # suffix-or-nickname under three orders; 1675 -> 1678 on
     # 2026-11-08, #1177's 'Hasan, Ali bin Ahmad Jr. Smith' reporting
-    # suffix-or-name under three orders.
-    assert claims == 1678, (
-        f"the field sweep checks {claims} claims, recorded as 1678 on "
+    # suffix-or-name under three orders; 1678 -> 1696 the same day, the
+    # six reports of its reviews' boundary rows under three orders.
+    assert claims == 1696, (
+        f"the field sweep checks {claims} claims, recorded as 1696 on "
         f"2026-11-08")
 
 
@@ -831,11 +832,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Akther, Mst. Nasima' the same; 334 -> 335 the same day, #1111's
     # 'Sir Freiherr von Richthofen' under its own policy, whose stand-in
     # for 'von' lands in the family with the chain, as the particle did;
-    # 537 -> 538 and 335 -> 334 on 2026-11-08, #1177's chain taking the
-    # 'Jr.' in 'Nguyen Van Jr. Vi', whose stand-in for 'Vi' now lands in
-    # the alternative's field; 334 -> 337 the same day, #1177's 'Hasan,
-    # Ali bin Ahmad Jr. Smith' under the three orders
-    assert (checked, skipped) == (538, 337), (checked, skipped)
+    # 335 -> 338 on 2026-11-08, #1177's 'Hasan, Ali bin Ahmad Jr. Smith'
+    # under the three orders, each stand-in keeping the taken one;
+    # 537 -> 540 and 338 -> 350 the same day, its reviews' boundary
+    # rows under the three orders
+    assert (checked, skipped) == (540, 350), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

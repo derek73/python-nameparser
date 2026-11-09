@@ -1095,7 +1095,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # starts the run: the prefix run below takes it as a particle,
         # as P6 reads it after a comma, and 'John van Mc' keeps family
         # 'van Mc' (every baseline's reading). A suffix WORD stops the
-        # chain wherever it stands, and the trailing
+        # chain where S8 would start its run at it, a word written as a
+        # name with a name word behind it being the chain's ('bin Abd
+        # Rahman', #1177), and the trailing
         # run -- the numeral, or the bare acronym with words to spare
         # -- stops it where the suffix-piece test alone did not ('John
         # van der Berg V' read family 'van der Berg V'). The chain
@@ -1157,7 +1159,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     continue
                 j = chain_run_end(k, pieces, ptags, tokens,
                                   len(pieces) - tail,
-                                  one_case if given_slot else None)
+                                  one_case if given_slot else None,
+                                  one_case, given_slot)
                 # The other half of PARTICLE_OR_GIVEN. _assign reports the
                 # fork when an ambiguous particle stays a lone leading piece
                 # ("Van Johnson" -> given under the default order, family

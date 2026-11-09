@@ -192,6 +192,7 @@
 {"name": "Ali Hassan bin Ahmad", "given": "Ali", "middle": "Hassan", "family": "bin Ahmad", "initials": "A. H. A.", "patronymic": "bin Ahmad"}
 {"name": "Ali Juma Hamisi", "given": "Ali", "middle": "Juma", "family": "Hamisi", "initials": "A. J. H."}
 {"name": "Ali Kara Oğlu", "given": "Ali", "middle": "Kara", "family": "Oğlu", "initials": "A. K. O."}
+{"name": "Ali bin Ahmad Jr. Hasan", "given": "Ali", "family": "bin Ahmad Jr. Hasan", "initials": "A. A. J. H.", "patronymic": "bin Ahmad Jr. Hasan"}
 {"name": "Ali bin Ahmad bin Hasan", "given": "Ali", "middle": "bin Ahmad", "family": "bin Hasan", "initials": "A. A. H.", "patronymic": "bin Ahmad bin Hasan"}
 {"name": "Ali née oglu", "family": "Ali", "maiden": "oglu", "initials": "A.", "capitalized_force": "Ali (Oglu)"}
 {"name": "Ali oglu", "given": "Ali", "family": "oglu", "initials": "A. o.", "capitalized_force": "Ali Oglu"}
@@ -2791,6 +2792,7 @@
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
 {"name": "Maria do Socorro Silva", "given": "Maria", "middle": "do Socorro", "family": "Silva", "initials": "M. S. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
+{"name": "Mariam binti MD Salleh", "given": "Mariam", "family": "binti", "suffix": "MD Salleh", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "M. b.", "capitalized_force": "Mariam Binti MD Salleh"}
 {"name": "Mariam binti Md Salleh", "given": "Mariam", "family": "binti Md Salleh", "initials": "M. M. S.", "patronymic": "binti Md Salleh"}
 {"name": "Mariana Duque Mariño", "given": "Mariana", "middle": "Duque", "family": "Mariño", "initials": "M. D. M."}
 {"name": "Marianne Schmidt", "given": "Marianne", "family": "Schmidt", "initials": "M. S."}
@@ -3367,6 +3369,7 @@
 {"name": "Ragnar Bjarnason", "given": "Ragnar", "family": "Bjarnason", "initials": "R. B."}
 {"name": "Rahman, Abdul MB ChB", "given": "Abdul", "family": "Rahman", "suffix": "MB ChB", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "A. R."}
 {"name": "Rahman, Ahmad bin Abd Ali", "given": "Ahmad", "middle": "bin Abd Ali", "family": "Rahman", "initials": "A. A. A. R.", "patronymic": "bin Abd Ali"}
+{"name": "Rahman, Ahmad bin Md Ali", "given": "Ahmad", "family": "bin Rahman", "suffix": "Md Ali", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. R.", "capitalized_force": "Ahmad bin Rahman MD Ali", "patronymic": "bin Rahman"}
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
@@ -4270,7 +4273,6 @@
 {"name": "and van Buren", "given": "and van", "family": "Buren", "initials": "a. v. B.", "capitalized_force": "and Van Buren"}
 {"name": "anh van do", "given": "anh", "family": "van do", "initials": "a. v. d.", "capitalized": "Anh Van Do"}
 {"name": "anh van mc", "given": "anh", "family": "van mc", "initials": "a. v. m.", "capitalized": "Anh Van Mc"}
-{"name": "bin Abd Jr., Ahmad", "given": "Ahmad", "family": "bin", "suffix": "Abd Jr.", "initials": "A. b.", "capitalized_force": "Ahmad Bin ABD Jr.", "generation": "Jr.", "credentials": "Abd"}
 {"name": "bin Abd Rahman, Ahmad", "given": "Ahmad", "family": "bin Abd Rahman", "initials": "A. A. R.", "patronymic": "bin Abd Rahman"}
 {"name": "bin Mohamad", "given": "bin", "family": "Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "b. M.", "capitalized_force": "Bin Mohamad"}
 {"name": "bin Mohamad, Mahathir", "given": "Mahathir", "family": "bin Mohamad", "initials": "M. M.", "patronymic": "bin Mohamad"}
@@ -4552,6 +4554,7 @@
 {"name": "van den Wolf Prof. Dr. Ada Cornelia Eva Sophia Jr, M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "Prof.", "middle": "Dr. Ada Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "Jr, M.D. Ph.D.", "initials": "P. D. A. C. E. S. W.", "generation": "Jr", "credentials": "M.D. Ph.D."}
 {"name": "van den Wolf, Prof. Dr. Anna Cornelia Eva Sophia jr. M.D. Ph.D.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. M.D. Ph.D.", "initials": "A. C. E. S. W.", "capitalized_force": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf Jr. M.D. Ph.D.", "generation": "jr.", "credentials": "M.D. Ph.D."}
 {"name": "van den Wolf, prof. dr. Anna Cornelia Eva Sophia jr. m.d. ph.d.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W.", "capitalized_force": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf Jr. M.D. Ph.D.", "generation": "jr.", "credentials": "m.d. ph.d."}
+{"name": "van der Berg PhD Jones, John", "given": "John", "family": "van der Berg Jones", "suffix": "PhD", "initials": "J. B. J."}
 {"name": "van der Berg, MA", "family": "van der Berg", "suffix": "MA", "initials": "B."}
 {"name": "van der Berg, PhD", "family": "van der Berg", "suffix": "PhD", "initials": "B."}
 {"name": "van der Berg, Sir", "title": "Sir", "family": "van der Berg", "initials": "B."}

@@ -21,16 +21,19 @@
   "Freiherr von Berg MA"      →  suffix="MA"
   "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
   ```
-- **A suffix word with a name word behind it begins no trailing suffix, and the chain takes it** like any name word, as names write `Abd` for Abdul and `Md` for Muhammad; before a family comma the part reads it so behind a particle too, and a suffix word with nothing but suffixes behind it is still the trailing run.
+- **A suffix word ends the chain where S8 would start its run at it**; one S8 declines for its writing with a name word behind it is a name word to the chain, as names write `Md` for Muhammad: a credential acronym written in Title case, a generation word written out, and a word also bound given-name vocabulary (`Abd` for Abdul), which starts no run. In the given part after a family comma S8's run starts behind the given word whatever stands behind it, so there only the last is the chain's; before a family comma the part keeps a word S8 starts no run at in the family behind a particle, as the chain does.
   ```
   "Ahmad bin Abd Rahman"      →  family="bin Abd Rahman"
   "Mariam binti Md Salleh"    →  family="binti Md Salleh"
   "Juan de Md Rahman"         →  family="de Md Rahman"
+  "Ali bin Ahmad Jr. Hasan"   →  family="bin Ahmad Jr. Hasan"
   "bin Abd Rahman, Ahmad"     →  family="bin Abd Rahman"
   "Rahman, Ahmad bin Abd Ali"  →  middle="bin Abd Ali"
-  "Ahmad bin Md"              →  suffix="Md"  · boundary
-  "bin Abd Jr., Ahmad"        →  suffix="Abd Jr."  · boundary
+  "Mariam binti MD Salleh"    →  suffix="MD Salleh"  · boundary
+  "Rahman, Ahmad bin Md Ali"  →  suffix="Md Ali"  · boundary
   "Hasan, Ali bin Ahmad Jr. Smith"  →  suffix="Jr. Smith"  · boundary
+  "van der Berg PhD Jones, John"  →  suffix="PhD"  · boundary
+  "Ahmad bin Md"              →  suffix="Md"  · boundary
   ```
 - **The same acronym written Title-case in a mixed-case name ends nothing** and joins the chain as any name word does, words to spare or not, and the fork the chain called is reported there exactly as it is where no particle stands (S4).
   ```
@@ -62,7 +65,7 @@
 
 **Accepted:**
 
-- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's.
+- A particle of the unambiguous suffix vocabulary too (vd, mc) is a suffix piece to the peel, so where it opens the trailing run the chain stops before it as before any suffix word opening that run, and the peel takes it; where it continues a prefix run, the run takes it as a particle, as P6 reads it after a comma — and there the chain reports nothing, the particle reading being P6's fork rather than S4's.
   ```
   "John Smith Mc V"           →  suffix="Mc V"
   "John van Mc"               →  family="van Mc"
