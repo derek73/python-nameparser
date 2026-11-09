@@ -4274,6 +4274,7 @@
 {"name": "anh van do", "given": "anh", "family": "van do", "initials": "a. v. d.", "capitalized": "Anh Van Do"}
 {"name": "anh van mc", "given": "anh", "family": "van mc", "initials": "a. v. m.", "capitalized": "Anh Van Mc"}
 {"name": "bin Abd Rahman, Ahmad", "given": "Ahmad", "family": "bin Abd Rahman", "initials": "A. A. R.", "patronymic": "bin Abd Rahman"}
+{"name": "bin Md Rahman, Ahmad", "given": "Ahmad", "family": "bin Md Rahman", "initials": "A. M. R.", "patronymic": "bin Md Rahman"}
 {"name": "bin Mohamad", "given": "bin", "family": "Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "b. M.", "capitalized_force": "Bin Mohamad"}
 {"name": "bin Mohamad, Mahathir", "given": "Mahathir", "family": "bin Mohamad", "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "bin Stromae Elizabeth Windsor Maria Teresa MP", "order": "FAMILY_FIRST", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S.", "patronymic": "bin Stromae"}

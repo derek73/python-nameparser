@@ -21,13 +21,14 @@
   "Freiherr von Berg MA"      →  suffix="MA"
   "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
   ```
-- **A suffix word ends the chain where S8 would start its run at it**; one S8 declines for its writing with a name word behind it is a name word to the chain, as names write `Md` for Muhammad: a credential acronym written in Title case, a generation word written out, and a word also bound given-name vocabulary (`Abd` for Abdul), which starts no run. In the given part after a family comma S8's run starts behind the given word whatever stands behind it, so there only the last is the chain's; before a family comma the part keeps a word S8 starts no run at in the family behind a particle, as the chain does.
+- **A suffix word ends the chain where S8 would start its run at it**, and is a name word to the chain where S8 starts none there: at a word S8 starts no run at, such as one that is also bound given-name vocabulary (`Abd` for Abdul), or one whose run S8 declines for its writing with a name word behind it (`Md` for Muhammad). In the given part after a family comma S8's run starts behind the given word whatever stands behind it, so there only the first is the chain's; before a family comma the part keeps either in the family behind a particle, as the chain does.
   ```
   "Ahmad bin Abd Rahman"      →  family="bin Abd Rahman"
   "Mariam binti Md Salleh"    →  family="binti Md Salleh"
   "Juan de Md Rahman"         →  family="de Md Rahman"
   "Ali bin Ahmad Jr. Hasan"   →  family="bin Ahmad Jr. Hasan"
   "bin Abd Rahman, Ahmad"     →  family="bin Abd Rahman"
+  "bin Md Rahman, Ahmad"      →  family="bin Md Rahman"
   "Rahman, Ahmad bin Abd Ali"  →  middle="bin Abd Ali"
   "Mariam binti MD Salleh"    →  suffix="MD Salleh"  · boundary
   "Rahman, Ahmad bin Md Ali"  →  suffix="Md Ali"  · boundary
