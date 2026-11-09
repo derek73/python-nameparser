@@ -750,7 +750,8 @@ def check_order(entries: Mapping[str, list[dict[str, Any]]]) -> None:
 #: inside a delimited clause a comma is kept as written (rules/N1), and
 #: there rules/M3 reads a marker followed by a comma as no marker, which
 #: holds only while the vocabulary stores no comma.
-DIVIDERS = frozenset({",", "\u060c", "\uff0c", "\u30fb", "\uff65"})
+DIVIDERS = frozenset({",", "\u060c", "\uff0c", "\u1363", "\u104a",
+                      "\u30fb", "\uff65", "\u1361"})
 #: _tokenize.py's _EMOJI_RANGES, stripped under strip_emoji (default on).
 EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                 (0x2600, 0x26FF), (0x2700, 0x27BF))

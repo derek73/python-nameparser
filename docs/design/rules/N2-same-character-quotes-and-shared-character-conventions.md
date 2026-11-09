@@ -17,6 +17,20 @@
 "Mari' Aube'"               →  family="Aube'"  · boundary
 ```
 
+**Except:**
+
+- **An apostrophe opening a word the vocabulary lists as a particle** is part of that word, so it opens no quote.
+  ```
+  "Jan van 't Hof 'Jantje'"  →  nickname="Jantje"
+  ```
+
+**Accepted:**
+
+- A quote that does open at such a word is read as the word, its close staying in the word it ends.
+  ```
+  "Pieter 't Hart' Smith"  →  family="'t Hart' Smith"
+  ```
+
 ---
-**Signal:** position
+**Signal:** position: where a same-character quote stands in its word, and a listed particle the apostrophe opens, tagged by where it stands as P1's is
 **history:** decisions/N2 · **implemented:** nameparser/_pipeline/_extract.py

@@ -29,7 +29,7 @@ from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
 
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
-_COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
+_COMMA_CHAR = re.compile(r"[,،，፣၊]")  # ASCII, Arabic, fullwidth, Ethiopic, Burmese
 _MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
 _NAME_RUN = re.compile(r"\w+")
@@ -197,14 +197,16 @@ _LAYOUTS = {order: _layout(order) for order in _NAME_ORDERS}
 _V2_DEFAULT_SPEC = ('{title} {given} "{nickname}" {middle} {family} '
                     "({maiden}) {suffix}")
 
-#: rules/T2 and T3's dividers: a nakaguro, or an interpunct the parse
-#: divided at (one written with a space beside it is a name word,
-#: rules/T3, so it is a token and never stands in a gap).
-_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65"})
+#: rules/T2 and T3's dividers: a nakaguro or the Ethiopic wordspace,
+#: or an interpunct the parse divided at (one written with a space
+#: beside it is a name word, rules/T3, so it is a token and never
+#: stands in a gap).
+_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65", "\u1361"})
 _NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.
-_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C"}
+_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C",
+                  "\u1363": "\u1363 ", "\u104A": "\u104A "}
 
 
 def _written_separator(gap: str) -> str | None:

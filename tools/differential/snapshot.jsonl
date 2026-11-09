@@ -1601,6 +1601,7 @@
 {"name": "Jan Koos Van der Merwe", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M.", "capitalized_force": "Jan Koos van der Merwe"}
 {"name": "Jan Měto Šejc", "given": "Jan", "middle": "Měto", "family": "Šejc", "initials": "J. M. Š."}
 {"name": "Jan Stephan von Calcar", "given": "Jan", "middle": "Stephan", "family": "von Calcar", "initials": "J. S. C."}
+{"name": "Jan van 't Hof 'Jantje'", "given": "Jan", "family": "van 't Hof", "nickname": "Jantje", "initials": "J. H."}
 {"name": "Jan van Dijk", "given": "Jan", "family": "van Dijk", "initials": "J. D."}
 {"name": "Jan van Eyck", "given": "Jan", "family": "van Eyck", "initials": "J. E."}
 {"name": "Jan van Munster", "given": "Jan", "family": "van Munster", "initials": "J. M."}
@@ -1739,6 +1740,7 @@
 {"name": "Jean «Petit» Dupont", "given": "Jean", "family": "Dupont", "nickname": "Petit", "initials": "J. D."}
 {"name": "Jean-Dominique de Cassini", "given": "Jean-Dominique", "family": "de Cassini", "initials": "J. C."}
 {"name": "Jean-François Lefebvre de La Barre", "given": "Jean-François", "middle": "Lefebvre", "family": "de La Barre", "initials": "J. L. B.", "capitalized_force": "Jean-François Lefebvre de la Barre"}
+{"name": "Jean Dupont", "given": "Jean", "family": "Dupont", "initials": "J. D."}
 {"name": "Jeffrey (JD) Bricken", "given": "Jeffrey", "family": "Bricken", "nickname": "JD", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. B.", "capitalized_force": "Jeffrey \"Jd\" Bricken"}
 {"name": "Jenny \"JJ\" Baker (Johnson)", "given": "Jenny", "family": "Baker", "nickname": "JJ Johnson", "initials": "J. B.", "capitalized_force": "Jenny \"Jj Johnson\" Baker"}
 {"name": "Jenny (Johnson) Baker", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
@@ -3240,6 +3242,7 @@
 {"name": "Piet", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet", "order": "FAMILY_FIRST", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet van Engelen", "given": "Piet", "family": "van Engelen", "initials": "P. E."}
+{"name": "Pieter 't Hart' Smith", "given": "Pieter", "family": "'t Hart' Smith", "initials": "P. H. S."}
 {"name": "Pieter Bruegel stariji Jones", "given": "Pieter", "middle": "Bruegel stariji", "family": "Jones", "initials": "P. B. s. J.", "capitalized_force": "Pieter Bruegel Stariji Jones"}
 {"name": "Pieter de Carpentier", "given": "Pieter", "family": "de Carpentier", "initials": "P. C."}
 {"name": "Pilar Fernández Seijo", "given": "Pilar", "middle": "Fernández", "family": "Seijo", "initials": "P. F. S."}
@@ -4367,7 +4370,7 @@
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d.", "capitalized": "J.-E.-P. Dupont"}
 {"name": "j.r.r. tolkien", "given": "j.r.r.", "family": "tolkien", "initials": "j. t.", "capitalized": "J.R.R. Tolkien"}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "j. m.", "capitalized": "Jack Ma"}
-{"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "j. h. h.", "capitalized": "Jacobus Henricus van 't Hoff"}
+{"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "initials": "j. h. h.", "capitalized": "Jacobus Henricus van 't Hoff"}
 {"name": "jane doe nee smith ma", "given": "jane", "family": "doe", "suffix": "ma", "maiden": "smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "j. d.", "capitalized": "Jane Doe (Smith) MA"}
 {"name": "jean-luc picard", "given": "jean-luc", "family": "picard", "initials": "j. p.", "capitalized": "Jean-Luc Picard"}
 {"name": "jenap Atajan Saparowiç Gurdow magistr, ylymlaryň kandidaty", "given": "ylymlaryň", "middle": "kandidaty", "family": "jenap Atajan Saparowiç Gurdow magistr", "initials": "y. k. j. A. S. G. m.", "capitalized_force": "Ylymlaryň Kandidaty Jenap Atajan Saparowiç Gurdow Magistr"}
@@ -6340,35 +6343,35 @@
 {"name": "ເອກະພົນ, ນາລິນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
 {"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
 {"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ၊", "initials": "ဇ. ဟ. စ."}
+{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
 {"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
 {"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
 {"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
 {"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
 {"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ပရော်ဖက်ဆာ", "middle": "ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊", "family": "ဒေါက်တာ", "initials": "ပ. ဒ. အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ. ဂ. ဒ."}
-{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "မစ္စတာ", "middle": "ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊", "family": "ဒေါက်တာ", "initials": "မ. ဘ. ဝ. ဟ. ရ. ဝ. ဂ. ဒ."}
+{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "initials": "ဒ. ပ. ဒ. အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ.", "generation": "ဂျူနီယာ"}
+{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "initials": "ဒ. မ. ဘ. ဝ. ဟ. ရ. ဝ.", "generation": "ဂျူနီယာ"}
 {"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ", "initials": "မ. ပ. ဝ. ႁ. ရ. ဝ. မ."}
 {"name": "မူလာ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ၊", "initials": "က. မ."}
+{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
 {"name": "မူးလႃႇ ၶေးတႃႇ", "order": "FAMILY_FIRST", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
 {"name": "မေရီ စူး ဟာမစ်ရှ် ဝပ်ဆင်", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
 {"name": "မေႇရီႇသူး ႁေးမိသျ် ဝတ်ႉသၼ်ႇ", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
 {"name": "ဝတ်ႉသၼ်ႇ မေႇရီႇသူး ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
 {"name": "ဝပ်ဆင် မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်၊", "initials": "မ. စ. ဟ. ဝ."}
+{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
 {"name": "ဝုတ်ႉသ်တႃႇ မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "order": "FAMILY_FIRST", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "family": "ဝုတ်ႉသ်တႃႇ", "initials": "မ. ပ. ဝ. ႁ. ရ. မ. ဝ."}
-{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဗွန်", "middle": "ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "family": "ဝူစ်တာ", "initials": "ဗ. ဝ. ဘ. ပ. ဒ. အ. က. ဆ. မ. ဂ. ဒ. ဝ."}
-{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "ဘရူ၊", "middle": "အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ", "initials": "ဘ. အ. က. ဆ. မ. ဝ. ဗ. ဝ."}
-{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "မစ္စတာ", "middle": "ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "family": "ဝူစ်တာ", "initials": "မ. ဘ. ဝ. ဟ. ရ. ဂ. ဒ. ဝ."}
-{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ၊", "initials": "ဘ. ဝ. ဟ. ရ. ဝ."}
+{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. ဗ. ဝ. ဘ. ပ. ဒ. အ. က. ဆ. မ.", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "အာဒါ", "middle": "ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ ဘရူ", "initials": "အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ."}
+{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. မ. ဘ. ဝ. ဟ. ရ.", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ", "initials": "ဘ. ဝ. ဟ. ရ. ဝ."}
 {"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "order": "FAMILY_FIRST", "given": "ပရူဝ်ႇလ်", "middle": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း", "initials": "ပ. ၵ. တ. ၶ. ဢ. ၶ. သ. မ. မ. ဝ."}
 {"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "initials": "ၶ. ဢ. ၶ. သ. မ. မ. ဝ. ပ. ၵ. တ."}
 {"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
 {"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
 {"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
 {"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ၊", "initials": "အ. အ."}
+{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
 {"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
 {"name": "ဢၢႆႇရိၼ်း ဢႅတ်ႉလႃႇ", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
 {"name": "ဢႅတ်ႉလႃႇ ဢၢႆႇရိၼ်း", "order": "FAMILY_FIRST", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
@@ -6458,36 +6461,37 @@
 {"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
 {"name": "이서연·김민준", "given": "이서연", "family": "김민준"}
 {"name": "ሙለር ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር", "initials": "ካ. ሙ."}
-{"name": "ሙለር፣ ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር፣", "initials": "ካ. ሙ."}
+{"name": "ሙለር፣ ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር", "initials": "ካ. ሙ."}
 {"name": "ሜሪ ሱ ሃሚሽ ዋትሰን", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}
 {"name": "ሲንባድ", "given": "ሲንባድ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ሲ."}
 {"name": "ሲንባድ", "order": "FAMILY_FIRST", "given": "ሲንባድ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ሲ."}
 {"name": "ስቶበር ዛዚሊያ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር", "initials": "ዛ. ሃ. ስ."}
-{"name": "ስቶበር፣ ዛዚሊያ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር፣", "initials": "ዛ. ሃ. ስ."}
-{"name": "ብሩሂ፣ ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን", "order": "FAMILY_FIRST", "given": "ኣዳ", "middle": "ኮርኒሊያ ሲዘር ማርቲን ቮን", "family": "ብሩሂ፣", "initials": "ኣ. ኮ. ሲ. ማ. ቮ. ብ."}
-{"name": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "order": "FAMILY_FIRST", "given": "ብሩሂ", "middle": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "family": "ቮን", "initials": "ብ. ፕ. ዶ. ኣ. ኮ. ሲ. ማ. ማ. ሓ. መ. ስ. ቮ."}
+{"name": "ስቶበር፣ ዛዚሊያ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር", "initials": "ዛ. ሃ. ስ."}
+{"name": "ብሩሂ፣ ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን", "order": "FAMILY_FIRST", "given": "ኣዳ", "middle": "ኮርኒሊያ ሲዘር ማርቲን ቮን", "family": "ብሩሂ", "initials": "ኣ. ኮ. ሲ. ማ. ቮ. ብ."}
+{"name": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "order": "FAMILY_FIRST", "given": "ሓኪም", "middle": "መጥባሕቲ ስኒ", "family": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ", "initials": "ሓ. መ. ስ. ቮ. ብ. ፕ. ዶ. ኣ. ኮ. ሲ. ማ. ማ."}
 {"name": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "order": "FAMILY_FIRST", "given": "ብሩህል", "middle": "ጎንዛሌዝ ዶሚንጎ ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "family": "ቮን", "initials": "ብ. ጎ. ዶ. ፕ. ዶ. አ. ኮ. ሴ. ማ. ዶ. የ. ዶ. ቮ."}
 {"name": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ, ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "given": "ፕ/ር", "middle": "ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር", "family": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ", "initials": "ፕ. ዶ. አ. ኮ. ሴ. ማ. ዶ. የ. ዶ. ቮ. ብ. ጎ. ዶ."}
+{"name": "አበበ፡ከበደ፡ተሰማ", "given": "አበበ", "middle": "ከበደ", "family": "ተሰማ", "initials": "አ. ከ. ተ."}
 {"name": "አቶ በርትራም ዊልበርፎርስ ሄነሪ ሮበርት ዉስተር የፓርላማ አባል", "given": "አቶ", "middle": "በርትራም ዊልበርፎርስ ሄነሪ ሮበርት ዉስተር የፓርላማ", "family": "አባል", "initials": "አ. በ. ዊ. ሄ. ሮ. ዉ. የ. አ."}
 {"name": "አይሪን አድለር", "given": "አይሪን", "family": "አድለር", "initials": "አ. አ."}
 {"name": "አድለር አይሪን", "order": "FAMILY_FIRST", "given": "አይሪን", "family": "አድለር", "initials": "አ. አ."}
 {"name": "ኣይሪን ኣድለር", "given": "ኣይሪን", "family": "ኣድለር", "initials": "ኣ. ኣ."}
-{"name": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ፣ ኣባል ባይቶ", "given": "ኣይተ", "middle": "በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ፣ ኣባል", "family": "ባይቶ", "initials": "ኣ. በ. ዊ. ሄ. ሮ. ዉ. ማ. ኣ. ባ."}
+{"name": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ፣ ኣባል ባይቶ", "given": "ኣባል", "middle": "ባይቶ", "family": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ", "initials": "ኣ. ባ. ኣ. በ. ዊ. ሄ. ሮ. ዉ. ማ."}
 {"name": "ኣድለር ኣይሪን", "order": "FAMILY_FIRST", "given": "ኣይሪን", "family": "ኣድለር", "initials": "ኣ. ኣ."}
-{"name": "ኣድለር፣ ኣይሪን", "order": "FAMILY_FIRST", "given": "ኣይሪን", "family": "ኣድለር፣", "initials": "ኣ. ኣ."}
+{"name": "ኣድለር፣ ኣይሪን", "order": "FAMILY_FIRST", "given": "ኣይሪን", "family": "ኣድለር", "initials": "ኣ. ኣ."}
 {"name": "ካቲ ሙለር", "given": "ካቲ", "family": "ሙለር", "initials": "ካ. ሙ."}
 {"name": "ዉስተር አቶ በርትራም ዊልበርፎርስ ሄነሪ ሮበርት የፓርላማ አባል", "order": "FAMILY_FIRST", "given": "አቶ", "middle": "በርትራም ዊልበርፎርስ ሄነሪ ሮበርት የፓርላማ አባል", "family": "ዉስተር", "initials": "አ. በ. ዊ. ሄ. ሮ. የ. አ. ዉ."}
-{"name": "ዉስተር ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ፣ ኣባል ባይቶ", "order": "FAMILY_FIRST", "given": "ኣይተ", "middle": "በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ፣ ኣባል ባይቶ", "family": "ዉስተር", "initials": "ኣ. በ. ዊ. ሄ. ሮ. ማ. ኣ. ባ. ዉ."}
-{"name": "ዉስተር፣ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት", "order": "FAMILY_FIRST", "given": "በርትረም", "middle": "ዊልበርፎርስ ሄንሪ ሮበርት", "family": "ዉስተር፣", "initials": "በ. ዊ. ሄ. ሮ. ዉ."}
+{"name": "ዉስተር ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ፣ ኣባል ባይቶ", "order": "FAMILY_FIRST", "given": "ኣባል", "middle": "ባይቶ", "family": "ዉስተር ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ", "initials": "ኣ. ባ. ዉ. ኣ. በ. ዊ. ሄ. ሮ. ማ."}
+{"name": "ዉስተር፣ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት", "order": "FAMILY_FIRST", "given": "በርትረም", "middle": "ዊልበርፎርስ ሄንሪ ሮበርት", "family": "ዉስተር", "initials": "በ. ዊ. ሄ. ሮ. ዉ."}
 {"name": "ዋትሰን ሜሪ ሱ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}
-{"name": "ዋትሰን፣ ሜሪ ሱ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን፣", "initials": "ሜ. ሱ. ሃ. ዋ."}
+{"name": "ዋትሰን፣ ሜሪ ሱ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}
 {"name": "ዘንዳያ", "given": "ዘንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዘ."}
 {"name": "ዘንዳያ", "order": "FAMILY_FIRST", "given": "ዘንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዘ."}
 {"name": "ዛዚሊያ ሃሚሽ ስቶበር", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር", "initials": "ዛ. ሃ. ስ."}
 {"name": "ዜንዳያ", "given": "ዜንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዜ."}
 {"name": "ዜንዳያ", "order": "FAMILY_FIRST", "given": "ዜንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዜ."}
 {"name": "ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ዶ/ር የጥርስ ዶ/ር", "given": "ፕ/ር", "middle": "ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ዶ/ር የጥርስ", "family": "ዶ/ር", "initials": "ፕ. ዶ. አ. ኮ. ሴ. ማ. ቮ. ብ. ጎ. ዶ. ዶ. የ. ዶ."}
-{"name": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "title": "ፕሮ. ዶር.", "given": "ኣዳ", "middle": "ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ", "family": "ስኒ", "initials": "ኣ. ኮ. ሲ. ማ. ቮ. ብ. ማ. ሓ. መ. ስ."}
+{"name": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "given": "ሓኪም", "middle": "መጥባሕቲ ስኒ", "family": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ", "initials": "ሓ. መ. ስ. ፕ. ዶ. ኣ. ኮ. ሲ. ማ. ቮ. ብ. ማ."}
 {"name": "ᎠᏕᎸ ᎠᏪᏁ", "order": "FAMILY_FIRST", "given": "ᎠᏪᏁ", "family": "ᎠᏕᎸ", "initials": "Ꭰ. Ꭰ.", "capitalized": "Ꭰꮥꮈ Ꭰꮺꮑ"}
 {"name": "ᎠᏕᎸ, ᎠᏪᏁ", "given": "ᎠᏪᏁ", "family": "ᎠᏕᎸ", "initials": "Ꭰ. Ꭰ.", "capitalized": "Ꭰꮺꮑ Ꭰꮥꮈ"}
 {"name": "ᎠᏪᏁ ᎠᏕᎸ", "given": "ᎠᏪᏁ", "family": "ᎠᏕᎸ", "initials": "Ꭰ. Ꭰ.", "capitalized": "Ꭰꮺꮑ Ꭰꮥꮈ"}
@@ -6532,6 +6536,8 @@
 {"name": "ស្តូបើ ហ្សាហ្សីលៀ ហេមីស", "order": "FAMILY_FIRST", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ស្តូបើ, ហ្សាហ្សីលៀ ហេមីស", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
+{"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ", "middle": "ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠶ. ᠴ."}
+{"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠴ."}
 {"name": "Ḥabīballāh Kalakānī", "given": "Ḥabīballāh", "family": "Kalakānī", "initials": "Ḥ. K."}
 {"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "family": "al- Ḥakīm", "initials": "T. Ḥ."}
 {"name": "Ḥamza Fanṣūrī", "given": "Ḥamza", "family": "Fanṣūrī", "initials": "Ḥ. F."}

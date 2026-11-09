@@ -330,3 +330,52 @@ def test_halfwidth_nakaguro_separates_too() -> None:
     state = _tokenized(text)
     assert len(state.tokens) == 2
     assert "･" not in "".join(t.text for t in state.tokens)
+
+
+@pytest.mark.parametrize("text, words, commas", [
+    # #1202: the Ethiopic and Burmese commas segment like ',' does,
+    # glued or spaced, and record an offset
+    ("ከበደ፣ አበበ", ["ከበደ", "አበበ"], (3,)),
+    ("ከበደ ፣ አበበ", ["ከበደ", "አበበ"], (4,)),
+    ("မောင်မောင်ခ၊ ဦး", ["မောင်မောင်ခ", "ဦး"], (11,)),
+    # the Ethiopic wordspace divides like the nakaguro (rules/T2) and,
+    # like it, records no offset
+    ("አበበ፡ከበደ፡ተሰማ", ["አበበ", "ከበደ", "ተሰማ"], ()),
+    ("አበበ፡ ከበደ፡ ተሰማ", ["አበበ", "ከበደ", "ተሰማ"], ()),
+])
+def test_ethiopic_and_burmese_separators(text: str, words: list[str],
+                                         commas: tuple[int, ...]) -> None:
+    state = _tokenized(text)
+    assert [t.text for t in state.tokens] == words
+    assert state.comma_offsets == commas
+
+
+_KHORLOO = "ᠬᠣᠷᠯᠤ᠎ᠠ"  # the stem, holding the vowel separator U+180E
+_YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
+
+
+@pytest.mark.parametrize("text, words", [
+    # #1236: between two Mongolian letters U+202F is the suffix
+    # connector and joins the suffix to its stem
+    (f"{_KHORLOO} {_YIN} ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ",
+     [f"{_KHORLOO} {_YIN}", "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
+    ("ᠯᠤᠪᠰᠠᠩᠨᠠᠮᠰᠠᠷᠠᠢ ᠢᠢᠨ ᠣᠶᠤᠨ-ᠡᠷᠳᠡᠨᠢ",
+     ["ᠯᠤᠪᠰᠠᠩᠨᠠᠮᠰᠠᠷᠠᠢ ᠢᠢᠨ", "ᠣᠶᠤᠨ-ᠡᠷᠳᠡᠨᠢ"]),
+    # anywhere else it is the narrow space it is named for: between
+    # Latin letters, beside one Mongolian letter, before French ':',
+    # and at a string's edge
+    ("Jean Dupont", ["Jean", "Dupont"]),
+    ("ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ Smith", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "Smith"]),
+    ("Smith ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", ["Smith", "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
+    ("Jean : Dupont", ["Jean", ":", "Dupont"]),
+    (" ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ ", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
+    # Mongolian punctuation and digits are no letters: the comma U+1802
+    # and the digit one U+1811 beside it leave it a space
+    ("ᠴᠣᠢ᠂ ᠪᠠᠯ", ["ᠴᠣᠢ᠂", "ᠪᠠᠯ"]),
+    ("ᠴᠣᠢ ᠑", ["ᠴᠣᠢ", "᠑"]),
+    # a plain space before the suffix still divides (decisions/T1)
+    (f"{_KHORLOO} {_YIN}", [_KHORLOO, _YIN]),
+])
+def test_narrow_no_break_space_joins_only_between_mongolian_letters(
+        text: str, words: list[str]) -> None:
+    assert [t.text for t in _tokenized(text).tokens] == words

@@ -1,0 +1,14 @@
+# T6 — a narrow no-break space between Mongolian letters joins them
+
+## Standing
+
+- U+202F joins only where both its neighbours are Mongolian-block characters other than the block's punctuation (U+1800–U+180A) and digits (U+1810–U+1819), so letters, the free variation selectors and the vowel separator; beside anything else, a Latin letter or French typography's colon among them, it is whitespace (rules/T1) — 2026-11-08 #1236.
+- A case suffix written after an ordinary space stays a word of its own; joining it needs vocabulary (a list of the suffixes), not tokenization — 2026-11-08 #1236.
+
+Open: whether a name written wholly in Mongolian script reads family-first by default, as rules/W4 reads a wholly-Han one, is a separate question #1236 raised and left open.
+
+## Log
+
+- 2026-11-08 #1236 — U+202F IS THE SUFFIX CONNECTOR BETWEEN MONGOLIAN LETTERS. Traditional Mongolian script writes a case suffix as a separate written unit joined to its stem by U+202F NARROW NO-BREAK SPACE, the use Unicode's Mongolian block description specifies, and a name writes the father's name in the genitive (`ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ`, Khorloo's) before the given name. The tokenizer split there like any whitespace (rules/T1), so under `FAMILY_FIRST`, the order the script writes names in, the suffix became the given name; 1.4.0 split there too. Decided as a script-conditional join, in tokenize beside the interpunct's flank test: decisions/T1 already keeps the Mongolian vowel separator U+180E inside the word because it shapes the letters beside it, and the connector is the same kind of character for the same script, settled by the script and not by a guess about language (root AGENTS.md's scoped exception). The test reads the two characters immediately beside the space, inside the region being tokenized, with no transparency for stripped characters: a mark between a stem and its connector is not a shape the script writes. Measured on Wikidata's native-label property (P1559), 2026-11-08: 111 Mongolian values in this script, 4 joining a genitive suffix with U+202F and 2 writing it after a plain space.
+  - Accepted: `ParsedName.replace()` splits a value at whitespace, so a replacement value holding a joined suffix divides there, as one holding a nakaguro or a zero-width space does (decisions/T1's 2026-10-24 #851 entry).
+  - Declined: joining a suffix written after a plain space (`ᠶ᠋ᠢᠨ`, `ᠦᠨ`, `ᠤᠨ`, `ᠢᠢᠨ`), which needs a vocabulary of the suffixes; 2 of 111 values write it, and nothing asks for the list yet.

@@ -13,7 +13,8 @@ Policy.maiden_delimiters (M1), or the content itself opens with a
 marker word (M3), which reassigns the role after the match and so is
 the one thing here that a bucket alone does not decide.
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
-Lexicon.maiden_markers, and through `_vocab.set_apart_kind` and
+Lexicon.maiden_markers, Lexicon.particles (an apostrophe opening a
+listed particle, rules/N2), and through `_vocab.set_apart_kind` and
 `set_apart` (rules/S1) Lexicon.suffix_words / suffix_words_ambiguous /
 suffix_acronyms / suffix_acronyms_ambiguous / titles /
 title_modifiers / title_styles / given_name_titles /
@@ -36,7 +37,7 @@ from __future__ import annotations
 import bisect
 import functools
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
@@ -118,8 +119,21 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
 # rules/N2: "a quote whose open and close are the same character
 # opens only at a word start and closes only at a word end, so an
 # apostrophe inside or at the end of a word is literal"
-def _open_ok(text: str, i: int) -> bool:
-    return i == 0 or text[i - 1].isspace()
+def _open_ok(text: str, i: int, lexicon: Lexicon) -> bool:
+    return ((i == 0 or text[i - 1].isspace())
+            and not _listed_apostrophe_word(text, i, lexicon))
+
+
+# rules/N2: "An apostrophe opening a word the vocabulary lists as a
+# particle" -- the Except clause: it opens no quote, so Dutch 't
+# reports nothing (decisions/N2, #1241).
+def _listed_apostrophe_word(text: str, i: int, lexicon: Lexicon) -> bool:
+    if text[i] not in WORD_INTERNAL_DELIMITERS:
+        return False
+    k = i + 1
+    while k < len(text) and not (text[k].isspace() or text[k] in COMMA_CHARS):
+        k += 1
+    return _normalize(text[i:k]) in lexicon._sets.particles
 
 
 def _close_ok(text: str, j: int, width: int) -> bool:
@@ -229,7 +243,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             if i != -1 and i < pos:
                 i = text.find(open_, pos)
                 while (i != -1 and open_ == close
-                       and not _open_ok(text, i)):
+                       and not _open_ok(text, i, state.lexicon)):
                     i = text.find(open_, i + 1)
                 cursors[key] = i
             if i != -1 and (best is None or i < best[0]):
@@ -250,7 +264,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             unbalanced.append(_unmatched(open_, i))
             scan = i + len(open_)
             while (k := text.find(open_, scan)) != -1:
-                if open_ != close or _open_ok(text, k):
+                if open_ != close or _open_ok(text, k, state.lexicon):
                     unbalanced.append(_unmatched(open_, k))
                 scan = k + 1
             exhausted.add((role, open_, close))

@@ -257,3 +257,50 @@ def test_unbalanced_delimiter_points_at_its_token(
     # string, which is not an API
     (amb,) = parse(text).ambiguities
     assert [t.text for t in amb.tokens] == [expected]
+
+
+@pytest.mark.parametrize("text", [
+    # #1241: an apostrophe opening a listed particle ('t, nl.toml) is
+    # part of the word, so it opens no quote and reports nothing
+    "Pieter 't Hart", "Pieter van 't Hof", "Hart, Pieter 't",
+    "Gerard 't Hooft", "'t Hooft, Gerard", "Pieter 'T Hart",
+    "Pieter 't, Hart", "Pieter 't. Hart",
+])
+def test_apostrophe_opening_a_listed_particle_reports_nothing(
+        text: str) -> None:
+    assert parse(text).ambiguities == ()
+
+
+@pytest.mark.parametrize("text", [
+    # the cases the check refused before #1241, and still refuses: an
+    # unlisted word ('Bob), a word the particle only begins ('s-, 'tje,
+    # 't-), an unlisted 's, and every one under an empty lexicon
+    "'Bob Smith", "Jan 's Jacob", "Storm van 's-Gravesande",
+    "Pieter 'tje Hart", "Pieter 't-Hart", 'Jon "Nick Smith',
+])
+def test_apostrophe_opening_an_unlisted_word_still_reports(text: str) -> None:
+    kinds = [a.kind for a in parse(text).ambiguities]
+    assert kinds == [AmbiguityKind.UNBALANCED_DELIMITER]
+
+
+def test_listed_particle_check_reads_the_parses_lexicon() -> None:
+    # the vocabulary decides, not the shape: without 't listed the
+    # word-initial apostrophe opens a candidate quote as before
+    out = extract_delimited(_state("Pieter 't Hart"))
+    assert [a.kind for a in out.ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
+
+
+@pytest.mark.parametrize("text, nickname", [
+    # with the particle's apostrophe no open, a quote after it pairs
+    # with its own close (1.4.0's reading) instead of opening at 't
+    ("Jan van 't Hof 'Jantje'", "Jantje"),
+    ("Pieter 'Piet' van 't Hof", "Piet"),
+    # accepted: a quote that does open at 't is no longer read as one
+    ("Pieter 't Hart' Smith", ""),
+])
+def test_quote_beside_a_listed_apostrophe_particle(text: str,
+                                                   nickname: str) -> None:
+    name = parse(text)
+    assert name.nickname == nickname
+    assert name.ambiguities == ()
