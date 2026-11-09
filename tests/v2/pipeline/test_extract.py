@@ -298,6 +298,9 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
     "Aaron 'T-Bone'. Walker", "Aaron 'T-Bone'; Walker",
     "Arent van 's-Gravesande d'Ancona", "Maria 's-Gravesande O'Neill",
     "Gerard 't Hooft d'Hondt",
+    # in another delimiter's clause too: the nickname is read, and the
+    # report comes back as in 3.0.1
+    'Jan \'t Hart "Jan\'s"',
     # after any non-space, a bracket included
     "Jan 's-Gravesande ('Jantje')",
 ])
@@ -324,6 +327,14 @@ def test_curly_apostrophe_particle_under_a_curly_quote(text: str,
     name = Parser(policy=_CURLY).parse(text)
     assert name.nickname == nickname
     assert name.ambiguities == ()
+
+
+def test_curly_particle_before_a_curly_possible_close_still_reports() -> None:
+    # the curly twin takes the same possible-close test: a later curly
+    # apostrophe inside a word is one (decisions/N2's accepted class)
+    name = Parser(policy=_CURLY).parse("Jan \u2019t Hart O\u2019Neill")
+    assert [a.kind for a in name.ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
 
 
 def test_listed_particle_check_reads_the_parses_lexicon() -> None:
