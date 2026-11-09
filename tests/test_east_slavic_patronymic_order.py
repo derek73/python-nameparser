@@ -129,6 +129,18 @@ class PatronymicNameOrderReorderTests(FlaggedPolicyTestBase):
         assert n.middle == "Abramovich"
         assert n.family == "David"
 
+    @pytest.mark.parametrize(("text", "given", "middle", "family"), [
+        # T5: a bare Cyrillic capital is a name word, so O1 rotates
+        ("Ирина Б Зубкевич", "Б", "Зубкевич", "Ирина"),
+        # P8's connective in a one-case name: both spellings rotate
+        ("ivan y petrovich", "y", "petrovich", "ivan"),
+        ("IVAN Y PETROVICH", "Y", "PETROVICH", "IVAN"),
+    ])
+    def test_what_is_no_initial_still_rotates(
+            self, text: str, given: str, middle: str, family: str) -> None:
+        n = self.hn(text)
+        assert (n.given, n.middle, n.family) == (given, middle, family)
+
 
 class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
     """Names that must NOT be reordered even when the flag is on."""
@@ -137,7 +149,7 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
 
     # O1 yields to an initial in the first or the middle place, read by
     # T5 and T4 (#1185, #1217's rows among them): (input, given, middle, family),
-    # each the default reading save the last two
+    # each the default reading
     @pytest.mark.parametrize(("text", "given", "middle", "family"), [
         ("И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
         ("Ирина Б. Зубкевич", "Ирина", "Б.", "Зубкевич"),
@@ -148,18 +160,15 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         ("Леонід С. Григорович", "Леонід", "С.", "Григорович"),
         ("Dr. И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
         ("И. Борис Зубкевич", "И.", "Борис", "Зубкевич"),
-        # unchanged by the Except
+        # unchanged by the precedence
         ("И.Б. Зубкевич", "И.Б.", "", "Зубкевич"),
         ("Роман Аркадьевич Абрамович", "Роман", "Аркадьевич", "Абрамович"),
         ("И. Петрович Сидоров", "И.", "Петрович", "Сидоров"),
-        # T4: a one-case name's lower-case letter is an initial, and its
-        # capital one too where it is also a connective
+        # T4: a one-case name's lower-case letter is an initial
         ("roman a abramovich", "roman", "a", "abramovich"),
         ("i b akulovich", "i", "b", "akulovich"),
         ("ROMAN A ABRAMOVICH", "ROMAN", "A", "ABRAMOVICH"),
         ("Roman A Abramovich", "Roman", "A", "Abramovich"),
-        # T5: a bare Cyrillic capital is a name word, so O1 rotates
-        ("Ирина Б Зубкевич", "Б", "Зубкевич", "Ирина"),
         # the Accepted cost: one shape with 'Ирина Б. Зубкевич'
         ("Сидоров И. Петрович", "Сидоров", "И.", "Петрович"),
     ])

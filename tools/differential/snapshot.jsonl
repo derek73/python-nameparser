@@ -4366,6 +4366,7 @@
 {"name": "ibn Ali Hasan", "family": "ibn Ali Hasan", "initials": "A. H.", "patronymic": "ibn Ali Hasan"}
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R.", "capitalized_force": "ibn Awf Abdul Rahman", "patronymic": "ibn Awf abdul Rahman"}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n.", "capitalized": "Ina binti Navalamar", "patronymic": "binti navalamar"}
+{"name": "ivan y petrovich", "given": "ivan", "middle": "y", "family": "petrovich", "initials": "i. y. p.", "capitalized": "Ivan y Petrovich"}
 {"name": "j", "given": "j", "initials": "j.", "capitalized": "J"}
 {"name": "j nee Smith", "given": "j", "maiden": "Smith", "initials": "j.", "capitalized_force": "J (Smith)"}
 {"name": "j nee smith", "given": "j", "maiden": "smith", "initials": "j.", "capitalized": "J (Smith)"}
