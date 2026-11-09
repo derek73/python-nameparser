@@ -18297,4 +18297,18 @@ CASES: tuple[Case, ...] = (
          {"given": "Pieter", "family": "'t Hart"},
          notes="the reading was right before #1241; only "
                "its unbalanced-delimiter report goes"),
+    Case("dutch_s_particle_joins_the_surname",
+         "Willem Jacob 's Gravesande",
+         {"given": "Willem", "middle": "Jacob",
+          "family": "'s Gravesande"},
+         notes="'s (des) is listed beside 't (nl.toml), so it chains "
+               "into the surname and opens no quote; 1.4.0 through "
+               "3.0.1 read middle \"Jacob 's\", family 'Gravesande', "
+               "the later releases reporting an unbalanced delimiter"),
+    Case("dutch_s_particle_hyphened_reports_nothing",
+         "Arent van 's-Gravesande",
+         {"given": "Arent", "family": "van 's-Gravesande"},
+         notes="the reading is 1.4.0's; a listed particle hyphened to "
+               "its surname opens no quote, so the unbalanced-delimiter "
+               "report 2.0.0 through 3.0.1 gave goes"),
 )

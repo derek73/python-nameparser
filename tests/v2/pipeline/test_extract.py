@@ -269,6 +269,11 @@ def test_unbalanced_delimiter_points_at_its_token(
     # nakaguro, the Ethiopic wordspace, a stripped bidi mark or emoji
     "Pieter 't\u200bHart", "Pieter 't\u30fbHart", "Pieter 't\u1361Hart",
     "Pieter 't\u200f Hart", "Pieter 't\U0001F600 Hart",
+    # 's (des) is listed too, spaced and hyphened to its surname, and a
+    # listed particle hyphened to a word opens no quote either
+    "Jan 's Jacob", "Willem Jacob 's Gravesande", "'s Gravesande, Willem",
+    "Storm van 's-Gravesande", "G.H. 's-Gravesande", "Pieter 't-Hart",
+    "'s-Gravesande, Arent",
 ])
 def test_apostrophe_opening_a_listed_particle_reports_nothing(
         text: str) -> None:
@@ -277,11 +282,13 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
 
 @pytest.mark.parametrize("text", [
     # the cases the check refused before #1241, and still refuses: an
-    # unlisted word ('Bob), the unlisted 's (alone and as 's-), a word
-    # the listed 't only begins ('tje, 't-), and a double quote; the
-    # empty-lexicon case is the test below
-    "'Bob Smith", "Jan 's Jacob", "Storm van 's-Gravesande",
-    "Pieter 'tje Hart", "Pieter 't-Hart", 'Jon "Nick Smith',
+    # unlisted word ('Bob, 'x), a word the listed 't only begins ('tje),
+    # an unlisted word before a hyphen ('tje-, 'x-), and a double
+    # quote; the empty-lexicon case is the test below. Jan 's Jacob,
+    # Storm van 's-Gravesande and Pieter 't-Hart stood here until 's
+    # was listed and a hyphen ended the particle (decisions/N2)
+    "'Bob Smith", "Pieter 'x Hart", "Pieter 'tje Hart",
+    "Pieter 'tje-Hart", "Pieter 'x-Hart", 'Jon "Nick Smith',
 ])
 def test_apostrophe_opening_an_unlisted_word_still_reports(text: str) -> None:
     kinds = [a.kind for a in parse(text).ambiguities]
@@ -297,6 +304,8 @@ _CURLY = Policy(nickname_delimiters=frozenset(
     # curly apostrophe gets the same reading (the family guard)
     ("Pieter \u2019t Hart", ""),
     ("Jan van \u2019t Hof \u2019Jantje\u2019", "Jantje"),
+    ("Willem \u2019s Gravesande", ""),
+    ("Arent van \u2019s-Gravesande", ""),
 ])
 def test_curly_apostrophe_particle_under_a_curly_quote(text: str,
                                                        nickname: str) -> None:
@@ -318,8 +327,15 @@ def test_listed_particle_check_reads_the_parses_lexicon() -> None:
     # with its own close (1.4.0's reading) instead of opening at 't
     ("Jan van 't Hof 'Jantje'", "Jantje"),
     ("Pieter 'Piet' van 't Hof", "Piet"),
-    # accepted: a quote that does open at 't is no longer read as one
+    # a quoted word closes itself, so a listed particle hyphened inside
+    # it still opens: the nickname is kept ('T-Bone'), and a quoted 's
+    # is no particle at all
+    ("Aaron 'T-Bone' Walker", "T-Bone"),
+    ("Bob 's' Smith", "s"),
+    # accepted: a quote that does open at 't is no longer read as one,
+    # nor an unclosed one at 'T- (decisions/N2)
     ("Pieter 't Hart' Smith", ""),
+    ("Aaron 'T-Bone Walker", ""),
 ])
 def test_quote_beside_a_listed_apostrophe_particle(text: str,
                                                    nickname: str) -> None:

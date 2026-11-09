@@ -23,12 +23,21 @@
   ```
   "Jan van 't Hof 'Jantje'"  →  nickname="Jantje"
   ```
+- **An apostrophe opening a listed particle hyphened to the name after it** opens none either, unless the word ends with the same apostrophe, as a quoted word does.
+  ```
+  "Arent van 's-Gravesande"  →  family="van 's-Gravesande"
+  "Aaron 'T-Bone' Walker"    →  nickname="T-Bone"
+  ```
 
 **Accepted:**
 
 - A quote that does open at such a word is read as the word, its close staying in the word it ends.
   ```
   "Pieter 't Hart' Smith"  →  family="'t Hart' Smith"
+  ```
+- An unclosed quote opening at a listed particle hyphened to a word is read as the word, with no report.
+  ```
+  "Aaron 'T-Bone Walker"  →  middle="'T-Bone"
   ```
 
 ---

@@ -71,6 +71,8 @@
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
+{"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W."}
+{"name": "Aaron 'T-Bone' Walker", "given": "Aaron", "family": "Walker", "nickname": "T-Bone", "initials": "A. W."}
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
@@ -346,6 +348,7 @@
 {"name": "Arenas Betancourt, Rodrigo", "given": "Rodrigo", "family": "Arenas Betancourt", "initials": "R. A. B."}
 {"name": "Arenberg, Auguste Marie Raymond d'", "given": "Auguste", "middle": "Marie Raymond", "family": "d' Arenberg", "initials": "A. M. R. A."}
 {"name": "Arend, Arie den", "given": "Arie", "family": "den Arend", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. A."}
+{"name": "Arent van 's-Gravesande", "given": "Arent", "family": "van 's-Gravesande", "initials": "A. '.", "capitalized_force": "Arent van 'S-Gravesande"}
 {"name": "Arie den Arend", "given": "Arie", "family": "den Arend", "initials": "A. A."}
 {"name": "Armando Domínguez Borrás", "given": "Armando", "middle": "Domínguez", "family": "Borrás", "initials": "A. D. B."}
 {"name": "Armando de Lacerda", "given": "Armando", "family": "de Lacerda", "initials": "A. L."}

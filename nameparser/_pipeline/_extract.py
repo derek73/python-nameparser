@@ -149,7 +149,16 @@ def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
         if ch in COMMA_CHARS or _ignorable(ch, state):
             break
         k += 1
-    return _normalize(text[i:k]) in state.lexicon._sets.particles
+    word = text[i:k]
+    particles = state.lexicon._sets.particles
+    if _normalize(word) in particles:
+        return True
+    # a particle hyphened to its surname ('s-Gravesande) opens none
+    # either, unless the word closes itself as a quoted word does:
+    # 'T-Bone' keeps its nickname (decisions/N2)
+    head, hyphen, _ = word.partition("-")
+    return (bool(hyphen) and not word.endswith(text[i])
+            and _normalize(head) in particles)
 
 
 def _close_ok(text: str, j: int, width: int) -> bool:
