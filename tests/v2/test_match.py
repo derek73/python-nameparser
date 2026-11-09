@@ -921,6 +921,8 @@ def test_a_listed_spelling_holds_whatever_the_accents(
 @pytest.mark.parametrize("a, b", [
     ("Jo. Garcia", "José Garcia"), ("Ma. Santos", "María Santos"),
     ("Jas. Singh", "James Singh"),
+    # every full stop the vocabulary strips marks the period (#322)
+    ("Jo\uff0e Garcia", "José Garcia"), ("Ma\uff61 Santos", "María Santos"),
     # a spelling of a word that is no name of its own needs no period
     ("Wm Smith", "William Smith"), ("Wm. Smith", "William Smith"),
     ("WM SMITH", "WILLIAM SMITH"),
