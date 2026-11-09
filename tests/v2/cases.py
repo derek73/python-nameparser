@@ -17835,7 +17835,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Jan", "family": "van 't Hof", "nickname": "Jantje"},
          notes="'t is listed (nl.toml), so its apostrophe "
                "opens no quote and the nickname pairs with its own "
-               "close; master read nickname \"t Hof 'Jantje\" (#1241)"),
+               "close; 2.0.0 through 3.0.1 read nickname \"t Hof 'Jantje\" (#1241)"),
     Case("apostrophe_particle_reports_nothing", "Pieter 't Hart",
          {"given": "Pieter", "family": "'t Hart"},
          notes="the reading was right before #1241; only "

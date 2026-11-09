@@ -372,7 +372,7 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
     # a Mongolian digit is no letter: the digit one U+1811 beside it
     # leaves it a space
     ("ᠴᠣᠢ ᠑", ["ᠴᠣᠢ", "᠑"]),
-    # a plain space before the suffix still divides (decisions/T1)
+    # a plain space before the suffix still divides (T6's Accepted)
     (f"{_KHORLOO} {_YIN}", [_KHORLOO, _YIN]),
 ])
 def test_narrow_no_break_space_joins_only_between_mongolian_letters(

@@ -277,8 +277,9 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
 
 @pytest.mark.parametrize("text", [
     # the cases the check refused before #1241, and still refuses: an
-    # unlisted word ('Bob), a word the particle only begins ('s-, 'tje,
-    # 't-), an unlisted 's, and every one under an empty lexicon
+    # unlisted word ('Bob), the unlisted 's (alone and as 's-), a word
+    # the listed 't only begins ('tje, 't-), and a double quote; the
+    # empty-lexicon case is the test below
     "'Bob Smith", "Jan 's Jacob", "Storm van 's-Gravesande",
     "Pieter 'tje Hart", "Pieter 't-Hart", 'Jon "Nick Smith',
 ])

@@ -12,6 +12,10 @@ Implements rules T1, T2, T3 and T6 of docs/design/rules/, cited at
 their code below. There is NO text-rewriting normalize stage: all
 four are character-classification rules, so spans always index the
 original exactly as given (v1 contrast: decisions/T1).
+
+Beside the stage function, `_ignorable` is shared: extract asks it
+where a listed particle's word ends (rules/N2, #1241), so the two
+stages cannot disagree about which characters separate a word.
 """
 from __future__ import annotations
 
@@ -70,8 +74,9 @@ _INTERPUNCT = "\u00B7"
 
 def _mongolian_letter(ch: str) -> bool:
     """A character of the Mongolian block that is not its punctuation
-    (U+1800-U+180A) or a digit: a letter, a free variation selector or
-    the vowel separator, each of which stands inside a written word."""
+    (U+1800-U+180A) or a digit (U+1810-U+1819): its letters, free
+    variation selectors and vowel separator, each of which stands
+    inside a written word, and the block's unassigned codepoints."""
     cp = ord(ch)
     return (_MONGOLIAN_BLOCK[0] <= cp <= _MONGOLIAN_BLOCK[1]
             and not 0x1800 <= cp <= 0x180A and not 0x1810 <= cp <= 0x1819)

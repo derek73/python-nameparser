@@ -14,7 +14,9 @@ marker word (M3), which reassigns the role after the match and so is
 the one thing here that a bucket alone does not decide.
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
 Lexicon.maiden_markers, Lexicon.particles (an apostrophe opening a
-listed particle, rules/N2), and through `_vocab.set_apart_kind` and
+listed particle, rules/N2), Policy.strip_emoji and Policy.strip_bidi
+(through `_tokenize._ignorable`, where that particle's word ends), and
+through `_vocab.set_apart_kind` and
 `set_apart` (rules/S1) Lexicon.suffix_words / suffix_words_ambiguous /
 suffix_acronyms / suffix_acronyms_ambiguous / titles /
 title_modifiers / title_styles / given_name_titles /
@@ -128,12 +130,22 @@ def _open_ok(text: str, i: int, state: ParseState) -> bool:
 # rules/N2: "An apostrophe opening a word the vocabulary lists as a
 # particle" -- the Except clause: it opens no quote, so Dutch 't
 # reports nothing (decisions/N2, #1241). Asked of any same-character
-# open, the curly ’t being listed too; the word ends where tokenize
-# would end it, by its own predicate.
+# open, the curly ’t being listed too. The word ends at a comma or a
+# character tokenize's _ignorable separates at. A delimited region's
+# edge is not asked, so 'Pieter \'t(Bob) Hart' still reports, a shape
+# no measured name writes; nor is T6's join, no particle holding U+202F.
 def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
     k = i + 1
-    while k < len(text) and not (text[k] in COMMA_CHARS
-                                 or _ignorable(text[k], state)):
+    while k < len(text):
+        ch = text[k]
+        # the narrower question inline: an ASCII character other than
+        # whitespace and the comma never ends the word, so a quoted
+        # nickname pays no frame per letter (_ignorable's own fast path)
+        if ch.isascii() and not ch.isspace() and ch != ",":
+            k += 1
+            continue
+        if ch in COMMA_CHARS or _ignorable(ch, state):
+            break
         k += 1
     return _normalize(text[i:k]) in state.lexicon._sets.particles
 
