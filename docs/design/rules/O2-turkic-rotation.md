@@ -11,6 +11,7 @@
 ```
 "Ali Ahmad Vali oglu"  [tr_az]  →  family="Ali"
 "Ali Ahmad Vali oglu Jr."  [tr_az]  →  family="Ali"
+"Sa'dullayev Alisher Zafar o‘g‘li"  [tr_az]  →  family="Sa'dullayev"
 ```
 
 **Accepted:**

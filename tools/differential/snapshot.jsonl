@@ -3423,6 +3423,7 @@
 {"name": "Rokas", "given": "Rokas", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
 {"name": "Rokas", "order": "FAMILY_FIRST", "given": "Rokas", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
 {"name": "Rolf Dietrich", "given": "Rolf", "family": "Dietrich", "initials": "R. D."}
+{"name": "Roman A. Abramovich", "given": "Roman", "middle": "A.", "family": "Abramovich", "initials": "R. A. A."}
 {"name": "Román García Rodrigo", "given": "Román", "middle": "García", "family": "Rodrigo", "initials": "R. G. R."}
 {"name": "Ronald Macdonald", "given": "Ronald", "family": "Macdonald", "initials": "R. M.", "capitalized_force": "Ronald MacDonald"}
 {"name": "Roque González Garza", "given": "Roque", "middle": "González", "family": "Garza", "initials": "R. G. G."}
@@ -3469,6 +3470,7 @@
 {"name": "SMITH, VD DE LA MA", "family": "SMITH VD DE LA MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. M.", "capitalized": "Smith vd de la Ma"}
 {"name": "SMITH, VD MA", "family": "SMITH VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. M.", "capitalized": "Smith vd Ma"}
 {"name": "STEVEN HARDMAN, MD, DO, DDS", "given": "STEVEN", "family": "HARDMAN", "suffix": "MD, DO, DDS", "ambiguities": ["COMMA_STRUCTURE"], "initials": "S. H.", "capitalized": "Steven Hardman, MD, DO, DDS"}
+{"name": "Sa'dullayev Alisher Zafar o‘g‘li", "given": "Sa'dullayev", "middle": "Alisher Zafar", "family": "o‘g‘li", "initials": "S. A. Z. o.", "capitalized_force": "Sa'Dullayev Alisher Zafar O‘G‘Li"}
 {"name": "Saad, Habib Pacha es-", "given": "Habib", "middle": "Pacha", "family": "es- Saad", "initials": "H. P. S."}
 {"name": "Saar Samira Ahmet", "order": "FAMILY_FIRST", "given": "Samira", "middle": "Ahmet", "family": "Saar", "initials": "S. A. S."}
 {"name": "Sahagún, Bernardino de", "given": "Bernardino", "family": "de Sahagún", "initials": "B. S."}
@@ -4368,6 +4370,7 @@
 {"name": "ibn Ali Hasan", "family": "ibn Ali Hasan", "initials": "A. H.", "patronymic": "ibn Ali Hasan"}
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R.", "capitalized_force": "ibn Awf Abdul Rahman", "patronymic": "ibn Awf abdul Rahman"}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n.", "capitalized": "Ina binti Navalamar", "patronymic": "binti navalamar"}
+{"name": "ivan y petrovich", "given": "ivan", "middle": "y", "family": "petrovich", "initials": "i. y. p.", "capitalized": "Ivan y Petrovich"}
 {"name": "j", "given": "j", "initials": "j.", "capitalized": "J"}
 {"name": "j nee Smith", "given": "j", "maiden": "Smith", "initials": "j.", "capitalized_force": "J (Smith)"}
 {"name": "j nee smith", "given": "j", "maiden": "smith", "initials": "j.", "capitalized": "J (Smith)"}
@@ -4505,6 +4508,7 @@
 {"name": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Ada", "middle": "Kornelija Eva Sofija", "family": "von Vilkas Jankauskas-Baranauskas", "initials": "A. K. E. S. V. J.", "capitalized_force": "Prof. Dr. Ada Kornelija Eva Sofija von Vilkas Jankauskas-Baranauskas"}
 {"name": "professori Ana Christina Lëja von Wright González Domingo, MD DDS", "given": "professori", "middle": "Ana Christina Lëja", "family": "von Wright González Domingo", "suffix": "MD DDS", "initials": "p. A. C. L. W. G. D.", "capitalized_force": "Professori Ana Christina Lëja von Wright González Domingo, MD DDS"}
 {"name": "qc mp", "given": "qc", "suffix": "mp", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "q.", "capitalized": "Qc MP"}
+{"name": "roman a abramovich", "given": "roman", "middle": "a", "family": "abramovich", "initials": "r. a. a.", "capitalized": "Roman A Abramovich"}
 {"name": "salem, abdul", "given": "abdul", "family": "salem", "initials": "a. s.", "capitalized": "Abdul Salem"}
 {"name": "salem, abdul salam", "given": "abdul salam", "family": "salem", "initials": "a. s. s.", "capitalized": "Abdul Salam Salem"}
 {"name": "salem, abdul salam ahmed", "given": "abdul salam", "middle": "ahmed", "family": "salem", "initials": "a. s. a. s.", "capitalized": "Abdul Salam Ahmed Salem"}
@@ -4991,6 +4995,7 @@
 {"name": "Зендая", "given": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "З."}
 {"name": "Зендая", "order": "FAMILY_FIRST", "given": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "З."}
 {"name": "Зорин, Михаил Петрович", "given": "Михаил", "middle": "Петрович", "family": "Зорин", "initials": "М. П. З."}
+{"name": "И. Б. Зубкевич", "given": "И.", "middle": "Б.", "family": "Зубкевич", "initials": "И. Б. З."}
 {"name": "Иван", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}
 {"name": "Иван", "order": "FAMILY_FIRST", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}
 {"name": "Иван Александрович Гончаров", "given": "Иван", "middle": "Александрович", "family": "Гончаров", "initials": "И. А. Г."}
@@ -5018,6 +5023,8 @@
 {"name": "Ирена Марковић", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Ирене Адлер", "given": "Ирене", "family": "Адлер", "initials": "И. А."}
 {"name": "Ирина Амосова", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
+{"name": "Ирина Б Зубкевич", "given": "Ирина", "middle": "Б", "family": "Зубкевич", "initials": "И. Б. З."}
+{"name": "Ирина Б. Зубкевич", "given": "Ирина", "middle": "Б.", "family": "Зубкевич", "initials": "И. Б. З."}
 {"name": "Ирина Яҡупова", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
 {"name": "Йордан Мутафчиев", "given": "Йордан", "family": "Мутафчиев", "initials": "Й. М."}
 {"name": "Кавалёў Мікалай Аляксандр", "order": "FAMILY_FIRST", "given": "Мікалай", "middle": "Аляксандр", "family": "Кавалёў", "initials": "М. А. К."}
@@ -5224,6 +5231,7 @@
 {"name": "Сергей Михайлович Эйзенштейн", "given": "Сергей", "middle": "Михайлович", "family": "Эйзенштейн", "initials": "С. М. Э."}
 {"name": "Середа Григорій Кузьмич", "order": "FAMILY_FIRST", "given": "Григорій", "middle": "Кузьмич", "family": "Середа", "initials": "Г. К. С."}
 {"name": "Сесилия Штобер", "given": "Сесилия", "family": "Штобер", "initials": "С. Ш."}
+{"name": "Сидоров И. Петрович", "given": "Сидоров", "middle": "И.", "family": "Петрович", "initials": "С. И. П."}
 {"name": "Сидоров Иван Петрович", "given": "Сидоров", "middle": "Иван", "family": "Петрович", "initials": "С. И. П."}
 {"name": "Симона Пейчева", "given": "Симона", "family": "Пейчева", "initials": "С. П."}
 {"name": "Синбад", "given": "Синбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
