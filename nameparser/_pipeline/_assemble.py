@@ -21,9 +21,10 @@ three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
 policy folds a middle; Policy.name_order, for ParsedName.order where
 no positional read happened; Policy.patronymic_rules, for the words
-an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms and
-suffix_acronyms_ambiguous, for the source of a token's reading where
-no tag gives it; and the Lexicon's readings by word (Lexicon._files),
+an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms,
+suffix_acronyms_ambiguous and given_name_abbreviations (the last
+through _vocab.is_title_shaped), for the source of a token's reading
+where no tag gives it; and the Lexicon's readings by word (Lexicon._files),
 for Reading.languages, the files whose reading is on in it, with
 every vocabulary field (`_lexicon._VOCAB_FIELDS`, `_listed_whole`)
 for whether the lexicon lists a word whole rather than by its parts.
@@ -59,7 +60,7 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, has_patronymic_ending, is_patronymic_marker,
+    has_patronymic_ending, is_patronymic_marker, is_title_shaped,
     name_source, suffix_kind,
 )
 from nameparser._policy import PatronymicRule
@@ -579,8 +580,14 @@ def assemble(state: ParseState) -> ParsedName:
                                     ReadingSource.VOCABULARY)
                 elif not tags.isdisjoint(_TITLE_TAGS):
                     kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
-                elif _PERIOD_ABBREV.match(t.text):
-                    # rules/H2's shape: an unlisted abbreviation
+                elif is_title_shaped(t.text, state.lexicon):
+                    # rules/H2: "an abbreviation the vocabulary reads as
+                    # a given name written short", "word in one of the
+                    # ten Brahmic scripts from Devanagari to Sinhala" and
+                    # "has no period abbreviations either" -- H2's shape,
+                    # asked through its own predicate; a word it refuses
+                    # is a title only by where it stands (decisions/A1,
+                    # 2026-11-09)
                     kind, source = ReadingKind.TITLE, ReadingSource.SHAPE
                 else:
                     # a title phrase's connective object ('of
