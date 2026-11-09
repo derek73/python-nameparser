@@ -1248,6 +1248,8 @@ def test_union_refuses_two_different_choices_naming_parser_for(
     ({"_languages": {"mul"}}, ValueError, "not a language to choose"),
     # a file holding no reading is a strict choice only, as at parser_for
     ({"_languages": {"hu"}}, ValueError, "strict=True"),
+    ({"_languages": {"mt"}}, ValueError, "strict=True"),
+    ({"_languages": {"sq"}}, ValueError, "strict=True"),
 ])
 def test_the_choice_is_validated_as_parser_for_validates_one(
         kwargs: dict[str, object], error: type[Exception], match: str) -> None:
@@ -1717,7 +1719,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES",
-        "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED"}
+        "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips

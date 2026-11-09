@@ -8,7 +8,8 @@ Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 `DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headwords`, each role in the group of its kind
-(`_GROUP`), and for `Lexicon.particles`, a hyphen half
+(`_GROUP`), for the familiar forms (`short_for`) through
+`Lexicon._familiar_forms`, and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
 name's other readings (`Matching.other_readings`); no `Policy` field.
 
@@ -22,13 +23,12 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import unicodedata
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from nameparser._lexicon import FULL_STOPS, _normalize
+from nameparser._lexicon import FULL_STOPS, _fold, _normalize
 from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
@@ -48,9 +48,10 @@ if TYPE_CHECKING:
 class Outcome(StrEnum):
     """How one role of one name compares with the same role of another,
     listed in the order `check` ranks them, strongest first. `strength`
-    is that rank as a number, larger for a stronger outcome and lowest
-    for `conflict`; rank outcomes by it, since `<` on an Outcome
-    compares the names as strings (`folded` sorts before `same`).
+    is that rank as an ordinal, larger for a stronger outcome and 0 for
+    `conflict`; compare outcomes by it, since `<` on an Outcome
+    compares the names as strings (`folded` sorts before `same`), but
+    never store one: the values change when an outcome is added.
     `conflict` is the one outcome that is never accepted. The search
     for each side's other readings is not an outcome but a switch,
     `Matching.other_readings`, and the reading used is named in
@@ -66,6 +67,7 @@ class Outcome(StrEnum):
     ONE_SIDE = "one-side"
     GENERATION_ONE_SIDE = "generation-one-side"
     NOTED = "noted"
+    FAMILIAR_FORM = "familiar-form"
     FAMILY_INITIAL = "family-initial"
     GIVEN_ONE_SIDE = "given-one-side"
     HYPHENATED_PART = "hyphenated-part"
@@ -74,9 +76,10 @@ class Outcome(StrEnum):
 
     @property
     def strength(self) -> int:
-        """The outcome's rank as a number: `conflict` is 0, and each
-        outcome declared before another is stronger than it, `same`
-        the strongest."""
+        """The outcome's rank as an ordinal to compare outcomes by:
+        `conflict` is 0, and each outcome declared before another is
+        stronger than it, `same` the strongest. The values change when
+        an outcome is added, so compare them, never store one."""
         return _STRENGTH[self]
 
 
@@ -369,7 +372,11 @@ class Matching:
         given name by the first letter of every word in its set among
         given names, where a word that is a name of its own as well
         (`jo`) contributes only itself unless written with its trailing
-        period, the one spelling set the check reads (`_spellings`).
+        period, the one spelling set the check reads (`_spellings`),
+        and where `familiar-form` is accepted also by the first letter
+        of every name a word of that set is paired with directly as a
+        familiar form, in either direction (`Bill` and `William` each
+        key both `b` and `w`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -378,6 +385,7 @@ class Matching:
         has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
+        `familiar-form` the given letters of the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
@@ -400,7 +408,8 @@ class Matching:
         ambiguity whose other reading it is, `None` for a name as
         parsed."""
         lexicon = self.parser.lexicon
-        roles = [_compare_role(role, left, right, lexicon) for role in Role]
+        roles = [_compare_role(role, left, right, lexicon, self.accept)
+                 for role in Role]
         across: list[CrossRoleMatch] = []
         if Outcome.ACROSS_ROLES in self.accept:
             middles = [left.middle.split(), right.middle.split()]
@@ -426,7 +435,7 @@ class Matching:
                     del middles[0 if cross.left_role is Role.MIDDLE
                                 else 1][index]
                     la, lb = (" ".join(words) for words in middles)
-                    outcome = _middle_outcome(la, lb, lexicon)
+                    outcome = _middle_outcome(la, lb, lexicon, self.accept)
                     roles[_MIDDLE] = dataclasses.replace(
                         roles[_MIDDLE], outcome=outcome,
                         more=(Side.NEITHER if outcome is Outcome.CONFLICT
@@ -518,6 +527,12 @@ class Matching:
         given = parsed.given.split()
         initials = ({g[:1] for g in _spelling_keys(given[0], "given", lexicon)}
                     if given else {""})
+        if given and Outcome.FAMILIAR_FORM in self.accept:
+            # every name the check pairs with it as a familiar form,
+            # either way (`_familiar`), so `Bill` and `William` share
+            # each other's keys
+            initials |= {g[:1] for g in _paired_forms(
+                _spellings(given[0], "given", lexicon), lexicon)} - {""}
         if across:
             # the texts the check matches against a given name, each
             # refused as it refuses them: a cross-role match is never
@@ -546,11 +561,6 @@ class Matching:
 
 # -- the check -------------------------------------------------------------
 
-#: Full stops and apostrophes: the typed one, the typographic U+2019
-#: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`.
-_DROPPED = str.maketrans("", "", ".'\u2019\u02bc")
-#: The scripts whose combining marks `_fold` drops as accents.
-_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 _WORDS = re.compile(r"[\s-]+")
 #: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
 #: single character in one of them is a whole word, never an initial.
@@ -600,44 +610,6 @@ def _cross_texts(name: ParsedName, role: Role) -> list[str]:
     text: str = getattr(name, role)
     return [text] if text else []
 
-
-
-def _fold(text: str) -> str:
-    """The text with case, accents, full stops and apostrophes folded
-    away: NFC, `.` and the apostrophes `'`, U+2019 and U+02BC removed,
-    NFD, casefolded, then NFC again, so the folded text, and every key
-    cut from it, is precomposed (a Hangul syllable, never a conjoining
-    jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped
-    only where the letter it attaches to is Latin, Greek or Cyrillic,
-    where it is an accent; in another script (a Devanagari virama,
-    anusvara or vowel sign) it is spelling and is kept. A letter counts
-    as in those scripts where it or its casefolded form is, so a letter
-    that casefolds into one (the micro sign U+00B5 into Greek mu, U+2183
-    into Latin) loses its mark on the first fold, which keeps the fold
-    idempotent; so does removing the full stops and apostrophes before
-    the marks are read, a mark after one then attaching to the letter
-    before it, and again after casefolding, which can write one (U+0149
-    `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
-    other, so `ᾳ` folds to `α`."""
-    if text.isascii():
-        # no accent, no composition, and no apostrophe but the typed one
-        return text.casefold().translate(_DROPPED)
-    decomposed = unicodedata.normalize(
-        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
-    kept = []
-    accented = False
-    for c in decomposed:
-        if unicodedata.category(c) == "Mn":
-            if accented:
-                continue
-        else:
-            accented = (unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
-                        or unicodedata.name(c.casefold()[:1] or c, "")
-                        .startswith(_ACCENTED_SCRIPTS))
-        kept.append(c)
-    # again after casefolding, which can write an apostrophe (U+0149)
-    return unicodedata.normalize(
-        "NFC", "".join(kept).casefold().translate(_DROPPED))
 
 
 def _strength(result: MatchResult) -> tuple[object, ...]:
@@ -740,6 +712,49 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
+def _paired_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
+    """The given names any member of a spelling set is paired with
+    directly as a familiar form, in either direction, each folded and
+    as normalized."""
+    paired = {name for word in spellings
+              for name in lexicon._familiar_forms(word)}
+    return paired | {_fold(name) for name in paired}
+
+
+def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
+    """One given-name word and the other are a listed familiar-form
+    pair (`Bill` / `William`, `Masha` / `Maria`): a name one word's
+    spelling set is paired with directly meets the other's spelling
+    set. Read whichever way the source wrote the pair, since nam_dict
+    does not always write the shorter name first, and never chained, so
+    two longer names paired with one short name (`Maximilian` /
+    `Maxim`) are no pair. Symmetric in its two arguments by
+    construction: the lexicon pairs each name both ways and under its
+    fold as well (`Lexicon._familiar_forms`), and a spelling set holds
+    each member's fold, so asking from the second side finds nothing the
+    first does not (measured over every pair of the 1,034 shipped
+    familiar names and their folds, 2026-11-08)."""
+    sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
+    return not _paired_forms(sa, lexicon).isdisjoint(sb)
+
+
+def _familiar_outcome(wa: list[str], wb: list[str],
+                      lexicon: Lexicon) -> Outcome | None:
+    """Two given texts' words, pair by pair, each the same once folded,
+    a listed spelling or a familiar form, and at least one a familiar
+    form: `familiar-form`, else `None`."""
+    if len(wa) != len(wb):
+        return None
+    found = False
+    for x, y in zip(wa, wb):
+        if _fold(x) == _fold(y) or _listed(x, y, "given", lexicon):
+            continue
+        if not _familiar(x, y, lexicon):
+            return None
+        found = True
+    return Outcome.FAMILIAR_FORM if found else None
+
+
 def _initials_only(folded: str) -> bool:
     """A folded text is initials alone."""
     return all(_is_initial(w) for w in _WORDS.split(folded) if w)
@@ -761,38 +776,112 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
     return None
 
 
-def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
-                  bases: tuple[str, str] | None = None) -> Outcome:
-    """Two non-empty texts of one role, by the strongest outcome that
-    holds: a full-name outcome (`_full_outcome`), then for a family,
-    given its two `bases`, particles set aside and part of the other,
-    then initial against name (family initial in the family role), then
-    initials agree, else conflict."""
-    if a == b:
-        return Outcome.SAME
+def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
+                   bases: tuple[str, str] | None = None) -> Iterator[Outcome]:
+    """The outcomes that hold for two non-empty texts of one role,
+    strongest first, lazily, and last conflict, which always holds. An
+    outcome holds only where the leniency it names was needed: none is
+    yielded where a stronger one that implies it holds, nor in the
+    family role after the first of its chain (decisions/name-matching,
+    2026-11-08 FAMILIAR FORMS, the review's ruling 1).
+
+    - A full-name outcome (`_full_outcome`: same, folded, listed
+      spelling) implies every weaker one, two texts equal once folded
+      or listed as one needing no other leniency, so it is the only
+      outcome yielded.
+    - In the family role (given its two `bases`) the outcomes are
+      treated as one chain, particles set aside, part of the other,
+      family initial, initials agree, and the first that holds is the
+      only one yielded. They are not all implied by the one before:
+      part of the other and family initial are independent leniencies
+      (`John S.` / `John S.-Jones` holds both), so a pair holding an
+      unaccepted part of the other is refused even where family
+      initial holds and is accepted.
+    - In any other role, initial against name and initials agree are
+      one leniency, the first that holds of the two yielded; a familiar
+      form (in the `given` group) and a hyphenated part are each
+      orthogonal to it and to each other, so each is yielded where it
+      holds (`Jean` / `Jean-Paul`, a caller's familiar pair and a
+      hyphenated part both)."""
     fa, fb = _fold(a), _fold(b)
-    outcome = _full_outcome(a, b, fa, fb, lexicon, group)
-    if outcome is not None:
-        return outcome
-    family = bases is not None
+    full = _full_outcome(a, b, fa, fb, lexicon, group)
     wa, wb = a.split(), b.split()
-    if bases is not None:
-        if bases[0] and _fold(bases[0]) == _fold(bases[1]):
-            return Outcome.PARTICLES_ASIDE
-        sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
-        if sa and sb and (sa <= sb or sb <= sa):
-            return Outcome.PART_OF_OTHER
+    if full is not None:
+        yield full
+    elif bases is not None:
+        chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
+        if chain is not None:
+            yield chain
+    else:
+        initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+        if initials is not None:
+            yield initials
+        if group == "given" and (
+                familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+            yield familiar
+        if len(wa) == len(wb) == 1 and (
+                _first_half(fa, fb) or _first_half(fb, fa)):
+            yield Outcome.HYPHENATED_PART
+    yield Outcome.CONFLICT
+
+
+def _initial_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
+                     lexicon: Lexicon, group: str) -> Outcome | None:
+    """Two texts' words, as `wa` and `wb`, folded whole as `fa` and
+    `fb`: `initial` where every pair agrees and one is an initial of
+    its name, else `initials-agree` where both are initials alone and
+    the same ones, else `None`."""
     if len(wa) == len(wb):
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
-            return Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
+            return Outcome.INITIAL
     if _initials_only(fa) and _initials_only(fb) and (
             _WORDS.split(fa) == _WORDS.split(fb)):
         return Outcome.INITIALS_AGREE
-    if not family and len(wa) == len(wb) == 1 and (
-            _first_half(fa, fb) or _first_half(fb, fa)):
-        return Outcome.HYPHENATED_PART
-    return Outcome.CONFLICT
+    return None
+
+
+def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
+                    bases: tuple[str, str], lexicon: Lexicon,
+                    group: str) -> Outcome | None:
+    """The family role's leniencies, treated as one chain, the first
+    that holds: the bases equal once folded (particles set aside), one
+    base's words among the other's (part of the other), an initial
+    against the family name (family initial), initials alone agreeing.
+    A later one is not always implied by an earlier (`John S.` /
+    `John S.-Jones` holds part of the other and family initial both),
+    and only the first is returned (`_text_outcomes`)."""
+    if bases[0] and _fold(bases[0]) == _fold(bases[1]):
+        return Outcome.PARTICLES_ASIDE
+    sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
+    if sa and sb and (sa <= sb or sb <= sa):
+        return Outcome.PART_OF_OTHER
+    initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+    return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
+            else initials)
+
+
+def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
+    """The outcome a row reports: the strongest that holds and is
+    accepted, else, where none of those holding is accepted, the
+    strongest that holds, so an unaccepted outcome still says what the
+    pair needed (`Jack` / `John` reads `familiar-form` under the
+    default) and an accepted weaker one is never hidden behind it
+    (decisions/name-matching, 2026-11-08 FAMILIAR FORMS). `outcomes`
+    run strongest first and end in `conflict`, never accepted."""
+    holding = iter(outcomes)
+    strongest = next(holding)
+    if strongest in accept:
+        return strongest
+    return next((o for o in holding if o in accept), strongest)
+
+
+def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
+                  accept: frozenset[Outcome],
+                  bases: tuple[str, str] | None = None) -> Outcome:
+    """Two non-empty texts of one role, by `_pick` over the outcomes
+    that hold (`_text_outcomes`)."""
+    return _pick(_text_outcomes(a, b, lexicon, group, bases), accept)
 
 
 def _particle_half(folded: str, lexicon: Lexicon) -> bool:
@@ -838,14 +927,16 @@ def _first_half(w: str, hyphenated: str) -> bool:
     return len(parts) > 1 and "-" not in w and bool(w) and parts[0] == w
 
 
-def _middle_outcome(a: str, b: str, lexicon: Lexicon) -> Outcome:
+def _middle_outcome(a: str, b: str, lexicon: Lexicon,
+                    accept: frozenset[Outcome]) -> Outcome:
     """The middle role word by word, in order: each aligned pair by
     `_text_outcome`, each word past the shorter side one-sided, the role
     taking the weakest; `same` where both are empty."""
     wa, wb = a.split(), b.split()
     if not wa and not wb:
         return Outcome.SAME
-    outcomes = [_text_outcome(x, y, lexicon, "given") for x, y in zip(wa, wb)]
+    outcomes = [_text_outcome(x, y, lexicon, "given", accept)
+                for x, y in zip(wa, wb)]
     if len(wa) != len(wb):
         outcomes.append(Outcome.ONE_SIDE)
     return _weakest(outcomes)
@@ -886,7 +977,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
 
 
 def _compare_role(role: Role, left: ParsedName, right: ParsedName,
-                  lexicon: Lexicon) -> RoleMatch:
+                  lexicon: Lexicon, accept: frozenset[Outcome]) -> RoleMatch:
     a, b = getattr(left, role), getattr(right, role)
     if role is Role.SUFFIX:
         outcome = _suffix_outcome(left, right, lexicon)
@@ -897,12 +988,12 @@ def _compare_role(role: Role, left: ParsedName, right: ParsedName,
     elif not a and not b:
         outcome = Outcome.SAME
     elif role is Role.MIDDLE:
-        outcome = _middle_outcome(a, b, lexicon)
+        outcome = _middle_outcome(a, b, lexicon, accept)
     elif not (a and b):
         outcome = Outcome.GIVEN_ONE_SIDE if role is Role.GIVEN else Outcome.ONE_SIDE
     else:
         outcome = _text_outcome(
-            a, b, lexicon, _GROUP[role],
+            a, b, lexicon, _GROUP[role], accept,
             (left.family_base, right.family_base)
             if role is Role.FAMILY else None)
     more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)

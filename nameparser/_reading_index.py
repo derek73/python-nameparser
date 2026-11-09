@@ -42,7 +42,11 @@ from typing import Any, TypedDict
 #: its category's name; the relation (birth_marker) and name (given,
 #: family) categories have no generic kind. Kind
 #: names are unique across categories; a fine kind arrives with its
-#: category's classification, in a core PR, as one row here.
+#: category's classification, in a core PR, as one row here. The
+#: familiar category's one kind, `familiar` (a short given name standing
+#: for longer ones, `max` of `maximilian`), compiles into FAMILIAR alone,
+#: which only the name match reads: no parse reads it (decisions/
+#: name-matching, 2026-11-08 FAMILIAR FORMS).
 CATEGORY: dict[str, str] = {
     "title": "title",
     "salutation": "title",
@@ -77,7 +81,14 @@ CATEGORY: dict[str, str] = {
     "birth_marker": "relation",
     "given": "name",
     "family": "name",
+    "familiar": "familiar",
 }
+
+#: The categories a choice neither prefers nor drops by (`choose`): a
+#: name reading keeps a gate on and settles nothing, and a familiar
+#: reading moves no parse at all, so neither competes with another
+#: file's reading of the word.
+UNPREFERRED = frozenset({"name", "familiar"})
 
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
@@ -95,6 +106,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "bound_given": frozenset({"completed_by", "cased", "default"}),
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
+    "familiar": frozenset({"default"}),
 }
 
 #: The suffix word kinds a name reading gates (rules/S11): the third
@@ -144,11 +156,15 @@ def same_as_group(kind: str) -> str | None:
 
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
-    category's behavioral ones, and on every kind `same_as`, the word a
-    spelling stands for, which compiles into SAME_AS (in the group of
-    `same_as_group`) and on a `given` reading also into
-    GIVEN_NAME_ABBREVIATIONS (#789). Everything else
-    a reading carries is evidence, compiled to nothing."""
+    category's behavioral ones, and on every kind but `familiar`
+    `same_as`, the word a spelling stands for, which compiles into
+    SAME_AS (in the group of `same_as_group`) and on a `given` reading
+    also into GIVEN_NAME_ABBREVIATIONS (#789); on a `familiar` reading
+    `short_for`, the longer given names the word stands for, which
+    compiles into FAMILIAR. Everything else a reading carries is
+    evidence, compiled to nothing."""
+    if CATEGORY[kind] == "familiar":
+        return BEHAVIORAL["familiar"] | {"short_for"}
     return BEHAVIORAL[CATEGORY[kind]] | {"same_as"}
 
 
@@ -296,8 +312,14 @@ UNCHOOSABLE = frozenset({"mul", "und"})
 
 @functools.cache
 def tags() -> frozenset[str]:
-    """The tags of the shipped files that hold a reading."""
-    return frozenset(row[0] for rows in _by_text().values() for row in rows)
+    """The tags of the shipped files that hold a reading a choice can
+    change: any but a familiar one. A plain choice never drops a
+    familiar reading, which no parse reads, so a file holding only
+    those (`hu.toml`, `mt.toml`, `sq.toml`) would change nothing as a
+    plain choice, and is refused as one holding no reading
+    (decisions/name-matching, 2026-11-08 FAMILIAR FORMS)."""
+    return frozenset(row[0] for rows in _by_text().values() for row in rows
+                     if CATEGORY[row[1]] != "familiar")
 
 
 @functools.cache
@@ -320,7 +342,7 @@ def selected(languages: Iterable[str], *,
     A plain choice selects among the files that hold a reading, since a
     file holding none would change nothing; a `strict` one among every
     file, since it drops whatever is not chosen and so is never inert
-    (``hu``, whose file holds only exclusions).
+    (``hu``, whose file holds only exclusions and familiar forms).
 
     Raises ValueError for ``mul`` or ``und``, and for a tag that selects
     no file at all, naming the tags that do."""
@@ -341,9 +363,9 @@ def selected(languages: Iterable[str], *,
                            if t.casefold() in _ancestors(tag))
             if empty:
                 raise ValueError(
-                    f"{empty[0]}.toml holds no reading yet, so a plain "
-                    f"choice of {tag!r} would change nothing; a strict one "
-                    f"(strict=True) accepts it")
+                    f"{empty[0]}.toml holds no reading a parse reads yet, "
+                    f"so a plain choice of {tag!r} would change nothing; a "
+                    f"strict one (strict=True) accepts it")
             raise ValueError(
                 f"no vocabulary file holds the language {tag!r} or one it "
                 f"belongs to; the languages that have one: "
@@ -371,7 +393,8 @@ def choose(readings: Iterable[IndexReading],
       readings leave, save mul.toml's, which are every language's, and
       und.toml's, whose language is not known to be another's. Name
       readings never leave and never settle anything (decision 15):
-      they keep the gate on;
+      they keep the gate on; nor do familiar readings, which no parse
+      reads (:data:`UNPREFERRED`);
     * **the shape clash**: a chosen file's conjunction reading drops
       ``may_be_initial``, the clash it records being with the initial
       the letter spells, a shape reading, which a preference outranks
@@ -383,10 +406,10 @@ def choose(readings: Iterable[IndexReading],
         return [r for r in readings if r.on_by_default]
     live = [r for r in readings if r.on_by_default or r.tag in chosen]
     preferred = {r.text for r in live
-                 if r.tag in chosen and r.category != "name"}
+                 if r.tag in chosen and r.category not in UNPREFERRED}
     out = []
     for r in live:
-        if (r.text in preferred and r.category != "name"
+        if (r.text in preferred and r.category not in UNPREFERRED
                 and r.tag not in chosen and r.tag not in UNCHOOSABLE):
             continue
         if r.tag in chosen and ("default" in r.props
@@ -483,10 +506,11 @@ def changed_words(chosen: frozenset[str]) -> frozenset[str]:
     default, choice = compile_choice(frozenset()), compile_choice(chosen)
     words: set[str] = set()
     for key in default:
-        if key in ("SAME_AS", "SAME_AS_NAMED"):
+        if key in ("SAME_AS", "SAME_AS_NAMED", "FAMILIAR"):
             # a word's listed spelling moves no word between sets, so it
             # changes no parse: a choice's `sr` of `senhor`, not `señor`,
-            # and whether the match reads the link written bare
+            # and whether the match reads the link written bare; nor does
+            # a familiar form, which only the match reads
             continue
         a: Any = default[key]  # type: ignore[literal-required]
         b: Any = choice[key]  # type: ignore[literal-required]
@@ -582,6 +606,7 @@ class Compiled(TypedDict):
     BOUND_PHRASES: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
+    FAMILIAR: dict[str, tuple[str, ...]]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -636,8 +661,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     # and the words it names with none: a name of its own
     short_names: dict[str, set[str]] = {}
     own_names: dict[str, set[str]] = {}
+    # a familiar form -> the given names it stands for, every file's
+    familiar: dict[str, set[str]] = {}
     for r, t in texts:
         p = r.props
+        if r.category == "familiar":
+            familiar.setdefault(t, set()).update(p.get("short_for", ()))
+            continue
         if "same_as" in p and (group := same_as_group(r.kind)) is not None:
             same_as[group].setdefault(t, set()).add(p["same_as"])
         if r.category == "name":
@@ -805,6 +835,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
             if same_as_group(k) == g
             for w in short & own_names.get(k, set()))
             for g in sorted(same_as)},
+        # a familiar form and the longer given names it stands for, one
+        # way (`max` of `maxim` and `maximilian`, which do not stand for
+        # each other), every file's together: read by the name match's
+        # opt-in `familiar-form` alone, never by a parse
+        # (decisions/name-matching, 2026-11-08 FAMILIAR FORMS)
+        FAMILIAR={w: tuple(sorted(longs))
+                  for w, longs in sorted(familiar.items())},
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

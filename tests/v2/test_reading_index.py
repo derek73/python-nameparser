@@ -330,14 +330,18 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
     empty = ri.files() - ri.tags()
     assert empty and ri.tags() <= ri.files()
     for tag in sorted(empty):
-        with pytest.raises(ValueError, match=f"{tag}.toml holds no reading"):
+        with pytest.raises(ValueError,
+                           match=f"{tag}.toml holds no reading a parse reads"):
             ri.selected([tag])
         assert ri.selected([tag], strict=True) == {tag}
-        # nothing Latin is left to compile but mul.toml's: the
-        # native-script pool and mul.toml alone (#1005)
+        # nothing Latin is left to compile but mul.toml's and the file's
+        # own familiar forms, which no parse reads: the native-script
+        # pool, mul.toml and the file alone (#1005)
         assert ri.compile_choice(frozenset({tag}), True) == ri.compile_readings(
             ri.choose([r for r in ri.index() if ri.is_native_script(r.text)
-                       or r.tag == "mul"], frozenset({tag})))
+                       or r.tag in ("mul", tag)], frozenset({tag})))
+        assert all(r.category == "familiar"
+                   for r in ri.index() if r.tag == tag)
 
 
 #: The words each strict choice of one tag ungates against the plain

@@ -139,10 +139,27 @@ A kind belongs to a category, which decides what the reading does:
    * - name
      - ``given``, ``family``
      - ``after_particle=True`` on ``given``; ``shared=True`` on either
+   * - familiar
+     - ``familiar``
+     - ``short_for=[...]``, read by name matching alone
 
 ``nameparser/vocab/README.md`` in the repository says what each kind
-and property means. ``same_as="..."`` is accepted on a reading of
-every kind: it names the word this one is a spelling of (``jnr`` is
+and property means. A ``familiar`` reading is a short given name
+standing for the longer ones its ``short_for`` lists (``max`` for
+Maximilian): no parse reads it, and :ref:`name matching
+<matching-names>` reads it as the opt-in ``familiar-form``.
+``add("max", kind="familiar", short_for=["maxwell"])`` *extends* the
+longer names the shipped vocabulary lists for ``max`` (Maksim, Maxim,
+Maximilian), in a reading of your own that names no file, unlike an
+add of any other kind the word holds, which updates that reading. A
+pair lives on the word whose reading lists the other, as
+``readings_of("max")`` shows: to cut ``Max`` / ``Maximilian``,
+``remove("max", kind="familiar")`` and add back the names to keep,
+``add("max", kind="familiar", short_for=["maksim", "maxim"])``. A
+familiar reading needs at least one name, and none may be the word
+itself.
+``same_as="..."`` is accepted on a reading of every kind but
+``familiar``: it names the word this one is a spelling of (``jnr`` is
 ``jr``), and :ref:`name matching <matching-names>` reads two words
 whose ``same_as`` links reach a common word as a ``listed-spelling``
 and gives them the same grouping key. A short form that is also a

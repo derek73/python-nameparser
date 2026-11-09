@@ -3326,10 +3326,13 @@ def test_a_strict_call_choosing_no_language_is_refused_with_a_fix_that_runs(
 
 
 def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
-    # hu.toml holds only exclusions (vi.toml did until #1108)
-    with pytest.raises(ValueError, match=r"hu\.toml holds no reading yet.*"
-                                         r"strict=True"):
-        parser_for(_choosing("hu"))
+    # hu.toml holds only exclusions and familiar forms, which no parse
+    # reads (vi.toml held only exclusions until #1108)
+    for tag in ("hu", "mt", "sq"):
+        with pytest.raises(ValueError, match=rf"{tag}\.toml holds no "
+                                             r"reading a parse reads yet"
+                                             r".*strict=True"):
+            parser_for(_choosing(tag))
     assert "do" not in parser_for(_choosing("hu"), strict=True).lexicon._sets.particles
 
 

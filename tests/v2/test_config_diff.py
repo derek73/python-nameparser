@@ -320,7 +320,11 @@ def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
     assert cd.gap_specs("tr") == ("plain:TR_AZ+tr", "strict:TR_AZ+tr")
     assert cd.gap_specs("pt-BR") == ("plain:PT_BR", "strict:PT_BR")
     assert cd.gap_specs("vi") == ("plain:VI", "strict:VI")
-    assert cd.gap_specs("hu")[0] == "default"  # hu.toml holds no reading
+    # hu.toml, mt.toml and sq.toml hold no reading a parse reads, only
+    # familiar forms, so the plain side is the default, never an inert
+    # plain choice of the tag
+    for tag in ("hu", "mt", "sq"):
+        assert cd.gap_specs(tag) == ("default", f"strict:{tag}")
 
 
 def test_a_group_is_placed_by_country_or_nationality() -> None:

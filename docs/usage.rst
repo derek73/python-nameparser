@@ -1312,14 +1312,18 @@ What the default accepts
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The outcomes, in the order ``check()`` ranks them, strongest first.
-``Outcome.strength`` gives that rank as a number, larger for a stronger
-outcome; rank outcomes by it, since ``<`` on an
-:class:`~nameparser.Outcome` compares the names as strings (``folded``
-sorts before ``same``). The default accepts the writing
+``Outcome.strength`` gives that rank as an ordinal, larger for a
+stronger outcome and 0 for ``conflict``; compare outcomes by it, since
+``<`` on an :class:`~nameparser.Outcome` compares the names as strings
+(``folded`` sorts before ``same``), but never store one: the values
+change when an outcome is added. A row reports the strongest outcome
+that holds and is accepted, and where none of those holding is
+accepted, the strongest that holds, so an unaccepted one shows what
+the pair needed. The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
-conflict until you accept them. ``family-initial``, ``given-one-side``
-and ``hyphenated-part`` are reported in the table either way, so an
-unaccepted one shows what the pair needed. ``across-roles`` is
+conflict until you accept them. ``familiar-form``, ``family-initial``,
+``given-one-side`` and ``hyphenated-part`` are reported in the table
+either way, so an unaccepted one shows what the pair needed. ``across-roles`` is
 searched only where accepted, and each side's other readings only where
 the search is switched on (below): otherwise the table shows the names
 as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
@@ -1361,6 +1365,9 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``noted``: titles and credentials, which never conflict
      - ``Dr. John Smith`` / ``John Smith, PhD``
      - yes
+   * - ``familiar-form``: two given names the vocabulary lists as a familiar-form pair, either way round, never chained
+     - ``Bill Smith`` / ``William Smith``
+     - no
    * - ``family-initial``: the family name written as an initial
      - ``John S.`` / ``John Stallbaum``
      - no
@@ -1399,10 +1406,19 @@ a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
-Typos (``Slvatore`` / ``Salvatore``), transliterations and
-nicknames the vocabulary does not list as the same name (``Bill`` /
-``William``) are conflicts: the table names the conflicting role, so
-you can run your own fuzzy comparison on that role alone.
+Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
+transliterations unless the vocabulary lists the pair as a familiar
+form (``Igor`` / ``Ihor`` is one, below). A familiar form you have not
+accepted keeps the pair inconsistent though its row reads
+``familiar-form``. The rows that kept a pair inconsistent are the
+ones whose outcome you did not accept, and the table names their
+roles, so you can run your own fuzzy comparison on those alone:
+
+.. doctest::
+
+    >>> igor = matcher.check("Igor Petrov", "Ihor Petrov")
+    >>> [(r.role.value, r.outcome.value) for r in igor.roles if r.outcome not in matcher.accept]
+    [('given', 'familiar-form')]
 
 Accepting more
 ~~~~~~~~~~~~~~
@@ -1457,6 +1473,54 @@ family reading as its alternative:
 An alternative that would move words into the title or the suffix is
 not tried, so a given name cannot vanish into one of them to agree
 with another.
+
+``familiar-form`` reads a short given name as standing for the longer
+ones the vocabulary lists it under: ``Max`` for Maximilian, Maxim and
+Maksim, ``Bill`` for William, ``Sepp`` for Josef. It is read in the
+given name, middle name and nickname, never the family name. A pair
+is read whichever way the vocabulary wrote it, since its source does
+not always write the shorter name first (``Maria`` / ``Masha``), but
+never chained, so two longer names paired with one short name do not
+agree with each other. The keys follow: a name is keyed by the first
+letters of the names it is paired with too, so ``Bill Smith`` meets
+``William Smith`` in a group:
+
+.. doctest::
+
+    >>> with_familiar = Parser().matching(accept=matcher.accept | {"familiar-form"})
+    >>> bill = with_familiar.check("Bill Smith", "William Smith")
+    >>> bill.consistent, bill["given"].outcome.value
+    (True, 'familiar-form')
+    >>> matcher.check("Bill Smith", "William Smith")["given"].outcome.value
+    'familiar-form'
+    >>> with_familiar.check("Maximilian Smith", "Maxim Smith").consistent
+    False
+    >>> sorted(with_familiar.keys("Bill Smith"))
+    ['smith;b', 'smith;w']
+
+The shipped familiar forms are the 736 pairs of Jörg Michael's
+nam_dict (2008, GNU Free Documentation License 1.2), each in the
+vocabulary file of the languages whose countries it lists them for.
+A plain choice of languages keeps every file's, and a strict one only
+its own files' (strict ``es`` holds five pairs: ``Cesc``, ``Koldo``,
+``Xabi`` and ``Xavi``). A pair whose short name reads as a title in
+front of a name (``Timi``, ``Nanny``) is never compared as a given
+name, so it stays inert while the title reading stands. It is a selection and has
+gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
+``William`` are not in it); add your own with a ``familiar`` reading,
+which extends the names the word's shipped readings list (to replace
+them, ``remove(word, kind="familiar")`` first):
+
+.. doctest::
+
+    >>> maxwell = Lexicon.default().add("max", kind="familiar", short_for=["maxwell"])
+    >>> mine = Parser(lexicon=maxwell).matching(accept=matcher.accept | {"familiar-form"})
+    >>> mine.check("Max Smith", "Maxwell Smith").consistent, mine.check("Max Smith", "Maximilian Smith").consistent
+    (True, True)
+
+A familiar form is outside the default because it is many-valued and
+often a name of its own: ``Max`` is a given name in its own right, as
+``Bill`` and ``Sepp`` are.
 
 ``across-roles`` compares a given name with each word of the other
 name's middle name and with its nickname, and a family name with the
@@ -1915,7 +1979,8 @@ form to pipe somewhere:
 Add ``--locale`` to parse with a locale pack (for example ``--locale
 ru``); see :doc:`locales`. A code no pack has that is a language whose
 vocabulary file holds readings (``--locale ko``) chooses that language
-alone; one whose file holds none yet (``hu``) needs ``--strict``, and
+alone; one whose file holds no reading a parse reads yet (``hu``)
+needs ``--strict``, and
 a pack's language with a region or script subtag (``zh-CN``,
 ``zh-Hant``) exits naming the pack to use.
 ``--strict`` reads only that language's words and the shared ones (see

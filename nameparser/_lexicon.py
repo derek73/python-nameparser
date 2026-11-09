@@ -648,15 +648,88 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
 SameAsNamed = Mapping[str, frozenset[str]]
 
 
+# -- the name match's fold, which the familiar-form index shares --------
+
+#: Full stops and apostrophes: the typed one, the typographic U+2019
+#: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`.
+_DROPPED = str.maketrans("", "", ".'\u2019\u02bc")
+#: The scripts whose combining marks `_fold` drops as accents.
+_ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
+
+def _fold(text: str) -> str:
+    """The text with case, accents, full stops and apostrophes folded
+    away: NFC, `.` and the apostrophes `'`, U+2019 and U+02BC removed,
+    NFD, casefolded, then NFC again, so the folded text, and every key
+    cut from it, is precomposed (a Hangul syllable, never a conjoining
+    jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped
+    only where the letter it attaches to is Latin, Greek or Cyrillic,
+    where it is an accent; in another script (a Devanagari virama,
+    anusvara or vowel sign) it is spelling and is kept. A letter counts
+    as in those scripts where it or its casefolded form is, so a letter
+    that casefolds into one (the micro sign U+00B5 into Greek mu, U+2183
+    into Latin) loses its mark on the first fold, which keeps the fold
+    idempotent; so does removing the full stops and apostrophes before
+    the marks are read, a mark after one then attaching to the letter
+    before it, and again after casefolding, which can write one (U+0149
+    `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
+    other, so `ᾳ` folds to `α`."""
+    if text.isascii():
+        # no accent, no composition, and no apostrophe but the typed one
+        return text.casefold().translate(_DROPPED)
+    decomposed = unicodedata.normalize(
+        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
+    kept = []
+    accented = False
+    for c in decomposed:
+        if unicodedata.category(c) == "Mn":
+            if accented:
+                continue
+        else:
+            accented = (unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
+                        or unicodedata.name(c.casefold()[:1] or c, "")
+                        .startswith(_ACCENTED_SCRIPTS))
+        kept.append(c)
+    # again after casefolding, which can write an apostrophe (U+0149)
+    return unicodedata.normalize(
+        "NFC", "".join(kept).casefold().translate(_DROPPED))
+
+
+#: A given name -> every name it is paired with as a familiar form, in
+#: either direction (`FAMILIAR`, read both ways).
+Familiar = Mapping[str, frozenset[str]]
+
+
+def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
+    """The compile's `FAMILIAR`, a familiar form -> the longer names its
+    `short_for` lists, read both ways: each word with every name it is
+    paired with directly, as the shorter name or the longer. The source
+    does not always write the shorter name first (nam_dict's `Maria` /
+    `Masha`), so the match reads a pair whichever way it was written,
+    and never chains two pairs (decisions/name-matching, 2026-11-08
+    FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
+    the match's own), so a pair written accented (`józsi`, `józsef`)
+    is found from either name written without its accents."""
+    paired: dict[str, set[str]] = {}
+    for short, longs in compiled["FAMILIAR"].items():
+        for long in longs:
+            for key in {short, _fold(short)}:
+                paired.setdefault(key, set()).add(long)
+            for key in {long, _fold(long)}:
+                paired.setdefault(key, set()).add(short)
+    return MappingProxyType({w: frozenset(ns) for w, ns in paired.items()})
+
+
 #: What a lexicon's readings compile to: the vocabulary sets by
-#: `_LexiconSets` name, the listed-spelling map, and the words in it
-#: that are a name of their own as well.
-_Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed]
+#: `_LexiconSets` name, the listed-spelling map, the words in it that
+#: are a name of their own as well, and the familiar forms.
+_Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed,
+                  Familiar]
 
 
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
     return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
-            MappingProxyType(dict(compiled["SAME_AS_NAMED"])))
+            MappingProxyType(dict(compiled["SAME_AS_NAMED"])),
+            _familiar_of(compiled))
 
 
 @functools.cache
@@ -674,7 +747,8 @@ _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
 #: What the empty base compiles to: no sets and no listed spellings.
 _NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
     {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}),
-    MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}))
+    MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}),
+    MappingProxyType({}))
 
 
 # -- readings ------------------------------------------------------------
@@ -725,6 +799,15 @@ def _unwritten(kind: str, prop: str) -> object:
     return bare.flag(prop)
 
 
+#: The properties whose value is a list of words, each with what its
+#: entries are and an example, for the messages refusing a value.
+_LIST_PROPS: Mapping[str, str] = MappingProxyType({
+    "attaches": "title kinds or title words, e.g. attaches=['military']",
+    "completed_by": "single words, e.g. completed_by=['الله']",
+    "short_for": "given names, e.g. short_for=['maxwell']",
+})
+
+
 def _prop_value(kind: str, prop: str, value: object) -> object:
     """`value` canonical for the log, None where it is the unwritten
     one (which removes the property)."""
@@ -747,10 +830,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"off the end of a name token) or None, "
                              f"got {value!r}")
         return value
-    if prop in ("attaches", "completed_by"):
-        what = ("title kinds or title words, e.g. attaches=['military']"
-                if prop == "attaches" else
-                "single words, e.g. completed_by=['الله']")
+    if prop in _LIST_PROPS:
+        what = _LIST_PROPS[prop]
         if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
             raise TypeError(f"{prop} must be an iterable of {what}, "
                             f"got {value!r}")
@@ -763,12 +844,23 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
         if len(words) != len(items):
             raise TypeError(f"{prop} entries must be strings, got "
                             f"{value!r}")
+        if prop == "short_for" and (
+                not words or any(not _normalize(x) for x in words)):
+            # the build's check 3: each a given name, none empty
+            raise ValueError(
+                f"short_for must be a non-empty list of the given names "
+                f"the word stands for, none normalizing to nothing, got "
+                f"{value!r}; write e.g. short_for=['maxwell']")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
         if prop == "completed_by" and any(" " in w for w in folded):
             # rules/P12 joins a bound word to the ONE word after it
             raise ValueError(f"completed_by entries must be single words, "
                              f"got {value!r}; list each completing word "
                              f"on its own")
+        if prop == "short_for" and any(" " in w for w in folded):
+            # the match compares a given name word by word
+            raise ValueError(f"short_for entries must be single given "
+                             f"names, got {value!r}; list each on its own")
         return folded or None
     # same_as: the word this one is a listed spelling of, a given name
     # written short's full name (#789) or a title's or suffix's full form
@@ -889,6 +981,19 @@ def _make_edit(op: object, words: object, kind: object,
     p = _edit_props(k, dict(props))
     ri = _index_module()
     category = ri.CATEGORY[k]
+    if category == "familiar":
+        # the build's check 3: a familiar reading lists the longer names
+        longs = dict(p).get("short_for")
+        if not longs:
+            raise ValueError(
+                "a familiar reading needs short_for, a non-empty list of "
+                "the given names the word stands for, e.g. add('max', "
+                "kind='familiar', short_for=['maxwell'])")
+        for w in ws:
+            if w in longs:
+                raise ValueError(
+                    f"short_for names the word itself, {w!r}; it lists "
+                    f"the other given names {w!r} stands for")
     for w in ws:
         # the build's check 8: a phrase is matched whole only as a birth
         # marker or a run of titles addressing the given name
@@ -923,6 +1028,20 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
     for w in words:
         rs = pool.get(w, ())
+        if edit.op == "add" and edit.kind == "familiar":
+            # EXTENDS: the caller's longer names go in a reading of the
+            # caller's own, attributed to the edit and to no file, and
+            # the compile unions it with each file's, which stay as
+            # they are (decisions/name-matching, 2026-11-08 FAMILIAR
+            # FORMS); an explicit replace is remove, then add
+            added = set(dict(edit.props)["short_for"])
+            mine = [r for r in rs if r.kind == "familiar" and not r.tag]
+            if mine:
+                added |= set(mine[0].props.get("short_for", ()))
+            reading = ri.IndexReading(w, "", "familiar", MappingProxyType(
+                {"short_for": tuple(sorted(added))}))
+            pool[w] = tuple(r for r in rs if r not in mine) + (reading,)
+            continue
         if edit.op == "remove":
             kept = tuple(r for r in rs if edit.kind is not None
                          and r.kind != edit.kind and r.category != edit.kind)
@@ -1030,7 +1149,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
            strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
-                                  SameAs, SameAsNamed]:
+                                  SameAs, SameAsNamed, Familiar]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1079,8 +1198,8 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
         return _NOTHING_COMPILED
-    _, sets, same_as, named = _built(base, edits, chosen, strict)
-    return sets, same_as, named
+    _, sets, same_as, named, familiar = _built(base, edits, chosen, strict)
+    return sets, same_as, named, familiar
 
 
 @functools.lru_cache(maxsize=32)
@@ -1583,6 +1702,13 @@ class Lexicon:
     # (`_headwords`); built like `_same_as`
     _same_as_named: SameAsNamed = field(
         init=False, repr=False, compare=False, hash=False)
+    # a given name -> every name it is paired with as a familiar form,
+    # either way (`max` -> {`maksim`, `maxim`, `maximilian`},
+    # `maximilian` -> {`max`}), from every `familiar` reading's
+    # `short_for`, read by the name match alone (`_familiar_forms`);
+    # built like `_same_as`
+    _familiar: Familiar = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -1626,11 +1752,12 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled, same_as, named = _compiled_for(
+        compiled, same_as, named, familiar = _compiled_for(
             self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
         put("_same_as", same_as)
         put("_same_as_named", named)
+        put("_familiar", familiar)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -1944,7 +2071,20 @@ class Lexicon:
             given readings, so the word keeps no plain given reading
             and its link counts written bare, where a word the
             vocabulary also holds as a name of its own counts only
-            written with its period); a property
+            written with its period), and ``short_for=[...]`` on a
+            ``familiar`` reading, the longer given names a familiar
+            form stands for, which name matching reads as a
+            ``familiar-form`` where that outcome is accepted and no
+            parse reads (``add("max", kind="familiar",
+            short_for=["maxwell"])``), which EXTENDS the longer names
+            the word's shipped familiar readings list, in a reading of
+            the caller's own that names no file, rather than replacing
+            them (unlike an add of any other kind the word holds); to
+            replace them, ``remove(word, kind="familiar")`` first. A
+            pair lives on the word whose reading lists the other (its
+            shorter name, as the files write it): to cut
+            ``Max`` / ``Maximilian``, remove ``max``'s familiar
+            reading and add it back without ``maximilian``; a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
@@ -2051,6 +2191,15 @@ class Lexicon:
                     seen.add(head)
                     todo.append(head)
         return frozenset(seen)
+
+    def _familiar_forms(self, word: str) -> frozenset[str]:
+        """The given names `word`, normalized, is paired with directly
+        as a familiar form, in either direction (`max` -> {`maksim`,
+        `maxim`, `maximilian`}, `maximilian` -> {`max`}), empty for a
+        word in no pair. Never chained: two longer names paired with
+        one shorter one (`maximilian`, `maxim`) do not reach each
+        other. Read by the name match alone, never by a parse."""
+        return self._familiar.get(_normalize(word), frozenset())
 
     def _deltas_from(self, other: Lexicon) -> tuple[
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:
