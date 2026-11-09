@@ -15,6 +15,7 @@ documents the row; _compiled.py is this index compiled.
 
 READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]], ...]], ...] = (
     ('&', (('mul', 'conjunction', ()),)),
+    ("'s", (('nl', 'article', ()),)),
     ("'t", (('nl', 'article', ()),)),
     ('10th', (('en', 'modifier', ()),)),
     ('1lt', (('en', 'military', ()),)),
@@ -2579,6 +2580,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('ጁኒየር', (('am', 'generation', ()), ('ti', 'generation', ()))),
     ('ጁንየር', (('am', 'generation', ()), ('ti', 'generation', ()))),
     ('ជូនៀរ', (('km', 'generation', ()),)),
+    ('’s', (('nl', 'article', (('same_as', "'s"),)),)),
     ('’t', (('nl', 'article', (('same_as', "'t"),)),)),
     ('くん', (('ja', 'honorific', (('attached', 'after'),)),)),
     ('さま', (('ja', 'honorific', (('attached', 'after'), ('same_as', '様'))),)),

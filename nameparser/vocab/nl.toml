@@ -118,6 +118,20 @@ expands = "van der, abbreviated"
 note = "Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
 
 [[word]]
+text = "'s"
+[word.article]
+may_be_given = false
+expands = "des, of the: \"'s Gravesande\", \"van 's-Gravesande\""
+note = "Wikidata people search 2026-11-09: 42 humans match \"'s Gravesande\" (Willem Jacob 's Gravesande, Arent van 's-Gravesande), 21 \"'s Jacob\"; no committed or local corpus writes it. Never a word of its own: 's opens a surname only"
+
+[[word]]
+text = "’s"
+[word.article]
+may_be_given = false
+expands = "the same, typographic apostrophe"
+same_as = "'s"
+
+[[word]]
 text = "'t"
 article = { may_be_given = false, expands = "het, the: \"'t Hooft\"" }
 

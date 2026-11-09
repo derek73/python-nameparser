@@ -1513,6 +1513,7 @@ TITLE_PHRASES: frozenset[str] = frozenset({
 })
 
 NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
+    "'s",
     "'t",
     'ad-',
     'adh-',
@@ -1585,10 +1586,12 @@ NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
     'ابن',
     'بن',
     'بنت',
+    '’s',
     '’t',
 })
 
 PARTICLES: frozenset[str] = frozenset({
+    "'s",
     "'t",
     'aan',
     'abu',
@@ -1703,6 +1706,7 @@ PARTICLES: frozenset[str] = frozenset({
     'ابو',
     'بن',
     'بنت',
+    '’s',
     '’t',
 })
 
@@ -3509,6 +3513,7 @@ SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
         'ua': ('ó',),
         'ul-': ('al-',),
         'ابو': ('أبو',),
+        '’s': ("'s",),
         '’t': ("'t",),
     },
     'given': {

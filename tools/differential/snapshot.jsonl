@@ -71,6 +71,7 @@
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
+{"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W."}
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
@@ -346,6 +347,7 @@
 {"name": "Arenas Betancourt, Rodrigo", "given": "Rodrigo", "family": "Arenas Betancourt", "initials": "R. A. B."}
 {"name": "Arenberg, Auguste Marie Raymond d'", "given": "Auguste", "middle": "Marie Raymond", "family": "d' Arenberg", "initials": "A. M. R. A."}
 {"name": "Arend, Arie den", "given": "Arie", "family": "den Arend", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. A."}
+{"name": "Arent van 's-Gravesande", "given": "Arent", "family": "van 's-Gravesande", "initials": "A. '.", "capitalized_force": "Arent van 'S-Gravesande"}
 {"name": "Arie den Arend", "given": "Arie", "family": "den Arend", "initials": "A. A."}
 {"name": "Armando Domínguez Borrás", "given": "Armando", "middle": "Domínguez", "family": "Borrás", "initials": "A. D. B."}
 {"name": "Armando de Lacerda", "given": "Armando", "family": "de Lacerda", "initials": "A. L."}
@@ -478,6 +480,8 @@
 {"name": "Blas de Lezo", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
 {"name": "Blerim", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Blerim", "order": "FAMILY_FIRST", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
+{"name": "Bob 'T Bone' Smith", "given": "Bob", "family": "Smith", "nickname": "T Bone", "initials": "B. S."}
+{"name": "Bob 'T-Bone Jones' Smith", "given": "Bob", "family": "Smith", "nickname": "T-Bone Jones", "initials": "B. S."}
 {"name": "Bob Dole", "given": "Bob", "family": "Dole", "initials": "B. D."}
 {"name": "Bob Jones, author", "title": "author", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Author Bob Jones"}
 {"name": "Bob Jones, compositeur", "title": "compositeur", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Compositeur Bob Jones"}
@@ -1228,6 +1232,7 @@
 {"name": "Georg von Hülsen-Haeseler", "given": "Georg", "family": "von Hülsen-Haeseler", "initials": "G. H."}
 {"name": "George D. Cummins", "given": "George", "middle": "D.", "family": "Cummins", "initials": "G. D. C."}
 {"name": "George Edward Stanhope Molyneux Herbert of Carnarvon", "given": "George", "middle": "Edward Stanhope Molyneux", "family": "Herbert of Carnarvon", "initials": "G. E. S. M. H. C."}
+{"name": "Gerard 't Hooft d'Hondt", "given": "Gerard", "family": "'t Hooft d'Hondt", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "G. H. d.", "capitalized_force": "Gerard 't Hooft D'Hondt"}
 {"name": "Gertrude Duby-Blom", "given": "Gertrude", "family": "Duby-Blom", "initials": "G. D."}
 {"name": "Gerður Benediktsdóttir", "given": "Gerður", "family": "Benediktsdóttir", "initials": "G. B."}
 {"name": "Gerður Helgadóttir", "given": "Gerður", "family": "Helgadóttir", "initials": "G. H."}
@@ -3257,7 +3262,6 @@
 {"name": "Piet", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet", "order": "FAMILY_FIRST", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet van Engelen", "given": "Piet", "family": "van Engelen", "initials": "P. E."}
-{"name": "Pieter 't Hart' Smith", "given": "Pieter", "family": "'t Hart' Smith", "initials": "P. H. S."}
 {"name": "Pieter Bruegel stariji Jones", "given": "Pieter", "middle": "Bruegel stariji", "family": "Jones", "initials": "P. B. s. J.", "capitalized_force": "Pieter Bruegel Stariji Jones"}
 {"name": "Pieter de Carpentier", "given": "Pieter", "family": "de Carpentier", "initials": "P. C."}
 {"name": "Pilar Fernández Seijo", "given": "Pilar", "middle": "Fernández", "family": "Seijo", "initials": "P. F. S."}

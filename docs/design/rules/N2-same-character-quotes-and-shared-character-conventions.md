@@ -19,16 +19,26 @@
 
 **Except:**
 
-- **An apostrophe opening a word the vocabulary lists as a particle** is part of that word, so it opens no quote.
+- **An apostrophe opening a word the vocabulary lists as a particle**, alone or hyphened to the name after it, is part of that word, so it opens no quote, unless the next apostrophe of the same character in the name stands after a character other than whitespace.
   ```
-  "Jan van 't Hof 'Jantje'"  →  nickname="Jantje"
+  "Jan van 't Hof 'Jantje'"   →  nickname="Jantje"
+  "Arent van 's-Gravesande"   →  family="van 's-Gravesande"
+  "Arent van 's-Gravesande"   →  ambiguities=()
+  "Bob 'T Bone' Smith"        →  nickname="T Bone"  · boundary
+  "Bob 'T-Bone Jones' Smith"  →  nickname="T-Bone Jones"  · boundary
   ```
 
 **Accepted:**
 
-- A quote that does open at such a word is read as the word, its close staying in the word it ends.
+- A quote with no apostrophe after it opening at a listed particle is read as the word, with no report.
   ```
-  "Pieter 't Hart' Smith"  →  family="'t Hart' Smith"
+  "Aaron 'T-Bone Walker"  →  middle="'T-Bone"
+  "Aaron 'T-Bone Walker"  →  ambiguities=()
+  ```
+- An apostrophe inside a later word stands after a letter, so a listed particle before it opens a quote as it did through 3.0.1, though that apostrophe cannot close one, and the quote reports.
+  ```
+  "Gerard 't Hooft d'Hondt"  →  family="'t Hooft d'Hondt"
+  "Gerard 't Hooft d'Hondt"  →  ambiguities=("unbalanced-delimiter",)
   ```
 
 ---
