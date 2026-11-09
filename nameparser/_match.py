@@ -464,43 +464,32 @@ class Matching:
 
     def _keys(self, parsed: ParsedName) -> frozenset[str]:
         lexicon = self.parser.lexicon
-
-        def heads(word: str, group: str) -> set[str]:
-            # the folded members suffice: every spelling set holds each
-            # member's folded form, so two sets that meet share one
-            return {_fold(h) for h in _spellings(word, group, lexicon)}
-
         across = Outcome.ACROSS_ROLES in self.accept
-        bases = parsed.family_base.split()
+        bases = [parsed.family_base]
         if across:
-            bases += _maiden_base(parsed).split()
-        words: set[str] = set()
-        for raw in bases:
-            folded = _fold(raw)
-            # the halves the check's part-of-other drops, by position, so
-            # the raw and the folded word drop the same ones
-            drop = {i for i, h in enumerate(folded.split("-"))
-                    if "-" in folded and _particle_half(h, lexicon)}
-            halves = [h for i, h in enumerate(raw.split("-")) if i not in drop]
-            # the whole word too: a hyphenated word may itself be the
-            # full form another word is listed as a spelling of
-            for form in {*halves, raw.replace("-", ""), raw}:
-                if form:
-                    words |= heads(form, "family")
+            bases.append(_maiden_base(parsed))
+        forms: list[str] = []
+        for base in bases:
+            forms += _family_words(base, lexicon)
+            # a hyphenated word joined and whole too: either may itself
+            # be the full form another word is listed as a spelling of
+            forms += [form for raw in base.split() if "-" in raw
+                      for form in (raw.replace("-", ""), raw)]
+        words = set().union(*(_spelling_keys(form, "family", lexicon)
+                              for form in forms if form))
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
-            words |= {f[:1] for f in heads(family[0], "family")} - {""}
-
-        def initials_of(word: str) -> set[str]:
-            return {g[:1] for g in heads(word, "given")}
-
+            words |= {f[:1] for f in _spelling_keys(
+                family[0], "family", lexicon)} - {""}
         given = parsed.given.split()
-        initials = initials_of(given[0]) if given else {""}
+        initials = ({g[:1] for g in _spelling_keys(given[0], "given", lexicon)}
+                    if given else {""})
         if across:
             # a cross-role match is never made by an initial
             for word in (*parsed.middle.split(), *parsed.nickname.split()[:1]):
                 if not _is_initial(_fold(word)):
-                    initials |= initials_of(word)
+                    initials |= {g[:1] for g in _spelling_keys(
+                        word, "given", lexicon)}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
@@ -651,6 +640,16 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     return heads | {_fold(h) for h in heads}
 
 
+def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
+    """The folded members of `word`'s spelling set in `group`, which
+    `keys` cuts its keys from: every spelling set holds each member's
+    folded form, so two sets that meet share a folded member. `_fold` is
+    idempotent (checked over every code point), so folding the words
+    `_spellings` reads is folding all its members."""
+    return {_fold(h) for h in (lexicon._headwords(word, group)
+                               | lexicon._headwords(_fold(word), group))}
+
+
 def _listed(a: str, b: str, group: str, lexicon: Lexicon) -> bool:
     """Two words are listed spellings of one word in `group`: their
     spelling sets meet."""
@@ -738,17 +737,29 @@ def _particle_half(folded: str, lexicon: Lexicon) -> bool:
     return _normalize(folded) in lexicon._sets.particles
 
 
-def _base_words(base: str, lexicon: Lexicon) -> set[str]:
-    """The folded family-base words `part-of-other` compares: each
-    word, and a hyphenated one as its halves less any listed particle."""
-    words: set[str] = set()
-    for word in _fold(base).split():
+def _family_words(base: str, lexicon: Lexicon) -> list[str]:
+    """A family base's comparable words, as written: each word, and a
+    hyphenated one as its halves less any listed particle, an empty half
+    dropped. Read by `part-of-other` (`_base_words`) and by `keys`, so
+    the two set aside the same halves. Raw and folded agree half for
+    half: `_fold` never adds or removes a hyphen or a space (checked over
+    every code point), so a word's halves fold to its folded halves,
+    save that a word or half of full stops folds to empty."""
+    words: list[str] = []
+    for word in base.split():
         halves = word.split("-")
         if len(halves) > 1:
-            words.update(h for h in halves if not _particle_half(h, lexicon))
+            words += [h for h in halves
+                      if h and not _particle_half(_fold(h), lexicon)]
         else:
-            words.add(word)
-    return words - {""}
+            words.append(word)
+    return words
+
+
+def _base_words(base: str, lexicon: Lexicon) -> set[str]:
+    """The folded family-base words `part-of-other` compares, a word
+    that folds to empty left out."""
+    return {_fold(w) for w in _family_words(base, lexicon)} - {""}
 
 
 def _first_half(word: str, hyphenated: str) -> bool:
