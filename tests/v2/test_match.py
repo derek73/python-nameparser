@@ -44,7 +44,7 @@ NAMES: tuple[str, ...] = (
     "John Hong Hoover", "Alice Smith", "Ann A. Smith", "E. Hoover",
     "John Edgar Hoover", "Edgar E. Hoover", "John Edgar Allan Hoover",
     "Edgar Allan Hoover", 'Robert "Bobby Joe" Smith', "Bobby Joe Smith",
-    "Bobby Smith", "John Wm. Smith",
+    "Bobby Smith", "John Wm. Smith", "John Smith, PhD",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -235,6 +235,16 @@ def test_different_generations_conflict() -> None:
 def test_a_generation_on_one_side_is_its_own_outcome() -> None:
     r = m.check("John Smith", "John Smith Jr.")
     assert r.consistent and role(r, Role.SUFFIX).outcome is Outcome.GENERATION_ONE_SIDE
+
+
+def test_a_generation_on_one_side_is_its_outcome_whatever_the_credentials() -> None:
+    # a credential beside it is only noted where the generations agree
+    r = m.check("John Smith Jr.", "John Smith, PhD")
+    assert r.consistent
+    assert role(r, Role.SUFFIX).outcome is Outcome.GENERATION_ONE_SIDE
+    without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.GENERATION_ONE_SIDE})
+    assert not without.check("John Smith Jr.", "John Smith, PhD").consistent
+    assert not without.check("John Smith, PhD", "John Smith Jr.").consistent
 
 
 def test_folding_ignores_case_and_accents() -> None:

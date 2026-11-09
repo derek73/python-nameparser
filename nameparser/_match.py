@@ -618,8 +618,9 @@ def _noted(a: str, b: str, lexicon: Lexicon) -> Outcome:
 def _suffix_outcome(left: ParsedName, right: ParsedName,
                     lexicon: Lexicon) -> Outcome:
     """A different generation conflicts and one on one side only is its
-    own outcome; the rest of the suffix (credentials, honorifics) is
-    noted."""
+    own outcome, whatever credentials either side carries; where the
+    generations agree, the rest of the suffix (credentials, honorifics)
+    is noted."""
     if left.suffix == right.suffix:
         return Outcome.SAME
     ga, gb = left.generation, right.generation
@@ -628,7 +629,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         if generation is Outcome.NOTED:
             return Outcome.CONFLICT
     elif ga or gb:
-        generation = Outcome.GENERATION_ONE_SIDE
+        return Outcome.GENERATION_ONE_SIDE
     else:
         generation = Outcome.SAME
     rest = _noted(" ".join(filter(None, (left.credentials, left.honorifics))),
