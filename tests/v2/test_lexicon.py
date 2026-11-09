@@ -2026,6 +2026,24 @@ def test_same_as_compiles_for_every_kind() -> None:
     assert lex._headword("smith") == "smith"
 
 
+@pytest.mark.parametrize("strict", [False, True])
+def test_same_as_follows_a_choice_of_languages(strict: bool) -> None:
+    # the Portuguese and Spanish files both list Sr as a salutation, each
+    # with its own headword; a choice keeps its own file's
+    from nameparser import locales
+    pt = parser_for(locales.PT, strict=strict).lexicon
+    es = parser_for(locales.ES, strict=strict).lexicon
+    assert pt._headword("Sr.") == pt._headword("senhor") == "senhor"
+    assert es._headword("Sr.") == es._headword("señor") == "señor"
+
+
+def test_an_unedited_lexicons_built_same_as_is_the_defaults() -> None:
+    from nameparser._lexicon import _built, _default_same_as
+    built = _built("default", (), frozenset(), False)[2]
+    assert dict(built) == dict(_default_same_as()) == dict(
+        Lexicon.default()._same_as)
+
+
 def test_a_callers_same_as_on_a_title_reaches_the_map() -> None:
     lex = Lexicon.default().add("brgdr", kind="military", same_as="brigadier")
     assert lex._headword("Brgdr.") == lex._headword("brigadier")
