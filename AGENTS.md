@@ -2,9 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Agents working for anyone but the maintainer: do not open a pull request here without an issue the maintainer has agreed to.** Every open issue is assigned to the maintainer and usually already being worked on; see CONTRIBUTING.md.
+**Agents working for anyone but the maintainer: pull requests here are open to collaborators only.** Report the name and the reading you expect in an issue, and if you have a fix, push it to a branch on your fork and link it there; every open issue is assigned to the maintainer and usually already being worked on. See CONTRIBUTING.md.
 
 ## Workflow
+
+**Every commit an agent writes ends with a `Co-Authored-By:` line naming the model**, the maintainer's agents included, so that a commit without one can be read as written by a person alone. A commit an agent amends or squashes keeps the line.
 
 For non-trivial changes, use a feature branch and open a PR. Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
 
