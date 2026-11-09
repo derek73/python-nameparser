@@ -26,6 +26,20 @@
   "É.J. DUPONT"               →  capitalized="É.J. Dupont"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
   ```
+- **An apostrophe between a Cyrillic letter and one of the vowels я, ю, є, ї, е, ё or і is part of the word's spelling**: it is the Ukrainian and Belarusian apostrophe, which marks the vowel as pronounced apart and never divides a prefix from a name, so the vowel keeps the word's lowercase. Any other apostrophe a word holds divides it, and the letter after it takes a capital, as in O'Brien and its Cyrillic spelling.
+  ```
+  "БЕЗУГЛА МАР'ЯНА"           →  capitalized="Безугла Мар'яна"
+  "ІВАН П'ЯТАК"               →  capitalized="Іван П'ятак"
+  "ДЗМІТРЫЙ ЮР’ЕВІЧ"          →  capitalized="Дзмітрый Юр’евіч"
+  "Мар’яна Безугла"           →  capitalized_forced="Мар’яна Безугла"
+  "ЛЮДМИЛА О'КОННОР"          →  capitalized="Людмила О'Коннор"  · boundary
+  "DEM'YAN SMITH"             →  capitalized="Dem'Yan Smith"  · boundary
+  ```
+- **A script that writes no initial capital is written in its lower case throughout**: Georgian writes its Mtavruli capitals only for a whole word set in capitals, so a name written in them repairs to plain Mkhedruli.
+  ```
+  "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ"            →  capitalized="ნინო ბურჯანაძე"
+  "Ნინო Ბურჯანაძე"            →  capitalized_forced="ნინო ბურჯანაძე"
+  ```
 - **A vocabulary entry records casing as a mask** — its word's letters, each in the case it takes — and repair lays it over the word as the writer punctuated it, so the one entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask applies wherever the word stands, whatever the parse read it as. A run of two or more letters beside a full stop takes the mask's case letter by letter and is never an initial.
   ```
   "john smith phd"            →  capitalized="John Smith PhD"

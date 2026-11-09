@@ -874,6 +874,75 @@ def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
             == f"{lead}Abd"
 
 
+def _nfd(text: str) -> str:
+    return unicodedata.normalize("NFD", text)
+
+
+def _repairs(text: str, force: bool) -> str:
+    """`text` parsed and repaired, read composed, so a row typed
+    decomposed compares with its composed twin (#542)."""
+    return unicodedata.normalize(
+        "NFC", str(parse(text).capitalized(force=force)))
+
+
+def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
+    """rules/R4 (#1214): the Ukrainian and Belarusian apostrophe before
+    я, ю, є, ї, е, ё or і is part of the word, so the vowel after it
+    keeps the word's lowercase, in each spelling of the apostrophe that
+    is no word character, typed composed or decomposed, plain or
+    forced. Any other apostrophe still divides the word: before a
+    consonant (О'Коннор) or a vowel outside the set (Д'Артаньян), and
+    after a Latin letter, whose question #1214 leaves open (Dem'Yan).
+    U+02BC is a modifier letter, a word character, so it never divided
+    the word."""
+    rows = (
+        ("БЕЗУГЛА МАР{a}ЯНА ВОЛОДИМИРІВНА", "Безугла Мар{a}яна Володимирівна"),
+        ("ІВАН П{a}ЯТАК", "Іван П{a}ятак"),
+        ("ар{a}єв володимир ігорович", "Ар{a}єв Володимир Ігорович"),
+        ("ДЗМІТРЫЙ ЮР{a}ЕВІЧ КАМЫШЫК", "Дзмітрый Юр{a}евіч Камышык"),
+        # a letter that decomposes on either side of the apostrophe
+        ("ІВАН ВОРОБЙ{a}ЇВ", "Іван Воробй{a}їв"),
+        ("ГАННА Б{a}ЁРН", "Ганна Б{a}ёрн"),
+        # the boundaries
+        ("ЛЮДМИЛА О{a}КОННОР", "Людмила О{a}Коннор"),
+        ("ЛЮДМИЛА Д{a}АРТАНЬЯН", "Людмила Д{a}Артаньян"),
+        ("DEM{a}YAN SMITH", "Dem{a}Yan Smith"),
+        ("JOHN O{a}BRIEN", "John O{a}Brien"),
+    )
+    for apostrophe in ("'", "‘", "’"):
+        for text, repaired in rows:
+            text, repaired = (s.format(a=apostrophe) for s in (text, repaired))
+            for written in (text, _nfd(text)):
+                for force in (False, True):
+                    assert _repairs(written, force) == repaired, \
+                        (written, force)
+    assert _repairs("БЕЗУГЛА МАРʼЯНА", False) == "Безугла Марʼяна"
+    # a name written correctly is a fixpoint of the forced repair
+    assert _repairs("Мар'яна Безугла", True) == "Мар'яна Безугла"
+
+
+def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
+    """rules/R4 (#1223): Georgian writes no initial capital, and a
+    Mtavruli letter's title case is itself, so a name written in
+    Mtavruli repairs to Mkhedruli throughout rather than keeping a
+    Mtavruli first letter. initials() reads the letters as written, as
+    it reads any capital, so it gives Mkhedruli after the repair. The
+    first-letter lowering reaches no other script: a letter whose lower
+    case is longer than it keeps str.capitalize()'s answer."""
+    for text, repaired in (("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "ნინო ბურჯანაძე"),
+                           ("ᲣᲩᲐ ᲒᲝᲒᲝᲚᲐᲫᲔ", "უჩა გოგოლაძე"),
+                           ("ნინო ბურჯანაძე", "ნინო ბურჯანაძე")):
+        for force in (False, True):
+            assert _repairs(text, force) == repaired, (text, force)
+    assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").initials() == "Ნ. Ბ."
+    assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").capitalized().initials() == "ნ. ბ."
+    # a Mtavruli first letter on Mkhedruli is mixed case: kept as
+    # written on the default path (rules/R5), repaired under force
+    assert _repairs("Ნინო Ბურჯანაძე", False) == "Ნინო Ბურჯანაძე"
+    assert _repairs("Ნინო Ბურჯანაძე", True) == "ნინო ბურჯანაძე"
+    assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
+
+
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
     """rules/R4's Accepted cost (#838): an unlisted abbreviation's
     ending after its full stop is written as a word ('Dut.Ra'), and a

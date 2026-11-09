@@ -705,13 +705,32 @@ def _title_chunk(chunk: str) -> str:
     lead = _past_modifiers(chunk, 0)
     mc = _MC.match(unicodedata.normalize("NFC", chunk[lead:]))
     if not mc:
-        return chunk[:lead] + chunk[lead:].capitalize()
+        return chunk[:lead] + _capitalize(chunk[lead:])
     cut = end = lead + len(mc.group(1))
     while run := _NAME_RUN.match(chunk, end):
         end = _past_marks(chunk, run.end())
     at = _past_modifiers(chunk, cut)
-    return (chunk[:lead] + chunk[lead:cut].capitalize() + chunk[cut:at]
-            + chunk[at:end].capitalize() + chunk[end:])
+    return (chunk[:lead] + _capitalize(chunk[lead:cut]) + chunk[cut:at]
+            + _capitalize(chunk[at:end]) + chunk[end:])
+
+
+# rules/R4: "A script that writes no initial capital is written in its
+# lower case throughout" -- the title case of a word's first letter,
+# where Georgian's is its Mkhedruli lower case. decisions/R4 (#1223).
+def _capitalize(text: str) -> str:
+    """str.capitalize(), except that a first letter whose lower case
+    title-cases to itself is written in that lower case: str.capitalize()
+    title-cases the letter as it stands, and a Mtavruli letter's title
+    case is itself, so 'ᲜᲘᲜᲝ' gave 'Ნინო'. The 46 Mtavruli letters are
+    the only ones the test reaches (measured over every codepoint,
+    2026-11-08); a letter whose lower case is longer than it ('İ') keeps
+    str.capitalize()'s answer, so the word keeps its length."""
+    out = text.capitalize()
+    if text:
+        low = text[0].lower()
+        if len(low) == 1 and low.title() == low != text[0].title():
+            return low + out[1:]
+    return out
 
 
 def _past_modifiers(text: str, at: int) -> int:
@@ -742,7 +761,8 @@ def _sub_words(cap: Callable[[str], str], text: str) -> str:
     spans: list[list[int]] = []
     for match in _WORD.finditer(text):
         start, end = match.start(), _past_marks(text, match.end())
-        if spans and spans[-1][1] == start:
+        if spans and (spans[-1][1] == start
+                      or _inner_apostrophe(text, spans[-1][1], start)):
             spans[-1][1] = end
         else:
             spans.append([start, end])
@@ -752,6 +772,35 @@ def _sub_words(cap: Callable[[str], str], text: str) -> str:
         out += (text[at:start], cap(text[start:end]))
         at = end
     return "".join(out) + text[at:]
+
+
+#: The apostrophes that are not word characters to _WORD: U+0027,
+#: U+2018 and U+2019. U+02BC, the one Ukrainian orthography prescribes,
+#: is a modifier letter, which \w matches, so it never divides a word.
+_APOSTROPHES = frozenset("'‘’")
+#: The Cyrillic vowels a Ukrainian (я ю є ї) or Belarusian (е ё і ю я)
+#: apostrophe stands before, marking the vowel as pronounced apart.
+#: Lower case, and composed: a decomposed ї or ё opens with і or е.
+_APOSTROPHE_VOWELS = frozenset("яюєїеёі")
+
+
+# rules/R4: "An apostrophe between a Cyrillic letter and one of the
+# vowels я, ю, є, ї, е, ё or і is part of the word's spelling" -- the
+# test _sub_words asks before dividing a word at an apostrophe.
+# decisions/R4 (#1214).
+def _inner_apostrophe(text: str, end: int, start: int) -> bool:
+    """The text between a word ending at `end` and the next starting at
+    `start` is one apostrophe standing between a Cyrillic letter (past
+    the combining marks after it) and one of _APOSTROPHE_VOWELS, so the
+    two are one word: 'МАР'ЯНА' is one word, 'О'КОННОР' two."""
+    if start != end + 1 or text[end] not in _APOSTROPHES:
+        return False
+    before = end - 1
+    while before >= 0 and unicodedata.category(text[before])[0] == "M":
+        before -= 1
+    return (before >= 0 and text[before].isalpha()
+            and unicodedata.name(text[before], "").startswith("CYRILLIC")
+            and text[start].lower() in _APOSTROPHE_VOWELS)
 
 
 def _joined_whole(text: str, role: Role, lex: Lexicon) -> str | None:

@@ -654,6 +654,7 @@
 {"name": "Cənab Arif Aliyev İlvus Santak Aydan Deputat", "given": "Cənab", "middle": "Arif Aliyev İlvus Santak Aydan", "family": "Deputat", "initials": "C. A. A. İ. S. A. D."}
 {"name": "DE MESNIL", "family": "DE MESNIL", "initials": "M.", "capitalized": "de Mesnil"}
 {"name": "DELA CRUZ", "given": "DELA", "family": "CRUZ", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "D. C.", "capitalized": "Dela Cruz"}
+{"name": "DEM'YAN SMITH", "given": "DEM'YAN", "family": "SMITH", "initials": "D. S.", "capitalized": "Dem'Yan Smith"}
 {"name": "DOE, JANE MA VD PHD", "given": "JANE", "family": "DOE", "suffix": "MA VD PHD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)", "SUFFIX_OR_NAME: particle as family (vocabulary)"], "initials": "J. D.", "capitalized": "Jane Doe MA VD PhD"}
 {"name": "DOE, JANE PHD VD", "given": "JANE", "family": "VD DOE", "suffix": "PHD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. D.", "capitalized": "Jane vd Doe PhD"}
 {"name": "DOE, JANE PHD VD MA", "given": "JANE", "family": "DOE", "suffix": "PHD VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)", "SUFFIX_OR_NAME: particle as family (vocabulary)"], "initials": "J. D.", "capitalized": "Jane Doe PhD VD MA"}
@@ -4743,6 +4744,7 @@
 {"name": "Єва Марія Шевченко", "given": "Єва", "middle": "Марія", "family": "Шевченко", "initials": "Є. М. Ш."}
 {"name": "Євген Гуцало", "given": "Євген", "family": "Гуцало", "initials": "Є. Г."}
 {"name": "Євгенія Казбекова", "given": "Євгенія", "family": "Казбекова", "initials": "Є. К."}
+{"name": "ІВАН П'ЯТАК", "given": "ІВАН", "family": "П'ЯТАК", "initials": "І. П.", "capitalized": "Іван П'ятак"}
 {"name": "Ігор Рибак", "given": "Ігор", "family": "Рибак", "initials": "І. Р."}
 {"name": "Ірына Алейнік", "given": "Ірына", "family": "Алейнік", "initials": "І. А."}
 {"name": "Јелена Беговић", "given": "Јелена", "family": "Беговић", "initials": "Ј. Б."}
@@ -4825,6 +4827,7 @@
 {"name": "Аталан", "order": "FAMILY_FIRST", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "А."}
 {"name": "Ашмарин Николай Иванович", "order": "FAMILY_FIRST", "given": "Николай", "middle": "Иванович", "family": "Ашмарин", "initials": "Н. И. А."}
 {"name": "Ашмарин, Николай Иванович", "given": "Николай", "middle": "Иванович", "family": "Ашмарин", "initials": "Н. И. А."}
+{"name": "БЕЗУГЛА МАР'ЯНА", "given": "БЕЗУГЛА", "family": "МАР'ЯНА", "initials": "Б. М.", "capitalized": "Безугла Мар'яна"}
 {"name": "Балдырған Қожамқұлова", "given": "Балдырған", "family": "Қожамқұлова", "initials": "Б. Қ."}
 {"name": "Бат", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бат", "order": "FAMILY_FIRST", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
@@ -4918,6 +4921,7 @@
 {"name": "Гойщик, Татьяна Геннадьевна", "given": "Татьяна", "middle": "Геннадьевна", "family": "Гойщик", "initials": "Т. Г. Г."}
 {"name": "Грипич, Александр Сергеевич", "given": "Александр", "middle": "Сергеевич", "family": "Грипич", "initials": "А. С. Г."}
 {"name": "Гриценко, Анатолий Иванович", "given": "Анатолий", "middle": "Иванович", "family": "Гриценко", "initials": "А. И. Г."}
+{"name": "ДЗМІТРЫЙ ЮР’ЕВІЧ", "given": "ДЗМІТРЫЙ", "family": "ЮР’ЕВІЧ", "initials": "Д. Ю.", "capitalized": "Дзмітрый Юр’евіч"}
 {"name": "Данка Илић", "given": "Данка", "family": "Илић", "initials": "Д. И."}
 {"name": "Дарья Александровна Дугина", "given": "Дарья", "middle": "Александровна", "family": "Дугина", "initials": "Д. А. Д."}
 {"name": "Дарья Алексеевна Навальная", "given": "Дарья", "middle": "Алексеевна", "family": "Навальная", "initials": "Д. А. Н."}
@@ -5053,6 +5057,7 @@
 {"name": "Кучма Леонід Данилович", "order": "FAMILY_FIRST", "given": "Леонід", "middle": "Данилович", "family": "Кучма", "initials": "Л. Д. К."}
 {"name": "Кэйт Мюллер", "given": "Кэйт", "family": "Мюллер", "initials": "К. М."}
 {"name": "Кэти Мюлер", "given": "Кэти", "family": "Мюлер", "initials": "К. М."}
+{"name": "ЛЮДМИЛА О'КОННОР", "given": "ЛЮДМИЛА", "family": "О'КОННОР", "initials": "Л. О.", "capitalized": "Людмила О'Коннор"}
 {"name": "Лев Семёнович Рубинштейн", "given": "Лев", "middle": "Семёнович", "family": "Рубинштейн", "initials": "Л. С. Р."}
 {"name": "Левандовский, Анатолий Петрович", "given": "Анатолий", "middle": "Петрович", "family": "Левандовский", "initials": "А. П. Л."}
 {"name": "Леонид Иванович Иванов", "given": "Леонид", "middle": "Иванович", "family": "Иванов", "initials": "Л. И. И."}
@@ -5067,6 +5072,7 @@
 {"name": "Марковић Ирена", "order": "FAMILY_FIRST", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Марковић, Ирена", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Марія Панчишин", "given": "Марія", "family": "Панчишин", "initials": "М. П."}
+{"name": "Мар’яна Безугла", "given": "Мар’яна", "family": "Безугла", "initials": "М. Б."}
 {"name": "Матвеев, Герман Иванович", "given": "Герман", "middle": "Иванович", "family": "Матвеев", "initials": "Г. И. М."}
 {"name": "Медведев, Николай Дмитриевич", "given": "Николай", "middle": "Дмитриевич", "family": "Медведев", "initials": "Н. Д. М."}
 {"name": "Мельник Анна", "order": "FAMILY_FIRST", "given": "Анна", "family": "Мельник", "initials": "А. М."}
@@ -6532,6 +6538,8 @@
 {"name": "ស្តូបើ ហ្សាហ្សីលៀ ហេមីស", "order": "FAMILY_FIRST", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ស្តូបើ, ហ្សាហ្សីលៀ ហេមីស", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
+{"name": "Ნინო Ბურჯანაძე", "given": "Ნინო", "family": "Ბურჯანაძე", "initials": "Ნ. Ბ.", "capitalized_force": "ნინო ბურჯანაძე"}
+{"name": "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "given": "ᲜᲘᲜᲝ", "family": "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "initials": "Ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "Ḥabīballāh Kalakānī", "given": "Ḥabīballāh", "family": "Kalakānī", "initials": "Ḥ. K."}
 {"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "family": "al- Ḥakīm", "initials": "T. Ḥ."}
 {"name": "Ḥamza Fanṣūrī", "given": "Ḥamza", "family": "Fanṣūrī", "initials": "Ḥ. F."}
