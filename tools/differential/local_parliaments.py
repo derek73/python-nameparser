@@ -2,17 +2,18 @@
 parliaments, as each parliament writes their names.
 
 opensanctions-parliaments -- the members OpenSanctions' crawlers read
-off twenty national chambers' own websites, and the regional heads
+off twenty-two national chambers' own websites, and the regional heads
 Indonesia elected in 2018 (DATASETS), each
 dataset's `targets.simple.csv`: a row per person, the `name` column as
 the parliament writes it and `aliases` the other forms the crawler
 found, joined by ";" (another script, Kazakh beside Russian Cyrillic,
-Uzbek Cyrillic beside its Latin, Devanagari beside Latin; a short
+Uzbek Cyrillic beside its Latin, Devanagari beside Latin, Hangul and
+Hanja beside a Korean member's Latin, Hebrew beside an Israeli's; a short
 parliamentary name, `Jorge Costa` for `Jorge Fernando Magalhães da
 Costa`; the name with its title, `Shrimati Savitri Kulaste`; another
 surname, in Ukraine's; another transliteration, in Ethiopia's). A row
-is a target; on 2026-11-08 every one of the 18,485 was a Person, 2,748
-of them spelled two ways or more, 22,325 spellings in all, distinct
+is a target; on 2026-11-08 every one of the 19,216 was a Person, 3,479
+of them spelled two ways or more, 24,084 spellings in all, distinct
 within each member. The parliaments write
 the shapes the other corpora barely hold: Turkic patronymics (`Həmid
 qızı`, `Серикбайулы`, `Bolatuly`, `Gurbangulyyevich`, `o‘g‘li`) and East
@@ -21,9 +22,11 @@ often in capitals (`AĞAZADƏ Əminə`, `Mehmet DEMİR`); Indic titles and
 initials (`Shri`, `Smt.`, `Dr.`, initials before the name); Slavic and
 Portuguese double surnames; Indonesian names in capitals with `H.`
 (Haji) or `R.` (Raden) before them and no family name; Ethiopian names
-of given, father's and grandfather's name. Issues #1186 to #1192 were
+of given, father's and grandfather's name; Korean names in Hangul and
+Hanja, and Hebrew ones. Issues #1186 to #1192 were
 read from it, in a 2026-11-07/08 check of the shipped packs; the
-Indonesian datasets measure #1205 and #1206, and Ethiopia's #1203.
+Indonesian datasets measure #1205 and #1206, Ethiopia's #1203, Korea's
+#1213, #1215 and #1216, and Israel's #1209, #1210 and #1211.
 
 A record is one distinct spelling of one member: the spelling (`name`),
 the member (`entity`, the dataset and OpenSanctions' id, so a member of
@@ -64,7 +67,8 @@ DATASETS = ("az_parliament", "kg_jogorku_kenesh", "uz_legislative_chamber", "uz_
             "kz_mazhilis", "kz_senate", "tm_mejlis", "tr_parliament", "hr_sabor",
             "si_dz_rs", "sk_nrsr_poslanci", "pt_parliament", "in_sansad", "ua_rada",
             "by_council_republic", "ru_duma_deputies", "ru_federation_council",
-            "id_dpr", "id_dpd", "id_regional_2018", "et_hopr")
+            "id_dpr", "id_dpd", "id_regional_2018", "et_hopr",
+            "kr_assembly", "il_knesset_members")
 INDEX_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/index.json"
 RESOURCE = "targets.simple.csv"
 #: The columns read; the file holds others (birth dates, contacts), and
