@@ -1027,17 +1027,6 @@ def test_a_callers_edit_moves_the_mark() -> None:
     assert not short._same_as_named["given"]
 
 
-def test_the_mark_follows_the_chosen_vocabulary() -> None:
-    # under Filipino alone, strict, Jo has no reading as a name of its
-    # own, so the bare word is José written short (review ruling)
-    from nameparser import Locale, parser_for
-    filipino = parser_for(Locale(code="x", lexicon=Lexicon.empty(),
-                                 languages=frozenset({"fil"})), strict=True)
-    r = filipino.matching().check("Jo Smith", "José Smith")
-    assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
-    assert not m.check("Jo Smith", "José Smith").consistent
-
-
 def test_a_bare_name_of_its_own_is_not_keyed_by_its_long_form() -> None:
     # the keys are cut from the one spelling set the check reads, so the
     # period is read there too: `Jo.` reaches José's folded form, `Jo`

@@ -566,6 +566,9 @@ _ACROSS: Mapping[Role, tuple[Role, ...]] = {
     Role.FAMILY: (Role.MAIDEN,),
 }
 _RANK_ROLE = {r: i for i, r in enumerate(Role)}
+#: `FULL_STOPS` as the tuple `str.endswith` takes, one test for the
+#: period `_spellings` reads off a word as written.
+_FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
 #: The `same_as` group each role reads its listed spellings in: the
 #: readings of the kind that stands there (`Lexicon._headwords`), so a
@@ -694,7 +697,7 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     (`FULL_STOPS`, `Jo．` too), read here off the word as written since
     both the normalizing and the fold drop it: `Jo` is the given name Jo
     alone (decisions/name-matching, 2026-11-08 #1006 follow-up)."""
-    period = word.endswith(tuple(FULL_STOPS))
+    period = word.endswith(_FULL_STOPS)
     heads = (lexicon._headwords(word, group, period=period)
              | lexicon._headwords(_fold(word), group, period=period))
     return heads | {_fold(h) for h in heads}
