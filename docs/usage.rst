@@ -258,7 +258,7 @@ read it as is the token's, :attr:`Token.reading
 
     >>> from nameparser import Lexicon
     >>> [(r.kind, r.languages) for r in Lexicon.default().readings_of("van")]
-    [('preposition', ('nl',)), ('given', ('nl',))]
+    [('preposition', ('nl',)), ('given', ('nl',)), ('familiar', ('en',))]
     >>> parse("Ludwig van Beethoven").tokens[1].reading
     Reading('particle' as 'family', 'vocabulary', in nl)
 
@@ -1498,24 +1498,29 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms are the 736 pairs of Jörg Michael's
-nam_dict (2008, GNU Free Documentation License 1.2), each in the
-vocabulary file of the languages whose countries it lists them for.
-A plain choice of languages keeps every file's, and a strict one only
-its own files' (strict ``es`` holds five pairs: ``Cesc``, ``Koldo``,
-``Xabi`` and ``Xavi``). A pair whose short name reads as a title in
-front of a name (``Timi``, ``Nanny``) is never compared as a given
-name, so it stays inert while the title reading stands. It is a selection and has
-gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
-``William`` are not in it); add your own with a ``familiar`` reading,
+The shipped familiar forms come from two sources, 2,826 pairs in all
+(counted 2026-11-09). The pairs of Jörg Michael's nam_dict (2008, GNU
+Free Documentation License 1.2) are each in the vocabulary file of the
+languages whose countries it lists them for. The pairs of Old Dominion
+University's nicknames list (Apache License 2.0), drawn from US records
+(``Ricky`` / ``Richard``, ``Peggy`` / ``Margaret``), are in the English
+file, less the pairs a review refused as spellings of one name
+(``Allan`` / ``Allen``), another language's form (``Ivan`` / ``John``)
+or another name (``Erin`` / ``Aaron``). A plain choice of languages
+keeps every file's, and a strict one only its own files' (strict
+``es`` holds five pairs: ``Cesc``, ``Koldo``, ``Xabi`` and ``Xavi``). A
+pair whose short name reads as a title in front of a name (``Timi``,
+``Nanny``) is never compared as a given name, so it stays inert while
+the title reading stands. It is a selection and has gaps (``Pepe`` /
+``José`` is not in it); add your own with a ``familiar`` reading,
 which extends the names the word's shipped readings list (to replace
 them, ``remove(word, kind="familiar")`` first):
 
 .. doctest::
 
-    >>> maxwell = Lexicon.default().add("max", kind="familiar", short_for=["maxwell"])
-    >>> mine = Parser(lexicon=maxwell).matching(accept=matcher.accept | {"familiar-form"})
-    >>> mine.check("Max Smith", "Maxwell Smith").consistent, mine.check("Max Smith", "Maximilian Smith").consistent
+    >>> pepe = Lexicon.default().add("pepe", kind="familiar", short_for=["josé"])
+    >>> mine = Parser(lexicon=pepe).matching(accept=matcher.accept | {"familiar-form"})
+    >>> mine.check("Pepe Garcia", "José Garcia").consistent, mine.check("Max Smith", "Maximilian Smith").consistent
     (True, True)
 
 A familiar form is outside the default because it is many-valued and

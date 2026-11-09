@@ -961,10 +961,13 @@ def test_a_listed_spelling_with_its_period_or_of_no_name_of_its_own(
 def test_a_name_of_its_own_written_bare_is_itself(a: str, b: str) -> None:
     # `jo`, `ma` and `jas` are given names of their own as well as
     # spellings of José, María and James, so written without the period
-    # each is the name, and conflicts with the long form
+    # each is the name, not a listed spelling of the long form (the
+    # nicknames list pairs `jo` with Joanne as a familiar form, which
+    # the table reports and the default does not accept)
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
-        assert not r.consistent and r["given"].outcome is Outcome.CONFLICT
+        assert not r.consistent
+        assert r["given"].outcome in (Outcome.CONFLICT, Outcome.FAMILIAR_FORM)
 
 
 def test_a_bare_middle_name_of_its_own_is_itself() -> None:
@@ -1204,9 +1207,10 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
 @pytest.mark.parametrize("a, b", [
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
-    # a pair nam_dict does not list
-    ("Max Smith", "Maxwell Smith"),
-    ("Peggy Smith", "Margaret Smith"),
+    # pairs no source lists: Rickie is paired with Rick and Roderick,
+    # Pepe with nothing
+    ("Rickie Smith", "Richard Smith"),
+    ("Pepe Smith", "José Smith"),
 ])
 def test_a_familiar_form_reaches_only_its_listed_longer_names(
         a: str, b: str) -> None:
@@ -1244,26 +1248,26 @@ def test_a_familiar_form_ranks_below_every_default_outcome() -> None:
 def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
     # an add EXTENDS the word's longer names, in a reading of the
     # caller's own that names no file; the shipped readings stay
+    shipped = Lexicon.default()._familiar_forms("max")
+    assert "maxence" not in shipped
     lexicon = Lexicon.default().add("max", kind="familiar",
-                                    short_for=["Maxwell"])
-    assert lexicon._familiar_forms("Max") == {
-        "maksim", "maxim", "maximilian", "maxwell"}
+                                    short_for=["Maxence"])
+    assert lexicon._familiar_forms("Max") == shipped | {"maxence"}
     readings = [r for r in lexicon.readings_of("max") if r.kind == "familiar"]
     assert sorted(r.languages for r in readings) == [
-        (), ("be", "ru", "uk"), ("de",)]
+        (), ("be", "ru", "uk"), ("de",), ("en",)]
     assert next(r for r in readings if not r.languages).properties == (
-        ("short_for", ("maxwell",)),)
+        ("short_for", ("maxence",)),)
     matching = Matching(Parser(lexicon=lexicon),
                         DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
-    for long in ("Maxwell", "Maximilian"):
+    for long in ("Maxence", "Maximilian"):
         assert matching.check("Max Smith", f"{long} Smith").consistent
         assert matching.keys("Max Smith") & matching.keys(f"{long} Smith")
     # a second add extends the caller's own reading
     again = lexicon.add("max", kind="familiar", short_for=["maxi"])
-    assert again._familiar_forms("max") == {
-        "maksim", "maxi", "maxim", "maximilian", "maxwell"}
+    assert again._familiar_forms("max") == shipped | {"maxence", "maxi"}
     assert len([r for r in again.readings_of("max")
-                if r.kind == "familiar"]) == 3
+                if r.kind == "familiar"]) == 4
     added = Lexicon.empty().add("zzq", kind="familiar", short_for=["zzr"])
     assert added._familiar_forms("zzq") == {"zzr"}
     assert added._familiar_forms("zzr") == {"zzq"}
@@ -1272,10 +1276,11 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
 
 def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
     # a pair lives on its short side: cutting Max / Maximilian is
-    # removing max's readings and adding back the names to keep
+    # removing max's readings and adding back the names to keep; Maxie's
+    # own reading, which pairs it with Max, stays
     cut = Lexicon.default().remove("max", kind="familiar").add(
         "max", kind="familiar", short_for=["maxim", "maksim"])
-    assert cut._familiar_forms("max") == {"maksim", "maxim"}
+    assert cut._familiar_forms("max") == {"maksim", "maxim", "maxie"}
     matching = Matching(Parser(lexicon=cut),
                         DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
     assert not matching.check("Max Smith", "Maximilian Smith").consistent
@@ -1343,7 +1348,8 @@ def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     plain = Lexicon(_base="default", _languages={"de"})
     strict = Lexicon(_base="default", _languages={"de"}, _strict=True)
     assert plain._familiar == Lexicon.default()._familiar
-    assert plain._familiar_forms("max") == {"maksim", "maxim", "maximilian"}
+    assert plain._familiar_forms("max") == (
+        Lexicon.default()._familiar_forms("max"))
     assert strict._familiar_forms("max") == {"maximilian"}
     assert not strict._familiar_forms("bill")
 
@@ -1366,9 +1372,13 @@ def test_a_familiar_form_holds_whatever_the_accents(a: str, b: str) -> None:
 
 
 #: The shipped pairs whose short name reads as a title in front of a
-#: name, so the pair is never compared as two given names: a pair is
-#: inert while its short form reads as a title.
-_TITLE_SHORT_FORMS = {("nanny", "nannette"), ("timi", "tímea")}
+#: name (and Governor, a title itself), so the pair is never compared as
+#: two given names: a pair is inert while a name of it reads as a title.
+_TITLE_SHORT_FORMS = {
+    ("ab", "abel"), ("ab", "abiel"), ("ab", "abijah"), ("ab", "abner"),
+    ("ab", "abraham"), ("ab", "abram"), ("ab", "absalom"),
+    ("govie", "governor"), ("nanny", "hannah"), ("nanny", "nancy"),
+    ("nanny", "nannette"), ("pres", "prescott"), ("timi", "tímea")}
 
 
 def test_every_shipped_pair_is_consistent_in_every_spelling() -> None:
