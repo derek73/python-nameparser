@@ -34,7 +34,7 @@
   "Сидоров И. Петрович"  [ru]  →  family="Петрович"
   "Сидоров И. Петрович"  [ru]  →  patronymic=""
   ```
-- A bare Cyrillic capital is no initial by T5, so it does not stand in the rotation's way, and a name that writes its middle initial without the period is rotated, as a single letter P8 reads as a connective is in both of a one-case name's spellings.
+- A bare Cyrillic capital is no initial by T5, so it does not stand in the rotation's way, and a name that writes a Cyrillic middle initial without the period is rotated, as is a single letter P8 reads as a connective, in both of a one-case name's spellings.
   ```
   "Ирина Б Зубкевич"  [ru]  →  family="Ирина"
   "ivan y petrovich"  [ru]  →  family="ivan"
