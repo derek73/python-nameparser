@@ -463,7 +463,8 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
 def skeleton_parts(sk: Skeleton) -> list[tuple[str, str]]:
     """Every quotable field's text, tagged with its field (``Then
     bullet`` for a bullet under Then), in file order: the one list the
-    quotable prose, the ID check and the size budget all read."""
+    quotable prose, the ID check and the size report (rules_size.py) all
+    read."""
     out = [("When", sk.when)]
     if sk.tolerated is not None:
         out.append(("Tolerated", sk.tolerated))

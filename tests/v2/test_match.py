@@ -890,13 +890,18 @@ def test_a_bad_accept_offers_code_that_extends_the_default(accept: object) -> No
     assert written == offered
 
 
-@pytest.mark.parametrize("apostrophe", ["\u2019", "\u02bc"])
+@pytest.mark.parametrize("apostrophe", ["\u2019", "\u02bc", "\u02bb",
+                                        "\u2018", "`"])
 def test_a_typographic_apostrophe_folds_like_a_typed_one(apostrophe: str) -> None:
+    # U+02BB, U+2018 and the backtick are the Uzbek spellings of the
+    # okina in gʻ and oʻ (#1186's sweep): G'ofurov and Gʻofurov are one
     written = f"O{apostrophe}Brien, Pat"
     assert _fold(f"O{apostrophe}Brien") == _fold("O'Brien") == "obrien"
     r = m.check(written, "Pat O'Brien")
     assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.FOLDED
     assert m.keys(written) == m.keys("Pat O'Brien") == {"obrien;p"}
+    uzbek = f"G{apostrophe}ofurov, Aziz"
+    assert m.check(uzbek, "Aziz G'ofurov").consistent
 
 
 def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:

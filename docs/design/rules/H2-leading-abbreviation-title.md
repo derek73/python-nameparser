@@ -83,4 +83,4 @@
 
 ---
 **Signal:** shape: an unlisted word of two or more letters ending in its one period, opening the given-name part, which a given name written short declines
-**history:** decisions/H2 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+**history:** decisions/H2 · **implemented:** nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
