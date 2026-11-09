@@ -26,7 +26,7 @@
   "É.J. DUPONT"               →  capitalized="É.J. Dupont"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
   ```
-- **An apostrophe between a Cyrillic letter and one of the vowels я, ю, є, ї, е, ё or і is part of the word's spelling**: it is the Ukrainian and Belarusian apostrophe, which marks the vowel as pronounced apart and never divides a prefix from a name, so the vowel keeps the word's lowercase. Any other apostrophe a word holds divides it, and the letter after it takes a capital, as in O'Brien and its Cyrillic spelling.
+- **An apostrophe between a Cyrillic letter and one of the vowels я, ю, є, ї, е, ё or і is part of the word's spelling**: it is the Ukrainian and Belarusian apostrophe, which marks the vowel as pronounced apart and never divides a prefix from a name, so the vowel keeps the word's lowercase. Any other apostrophe written as a punctuation mark (', ‘ or ’) divides the word, and the letter after it takes a capital, as in O'Brien and its Cyrillic spelling; the modifier letter apostrophe ʼ is a letter of the word and divides nothing.
   ```
   "БЕЗУГЛА МАР'ЯНА"           →  capitalized="Безугла Мар'яна"
   "ІВАН П'ЯТАК"               →  capitalized="Іван П'ятак"
@@ -159,6 +159,10 @@
 
 **Accepted:**
 
+- A Cyrillic spelling of an elided prefix before е or і, such as French d' (Д'Естен), loses the capital after its apostrophe, since the Belarusian apostrophe stands before those vowels inside a word and nothing in the letters tells the two apart.
+  ```
+  "ВАЛЕРІ Д'ЕСТЕН"            →  capitalized="Валері Д'естен"  · boundary
+  ```
 - A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
   ```
   "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary

@@ -906,6 +906,9 @@ def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
         # the boundaries
         ("ЛЮДМИЛА О{a}КОННОР", "Людмила О{a}Коннор"),
         ("ЛЮДМИЛА Д{a}АРТАНЬЯН", "Людмила Д{a}Артаньян"),
+        # the accepted cost: an elision before a vowel only Belarusian
+        # writes after its apostrophe
+        ("ВАЛЕРІ Д{a}ЕСТЕН", "Валері Д{a}естен"),
         ("DEM{a}YAN SMITH", "Dem{a}Yan Smith"),
         ("JOHN O{a}BRIEN", "John O{a}Brien"),
     )
@@ -955,6 +958,9 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
             ("AHMAD AL-AHMARI", "Ahmad Al-Ahmari"),
             ("AHMAD IBN-ʿALĪ", "Ahmad Ibn-ʿAlī"),
             ("ARMAND VAN-DEN BERGH", "Armand Van-den Bergh"),
+            ("MARIA VAN-DER", "Maria Van-der"),
+            # only the opening part's first word leaves the particle arm
+            ("JUAN D'LA-VEGA", "Juan D'la-Vega"),
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
             ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
             ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),

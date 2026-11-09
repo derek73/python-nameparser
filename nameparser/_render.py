@@ -874,10 +874,17 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         return _sub_words(cap, text)
 
     # rules/R4: "So is a particle opening a hyphenated word" -- the
-    # opening named part, asked without the particle arm, with a named
-    # part after it. decisions/R4 (#1224).
-    def opening(word: str) -> str:
-        return _cap_word(word, role, tags, lex, particle=False)
+    # first word of the opening named part, asked without the particle
+    # arm, with a named part after it; a later word of that part
+    # ('la' in "d'la-vega") is asked as any word is. decisions/R4 (#1224).
+    def opening(part: str) -> str:
+        words: list[str] = []
+
+        def first_word(word: str) -> str:
+            words.append(word)
+            return _cap_word(word, role, tags, lex,
+                             particle=len(words) > 1)
+        return _sub_words(first_word, part)
 
     # rules/R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
@@ -898,7 +905,8 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
                 and not _DOTTED_INITIAL.fullmatch(
                     unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex._sets.conjunctions)
-        else _sub_words(opening if at == first else cap, part)
+        else opening(part) if at == first
+        else _sub_words(cap, part)
         for at, part in enumerate(parts))
 
 
