@@ -94,9 +94,6 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # shape test), so it is visible under both module names and the
     # completeness scan below sees it twice.
     ("_pieces", "_PERIOD_ABBREV"): ("_vocab", "_PERIOD_ABBREV"),
-    # the same object again: assemble imports it to name a title read
-    # by rules/H2's shape (`Token.reading`, 3.0)
-    ("_assemble", "_PERIOD_ABBREV"): ("_vocab", "_PERIOD_ABBREV"),
     # `split_pair`'s two halves, the Ph./D. split credential (#752;
     # declared under _group until then, which had stopped holding them)
     ("_vocab", "_PH"): None,

@@ -277,6 +277,14 @@ _EXPECTED_READINGS = [
      "vocabulary"),
     ("Member of Parliament John Smith", None, "Parliament", "title",
      "position"),
+    # a connective's object H2's shape refuses reads by its place, not
+    # by the shape: a given name written short, and words in scripts
+    # with no period abbreviations (rules/H2's Except), beside an
+    # unlisted abbreviation the shape does take
+    ("Member of Xyz. John Smith", None, "Xyz.", "title", "shape"),
+    ("Member of Chas. John Smith", None, "Chas.", "title", "position"),
+    ("Member of 田中. John Smith", None, "田中.", "title", "position"),
+    ("Member of एम. John Smith", None, "एम.", "title", "position"),
     ("Dr. Juan de la Vega III", None, "Juan", "name", "position"),
     ("Dr. Juan de la Vega III", None, "de", "particle", "vocabulary"),
     ("Dr. Juan de la Vega III", None, "III", "generation", "vocabulary"),

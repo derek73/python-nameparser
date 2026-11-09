@@ -59,7 +59,7 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, has_patronymic_ending, is_patronymic_marker,
+    has_patronymic_ending, is_patronymic_marker, is_title_shaped,
     name_source, suffix_kind,
 )
 from nameparser._policy import PatronymicRule
@@ -579,8 +579,12 @@ def assemble(state: ParseState) -> ParsedName:
                                     ReadingSource.VOCABULARY)
                 elif not tags.isdisjoint(_TITLE_TAGS):
                     kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
-                elif _PERIOD_ABBREV.match(t.text):
-                    # rules/H2's shape: an unlisted abbreviation
+                elif is_title_shaped(t.text, state.lexicon):
+                    # rules/H2's shape: an unlisted abbreviation, asked
+                    # as H2 asks it, so a word its Except refuses (a
+                    # given name written short, a word in a script
+                    # with no period abbreviations) is a title only by
+                    # where it stands
                     kind, source = ReadingKind.TITLE, ReadingSource.SHAPE
                 else:
                     # a title phrase's connective object ('of
