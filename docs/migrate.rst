@@ -467,13 +467,13 @@ A ``Lexicon`` pickled by 2.x holds the compiled sets, and 3.1 refuses
 it, as it refuses a ``Parser`` or a locale pack holding one, with a
 ``ValueError`` saying which releases wrote it. One written by 2.7 or
 2.8 loads under 3.0, which translates it onto readings: pickle the
-loaded object again there (``pickle.dumps(obj)``), or build it again
-if 3.0 refuses it too, as it refused an edited ``Lexicon`` whose sets
-no readings express. No 3.x release
-loads one written by 2.6 or earlier, so build that object again. A
-re-pickled object
-keeps the vocabulary it was first pickled with, not this release's;
-build a new ``Parser()`` for that.
+loaded object again there (``pickle.dumps(obj)``). If 3.0 refuses the
+pickle too, as it refused an edited ``Lexicon`` whose sets no readings
+express, build the object again. No 3.x release loads one written by
+2.6 or earlier, which the error says by naming the fields its layout
+lacks, so build that object again. A re-pickled object keeps the
+vocabulary it was first pickled with, not this release's; build a new
+``Parser()`` for that.
 
 Vocabulary constants → Lexicon.words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

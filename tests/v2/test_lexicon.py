@@ -1495,16 +1495,21 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
 _REFUSED_2X = re.escape(
     "this Lexicon was pickled by nameparser 2.7 or 2.8, which 3.1 no "
     "longer loads: load the pickle under 3.0 and pickle the loaded object "
-    "(the Lexicon, or the Parser or locale pack holding it) again, or "
-    "build it again if 3.0 refuses it too")
-_REFUSED_OLDER = re.escape(
-    "this Lexicon was pickled by nameparser 2.x in a layout no 3.x release "
-    "loads, 2.6's or an earlier one: build the object (the Lexicon, or the "
-    "Parser or locale pack holding it) again")
+    "(the Lexicon, or the Parser or locale pack holding it) again; if 3.0 "
+    "refuses the pickle too, build the object again")
+
+
+def _refused_older(missing: str, unexpected: str = "none") -> str:
+    """The refusal of a 2.x layout 3.0 never loaded, naming its keys."""
+    return re.escape(
+        f"this Lexicon was pickled by nameparser 2.x in a layout no 3.x "
+        f"release loads (missing: {missing}; unexpected: {unexpected}), as "
+        f"2.6 and earlier wrote: build the object (the Lexicon, or the "
+        f"Parser or locale pack holding it) again")
 
 #: The fields a 2.6.0 Lexicon state lacks against 2.8's, read off the
 #: ValueError 3.0.1 raised loading `Lexicon.default()` pickled by the
-#: 2.6.0 wheel (2026-11-08).
+#: 2.6.0 wheel (2026-11-08), sorted as the refusal lists them.
 _NOT_IN_2_6 = ("agnomens", "given_name_abbreviations",
                "suffix_words_ambiguous", "title_modifiers", "title_phrases",
                "title_styles", "titles_ambiguous")
@@ -1555,18 +1560,32 @@ def test_a_2_8_pickle_is_still_told_to_re_pickle_after_a_field_joins(
         Lexicon.__new__(Lexicon).__setstate__(_state_2_8())
 
 
-@pytest.mark.parametrize("layout", ["2.6", "unknown field"])
-def test_a_2x_layout_3_0_never_loaded_is_told_to_rebuild(layout: str) -> None:
-    # 3.0 refused any 2.x state but 2.7's and 2.8's, so re-pickling under
-    # it cannot help them: the remedy is to build the object again
-    state = _state_2_8()
-    if layout == "2.6":
-        for f in _NOT_IN_2_6:
-            del state[f]
-    else:
-        state["no_such_field"] = frozenset()
-    with pytest.raises(ValueError, match=_REFUSED_OLDER):
-        Lexicon.__new__(Lexicon).__setstate__(state)
+def test_a_lexicon_pickled_by_2_6_0_is_told_to_rebuild() -> None:
+    """tests/v2/data/lexicon_v26.pickle is `Lexicon.empty()` pickled
+    (protocol 4) by the released 2.6.0 wheel, made 2026-11-08 as
+    lexicon_v28.pickle was, version and module path asserted. 3.0
+    refused it, so re-pickling under 3.0 cannot help: the refusal says
+    to build the object again and names the keys that differ."""
+    data = (Path(__file__).parent / "data" / "lexicon_v26.pickle").read_bytes()
+    with pytest.raises(ValueError,
+                       match=_refused_older(", ".join(_NOT_IN_2_6))):
+        pickle.loads(data)  # noqa: S301 -- our own fixture
+
+
+def test_a_layout_off_by_one_key_is_named_by_that_key() -> None:
+    # neither 2.7's nor 2.8's layout: named by what differs, never
+    # credited to a release
+    for drop, add, missing, unexpected in [
+            ("titles_ambiguous", None, "titles_ambiguous", "none"),
+            (None, "no_such_field", "none", "no_such_field")]:
+        state = _state_2_8()
+        if drop:
+            del state[drop]
+        if add:
+            state[add] = frozenset()
+        with pytest.raises(ValueError,
+                           match=_refused_older(missing, unexpected)):
+            Lexicon.__new__(Lexicon).__setstate__(state)
 
 
 @pytest.mark.parametrize("obj", [

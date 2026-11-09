@@ -1361,19 +1361,22 @@ def _refused_2x(state: Mapping[str, object]) -> ValueError:
     state's layout, since a caller holding an old pickle seldom knows
     which release wrote it (decisions/vocabulary-model, 2026-11-08
     #1003). It is raised wherever the `Lexicon` is, so a `Parser` or
-    locale pack holding one is named too."""
+    locale pack holding one is named too. Any other layout is named by
+    the keys it lacks and holds beyond that one, as 3.0 named them."""
     held = "the Lexicon, or the Parser or locale pack holding it"
-    if _LAYOUT_3_0_LOADED <= set(state) <= _LAYOUT_3_0_LOADED | {
-            "given_names"}:
+    missing = sorted(_LAYOUT_3_0_LOADED - set(state))
+    unexpected = sorted(set(state) - _LAYOUT_3_0_LOADED - {"given_names"})
+    if not missing and not unexpected:
         return ValueError(
             f"this Lexicon was pickled by nameparser 2.7 or 2.8, which "
             f"3.1 no longer loads: load the pickle under 3.0 and pickle "
-            f"the loaded object ({held}) again, or build it again if 3.0 "
-            f"refuses it too")
+            f"the loaded object ({held}) again; if 3.0 refuses the "
+            f"pickle too, build the object again")
     return ValueError(
         f"this Lexicon was pickled by nameparser 2.x in a layout no 3.x "
-        f"release loads, 2.6's or an earlier one: build the object "
-        f"({held}) again")
+        f"release loads (missing: {', '.join(missing) or 'none'}; "
+        f"unexpected: {', '.join(unexpected) or 'none'}), as 2.6 and "
+        f"earlier wrote: build the object ({held}) again")
 
 
 # -- the public types ----------------------------------------------------
