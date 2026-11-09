@@ -1550,3 +1550,62 @@ def test_every_role_has_one_rule_and_its_columns_agree() -> None:
         assert rule.tried_into is not never_conflicts, role
         # a comparator reading the names whole takes no empty-side cells
         assert (rule.empty is None) is (rule.compare is _compare_suffix), role
+
+
+# -- each role's rule, on the paths the corpora never reach (#1260) ---------
+# A one-cell change to `_RULES` that no corpus pair reaches is held here:
+# the review of #1260 mutated every cell and found these paths moved by
+# nothing else (decisions/name-matching, 2026-11-09 #1260).
+
+@pytest.mark.parametrize("a, b, outcome", [
+    ("Jane Doe (née Smith)", "Jane Doe (née Jones)", Outcome.CONFLICT),
+    ("Jane Doe (née Smith)", "Jane Doe (née SMITH)", Outcome.FOLDED),
+    # read in the family group: Mc is listed as a spelling of Mac there
+    ("Jane Doe (née Mc)", "Jane Doe (née Mac)", Outcome.LISTED_SPELLING),
+    # compared whole, with no family leniency: no particles set aside,
+    # no part of the other
+    ("Jane Doe (née de la Vega)", "Jane Doe (née Vega)", Outcome.CONFLICT),
+    ("Jane Doe (née Smith Jones)", "Jane Doe (née Smith)", Outcome.CONFLICT),
+])
+def test_a_maiden_name_on_both_sides_is_compared_whole_as_a_surname(
+        a: str, b: str, outcome: Outcome) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["maiden"].outcome is outcome
+        assert r.consistent is (outcome is not Outcome.CONFLICT)
+
+
+def test_a_maiden_name_is_not_matched_across_into_the_family() -> None:
+    # the family is tried against the other's maiden name; the maiden is
+    # not tried against the other's family, so a swap still conflicts
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    r = across.check("Jane Smith (née Doe)", "Jane Doe (née Smith)")
+    assert r["family"].outcome is Outcome.ACROSS_ROLES
+    assert r["maiden"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+def test_a_nickname_of_several_words_is_compared_whole() -> None:
+    r = m.check('John "Billy Joe" Smith', 'John "Billy" Smith')
+    assert r["nickname"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+def test_a_title_on_one_side_is_noted() -> None:
+    r = m.check("Sir John Smith", "John Smith")
+    assert r["title"].outcome is Outcome.NOTED and r.consistent
+
+
+def test_another_reading_is_tried_into_the_middle_and_the_given_name() -> None:
+    # only a family-first parse offers one: `Smith John V` reads V as the
+    # generation, its other reading as a middle name (family first) or
+    # as the given name's second word (given last)
+    from nameparser import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, Policy
+    first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    r = first.matching(other_readings=True).check(
+        "Smith John V", "Smith John Victor III")
+    assert r.consistent and r.left_alternative is not None
+    assert r["middle"].outcome is Outcome.INITIAL
+    last = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    other = last.revise(last.parse("Smith Victor III"), given="John Victor")
+    r = last.matching(other_readings=True).check("Smith John V", other)
+    assert r.consistent and r.left_alternative is not None
+    assert r["given"].outcome is Outcome.INITIAL
