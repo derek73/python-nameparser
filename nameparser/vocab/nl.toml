@@ -133,7 +133,7 @@ same_as = "'s"
 
 [[word]]
 text = "'t"
-article ={ may_be_given = false, expands = "het, the: \"'t Hooft\"" }
+article = { may_be_given = false, expands = "het, the: \"'t Hooft\"" }
 
 [[word]]
 text = "’t"

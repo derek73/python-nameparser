@@ -154,10 +154,15 @@ def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
     if _normalize(word) in particles:
         return True
     # a particle hyphened to its surname ('s-Gravesande) opens none
-    # either, unless the word closes itself as a quoted word does:
-    # 'T-Bone' keeps its nickname (decisions/N2)
+    # either, unless the same character stands later after a non-space,
+    # where it could close the quote: 'T-Bone' and 'T-Bone Jones' keep
+    # their nicknames (decisions/N2). The hyphen test comes first so a
+    # word without one pays no second _normalize frame.
     head, hyphen, _ = word.partition("-")
-    return (bool(hyphen) and not word.endswith(text[i])
+    if not hyphen:
+        return False
+    j = text.find(text[i], i + 1)
+    return ((j < 0 or text[j - 1].isspace())
             and _normalize(head) in particles)
 
 

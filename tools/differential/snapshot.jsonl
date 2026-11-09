@@ -72,7 +72,6 @@
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
 {"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W."}
-{"name": "Aaron 'T-Bone' Walker", "given": "Aaron", "family": "Walker", "nickname": "T-Bone", "initials": "A. W."}
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
@@ -481,6 +480,7 @@
 {"name": "Blas de Lezo", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
 {"name": "Blerim", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Blerim", "order": "FAMILY_FIRST", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
+{"name": "Bob 'T-Bone Jones' Smith", "given": "Bob", "family": "Smith", "nickname": "T-Bone Jones", "initials": "B. S."}
 {"name": "Bob Dole", "given": "Bob", "family": "Dole", "initials": "B. D."}
 {"name": "Bob Jones, author", "title": "author", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Author Bob Jones"}
 {"name": "Bob Jones, compositeur", "title": "compositeur", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Compositeur Bob Jones"}

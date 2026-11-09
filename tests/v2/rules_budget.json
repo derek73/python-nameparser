@@ -32,7 +32,7 @@
   "M3": {"words": 239, "then_words": 84, "because_sentences": 2, "except": 2, "precedence": 2, "accepted": 1, "accepted_words": 93},
   "M4": {"words": 325, "then_words": 168, "because_sentences": 2, "except": 1, "precedence": 1, "accepted": 1, "accepted_words": 59},
   "N1": {"words": 95, "then_words": 62, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "N2": {"words": 180, "then_words": 79, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 2, "accepted_words": 42},
+  "N2": {"words": 187, "then_words": 79, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 2, "accepted_words": 45},
   "N3": {"words": 156, "then_words": 34, "because_sentences": 1, "except": 1, "precedence": 1, "accepted": 5, "accepted_words": 252},
   "O1": {"words": 226, "then_words": 92, "because_sentences": 1, "except": 0, "precedence": 1, "accepted": 3, "accepted_words": 220},
   "O2": {"words": 115, "then_words": 60, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 66},

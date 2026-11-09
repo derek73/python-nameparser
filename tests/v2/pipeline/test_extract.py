@@ -273,7 +273,9 @@ def test_unbalanced_delimiter_points_at_its_token(
     # listed particle hyphened to a word opens no quote either
     "Jan 's Jacob", "Willem Jacob 's Gravesande", "'s Gravesande, Willem",
     "Storm van 's-Gravesande", "G.H. 's-Gravesande", "Pieter 't-Hart",
-    "'s-Gravesande, Arent",
+    "'s-Gravesande, Arent", "Gravesande, Willem 's",
+    # the head is cut at the FIRST hyphen
+    "Storm van 's-Graven-Hage", "Arent van 's-Gravesande-Smith",
 ])
 def test_apostrophe_opening_a_listed_particle_reports_nothing(
         text: str) -> None:
@@ -289,6 +291,12 @@ def test_apostrophe_opening_a_listed_particle_reports_nothing(
     # was listed and a hyphen ended the particle (decisions/N2)
     "'Bob Smith", "Pieter 'x Hart", "Pieter 'tje Hart",
     "Pieter 'tje-Hart", "Pieter 'x-Hart", 'Jon "Nick Smith',
+    # a listed particle hyphened to a word still opens where the same
+    # character stands later after a non-space, a possible close: a
+    # close the punctuation after it refuses, and d' (accepted, no
+    # measured name writes the pair)
+    "Aaron 'T-Bone'. Walker", "Aaron 'T-Bone'; Walker",
+    "Arent van 's-Gravesande d'Ancona",
 ])
 def test_apostrophe_opening_an_unlisted_word_still_reports(text: str) -> None:
     kinds = [a.kind for a in parse(text).ambiguities]
@@ -306,6 +314,7 @@ _CURLY = Policy(nickname_delimiters=frozenset(
     ("Jan van \u2019t Hof \u2019Jantje\u2019", "Jantje"),
     ("Willem \u2019s Gravesande", ""),
     ("Arent van \u2019s-Gravesande", ""),
+    ("Aaron \u2019T-Bone\u2019 Walker", "T-Bone"),
 ])
 def test_curly_apostrophe_particle_under_a_curly_quote(text: str,
                                                        nickname: str) -> None:
@@ -331,11 +340,19 @@ def test_listed_particle_check_reads_the_parses_lexicon() -> None:
     # it still opens: the nickname is kept ('T-Bone'), and a quoted 's
     # is no particle at all
     ("Aaron 'T-Bone' Walker", "T-Bone"),
+    ("Bob 'T-Bone Jones' Smith", "T-Bone Jones"),
+    ("Bob 'S-Man Jr' Smith", "S-Man Jr"),
     ("Bob 's' Smith", "s"),
+    # a quote after a hyphened particle pairs with its own close
+    ("Jan van 's-Gravesande 'Jantje'", "Jantje"),
+    ("Pieter 't-Hart 'Piet'", "Piet"),
     # accepted: a quote that does open at 't is no longer read as one,
     # nor an unclosed one at 'T- (decisions/N2)
     ("Pieter 't Hart' Smith", ""),
     ("Aaron 'T-Bone Walker", ""),
+    # and, 's being listed, a quoted clause opening with the bare
+    # letter S, as with T
+    ("John 'S Dog' Smith", ""),
 ])
 def test_quote_beside_a_listed_apostrophe_particle(text: str,
                                                    nickname: str) -> None:
