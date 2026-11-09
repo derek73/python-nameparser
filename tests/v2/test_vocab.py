@@ -532,6 +532,11 @@ MUTATIONS = [
     ("shared-not-true", {"pa.toml": _w('[[word]]\ntext = "kaur"\nfamily = { note = "x", shared = false }')}, "shared must be true, or left unwritten"),
     ("after-particle-not-true", {"es.toml": _w('[[word]]\ntext = "carmen"\ngiven = { note = "x", after_particle = 1 }')}, "after_particle must be true, or left unwritten"),
     ("after-particle-on-a-family-reading", {"es.toml": _w('[[word]]\ntext = "carmen"\nfamily = { note = "x", after_particle = true }')}, "only a `given` reading takes one"),
+    # rules/R4's capital_opening: true or unwritten, and a particle
+    # reading's alone (BEHAVIORAL), so any other refuses it as unknown
+    ("capital-opening-not-true", {"nl.toml": _w('[[word]]\ntext = "ter"\npreposition = { may_be_given = false, capital_opening = false }')}, "capital_opening must be true, or left unwritten"),
+    ("capital-opening-on-a-family-reading", {"hy.toml": _w('[[word]]\ntext = "ter"\nfamily = { note = "x", capital_opening = true }')}, "capital_opening"),
+    ("capital-opening-on-a-conjunction", {"nl.toml": _w('[[word]]\ntext = "en"\nconjunction = { capital_opening = true }')}, "capital_opening"),
 ]
 
 
@@ -1136,6 +1141,7 @@ _PROPERTY_PROBES = {
     "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
     "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
     "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
+    "capital_opening": ("preposition", "{ capital_opening = true }", "zzq"),
     "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",

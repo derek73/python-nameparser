@@ -126,7 +126,7 @@ A kind belongs to a category, which decides what the reading does:
    * - particle
      - ``particle``, ``preposition``, ``article``, ``patronymic``,
        ``teknonymic``, ``clan``, ``rank``, ``saint``, ``alias``
-     - none
+     - ``capital_opening=True``
    * - conjunction
      - ``conjunction``
      - ``may_be_initial=True``

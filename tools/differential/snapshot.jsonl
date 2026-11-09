@@ -71,6 +71,8 @@
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
+{"name": "ANKE MAITLAND-VAN DER ZEE", "given": "ANKE", "middle": "MAITLAND-VAN", "family": "DER ZEE", "initials": "A. M. Z.", "capitalized": "Anke Maitland-van der Zee"}
+{"name": "ARMEN DER KIUREGHIAN", "given": "ARMEN", "family": "DER KIUREGHIAN", "initials": "A. K.", "capitalized": "Armen Der Kiureghian"}
 {"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W."}
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
@@ -1175,6 +1177,7 @@
 {"name": "G. M.", "given": "G.", "family": "M.", "initials": "G. M."}
 {"name": "G. V. M.", "given": "G.", "middle": "V.", "family": "M.", "initials": "G. V. M."}
 {"name": "GEORGE SHANAHAN IV", "given": "GEORGE", "family": "SHANAHAN", "suffix": "IV", "initials": "G. S.", "capitalized": "George Shanahan IV", "generation": "IV"}
+{"name": "GERARD TER BORCH", "given": "GERARD", "family": "TER BORCH", "initials": "G. B.", "capitalized": "Gerard Ter Borch"}
 {"name": "GOMINA MUSA Abɖu-Tɔyib", "order": "FAMILY_FIRST", "given": "MUSA", "middle": "Abɖu-Tɔyib", "family": "GOMINA", "initials": "M. A. G.", "capitalized_force": "Gomina Musa Abɖu-Tɔyib"}
 {"name": "GRACE SMITH", "given": "GRACE", "family": "SMITH", "initials": "G. S.", "capitalized": "Grace Smith"}
 {"name": "GREGORY HOUSE M.D.", "given": "GREGORY", "family": "HOUSE", "suffix": "M.D.", "initials": "G. H.", "capitalized": "Gregory House M.D."}
@@ -1520,9 +1523,12 @@
 {"name": "J.R.R. Tolkien", "given": "J.R.R.", "family": "Tolkien", "initials": "J. T."}
 {"name": "J.Smith", "given": "J.Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "J.씨", "given": "J.", "suffix": "씨", "initials": "J.", "honorifics": "씨"}
+{"name": "JA DER LIANG", "given": "JA", "family": "DER LIANG", "initials": "J. L.", "capitalized": "Ja Der Liang"}
 {"name": "JA KD", "given": "JA", "family": "KD", "initials": "J. K.", "capitalized": "Ja Kd"}
 {"name": "JACK MA", "given": "JACK", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "Jack Ma"}
 {"name": "JAMES MACKENZIE", "given": "JAMES", "family": "MACKENZIE", "initials": "J. M.", "capitalized": "James Mackenzie"}
+{"name": "JAN VAN DER BERG", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
+{"name": "JAN VAN TER HORST", "given": "JAN", "family": "VAN TER HORST", "initials": "J. H.", "capitalized": "Jan van ter Horst"}
 {"name": "JANE DOE MA R.T.", "given": "JANE", "middle": "DOE MA", "family": "R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. D. M. R.", "capitalized": "Jane Doe Ma R.T."}
 {"name": "JANE DOE NEE SMITH MA", "given": "JANE", "family": "DOE", "suffix": "MA", "maiden": "SMITH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized": "Jane Doe (Smith) MA"}
 {"name": "JANE DOE NEE YO-YO MA", "given": "JANE", "family": "DOE", "suffix": "MA", "maiden": "YO-YO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized": "Jane Doe (Yo-Yo) MA"}
@@ -2442,6 +2448,7 @@
 {"name": "K. Sivakumar", "given": "K.", "family": "Sivakumar", "initials": "K. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
+{"name": "KAREN AUS DER FÜNTEN", "given": "KAREN", "middle": "AUS", "family": "DER FÜNTEN", "initials": "K. A. F.", "capitalized": "Karen Aus Der Fünten"}
 {"name": "KIM, AE-RA", "family": "KIM", "suffix": "AE-RA", "initials": "K.", "capitalized": "Kim, AE-RA"}
 {"name": "KIM, MA-AE", "family": "KIM", "suffix": "MA-AE", "initials": "K.", "capitalized": "Kim, MA-AE"}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}
@@ -2549,7 +2556,7 @@
 {"name": "L'Aubespine, François de", "given": "François", "family": "de L'Aubespine", "initials": "F. L."}
 {"name": "L. U. P. O.", "given": "L.", "middle": "U. P.", "family": "O.", "initials": "L. U. P. O."}
 {"name": "LEED AP", "given": "LEED", "family": "AP", "initials": "L. A.", "capitalized": "Leed Ap"}
-{"name": "LEVON TER PETROSYAN", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon ter Petrosyan"}
+{"name": "LEVON TER PETROSYAN", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon Ter Petrosyan"}
 {"name": "LEVON TER-PETROSYAN", "given": "LEVON", "family": "TER-PETROSYAN", "initials": "L. T.", "capitalized": "Levon Ter-Petrosyan"}
 {"name": "LT. GEN. JOHN A. KENNETH DOE IV", "title": "LT. GEN.", "given": "JOHN", "middle": "A. KENNETH", "family": "DOE", "suffix": "IV", "initials": "J. A. K. D.", "capitalized": "Lt. Gen. John A. Kenneth Doe IV", "generation": "IV"}
 {"name": "LT.GOV. JOHN DOE", "title": "LT.GOV.", "given": "JOHN", "family": "DOE", "initials": "J. D.", "capitalized": "Lt.Gov. John Doe"}
@@ -2594,6 +2601,7 @@
 {"name": "Lerch, Magda von", "given": "Magda", "family": "von Lerch", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. L."}
 {"name": "Leschetizky, Walter", "given": "Walter", "family": "Leschetizky", "initials": "W. L."}
 {"name": "Levi, Omer Bar", "given": "Omer", "family": "Bar Levi", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "O. L.", "capitalized_force": "Omer bar Levi", "patronymic": "Bar Levi"}
+{"name": "Levon ter Petrosyan", "given": "Levon", "family": "ter Petrosyan", "initials": "L. P.", "capitalized_force": "Levon Ter Petrosyan"}
 {"name": "Leyla Vali qizi née Rasim qizi", "given": "Leyla", "middle": "Vali", "family": "qizi", "maiden": "Rasim qizi", "initials": "L. V. q.", "capitalized_force": "Leyla Vali Qizi (Rasim Qizi)"}
 {"name": "Leyla née Rasim qizi", "family": "Leyla", "maiden": "Rasim qizi", "initials": "L.", "capitalized_force": "Leyla (Rasim Qizi)"}
 {"name": "Lezo, Blas de", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
@@ -3935,6 +3943,7 @@
 {"name": "Süßkind-Schwendi, Richard von", "given": "Richard", "family": "von Süßkind-Schwendi", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "R. S."}
 {"name": "Sābūr Ibn-Sahl", "given": "Sābūr", "family": "Ibn-Sahl", "initials": "S. I."}
 {"name": "Sādāt, Ǧīhān as-", "given": "Ǧīhān", "family": "as- Sādāt", "initials": "Ǧ. S."}
+{"name": "TER PETROSYAN, LEVON", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon Ter Petrosyan"}
 {"name": "Tadsch ad-Din al-Hasani", "given": "Tadsch", "middle": "ad-Din", "family": "al-Hasani", "initials": "T. a. a.", "capitalized_force": "Tadsch Ad-Din Al-Hasani"}
 {"name": "Tahir Jalaluddin", "given": "Tahir", "family": "Jalaluddin", "initials": "T. J."}
 {"name": "Takamatsu, Jirō", "given": "Jirō", "family": "Takamatsu", "initials": "J. T."}
@@ -4026,6 +4035,7 @@
 {"name": "Ursula von der Leyen geb. Albrecht", "given": "Ursula", "family": "von der Leyen", "maiden": "Albrecht", "initials": "U. L."}
 {"name": "Uxía", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "Uxía", "order": "FAMILY_FIRST", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
+{"name": "VAN DER BERG, JAN", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
 {"name": "VAN GOGH VINCENT", "given": "VAN", "middle": "GOGH", "family": "VINCENT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. G. V.", "capitalized": "Van Gogh Vincent"}
 {"name": "VI, AD", "given": "AD", "family": "VI", "initials": "A. V.", "capitalized": "Ad Vi"}
 {"name": "VINCENT VAN GOGH", "given": "VINCENT", "family": "VAN GOGH", "initials": "V. G.", "capitalized": "Vincent van Gogh"}

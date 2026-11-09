@@ -994,9 +994,10 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     """rules/R4 (#1224): a particle that opens a hyphenated word is
     written as a name word, whichever particle it is, the particle arm
     being the only clause left out for it; one inside the word
-    keeps its lowercase, as does a spaced one, and a particle written
-    with its hyphen and nothing after it ('az-') is one word, asked
-    whole as before (#700)."""
+    keeps its lowercase, as does a spaced one (save one opening the
+    surname that its reading writes with a capital, the test below),
+    and a particle written with its hyphen and nothing after it ('az-')
+    is one word, asked whole as before (#700)."""
     for text, repaired in (
             ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
             ("levon ter-petrosyan", "Levon Ter-Petrosyan"),
@@ -1012,13 +1013,65 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
             ("MARIA VAN-", "Maria van-"),
             ("jose -de", "Jose -de"),
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
-            ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
-            ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),
+            ("JAN VAN TER HORST", "Jan van ter Horst"),
             ("zaʿīm, ḥusnī az-", "Ḥusnī az- Zaʿīm")):
         for written in (text, _nfd(text)):
             assert _repairs(written, False) == repaired, written
     assert _repairs("Levon Ter-Petrosyan", True) == "Levon Ter-Petrosyan"
     assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
+
+
+def test_a_spaced_ter_or_der_opening_the_surname_takes_a_capital() -> None:
+    """rules/R4 (decisions/R4, 2026-11-09): a spaced particle written
+    `capital_opening` (`ter`, `der`) is repaired with the particle arm
+    left out where no particle stands before it, by its tag or by the
+    last part of a hyphenated word before it; after one it keeps its
+    lowercase. Every comma shape, a title before, the middle role, a
+    full stop on the word and the repair of the repaired name."""
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    for text, repaired in (
+            ("LEVON TER PETROSYAN", "Levon Ter Petrosyan"),
+            ("ARMEN DER KIUREGHIAN", "Armen Der Kiureghian"),
+            ("levon ter petrosyan", "Levon Ter Petrosyan"),
+            ("TER PETROSYAN, LEVON", "Levon Ter Petrosyan"),
+            ("PETROSYAN, LEVON TER", "Levon Ter Petrosyan"),
+            ("DR LEVON TER PETROSYAN", "Dr Levon Ter Petrosyan"),
+            ("LEVON TER PETROSYAN, PHD", "Levon Ter Petrosyan, PhD"),
+            ("LEVON TER. PETROSYAN", "Levon Ter. Petrosyan"),
+            # the Dutch cost and the Taiwanese given-name syllable
+            ("GERARD TER BORCH", "Gerard Ter Borch"),
+            ("JA DER LIANG", "Ja Der Liang"),
+            # aus is no particle, so der opens: the German cost
+            ("KAREN AUS DER FÜNTEN", "Karen Aus Der Fünten"),
+            # after a particle, by its tag
+            ("JAN VAN DER BERG", "Jan van der Berg"),
+            ("JAN VAN TER HORST", "Jan van ter Horst"),
+            ("URSULA VON DER LEYEN", "Ursula von der Leyen"),
+            ("VAN DER BERG, JAN", "Jan van der Berg"),
+            ("BERG, JAN VAN DER", "Jan van der Berg"),
+            ("LEVON TER DER PETROSYAN", "Levon Ter der Petrosyan"),
+            # after a particle closing a hyphenated word, untagged
+            ("ANKE MAITLAND-VAN DER ZEE", "Anke Maitland-van der Zee"),
+            # an all-particle part was name text already
+            ("ANH DO", "Anh Do"),
+            ("TER DER", "Ter Der"),
+            # no capital_opening reading: the particle arm as before
+            ("JUAN DE LA VEGA", "Juan de la Vega")):
+        assert _repairs(text, False) == repaired, text
+        once = parse(text).capitalized()
+        assert once.capitalized(force=True) == once, text
+    assert _repairs("Levon ter Petrosyan", True) == "Levon Ter Petrosyan"
+    assert _repairs("Jan van der Berg", True) == "Jan van der Berg"
+    # the middle role, which the family-first order puts it in
+    middle = family_first.parse("PETROSYAN LEVON TER ARAM")
+    assert [t.role for t in middle.tokens if t.text == "TER"] == [Role.MIDDLE]
+    assert str(family_first.capitalized(middle)) == "Petrosyan Levon Ter Aram"
+    # a caller's reading takes the property; without it, lowercase
+    lex = Lexicon.default().add("zu", kind="preposition",
+                                capital_opening=True)
+    zu = Parser(lexicon=lex)
+    assert str(zu.capitalized(zu.parse("HANS ZU SALM"))) == "Hans Zu Salm"
+    assert _repairs("HANS ZU SALM", False) == "Hans zu Salm"
 
 
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:

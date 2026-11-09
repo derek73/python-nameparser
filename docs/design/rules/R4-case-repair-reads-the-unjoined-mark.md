@@ -53,7 +53,7 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase.
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase — save a spaced particle its reading writes with a capital opening the surname, the Armenian priestly prefix (`Ter Petrosyan`, `Der Kiureghian`), which takes its capital where no particle stands before it, and keeps its lowercase after one (`van der Berg`, `van ter Horst`), a particle closing the hyphenated word before it counting as one (`Maitland-van der Zee`).
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
@@ -61,7 +61,14 @@
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
   "maria da-silva"            →  capitalized="Maria Da-Silva"
   "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
-  "LEVON TER PETROSYAN"       →  capitalized="Levon ter Petrosyan"  · boundary
+  "LEVON TER PETROSYAN"       →  capitalized="Levon Ter Petrosyan"
+  "ARMEN DER KIUREGHIAN"      →  capitalized="Armen Der Kiureghian"
+  "TER PETROSYAN, LEVON"      →  capitalized="Levon Ter Petrosyan"
+  "Levon ter Petrosyan"       →  capitalized_forced="Levon Ter Petrosyan"
+  "JAN VAN DER BERG"          →  capitalized="Jan van der Berg"  · boundary
+  "VAN DER BERG, JAN"         →  capitalized="Jan van der Berg"  · boundary
+  "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
+  "ANKE MAITLAND-VAN DER ZEE"  →  capitalized="Anke Maitland-van der Zee"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
@@ -162,6 +169,12 @@
 - A Cyrillic spelling of an elided prefix before е or і, such as French d' (Д'Естен), loses the capital after its apostrophe, since the Belarusian apostrophe stands before those vowels inside a word and nothing in the letters tells the two apart.
   ```
   "ВАЛЕРІ Д'ЕСТЕН"            →  capitalized="Валері Д'естен"  · boundary
+  ```
+- A spaced `ter` or `der` opening a surname takes its capital whatever language it is written in, since nothing in the spelling tells the Armenian prefix from the Dutch and German particle: a Dutch surname opened by `ter` is written with a capital, and a German `der` behind a word the vocabulary does not list as a particle (`aus der`) opens the surname as far as repair can tell. A Taiwanese given-name syllable `Der`, which the parse places in the family name, takes the capital its writers give it.
+  ```
+  "GERARD TER BORCH"          →  capitalized="Gerard Ter Borch"  · boundary
+  "KAREN AUS DER FÜNTEN"      →  capitalized="Karen Aus Der Fünten"  · boundary
+  "JA DER LIANG"              →  capitalized="Ja Der Liang"  · boundary
   ```
 - A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
   ```
