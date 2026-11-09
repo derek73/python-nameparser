@@ -4,6 +4,8 @@ Release Log
 
     nameparser 3.1 is under development. It refuses a ``Lexicon``, ``Parser`` or locale pack pickled by 2.x, which 3.0 loads with a ``DeprecationWarning``.
 
+    - **Add Parser.matching(), to group and compare names from several sources.** ``Parser().matching().check("John A. Smith", "J. Smith")`` is consistent, with a table reading the given name as an initial and the middle name as written on one side only, where ``parse("John A. Smith").matches("J. Smith")`` is ``False``, and ``keys()`` gives grouping keys that a consistent pair always shares. Consistent means nothing in the two names contradicts the match, not that they are one person, and it is not transitive (``J. Smith`` is consistent with ``John Smith`` and with ``Jane Smith``). See :ref:`matching-names`. :issue:`1006`
+
 * 3.0.1 - November 8, 2026
 
     - **Fix the test suite run against the installed package.** Run as Debian's autopkgtest runs it, with the tests beside the installed package and no source tree, 3.0.0's suite stopped during collection; it now passes, and a test that reads the source tree or the user docs skips there. The library is unchanged from 3.0.0. :issue:`1184`

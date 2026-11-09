@@ -286,7 +286,7 @@ class Parser:
     def matching(
         self, accept: Iterable[Outcome | str] | None = None,
     ) -> Matching:
-        """A :class:`~nameparser._match.Matching` bound to THIS parser,
+        """A :class:`~nameparser.Matching` bound to THIS parser,
         so its ``check`` and ``keys`` parse str arguments with this
         parser's lexicon and policy. A ParsedName argument is compared
         as given, whatever parser produced it. ``accept`` is the

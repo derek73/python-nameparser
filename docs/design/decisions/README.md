@@ -155,6 +155,7 @@ Entry conventions:
 - [indic-honorifics — the renunciate class and the Indic honorific vocabulary (2026-09-06, #346/#344/#343)](indic-honorifics.md)
 - [initials-repertoire — is_initial across scripts (#320)](initials-repertoire.md)
 - [ma-do — ambiguous acronyms by decision](ma-do.md)
+- [name-matching — grouping keys and a consistency check that explains itself](name-matching.md)
 - [nfd-shapes — shape tests read letters, and a decomposed letter is one letter](nfd-shapes.md)
 - [normalization-fold — lower(), not casefold(); comparison folds harder](normalization-fold.md)
 - [parse-cost — what a parse is allowed to cost](parse-cost.md)
