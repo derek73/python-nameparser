@@ -134,7 +134,7 @@ class PatronymicNameOrderReorderTests(FlaggedPolicyTestBase):
         # either place and in a one-case name too (T4's ж)
         ("Ирина Б Зубкевич", "Б", "Зубкевич", "Ирина"),
         ("ИРИНА Б ЗУБКЕВИЧ", "Б", "ЗУБКЕВИЧ", "ИРИНА"),
-        ("И Б Зубкевич", "Б", "Зубкевич", "И"),
+        ("Ж Б Зубкевич", "Б", "Зубкевич", "Ж"),
         # P8's connective in a one-case name: both spellings rotate
         ("ivan y petrovich", "y", "petrovich", "ivan"),
         ("IVAN Y PETROVICH", "Y", "PETROVICH", "IVAN"),
@@ -186,8 +186,9 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         n = self.hn(text)
         assert (n.given, n.middle, n.family) == (given, middle, family)
 
-    @pytest.mark.xfail(strict=True, reason="#1136: a romanized two-letter "
-                       "initial (Yu., Zh.) is not tagged an initial")
+    @pytest.mark.xfail(strict=True, reason="a romanized two-letter initial "
+                       "(Yu., Zh.) is not tagged an initial; #1136 asks only "
+                       "its first-position title reading")
     def test_a_romanized_two_letter_initial_blocks_the_rotation(self) -> None:
         n = self.hn("Irina Yu. Zubkevich")
         assert (n.given, n.middle, n.family) == ("Irina", "Yu.", "Zubkevich")

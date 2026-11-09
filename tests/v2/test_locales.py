@@ -1403,6 +1403,8 @@ _ROTATORS["tr_az"] = [
     "Karimov Alisher Vali o'g'li",       # the o'g'li branch, ASCII '
     "Yusupov Botir Vali o’g’li",         # the o'g'li branch, typographic ’
     "Yusupov Botir Vali o‘g‘li",         # the o'g'li branch, smart quote ‘ (#1186)
+    "Yusupov Botir Vali oʼgʼli",         # the o'g'li branch, modifier ʼ (#1186)
+    "Yusupov Botir Vali o`g`li",         # the o'g'li branch, backtick (#1186)
     "Mammadova Aygun Hasan qizi",        # qizi
     "Aliyeva Leyla Vali qızı",           # qızı
     "Mammadova Sevinj Ali kizi",         # kizi
