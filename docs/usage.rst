@@ -1329,7 +1329,7 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
      - ``María García`` / ``MARIA GARCIA``
      - yes
-   * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word
+   * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
      - ``Wm. Smith`` / ``William Smith``
      - yes
    * - ``particles-aside``: the family names agree without their particles
@@ -1372,11 +1372,17 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
 A listed spelling is read in the role's own kind of word: given names
 for the given name, middle name and nickname, surnames and particles
 for the family and maiden names, titles and suffixes for theirs. So
-``Ma`` (María written short) agrees with ``María`` as a given name and
-conflicts as a surname, ``Ma, Jack`` / ``María, Jack``. It is read
-with accents folded too, so ``Jo Garcia`` / ``Jose Garcia`` agree as
-``Jo`` / ``José`` do. A middle name is compared word by word, in order,
-and takes the weakest of its words' outcomes. A different generation conflicts
+``Ma.`` (María written short) agrees with ``María`` as a given name,
+while the surname Ma is another word, ``Ma, Jack`` / ``María, Jack``.
+A short form that is also a name of its own, as ``Ma``, ``Jo`` (José)
+and ``Jas`` (James) are, is read as its long form only written with
+its period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia``
+/ ``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while
+``Wm Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm``
+being no name of its own. It is read with accents folded too, so
+``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A
+middle name is compared word by word, in order, and takes the weakest
+of its words' outcomes. A different generation conflicts
 (``Jr.`` / ``Sr.``), and a generation on one side only reads
 ``generation-one-side`` whatever credentials either side carries
 (``John Smith Jr.`` / ``John Smith, PhD``); a credential or title

@@ -5480,7 +5480,11 @@ given = { us_ssa = 1324, wikidata = 47, as_of = 2026-10-26, same_as = "george", 
 
 [[word]]
 text = "jas"
-given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", note = "James written short; US SSA births summed over both sexes (F 13, M 111); also a Punjabi given name (nam_dict band 2 in India/Sri Lanka), and a surname (US Census 2010 117 bearers, Wikidata 25), which a period-marked word opening the given part is not; Wikidata is a lower bound" }
+given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", note = "James written short; US SSA births summed over both sexes (F 13, M 111); also a Punjabi given name of its own (pa.toml), so the name match reads Jas as James only written Jas. unless pa.toml is left out (a strict en choice) (decisions/name-matching, 2026-11-08), and a surname (US Census 2010 117 bearers, Wikidata 25), which a period-marked word opening the given part is not; Wikidata is a lower bound" }
+
+[[word]]
+text = "jo"
+given = { us_ssa = 180911, wikidata = 975, as_of = 2026-11-08, note = "Jo, a given name of its own: US SSA births summed over both sexes (F 179,057, M 1,854); nam_dict band 6 in the Netherlands and Korea, 5 in the U.S.A.; Wikidata (a lower bound) United States 143, United Kingdom 118, the Netherlands 106; also a Korean surname (US Census 2010 3,588 bearers, Wikidata 1,322, South Korea 1,116). Beside fil.toml's José written short, it makes the name match read Jo as José only written Jo. (decisions/name-matching, 2026-11-08)" }
 
 [[word]]
 text = "jno"

@@ -3680,3 +3680,17 @@ SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
         'মোসা': ('মোসাঃ',),
     },
 }
+
+SAME_AS_NAMED: dict[str, frozenset[str]] = {
+    'family': frozenset({
+    }),
+    'given': frozenset({
+        'jas',
+        'jo',
+        'ma',
+    }),
+    'suffix': frozenset({
+    }),
+    'title': frozenset({
+    }),
+}

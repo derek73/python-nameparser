@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import FULL_STOPS, _normalize
 from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
@@ -367,7 +367,10 @@ class Matching:
         set among surnames (itself and the words it is listed as a
         spelling of, read as written and folded, each folded), and a
         given name by the first letter of every word in its set among
-        given names. The guarantee rests on this: two words the check
+        given names, where a word that is a name of its own as well
+        (`jo`) contributes only itself unless written with its trailing
+        period, the one spelling set the check reads (`_spellings`).
+        The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
         check compares is keyed, so two names it finds consistent share
@@ -563,11 +566,14 @@ _ACROSS: Mapping[Role, tuple[Role, ...]] = {
     Role.FAMILY: (Role.MAIDEN,),
 }
 _RANK_ROLE = {r: i for i, r in enumerate(Role)}
+#: `FULL_STOPS` as the tuple `str.endswith` takes, one test for the
+#: period `_spellings` reads off a word as written.
+_FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
 #: The `same_as` group each role reads its listed spellings in: the
 #: readings of the kind that stands there (`Lexicon._headwords`), so a
-#: given name's spelling never matches a surname (`Ma` / `María` agree
-#: as given names, never as surnames).
+#: given name's spelling never matches a surname (`Ma.` / `María` agree
+#: as given names; the surname Ma never matches María).
 _GROUP: Mapping[Role, str] = {
     Role.TITLE: "title",
     Role.GIVEN: "given",
@@ -685,9 +691,15 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     """The words `word` is a listed spelling of in `group`, the word
     itself included, read from the word as written and from it folded,
     each member beside its folded form: `Jose` among given names reaches
-    `jo`'s full form `josé` folded, so `Jo` and `Jose` meet."""
-    heads = (lexicon._headwords(word, group)
-             | lexicon._headwords(_fold(word), group))
+    `jo`'s full form `josé` folded, so `Jo.` and `Jose` meet. A word that
+    is a name of its own as well reaches its links only written with
+    its trailing period, any full stop the vocabulary strips
+    (`FULL_STOPS`, `Jo．` too), read here off the word as written since
+    both the normalizing and the fold drop it: `Jo` is the given name Jo
+    alone (decisions/name-matching, 2026-11-08 #1006 follow-up)."""
+    period = word.endswith(_FULL_STOPS)
+    heads = (lexicon._headwords(word, group, period=period)
+             | lexicon._headwords(_fold(word), group, period=period))
     return heads | {_fold(h) for h in heads}
 
 

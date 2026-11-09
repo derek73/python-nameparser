@@ -1717,7 +1717,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES",
-        "BOUND_PHRASES", "SAME_AS"}
+        "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips

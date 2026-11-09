@@ -64,7 +64,9 @@ at fault:
    abbreviates, a name rather than a word of the vocabulary, written
    normalized, and a `family` reading takes none. Every `same_as`
    compiles into SAME_AS in the group of its reading's kind, and a
-   `given` reading's also into GIVEN_NAME_ABBREVIATIONS;
+   `given` reading's also into GIVEN_NAME_ABBREVIATIONS, and, beside
+   a `given` reading with none (a name of its own too), into
+   SAME_AS_NAMED;
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has a given reading;
@@ -273,7 +275,8 @@ COUNT_SOURCES = frozenset({"us_census_2010", "us_ssa", "wikidata"})
 #: (`chas` -> charles), which compiles it into GIVEN_NAME_ABBREVIATIONS:
 #: a period-marked abbreviation opening the given part is that given
 #: name, not rules/H2's title (#789); and into SAME_AS's `given` group,
-#: where the name match reads the two as listed spellings
+#: where the name match reads the two as listed spellings, only written
+#: with the period where the word is a name of its own too (SAME_AS_NAMED)
 NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
@@ -1396,6 +1399,7 @@ CONSTANTS = (
     "CAPITALIZED_PARTICLES",
     "BOUND_PHRASES",
     "SAME_AS",
+    "SAME_AS_NAMED",
 )
 
 
@@ -1499,6 +1503,15 @@ def render(compiled: Compiled) -> str:
                 out += [f"        {k!r}: {v[group][k]!r},"
                         for k in sorted(v[group])]
                 out.append("    },")
+            out.append("}")
+        elif isinstance(v, dict) and all(
+                isinstance(g, frozenset) for g in v.values()):
+            # SAME_AS_NAMED: group -> the words it holds
+            out.append(f"{name}: dict[str, frozenset[str]] = {{")
+            for group in sorted(v):
+                out.append(f"    {group!r}: frozenset({{")
+                out += [f"        {w!r}," for w in sorted(v[group])]
+                out.append("    }),")
             out.append("}")
         elif isinstance(v, dict):
             out.append(f"{name}: dict[str, str] = {{")
