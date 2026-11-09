@@ -784,10 +784,10 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     of the other, then initial against name (family initial in the
     family role), then initials agree, then in the `given` group a
     familiar form, then a hyphenated part, and last conflict, which
-    always holds."""
+    always holds. `same`, always accepted, ends the pick (`_pick`), so
+    nothing after it is computed for two equal texts."""
     if a == b:
         yield Outcome.SAME
-        return
     fa, fb = _fold(a), _fold(b)
     outcome = _full_outcome(a, b, fa, fb, lexicon, group)
     if outcome is not None:
