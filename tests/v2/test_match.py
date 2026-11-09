@@ -471,7 +471,8 @@ def test_consistent_names_always_share_a_key(
     pair shares a key, so grouping by key never separates names `check`
     accepts. Negative controls, each the first pair to fail, re-taken
     2026-11-08 after the familiar forms' names ("Max Smith" through
-    "Smith, Bill") joined NAMES and familiar-form joined the settings,
+    "Maria Ivanova") joined NAMES, familiar-form joined the settings and
+    a familiar-form pair came to be read and keyed either way round,
     each mutation applied in-process, every pair unmoved since the
     period rule's names ("Jo. Garcia" through "Ana Mà. Cruz" written
     decomposed) and before them "Ahmed Al", "Ahmed Al-Saud" and "Ahmed
