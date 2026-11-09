@@ -64,7 +64,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _ABUGIDA, _PERIOD_ABBREV, _ROMAN, _TRAILING_TITLE_SHAPE, Lean, ambiguous_lean,
+    _INDIC_BRAHMIC, _PERIOD_ABBREV, _ROMAN, _TRAILING_TITLE_SHAPE, Lean, ambiguous_lean,
     in_initialless_script,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
     numeral_settled_by_case, reads_as_generation, tag_marker_runs,
@@ -448,7 +448,7 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # own test file) checks it over the union of both predicates'
     # example tables rather than leaving it to a sentence.
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not (_ABUGIDA.search(text)
+            and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
                                         or in_initialless_script(text)))
             # rules/H2's precedence: a given name written short outranks
             # the shape ('Chas.', #789) -- classify's tag, a C-level test

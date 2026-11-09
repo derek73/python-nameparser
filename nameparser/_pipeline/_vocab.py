@@ -206,15 +206,15 @@ _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
-# rules/H2: "A word in a Brahmic script of India or Sri Lanka" "never
-# reads as a title by shape, even where it is a run of letters" -- the
-# Unicode blocks Devanagari through Sinhala, U+0900 to U+0DFF. A vowel sign
+# rules/H2: "A word in one of the ten Brahmic scripts from Devanagari
+# to Sinhala" "never reads as a title by shape, even where it is a run
+# of letters" -- their Unicode blocks, U+0900 to U+0DFF. A vowel sign
 # already breaks `_LETTER`'s run, but a spelled initial written with
 # none (एम. for M., এম., ਐਮ.) is a run of two letters, and the shape
 # read it as a title; these scripts write initials, so the veto is the
 # title shape's alone and not `is_initial`'s (decisions/H2, #1191).
 # Searched on the raw text: a nukta letter decomposes inside the range.
-_ABUGIDA = re.compile('[\u0900-\u0dff]')
+_INDIC_BRAHMIC = re.compile('[\u0900-\u0dff]')
 
 #: The hyphens and the dashes that join two family names in one written
 #: word (rules/O6), and the parts of an abbreviation written hyphenated
@@ -280,9 +280,15 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     above U+3000), so the C-level test declines before the regex
     search runs -- four frames per unlisted-abbreviation opener per
     parse, this running four times per piece.
+
+    A word holding a letter of the ten Brahmic scripts from Devanagari
+    to Sinhala is refused too (`_INDIC_BRAHMIC`, rules/H2's Except,
+    #1191): those scripts write initials, and spell a Latin one out by
+    its sound with no vowel sign (एम. for M.), a run of letters the
+    shape would misread. Its search is C-level, so it costs no frame.
     """
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not (_ABUGIDA.search(text)
+            and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
                                         or in_initialless_script(text)))
             and _normalize(text) not in lexicon._sets.given_name_abbreviations)
 

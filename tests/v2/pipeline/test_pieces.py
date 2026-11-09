@@ -656,9 +656,11 @@ def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
     ("ਐਮ.", False),         # Gurmukhi
     ("એમ.", False),         # Gujarati
     ("ଏମ.", False),         # Odia
+    ("එම.", False),         # Sinhala, the range's far end
+    ("ດຣ.", True),          # Lao, outside the range, as Thai is
     ("Mएम.", False),        # contains-any, as Kim김. is
 ])
-def test_leading_title_shape_refuses_an_initialless_script(
+def test_leading_title_shape_refuses_a_script_it_does_not_read(
         text: str, expected: bool) -> None:
     # Xyz. rather than Rev. for the Latin side: Rev. is LISTED, so
     # is_title_piece claims it before the shape is asked

@@ -423,10 +423,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # switch set to family under the default order and under
     # FAMILY_FIRST, and 'Anh,'), one claim each; 1672 -> 1675 on
     # 2026-11-07, #1138's 'John (MA/PhD) Smith' reporting
-    # suffix-or-nickname under three orders.
-    assert claims == 1675, (
-        f"the field sweep checks {claims} claims, recorded as 1675 on "
-        f"2026-11-07")
+    # suffix-or-nickname under three orders; 1675 -> 1678 on
+    # 2026-11-08, #1191's lone 'एम.' reporting given-or-family under
+    # three orders.
+    assert claims == 1678, (
+        f"the field sweep checks {claims} claims, recorded as 1678 on "
+        f"2026-11-08")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

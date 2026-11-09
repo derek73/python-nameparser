@@ -199,10 +199,8 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # A token with no kanji -- a name written wholly in hiragana,
         # or in hiragana and katakana -- gives namedivider's kanji
         # statistics nothing to read: its kanji_feature path returns the
-        # first character as the family every time (あいさわいちろう ->
-        # あ | いさわいちろう, measured on namedivider 0.4.x, and on all
-        # 457 of the House of Representatives' unspaced hiragana
-        # readings), a division never right. Decline, a fact about the
+        # first character as the family (あいさわいちろう -> あ |
+        # いさわいちろう). Decline, a fact about the
         # content as the repertoire and 〆 declines are, and the token
         # stays whole as it does with no segmenter. A token holding a
         # kanji is passed on: 山田たろう divides at the kana boundary by
