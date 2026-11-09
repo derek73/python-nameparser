@@ -200,6 +200,7 @@ def _run(example: Example) -> object:
     policy: Policy | None = None
     lexicon: Lexicon | None = None
     locale: str | None = None
+    segmented = False
     if example.annotation is not None:
         kind, obj = resolve_annotation(example.annotation)
         if kind == "policy":
@@ -220,9 +221,15 @@ def _run(example: Example) -> object:
                             "runs this")
             assert isinstance(obj, str)
             locale = obj
+            # the gate's name: the pack with the segmenter it needs, the
+            # one gate today being ja's (#1193 wrote its first example)
+            segmented = True
     if example.field == "pieces":
         return _pieces(example.text, policy, lexicon)
-    if locale is not None:
+    if locale is not None and segmented:
+        parsed = parser_for(locales.get(locale),
+                            segmenter=locales.ja_segmenter()).parse(example.text)
+    elif locale is not None:
         parsed = parser_for(locales.get(locale)).parse(example.text)
     elif lexicon is not None:
         parsed = Parser(policy=policy or Policy(),

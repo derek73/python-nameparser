@@ -206,6 +206,17 @@ _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
+# rules/H2: "an abbreviation in a script whose letters carry combining
+# vowel signs (Bengali, Devanagari and the other Brahmic scripts of
+# India and Sri Lanka) never reads as a title by shape" -- the Unicode
+# blocks Devanagari through Sinhala, U+0900 to U+0DFF. A vowel sign
+# already breaks `_LETTER`'s run, but a spelled initial written with
+# none (एम. for M., এম., ਐਮ.) is a run of two letters, and the shape
+# read it as a title; these scripts write initials, so the veto is the
+# title shape's alone and not `is_initial`'s (decisions/H2, #1191).
+# Searched on the raw text: a nukta letter decomposes inside the range.
+_ABUGIDA = re.compile('[\u0900-\u0dff]')
+
 #: The hyphens and the dashes that join two family names in one written
 #: word (rules/O6), and the parts of an abbreviation written hyphenated
 #: (rules/H5, 'Dipl.‐Ing.' as a word processor writes it): hyphen-minus,
@@ -272,7 +283,8 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     parse, this running four times per piece.
     """
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not in_initialless_script(text))
+            and (text.isascii() or not (_ABUGIDA.search(text)
+                                        or in_initialless_script(text)))
             and _normalize(text) not in lexicon._sets.given_name_abbreviations)
 
 

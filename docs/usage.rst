@@ -764,8 +764,10 @@ the name would merely look undivided.
 
 The shipped ``ja_segmenter()`` does decline, returning ``None`` and
 leaving the token whole, for the cases that are *not* protocol
-violations: text outside the Japanese repertoire, text too short to
-divide, an answer that fails to reconstruct its input, and a score
+violations: text outside the Japanese repertoire, text with no kanji
+(namedivider divides by kanji statistics, so ``あいさわいちろう`` stays
+whole rather than splitting after its first character), text too short
+to divide, an answer that fails to reconstruct its input, and a score
 outside [0, 1].
 
 Exceptions are the one thing that does *not* stay inside the parse: a

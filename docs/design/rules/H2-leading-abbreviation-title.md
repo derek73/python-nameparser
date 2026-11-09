@@ -56,9 +56,12 @@
 
 **Accepted:**
 
-- The shape is only recognizable as an unbroken run of letters, so an abbreviation in a script whose letters carry combining vowel signs (Bengali, Devanagari) never reads as a title by shape — an unlisted abugida honorific stays a name word, and only vocabulary can recognize it — which is what #343 and #344 supply for Bengali and Devanagari.
+- The shape is only recognizable as an unbroken run of letters, so an abbreviation in a script whose letters carry combining vowel signs (Bengali, Devanagari and the other Brahmic scripts of India and Sri Lanka) never reads as a title by shape — an unlisted abugida honorific stays a name word, and only vocabulary can recognize it, which is what #343 and #344 supply for Bengali and Devanagari — and neither does a Latin initial spelled out in one of them with no vowel sign to break the run, as "एम." spells "M." (#1191).
   ```
   "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
+  "एम. एस. वर्मा"               →  given="एम."
+  "এম. আবদুল লতিফ"             →  title=""
+  "ਐਮ. ਸਿੰਘ"                    →  given="ਐਮ."
   ```
 - The shape reads a Latin convention, and a script with no initials has no period abbreviations either, so a period-marked opening word carrying a Han, kana or hangul character — as the script table classifies them, halfwidth katakana included since #594 — is a name word and never a title by shape (#323; decisions/cjk-full-stops) — the same veto that keeps 씨. from reading as an initial. The Latin reading is unchanged, and W3's example block carries the CJK reading this clause vetoes into. The veto reads the composed spelling, so hangul typed decomposed, as conjoining jamo, is hangul to it too (#665); the second line below is typed that way.
   ```
