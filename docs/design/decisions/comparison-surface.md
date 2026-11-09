@@ -4,6 +4,8 @@
 
 - Case-insensitive equality, equality with plain strings and hashability cannot all hold, so the mutable `HumanName` carried no value equality, and went in 3.0 without it; comparison is `matches()` and `comparison_key()`, one casefolded component per field, the maiden name included — 2026-07 #223; 2026-10-28 #357.
 
+Elsewhere: lenient comparison, a verdict and a per-role table over the accepted outcomes, is `Parser.matching()` — decisions/name-matching's 2026-11-08 #1006 entry.
+
 Not standing: the cross-constants asymmetry of `HumanName.matches()`, gone with it — 2026-10-28 #357.
 
 Open: none in this file.
@@ -17,5 +19,5 @@ Open: none in this file.
 Declined:
 
 - Component-based __eq__/__hash__ — workable, considered, rejected: it still privileged one equality semantic for a domain that has none, and kept the mutate-while-hashed hazard.
-- Lenient matching (initials-compatible, Bob/Robert) — declined WITHOUT an issue, deliberately: matches() is exact-components by design. Someone will propose could_match() within a year; this entry is the resolved-as-no they should find.
+- Lenient matching (initials-compatible, Bob/Robert) — declined WITHOUT an issue, deliberately: matches() is exact-components by design. Someone will propose could_match() within a year; this entry is the resolved-as-no they should find. Superseded in part by decisions/name-matching's 2026-11-08 #1006 entry: initials-compatible matching ships as `Parser.matching()`, beside `matches()`, which stays exact-components; a nickname table (Bob/Robert) stays declined.
 

@@ -64,6 +64,11 @@ ALLOWED = {
     # Lexicon compiles its readings)
     "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
+    # name matching: the types, the lexicon's listed spellings, and the
+    # scripts that write no initials (as _render reads them); Parser is
+    # TYPE_CHECKING
+    "_match.py": ("nameparser._types", "nameparser._lexicon",
+                  "nameparser._policy"),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since
@@ -129,10 +134,12 @@ ALLOWED = {
     "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED + (
         "nameparser._reading_index",),
     # Parser sits on everything except _render; the reading index at
-    # call time only, where a choice of languages is applied (3b)
+    # call time only, where a choice of languages is applied (3b); _match
+    # at call time only, in Parser.matching()
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
-                   "nameparser._pipeline", "nameparser._reading_index"),
+                   "nameparser._pipeline", "nameparser._reading_index",
+                   "nameparser._match"),
     # PEP 562 lazy loader: the only static import is _locale (for the
     # Locale return type); pack modules load via importlib.import_module
     # (a runtime string, invisible to the AST walker) -- the
@@ -366,6 +373,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
 
     import nameparser._lexicon
     import nameparser._locale
+    import nameparser._match
     import nameparser._parser
     import nameparser._policy
     import nameparser._types
@@ -374,7 +382,8 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     # _pipeline internals (ParseState, WorkToken, ...) are exempt: they
     # are never pickled and are not public API.
     modules = (nameparser._types, nameparser._lexicon,
-               nameparser._policy, nameparser._locale, nameparser._parser)
+               nameparser._policy, nameparser._locale, nameparser._parser,
+               nameparser._match)
     for module in modules:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__:
@@ -643,8 +652,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 134 on #1138's tree (139 since
-#: #1131's, below) were 125 attribute loads, 3 roster
+#: reaches nothing. The library's 134 on #1138's tree (140 since
+#: #1006's, below) were 125 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 6 `sets =` bindings (#1000's Ph./D. gate
 #: added one binding and four of the loads; #999's gate
@@ -669,7 +678,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: #1131's every-chunk reading of a word the periods join, the
 #: honorific tail, the titles and the acronyms its set-apart word
 #: asks first, its S11 guard and the initials test of a word the
-#: periods join, 134 -> 139);
+#: periods join, 134 -> 139; #1006's name matching dropping a hyphen
+#: half that is a listed particle, the particles, 139 -> 140);
 #: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -680,7 +690,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 139, "tools": 19}
+_UNGUARDED_READS = {"library": 140, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

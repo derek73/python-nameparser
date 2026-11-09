@@ -611,6 +611,26 @@ _COMPILED_FIELDS = {
 }
 
 
+#: The groups `SAME_AS` is keyed by, one per kind of role a name match
+#: compares (`_reading_index.SAME_AS_GROUPS` maps a reading's kind to
+#: one; tests/v2/test_lexicon.py holds the two to one list).
+_SAME_AS_GROUPS = frozenset({"given", "family", "title", "suffix"})
+
+#: A group -> word -> the words it is a listed spelling of.
+SameAs = Mapping[str, Mapping[str, frozenset[str]]]
+
+
+def _same_as_of(compiled: Mapping[str, Any]) -> SameAs:
+    """The compile's `SAME_AS` as the lexicon keeps it: per group, each
+    word's full forms normalized, as a caller's `same_as` is written
+    free-form."""
+    return MappingProxyType({
+        group: MappingProxyType({
+            w: frozenset(_normalize(h) for h in heads)
+            for w, heads in words.items()})
+        for group, words in compiled["SAME_AS"].items()})
+
+
 def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
     """The sets a compile of the vocabulary gives, by `_LexiconSets`
     name (the constants of nameparser/config/_compiled.py, or a compile
@@ -623,18 +643,30 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
     return out
 
 
+#: What a lexicon's readings compile to: the vocabulary sets by
+#: `_LexiconSets` name, and the listed-spelling map.
+_Compiled = tuple[Mapping[str, frozenset[str]], SameAs]
+
+
+def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
+    return MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled)
+
+
 @functools.cache
-def _default_compiled() -> Mapping[str, frozenset[str]]:
+def _default_compiled() -> _Compiled:
     # the compiled data module is the default's one source, so the
     # default never loads the reading index (decisions/vocabulary-
     # model, 2026-10-29 3a; its 2026-11-02 #754 entry, item 4)
     import nameparser.config._compiled as compiled
-    return MappingProxyType(_vocab_fields(vars(compiled)))
+    return _compiled_of(vars(compiled))
 
 
 _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
     {name: frozenset() for name in _COMPILED_FIELDS} | {
         "particles_ambiguous": frozenset()})
+#: What the empty base compiles to: no sets and no listed spellings.
+_NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
+    {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}))
 
 
 # -- readings ------------------------------------------------------------
@@ -730,10 +762,11 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"got {value!r}; list each completing word "
                              f"on its own")
         return folded or None
-    # same_as, a given name written short's full name (#789)
+    # same_as: the word this one is a listed spelling of, a given name
+    # written short's full name (#789) or a title's or suffix's full form
     if not isinstance(value, str) or not value.strip():
-        raise TypeError(f"same_as must be the full given name, a "
-                        f"non-empty string, got {value!r}")
+        raise TypeError(f"same_as must be the word this one is a spelling "
+                        f"of, a non-empty string, got {value!r}")
     return value
 
 
@@ -988,7 +1021,8 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
-           strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]]]:
+           strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
+                                  SameAs]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1014,7 +1048,7 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
             r for rs in pool.values() for r in rs)
     except ri.CompileError as exc:
         raise ValueError(str(exc)) from None
-    return MappingProxyType(pool), MappingProxyType(_vocab_fields(compiled))
+    return (MappingProxyType(pool), *_compiled_of(compiled))
 
 
 def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
@@ -1029,22 +1063,22 @@ def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
 
 def _compiled_for(base: object, edits: tuple[_Edit, ...],
                   chosen: frozenset[str] = frozenset(),
-                  strict: bool = False) -> Mapping[str, frozenset[str]]:
+                  strict: bool = False) -> _Compiled:
     if not edits and base == "default":
         # under a choice, the shipped index compiled once per choice by
         # the reader every pack shares
         return (_choice_compiled(chosen, strict) if chosen
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
-        return _NO_SETS
-    return _built(base, edits, chosen, strict)[1]
+        return _NOTHING_COMPILED
+    _, sets, same_as = _built(base, edits, chosen, strict)
+    return sets, same_as
 
 
 @functools.lru_cache(maxsize=32)
-def _choice_compiled(chosen: frozenset[str],
-                     strict: bool) -> Mapping[str, frozenset[str]]:
+def _choice_compiled(chosen: frozenset[str], strict: bool) -> _Compiled:
     ri = _index_module()
-    return MappingProxyType(_vocab_fields(ri.compile_choice(chosen, strict)))
+    return _compiled_of(ri.compile_choice(chosen, strict))
 
 
 class _ReadingFiles:
@@ -1531,6 +1565,11 @@ class Lexicon:
         init=False, repr=False, compare=False, hash=False)
     _sets: _LexiconSets = field(
         init=False, repr=False, compare=False, hash=False)
+    # group -> word -> the words it is a listed spelling of (`given`:
+    # `wm` -> {`william`}), from every reading's `same_as` in the group
+    # of its kind; built at construction, never pickled, like `_cap_map`
+    _same_as: SameAs = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -1574,8 +1613,9 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled = _compiled_for(self._base, canon, chosen, _strict)
+        compiled, same_as = _compiled_for(self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
+        put("_same_as", same_as)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -1876,10 +1916,17 @@ class Lexicon:
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
             ``may_be_initial=True``, ``completed_by=[...]`` on a
-            ``bound_given`` reading, ``same_as=...`` and
-            ``after_particle=True`` on a ``given`` reading, ``shared=True``
-            on a name reading); a property given its unwritten value (``None``,
-            ``False``) is removed. Where the word holds a reading of `kind`
+            ``bound_given`` reading, ``after_particle=True`` on a
+            ``given`` reading, ``shared=True`` on a name reading, and
+            ``same_as=...`` on a reading of any kind: the word this one
+            is a spelling of, which name matching reads as a
+            ``listed-spelling`` and keys alike in the roles that read
+            the kind's words (a ``given`` reading's in the given name,
+            middle name and nickname, a ``family`` reading's in the
+            family and maiden names, a title's and a suffix's in theirs),
+            and which on a ``given`` reading also marks a given name
+            written short); a property
+            given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
             file. Warns where it makes a title reading that a ``given``
@@ -1951,6 +1998,32 @@ class Lexicon:
 
     def _pool(self) -> Pool:
         return self._files.pool()
+
+    def _headwords(self, word: str, group: str) -> frozenset[str]:
+        """Every word reachable from `word`, normalized, through the
+        `same_as` links of `group` (`given`, `family`, `title` or
+        `suffix`, the group of the readings' kinds), the word itself
+        included: `Wm.` among given names is {`wm`, `william`}, and `sr`
+        among titles {`sr`, `señor`, `senhor`}. A word's readings of
+        another kind are another group's (`ma` is María written short
+        among given names and only itself among surnames), and a word
+        with no listed spelling is itself alone. A loop, which a
+        caller's edits can write where the build refuses it in the
+        files, yields every word in it. The name match reads two words
+        as listed spellings of each other where their sets meet."""
+        links = self._same_as.get(group)
+        if links is None:
+            raise ValueError(f"unknown same_as group {group!r}; the groups "
+                             f"are {', '.join(sorted(_SAME_AS_GROUPS))}")
+        start = _normalize(word)
+        seen = {start}
+        todo = [start]
+        while todo:
+            for head in links.get(todo.pop(), ()):
+                if head not in seen:
+                    seen.add(head)
+                    todo.append(head)
+        return frozenset(seen)
 
     def _deltas_from(self, other: Lexicon) -> tuple[
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:

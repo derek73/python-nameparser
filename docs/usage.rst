@@ -1177,6 +1177,337 @@ the DEFAULT parser; to compare against a string using a custom
     >>> parse("JUAN DE LA VEGA").comparison_key() == parse("Juan de la Vega").comparison_key()
     True
 
+.. _matching-names:
+
+Matching names across sources
+-----------------------------
+
+``matches()`` asks whether two writings are the same name. Joining
+records from several sources asks something looser: could these two
+names belong to the same person? One source writes ``John A. Smith``,
+another ``J. Smith``, a third ``JOHN SMITH JR.``. A name matcher
+answers that question role by role, using the parse to know which
+words are the family name, which are particles and which are initials,
+and says *why* for every pair. It never scores a pair: combine its
+answer with your own evidence (coauthors, institutions, identifiers)
+and set your own thresholds.
+
+The workflow is four steps:
+
+#. Parse each source with its own :class:`~nameparser.Policy`, so two
+   sources that write names in different orders each read correctly.
+#. Build one :class:`~nameparser.Matching` from a parser with
+   :meth:`Parser.matching() <nameparser.Parser.matching>`, and use it
+   for both of the steps below.
+#. Group the names by ``keys()``.
+#. Within each group, ``check()`` each pair.
+
+Grouping by key
+~~~~~~~~~~~~~~~
+
+``keys()`` gives each name a set of short strings, the family name's
+words without their particles beside the given name's first letter.
+Two names ``check()`` calls consistent always share a key, so grouping
+by key loses no match, and a pair that shares no key need never be
+checked:
+
+.. doctest::
+
+    >>> from collections import defaultdict
+    >>> from nameparser import Parser
+    >>> matcher = Parser().matching()
+    >>> sorted(matcher.keys("Jane A. de la Vega"))
+    ['vega;j']
+    >>> groups = defaultdict(list)
+    >>> for written in ["John A. Smith", "J. Smith", "Juan de la Vega", "Juan Vega"]:
+    ...     for key in matcher.keys(written):
+    ...         groups[key].append(written)
+    >>> dict(groups)
+    {'smith;j': ['John A. Smith', 'J. Smith'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
+
+A family name of several words gets a key for each, because a source
+may cut a surname list short, and a hyphenated one a key for each half,
+for the two joined and for the whole word, save a half that is a
+particle (``Al-Saud`` keys ``saud``, ``alsaud`` and ``al-saud``, never
+``al``):
+
+.. doctest::
+
+    >>> sorted(matcher.keys("Mary Smith-Jones"))
+    ['jones;m', 'smith-jones;m', 'smith;m', 'smithjones;m']
+
+A key only gathers candidates: ``Jane Smith`` shares ``smith;j`` with
+``John Smith``, and ``check()`` is what tells them apart. A name with
+no family name, such as a lone ``Suharto`` (read as a given name, see
+:ref:`lone-name-word`), gets no key and is consistent with nothing by
+default, since the family name must be present on both sides and
+agree; the search for other readings (below) reaches it through its
+family reading.
+
+Checking a pair
+~~~~~~~~~~~~~~~
+
+``check()`` takes two strings, parsed with the matcher's parser, or
+two :class:`~nameparser.ParsedName` objects, compared as they were
+parsed. It returns a :class:`~nameparser.MatchResult`: ``consistent``,
+and in ``roles`` one :class:`~nameparser.RoleMatch` per field in field
+order, each with its :class:`~nameparser.Outcome`, the text on each
+side, and which :class:`~nameparser.Side` carried more of it. A row is
+read by its field's name or :class:`~nameparser.Role`
+(``result["family"]``), and ``weakest`` is the weakest row's outcome:
+
+.. doctest::
+
+    >>> smiths = matcher.check("John A. Smith", "J. Smith")
+    >>> smiths.consistent
+    True
+    >>> for row in smiths.roles:
+    ...     print(row.role.value, row.outcome.value, repr(row.left), repr(row.right), row.more.value)
+    title same '' '' neither
+    given initial 'John' 'J.' left
+    middle one-side 'A.' '' left
+    family same 'Smith' 'Smith' neither
+    suffix same '' '' neither
+    nickname same '' '' neither
+    maiden same '' '' neither
+    >>> smiths["given"].outcome.value, smiths.weakest.value
+    ('initial', 'one-side')
+
+**Consistent means nothing in the two names contradicts the match**,
+under the outcomes accepted. It does not mean the two are the same
+person: ``J. Smith`` is consistent with half the Smiths in a phone
+book. The table is what lets you tell ``John A. Smith`` / ``John
+Smith`` (only a middle initial missing) from ``J. Smith`` / ``John A.
+Smith`` (most of the given name missing too), though both are
+consistent. A pair is inconsistent when a role's outcome is
+``conflict``, or one you have not accepted:
+
+.. doctest::
+
+    >>> johns = matcher.check("John Smith Jr.", "John Smith Sr.")
+    >>> johns.consistent, johns["suffix"].outcome.value
+    (False, 'conflict')
+
+The check is symmetric: swapping the two names gives the same verdict
+and the same table with ``left`` and ``right`` exchanged
+(``MatchResult.mirrored()``). Each source keeps its own order, so
+names parsed under different policies compare correctly:
+
+.. doctest::
+
+    >>> from nameparser import FAMILY_FIRST, Policy
+    >>> family_first_source = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> matcher.check(family_first_source.parse("Smith John"), "John A. Smith").consistent
+    True
+
+What the default accepts
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The outcomes, in the order ``check()`` ranks them, strongest first.
+``Outcome.strength`` gives that rank as a number, larger for a stronger
+outcome; rank outcomes by it, since ``<`` on an
+:class:`~nameparser.Outcome` compares the names as strings (``folded``
+sorts before ``same``). The default accepts the writing
+variants a hand-built comparison usually forgives; the rest count as a
+conflict until you accept them. ``family-initial``, ``given-one-side``
+and ``hyphenated-part`` are reported in the table either way, so an
+unaccepted one shows what the pair needed. ``across-roles`` is
+searched only where accepted, and each side's other readings only where
+the search is switched on (below): otherwise the table shows the names
+as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 38 12
+
+   * - Outcome
+     - Example (left / right)
+     - Default
+   * - ``same``
+     - ``Smith`` / ``Smith``
+     - yes
+   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
+     - ``María García`` / ``MARIA GARCIA``
+     - yes
+   * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word
+     - ``Wm. Smith`` / ``William Smith``
+     - yes
+   * - ``particles-aside``: the family names agree without their particles
+     - ``Juan de la Vega`` / ``Juan Vega``
+     - yes
+   * - ``part-of-other``: one family name's words are among the other's
+     - ``Ana de Melo Schmitt`` / ``Ana de Melo Schmitt e Braga``
+     - yes
+   * - ``initial``: an initial against a name, outside the family name
+     - ``J. Smith`` / ``John Smith``
+     - yes
+   * - ``initials-agree``: one role written in initials alone on both sides, the same initials once spaces and hyphens are set aside
+     - ``Jane Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``
+     - yes
+   * - ``one-side``: a middle name, nickname or maiden name on one side only
+     - ``John A. Smith`` / ``John Smith``
+     - yes
+   * - ``generation-one-side``: a generation on one side only
+     - ``John Smith`` / ``John Smith Jr.``
+     - yes
+   * - ``noted``: titles and credentials, which never conflict
+     - ``Dr. John Smith`` / ``John Smith, PhD``
+     - yes
+   * - ``family-initial``: the family name written as an initial
+     - ``John S.`` / ``John Stallbaum``
+     - no
+   * - ``given-one-side``: a given name on one side only
+     - ``Mr. Smith`` / ``John Smith``
+     - no
+   * - ``hyphenated-part``: a given name against the first half of a hyphenated one
+     - ``Hong Guo`` / ``Hong-Yi Guo``
+     - no
+   * - ``across-roles``: a name in a different role on each side
+     - ``J. Edgar Hoover`` / ``Edgar Hoover``
+     - no
+   * - ``conflict``
+     - ``John Smith`` / ``Jane Smith``
+     - never
+
+A listed spelling is read in the role's own kind of word: given names
+for the given name, middle name and nickname, surnames and particles
+for the family and maiden names, titles and suffixes for theirs. So
+``Ma`` (María written short) agrees with ``María`` as a given name and
+conflicts as a surname, ``Ma, Jack`` / ``María, Jack``. It is read
+with accents folded too, so ``Jo Garcia`` / ``Jose Garcia`` agree as
+``Jo`` / ``José`` do. A middle name is compared word by word, in order,
+and takes the weakest of its words' outcomes. A different generation conflicts
+(``Jr.`` / ``Sr.``), and a generation on one side only reads
+``generation-one-side`` whatever credentials either side carries
+(``John Smith Jr.`` / ``John Smith, PhD``); a credential or title
+never conflicts, so a career from ``Mr.`` to ``Dr.`` does not separate
+a person's records. The fold drops accents only from Latin, Greek and
+Cyrillic letters; a mark on another script's letter, such as a
+Devanagari vowel sign, is spelling and stays. Initials written joined
+read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
+Typos (``Slvatore`` / ``Salvatore``), transliterations and
+nicknames the vocabulary does not list as the same name (``Bill`` /
+``William``) are conflicts: the table names the conflicting role, so
+you can run your own fuzzy comparison on that role alone.
+
+Accepting more
+~~~~~~~~~~~~~~
+
+``accept`` takes outcome names or :class:`~nameparser.Outcome`
+members, and *replaces* the default set rather than adding to it, so
+extend the default with the ``accept`` of a default matcher. The keys
+follow what is accepted and the ``other_readings`` switch, so one
+matcher's ``keys()`` and ``check()`` always agree; never group with one
+matcher and check with another:
+
+.. doctest::
+
+    >>> with_family_initial = Parser().matching(accept=matcher.accept | {"family-initial"})
+    >>> with_family_initial
+    Matching(default + family-initial)
+    >>> matcher.check("John S.", "John Stallbaum").consistent
+    False
+    >>> with_family_initial.check("John S.", "John Stallbaum").consistent
+    True
+    >>> sorted(with_family_initial.keys("John Stallbaum"))
+    ['s;j', 'stallbaum;j']
+
+A family initial is outside the default because its key, one letter of
+the family name, gathers very large groups. An unknown outcome name
+raises ``ValueError`` listing the valid ones, and ``conflict`` cannot
+be accepted.
+
+``other_readings=True``, a switch beside ``accept`` rather than an
+outcome, tries each side's other reading where the names as parsed are
+not consistent: one :ref:`ambiguity <parser-guesses>` at a time, its
+words moved to the role its ``alternative`` names. Each row keeps its
+own outcome under the other reading, so whatever else the pair needed
+still shows, and ``left_alternative`` and ``right_alternative`` hold
+the ambiguity whose other reading each side used, ``None`` for a side
+read as parsed. A lone ``Suharto``, read as a given name, has the
+family reading as its alternative:
+
+.. doctest::
+
+    >>> with_other_reading = Parser().matching(other_readings=True)
+    >>> with_other_reading
+    Matching(default + other-readings)
+    >>> lone = with_other_reading.check("Suharto", "Suharto")
+    >>> lone.consistent, lone["family"].outcome.value
+    (True, 'same')
+    >>> lone.left_alternative.kind.value, lone.left_alternative.alternative.role.value
+    ('given-or-family', 'family')
+    >>> sorted(with_other_reading.keys("Suharto"))
+    ['suharto;']
+
+An alternative that would move words into the title or the suffix is
+not tried, so a given name cannot vanish into one of them to agree
+with another.
+
+``across-roles`` compares a given name with each word of the other
+name's middle name and with its nickname, and a family name with the
+other's maiden name. It counts only a full name on both sides, never
+an initial, and records each match it made in ``across``:
+
+.. doctest::
+
+    >>> with_across = Parser().matching(accept=matcher.accept | {"across-roles"})
+    >>> hoover = with_across.check("J. Edgar Hoover", "Edgar Hoover")
+    >>> hoover.consistent, hoover["given"].outcome.value
+    (True, 'across-roles')
+    >>> hoover.across[0].left_role.value, hoover.across[0].right_role.value, hoover.across[0].left
+    ('middle', 'given', 'Edgar')
+    >>> with_across.check("Jane Doe (née Smith)", "Jane Smith").consistent
+    True
+
+The middle word a match uses is taken out of the middle comparison,
+and the middle words left are compared role to role.
+
+Consistency is not transitive
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``J. Smith`` is consistent with ``John Smith`` and with ``Jane
+Smith``, which are not consistent with each other:
+
+.. doctest::
+
+    >>> matcher.check("J. Smith", "John Smith").consistent
+    True
+    >>> matcher.check("J. Smith", "Jane Smith").consistent
+    True
+    >>> matcher.check("John Smith", "Jane Smith").consistent
+    False
+
+So do not merge records by chaining consistent pairs: a less specific
+name joins people a more specific one keeps apart. ``RoleMatch.more``
+tells you which side carried more of each role, so of a consistent
+pair, one name is a less specific writing of the other when no role
+has it carrying more:
+
+.. doctest::
+
+    >>> def less_specific(result):
+    ...     return all(row.more.value != "left" for row in result.roles)
+    >>> less_specific(matcher.check("J. Smith", "John A. Smith"))
+    True
+    >>> less_specific(matcher.check("John A. Smith", "J. Smith"))
+    False
+
+A role read ``across-roles`` has the side carrying more that held both
+the role and the role it was matched against, so ``J. Edgar Hoover``,
+which holds a given initial beside the middle name the other uses as
+its given name, is the more specific of the two:
+
+.. doctest::
+
+    >>> less_specific(with_across.check("Edgar Hoover", "J. Edgar Hoover"))
+    True
+    >>> less_specific(with_across.check("J. Edgar Hoover", "Edgar Hoover"))
+    False
+
+Link each record to its most specific consistent name rather than to
+every name it is consistent with.
+
 .. _parser-guesses:
 
 When the parser had to guess

@@ -154,7 +154,7 @@ def test_every_vocabulary_constant_is_frozen() -> None:
 
     import nameparser.config
 
-    # The mapping constant, EXEMPT and named rather than dropped by the
+    # The mapping constants, EXEMPT and named rather than dropped by the
     # isinstance filter without comment (REGEXES, the other until 3.0,
     # left with its module, #1008). CAPITALIZATION_EXCEPTIONS is
     # vocabulary-shaped and is a decided, in-scope exemption, which
@@ -163,6 +163,10 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     # down here and in AGENTS.md so it does not read as covered.
     exempt_mappings = {
         "_compiled.CAPITALIZATION_EXCEPTIONS",
+        # group -> word -> full forms, private since it compiled, read
+        # once into each Lexicon's own frozen `_same_as`: the same live
+        # hazard, recorded beside the other in AGENTS.md
+        "_compiled.SAME_AS",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent

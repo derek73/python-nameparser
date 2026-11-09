@@ -86,6 +86,29 @@ Results
 .. autoclass:: nameparser.ReadingSource
    :members:
 
+Matching
+~~~~~~~~
+
+Comparing names from several sources: see :ref:`matching-names`.
+
+.. autoclass:: nameparser.Matching
+   :members:
+
+.. autoclass:: nameparser.MatchResult
+   :members:
+
+.. autoclass:: nameparser.RoleMatch
+   :members:
+
+.. autoclass:: nameparser.CrossRoleMatch
+   :members:
+
+.. autoclass:: nameparser.Outcome
+   :members:
+
+.. autoclass:: nameparser.Side
+   :members:
+
 Configuration
 ~~~~~~~~~~~~~
 

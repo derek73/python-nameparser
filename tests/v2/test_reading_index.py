@@ -389,3 +389,27 @@ def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None
 def test_a_word_no_file_holds_as_a_suffix_has_no_suffix_kind() -> None:
     assert ri.suffix_kind_of("dean") is None
     assert ri.suffix_kind_of("zzqnotaword") is None
+
+
+def test_same_as_compiles_for_readings_of_every_kind() -> None:
+    from nameparser import _reading_index as ri
+    compiled = ri.compile_choice(frozenset())
+    same_as = compiled["SAME_AS"]
+    # keyed by the group of the reading's kind (decisions/name-matching,
+    # 2026-11-08): a given name's spelling is not a surname's
+    assert list(same_as) == sorted(set(ri.SAME_AS_GROUPS.values()))
+    assert same_as["given"]["wm"] == ("william",)
+    assert same_as["suffix"]["junior"] == ("jr",)
+    assert same_as["title"]["capt"] == ("captain",)
+    assert "ma" in same_as["given"] and "ma" not in same_as["family"]
+    # a bound given name's spelling is the given name's, a particle's
+    # the family's: the words standing in those roles
+    assert same_as["given"]["abdel"] == ("abdul",)
+    assert same_as["family"]["mc"] == ("mac",)
+    # every full form a word carries in a group, not the first one
+    assert same_as["title"]["sr"] == ("senhor", "señor")
+    for group in same_as.values():
+        assert list(group) == sorted(group)
+    # only a given reading's same_as makes an abbreviated given name
+    assert "wm" in compiled["GIVEN_NAME_ABBREVIATIONS"]
+    assert not {"junior", "capt"} & compiled["GIVEN_NAME_ABBREVIATIONS"]

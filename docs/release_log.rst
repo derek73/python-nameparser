@@ -5,6 +5,7 @@ Release Log
     nameparser 3.1 is under development. It refuses a ``Lexicon``, ``Parser`` or locale pack pickled by 2.x, which 3.0 loads with a ``DeprecationWarning``.
 
     - **Remove loading a Lexicon, Parser or locale pack pickled by 2.x, which 3.0 deprecated.** ``pickle.loads`` of a ``Parser`` pickled by 2.8.0 raises ``ValueError`` saying to re-pickle it under 3.0, where 3.0.x loaded it with a ``DeprecationWarning``; the error for a 2.x ``Lexicon`` spelling now names :doc:`migrate`'s table rather than each word's calls. :issue:`1003`
+    - **Add Parser.matching(), to group and compare names from several sources.** ``Parser().matching().check("John A. Smith", "J. Smith")`` is consistent, with a table reading the given name as an initial and the middle name as written on one side only, where ``parse("John A. Smith").matches("J. Smith")`` is ``False``, and ``keys()`` gives grouping keys that a consistent pair always shares. Consistent means nothing in the two names contradicts the match, not that they are one person, and it is not transitive (``J. Smith`` is consistent with ``John Smith`` and with ``Jane Smith``). See :ref:`matching-names`. :issue:`1006`
 
 * 3.0.1 - November 8, 2026
 

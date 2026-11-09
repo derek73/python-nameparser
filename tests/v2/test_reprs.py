@@ -6,6 +6,7 @@ import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
+from nameparser._match import Matching
 from nameparser._parser import Parser, parse
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
 from nameparser._types import (
@@ -131,6 +132,7 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     Lexicon.empty(),
     Parser(),
     Parser(segmenter=functools.partial(_decline, blob="x" * 500)),
+    Matching(Parser()),
 ])
 def test_config_reprs_never_leak_the_unset_sentinel(obj: object) -> None:
     # Guard the whole family: every config type's repr is bounded and

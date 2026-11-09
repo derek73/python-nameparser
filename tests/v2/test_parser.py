@@ -3538,3 +3538,24 @@ def test_a_spanish_choice_reads_lady_as_a_given_name() -> None:
     # under the pack two family names follow, so the peeress's own given
     # name lands in the family (rules/O6)
     assert parser_for(locales.ES).parse("Lady Annabel Goldsmith").family == "Annabel Goldsmith"
+
+
+def test_matching_parses_strings_with_this_parser() -> None:
+    p = Parser(lexicon=Lexicon.default().add(
+        "brgdr", kind="military", same_as="brigadier"))
+    assert p.matching().check(
+        "Brgdr. John Smith", "Brigadier John Smith").consistent
+
+
+def test_check_compares_parsed_names_as_given() -> None:
+    ff = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    assert Parser().matching().check(
+        ff.parse("Smith John"), "John Smith").consistent
+
+
+def test_matching_accept_none_is_the_default_and_bad_values_raise() -> None:
+    from nameparser._match import DEFAULT_ACCEPT
+    assert Parser().matching().accept == DEFAULT_ACCEPT
+    assert Parser().matching({"initial"}).accept >= {"same", "initial"}
+    with pytest.raises(TypeError):
+        Parser().matching("initial")  # type: ignore[arg-type]

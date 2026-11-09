@@ -138,13 +138,19 @@ A kind belongs to a category, which decides what the reading does:
      - none
    * - name
      - ``given``, ``family``
-     - ``same_as="..."`` and ``after_particle=True`` on ``given``;
-       ``shared=True`` on either
+     - ``after_particle=True`` on ``given``; ``shared=True`` on either
 
 ``nameparser/vocab/README.md`` in the repository says what each kind
-and property means. A property given its unwritten value (``None``,
-``False``) is removed; ``acronym`` is unwritten-true on a
-``credential`` alone. Two things are not properties: whether a reading
+and property means. ``same_as="..."`` is accepted on a reading of
+every kind: it names the word this one is a spelling of (``jnr`` is
+``jr``), and :ref:`name matching <matching-names>` reads two words
+whose ``same_as`` chains end at the same word as a ``listed-spelling``
+and gives them the same grouping key. It moves no word between kinds,
+save on a ``given`` reading, where it also marks the word as a given
+name written short (``chas`` is ``charles``), so ``Chas. Smith`` reads
+given ``Chas.`` rather than a title. A property given its unwritten
+value (``None``, ``False``) is removed; ``acronym`` is unwritten-true
+on a ``credential`` alone. Two things are not properties: whether a reading
 is on (a caller's always is) and its case mask (:ref:`case-exceptions`).
 
 A **name** reading beside another reading is what makes a word

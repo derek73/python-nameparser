@@ -525,7 +525,7 @@ it:
    * - ``BOUND_GIVEN_NAMES``
      - ``d.words(kind="bound_given")``
    * - ``GIVEN_NAME_ABBREVIATIONS``
-     - ``[w for w in d.words(kind="given") if any(dict(r.properties).get("same_as") for r in d.readings_of(w))]``
+     - ``[w for w in d.words(kind="given") if any(r.kind == "given" and dict(r.properties).get("same_as") for r in d.readings_of(w))]``
    * - ``MAIDEN_MARKERS``
      - ``d.words(kind="birth_marker")``
    * - ``SUFFIX_ACRONYMS``

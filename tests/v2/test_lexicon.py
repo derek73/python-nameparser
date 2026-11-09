@@ -767,14 +767,14 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("x", kind="title", default=False), ValueError, "a caller's reading is on"),
     (lambda: Lexicon.empty().add("x", kind="title", cased="X"), ValueError, "capitalization_exceptions"),
     (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
-    (lambda: Lexicon.empty().add("x", kind="family", same_as="y"), ValueError, "a family reading takes shared; got 'same_as'"),
+    (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "after_particle names a given name"),
     (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "only a given reading takes it"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", abbreviation="yes"), TypeError, "abbreviation must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "attached must be 'after'"),
-    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the full given name"),
+    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the word this one is a spelling of"),
     # the build's check 8: a phrase matches only as a marker or a run of
     # titles addressing the given name
     (lambda: Lexicon.empty().add("chief justice", kind="title"), ValueError, "a phrase, which can never match as a title"),
@@ -1717,7 +1717,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES",
-        "BOUND_PHRASES"}
+        "BOUND_PHRASES", "SAME_AS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips
@@ -1764,3 +1764,80 @@ def test_a_generation_word_that_is_a_name_leans_by_case_only_when_told() -> None
     with pytest.raises(TypeError, match="title_case_is_name must be True or False"):
         Lexicon.default().add("zzgen", kind="generation",
                               title_case_is_name="yes")
+
+
+def test_same_as_compiles_for_every_kind() -> None:
+    lex = Lexicon.default()
+    assert lex._headwords("junior", "suffix") & lex._headwords("jr", "suffix")
+    assert lex._headwords("wm", "given") == {"wm", "william"}
+    assert lex._headwords("Wm.", "given") == {"wm", "william"}
+    assert lex._headwords("capt", "title") & lex._headwords("captain", "title")
+    assert lex._headwords("smith", "family") == {"smith"}
+
+
+def test_same_as_is_read_in_the_group_of_its_readings_kind() -> None:
+    # a given name's listed spelling is not a surname's, nor a
+    # generation's a given name's
+    lex = Lexicon.default()
+    assert lex._headwords("ma", "given") == {"ma", "maría"}
+    assert lex._headwords("ma", "family") == {"ma"}
+    assert lex._headwords("junior", "given") == {"junior"}
+
+
+def test_every_same_as_a_word_carries_in_a_group_is_kept() -> None:
+    # Spanish and Portuguese both list Sr as a salutation, each under its
+    # own full form, and the default keeps both
+    assert Lexicon.default()._headwords("sr", "title") == {
+        "sr", "señor", "senhor"}
+
+
+@pytest.mark.parametrize("strict", [False, True])
+def test_same_as_follows_a_choice_of_languages(strict: bool) -> None:
+    # a choice keeps its own file's full form
+    from nameparser import locales
+    pt = parser_for(locales.PT, strict=strict).lexicon
+    es = parser_for(locales.ES, strict=strict).lexicon
+    assert pt._headwords("Sr.", "title") == {"sr", "senhor"}
+    assert es._headwords("Sr.", "title") == {"sr", "señor"}
+
+
+def test_an_unedited_lexicons_built_same_as_is_the_defaults() -> None:
+    from nameparser._lexicon import _built, _default_compiled
+    built = _built("default", (), frozenset(), False)[2]
+    assert dict(built) == dict(_default_compiled()[1]) == dict(
+        Lexicon.default()._same_as)
+
+
+def test_a_callers_same_as_on_a_title_reaches_the_map() -> None:
+    lex = Lexicon.default().add("brgdr", kind="military", same_as="brigadier")
+    assert lex._headwords("Brgdr.", "title") == {"brgdr", "brigadier"}
+    assert lex._headwords("brgdr", "given") == {"brgdr"}
+    assert Lexicon.default()._headwords("brgdr", "title") == {"brgdr"}
+
+
+def test_a_same_as_loop_in_a_callers_edits_reaches_every_word_in_it() -> None:
+    lex = (Lexicon.empty().add("aa", kind="military", same_as="bb")
+           .add("bb", kind="military", same_as="aa"))
+    assert lex._headwords("aa", "title") == lex._headwords("bb", "title") == {
+        "aa", "bb"}
+
+
+def test_the_lexicon_and_the_compiler_name_the_same_groups() -> None:
+    import nameparser._reading_index as ri
+    from nameparser._lexicon import _SAME_AS_GROUPS
+    assert _SAME_AS_GROUPS == set(ri.SAME_AS_GROUPS.values())
+    assert set(Lexicon.default()._same_as) == set(Lexicon.empty()._same_as) == (
+        _SAME_AS_GROUPS)
+
+
+def test_headwords_refuses_an_unknown_group() -> None:
+    with pytest.raises(ValueError, match="group"):
+        Lexicon.default()._headwords("wm", "name")
+
+
+def test_same_as_does_not_move_which_set_a_word_compiles_into() -> None:
+    lex = Lexicon.default().add("brgdr", kind="military", same_as="brigadier")
+    assert "brgdr" in lex._sets.titles
+    assert "wm" in lex._sets.given_name_abbreviations
+    assert "capt" not in lex._sets.given_name_abbreviations
+    assert "junior" not in lex._sets.given_name_abbreviations
