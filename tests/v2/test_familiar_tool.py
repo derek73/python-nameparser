@@ -1,16 +1,19 @@
 """Offline checks on tools/vocab/familiar.py, which writes the familiar
-readings seeded from nam_dict (decisions/name-matching, 2026-11-08
-FAMILIAR FORMS).
+readings seeded from nam_dict and the nicknames list
+(decisions/name-matching, 2026-11-08 FAMILIAR FORMS and 2026-11-09 THE
+NICKNAMES LIST).
 
-The source is a GFDL file cached outside the tree, so these read a
-dictionary built here in its layout, and the tree's own files: the
-failure that matters is a pair placed in the wrong language's file, or
-a regeneration that rewrites what the tool does not own.
+The sources are files cached outside the tree, so these read a
+dictionary and a list built here in their layouts, and the tree's own
+files: the failure that matters is a pair placed in the wrong
+language's file, a refused pair written anyway, or a regeneration that
+rewrites what the tool does not own.
 """
 from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import os
 import sys
 import tomllib
@@ -156,7 +159,8 @@ def test_every_shipped_familiar_reading_credits_its_source() -> None:
                 for e in tomllib.loads(path.read_text())["word"]
                 if "familiar" in e]
     assert len(readings) >= 600
-    assert all(r["note"].startswith(tool.SOURCE) for r in readings)
+    assert all(r["note"].startswith((tool.SOURCE, tool.NICKNAMES_SOURCE))
+               for r in readings)
 
 
 def test_stripping_the_tree_leaves_no_familiar_reading() -> None:
@@ -170,19 +174,28 @@ def test_stripping_the_tree_leaves_no_familiar_reading() -> None:
         tomllib.loads(stripped)  # still a file
 
 
-#: The cached file's path, worked out without creating the cache folder
-#: as name_usage.cache_dir() does: collecting this module must write
+#: The cached files' folder, worked out without creating it as
+#: name_usage.cache_dir() does: collecting this module must write
 #: nothing.
-_CACHED = Path(os.environ.get(
-    "NAMEPARSER_TOOLS_CACHE", Path.home() / ".cache" / "nameparser-tools")
-) / tool.name_usage.NAMDICT_FILE
+_CACHE = Path(os.environ.get(
+    "NAMEPARSER_TOOLS_CACHE", Path.home() / ".cache" / "nameparser-tools"))
 
 
 @pytest.mark.skipif(
-    not _CACHED.exists(),
-    reason="nam_dict.txt is not cached (tools/name_usage.py downloads it)")
-def test_the_tree_is_what_the_tool_writes_from_the_cached_source() -> None:
-    assert tool.stale(tool.place(tool.load_pairs())) == []
+    not (_CACHE / tool.name_usage.NAMDICT_FILE).exists()
+    or not (_CACHE / tool.NICKNAMES_FILE).exists(),
+    reason="a source is not cached (tools/name_usage.py downloads "
+           "nam_dict, tools/vocab/familiar.py --fetch the list)")
+def test_the_tree_is_what_the_tool_writes_from_the_cached_sources() -> None:
+    placements, nicknames = tool.sources()
+    assert tool.stale(placements, nicknames=nicknames) == []
+
+
+def test_the_shipped_refusals_read() -> None:
+    # offline: the reviewed list parses, whatever is cached
+    refused = tool.load_exclusions()
+    assert refused
+    assert set(refused.values()) <= tool.EXCLUSION_CATEGORIES
 
 
 # -- the format's edge cases -------------------------------------------------
@@ -243,10 +256,19 @@ _PLANTED = _dict(
 )
 
 
+_PLANTED_LIST = ("name1,relationship,name2\r\n"
+                 "william,has_nickname,will\r\n"
+                 "william,has_nickname,bill\r\n"
+                 "aaron,has_nickname,erin\r\n")
+_PLANTED_REFUSED = ("full\tnickname\tcategory\treason\n"
+                    "aaron\terin\tdifferent-name\tresemblance only\n")
+
+
 @pytest.fixture
 def planted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """A cache holding a planted nam_dict, pinned by its own hash, and a
-    vocabulary folder holding one file: never the real cache or tree."""
+    """A cache holding a planted nam_dict and nicknames list, each pinned
+    by its own hash, a refusals file, and a vocabulary folder holding
+    one file: never the real cache or tree."""
     cache = tmp_path / "cache"
     cache.mkdir()
     data = _PLANTED.encode("utf-8")
@@ -254,6 +276,13 @@ def planted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(cache))
     monkeypatch.setattr(tool.name_usage, "NAMDICT_FILE_SHA256",
                         hashlib.sha256(data).hexdigest())
+    listed = _PLANTED_LIST.encode("utf-8")
+    (cache / tool.NICKNAMES_FILE).write_bytes(listed)
+    monkeypatch.setattr(tool, "NICKNAMES_SHA256",
+                        hashlib.sha256(listed).hexdigest())
+    refused = tmp_path / "refused.tsv"
+    refused.write_text(_PLANTED_REFUSED, encoding="utf-8")
+    monkeypatch.setattr(tool, "NICKNAMES_EXCLUDED", refused)
     vocab = tmp_path / "vocab"
     vocab.mkdir()
     (vocab / "en.toml").write_text(_FILE, encoding="utf-8")
@@ -264,7 +293,8 @@ def planted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 def test_check_reports_stale_until_write_brings_the_files_current(
         planted: Path) -> None:
     assert tool.main(["--check"]) == 1
-    assert tool.stale(tool.place(tool.load_pairs()), planted) == [
+    placements, nicknames = tool.sources()
+    assert tool.stale(placements, planted, nicknames) == [
         planted / "de.toml", planted / "en.toml"]
     assert tool.main(["--write"]) == 0
     assert tool.main(["--check"]) == 0
@@ -274,7 +304,18 @@ def test_check_reports_stale_until_write_brings_the_files_current(
     # the written files pass the build's checks
     tool.build.compile_files(written)
     by_text = {e["text"]: e for e in tomllib.loads(written["en.toml"])["word"]}
+    # nam_dict's pair, the list's copy of it dropped
     assert by_text["bill"]["familiar"]["short_for"] == ["william"]
+    assert by_text["bill"]["familiar"]["note"].startswith(tool.SOURCE)
+    assert tool.NICKNAMES_SOURCE not in by_text["bill"]["familiar"]["note"]
+    # the list's own pair, and its refused one left out
+    assert by_text["will"]["familiar"] == {
+        "short_for": ["william"], "note": tool.NICKNAMES_SOURCE}
+    assert "erin" not in by_text
+    # the list's pairs go in en.toml alone
+    de = tomllib.loads(written["de.toml"])["word"]
+    assert {e["text"] for e in de} == {"sepp"}
+    assert not any(tool.NICKNAMES_SOURCE in e["familiar"]["note"] for e in de)
 
 
 def test_a_cache_file_of_another_hash_is_refused(
@@ -291,3 +332,199 @@ def test_a_missing_cache_file_names_the_command_that_fetches_it(
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(empty))
     with pytest.raises(SystemExit, match="tools/name_usage.py"):
         tool.load_pairs()
+
+
+# -- the nicknames list ----------------------------------------------------------
+
+_LIST = ("name1,relationship,name2\r\n"
+         "richard,has_nickname,ricky\r\n"
+         "richard,has_nickname,rick\r\n"
+         "aaron,has_nickname,erin\r\n")
+
+
+def test_the_lists_rows_read_as_name_and_nickname() -> None:
+    assert tool.read_nicknames(_LIST) == [
+        ("richard", "ricky"), ("richard", "rick"), ("aaron", "erin")]
+
+
+@pytest.mark.parametrize(("text", "match"), [
+    ("name,relationship,nickname\r\nrichard,has_nickname,ricky\r\n",
+     "header"),
+    (_LIST + "richard,is_spelling_of,rychard\r\n", "line 5"),
+    (_LIST + "richard,has_nickname\r\n", "line 5"),
+    (_LIST + "richard,has_nickname,\r\n", "empty name"),
+    (_LIST + "richard,has_nickname,ricky\r\n", "repeats a row"),
+    ("name1,relationship,name2\r\n", "holds no row"),
+    # cut inside a row: csv would read it as a short last row
+    (_LIST[:-6], "line break"),
+])
+def test_a_malformed_list_is_refused(text: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        tool.read_nicknames(text)
+
+
+_REFUSED = ("full\tnickname\tcategory\treason\n"
+            "aaron\terin\tdifferent-name\tdistinct name\n")
+
+
+def test_the_refusals_read_as_pair_and_category() -> None:
+    assert tool.read_exclusions(_REFUSED) == {
+        ("aaron", "erin"): "different-name"}
+
+
+@pytest.mark.parametrize(("text", "match"), [
+    (_REFUSED.replace("full\t", "name\t"), "header"),
+    (_REFUSED + "x\ty\tspelling\n", "four"),
+    (_REFUSED + "x\ty\ttypo\tone letter\n", "'typo' is not one of"),
+    (_REFUSED + "x\ty\tspelling\t \n", "needs its reason"),
+    (_REFUSED + "aaron\terin\tunclear\tagain\n", "listed twice"),
+])
+def test_a_malformed_refusal_is_refused(text: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        tool.read_exclusions(text)
+
+
+def test_a_refused_pair_and_one_nam_dict_places_are_left_out() -> None:
+    placements = {"en": {"rick": {"Richard": {"U.S.A.": 3}}},
+                  "de": {"ricky": {"Richard": {"Germany": 1}}}}
+    kept = tool.keep_nicknames(
+        tool.read_nicknames(_LIST), tool.read_exclusions(_REFUSED),
+        placements)
+    # rick = richard is nam_dict's in en.toml; ricky's in de.toml alone
+    # does not count, as the list's pairs go in en.toml
+    assert kept == {"ricky": {"richard"}}
+
+
+def test_a_pair_nam_dict_places_the_other_way_round_is_left_out() -> None:
+    placements: dict[str, dict[str, dict[str, dict[str, int]]]] = {
+        "en": {"richard": {"Ricky": {}}}}
+    kept = tool.keep_nicknames([("richard", "ricky")], {}, placements)
+    assert kept == {}
+
+
+def test_a_refusal_naming_no_row_of_the_list_is_refused() -> None:
+    # a new commit of the list that drops a row leaves its refusal stale
+    with pytest.raises(ValueError, match="1 pairs the list does not hold"):
+        tool.keep_nicknames([("richard", "ricky")],
+                            tool.read_exclusions(_REFUSED), {})
+
+
+def test_a_listed_pair_whose_names_normalize_alike_is_refused() -> None:
+    with pytest.raises(ValueError, match="normalize alike"):
+        tool.keep_nicknames([("Ann", "ann")], {}, {})
+
+
+def test_a_word_both_sources_pair_takes_one_reading_noting_both() -> None:
+    out = tool.rewrite(_FILE, {"ed": {"Edward": {"U.S.A.": 2}}}, "en.toml",
+                       {"ed": {"edwin"}, "eddie": {"edward", "edwin"}})
+    assert out is not None
+    by_text = {e["text"]: e for e in tomllib.loads(out)["word"]}
+    ed = by_text["ed"]["familiar"]
+    assert ed["short_for"] == ["edward", "edwin"]
+    assert ed["note"].startswith(tool.SOURCE)
+    assert ed["note"].endswith(f"the {tool.NICKNAMES_SOURCE} with edwin")
+    assert by_text["eddie"]["familiar"] == {
+        "short_for": ["edward", "edwin"], "note": tool.NICKNAMES_SOURCE}
+    # the tool owns both notes: regenerating is idempotent, and
+    # stripping gives the file back
+    assert tool.rewrite(out, {"ed": {"Edward": {"U.S.A.": 2}}}, "en.toml",
+                        {"ed": {"edwin"}, "eddie": {"edward", "edwin"}}) == out
+    assert tool.strip(out) == _FILE
+
+
+class _Response(io.BytesIO):
+    def __enter__(self) -> _Response:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
+
+
+def test_fetch_caches_the_list_only_when_its_hash_is_the_pinned_one(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    data = _LIST.encode("utf-8")
+    monkeypatch.setattr(tool.urllib.request, "urlopen",
+                        lambda *a, **k: _Response(data))
+    with pytest.raises(SystemExit, match="not the pinned"):
+        tool.fetch_nicknames()
+    assert not (tmp_path / tool.NICKNAMES_FILE).exists()
+    monkeypatch.setattr(tool, "NICKNAMES_SHA256",
+                        hashlib.sha256(data).hexdigest())
+    assert tool.main(["--fetch"]) == 0
+    assert tool.load_nicknames() == tool.read_nicknames(_LIST)
+
+
+def test_a_missing_list_names_the_command_that_fetches_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    with pytest.raises(SystemExit, match="familiar.py --fetch"):
+        tool.load_nicknames()
+
+
+def test_a_refusal_is_of_the_pair_whichever_way_round() -> None:
+    both_ways = [("caroline", "carol"), ("carol", "caroline"),
+                 ("aaron", "erin"), ("erin", "aaron")]
+    refused = {("aaron", "erin"): "different-name",
+               ("erin", "aaron"): "different-name"}
+    assert tool.keep_nicknames(both_ways, refused, {}) == {
+        "carol": {"caroline"}, "caroline": {"carol"}}
+    # one row refused and the other kept is the review's to settle: the
+    # match reads both as one pair, so the refusal would reach nothing
+    with pytest.raises(ValueError, match="carol = caroline but not"):
+        tool.keep_nicknames(both_ways, {("carol", "caroline"): "unclear"}, {})
+
+
+def test_a_refusal_nam_dict_also_pairs_is_refused() -> None:
+    placements = {"de": {"erin": {"Aaron": {"Germany": 1}}}}
+    with pytest.raises(ValueError, match="which nam_dict pairs too"):
+        tool.keep_nicknames([("aaron", "erin")],
+                            {("aaron", "erin"): "different-name"}, placements)
+
+
+def test_a_kept_name_that_is_not_letters_alone_is_refused() -> None:
+    rows = [("casey", "k.c."), ("kasey", "k.c.")]
+    with pytest.raises(ValueError, match="k.c. = kasey: a name"):
+        tool.keep_nicknames(rows, {("casey", "k.c."): "spelling"}, {})
+    assert tool.keep_nicknames(
+        rows, {r: "spelling" for r in rows}, {}) == {}
+
+
+def test_a_list_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
+    out = tool.rewrite(_FILE, {}, "en.toml", {"jr": {"junior"}})
+    assert out is not None
+    data = tomllib.loads(out)
+    assert data["word"][0] == {
+        "text": "jr", "generation": {},
+        "familiar": {"short_for": ["junior"], "note": tool.NICKNAMES_SOURCE}}
+    assert tool.BEGIN not in out
+    assert tool.strip(out) == _FILE
+
+
+@pytest.mark.parametrize("source", [tool.SOURCE, tool.NICKNAMES_SOURCE])
+def test_a_hand_note_opening_with_a_source_is_not_the_tools(
+        source: str) -> None:
+    hand = _FILE.replace(
+        'given = { note = "x" }',
+        'familiar = { short_for = ["edgar"], '
+        f'note = "{source}, and a census I read" }}')
+    with pytest.raises(ValueError, match="does not own"):
+        tool.rewrite(hand, {"ed": {"Edward": {}}}, "en.toml")
+
+
+def test_a_cached_list_of_another_hash_is_refused(
+        planted: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "NICKNAMES_SHA256", "0" * 64)
+    with pytest.raises(SystemExit, match="not the pinned"):
+        tool.load_nicknames()
+
+
+def test_no_refused_pair_is_shipped() -> None:
+    # offline, from the committed files alone: every refusal is of a
+    # pair the default lexicon does not pair, whichever way round
+    from nameparser import Lexicon
+    lexicon = Lexicon.default()
+    shipped = [(full, nickname) for full, nickname in tool.load_exclusions()
+               if tool.build._normalize(full)
+               in lexicon._familiar_forms(tool.build._normalize(nickname))]
+    assert shipped == []

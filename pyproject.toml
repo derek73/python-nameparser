@@ -4,7 +4,7 @@ description = "Parse human names into title, given, middle, family, suffix, nick
 readme = "README.rst"
 requires-python = ">=3.11"
 license = "LGPL-2.1-or-later"
-license-files = ["LICENSE", "AUTHORS"]
+license-files = ["LICENSE", "AUTHORS", "LICENSE-nicknames"]
 authors = [{name = "Derek Gulbranson", email = "derek73@gmail.com"}]
 dynamic = ["version"]
 keywords = ["names", "parser", "name parsing", "human names", "nlp", "data cleaning", "record linkage", "cjk", "i18n"]

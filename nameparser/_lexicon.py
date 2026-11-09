@@ -706,10 +706,11 @@ Familiar = Mapping[str, frozenset[str]]
 def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
     """The compile's `FAMILIAR`, a familiar form -> the longer names its
     `short_for` lists, read both ways: each word with every name it is
-    paired with directly, as the shorter name or the longer. The source
-    does not always write the shorter name first (nam_dict's `Maria` /
-    `Masha`), so the match reads a pair whichever way it was written,
-    and never chains two pairs (decisions/name-matching, 2026-11-08
+    paired with directly, as the shorter name or the longer. The
+    sources do not always write the shorter name first (nam_dict's
+    `Maria` / `Masha`, the nicknames list's `barbara` / `babs`), so the
+    match reads a pair whichever way it was written, and never chains
+    two pairs (decisions/name-matching, 2026-11-08
     FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
     the match's own), so a pair written accented (`józsi`, `józsef`)
     is found from either name written without its accents."""
