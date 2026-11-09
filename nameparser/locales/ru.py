@@ -18,7 +18,8 @@ Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA):
 applying this
 pack changes only NO_COMMA names whose final token carries an East
 Slavic patronymic ending while the middle token does not, and
-neither the first nor the middle token is an initial --
+neither the first nor the middle name word is an initial (DEVIATES
+over-declares, testing no initial) --
 DEVIATES(name) below is the machine-readable declaration the
 non-interference gate checks.
 """

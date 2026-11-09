@@ -130,8 +130,11 @@ class PatronymicNameOrderReorderTests(FlaggedPolicyTestBase):
         assert n.family == "David"
 
     @pytest.mark.parametrize(("text", "given", "middle", "family"), [
-        # T5: a bare Cyrillic capital is a name word, so O1 rotates
+        # T5: a bare Cyrillic capital is a name word, so O1 rotates, in
+        # either place and in a one-case name too (T4's ж)
         ("Ирина Б Зубкевич", "Б", "Зубкевич", "Ирина"),
+        ("ИРИНА Б ЗУБКЕВИЧ", "Б", "ЗУБКЕВИЧ", "ИРИНА"),
+        ("И Б Зубкевич", "Б", "Зубкевич", "И"),
         # P8's connective in a one-case name: both spellings rotate
         ("ivan y petrovich", "y", "petrovich", "ivan"),
         ("IVAN Y PETROVICH", "Y", "PETROVICH", "IVAN"),
@@ -167,8 +170,14 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         # T4: a one-case name's lower-case letter is an initial
         ("roman a abramovich", "roman", "a", "abramovich"),
         ("i b akulovich", "i", "b", "akulovich"),
+        # T5: a bare unaccented Latin capital, in either case pattern
         ("ROMAN A ABRAMOVICH", "ROMAN", "A", "ABRAMOVICH"),
         ("Roman A Abramovich", "Roman", "A", "Abramovich"),
+        # the dotted Cyrillic initial in a one-case name, both spellings
+        ("ИРИНА Б. ЗУБКЕВИЧ", "ИРИНА", "Б.", "ЗУБКЕВИЧ"),
+        ("ирина б. зубкевич", "ирина", "б.", "зубкевич"),
+        # a suffix after the initials is set aside
+        ("И. Б. Зубкевич мл.", "И.", "Б.", "Зубкевич"),
         # the Accepted cost: one shape with 'Ирина Б. Зубкевич'
         ("Сидоров И. Петрович", "Сидоров", "И.", "Петрович"),
     ])
@@ -177,8 +186,14 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         n = self.hn(text)
         assert (n.given, n.middle, n.family) == (given, middle, family)
 
+    @pytest.mark.xfail(strict=True, reason="#1136: a romanized two-letter "
+                       "initial (Yu., Zh.) is not tagged an initial")
+    def test_a_romanized_two_letter_initial_blocks_the_rotation(self) -> None:
+        n = self.hn("Irina Yu. Zubkevich")
+        assert (n.given, n.middle, n.family) == ("Irina", "Yu.", "Zubkevich")
+
     def test_a_full_family_first_listing_still_rotates(self) -> None:
-        # the boundary of the Except: no initial, so O1 restores the order
+        # the boundary of the precedence: no initial, so O1 restores the order
         n = self.hn("Сидоров Иван Петрович")
         assert (n.given, n.middle, n.family) == ("Иван", "Петрович", "Сидоров")
 
