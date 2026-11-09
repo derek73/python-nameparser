@@ -245,6 +245,18 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
 
 
+def test_render_writes_back_every_comma_and_divider_tokenize_reads() -> None:
+    # rules/R6 keeps the separator as written, so each comma and dot
+    # divider the tokenizer divides at needs a written form in _render; a comma
+    # added to COMMA_CHARS without one renders as a space (#1202)
+    from nameparser._pipeline import _tokenize
+    from nameparser._pipeline._state import COMMA_CHARS
+
+    assert set(_render._COMMA_WRITTEN) == set(COMMA_CHARS)
+    assert _render._DOT_SEPARATORS == (
+        _tokenize._NAME_DOT_SEPARATORS | {_tokenize._INTERPUNCT})
+
+
 def test_every_declared_pattern_still_exists() -> None:
     """The converse of the completeness check: an entry naming a
     pattern its module no longer holds pins nothing. `_group._PH` and
@@ -255,3 +267,16 @@ def test_every_declared_pattern_still_exists() -> None:
                    if not isinstance(getattr(_MODULES[where[0]], where[1],
                                              None), re.Pattern))
     assert not stale, f"_SOURCES entries naming no compiled pattern: {stale}"
+
+
+def test_render_mongolian_letter_class_matches_tokenize() -> None:
+    # render's collapse keeps a U+202F between two Mongolian letters
+    # (the T6 join); its class is a hand copy of tokenize's predicate
+    import re
+    from nameparser._pipeline import _tokenize
+
+    letter = re.compile(_render._MONGOLIAN_LETTER)
+    for cp in range(0x1700, 0x1900):
+        ch = chr(cp)
+        assert bool(letter.fullmatch(ch)) == _tokenize._mongolian_letter(ch), (
+            hex(cp))

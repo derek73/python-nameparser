@@ -1802,9 +1802,10 @@ class ParsedName:
         one directly after the other both in the name as written and
         in that layout keep the separator written between them,
         normalized: nothing stays nothing, any whitespace becomes one
-        space, an interpunct or nakaguro the parse divided at stands
-        alone, and one comma is written ', ' (ASCII), '، ' (Arabic)
-        or '，' (full-width). Every other pair takes a space, or the
+        space, an interpunct, nakaguro or Ethiopic wordspace the parse
+        divided at stands alone, and one comma is written ', '
+        (ASCII), '، ' (Arabic), '፣ ' (Ethiopic), '၊ ' (Burmese) or
+        '，' (full-width). Every other pair takes a space, or the
         layout's quotes and parentheses where those stand between the
         two fields, and suffixes not written side by side are joined
         with ', ' as the ``suffix`` field joins them."""

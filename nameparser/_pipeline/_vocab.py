@@ -335,7 +335,7 @@ _EAST_SLAVIC_CYR = re.compile(
     r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
     re.I)
 _TURKIC = re.compile(
-    r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
+    r"^(oglu|oğlu|ogly|ogli|o['’ʻ‘ʼ`]g['’ʻ‘ʼ`]li"
     r"|qizi|qızı|kizi|kyzy|gyzy|uly|uulu)$", re.I)
 _TURKIC_CYR = re.compile(
     r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
