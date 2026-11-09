@@ -4,6 +4,8 @@ Release Log
 
     nameparser 3.1 is under development. It refuses a ``Lexicon``, ``Parser`` or locale pack pickled by 2.x, which 3.0 loads with a ``DeprecationWarning``.
 
+    - **Remove loading a Lexicon, Parser or locale pack pickled by 2.x, which 3.0 deprecated.** ``pickle.loads`` of a ``Parser`` pickled by 2.8.0 raises ``ValueError`` saying to re-pickle it under 3.0, where 3.0.x loaded it with a ``DeprecationWarning``; the error for a 2.x ``Lexicon`` spelling now names :doc:`migrate`'s table rather than each word's calls. :issue:`1003`
+
 * 3.0.1 - November 8, 2026
 
     - **Fix the test suite run against the installed package.** Run as Debian's autopkgtest runs it, with the tests beside the installed package and no source tree, 3.0.0's suite stopped during collection; it now passes, and a test that reads the source tree or the user docs skips there. The library is unchanged from 3.0.0. :issue:`1184`

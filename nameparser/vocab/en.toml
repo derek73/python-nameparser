@@ -63,7 +63,7 @@ style = {}
 
 [[word]]
 text = "hon"
-style = { same_as = "honorable", abbreviation = true, attaches = ["mr", "mrs", "lord", "lady", "sir", "justice"], note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading; attaches: Hon Mr, Hon Mrs, Hon Lord, Hon Lady, Hon Sir, Hon Justice (rules/H9), the phrases a Chinese choice, which gives the word zh.toml's given reading, keeps as titles (#999); six words at most, the most a refusal message shows of a list the 2.x translation rewrites (decisions/H9)" }
+style = { same_as = "honorable", abbreviation = true, attaches = ["mr", "mrs", "lord", "lady", "sir", "justice"], note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading; attaches: Hon Mr, Hon Mrs, Hon Lord, Hon Lady, Hon Sir, Hon Justice (rules/H9), the phrases a Chinese choice, which gives the word zh.toml's given reading, keeps as titles (#999); six words at most, the most a refusal message showed of a list the 2.x translation rewrote, a reason gone since 3.1 (decisions/H9, decisions/vocabulary-model #1003)" }
 
 [[word]]
 text = "honourable"
