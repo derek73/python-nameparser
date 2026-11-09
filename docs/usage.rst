@@ -1317,7 +1317,7 @@ shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
    * - ``same``
      - ``Smith`` / ``Smith``
      - yes
-   * - ``folded``: equal once case, accents, full stops and apostrophes are folded away
+   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
      - ``María García`` / ``MARIA GARCIA``
      - yes
    * - ``listed-spelling``: spellings the vocabulary lists as one

@@ -467,7 +467,9 @@ class Matching:
 
 # -- the check -------------------------------------------------------------
 
-_DROPPED = str.maketrans("", "", ".'")
+#: Full stops and apostrophes: the typed one, the typographic U+2019
+#: and the modifier letter U+02BC, so `O’Brien` folds to `obrien`.
+_DROPPED = str.maketrans("", "", ".'\u2019\u02bc")
 _WORDS = re.compile(r"[\s-]+")
 #: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
 #: single character in one of them is a whole word, never an initial.
@@ -510,11 +512,11 @@ _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
-    away: NFC then NFD, casefolded, `.` and `'` removed. Hyphens and
-    spaces are kept. A combining mark (Mn) is dropped only where the
-    letter it attaches to is Latin, Greek or Cyrillic, where it is an
-    accent; in another script (a Devanagari virama, anusvara or vowel
-    sign) it is spelling and is kept."""
+    away: NFC then NFD, casefolded, `.` and the apostrophes `'`, U+2019
+    and U+02BC removed. Hyphens and spaces are kept. A combining mark
+    (Mn) is dropped only where the letter it attaches to is Latin, Greek
+    or Cyrillic, where it is an accent; in another script (a Devanagari
+    virama, anusvara or vowel sign) it is spelling and is kept."""
     decomposed = unicodedata.normalize(
         "NFD", unicodedata.normalize("NFC", text))
     kept = []

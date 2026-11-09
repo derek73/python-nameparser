@@ -46,6 +46,7 @@ NAMES: tuple[str, ...] = (
     "Edgar Allan Hoover", 'Robert "Bobby Joe" Smith', "Bobby Joe Smith",
     "Bobby Smith", "John Wm. Smith", "John Smith, PhD",
     "Ahmed Al", "Ahmed Al-Saud", "Ahmed Saud",
+    "Pat O'Brien", "O\u2019Brien, Pat", "Pat O\u02bcBrien",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -717,3 +718,12 @@ def test_a_bad_accept_offers_code_that_extends_the_default(accept: object) -> No
     # and type-checks, the same spelling written out for mypy
     written = parser.matching(accept=parser.matching().accept | {"family-initial"})
     assert written == offered
+
+
+@pytest.mark.parametrize("apostrophe", ["\u2019", "\u02bc"])
+def test_a_typographic_apostrophe_folds_like_a_typed_one(apostrophe: str) -> None:
+    written = f"O{apostrophe}Brien, Pat"
+    assert _fold(f"O{apostrophe}Brien") == _fold("O'Brien") == "obrien"
+    r = m.check(written, "Pat O'Brien")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.FOLDED
+    assert m.keys(written) == m.keys("Pat O'Brien") == {"obrien;p"}
