@@ -21,6 +21,7 @@
   "John Smith y"              →  family="Smith y"
   "John Smith and Jr."        →  family="Smith and"
   "John Paul Smith y Prof."   →  title="Prof."
+  "John Smith y Maj."         →  title="Maj."
   "محمد علي و"                →  family="علي و"
   ```
 
