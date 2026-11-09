@@ -943,6 +943,28 @@ def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
     assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
 
 
+def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
+    """rules/R4 (#1224): a particle that opens a hyphenated word is
+    written as a name word, whatever the particle; one inside the word
+    keeps its lowercase, as does a spaced one, and a particle written
+    with its hyphen and nothing after it ('az-') is one word, asked
+    whole as before (#700)."""
+    for text, repaired in (
+            ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
+            ("levon ter-petrosyan", "Levon Ter-Petrosyan"),
+            ("AHMAD AL-AHMARI", "Ahmad Al-Ahmari"),
+            ("AHMAD IBN-ʿALĪ", "Ahmad Ibn-ʿAlī"),
+            ("ARMAND VAN-DEN BERGH", "Armand Van-den Bergh"),
+            ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
+            ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
+            ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),
+            ("zaʿīm, ḥusnī az-", "Ḥusnī az- Zaʿīm")):
+        for written in (text, _nfd(text)):
+            assert _repairs(written, False) == repaired, written
+    assert _repairs("Levon Ter-Petrosyan", True) == "Levon Ter-Petrosyan"
+    assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
+
+
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
     """rules/R4's Accepted cost (#838): an unlisted abbreviation's
     ending after its full stop is written as a word ('Dut.Ra'), and a
@@ -1044,7 +1066,7 @@ def test_a_joined_acronym_repairs_whole_and_a_recorded_casing_wins() -> None:
         == "OTR/L"
     for text, whole in (("john smith-jones", "John Smith-Jones"),
                         ("jean-luc picard", "Jean-Luc Picard"),
-                        ("maria da-silva", "Maria da-Silva"),
+                        ("maria da-silva", "Maria Da-Silva"),
                         ("dipl.-ing john smith", "Dipl.-Ing John Smith")):
         assert str(parse(text).capitalized()) == whole, text
     default = Lexicon.default()
@@ -1620,9 +1642,10 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             ("juan y-garcia", "Juan Y-Garcia"),
             ("jose ortega-y-", "Jose Ortega-Y-"),
             ("jose -y-gasset", "Jose -Y-Gasset"),
-            # no connective, and the particle arm's own per-word answer
+            # no connective; a particle opening the word is name text
+            # (#1224)
             ("donovan mcnabb-smith", "Donovan McNabb-Smith"),
-            ("maria da-silva", "Maria da-Silva"),
+            ("maria da-silva", "Maria Da-Silva"),
             # three worded parts on the ambiguous side of `first < at
             # < last`, so a mutant dropping that bound cannot pass
             ("juan y-garcia-lopez", "Juan Y-Garcia-Lopez"),

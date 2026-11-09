@@ -492,7 +492,9 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
 
 
 def _cap_word(word: str, role: Role, tags: frozenset[str],
-              lex: Lexicon) -> str:
+              lex: Lexicon, *, particle: bool = True) -> str:
+    # `particle=False` is the hyphen clause's opening part (_cap_text):
+    # the particle arm is not asked, every other clause is.
     # Clause order: the particle/connective arm, then the exceptions
     # map as a mask, then the acronym clause (listed or by shape),
     # then the numeral clause, then, per full-stop chunk, the chunk's
@@ -611,7 +613,8 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
         return word.lower()
     generation = role is Role.SUFFIX and "vocab:suffix" in tags
     if not generation and (
-            _lowers_as_particle(normalized, word, role, tags, lex)
+            (particle
+             and _lowers_as_particle(normalized, word, role, tags, lex))
             or "conjunction" in tags
             or (UNCLASSIFIED_TAG in tags
                 and _reads_as_conjunction(word, lex))):
@@ -867,8 +870,15 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # -- is not a worded neighbour and must not count as one.
     named = [at for at, part in enumerate(parts)
              if any(c.isalnum() for c in part)]
-    if len(named) < 3:
+    if len(named) < 2:
         return _sub_words(cap, text)
+
+    # rules/R4: "So is a particle opening a hyphenated word" -- the
+    # opening named part, asked without the particle arm, with a named
+    # part after it. decisions/R4 (#1224).
+    def opening(word: str) -> str:
+        return _cap_word(word, role, tags, lex, particle=False)
+
     # rules/R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
     # keeps its lowercase" (#478). Decided here, not in _cap_word,
@@ -888,7 +898,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
                 and not _DOTTED_INITIAL.fullmatch(
                     unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex._sets.conjunctions)
-        else _sub_words(cap, part)
+        else _sub_words(opening if at == first else cap, part)
         for at, part in enumerate(parts))
 
 

@@ -13,8 +13,8 @@
   ```
   "j.r.r. tolkien"            →  capitalized="J.R.R. Tolkien"
   "A.B. Vajpayee"             →  capitalized_forced="A.B. Vajpayee"
-  "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad ibn-ʿAlī"
-  "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad al-ʿAbbas"
+  "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad Ibn-ʿAlī"
+  "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad Al-ʿAbbas"
   "ʻIOLANI KAMAKA"            →  capitalized="ʻIolani Kamaka"
   "LT.GOV. JOHN DOE"          →  capitalized="Lt.Gov. John Doe"
   "lt.gov john doe"           →  capitalized="Lt.Gov John Doe"
@@ -53,13 +53,15 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them.
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase.
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
   "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
-  "maria da-silva"            →  capitalized="Maria da-Silva"
+  "maria da-silva"            →  capitalized="Maria Da-Silva"
+  "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
+  "LEVON TER PETROSYAN"       →  capitalized="Levon ter Petrosyan"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"

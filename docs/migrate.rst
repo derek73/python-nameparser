@@ -1273,11 +1273,12 @@ Changed in 3.1
 ~~~~~~~~~~~~~~
 
 Case repair keeps a Ukrainian or Belarusian apostrophe inside its word,
-and writes Georgian set in Mtavruli capitals in plain Mkhedruli. 1.4
-through 3.0 gave ``Мар'Яна`` and ``Ნინო``:
+writes Georgian set in Mtavruli capitals in plain Mkhedruli, and
+capitalizes a particle that opens a hyphenated word. 1.4 through 3.0
+gave ``Мар'Яна``, ``Ნინო`` and ``ter-Petrosyan``:
 
 .. doctest::
 
     >>> [str(parse(n).capitalized()) for n in ("БЕЗУГЛА МАР'ЯНА",
-    ...     "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ")]
-    ["Безугла Мар'яна", 'ნინო ბურჯანაძე']
+    ...     "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "LEVON TER-PETROSYAN")]
+    ["Безугла Мар'яна", 'ნინო ბურჯანაძე', 'Levon Ter-Petrosyan']
