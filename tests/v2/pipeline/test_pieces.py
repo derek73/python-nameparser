@@ -671,7 +671,7 @@ def test_leading_title_shape_refuses_a_script_it_does_not_read(
 
 @pytest.mark.parametrize("text", [
     "Xyz.", "Dr.", "Xyz", "X.", "田中.", "김민준.", "たなか.", "Kim김.", "J.",
-    "Chas.", "MA.", "एम.", "এম.", "ਐਮ.", "Mएम.",
+    "Chas.", "MA.", "एम.", "এম.", "ਐਮ.", "Mएम.", "એમ.", "ଏମ.", "එම.", "ດຣ.",
 ])
 def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
     # The two spellings of H2's shape test -- `is_title_shaped`'s own
