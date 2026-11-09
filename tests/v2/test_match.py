@@ -19,6 +19,7 @@ from nameparser._match import (
     Outcome,
     RoleMatch,
     Side,
+    _RULES,
     _fold,
     _spelling_keys,
 )
@@ -1528,3 +1529,17 @@ def test_an_equal_given_name_reads_folded_beside_a_conflicting_family() -> None:
     r = m.check("J. Smith", "J Garcia")
     assert role(r, Role.GIVEN).outcome is Outcome.FOLDED
     assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
+
+
+def test_every_role_has_one_rule_and_its_cross_roles_are_roles() -> None:
+    # the table holds every role-specific decision (#1260): a Role added
+    # without a row would raise KeyError in the check, so the table is
+    # held to the enum here rather than found missing there
+    assert list(_RULES) == list(Role)
+    for role, rule in _RULES.items():
+        assert role not in rule.across
+        assert all(isinstance(r, Role) for r in rule.across)
+    # the roles a reading may not be tried into are exactly the ones
+    # that never conflict on their text (decisions/name-matching #1006)
+    assert {r for r, rule in _RULES.items() if not rule.tried_into} == {
+        Role.TITLE, Role.SUFFIX}
