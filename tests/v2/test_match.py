@@ -264,18 +264,33 @@ def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
     # has no decomposition, case or mark to fold). The mark contexts
     # found the micro sign U+00B5 and U+2183, which casefold into Greek
     # and Latin, and a full stop or apostrophe before a mark (review of
-    # #1221). Measured 2026-11-08: about 3.5 s serial on py3.11.
+    # #1221). Measured 2026-11-08: about 6 s serial on py3.11, the module's
+    # heaviest test.
     bad = []
     for i in range(0x110000):
         c = chr(i)
         if unicodedata.category(c) in ("Cn", "Cs"):
             continue
-        for text in (c, "a" + c, c + "-a", "-" + c, "a" + c + "\u0301",
-                     "-" + c + "\u0301", "\u0915" + c + "\u0301"):
+        for text in (c, "a" + c, c + "-a", "-" + c, c + " x",
+                     "a" + c + "\u0301", "-" + c + "\u0301",
+                     "\u0915" + c + "\u0301"):
             folded = _fold(text)
-            if _fold(folded) != folded or folded.count("-") != text.count("-"):
+            if (_fold(folded) != folded or folded.count("-") != text.count("-")
+                    or folded.count(" ") != text.count(" ")):
                 bad.append((hex(i), text, folded))
     assert bad == []
+
+
+def test_fold_reads_a_letters_script_before_and_after_casefolding() -> None:
+    # the micro sign casefolds into Greek and U+2183 into Latin, so their
+    # marks are accents; the iota subscript stays a mark; U+0149 casefolds
+    # to an apostrophe and n; a full stop before a mark moves the mark onto
+    # the letter before it
+    assert _fold("\u00b5\u0301") == "\u03bc"
+    assert _fold("\u2183\u0301") == "\u2184"
+    assert _fold("\u1fb3") == _fold("\u03b1\u0345") == "\u03b1"
+    assert _fold("\u0149") == "n"
+    assert _fold("a.\u0301") == "a"
 
 
 def test_the_table_has_one_entry_per_role_in_role_order() -> None:

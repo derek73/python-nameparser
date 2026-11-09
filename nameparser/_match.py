@@ -598,24 +598,26 @@ def _cross_texts(name: ParsedName, role: Role) -> list[str]:
 
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
-    away: NFC, casefolded, `.` and the apostrophes `'`, U+2019 and U+02BC
-    removed, then NFD, then NFC again, so the folded text, and every key
+    away: NFC, `.` and the apostrophes `'`, U+2019 and U+02BC removed,
+    NFD, casefolded, then NFC again, so the folded text, and every key
     cut from it, is precomposed (a Hangul syllable, never a conjoining
     jamo). Hyphens and spaces are kept. A combining mark (Mn) is dropped
     only where the letter it attaches to is Latin, Greek or Cyrillic,
     where it is an accent; in another script (a Devanagari virama,
-    anusvara or vowel sign) it is spelling and is kept. The letter's
-    script is read after casefolding, so a letter that casefolds into
-    one of those scripts (the micro sign U+00B5 into Greek mu, U+2183
+    anusvara or vowel sign) it is spelling and is kept. A letter counts
+    as in those scripts where it or its casefolded form is, so a letter
+    that casefolds into one (the micro sign U+00B5 into Greek mu, U+2183
     into Latin) loses its mark on the first fold, which keeps the fold
-    idempotent, as does removing the full stops and apostrophes before
-    the marks are read (a mark after one then attaches to the letter
-    before it, and is read with it)."""
+    idempotent; so does removing the full stops and apostrophes before
+    the marks are read, a mark after one then attaching to the letter
+    before it, and again after casefolding, which can write one (U+0149
+    `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
+    other, so `ᾳ` folds to `α`."""
     if text.isascii():
         # no accent, no composition, and no apostrophe but the typed one
         return text.casefold().translate(_DROPPED)
     decomposed = unicodedata.normalize(
-        "NFD", unicodedata.normalize("NFC", text).casefold().translate(_DROPPED))
+        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
     kept = []
     accented = False
     for c in decomposed:
@@ -623,9 +625,13 @@ def _fold(text: str) -> str:
             if accented:
                 continue
         else:
-            accented = unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
+            accented = (unicodedata.name(c, "").startswith(_ACCENTED_SCRIPTS)
+                        or unicodedata.name(c.casefold()[:1] or c, "")
+                        .startswith(_ACCENTED_SCRIPTS))
         kept.append(c)
-    return unicodedata.normalize("NFC", "".join(kept))
+    # again after casefolding, which can write an apostrophe (U+0149)
+    return unicodedata.normalize(
+        "NFC", "".join(kept).casefold().translate(_DROPPED))
 
 
 def _strength(result: MatchResult) -> tuple[object, ...]:
@@ -792,8 +798,9 @@ def _family_words(base: str, lexicon: Lexicon) -> list[str]:
     dropped. Read by `part-of-other` (`_base_words`) and by `keys`, so
     the two set aside the same halves. Raw and folded agree half for
     half: `_fold` never adds or removes a hyphen or a space (test_match.py
-    holds it over every assigned code point in context), so a word's halves fold to its folded halves,
-    save that a word or half of full stops folds to empty."""
+    holds it over every assigned code point in context), so a word's
+    halves fold to its folded halves, save that a word or half of full
+    stops folds to empty."""
     words: list[str] = []
     for word in base.split():
         halves = word.split("-")
