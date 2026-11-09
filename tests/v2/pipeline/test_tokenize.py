@@ -371,10 +371,11 @@ _YIN = "ᠶ᠋ᠢᠨ"  # the genitive suffix, holding a variation selector
     ("Jean : Dupont", ["Jean", ":", "Dupont"]),
     (" ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ ", ["ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"]),
     # a Mongolian digit or punctuation mark is no letter: the digit one
-    # U+1811 or the comma U+1802 beside it leaves it a space, while a
-    # variation selector or the vowel separator beside it joins
-    ("ᠴᠣᠢ\u1802\u202fᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u1802", "ᠪᠠ", "ᠴᠣᠢ"]),
-    ("ᠴᠣᠢ\u202f\u1802ᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "\u1802ᠪᠠ", "ᠴᠣᠢ"]),
+    # U+1811 or the full stop U+1803 beside it leaves it a space (the
+    # comma U+1802 is a comma, which divides wherever it stands), while
+    # a variation selector or the vowel separator beside it joins
+    ("ᠴᠣᠢ\u1803\u202fᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u1803", "ᠪᠠ", "ᠴᠣᠢ"]),
+    ("ᠴᠣᠢ\u202f\u1803ᠪᠠ ᠴᠣᠢ", ["ᠴᠣᠢ", "\u1803ᠪᠠ", "ᠴᠣᠢ"]),
     ("ᠴᠣᠢ\u180b\u202fᠢᠨ ᠴᠣᠢ", ["ᠴᠣᠢ\u180b\u202fᠢᠨ", "ᠴᠣᠢ"]),
     ("ᠴᠣᠢ\u202f\u180eᠠ ᠴᠣᠢ", ["ᠴᠣᠢ\u202f\u180eᠠ", "ᠴᠣᠢ"]),
     # a run holding U+202F is whitespace, and one at the string's start

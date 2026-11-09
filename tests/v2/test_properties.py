@@ -3955,3 +3955,48 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     # comma the shape never fires (rules/H6)
     assert fired == set(_ABBREVIATION_SLOTS) - {"{} SMITH, XYZ"}, (
         set(_ABBREVIATION_SLOTS) - fired)
+
+
+# --- #1202: every script's comma reads as the ASCII comma does ------
+# The corpus names holding an ASCII comma, each with every ASCII comma
+# swapped for one other member of COMMA_CHARS, the member rotating by
+# the name's place so each is asked of a quarter of the names: the
+# sites read the set, not one member, so one swap a name keeps the walk
+# at two parses a name (measured 2026-11-08 on py3.11: 1,847 names,
+# about 2 s; all four members on every name took 8 s). The twin's
+# fields are compared with its comma written back as ASCII, since a
+# nickname, and so a clause S1 leaves alone, keeps its text as written.
+
+def _other_comma_findings() -> list[str]:
+    from nameparser._pipeline._state import COMMA_CHARS
+    others = sorted(COMMA_CHARS - {","})
+    parser = Parser()
+    out: list[str] = []
+    for i, text in enumerate(t for t in _FORK_CORPUS if "," in t):
+        comma = others[i % len(others)]
+        twin = parser.parse(text.replace(",", comma)).as_dict()
+        want = parser.parse(text).as_dict()
+        got = {field: value.replace(comma, ",")
+               for field, value in twin.items()}
+        if got != want:
+            out.append(f"{text!r} with {comma!r}: {got} != {want}")
+    return out
+
+
+def test_every_comma_reads_as_the_ascii_comma_does() -> None:
+    """rules/C's Background as an invariant: "Which characters COUNT
+    as the comma is part of the rule", so a name reads alike whichever
+    member of COMMA_CHARS divides it, where it divides the name and
+    where it divides the words of a clause rules/S1 sets apart.
+
+    Recorded negative control, measured 2026-11-08 with all four
+    members on every name, at f0f966d6 (PR #1251's branch, before the
+    clause sites read COMMA_CHARS): 16 names moved under each member,
+    every one inside a bracketed clause ('(PhD, Sr) John Smith' reading
+    a nickname rather than title 'Sr', suffix 'PhD'); compared without
+    writing the twin's comma back, 34 did, the other 18 nicknames
+    keeping their comma as written."""
+    failures = _other_comma_findings()
+    assert not failures, (
+        f"{len(failures)} name(s) read differently with another comma:\n"
+        + "\n".join(failures[:10]))

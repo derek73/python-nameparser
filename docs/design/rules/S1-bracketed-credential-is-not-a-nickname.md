@@ -27,10 +27,12 @@
   "W. Russell (Jr.) Withers"  →  suffix="Jr."
   "Jack (PhD)"                →  family="Jack"
   ```
-- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against.
+- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against. A comma is any of the characters C's Background counts as one, the Arabic, fullwidth, Ethiopic and Burmese commas reading here as the ASCII one does.
   ```
   "John Smith (USN, Ret.)"    →  suffix="USN, Ret."
   "John Smith (Dr., PhD)"     →  title="Dr."
+  "John Smith (Dr.፣ PhD)"     →  title="Dr."
+  "(PhD، Sr) John Smith"      →  title="Sr"
   "John Smith (MD ,PhD)"      →  suffix="MD, PhD"
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"

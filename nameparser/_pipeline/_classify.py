@@ -92,7 +92,7 @@ import unicodedata
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_STRIP, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
@@ -495,7 +495,7 @@ def classify(state: ParseState) -> ParseState:
     if state.extracted:
         for i, t in enumerate(state.tokens):
             if (t.role is not None and i not in marker_tags
-                    and (bare := t.text.strip(",")) and bare != t.text):
+                    and (bare := t.text.strip(COMMA_STRIP)) and bare != t.text):
                 readers[i] = copy_with(t, text=bare)
                 folded[i] = _normalize(bare)
     tokens = tuple(

@@ -37,7 +37,9 @@ _MONGOLIAN_LETTER = "[\u180B-\u180F\u181A-\u18AF]"
 _SPACES = re.compile(
     rf"(?:(?!(?<={_MONGOLIAN_LETTER})\u202F(?={_MONGOLIAN_LETTER}))\s)+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
-_COMMA_CHAR = re.compile(r"[,،，፣၊]")  # ASCII, Arabic, fullwidth, Ethiopic, Burmese
+#: ASCII, Arabic, fullwidth, Ethiopic, Burmese, then N'Ko, Mongolian,
+#: Manchu, Lisu, Vai and Bamum: _pipeline._state.COMMA_CHARS
+_COMMA_CHAR = re.compile("[,\u060c\uff0c\u1363\u104a\u07f8\u1802\u1808\ua4fe\ua60d\ua6f5]")
 _MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
 _NAME_RUN = re.compile(r"\w+")
@@ -214,7 +216,10 @@ _NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.
 _COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C",
-                  "\u1363": "\u1363 ", "\u104A": "\u104A "}
+                  "\u1363": "\u1363 ", "\u104A": "\u104A ",
+                  "\u07F8": "\u07F8 ", "\u1802": "\u1802 ",
+                  "\u1808": "\u1808 ", "\uA4FE": "\uA4FE ",
+                  "\uA60D": "\uA60D ", "\uA6F5": "\uA6F5 "}
 
 
 def _written_separator(gap: str) -> str | None:
