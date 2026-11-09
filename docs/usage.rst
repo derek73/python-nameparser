@@ -1237,8 +1237,10 @@ and for the two joined:
 A key only gathers candidates: ``Jane Smith`` shares ``smith;j`` with
 ``John Smith``, and ``check()`` is what tells them apart. A name with
 no family name, such as a lone ``Suharto`` (read as a given name, see
-:ref:`lone-name-word`), gets no key and is consistent with nothing,
-since the family name must be present on both sides and agree.
+:ref:`lone-name-word`), gets no key and is consistent with nothing by
+default, since the family name must be present on both sides and
+agree; ``other-reading`` (below) reaches it through its family
+reading.
 
 Checking a pair
 ~~~~~~~~~~~~~~~
@@ -1296,8 +1298,13 @@ What the default accepts
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The outcomes, strongest first. The default accepts the writing
-variants a hand-built comparison usually forgives; the rest are
-reported in the table but count as a conflict until you accept them:
+variants a hand-built comparison usually forgives; the rest count as a
+conflict until you accept them. ``family-initial``, ``given-one-side``
+and ``hyphenated-part`` are reported in the table either way, so an
+unaccepted one shows what the pair needed. ``other-reading`` and
+``across-roles`` are searched only where accepted: otherwise the table
+shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
+``conflict``.
 
 .. list-table::
    :header-rows: 1
@@ -1324,8 +1331,8 @@ reported in the table but count as a conflict until you accept them:
    * - ``initial``: an initial against a name, outside the family name
      - ``J. Smith`` / ``John Smith``
      - yes
-   * - ``initials-agree``: the same initials, written with different spacing or hyphens
-     - a given name ``J.-P.`` / ``J. P.``
+   * - ``initials-agree``: one role written in initials alone on both sides, the same initials once spaces and hyphens are set aside
+     - ``Jane Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``
      - yes
    * - ``one-side``: a middle name, nickname or maiden name on one side only
      - ``John A. Smith`` / ``John Smith``
@@ -1357,11 +1364,15 @@ reported in the table but count as a conflict until you accept them:
 
 A middle name is compared word by word, in order, and takes the
 weakest of its words' outcomes. A different generation conflicts
-(``Jr.`` / ``Sr.``); a credential or title never does, so a career
-from ``Mr.`` to ``Dr.`` does not separate a person's records. The fold
-drops accents only from Latin, Greek and Cyrillic letters; a mark on
-another script's letter, such as a Devanagari vowel sign, is spelling
-and stays. Typos (``Slvatore`` / ``Salvatore``), transliterations and
+(``Jr.`` / ``Sr.``), and a generation on one side only reads
+``generation-one-side`` whatever credentials either side carries
+(``John Smith Jr.`` / ``John Smith, PhD``); a credential or title
+never conflicts, so a career from ``Mr.`` to ``Dr.`` does not separate
+a person's records. The fold drops accents only from Latin, Greek and
+Cyrillic letters; a mark on another script's letter, such as a
+Devanagari vowel sign, is spelling and stays. Initials written joined
+read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
+Typos (``Slvatore`` / ``Salvatore``), transliterations and
 nicknames the vocabulary does not list as the same name (``Bill`` /
 ``William``) are conflicts: the table names the conflicting role, so
 you can run your own fuzzy comparison on that role alone.
@@ -1394,8 +1405,10 @@ be accepted.
 
 ``other-reading`` tries, where the names as parsed are not consistent,
 each side's other reading: one :ref:`ambiguity <parser-guesses>` at a
-time, its words moved to the role its ``alternative`` names. The roles
-an alternative changed read ``other-reading``. A lone ``Suharto``,
+time, its words moved to the role its ``alternative`` names. A role
+the alternative moved a word into or out of reads ``other-reading``
+where its own outcome is accepted, and keeps its own outcome where it
+is not. A lone ``Suharto``,
 read as a given name, has the family reading as its alternative:
 
 .. doctest::
