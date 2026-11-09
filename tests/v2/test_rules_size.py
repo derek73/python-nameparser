@@ -1,6 +1,7 @@
 """The rule-size report (tests/v2/rules_size.py)."""
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -50,9 +51,14 @@ def test_measure_refuses_text_the_doc_tests_reject() -> None:
 
 
 def _git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", "-C", str(repo), "-c", "user.name=t",
-                    "-c", "user.email=t@t", *args],
-                   check=True, capture_output=True)
+    # The user's and the system's git config are shut out, so a global
+    # commit.gpgsign or core.hooksPath cannot fail a scratch commit.
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull,
+           "GIT_CONFIG_NOSYSTEM": "1"}
+    done = subprocess.run(["git", "-C", str(repo), "-c", "user.name=t",
+                           "-c", "user.email=t@t", *args],
+                          capture_output=True, text=True, env=env)
+    assert done.returncode == 0, f"git {' '.join(args)}: {done.stderr}"
 
 
 @pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
@@ -91,6 +97,20 @@ def test_the_base_is_read_at_the_merge_base_not_the_branch_tip(
     assert rules_size.main(["--since", "main"]) == 0
     out = capsys.readouterr().out
     assert "X1: words 27 -> 29\n" in out   # the branch's 2, not main's 5
+
+    # a base the report cannot read is named, with git's or the parser's
+    # reason, on stderr and a nonzero exit, never a traceback
+    assert rules_size.main(["--since", "no-such-ref"]) == 2
+    assert "no-such-ref" in capsys.readouterr().err
+    index.write_text("- [X1 — one](X1-one.md)\n- [X2 — two](X2-two.md)\n",
+                     encoding="utf-8")
+    (rules / "X2-two.md").write_text(_SKELETON_DOC.replace(
+        "# X1 —", "# X2 —").replace("**Because:**", "Because:"),
+        encoding="utf-8")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-qm", "an unreadable rule")
+    assert rules_size.main(["--since", "HEAD"]) == 2
+    assert "pass a later --since" in capsys.readouterr().err
 
 
 _SKELETON_DOC = """\

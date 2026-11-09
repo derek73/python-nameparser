@@ -9,7 +9,9 @@ growth in front of a reviewer:
 measures every rule in the working tree and at the merge-base of
 ``--since`` and HEAD, and prints one line per rule that moved, for axis
 12 (docs/design/AGENTS.md) to ask what the new words read. It prints
-and exits 0; nothing here fails the suite. Through 2026-11-09 the sizes
+and exits 0; nothing here fails the suite. A base it cannot read (a
+ref git does not know, a commit before the rules folder or before the
+skeleton format) exits 2 with the reason. Through 2026-11-09 the sizes
 were a committed record the suite held the tree to, retired because
 every rules PR rewrote that one file and branches editing neighbouring
 rules conflicted in it (decisions/rules-size-record).
@@ -27,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
@@ -119,8 +122,27 @@ def main(argv: list[str] | None = None) -> int:
                     help="compare against the merge-base of REF and HEAD "
                          f"(default {DEFAULT_SINCE})")
     args = ap.parse_args(argv)
-    base, text = rules_text_at(args.since)
-    found = changes(measure(text), measure(read_rules_text()))
+    try:
+        base, text = rules_text_at(args.since)
+    except subprocess.CalledProcessError as e:
+        err = e.stderr.decode() if isinstance(e.stderr, bytes) else e.stderr
+        print(f"cannot read the rules at the merge-base of {args.since} "
+              f"and HEAD: {(err or '').strip() or e}", file=sys.stderr)
+        return 2
+    except FileNotFoundError as e:
+        print(f"cannot run {e.filename}: the report needs git and tar",
+              file=sys.stderr)
+        return 2
+    try:
+        before = measure(text)
+    except ValueError as e:
+        print(f"the merge-base {base[:10]} holds rules the current parser "
+              f"cannot read (one older than the skeleton format, #761, "
+              f"is refused); pass a later --since. {e}", file=sys.stderr)
+        return 2
+    # the tree's own errors are the tree's to fix, so they raise as the
+    # doc tests raise them
+    found = changes(before, measure(read_rules_text()))
     print(f"rules against {args.since} (merge-base {base[:10]}):")
     print("\n".join(found) or "no rule moved")
     return 0
