@@ -581,8 +581,9 @@ def _is_initial(folded: str) -> bool:
 def _part_agrees(a: str, b: str, lexicon: Lexicon) -> Outcome | None:
     """One word against one word: `same` where they are equal once
     folded or listed as one spelling, `initial` where one is an initial
-    of the other's first letter, else `None`. A hyphenated word is compared part by part against the
-    other's hyphen-split parts (`J.-P.` / `Jean-Pierre`)."""
+    of the other's first letter, else `None`. A hyphenated word is
+    compared part by part against the other's hyphen-split parts
+    (`J.-P.` / `Jean-Pierre`)."""
     fa, fb = _fold(a), _fold(b)
     if fa == fb or lexicon._headword(a) == lexicon._headword(b):
         return Outcome.SAME

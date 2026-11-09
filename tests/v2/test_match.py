@@ -1,4 +1,6 @@
-"""Name matching: the settings object and the result types."""
+"""Name matching: the settings object, the result types, the check
+and the grouping keys, with the symmetry and key-guarantee properties
+held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
 import itertools
