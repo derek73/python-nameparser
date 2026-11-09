@@ -465,12 +465,11 @@ def test_consistent_names_always_share_a_key(
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
     accepts. Negative controls, each the first pair to fail, re-taken
-    2026-11-08 after the listed-spelling names ("Jo Garcia" through
-    "Senhor John Smith") joined NAMES with the per-role spelling sets,
-    every one unmoved since "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud"
-    joined it, and taken over NAMES as it stood then, before the period
-    rule's names ("Jo. Garcia" through "Ana María Cruz") were appended: with only the joined form of a hyphenated word keyed, the
-    default, given-one-side, hyphenated-part, other-reading and
+    2026-11-08 after the period rule's names ("Jo. Garcia" through "Ana
+    María Cruz") joined NAMES, each mutation applied in-process, every
+    one unmoved since "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud"
+    joined it, and the symmetry test passing under every one: with only
+    the joined form of a hyphenated word keyed, the default, given-one-side, hyphenated-part, other-reading and
     across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
     family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
     with part-of-other keeping a hyphen half that is a particle while
@@ -491,11 +490,17 @@ def test_consistent_names_always_share_a_key(
     all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)").
     hyphenated-part adds no key, its halves sharing the given initial.
     Two keys no pair of NAMES needs, each failing a named test when
-    removed: the whole hyphenated word's spellings
-    (test_a_hyphenated_listed_spelling_shares_a_key, under a caller's
-    hyphenated full form) and the spellings read from the folded word
-    (test_a_listed_spelling_holds_whatever_the_accents, "Ana Mà. Cruz",
-    re-taken 2026-11-08 with the period rule).
+    removed (re-taken the same day): the whole hyphenated word's
+    spellings (test_a_hyphenated_listed_spelling_shares_a_key, under a
+    caller's hyphenated full form, and the two key-content tests of
+    hyphenated family words) and the spellings read from the folded
+    word (test_a_listed_spelling_holds_whatever_the_accents, "Ana Mà.
+    Cruz"). The period rule moves no pair here: with the period test
+    removed from `_spellings`, the bare word's links restored, this
+    test and the symmetry test pass under every setting, since the
+    check and the keys read the one spelling set, while
+    test_a_name_of_its_own_written_bare_is_itself (four rows) and
+    test_a_bare_name_of_its_own_is_not_keyed_by_its_long_form fail.
     Other-reading names the setting with `other_readings=True`, which
     was the `other-reading` member of accept when these were taken."""
     matching = Matching(Parser(), *setting)
