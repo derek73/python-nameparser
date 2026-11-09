@@ -1531,15 +1531,22 @@ def test_an_equal_given_name_reads_folded_beside_a_conflicting_family() -> None:
     assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
 
 
-def test_every_role_has_one_rule_and_its_cross_roles_are_roles() -> None:
-    # the table holds every role-specific decision (#1260): a Role added
-    # without a row would raise KeyError in the check, so the table is
-    # held to the enum here rather than found missing there
+def test_every_role_has_one_rule_and_its_columns_agree() -> None:
+    # the table holds each role's rules (#1260): a Role added without a
+    # row would raise KeyError in the check, so the table is held to the
+    # enum here rather than found missing there
+    from nameparser._match import _compare_noted, _compare_suffix
     assert list(_RULES) == list(Role)
     for role, rule in _RULES.items():
+        # a cross role is another role of the same group: the keys cut a
+        # cross role's words in the role's own group
         assert role not in rule.across
-        assert all(isinstance(r, Role) for r in rule.across)
-    # the roles a reading may not be tried into are exactly the ones
-    # that never conflict on their text (decisions/name-matching #1006)
-    assert {r for r, rule in _RULES.items() if not rule.tried_into} == {
-        Role.TITLE, Role.SUFFIX}
+        assert all(_RULES[other].group == rule.group for other in rule.across)
+        # a role another reading is not tried into is one whose
+        # comparator conflicts on no text (the title, noted) or only on
+        # a generation (the suffix), so a word moved there could only
+        # empty a role that does
+        never_conflicts = rule.compare in (_compare_noted, _compare_suffix)
+        assert rule.tried_into is not never_conflicts, role
+        # a comparator reading the names whole takes no empty-side cells
+        assert (rule.empty is None) is (rule.compare is _compare_suffix), role

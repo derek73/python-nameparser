@@ -435,8 +435,8 @@ class Matching:
                     del middles[0 if cross.left_role is Role.MIDDLE
                                 else 1][index]
                     la, lb = (" ".join(words) for words in middles)
-                    outcome = _middle_outcome(la, lb, lexicon, self.accept,
-                                              _RULES[Role.MIDDLE].group)
+                    outcome = _role_outcome(_RULES[Role.MIDDLE], la, lb,
+                                            left, right, lexicon, self.accept)
                     roles[_MIDDLE] = dataclasses.replace(
                         roles[_MIDDLE], outcome=outcome,
                         more=(Side.NEITHER if outcome is Outcome.CONFLICT
@@ -448,9 +448,10 @@ class Matching:
     def _across(self, role: Role, left: ParsedName, right: ParsedName,
                 ) -> tuple[CrossRoleMatch, int | None] | None:
         """The strongest match of `role` on one side against one of its
-        cross roles (its `_RULES` row's `across`) on the other, or `None`, with the index
-        of the middle word it used (`None` for a role other than the
-        middle; the match's middle role names the side): a middle name
+        cross roles (its `_RULES` row's `across`) on the other, or
+        `None`, with the index of the middle word it used (`None` for a
+        role other than the middle; the match's middle role names the
+        side): a middle name
         word by word, the other roles whole. Only a full name on both
         sides counts (`_full_outcome`), never an initial. The pick is by
         outcome, then by texts and roles named without a side, so it is
@@ -483,10 +484,9 @@ class Matching:
                   ) -> list[tuple[ParsedName, Ambiguity | None]]:
         """The name as parsed, with no ambiguity, then one other
         reading per ambiguity whose `alternative` moves a word into a
-        role its `_RULES` row lets one be tried into (not the title or
-        suffix): that
-        ambiguity's words moved to the alternative's role by
-        `Parser.revise`, with the ambiguity."""
+        role whose `_RULES` row has `tried_into`: that ambiguity's words
+        moved to the alternative's role by `Parser.revise`, with the
+        ambiguity."""
         readings: list[tuple[ParsedName, Ambiguity | None]] = [(name, None)]
         for ambiguity in name.ambiguities:
             if ambiguity.alternative is None:
@@ -512,10 +512,11 @@ class Matching:
         lexicon = self.parser.lexicon
         across = Outcome.ACROSS_ROLES in self.accept
         family_rule, given_rule = _RULES[Role.FAMILY], _RULES[Role.GIVEN]
-        assert family_rule.base is not None
-        bases = [family_rule.base(parsed)]
+        bases = [parsed.family_base]
         if across:
-            bases.append(_maiden_base(parsed))
+            # the texts the check matches against a family name, each
+            # without its particles as the family base is
+            bases += [_base_of(parsed, other) for other in family_rule.across]
         forms: list[str] = []
         for base in bases:
             forms += _family_words(base, lexicon)
@@ -577,10 +578,10 @@ _FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
 
 
-def _maiden_base(name: ParsedName) -> str:
-    """The maiden name without its particles, as `family_base` writes
-    the family's."""
-    return name._text_for(Role.MAIDEN, without_tag="particle",
+def _base_of(name: ParsedName, role: Role) -> str:
+    """A role's text without its particles, as `family_base` writes the
+    family's (the maiden's, which `across-roles` keys as family words)."""
+    return name._text_for(role, without_tag="particle",
                           unless_tag=UNJOINED_TAG)
 
 
@@ -771,7 +772,7 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
       spelling) implies every weaker one, two texts equal once folded
       or listed as one needing no other leniency, so it is the only
       outcome yielded.
-    - In the family role (given its two `bases`) the outcomes are
+    - Given `bases`, the family role's (`_compare_family`), the outcomes are
       treated as one chain, particles set aside, part of the other,
       family initial, initials agree, and the first that holds is the
       only one yielded. They are not all implied by the one before:
@@ -940,7 +941,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
     """A different generation conflicts and one on one side only is its
     own outcome, whatever credentials either side carries; where the
     generations agree, the rest of the suffix (credentials, honorifics)
-    is noted."""
+    is noted. Listed spellings are read in `group`."""
     if left.suffix == right.suffix:
         return Outcome.SAME
     ga, gb = left.generation, right.generation
@@ -968,35 +969,32 @@ _Compare = Callable[
 
 @dataclass(frozen=True, slots=True)
 class _RoleRule:
-    """How one role compares: every role-specific decision of the check
-    and the keys in one row (#1260).
+    """How one role compares, read by the check's row for the role, the
+    cross-role and other-reading searches and the keys (#1260). The
+    word-by-word reading of a middle name (`_cross_texts`,
+    `_middle_outcome`) and the familiar forms' place in the `given`
+    group (`_text_outcomes`) stay in their helpers.
 
     - `group`: the `same_as` group its listed spellings are read in, the
       readings of the kind that stands there (`Lexicon._headwords`), so
       a given name's spelling never matches a surname (`Ma.` / `María`
       agree as given names; the surname Ma never matches María).
-    - `both_empty` and `one_side`: the outcome where neither side holds
-      the role, and where one side alone does; the family role's are
-      both `conflict`, a family name being the minimum evidence.
-    - `compare`: the comparator where both sides hold it.
-    - `whole`: the comparator reads the two names whole, empty sides
-      included (the suffix, which compares generations), so its
-      `both_empty` and `one_side` are never read.
-    - `base`: the text the family leniencies compare beside the role's
-      own (`particles-aside`, `part-of-other`), `None` where the role
-      has none.
+    - `compare`: the comparator where both sides hold the role, or, where
+      `empty` is `None`, always: it then reads the two names whole (the
+      suffix, which compares generations).
+    - `empty`: the outcomes where neither side holds the role and where
+      one side alone does; the family role's are both `conflict`, a
+      family name being the minimum evidence.
     - `across`: the roles of the other name a cross-role match tries it
-      against (`across-roles`), empty where it is never tried.
+      against (`across-roles`), empty where it is never tried; the keys
+      follow it.
     - `tried_into`: whether another reading may move words into it; a
       title never conflicts and a suffix only on its generation, so a
       word moved there could only empty a role that does."""
 
     group: str
-    both_empty: Outcome
-    one_side: Outcome
     compare: _Compare
-    whole: bool = False
-    base: Callable[[ParsedName], str] | None = None
+    empty: tuple[Outcome, Outcome] | None
     across: tuple[Role, ...] = ()
     tried_into: bool = True
 
@@ -1007,11 +1005,17 @@ class _RoleRule:
 def _compare_text(a: str, b: str, left: ParsedName, right: ParsedName,
                   lexicon: Lexicon, accept: frozenset[Outcome],
                   rule: _RoleRule) -> Outcome:
-    """Two non-empty texts by `_text_outcome`, with the role's bases
-    where it has them."""
-    bases = (None if rule.base is None
-             else (rule.base(left), rule.base(right)))
-    return _text_outcome(a, b, lexicon, rule.group, accept, bases)
+    """Two non-empty texts by `_text_outcome`."""
+    return _text_outcome(a, b, lexicon, rule.group, accept)
+
+
+def _compare_family(a: str, b: str, left: ParsedName, right: ParsedName,
+                    lexicon: Lexicon, accept: frozenset[Outcome],
+                    rule: _RoleRule) -> Outcome:
+    """Two non-empty family names by `_text_outcome`, with the two family
+    bases its leniencies compare (`particles-aside`, `part-of-other`)."""
+    return _text_outcome(a, b, lexicon, rule.group, accept,
+                         (left.family_base, right.family_base))
 
 
 def _compare_middle(a: str, b: str, left: ParsedName, right: ParsedName,
@@ -1032,40 +1036,41 @@ def _compare_suffix(a: str, b: str, left: ParsedName, right: ParsedName,
     return _suffix_outcome(left, right, lexicon, rule.group)
 
 
-def _family_base(name: ParsedName) -> str:
-    return name.family_base
-
+_EMPTY = (Outcome.SAME, Outcome.ONE_SIDE)
 
 #: Each role's rule (`_RoleRule`), one row per `Role`.
 _RULES: Mapping[Role, _RoleRule] = {
-    Role.TITLE: _RoleRule("title", Outcome.SAME, Outcome.NOTED,
-                          _compare_noted, tried_into=False),
-    Role.GIVEN: _RoleRule("given", Outcome.SAME, Outcome.GIVEN_ONE_SIDE,
-                          _compare_text, across=(Role.MIDDLE, Role.NICKNAME)),
-    Role.MIDDLE: _RoleRule("given", Outcome.SAME, Outcome.ONE_SIDE,
-                           _compare_middle),
-    Role.FAMILY: _RoleRule("family", Outcome.CONFLICT, Outcome.CONFLICT,
-                           _compare_text, base=_family_base,
+    Role.TITLE: _RoleRule("title", _compare_noted,
+                          (Outcome.SAME, Outcome.NOTED), tried_into=False),
+    Role.GIVEN: _RoleRule("given", _compare_text,
+                          (Outcome.SAME, Outcome.GIVEN_ONE_SIDE),
+                          across=(Role.MIDDLE, Role.NICKNAME)),
+    Role.MIDDLE: _RoleRule("given", _compare_middle, _EMPTY),
+    Role.FAMILY: _RoleRule("family", _compare_family,
+                           (Outcome.CONFLICT, Outcome.CONFLICT),
                            across=(Role.MAIDEN,)),
-    Role.SUFFIX: _RoleRule("suffix", Outcome.SAME, Outcome.SAME,
-                           _compare_suffix, whole=True, tried_into=False),
-    Role.NICKNAME: _RoleRule("given", Outcome.SAME, Outcome.ONE_SIDE,
-                             _compare_text),
-    Role.MAIDEN: _RoleRule("family", Outcome.SAME, Outcome.ONE_SIDE,
-                           _compare_text),
+    Role.SUFFIX: _RoleRule("suffix", _compare_suffix, None, tried_into=False),
+    Role.NICKNAME: _RoleRule("given", _compare_text, _EMPTY),
+    Role.MAIDEN: _RoleRule("family", _compare_text, _EMPTY),
 }
+
+
+def _role_outcome(rule: _RoleRule, a: str, b: str, left: ParsedName,
+                  right: ParsedName, lexicon: Lexicon,
+                  accept: frozenset[Outcome]) -> Outcome:
+    """Two texts of one role, `a` from `left` and `b` from `right`, by
+    the role's rule: its comparator where both hold text or where it
+    reads the names whole, else its outcome for one side or none."""
+    if rule.empty is None or (a and b):
+        return rule.compare(a, b, left, right, lexicon, accept, rule)
+    both_empty, one_side = rule.empty
+    return one_side if a or b else both_empty
 
 
 def _compare_role(role: Role, left: ParsedName, right: ParsedName,
                   lexicon: Lexicon, accept: frozenset[Outcome]) -> RoleMatch:
-    """One role's row, by its `_RULES` row."""
-    rule = _RULES[role]
+    """One role's `RoleMatch`, decided by its `_RULES` entry."""
     a, b = getattr(left, role), getattr(right, role)
-    if rule.whole or (a and b):
-        outcome = rule.compare(a, b, left, right, lexicon, accept, rule)
-    elif a or b:
-        outcome = rule.one_side
-    else:
-        outcome = rule.both_empty
+    outcome = _role_outcome(_RULES[role], a, b, left, right, lexicon, accept)
     more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)
     return RoleMatch(role, outcome, a, b, more)
