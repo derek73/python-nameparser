@@ -278,3 +278,91 @@ def test_a_mutated_package_reports_the_pairs_it_moves(
     assert "'John de la Vega' / 'John Vega'" in out
     # taking particles-aside out of accept stops refusing the pair
     assert "verdict False -> True" in out
+
+
+def test_a_source_absent_moves_no_other_sources_pairs(
+        tmp_path: Path, _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # PatentsView samples its inventors in a drawn order, so it shows
+    # whether the jrc-names draw before it moved its generator
+    _plant(_cache, "jrc-names", [
+        {"entity": str(i), "name": f"{g} Smith{i}", "script": "Latin"}
+        for i in range(30) for g in ("John", "J.")])
+    _patentsview(_cache, monkeypatch, _HEADER + "".join(
+        f"i{i}\tJohn\tLee{i}\ni{i}\tJ.\tLee{i}\n" for i in range(30)))
+    module = tmp_path / "test_x.py"
+    module.write_text("ROWS = []\n", encoding="utf-8")
+
+    def pv(pairs: list[tuple[str, str, str]]) -> list[tuple[str, str, str]]:
+        return [p for p in pairs if p[0].startswith("PatentsView")]
+
+    both, _ = tool.draw_pairs(module)
+    shutil.rmtree(_cache / "local" / "jrc-names")
+    alone, notes = tool.draw_pairs(module)
+    assert [n.split(":")[0] for n in notes] == ["jrc-names", "tse-donors"]
+    assert pv(alone) == pv(both) != []
+
+
+def _patentsview(cache: Path, monkeypatch: pytest.MonkeyPatch,
+                 table: str) -> None:
+    archive = cache / tool.PATENTSVIEW_RAW
+    archive.parent.mkdir()
+    with zipfile.ZipFile(archive, "w") as z:
+        z.writestr(tool.PATENTSVIEW_MEMBER, table)
+    pv = importlib.import_module("local_patentsview")
+    monkeypatch.setitem(pv.PV_FILES, pv.PV_RAW,
+                        (archive.stat().st_size, "", ""))
+
+
+_HEADER = "inventor_id\traw_inventor_name_first\traw_inventor_name_last\n"
+
+
+@pytest.mark.parametrize("row", ["a\tJohn\n", "a\tJohn\tSmith\textra\n"])
+def test_a_patentsview_row_of_another_width_stops_the_run(
+        tmp_path: Path, _cache: Path, monkeypatch: pytest.MonkeyPatch,
+        row: str) -> None:
+    _patentsview(_cache, monkeypatch, _HEADER + "a\tJ.\tSmith\n" + row)
+    module = tmp_path / "test_x.py"
+    module.write_text("ROWS = []\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="not as wide as its header"):
+        tool.draw_pairs(module)
+
+
+def test_a_patentsview_spelling_with_no_name_pairs_nothing(
+        tmp_path: Path, _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _patentsview(_cache, monkeypatch, _HEADER + "a\tJohn\tSmith\na\t\t\n")
+    module = tmp_path / "test_x.py"
+    module.write_text("ROWS = []\n", encoding="utf-8")
+    pairs, _ = tool.draw_pairs(module)
+    assert [p for p in pairs if p[0].startswith("PatentsView")] == []
+
+
+def test_the_kept_key_holds_the_code_that_writes_a_row(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    here = tmp_path / "tools"
+    here.mkdir()
+    for name in ("match_diff.py", "snapshot.py", "corpus_build.py"):
+        (here / name).write_text(name, encoding="utf-8")
+    monkeypatch.setattr(tool, "HERE", here)
+    first = tool._kept_path("pairs", "0" * 64)
+    (here / "corpus_build.py").write_text("changed", encoding="utf-8")
+    assert tool._kept_path("pairs", "0" * 64) != first
+
+
+@needs_checkout
+@pytest.mark.usefixtures("fixed_pairs")
+def test_a_head_changing_or_short_is_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    head = _copy(tmp_path, "head")
+    argv = ["--tree", str(head), "--jobs", "1"]
+    real_digest = tool.snapshot._source_digest
+    calls = iter(range(100))
+    monkeypatch.setattr(tool.snapshot, "_source_digest",
+                        lambda root: f"{next(calls):064d}")
+    with pytest.raises(SystemExit, match="changed while it was read"):
+        tool.main(argv)
+    monkeypatch.setattr(tool.snapshot, "_source_digest", real_digest)
+    real_run = tool._run_side
+    monkeypatch.setattr(tool, "_run_side", lambda *a: "".join(
+        f"{line}\n" for line in real_run(*a).splitlines()[1:]))
+    with pytest.raises(SystemExit, match="rows, not the"):
+        tool.main(argv)
