@@ -17794,4 +17794,50 @@ CASES: tuple[Case, ...] = (
                "'Dr 김민준씨, Jr.' (ko_honorific_glued_given_suffix_"
                "comma) keeps its comma, which is the pair that shows "
                "the separator is read from the text"),
+    # -- #1202: the Ethiopic and Burmese commas, the Ethiopic wordspace.
+    Case("ethiopic_comma_is_a_family_comma", "ከበደ፣ አበበ",
+         {"family": "ከበደ", "given": "አበበ"},
+         classification="fix(#1202)",
+         notes="U+1363 reads as the Arabic and ASCII commas do; 1.4.0 "
+               "kept it glued to its word, first 'ከበደ፣' last 'አበበ'"),
+    Case("burmese_comma_is_a_family_comma", "မောင်မောင်ခ၊ ဦး",
+         {"family": "မောင်မောင်ခ", "given": "ဦး"},
+         classification="fix(#1202)",
+         notes="U+104A is the Burmese comma (U+104B is the full stop); "
+               "Burmese Wikipedia titles write 'Name၊ honorific', and "
+               "with no Burmese title listed the honorific reads given "
+               "(#1233). 1.4.0: first 'မောင်မောင်ခ၊' last 'ဦး'"),
+    Case("ethiopic_wordspace_divides_like_a_space", "አበበ፡ከበደ፡ተሰማ",
+         {"given": "አበበ", "middle": "ከበደ", "family": "ተሰማ"},
+         classification="fix(#1202)",
+         notes="U+1361 is Ethiopic-only, so it divides "
+               "unconditionally like the nakaguro; 1.4.0 read one "
+               "first name 'አበበ፡ከበደ፡ተሰማ'"),
+    # -- #1236: U+202F joins a Mongolian case suffix to its stem.
+    Case("mongolian_suffix_connector_joins_the_genitive",
+         "ᠬᠣᠷᠯᠤ\u180eᠠ\u202fᠶ\u180bᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ",
+         {"family": "ᠬᠣᠷᠯᠤ\u180eᠠ\u202fᠶ\u180bᠢᠨ",
+          "given": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1236)",
+         notes="Khorloogiin Choibalsan, family-first as the script "
+               "writes it: the genitive is one word with the father's "
+               "name. 1.4.0 split at U+202F (first 'ᠬᠣᠷᠯᠤ᠎ᠠ', middle "
+               "'ᠶ᠋ᠢᠨ', under the default order)"),
+    Case("narrow_no_break_space_outside_mongolian_separates",
+         "Jean\u202fDupont",
+         {"given": "Jean", "family": "Dupont"},
+         notes="elsewhere U+202F is the narrow space it is "
+               "named for"),
+    # -- #1241: an apostrophe opening a listed particle is no quote.
+    Case("apostrophe_particle_beside_a_quoted_nickname",
+         "Jan van 't Hof 'Jantje'",
+         {"given": "Jan", "family": "van 't Hof", "nickname": "Jantje"},
+         notes="'t is listed (nl.toml), so its apostrophe "
+               "opens no quote and the nickname pairs with its own "
+               "close; 2.0.0 through 3.0.1 read nickname \"t Hof 'Jantje\" (#1241)"),
+    Case("apostrophe_particle_reports_nothing", "Pieter 't Hart",
+         {"given": "Pieter", "family": "'t Hart"},
+         notes="the reading was right before #1241; only "
+               "its unbalanced-delimiter report goes"),
 )

@@ -27,9 +27,17 @@ from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
                                UNJOINED_TAG, Ambiguity, ParsedName, Role,
                                Token)
 
-_SPACES = re.compile(r"\s+")
+#: Whitespace runs the collapse makes one space, save a U+202F inside a
+#: word. rules/T6: "a narrow no-break space between two Mongolian
+#: letters joins them into one word" -- the render side, so a spec's
+#: collapse writes the word as str() does (decisions/T6, #1236). The
+#: class is _tokenize._mongolian_letter, held to it by
+#: tests/v2/test_regex_sync.py.
+_MONGOLIAN_LETTER = "[\u180B-\u180F\u181A-\u18AF]"
+_SPACES = re.compile(
+    rf"(?:(?!(?<={_MONGOLIAN_LETTER})\u202F(?={_MONGOLIAN_LETTER}))\s)+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
-_COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
+_COMMA_CHAR = re.compile(r"[,،，፣၊]")  # ASCII, Arabic, fullwidth, Ethiopic, Burmese
 _MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
 _NAME_RUN = re.compile(r"\w+")
@@ -197,14 +205,16 @@ _LAYOUTS = {order: _layout(order) for order in _NAME_ORDERS}
 _V2_DEFAULT_SPEC = ('{title} {given} "{nickname}" {middle} {family} '
                     "({maiden}) {suffix}")
 
-#: rules/T2 and T3's dividers: a nakaguro, or an interpunct the parse
-#: divided at (one written with a space beside it is a name word,
-#: rules/T3, so it is a token and never stands in a gap).
-_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65"})
+#: rules/T2 and T3's dividers: a nakaguro or the Ethiopic wordspace,
+#: or an interpunct the parse divided at (one written with a space
+#: beside it is a name word, rules/T3, so it is a token and never
+#: stands in a gap).
+_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65", "\u1361"})
 _NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.
-_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C"}
+_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C",
+                  "\u1363": "\u1363 ", "\u104A": "\u104A "}
 
 
 def _written_separator(gap: str) -> str | None:
