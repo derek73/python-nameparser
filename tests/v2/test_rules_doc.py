@@ -18,7 +18,7 @@ from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
 from tests.v2.design_docs import RULES_DIR, read_rules_text
 from tests.v2.rules_doc import (
-    Example, Rule, parse_rules_doc, resolve_annotation)
+    GATES, Example, Rule, parse_rules_doc, resolve_annotation)
 
 RULES = parse_rules_doc(read_rules_text())
 
@@ -200,6 +200,7 @@ def _run(example: Example) -> object:
     policy: Policy | None = None
     lexicon: Lexicon | None = None
     locale: str | None = None
+    segmented = False
     if example.annotation is not None:
         kind, obj = resolve_annotation(example.annotation)
         if kind == "policy":
@@ -215,14 +216,23 @@ def _run(example: Example) -> object:
                 "[ja+segmenter] gate so CI without the extra skips it")
             locale = obj
         elif kind == "gated_locale":
-            if importlib.util.find_spec("namedivider") is None:
+            assert example.annotation is not None
+            if importlib.util.find_spec(
+                    GATES[example.annotation][1]) is None:
                 pytest.skip("optional extra absent; the ja-extra CI job "
                             "runs this")
             assert isinstance(obj, str)
+            # the gate's name: the pack with the segmenter it needs (#1193
+            # wrote the first example); a new gate names its own here
+            assert obj == "ja", f"no segmenter is wired for gate {obj!r}"
             locale = obj
+            segmented = True
     if example.field == "pieces":
         return _pieces(example.text, policy, lexicon)
-    if locale is not None:
+    if locale is not None and segmented:
+        parsed = parser_for(locales.get(locale),
+                            segmenter=locales.ja_segmenter()).parse(example.text)
+    elif locale is not None:
         parsed = parser_for(locales.get(locale)).parse(example.text)
     elif lexicon is not None:
         parsed = Parser(policy=policy or Policy(),

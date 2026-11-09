@@ -92,6 +92,10 @@ JA = Locale(
 # any gate runs, and over-declaring is its safe direction by design.
 _has_japanese = _script_matcher(*_JA_SCRIPTS)
 _wholly_japanese = _script_matcher(*_JA_SCRIPTS, whole=True)
+#: The adapter's kanji guard (#1193): namedivider divides by kanji
+#: statistics, so a token holding no Han character gives it nothing to
+#: read.
+_has_han = _script_matcher(Script.HAN)
 
 
 #: How far outside [0, 1] a namedivider score may stray and still count
@@ -131,7 +135,9 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     The adapter declines -- returns None, leaving the token whole --
     for text outside the Japanese repertoire, for text bearing the
     shime mark 〆 (namedivider 0.4.x's rule path cuts it in the wrong
-    place), for text too short to divide, for any answer that fails
+    place), for text holding no kanji (namedivider divides by kanji
+    statistics, and cuts a hiragana name after its first character),
+    for text too short to divide, for any answer that fails
     to reconstruct its input, and for any score outside [0, 1] by
     more than float noise (a divider scoring 87.0 is broken, and its
     division is worth no more than its score). An answer that puts
@@ -189,6 +195,17 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # a SEGMENTATION report -- swept in anyway, because decline is
         # the safe direction and mid-token 〆 is vanishingly rare.
         if "〆" in text:
+            return None
+        # A token with no kanji -- a name written wholly in hiragana,
+        # or in hiragana and katakana -- gives namedivider's kanji
+        # statistics nothing to read: its kanji_feature path returns the
+        # first character as the family (あいさわいちろう -> あ |
+        # いさわいちろう). Decline, a fact about the
+        # content as the repertoire and 〆 declines are, and the token
+        # stays whole as it does with no segmenter. A token holding a
+        # kanji is passed on: 山田たろう divides at the kana boundary by
+        # namedivider's rule path, and rightly (decisions/W1, #1193).
+        if not _has_han(text):
             return None
         result = divider.divide_name(text)
         if result.family + result.given != text:
