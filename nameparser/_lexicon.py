@@ -1987,7 +1987,12 @@ class Lexicon:
             form stands for, which name matching reads as a
             ``familiar-form`` where that outcome is accepted and no
             parse reads (``add("max", kind="familiar",
-            short_for=["maxwell"])``); a property
+            short_for=["maxwell"])``); as with any add of a kind the
+            word holds, it REPLACES the longer names the word's shipped
+            familiar readings list rather than extending them, so to
+            extend, list those too (``short_for=["maksim", "maxim",
+            "maximilian", "maxwell"]``, the shipped names being in
+            ``readings_of("max")``); a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
