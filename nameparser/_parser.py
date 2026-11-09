@@ -284,7 +284,8 @@ class Parser:
         return a.comparison_key() == b.comparison_key()
 
     def matching(
-        self, accept: Iterable[Outcome | str] | None = None,
+        self, accept: Iterable[Outcome | str] | None = None, *,
+        other_readings: bool = False,
     ) -> Matching:
         """A :class:`~nameparser.Matching` bound to THIS parser,
         so its ``check`` and ``keys`` parse str arguments with this
@@ -293,11 +294,13 @@ class Parser:
         iterable of outcomes counted as consistent; None takes the
         default set, and any other value replaces it, so extend the
         default with ``parser.matching(accept=parser.matching().accept
-        | {"family-initial"})``. A value is validated by ``Matching``,
-        which raises for a bad one."""
+        | {"family-initial"})``. ``other_readings=True`` also searches
+        each side's other readings (``Matching.other_readings``). A
+        value is validated by ``Matching``, which raises for a bad one."""
         from nameparser._match import DEFAULT_ACCEPT, Matching
         return Matching(
-            self, DEFAULT_ACCEPT if accept is None else accept)  # type: ignore[arg-type]
+            self, DEFAULT_ACCEPT if accept is None else accept,  # type: ignore[arg-type]
+            other_readings)
 
     # -- rendering delegates ----------------------------------------------
 

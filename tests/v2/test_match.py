@@ -63,17 +63,19 @@ PARSED: tuple[ParsedName, ...] = tuple(Parser().parse(n) for n in NAMES)
 #: The opt-in outcomes this module's settings sweep adds to the default.
 OPT_INS: tuple[Outcome, ...] = (
     Outcome.FAMILY_INITIAL, Outcome.GIVEN_ONE_SIDE,
-    Outcome.HYPHENATED_PART, Outcome.OTHER_READING, Outcome.ACROSS_ROLES,
+    Outcome.HYPHENATED_PART, Outcome.ACROSS_ROLES,
 )
 
-#: The settings the guarantee and the symmetry are held under: the
-#: default, each opt-in added to it alone, and all of them together.
-SETTINGS: tuple[frozenset[Outcome], ...] = (
-    DEFAULT_ACCEPT,
-    *(DEFAULT_ACCEPT | {o} for o in OPT_INS),
-    DEFAULT_ACCEPT | set(OPT_INS),
+#: The settings the guarantee and the symmetry are held under, each an
+#: accept set and the other-readings switch: the default, each opt-in
+#: added to it alone, the switch on alone, and all of them together.
+SETTINGS: tuple[tuple[frozenset[Outcome], bool], ...] = (
+    (DEFAULT_ACCEPT, False),
+    *((DEFAULT_ACCEPT | {o}, False) for o in OPT_INS),
+    (DEFAULT_ACCEPT, True),
+    (DEFAULT_ACCEPT | set(OPT_INS), True),
 )
-_SETTING_IDS = ["default", *(o.value for o in OPT_INS), "all"]
+_SETTING_IDS = ["default", *(o.value for o in OPT_INS), "other-readings", "all"]
 
 m = Matching(Parser())
 
@@ -151,7 +153,7 @@ def test_the_default_accepts_what_the_spec_lists() -> None:
 def test_outcomes_are_declared_strongest_first() -> None:
     names = [o.value for o in Outcome]
     assert names[0] == "same" and names[-1] == "conflict"
-    assert len(names) == 16
+    assert len(names) == 15
 
 
 def test_match_types_round_trip_through_pickle() -> None:
@@ -204,6 +206,46 @@ def test_matching_repr_shows_only_the_deviation() -> None:
     assert repr(Matching(
         Parser(), (DEFAULT_ACCEPT - {Outcome.NOTED}) | {Outcome.ACROSS_ROLES},
     )) == "Matching(default + across-roles - noted)"
+    assert repr(Matching(Parser(), other_readings=True)) == (
+        "Matching(default + other-readings)")
+    assert repr(Matching(
+        Parser(), (DEFAULT_ACCEPT - {Outcome.NOTED}) | {Outcome.ACROSS_ROLES},
+        other_readings=True,
+    )) == "Matching(default + across-roles, other-readings - noted)"
+
+
+def test_other_readings_is_off_by_default_and_passed_through() -> None:
+    assert Matching(Parser()).other_readings is False
+    parser = Parser()
+    switched = parser.matching(other_readings=True)
+    assert switched.other_readings is True
+    assert switched.accept == DEFAULT_ACCEPT
+    assert switched == Matching(parser, DEFAULT_ACCEPT, other_readings=True)
+    assert pickle.loads(pickle.dumps(switched)) == switched
+
+
+@pytest.mark.parametrize("value", [1, "yes", None])
+def test_other_readings_must_be_a_bool(value: object) -> None:
+    with pytest.raises(TypeError, match="other_readings must be a bool.*"
+                       "pass other_readings=True or other_readings=False"):
+        Matching(Parser(), other_readings=value)  # type: ignore[arg-type]
+
+
+_OFFERED_SWITCH = "parser.matching(other_readings=True)"
+
+
+def test_other_reading_in_accept_offers_the_switch() -> None:
+    parser = Parser()
+    with pytest.raises(ValueError) as caught:
+        parser.matching(accept=parser.matching().accept | {"other-reading"})
+    message = str(caught.value)
+    assert "'other-reading' is not an outcome" in message
+    assert message.endswith(f"e.g. {_OFFERED_SWITCH}")
+    # the offered code runs and switches the search on
+    offered = eval(message.split("e.g. ")[1], {"parser": parser})
+    assert offered.other_readings and offered.accept == DEFAULT_ACCEPT
+    # and type-checks, the same spelling written out for mypy
+    assert parser.matching(other_readings=True) == offered
 
 
 def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
@@ -334,17 +376,14 @@ def test_cjk_names_compare_as_same_and_never_as_initials() -> None:
     assert role(m.check("王小明", "王小"), Role.GIVEN).outcome is not Outcome.INITIAL
 
 
-@pytest.mark.parametrize("accept", SETTINGS, ids=_SETTING_IDS)
-def test_the_check_is_symmetric(accept: frozenset[Outcome]) -> None:
-    matching = Matching(Parser(), accept)
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_the_check_is_symmetric(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    matching = Matching(Parser(), *setting)
     for a, b in itertools.product(PARSED, repeat=2):
         result = matching.check(a, b)
         assert matching.check(b, a) == result.mirrored(), (
             a.original, b.original)
-        # a row keeps its own outcome; other-reading only switches the
-        # search on, and the reading used is named beside the rows
-        assert all(x.outcome is not Outcome.OTHER_READING
-                   for x in result.roles), (a.original, b.original)
 
 
 def test_a_single_han_character_is_never_an_initial() -> None:
@@ -395,8 +434,9 @@ def test_default_keys_are_family_words_with_the_given_initial() -> None:
     assert m.keys("Suharto") == frozenset()
 
 
-@pytest.mark.parametrize("accept", SETTINGS, ids=_SETTING_IDS)
-def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None:
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_consistent_names_always_share_a_key(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
     """The guarantee, over every ordered pair of NAMES, under the default,
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
@@ -429,8 +469,10 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     removed: the whole hyphenated word's spellings
     (test_a_hyphenated_listed_spelling_shares_a_key, under a caller's
     hyphenated full form) and the spellings read from the folded word
-    (test_a_listed_spelling_holds_whatever_the_accents, "Mà Cruz")."""
-    matching = Matching(Parser(), accept)
+    (test_a_listed_spelling_holds_whatever_the_accents, "Mà Cruz").
+    Other-reading names the setting with `other_readings=True`, which
+    was the `other-reading` member of accept when these were taken."""
+    matching = Matching(Parser(), *setting)
     for a, b in itertools.product(PARSED, repeat=2):
         if matching.check(a, b).consistent:
             assert matching.keys(a) & matching.keys(b), (a.original, b.original)
@@ -469,8 +511,11 @@ def test_listed_and_folded_spellings_share_a_key(a: str, b: str) -> None:
     assert m.keys(a) & m.keys(b)
 
 
-def _with(*outcomes: Outcome) -> Matching:
-    return Matching(Parser(), DEFAULT_ACCEPT | set(outcomes))
+def _with(*outcomes: Outcome, other_readings: bool = False) -> Matching:
+    return Matching(Parser(), DEFAULT_ACCEPT | set(outcomes), other_readings)
+
+
+_other = _with(other_readings=True)
 
 
 def test_a_family_initial_is_consistent_where_accepted() -> None:
@@ -511,7 +556,7 @@ def test_the_other_reading_is_consistent_where_accepted() -> None:
     assert not r.consistent
     assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
     assert (r.left_alternative, r.right_alternative) == (None, None)
-    opted = _with(Outcome.OTHER_READING)
+    opted = _other
     r = opted.check("Suharto", "Suharto")
     assert r.consistent
     assert role(r, Role.FAMILY).outcome is Outcome.SAME
@@ -529,14 +574,14 @@ def test_an_ambiguity_with_no_alternative_reading_is_skipped() -> None:
     # as parsed, so the search runs and finds nothing else to read
     name = parse("John (Smith Doe")
     assert [a.alternative for a in name.ambiguities] == [None]
-    r = _with(Outcome.OTHER_READING).check(name, "James (Smith Doe")
+    r = _other.check(name, "James (Smith Doe")
     assert not r.consistent
     assert r == m.check(name, "James (Smith Doe")
     assert (r.left_alternative, r.right_alternative) == (None, None)
 
 
 def test_the_other_reading_does_not_hide_a_conflict() -> None:
-    r = _with(Outcome.OTHER_READING).check("Suharto", "Sukarno")
+    r = _other.check("Suharto", "Sukarno")
     assert not r.consistent
     assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
 
@@ -544,10 +589,10 @@ def test_the_other_reading_does_not_hide_a_conflict() -> None:
 def test_the_other_reading_of_one_side_meets_the_other_as_parsed() -> None:
     # "Van Gogh" read with Van as a particle has the family "Van Gogh"
     # and no given name, so the given role also needs given-one-side
-    r = _with(Outcome.OTHER_READING).check("Van Gogh", "Vincent Van Gogh")
+    r = _other.check("Van Gogh", "Vincent Van Gogh")
     assert not r.consistent
     assert role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
-    r = _with(Outcome.OTHER_READING, Outcome.GIVEN_ONE_SIDE).check(
+    r = _with(Outcome.GIVEN_ONE_SIDE, other_readings=True).check(
         "Van Gogh", "Vincent Van Gogh")
     assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
     assert role(r, Role.FAMILY).outcome is Outcome.SAME
@@ -558,7 +603,7 @@ def test_the_other_reading_of_one_side_meets_the_other_as_parsed() -> None:
 
 
 def test_the_default_reports_the_names_as_parsed() -> None:
-    # no alternative reading is searched unless other-reading is accepted
+    # no alternative reading is searched unless other_readings is on
     r = m.check("Van Gogh", "Dean Smith")
     assert not r.consistent
     assert (role(r, Role.GIVEN).left, role(r, Role.GIVEN).right) == ("Van", "Dean")
@@ -578,7 +623,7 @@ def test_the_other_reading_does_not_make_conflicting_given_names_agree(
         a: str, b: str) -> None:
     # an alternative into a role that never conflicts (Dean as a title)
     # is not used, so it cannot empty a given role to agree with another
-    opted = _with(Outcome.OTHER_READING)
+    opted = _other
     assert not opted.check(a, b).consistent
     assert not opted.check(b, a).consistent
 
@@ -727,7 +772,7 @@ def test_a_cross_role_row_says_the_side_that_held_both_roles_carried_more() -> N
     assert role(r, Role.GIVEN).more is Side.LEFT
 
 
-_every = Matching(Parser(), DEFAULT_ACCEPT | set(OPT_INS))
+_every = Matching(Parser(), DEFAULT_ACCEPT | set(OPT_INS), other_readings=True)
 
 
 @pytest.mark.parametrize("a, b, which, outcome", [
@@ -870,6 +915,11 @@ def test_strength_ranks_the_outcomes_in_declaration_order() -> None:
     assert Outcome.SAME.strength > Outcome.FOLDED.strength
     assert min(Outcome, key=lambda o: o.strength) is Outcome.CONFLICT
     assert sorted(Outcome, key=lambda o: o.strength, reverse=True) == list(Outcome)
+    # every outcome is one a row can read, so the ranks run unbroken
+    # from conflict's 0 to same's
+    assert sorted(o.strength for o in Outcome) == list(range(len(Outcome)))
+    assert Outcome.CONFLICT.strength == 0
+    assert Outcome.ACROSS_ROLES.strength == 1
 
 
 def test_weakest_is_the_weakest_rows_outcome() -> None:

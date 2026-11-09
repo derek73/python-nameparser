@@ -1241,8 +1241,8 @@ A key only gathers candidates: ``Jane Smith`` shares ``smith;j`` with
 no family name, such as a lone ``Suharto`` (read as a given name, see
 :ref:`lone-name-word`), gets no key and is consistent with nothing by
 default, since the family name must be present on both sides and
-agree; ``other-reading`` (below) reaches it through its family
-reading.
+agree; the search for other readings (below) reaches it through its
+family reading.
 
 Checking a pair
 ~~~~~~~~~~~~~~~
@@ -1311,10 +1311,10 @@ sorts before ``same``). The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
 conflict until you accept them. ``family-initial``, ``given-one-side``
 and ``hyphenated-part`` are reported in the table either way, so an
-unaccepted one shows what the pair needed. ``other-reading`` and
-``across-roles`` are searched only where accepted: otherwise the table
-shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
-``conflict``.
+unaccepted one shows what the pair needed. ``across-roles`` is
+searched only where accepted, and each side's other readings only where
+the search is switched on (below): otherwise the table shows the names
+as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
 
 .. list-table::
    :header-rows: 1
@@ -1361,9 +1361,6 @@ shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
      - no
    * - ``hyphenated-part``: a given name against the first half of a hyphenated one
      - ``Hong Guo`` / ``Hong-Yi Guo``
-     - no
-   * - ``other-reading``: the reading the parser did not take, named beside the rows rather than read in one
-     - ``Suharto`` / ``Suharto``
      - no
    * - ``across-roles``: a name in a different role on each side
      - ``J. Edgar Hoover`` / ``Edgar Hoover``
@@ -1419,18 +1416,21 @@ the family name, gathers very large groups. An unknown outcome name
 raises ``ValueError`` listing the valid ones, and ``conflict`` cannot
 be accepted.
 
-``other-reading`` tries, where the names as parsed are not consistent,
-each side's other reading: one :ref:`ambiguity <parser-guesses>` at a
-time, its words moved to the role its ``alternative`` names. Each row
-keeps its own outcome under the other reading, so whatever else the
-pair needed still shows, and ``left_alternative`` and
-``right_alternative`` hold the ambiguity whose other reading each side
-used, ``None`` for a side read as parsed. A lone ``Suharto``, read as
-a given name, has the family reading as its alternative:
+``other_readings=True``, a switch beside ``accept`` rather than an
+outcome, tries each side's other reading where the names as parsed are
+not consistent: one :ref:`ambiguity <parser-guesses>` at a time, its
+words moved to the role its ``alternative`` names. Each row keeps its
+own outcome under the other reading, so whatever else the pair needed
+still shows, and ``left_alternative`` and ``right_alternative`` hold
+the ambiguity whose other reading each side used, ``None`` for a side
+read as parsed. A lone ``Suharto``, read as a given name, has the
+family reading as its alternative:
 
 .. doctest::
 
-    >>> with_other_reading = Parser().matching(accept=matcher.accept | {"other-reading"})
+    >>> with_other_reading = Parser().matching(other_readings=True)
+    >>> with_other_reading
+    Matching(default + other-readings)
     >>> lone = with_other_reading.check("Suharto", "Suharto")
     >>> lone.consistent, lone["family"].outcome.value
     (True, 'same')

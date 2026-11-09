@@ -1,15 +1,16 @@
 """Name matching: the settings object, the result types and the check.
 
 Not a stage: nothing here runs inside a parse. `Matching` carries a
-`Parser` and the set of outcomes the caller accepts, and its `check`
-compares two parsed names role by role.
+`Parser`, the set of outcomes the caller accepts and the switch for
+other readings, and its `check` compares two parsed names role by
+role.
 Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 `DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headwords`, each role in the group of its kind
 (`_GROUP`), and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
-name's other readings (`other-reading`); no `Policy` field.
+name's other readings (`Matching.other_readings`); no `Policy` field.
 
 Consistent means nothing in the two names contradicts it, under the
 outcomes the caller accepts. The module imports `_types`, `_policy`
@@ -50,10 +51,10 @@ class Outcome(StrEnum):
     is that rank as a number, larger for a stronger outcome and lowest
     for `conflict`; rank outcomes by it, since `<` on an Outcome
     compares the names as strings (`folded` sorts before `same`).
-    `conflict` is the one outcome that is never accepted.
-    `other-reading` is never a role's outcome: accepting it switches on
-    the search for each side's other readings, and the reading used is
-    named in `MatchResult.left_alternative` and `right_alternative`."""
+    `conflict` is the one outcome that is never accepted. The search
+    for each side's other readings is not an outcome but a switch,
+    `Matching.other_readings`, and the reading used is named in
+    `MatchResult.left_alternative` and `right_alternative`."""
 
     SAME = "same"
     FOLDED = "folded"
@@ -68,7 +69,6 @@ class Outcome(StrEnum):
     FAMILY_INITIAL = "family-initial"
     GIVEN_ONE_SIDE = "given-one-side"
     HYPHENATED_PART = "hyphenated-part"
-    OTHER_READING = "other-reading"
     ACROSS_ROLES = "across-roles"
     CONFLICT = "conflict"
 
@@ -148,7 +148,7 @@ class MatchResult:
     resolved (empty unless `across-roles` is accepted), and on each
     side the `Ambiguity` whose other reading the table used, or `None`
     where that side is read as parsed (always `None` unless
-    `other-reading` is accepted). A side uses one other reading at a
+    `other_readings` is on). A side uses one other reading at a
     time; each row keeps its own outcome under it.
 
     A row is read by its role, a `Role` member or its name
@@ -216,6 +216,11 @@ _VALID = ", ".join(o.value for o in Outcome if o is not Outcome.CONFLICT)
 #: which a bare `accept=` would replace, and type-checks.
 _ACCEPT_HINT = ('pass e.g. parser.matching(accept=parser.matching().accept'
                 ' | {"family-initial"})')
+#: The spelling of the other-reading search before it became a switch,
+#: refused with the call that replaces it.
+_OTHER_READING = "other-reading"
+#: The code a refused `other-reading` member is offered; it type-checks.
+_OTHER_READINGS_HINT = "parser.matching(other_readings=True)"
 
 
 def _outcome(value: object) -> Outcome:
@@ -224,6 +229,12 @@ def _outcome(value: object) -> Outcome:
     if isinstance(value, Outcome):
         return value
     if isinstance(value, str):
+        if value == _OTHER_READING:
+            raise ValueError(
+                f"{_OTHER_READING!r} is not an outcome: the search for each "
+                f"side's other readings is a switch; drop it from accept, "
+                f"keep the rest, and pass other_readings=True beside it, "
+                f"e.g. {_OTHER_READINGS_HINT}")
         try:
             return Outcome(value)
         except ValueError:
@@ -239,17 +250,25 @@ def _outcome(value: object) -> Outcome:
 @dataclass(frozen=True, slots=True)
 class Matching:
     """The settings of a name match: the parser that reads the names and
-    the outcomes accepted as consistent.
+    the outcomes accepted as consistent, and whether each side's other
+    readings are searched.
 
     `accept` takes any iterable of `Outcome` members or their names and is
     stored as a frozenset with `same` always present. Passing it replaces
     the default set rather than extending it, so extend the default
     matcher's set: `parser.matching(accept=parser.matching().accept |
     {"family-initial"})`. `conflict` cannot be accepted.
+
+    `other_readings`, a bool, off by default, switches on the search
+    for each side's other readings where the names as parsed are not
+    consistent (see `check`), and the keys of each reading searched
+    (see `keys`). It is not an outcome: no row reads it, and each row
+    keeps its own outcome under the reading used.
     """
 
     parser: Parser
     accept: frozenset[Outcome] = DEFAULT_ACCEPT
+    other_readings: bool = False
 
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
@@ -271,10 +290,19 @@ class Matching:
                 f"contradiction; drop it from accept (valid outcomes: "
                 f"{_VALID})")
         object.__setattr__(self, "accept", outcomes | {Outcome.SAME})
+        if not isinstance(self.other_readings, bool):
+            raise TypeError(
+                f"other_readings must be a bool, got "
+                f"{type(self.other_readings).__name__} "
+                f"{self.other_readings!r}; pass other_readings=True or "
+                f"other_readings=False")
 
     def __repr__(self) -> str:
         added = sorted(o.value for o in self.accept - DEFAULT_ACCEPT)
         removed = sorted(o.value for o in DEFAULT_ACCEPT - self.accept)
+        if self.other_readings:
+            # a switch, not an outcome, so it follows the outcomes added
+            added.append("other-readings")
         parts = ["default"]
         if added:
             parts.append("+ " + ", ".join(added))
@@ -292,7 +320,7 @@ class Matching:
         `John Smith` and with `Jane Smith`, which are not consistent
         with each other.
 
-        Where `other-reading` is accepted and the names as parsed are
+        Where `other_readings` is on and the names as parsed are
         not consistent, each side's other readings are tried too: one
         per `Ambiguity` with an `alternative`, its words moved to the
         alternative's role, one ambiguity at a time and never two
@@ -318,7 +346,7 @@ class Matching:
         agree, here directly or through the maiden name."""
         left, right = self._parsed(a), self._parsed(b)
         best = self._result(left, right)
-        if best.consistent or Outcome.OTHER_READING not in self.accept:
+        if best.consistent or not self.other_readings:
             return best
         # each side's first reading is the name as parsed, so the pair
         # of those is `best`, already built
@@ -349,14 +377,13 @@ class Matching:
         Each accepted opt-in adds the keys its outcome needs:
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
-        family part keyed, `other-reading` the keys of each other
-        reading `check` tries, and `across-roles` the maiden name's
+        family part keyed and `across-roles` the maiden name's
         words without particles as family words, and the first letter
         of each middle word and of the nickname's first word, save one
-        written as an initial, as given letters."""
+        written as an initial, as given letters. Where `other_readings`
+        is on, each other reading `check` tries adds its own keys."""
         parsed = self._parsed(name)
-        readings = (self._readings(parsed)
-                    if Outcome.OTHER_READING in self.accept
+        readings = (self._readings(parsed) if self.other_readings
                     else [(parsed, None)])
         return frozenset().union(
             *(self._keys(reading) for reading, _ in readings))
