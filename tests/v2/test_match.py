@@ -7,7 +7,7 @@ import pickle
 import pytest
 
 import nameparser
-from nameparser import ParsedName, Parser, Role
+from nameparser import ParsedName, Parser, Role, parse
 from nameparser._match import (
     DEFAULT_ACCEPT,
     CrossRoleMatch,
@@ -208,7 +208,6 @@ def test_the_table_has_one_entry_per_role_in_role_order() -> None:
 
 
 def test_check_takes_a_parsed_name() -> None:
-    from nameparser import parse
     assert m.check(parse("John Smith"), "John Smith").consistent
 
 
@@ -312,19 +311,22 @@ def test_cjk_names_compare_as_same_and_never_as_initials() -> None:
 def test_the_check_is_symmetric(accept: frozenset[Outcome]) -> None:
     matching = Matching(Parser(), accept)
     for a, b in itertools.product(PARSED, repeat=2):
-        assert matching.check(b, a) == matching.check(a, b).mirrored(), (
+        result = matching.check(a, b)
+        assert matching.check(b, a) == result.mirrored(), (
             a.original, b.original)
+        # a row keeps its own outcome; other-reading only switches the
+        # search on, and the reading used is named beside the rows
+        assert all(x.outcome is not Outcome.OTHER_READING
+                   for x in result.roles), (a.original, b.original)
 
 
 def test_a_single_han_character_is_never_an_initial() -> None:
-    from nameparser import parse
     base = parse("John Smith")
     r = m.check(base.replace(given="小"), base.replace(given="小明"))
     assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
 
 
 def test_initials_written_apart_agree_with_the_same_initials_joined() -> None:
-    from nameparser import parse
     base = parse("John Smith")
     r = m.check(base.replace(given="J.-P."), base.replace(given="J. P."))
     assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.INITIALS_AGREE
@@ -468,12 +470,15 @@ def test_the_other_reading_is_consistent_where_accepted() -> None:
     r = m.check("Suharto", "Suharto")
     assert not r.consistent
     assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
+    assert (r.left_alternative, r.right_alternative) == (None, None)
     opted = _with(Outcome.OTHER_READING)
     r = opted.check("Suharto", "Suharto")
     assert r.consistent
-    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
-    assert role(r, Role.GIVEN).outcome is Outcome.OTHER_READING
+    assert role(r, Role.FAMILY).outcome is Outcome.SAME
+    assert role(r, Role.GIVEN).outcome is Outcome.SAME
     assert (role(r, Role.FAMILY).left, role(r, Role.FAMILY).right) == ("Suharto", "Suharto")
+    lone = parse("Suharto").ambiguities[0]
+    assert (r.left_alternative, r.right_alternative) == (lone, lone)
     assert "suharto;" in opted.keys("Suharto")
     assert m.keys("Suharto") == frozenset()
 
@@ -490,12 +495,14 @@ def test_the_other_reading_of_one_side_meets_the_other_as_parsed() -> None:
     r = _with(Outcome.OTHER_READING).check("Van Gogh", "Vincent Van Gogh")
     assert not r.consistent
     assert role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
-    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
     r = _with(Outcome.OTHER_READING, Outcome.GIVEN_ONE_SIDE).check(
         "Van Gogh", "Vincent Van Gogh")
-    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.OTHER_READING
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
+    assert role(r, Role.FAMILY).outcome is Outcome.SAME
     assert (role(r, Role.FAMILY).left, role(r, Role.FAMILY).right) == (
         "Van Gogh", "Van Gogh")
+    assert r.left_alternative == parse("Van Gogh").ambiguities[0]
+    assert r.right_alternative is None
 
 
 def test_the_default_reports_the_names_as_parsed() -> None:
@@ -666,3 +673,29 @@ def test_a_cross_role_row_says_the_side_that_held_both_roles_carried_more() -> N
     assert role(r, Role.FAMILY).more is Side.LEFT
     r = _across.check('William "Bill" Clinton', "Bill Clinton")
     assert role(r, Role.GIVEN).more is Side.LEFT
+
+
+_every = Matching(Parser(), DEFAULT_ACCEPT | set(OPT_INS))
+
+
+@pytest.mark.parametrize("a, b, which, outcome", [
+    ("Smith", "Jane Smith", Role.GIVEN, Outcome.GIVEN_ONE_SIDE),
+    ("Van Gogh", "Gogh", Role.FAMILY, Outcome.PARTICLES_ASIDE),
+])
+def test_a_row_reached_through_another_reading_keeps_its_own_outcome(
+        a: str, b: str, which: Role, outcome: Outcome) -> None:
+    # the leniency the other reading still needed stays visible
+    r = _every.check(a, b)
+    assert r.consistent and role(r, which).outcome is outcome
+    assert r.left_alternative == parse(a).ambiguities[0]
+    assert r == _every.check(b, a).mirrored()
+
+
+def test_mirrored_swaps_the_alternatives() -> None:
+    lone = parse("Suharto").ambiguities[0]
+    result = MatchResult(True, _result().roles, (), lone, None)
+    assert (result.mirrored().left_alternative,
+            result.mirrored().right_alternative) == (None, lone)
+    assert result.mirrored().mirrored() == result
+    assert result != MatchResult(True, _result().roles, (), None, lone)
+    assert pickle.loads(pickle.dumps(result)) == result

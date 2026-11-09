@@ -1353,7 +1353,7 @@ shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
    * - ``hyphenated-part``: a given name against the first half of a hyphenated one
      - ``Hong Guo`` / ``Hong-Yi Guo``
      - no
-   * - ``other-reading``: the reading the parser did not take
+   * - ``other-reading``: the reading the parser did not take, named beside the rows rather than read in one
      - ``Suharto`` / ``Suharto``
      - no
    * - ``across-roles``: a name in a different role on each side
@@ -1406,18 +1406,21 @@ be accepted.
 
 ``other-reading`` tries, where the names as parsed are not consistent,
 each side's other reading: one :ref:`ambiguity <parser-guesses>` at a
-time, its words moved to the role its ``alternative`` names. A role
-the alternative moved a word into or out of reads ``other-reading``
-where its own outcome is accepted, and keeps its own outcome where it
-is not. A lone ``Suharto``,
-read as a given name, has the family reading as its alternative:
+time, its words moved to the role its ``alternative`` names. Each row
+keeps its own outcome under the other reading, so whatever else the
+pair needed still shows, and ``left_alternative`` and
+``right_alternative`` hold the ambiguity whose other reading each side
+used, ``None`` for a side read as parsed. A lone ``Suharto``, read as
+a given name, has the family reading as its alternative:
 
 .. doctest::
 
     >>> with_other_reading = Parser().matching(accept=matcher.accept | {"other-reading"})
     >>> lone = with_other_reading.check("Suharto", "Suharto")
     >>> lone.consistent, lone.roles[3].outcome.value
-    (True, 'other-reading')
+    (True, 'same')
+    >>> lone.left_alternative.kind.value, lone.left_alternative.alternative.role.value
+    ('given-or-family', 'family')
     >>> sorted(with_other_reading.keys("Suharto"))
     ['suharto;']
 

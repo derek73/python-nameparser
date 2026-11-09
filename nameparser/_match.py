@@ -28,6 +28,7 @@ from nameparser._lexicon import _normalize
 from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
+    Ambiguity,
     ParsedName,
     Role,
     _guarded_getstate,
@@ -41,7 +42,10 @@ if TYPE_CHECKING:
 
 class Outcome(StrEnum):
     """How one role of one name compares with the same role of another,
-    strongest first. `conflict` is the one outcome that is never accepted."""
+    strongest first. `conflict` is the one outcome that is never accepted.
+    `other-reading` is never a role's outcome: accepting it switches on
+    the search for each side's other readings, and the reading used is
+    named in `MatchResult.left_alternative` and `right_alternative`."""
 
     SAME = "same"
     FOLDED = "folded"
@@ -119,24 +123,32 @@ class CrossRoleMatch:
 class MatchResult:
     """The result of comparing two names: whether nothing in them
     contradicts the match under the accepted outcomes, one `RoleMatch`
-    per `Role`, in `Role` order, and the `CrossRoleMatch` behind each
+    per `Role`, in `Role` order, the `CrossRoleMatch` behind each
     role reading `across-roles`, in `Role` order of the role it
-    resolved (empty unless `across-roles` is accepted)."""
+    resolved (empty unless `across-roles` is accepted), and on each
+    side the `Ambiguity` whose other reading the table used, or `None`
+    where that side is read as parsed (always `None` unless
+    `other-reading` is accepted). A side uses one other reading at a
+    time; each row keeps its own outcome under it."""
 
     consistent: bool
     roles: tuple[RoleMatch, ...]
     across: tuple[CrossRoleMatch, ...] = ()
+    left_alternative: Ambiguity | None = None
+    right_alternative: Ambiguity | None = None
 
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
     def mirrored(self) -> MatchResult:
         """The same result with the two names swapped: each role's left
-        and right text exchanged and its `more` side flipped, and each
-        cross-role match's roles and texts exchanged."""
+        and right text exchanged and its `more` side flipped, each
+        cross-role match's roles and texts exchanged, and the two sides'
+        alternatives exchanged."""
         return MatchResult(self.consistent,
                            tuple(m.mirrored() for m in self.roles),
-                           tuple(c.mirrored() for c in self.across))
+                           tuple(c.mirrored() for c in self.across),
+                           self.right_alternative, self.left_alternative)
 
 
 #: The outcomes accepted when a caller states none.
@@ -228,11 +240,11 @@ class Matching:
         per `Ambiguity` with an `alternative`, its words moved to the
         alternative's role, one ambiguity at a time and never two
         together, save an alternative into the title or suffix, roles
-        that never conflict, which could only empty a role that does. The table reported
-        is the one with the strongest outcomes, every role the
-        alternative moved a word into or out of that would otherwise be
-        accepted reading `other-reading`, so the pair is consistent
-        through it only where `other-reading` is accepted.
+        that never conflict, which could only empty a role that does.
+        The table reported is the one with the strongest outcomes, each
+        row keeping its own outcome, and the result names in
+        `left_alternative` and `right_alternative` the ambiguity whose
+        other reading each side used.
 
         Where `across-roles` is accepted, a given or family role whose
         outcome is not accepted is compared with a different role of
@@ -247,17 +259,17 @@ class Matching:
         where `across-roles` is not accepted. The family role must still
         agree, here directly or through the maiden name."""
         left, right = self._parsed(a), self._parsed(b)
-        best = self._result(left, right, frozenset())
+        best = self._result(left, right)
         if best.consistent or Outcome.OTHER_READING not in self.accept:
             return best
         readings_a, readings_b = self._readings(left), self._readings(right)
         if len(readings_a) == len(readings_b) == 1:
             return best
         candidates = [
-            (self._result(ra, rb, ta | tb), int(bool(ta)) + int(bool(tb)))
-            for ra, ta in readings_a for rb, tb in readings_b
+            self._result(ra, rb, alt_a, alt_b)
+            for ra, alt_a in readings_a for rb, alt_b in readings_b
         ]
-        return min(candidates, key=_strength)[0]
+        return min(candidates, key=_strength)
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
         """Grouping keys: for each word of the folded family base, and
@@ -289,16 +301,13 @@ class Matching:
             *(self._keys(reading) for reading, _ in self._readings(parsed)))
 
     def _result(self, left: ParsedName, right: ParsedName,
-                moved: frozenset[Role]) -> MatchResult:
-        """The table of two readings; each role in `moved`, which an
-        alternative reading moved a word into or out of, reads
-        `other-reading` where its own outcome is accepted."""
+                left_alternative: Ambiguity | None = None,
+                right_alternative: Ambiguity | None = None) -> MatchResult:
+        """The table of two readings, each side's alternative the
+        ambiguity whose other reading it is, `None` for a name as
+        parsed."""
         lexicon = self.parser.lexicon
         roles = [_compare_role(role, left, right, lexicon) for role in Role]
-        roles = [
-            dataclasses.replace(r, outcome=Outcome.OTHER_READING)
-            if r.role in moved and r.outcome in self.accept else r
-            for r in roles]
         across: list[CrossRoleMatch] = []
         if Outcome.ACROSS_ROLES in self.accept:
             middles = [left.middle.split(), right.middle.split()]
@@ -323,20 +332,19 @@ class Matching:
                     del middles[side][index]
                     at = list(Role).index(Role.MIDDLE)
                     roles[at] = self._middle_left_over(
-                        roles[at], middles[0], middles[1], Role.MIDDLE in moved)
+                        roles[at], middles[0], middles[1])
         return MatchResult(all(r.outcome in self.accept for r in roles),
-                           tuple(roles), tuple(across))
+                           tuple(roles), tuple(across),
+                           left_alternative, right_alternative)
 
-    def _middle_left_over(self, row: RoleMatch, a: list[str], b: list[str],
-                          moved: bool) -> RoleMatch:
+    def _middle_left_over(self, row: RoleMatch, a: list[str],
+                          b: list[str]) -> RoleMatch:
         """The middle row once a middle word matched across roles is
         taken out: the words left compared role to role, the row
         keeping both sides' text as parsed."""
         la, lb = " ".join(a), " ".join(b)
         outcome = (_middle_outcome(la, lb, self.parser.lexicon)
                    if la or lb else Outcome.SAME)
-        if moved and outcome in self.accept:
-            outcome = Outcome.OTHER_READING
         more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(la, lb)
         return dataclasses.replace(row, outcome=outcome, more=more)
 
@@ -372,13 +380,13 @@ class Matching:
         return min(found, key=lambda f: f[0])[1] if found else None
 
     def _readings(self, name: ParsedName
-                  ) -> list[tuple[ParsedName, frozenset[Role]]]:
-        """The name as parsed, with no role moved, then one other
+                  ) -> list[tuple[ParsedName, Ambiguity | None]]:
+        """The name as parsed, with no ambiguity, then one other
         reading per ambiguity whose `alternative` moves a word into a
         role that can conflict (not the title or suffix): that
         ambiguity's words moved to the alternative's role by
-        `Parser.revise`, with the roles it changed."""
-        readings: list[tuple[ParsedName, frozenset[Role]]] = [(name, frozenset())]
+        `Parser.revise`, with the ambiguity."""
+        readings: list[tuple[ParsedName, Ambiguity | None]] = [(name, None)]
         for ambiguity in name.ambiguities:
             if ambiguity.alternative is None:
                 continue
@@ -395,7 +403,8 @@ class Matching:
                 dataclasses.replace(t, role=target, reading=None)
                 if t in words else t for t in name.tokens))
             readings.append((self.parser.revise(
-                name, **{r.value: getattr(laid_out, r) for r in moved}), moved))
+                name, **{r.value: getattr(laid_out, r) for r in moved}),
+                ambiguity))
         return readings
 
     def _keys(self, parsed: ParsedName) -> frozenset[str]:
@@ -515,18 +524,31 @@ def _fold(text: str) -> str:
     return "".join(kept).casefold().translate(_DROPPED)
 
 
-def _strength(candidate: tuple[MatchResult, int]) -> tuple[object, ...]:
+def _strength(result: MatchResult) -> tuple[object, ...]:
     """The order `check` picks a table by, best first: consistent, then
     the weakest outcome strongest (then the next weakest, and so on),
-    then fewer sides read another way, then each role's text pair and
-    each cross-role match's, which keeps the pick the same with the
-    names swapped."""
-    result, sides = candidate
+    then fewer sides read another way, then each role's text pair, each
+    cross-role match's and the two alternatives, each pair taken
+    without its sides, which keeps the pick the same with the names
+    swapped."""
+    alternatives = (result.left_alternative, result.right_alternative)
     ranks = sorted((_RANK[r.outcome] for r in result.roles), reverse=True)
+    sides = sum(a is not None for a in alternatives)
     texts = tuple(tuple(sorted((r.left, r.right))) for r in result.roles)
     across = tuple(sorted(((c.left, c.left_role), (c.right, c.right_role)))
                    for c in result.across)
-    return (not result.consistent, ranks, sides, texts, across)
+    return (not result.consistent, ranks, sides, texts, across,
+            sorted(_ambiguity_key(a) for a in alternatives))
+
+
+def _ambiguity_key(ambiguity: Ambiguity | None) -> tuple[str, ...]:
+    """An ambiguity as sortable text, `()` for none."""
+    if ambiguity is None:
+        return ()
+    alternative = ambiguity.alternative
+    return (ambiguity.kind.value, ambiguity.detail,
+            repr([(t.text, t.span) for t in ambiguity.tokens]),
+            alternative.role.value if alternative is not None else "")
 
 
 def _weakest(outcomes: Iterable[Outcome]) -> Outcome:
