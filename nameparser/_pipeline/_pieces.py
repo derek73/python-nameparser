@@ -1666,8 +1666,8 @@ def declined_by_the_name_behind(token: WorkToken, piece: Sequence[int],
 # rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, the maiden take)
-# sees one answer; P2's chain stop asks the run's start word by word
-# instead (`starts_the_run_here`), the count of name words aside.
+# sees one answer; P2's chain stop also asks the run's start word by
+# word (`starts_the_run_here`), the count of name words aside.
 def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
@@ -2425,10 +2425,11 @@ def _chain_units(pieces: Sequence[Sequence[int]],
             j = chain_run_end(k, pieces, ptags, tokens, count, one_case)
             q = k + 1
             # a split credential is weighed as the class it is a
-            # member of (rules/S12); a suffix word with a name word
-            # behind it inside the chain's run is one the chain took
-            # because S8 starts no run there, so the peel cannot reach
-            # it and it is no word of its own (rules/P2, #1177's
+            # member of (rules/S12); a suffix word with an unweighed
+            # word behind it inside the chain's run is one the chain
+            # took because S8 starts no run there or declines one, so
+            # the peel cannot reach it and it is no word of its own
+            # (rules/P2, #1177's
             # review: 'Freiherr von Md Berg V' as 'Freiherr von Abdul
             # Berg V')
             while (q < j and "split" not in ptags[q]
