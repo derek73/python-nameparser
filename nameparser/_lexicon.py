@@ -1832,9 +1832,8 @@ class Lexicon:
             """This lexicon with a reading of `kind` added to each word.
             `kind` is required; the signature's default exists only so
             that a 2.x call, which names no kind, is refused pointing at
-            docs/migrate.rst's table of kinds. It is a vocabulary kind as the language files
-            write it, a key
-            of ``nameparser._reading_index.CATEGORY`` (``"title"``,
+            docs/migrate.rst's table of kinds. It is a vocabulary kind as
+            the language files write it, a key of ``nameparser._reading_index.CATEGORY`` (``"title"``,
             ``"office"``, ``"credential"``, ``"generation"``,
             ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
             ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
