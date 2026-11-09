@@ -1431,3 +1431,45 @@ def test_a_row_reports_the_strongest_accepted_outcome_that_holds(
         assert matching.check(y, x) == r.mirrored()
         if consistent:
             assert matching.keys(x) & matching.keys(y)
+
+
+@pytest.mark.parametrize("a, b, outcome", [
+    ("Bill Jack", "William John", Outcome.FAMILIAR_FORM),
+    ("Bill Jack", "William Jane", Outcome.CONFLICT),
+    ("Bill", "William Jack", Outcome.CONFLICT),
+    ("Bill Jack", "William Jack", Outcome.FAMILIAR_FORM),
+])
+def test_every_word_of_a_given_name_must_agree(
+        a: str, b: str, outcome: Outcome) -> None:
+    # a given name of several words (as a bound pair or a caller's
+    # replace makes one) reads familiar-form only where every word is
+    # the same, a listed spelling or a familiar form, word for word
+    base = parse("John Smith")
+    x, y = base.replace(given=a), base.replace(given=b)
+    r = _familiar.check(x, y)
+    assert role(r, Role.GIVEN).outcome is outcome
+    assert r.consistent is (outcome is Outcome.FAMILIAR_FORM)
+
+
+@pytest.mark.parametrize("word, kind", [
+    ("dr", "title"), ("van", "particle"), ("jr", "suffix"), ("ma", "given"),
+])
+def test_a_callers_familiar_reading_moves_no_parse(word: str, kind: str) -> None:
+    # a familiar reading on a title, particle, suffix or name word
+    # changes no token, reading or language, under the default and
+    # under a strict choice
+    from nameparser import Locale, parser_for
+    assert any(r.category == kind or r.kind == kind
+               for r in Lexicon.default().readings_of(word))
+    texts = (f"{word.title()} John Smith", f"John {word.title()} Smith",
+             f"John Smith {word.title()}", f"Smith, John {word.title()}")
+    strict = parser_for(Locale(code="test", lexicon=Lexicon.empty(),
+                               languages=frozenset({"en"})), strict=True)
+    for base in (Parser(), strict):
+        mine = Parser(lexicon=base.lexicon.add(
+            word, kind="familiar", short_for=["zzqname"]),
+            policy=base.policy)
+        assert mine.lexicon._familiar_forms(word) >= {"zzqname"}
+        for text in texts:
+            a, b = base.parse(text), mine.parse(text)
+            assert a.tokens == b.tokens and a.ambiguities == b.ambiguities, text
