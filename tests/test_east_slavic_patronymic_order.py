@@ -135,9 +135,9 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
 
     policy_kwargs = _BOTH_RULES
 
-    # rules/O1's bullet "A name word written as an initial in the first
-    # or the middle place blocks the reading" (#1185, #1217's rows among
-    # them): (input, given, middle, family), each the default reading
+    # O1 yields to an initial in the first or the middle place, read by
+    # T5 and T4 (#1185, #1217's rows among them): (input, given, middle, family),
+    # each the default reading save the last two
     @pytest.mark.parametrize(("text", "given", "middle", "family"), [
         ("И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
         ("Ирина Б. Зубкевич", "Ирина", "Б.", "Зубкевич"),
@@ -152,6 +152,14 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         ("И.Б. Зубкевич", "И.Б.", "", "Зубкевич"),
         ("Роман Аркадьевич Абрамович", "Роман", "Аркадьевич", "Абрамович"),
         ("И. Петрович Сидоров", "И.", "Петрович", "Сидоров"),
+        # T4: a one-case name's lower-case letter is an initial, and its
+        # capital one too where it is also a connective
+        ("roman a abramovich", "roman", "a", "abramovich"),
+        ("i b akulovich", "i", "b", "akulovich"),
+        ("ROMAN A ABRAMOVICH", "ROMAN", "A", "ABRAMOVICH"),
+        ("Roman A Abramovich", "Roman", "A", "Abramovich"),
+        # T5: a bare Cyrillic capital is a name word, so O1 rotates
+        ("Ирина Б Зубкевич", "Б", "Зубкевич", "Ирина"),
         # the Accepted cost: one shape with 'Ирина Б. Зубкевич'
         ("Сидоров И. Петрович", "Сидоров", "И.", "Петрович"),
     ])

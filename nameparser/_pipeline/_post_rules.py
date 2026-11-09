@@ -1077,11 +1077,16 @@ def post_rules(state: ParseState) -> ParseState:
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
-        # rules/O1: "A name word written as an initial in
-        # the first or the middle place blocks the reading" (#1185)
+        # rules/O1: "T5 wins, and T4 in a name written wholly in one
+        # case" -- an initial first or in the middle keeps the order,
+        # read off the word's text (T5's shape) or classify's tag (T4's
+        # one-case letter); the text arm keeps a capital a one-case
+        # name tags a connective ('ROMAN A ABRAMOVICH', decisions/O1,
+        # #1185, #1217)
         if (has_patronymic_ending(tail) and not has_patronymic_ending(mid)
-                and not is_initial(mid)
-                and not is_initial(tokens[givens[0]].text)):
+                and not any(is_initial(tokens[i].text)
+                            or "initial" in tokens[i].tags
+                            for i in (givens[0], middles[0]))):
             g, m, f = givens[0], middles[0], families[0]
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)

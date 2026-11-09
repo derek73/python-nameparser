@@ -4503,6 +4503,7 @@
 {"name": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Ada", "middle": "Kornelija Eva Sofija", "family": "von Vilkas Jankauskas-Baranauskas", "initials": "A. K. E. S. V. J.", "capitalized_force": "Prof. Dr. Ada Kornelija Eva Sofija von Vilkas Jankauskas-Baranauskas"}
 {"name": "professori Ana Christina Lëja von Wright González Domingo, MD DDS", "given": "professori", "middle": "Ana Christina Lëja", "family": "von Wright González Domingo", "suffix": "MD DDS", "initials": "p. A. C. L. W. G. D.", "capitalized_force": "Professori Ana Christina Lëja von Wright González Domingo, MD DDS"}
 {"name": "qc mp", "given": "qc", "suffix": "mp", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "q.", "capitalized": "Qc MP"}
+{"name": "roman a abramovich", "given": "roman", "middle": "a", "family": "abramovich", "initials": "r. a. a.", "capitalized": "Roman A Abramovich"}
 {"name": "salem, abdul", "given": "abdul", "family": "salem", "initials": "a. s.", "capitalized": "Abdul Salem"}
 {"name": "salem, abdul salam", "given": "abdul salam", "family": "salem", "initials": "a. s. s.", "capitalized": "Abdul Salam Salem"}
 {"name": "salem, abdul salam ahmed", "given": "abdul salam", "middle": "ahmed", "family": "salem", "initials": "a. s. a. s.", "capitalized": "Abdul Salam Ahmed Salem"}
@@ -5017,6 +5018,7 @@
 {"name": "Ирена Марковић", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Ирене Адлер", "given": "Ирене", "family": "Адлер", "initials": "И. А."}
 {"name": "Ирина Амосова", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
+{"name": "Ирина Б Зубкевич", "given": "Ирина", "middle": "Б", "family": "Зубкевич", "initials": "И. Б. З."}
 {"name": "Ирина Б. Зубкевич", "given": "Ирина", "middle": "Б.", "family": "Зубкевич", "initials": "И. Б. З."}
 {"name": "Ирина Яҡупова", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
 {"name": "Йордан Мутафчиев", "given": "Йордан", "family": "Мутафчиев", "initials": "Й. М."}
