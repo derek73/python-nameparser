@@ -651,10 +651,9 @@ def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
     """The folded members of `word`'s spelling set in `group`, which
     `keys` cuts its keys from: every spelling set holds each member's
     folded form, so two sets that meet share a folded member. `_fold` is
-    idempotent (checked over every code point), so folding the words
-    `_spellings` reads is folding all its members."""
-    return {_fold(h) for h in (lexicon._headwords(word, group)
-                               | lexicon._headwords(_fold(word), group))}
+    idempotent (test_match.py holds it over every code point), so the
+    folded members are the folds of `_spellings`' own."""
+    return {_fold(h) for h in _spellings(word, group, lexicon)}
 
 
 def _listed(a: str, b: str, group: str, lexicon: Lexicon) -> bool:

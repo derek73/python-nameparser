@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import itertools
 import pickle
+import unicodedata
 
 import pytest
 
@@ -208,6 +209,25 @@ def test_matching_repr_shows_only_the_deviation() -> None:
 def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
     assert _fold("J.-P. O'Mári\u0301a") == "j-p omaria"
     assert _fold("María") == _fold("Mari\u0301a") == "maria"
+
+
+def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
+    # The key guarantee rests on these two: keys fold a spelling set's
+    # members again, and a family word's hyphen halves are cut from the
+    # raw word by position (_spelling_keys, _family_words). Every
+    # assigned code point is folded alone, after a letter, and beside a
+    # hyphen (an unassigned one has no decomposition, case or mark to
+    # fold). Measured 2026-11-08: about 1.2 s serial on py3.11.
+    bad = []
+    for i in range(0x110000):
+        c = chr(i)
+        if unicodedata.category(c) in ("Cn", "Cs"):
+            continue
+        for text in (c, "a" + c, c + "-a"):
+            folded = _fold(text)
+            if _fold(folded) != folded or folded.count("-") != text.count("-"):
+                bad.append((hex(i), text, folded))
+    assert bad == []
 
 
 def test_the_table_has_one_entry_per_role_in_role_order() -> None:
