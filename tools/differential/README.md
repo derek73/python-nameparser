@@ -384,6 +384,12 @@ uv run python tools/differential/config_diff.py diff default 'expr:Parser(lexico
 uv run python tools/differential/config_diff.py score default plain:ES --switches two_family_names,two_given_names --languages es
 ```
 
+**Measuring a change to name matching.** A change to `nameparser/_match.py`, or to the vocabulary it reads (`same_as`, `familiar` and the particles), moves no parse, so the steps above all report none; `match_diff.py --base <checkout>` is its check (#1278). It reads one fixed draw of name pairs -- every pair `tests/v2/test_match.py` writes, seeded pairings of those names, and pairs from jrc-names, tse-donors and PatentsView where they are fetched -- under twenty settings (the default, each opt-in added, every opt-in, each default outcome taken out, other readings on, and `locales.ES`), in a child process per tree, and prints every pair whose `check` result or keys moved, grouped by what moved (a role's outcome, the verdict, the cross-role matches, the reading used, the keys), with the setting and the pair; and every pair the head reads consistent that shares no key, the guarantee `keys` gives. A refactor expects no moves, and any exits 1. The base's results are kept in the cache under its package's digest, as `snapshot.py --local --base` keeps a base, so the second run reads only the head. A whole run over the three corpora, 30,128 pairs and 602,560 rows, took 2m14s reading both sides with `--jobs 8` on a 12-CPU machine (2026-11-09), about half that once the base is kept; `--sample N` reads every Nth pair. Its proof that it can report a move: taking the family chain's particles-aside step out of `_match.py` moves 426 of 282,560 rows over the test pairs alone, every one `family: particles-aside -> part-of-other` (2026-11-09; `tests/v2/test_match_diff.py` runs the same mutation over three pairs). An outcome's rank alone is not such a mutation: it orders `Outcome.strength` and the pick among other readings, and the row a pair reads is decided by the order the comparator tries the outcomes in, so swapping two ranks (`part-of-other` and `initial`) moved no row of a 1-in-20 sample of them, 14,140 rows.
+
+```
+uv run python tools/differential/match_diff.py --base ../master-checkout
+```
+
 For a vocabulary word whose reading acts on a name position, `tools/vocab/word_report.py` gives the per-word view before and alongside this: the word in a grid of shapes, its incidence in every fetched local corpus, and its `name_usage.py` rows (`nameparser/vocab/README.md`, "Adding a word").
 
 ## Corpus provenance
