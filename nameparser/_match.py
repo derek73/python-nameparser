@@ -781,17 +781,22 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     """The outcomes that hold for two non-empty texts of one role,
     strongest first, lazily, and last conflict, which always holds. An
     outcome holds only where the leniency it names was needed: none is
-    yielded where a stronger one that implies it holds (decisions/
-    name-matching, 2026-11-08 FAMILIAR FORMS, the review's ruling 1).
+    yielded where a stronger one that implies it holds, nor in the
+    family role after the first of its chain (decisions/name-matching,
+    2026-11-08 FAMILIAR FORMS, the review's ruling 1).
 
     - A full-name outcome (`_full_outcome`: same, folded, listed
       spelling) implies every weaker one, two texts equal once folded
       or listed as one needing no other leniency, so it is the only
       outcome yielded.
-    - In the family role (given its two `bases`) the outcomes form one
-      chain, each implied by the one before it where both hold:
-      particles set aside, part of the other, family initial, initials
-      agree; the first that holds is the only one yielded.
+    - In the family role (given its two `bases`) the outcomes are
+      treated as one chain, particles set aside, part of the other,
+      family initial, initials agree, and the first that holds is the
+      only one yielded. They are not all implied by the one before:
+      part of the other and family initial are independent leniencies
+      (`John S.` / `John S.-Jones` holds both), so a pair holding an
+      unaccepted part of the other is refused even where family
+      initial holds and is accepted.
     - In any other role, initial against name and initials agree are
       one leniency, the first that holds of the two yielded; a familiar
       form (in the `given` group) and a hyphenated part are each
@@ -839,10 +844,13 @@ def _initial_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
 def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
                     bases: tuple[str, str], lexicon: Lexicon,
                     group: str) -> Outcome | None:
-    """The family role's leniency chain, the first that holds: the
-    bases equal once folded (particles set aside), one base's words
-    among the other's (part of the other), an initial against the
-    family name (family initial), initials alone agreeing."""
+    """The family role's leniencies, treated as one chain, the first
+    that holds: the bases equal once folded (particles set aside), one
+    base's words among the other's (part of the other), an initial
+    against the family name (family initial), initials alone agreeing.
+    A later one is not always implied by an earlier (`John S.` /
+    `John S.-Jones` holds part of the other and family initial both),
+    and only the first is returned (`_text_outcomes`)."""
     if bases[0] and _fold(bases[0]) == _fold(bases[1]):
         return Outcome.PARTICLES_ASIDE
     sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
