@@ -729,7 +729,7 @@ def _capitalize(text: str) -> str:
     case is itself, so 'ᲜᲘᲜᲝ' gave 'Ნინო'. The 46 Mtavruli letters are
     the only ones the test reaches (measured over every codepoint,
     2026-11-08); 'İ' is not among them, its lower case 'i' plus U+0307
-    title-casing back to 'İ'. The one-letter guard keeps the word's
+    title-casing to 'I' plus U+0307, not to itself. The one-letter guard keeps the word's
     length should a later Unicode give a longer lower case that
     title-cases to itself; no codepoint does today."""
     out = text.capitalize()
