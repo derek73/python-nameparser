@@ -1242,29 +1242,78 @@ def test_a_familiar_form_ranks_below_every_default_outcome() -> None:
                for o in OPT_INS if o is not Outcome.FAMILIAR_FORM)
 
 
-def test_a_callers_familiar_form_is_read_and_keyed() -> None:
-    # an add of a kind the word holds updates its properties in every
-    # file holding it, so it replaces the longer names, as a same_as is
-    # replaced; listing the shipped ones keeps them
+def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
+    # an add EXTENDS the word's longer names, in a reading of the
+    # caller's own that names no file; the shipped readings stay
     lexicon = Lexicon.default().add("max", kind="familiar",
                                     short_for=["Maxwell"])
-    assert lexicon._familiar_forms("Max") == {"maxwell"}
+    assert lexicon._familiar_forms("Max") == {
+        "maksim", "maxim", "maximilian", "maxwell"}
+    readings = [r for r in lexicon.readings_of("max") if r.kind == "familiar"]
+    assert sorted(r.languages for r in readings) == [
+        (), ("be", "ru", "uk"), ("de",)]
+    assert next(r for r in readings if not r.languages).properties == (
+        ("short_for", ("maxwell",)),)
     matching = Matching(Parser(lexicon=lexicon),
                         DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
-    assert matching.check("Max Smith", "Maxwell Smith").consistent
-    assert not matching.check("Max Smith", "Maximilian Smith").consistent
-    assert matching.keys("Max Smith") & matching.keys("Maxwell Smith")
-    kept = Lexicon.default().add("max", kind="familiar", short_for=[
-        *sorted(Lexicon.default()._familiar_forms("max")), "maxwell"])
-    assert kept._familiar_forms("max") == {
-        "maksim", "maxim", "maximilian", "maxwell"}
+    for long in ("Maxwell", "Maximilian"):
+        assert matching.check("Max Smith", f"{long} Smith").consistent
+        assert matching.keys("Max Smith") & matching.keys(f"{long} Smith")
+    # a second add extends the caller's own reading
+    again = lexicon.add("max", kind="familiar", short_for=["maxi"])
+    assert again._familiar_forms("max") == {
+        "maksim", "maxi", "maxim", "maximilian", "maxwell"}
+    assert len([r for r in again.readings_of("max")
+                if r.kind == "familiar"]) == 3
     added = Lexicon.empty().add("zzq", kind="familiar", short_for=["zzr"])
     assert added._familiar_forms("zzq") == {"zzr"}
+    assert added._familiar_forms("zzr") == {"zzq"}
     assert added.words(kind="familiar") == ("zzq",)
-    with pytest.raises(TypeError, match="short_for must be an iterable"):
-        Lexicon.default().add("max", kind="familiar", short_for="maxwell")
-    with pytest.raises(ValueError, match="single given names"):
-        Lexicon.default().add("max", kind="familiar", short_for=["max well"])
+
+
+def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
+    # a pair lives on its short side: cutting Max / Maximilian is
+    # removing max's readings and adding back the names to keep
+    cut = Lexicon.default().remove("max", kind="familiar").add(
+        "max", kind="familiar", short_for=["maxim", "maksim"])
+    assert cut._familiar_forms("max") == {"maksim", "maxim"}
+    matching = Matching(Parser(lexicon=cut),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    assert not matching.check("Max Smith", "Maximilian Smith").consistent
+    assert matching.check("Max Smith", "Maxim Smith").consistent
+
+
+@pytest.mark.parametrize("props, error, match", [
+    ({}, ValueError, "needs short_for"),
+    ({"short_for": []}, ValueError, "non-empty list"),
+    ({"short_for": ["."]}, ValueError, "none normalizing to nothing"),
+    ({"short_for": [".", "maxwell"]}, ValueError, "none normalizing to nothing"),
+    ({"short_for": ["Max"]}, ValueError, "names the word itself"),
+    ({"short_for": "maxwell"}, TypeError, "short_for must be an iterable"),
+    ({"short_for": ["max well"]}, ValueError, "single given names"),
+    ({"short_for": ["maxwell"], "same_as": "maxwell"}, ValueError,
+     "takes short_for"),
+])
+def test_a_callers_familiar_reading_is_refused_where_it_lists_no_name(
+        props: dict[str, object], error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        Lexicon.default().add("max", kind="familiar", **props)
+
+
+def test_a_callers_pair_under_a_strict_choice_reaches_no_other_file() -> None:
+    from nameparser import Locale, parser_for
+    strict = parser_for(Locale(code="test", lexicon=Lexicon.empty(),
+                               languages=frozenset({"de"})), strict=True)
+    lexicon = strict.lexicon.add("bill", kind="familiar",
+                                 short_for=["william"])
+    assert lexicon._familiar_forms("bill") == {"william"}
+    assert [r.languages for r in lexicon.readings_of("bill")
+            if r.kind == "familiar"] == [()]
+    # de's own pairs stay, and no other file's comes back
+    assert lexicon._familiar_forms("max") == {"maximilian"}
+    assert not lexicon._familiar_forms("bob")
+    assert Parser(lexicon=lexicon).parse("Bill Smith").tokens == strict.parse(
+        "Bill Smith").tokens
 
 
 def test_no_parse_reads_a_familiar_form() -> None:

@@ -839,6 +839,13 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
         if len(words) != len(items):
             raise TypeError(f"{prop} entries must be strings, got "
                             f"{value!r}")
+        if prop == "short_for" and (
+                not words or any(not _normalize(x) for x in words)):
+            # the build's check 3: each a given name, none empty
+            raise ValueError(
+                f"short_for must be a non-empty list of the given names "
+                f"the word stands for, none normalizing to nothing, got "
+                f"{value!r}; write e.g. short_for=['maxwell']")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
         if prop == "completed_by" and any(" " in w for w in folded):
             # rules/P12 joins a bound word to the ONE word after it
@@ -969,6 +976,19 @@ def _make_edit(op: object, words: object, kind: object,
     p = _edit_props(k, dict(props))
     ri = _index_module()
     category = ri.CATEGORY[k]
+    if category == "familiar":
+        # the build's check 3: a familiar reading lists the longer names
+        longs = dict(p).get("short_for")
+        if not longs:
+            raise ValueError(
+                "a familiar reading needs short_for, a non-empty list of "
+                "the given names the word stands for, e.g. add('max', "
+                "kind='familiar', short_for=['maxwell'])")
+        for w in ws:
+            if w in longs:
+                raise ValueError(
+                    f"short_for names the word itself, {w!r}; it lists "
+                    f"the other given names {w!r} stands for")
     for w in ws:
         # the build's check 8: a phrase is matched whole only as a birth
         # marker or a run of titles addressing the given name
@@ -1003,6 +1023,20 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
     for w in words:
         rs = pool.get(w, ())
+        if edit.op == "add" and edit.kind == "familiar":
+            # EXTENDS: the caller's longer names go in a reading of the
+            # caller's own, attributed to the edit and to no file, and
+            # the compile unions it with each file's, which stay as
+            # they are (decisions/name-matching, 2026-11-08 FAMILIAR
+            # FORMS); an explicit replace is remove, then add
+            added = set(dict(edit.props)["short_for"])
+            mine = [r for r in rs if r.kind == "familiar" and not r.tag]
+            if mine:
+                added |= set(mine[0].props.get("short_for", ()))
+            reading = ri.IndexReading(w, "", "familiar", MappingProxyType(
+                {"short_for": tuple(sorted(added))}))
+            pool[w] = tuple(r for r in rs if r not in mine) + (reading,)
+            continue
         if edit.op == "remove":
             kept = tuple(r for r in rs if edit.kind is not None
                          and r.kind != edit.kind and r.category != edit.kind)
@@ -2037,12 +2071,15 @@ class Lexicon:
             form stands for, which name matching reads as a
             ``familiar-form`` where that outcome is accepted and no
             parse reads (``add("max", kind="familiar",
-            short_for=["maxwell"])``); as with any add of a kind the
-            word holds, it REPLACES the longer names the word's shipped
-            familiar readings list rather than extending them, so to
-            extend, list those too (``short_for=["maksim", "maxim",
-            "maximilian", "maxwell"]``, the shipped names being in
-            ``readings_of("max")``); a property
+            short_for=["maxwell"])``), which EXTENDS the longer names
+            the word's shipped familiar readings list, in a reading of
+            the caller's own that names no file, rather than replacing
+            them (unlike an add of any other kind the word holds); to
+            replace them, ``remove(word, kind="familiar")`` first. A
+            pair lives on the word whose reading lists the other (its
+            shorter name, as the files write it): to cut
+            ``Max`` / ``Maximilian``, remove ``max``'s familiar
+            reading and add it back without ``maximilian``; a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no

@@ -148,13 +148,16 @@ and property means. A ``familiar`` reading is a short given name
 standing for the longer ones its ``short_for`` lists (``max`` for
 Maximilian): no parse reads it, and :ref:`name matching
 <matching-names>` reads it as the opt-in ``familiar-form``.
-``add("max", kind="familiar", short_for=["maxwell"])`` *replaces* the
+``add("max", kind="familiar", short_for=["maxwell"])`` *extends* the
 longer names the shipped vocabulary lists for ``max`` (Maksim, Maxim,
-Maximilian) rather than extending them, as an add of a kind a word
-holds always updates that reading; to extend, list the shipped ones
-too, which ``readings_of("max")`` shows:
-``add("max", kind="familiar", short_for=["maksim", "maxim",
-"maximilian", "maxwell"])``.
+Maximilian), in a reading of your own that names no file, unlike an
+add of any other kind the word holds, which updates that reading. A
+pair lives on the word whose reading lists the other, as
+``readings_of("max")`` shows: to cut ``Max`` / ``Maximilian``,
+``remove("max", kind="familiar")`` and add back the names to keep,
+``add("max", kind="familiar", short_for=["maksim", "maxim"])``. A
+familiar reading needs at least one name, and none may be the word
+itself.
 ``same_as="..."`` is accepted on a reading of every kind but
 ``familiar``: it names the word this one is a spelling of (``jnr`` is
 ``jr``), and :ref:`name matching <matching-names>` reads two words

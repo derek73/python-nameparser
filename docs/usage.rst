@@ -1482,17 +1482,16 @@ nam_dict (2008, GNU Free Documentation License 1.2), each in the
 vocabulary file of the languages whose countries it lists them for,
 so a choice of languages reads its own. It is a selection and has
 gaps (``Peggy`` / ``Margaret``, ``Pepe`` / ``José``, ``Will`` /
-``William`` are not in it); add your own with a ``familiar`` reading.
-An add replaces the longer names the word's shipped readings list
-rather than extending them, so to extend, name the shipped ones too:
+``William`` are not in it); add your own with a ``familiar`` reading,
+which extends the names the word's shipped readings list (to replace
+them, ``remove(word, kind="familiar")`` first):
 
 .. doctest::
 
-    >>> maxwell = Lexicon.default().add(
-    ...     "max", kind="familiar", short_for=["maximilian", "maxim", "maksim", "maxwell"])
+    >>> maxwell = Lexicon.default().add("max", kind="familiar", short_for=["maxwell"])
     >>> mine = Parser(lexicon=maxwell).matching(accept=matcher.accept | {"familiar-form"})
-    >>> mine.check("Max Smith", "Maxwell Smith").consistent
-    True
+    >>> mine.check("Max Smith", "Maxwell Smith").consistent, mine.check("Max Smith", "Maximilian Smith").consistent
+    (True, True)
 
 A familiar form is outside the default because it is many-valued and
 often a name of its own: ``Max`` is a given name in its own right, as
