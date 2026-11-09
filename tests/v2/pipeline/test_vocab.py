@@ -824,7 +824,8 @@ def test_name_word_count_counts_names_not_tokens() -> None:
 
 # Stored form: space-joined, per-word normalized -- the key
 # add(..., kind="birth_marker") folds a phrase to (_lexicon._title_key).
-# Built as bare frozensets rather than through a Lexicon so these exercise the predicate and nothing else.
+# Built as bare frozensets rather than through a Lexicon so these
+# exercise the predicate and nothing else.
 _WORD_ONLY = frozenset({"née"})
 _PHRASE = frozenset({"z domu"})
 _BOTH = frozenset({"geb", "geb von"})
