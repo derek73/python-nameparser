@@ -133,6 +133,27 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
 
     policy_kwargs = _BOTH_RULES
 
+    def test_first_token_initial_surname_ends_patronymic(self) -> None:
+        # "И. Б. Зубкевич": first token is an initial -> guard fires, do not rotate
+        n = self.hn("И. Б. Зубкевич")
+        assert n.given == "И."
+        assert n.middle == "Б."
+        assert n.family == "Зубкевич"
+
+    def test_first_token_initial_latin_surname_ends_patronymic(self) -> None:
+        # "I. B. Akulovich": first token is an initial -> guard fires, do not rotate
+        n = self.hn("I. B. Akulovich")
+        assert n.given == "I."
+        assert n.middle == "B."
+        assert n.family == "Akulovich"
+
+    def test_first_token_initial_abramovich(self) -> None:
+        # "A. B. Abramovich": first token is an initial -> guard fires, do not rotate
+        n = self.hn("A. B. Abramovich")
+        assert n.given == "A."
+        assert n.middle == "B."
+        assert n.family == "Abramovich"
+
     def test_already_correct_order(self) -> None:
         # middle is patronymic → already in Western order, do not rotate
         n = self.hn("Ivan Ivanovich Ivanov")

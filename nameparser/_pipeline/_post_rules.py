@@ -1075,9 +1075,14 @@ def post_rules(state: ParseState) -> ParseState:
     # family-first" (history: decisions/O1)
     if rotations_apply and PatronymicRule.EAST_SLAVIC in rules and \
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
+        head = tokens[givens[0]]
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
-        if has_patronymic_ending(tail) and not has_patronymic_ending(mid):
+        if (
+            has_patronymic_ending(tail)
+            and not has_patronymic_ending(mid)
+            and not (is_initial(head.text) or "initial" in head.tags)
+        ):
             g, m, f = givens[0], middles[0], families[0]
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)

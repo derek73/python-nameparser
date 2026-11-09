@@ -8,6 +8,10 @@
   ```
   "Иван Петрович Абрамович"  [ru]  →  family="Абрамович"  · boundary
   ```
+- **A first word that is an initial blocks the reading**, because a family name is never written as an initial.
+  ```
+  "И. Б. Зубкевич"  [ru]  →  family="Зубкевич"  · boundary
+  ```
 - **The restoration is the default order's work**: it recovers the given-first reading a family-first listing hides, so where the caller has DECLARED a family-first order there is nothing left to restore and position decides.
 
 **Because:** an East Slavic name written family-first still shows its patronymic — the distinctive ending identifies which word is the patronymic, and the patronymic sits next to the given name.
