@@ -6,13 +6,15 @@ compares two parsed names role by role.
 Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 `DEFAULT_ACCEPT` and `Matching`.
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
-through `Lexicon._headword`, and its `revise`, for a name's other
-readings (`other-reading`); no `Policy` field.
+through `Lexicon._headword` and for `Lexicon.particles`, a hyphen half
+that is a listed particle being set aside, and its `revise`, for a
+name's other readings (`other-reading`); no `Policy` field.
 
 Consistent means nothing in the two names contradicts it, under the
-outcomes the caller accepts. The module imports `_types` and `_policy`
-(for the scripts that write no initials), `Lexicon` and `Parser` for
-typing alone.
+outcomes the caller accepts. The module imports `_types`, `_policy`
+(for the scripts that write no initials) and `_lexicon` (for
+`_normalize`, which folds a hyphen half before it is looked up among
+the particles), and `Lexicon` and `Parser` for typing alone.
 """
 from __future__ import annotations
 
