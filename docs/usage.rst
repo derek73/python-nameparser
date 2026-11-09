@@ -1955,7 +1955,7 @@ form to pipe somewhere:
 Add ``--locale`` to parse with a locale pack (for example ``--locale
 ru``); see :doc:`locales`. A code no pack has that is a language whose
 vocabulary file holds readings (``--locale ko``) chooses that language
-alone; one whose file holds none yet (``zu``) needs ``--strict``, and
+alone; one whose file holds none yet (``hu``) needs ``--strict``, and
 a pack's language with a region or script subtag (``zh-CN``,
 ``zh-Hant``) exits naming the pack to use.
 ``--strict`` reads only that language's words and the shared ones (see

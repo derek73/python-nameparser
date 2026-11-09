@@ -1247,7 +1247,9 @@ def test_union_refuses_two_different_choices_naming_parser_for(
     ({"_languages": {"xx"}}, ValueError, "no vocabulary file holds"),
     ({"_languages": {"mul"}}, ValueError, "not a language to choose"),
     # a file holding no reading is a strict choice only, as at parser_for
-    ({"_languages": {"zu"}}, ValueError, "strict=True"),
+    ({"_languages": {"hu"}}, ValueError, "strict=True"),
+    ({"_languages": {"mt"}}, ValueError, "strict=True"),
+    ({"_languages": {"sq"}}, ValueError, "strict=True"),
 ])
 def test_the_choice_is_validated_as_parser_for_validates_one(
         kwargs: dict[str, object], error: type[Exception], match: str) -> None:
