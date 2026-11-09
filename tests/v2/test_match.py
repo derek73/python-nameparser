@@ -1472,3 +1472,41 @@ def test_a_callers_familiar_reading_moves_no_parse(word: str, kind: str) -> None
         for text in texts:
             a, b = base.parse(text), mine.parse(text)
             assert a.tokens == b.tokens and a.ambiguities == b.ambiguities, text
+
+
+#: Narrowing `accept` still refuses: each pair's row reads, on the
+#: default, an outcome the narrowed setting drops, and no weaker outcome
+#: that outcome implies stands in for it (decisions/name-matching,
+#: 2026-11-08 FAMILIAR FORMS, the review's ruling 1).
+_IMPLIED_ROWS = [
+    ("John Smith", "John SMITH", Outcome.FOLDED, {Role.FAMILY: Outcome.FOLDED}),
+    ("José García", "José Garcia", Outcome.FOLDED, {Role.FAMILY: Outcome.FOLDED}),
+    ("John O'Brien", "John OBrien", Outcome.FOLDED,
+     {Role.FAMILY: Outcome.FOLDED}),
+    ("J. Smith", "J Smith", Outcome.FOLDED, {Role.GIVEN: Outcome.FOLDED}),
+    ("J. P. Smith", "J P Smith", Outcome.FOLDED,
+     {Role.GIVEN: Outcome.FOLDED, Role.MIDDLE: Outcome.FOLDED}),
+    ("John de la Vega", "John Vega", Outcome.PARTICLES_ASIDE,
+     {Role.FAMILY: Outcome.PARTICLES_ASIDE}),
+]
+
+
+@pytest.mark.parametrize("a, b, dropped, rows", _IMPLIED_ROWS)
+def test_narrowing_accept_refuses_and_no_implied_outcome_stands_in(
+        a: str, b: str, dropped: Outcome, rows: dict[Role, Outcome]) -> None:
+    default = m.check(a, b)
+    assert default.consistent
+    for which, outcome in rows.items():
+        assert role(default, which).outcome is outcome
+    narrowed = Matching(Parser(), DEFAULT_ACCEPT - {dropped})
+    for x, y in ((a, b), (b, a)):
+        r = narrowed.check(x, y)
+        assert not r.consistent
+        for which, outcome in rows.items():
+            assert role(r, which).outcome is outcome
+
+
+def test_an_equal_given_name_reads_folded_beside_a_conflicting_family() -> None:
+    r = m.check("J. Smith", "J Garcia")
+    assert role(r, Role.GIVEN).outcome is Outcome.FOLDED
+    assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT

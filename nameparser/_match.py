@@ -779,41 +779,78 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
 def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
                    bases: tuple[str, str] | None = None) -> Iterator[Outcome]:
     """The outcomes that hold for two non-empty texts of one role,
-    strongest first, lazily: a full-name outcome (`_full_outcome`), then
-    for a family, given its two `bases`, particles set aside and part
-    of the other, then initial against name (family initial in the
-    family role), then initials agree, then in the `given` group a
-    familiar form, then a hyphenated part, and last conflict, which
-    always holds. `same`, always accepted, ends the pick (`_pick`), so
-    nothing after it is computed for two equal texts."""
-    if a == b:
-        yield Outcome.SAME
+    strongest first, lazily, and last conflict, which always holds. An
+    outcome holds only where the leniency it names was needed: none is
+    yielded where a stronger one that implies it holds (decisions/
+    name-matching, 2026-11-08 FAMILIAR FORMS, the review's ruling 1).
+
+    - A full-name outcome (`_full_outcome`: same, folded, listed
+      spelling) implies every weaker one, two texts equal once folded
+      or listed as one needing no other leniency, so it is the only
+      outcome yielded.
+    - In the family role (given its two `bases`) the outcomes form one
+      chain, each implied by the one before it where both hold:
+      particles set aside, part of the other, family initial, initials
+      agree; the first that holds is the only one yielded.
+    - In any other role, initial against name and initials agree are
+      one leniency, the first that holds of the two yielded; a familiar
+      form (in the `given` group) and a hyphenated part are each
+      orthogonal to it and to each other, so each is yielded where it
+      holds (`Jean` / `Jean-Paul`, a caller's familiar pair and a
+      hyphenated part both)."""
     fa, fb = _fold(a), _fold(b)
-    outcome = _full_outcome(a, b, fa, fb, lexicon, group)
-    if outcome is not None:
-        yield outcome
-    family = bases is not None
+    full = _full_outcome(a, b, fa, fb, lexicon, group)
     wa, wb = a.split(), b.split()
-    if bases is not None:
-        if bases[0] and _fold(bases[0]) == _fold(bases[1]):
-            yield Outcome.PARTICLES_ASIDE
-        sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
-        if sa and sb and (sa <= sb or sb <= sa):
-            yield Outcome.PART_OF_OTHER
+    if full is not None:
+        yield full
+    elif bases is not None:
+        chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
+        if chain is not None:
+            yield chain
+    else:
+        initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+        if initials is not None:
+            yield initials
+        if group == "given" and (
+                familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+            yield familiar
+        if len(wa) == len(wb) == 1 and (
+                _first_half(fa, fb) or _first_half(fb, fa)):
+            yield Outcome.HYPHENATED_PART
+    yield Outcome.CONFLICT
+
+
+def _initial_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
+                     lexicon: Lexicon, group: str) -> Outcome | None:
+    """Two texts' words, as `wa` and `wb`, folded whole as `fa` and
+    `fb`: `initial` where every pair agrees and one is an initial of
+    its name, else `initials-agree` where both are initials alone and
+    the same ones, else `None`."""
     if len(wa) == len(wb):
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
-            yield Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
+            return Outcome.INITIAL
     if _initials_only(fa) and _initials_only(fb) and (
             _WORDS.split(fa) == _WORDS.split(fb)):
-        yield Outcome.INITIALS_AGREE
-    if not family and group == "given" and (
-            familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
-        yield familiar
-    if not family and len(wa) == len(wb) == 1 and (
-            _first_half(fa, fb) or _first_half(fb, fa)):
-        yield Outcome.HYPHENATED_PART
-    yield Outcome.CONFLICT
+        return Outcome.INITIALS_AGREE
+    return None
+
+
+def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
+                    bases: tuple[str, str], lexicon: Lexicon,
+                    group: str) -> Outcome | None:
+    """The family role's leniency chain, the first that holds: the
+    bases equal once folded (particles set aside), one base's words
+    among the other's (part of the other), an initial against the
+    family name (family initial), initials alone agreeing."""
+    if bases[0] and _fold(bases[0]) == _fold(bases[1]):
+        return Outcome.PARTICLES_ASIDE
+    sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
+    if sa and sb and (sa <= sb or sb <= sa):
+        return Outcome.PART_OF_OTHER
+    initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+    return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
+            else initials)
 
 
 def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
