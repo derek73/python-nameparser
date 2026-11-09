@@ -699,3 +699,21 @@ def test_mirrored_swaps_the_alternatives() -> None:
     assert result.mirrored().mirrored() == result
     assert result != MatchResult(True, _result().roles, (), None, lone)
     assert pickle.loads(pickle.dumps(result)) == result
+
+
+_OFFERED = 'parser.matching(accept=parser.matching().accept | {"family-initial"})'
+
+
+@pytest.mark.parametrize("accept", ["initial", {3}])
+def test_a_bad_accept_offers_code_that_extends_the_default(accept: object) -> None:
+    with pytest.raises(TypeError) as caught:
+        Matching(Parser(), accept=accept)  # type: ignore[arg-type]
+    message = str(caught.value)
+    assert message.endswith(f"pass e.g. {_OFFERED}")
+    # the offered code runs, keeps the default and adds the outcome
+    parser = Parser()
+    offered = eval(message.split("pass e.g. ")[1], {"parser": parser})
+    assert offered.accept == DEFAULT_ACCEPT | {Outcome.FAMILY_INITIAL}
+    # and type-checks, the same spelling written out for mypy
+    written = parser.matching(accept=parser.matching().accept | {"family-initial"})
+    assert written == offered

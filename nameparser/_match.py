@@ -160,6 +160,10 @@ DEFAULT_ACCEPT: frozenset[Outcome] = frozenset({
 })
 
 _VALID = ", ".join(o.value for o in Outcome if o is not Outcome.CONFLICT)
+#: The code a refused `accept` is offered: it extends the default set,
+#: which a bare `accept=` would replace, and type-checks.
+_ACCEPT_HINT = ('pass e.g. parser.matching(accept=parser.matching().accept'
+                ' | {"family-initial"})')
 
 
 def _outcome(value: object) -> Outcome:
@@ -174,8 +178,8 @@ def _outcome(value: object) -> Outcome:
             ) from None
     raise TypeError(
         f"accept must be an iterable of outcome names or Outcome members, "
-        f"got a member {value!r} of type {type(value).__name__}; pass "
-        f"e.g. accept={{'initial', 'family-initial'}}")
+        f"got a member {value!r} of type {type(value).__name__}; "
+        f"{_ACCEPT_HINT}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -205,8 +209,7 @@ class Matching:
         if isinstance(accept, (str, bytes, Mapping)) or not isinstance(accept, Iterable):
             raise TypeError(
                 f"accept must be an iterable of outcome names, got "
-                f"{type(accept).__name__} {accept!r}; pass e.g. "
-                f"accept={{'initial', 'family-initial'}}")
+                f"{type(accept).__name__} {accept!r}; {_ACCEPT_HINT}")
         outcomes = frozenset(_outcome(v) for v in accept)
         if Outcome.CONFLICT in outcomes:
             raise ValueError(
