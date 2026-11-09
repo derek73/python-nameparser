@@ -581,7 +581,7 @@ def assemble(state: ParseState) -> ParsedName:
                     kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
                 elif is_title_shaped(t.text, state.lexicon):
                     # rules/H2's shape, asked through H2's own
-                    # predicate: a word its Except refuses -- "an
+                    # predicate: a word H2 does not read by shape -- "an
                     # abbreviation the vocabulary reads as a given name
                     # written short", a "word in one of the ten Brahmic
                     # scripts from Devanagari to Sinhala", and a word in
