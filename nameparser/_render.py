@@ -493,8 +493,9 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
 
 def _cap_word(word: str, role: Role, tags: frozenset[str],
               lex: Lexicon, *, particle: bool = True) -> str:
-    # `particle=False` is the hyphen clause's opening part (_cap_text):
-    # the particle arm is not asked, every other clause is.
+    # `particle=False` is the first word of the hyphen clause's opening
+    # part (_cap_text): the particle arm is not asked, every other
+    # clause is.
     # Clause order: the particle/connective arm, then the exceptions
     # map as a mask, then the acronym clause (listed or by shape),
     # then the numeral clause, then, per full-stop chunk, the chunk's
@@ -721,13 +722,16 @@ def _title_chunk(chunk: str) -> str:
 # lower case throughout" -- the title case of a word's first letter,
 # where Georgian's is its Mkhedruli lower case. decisions/R4 (#1223).
 def _capitalize(text: str) -> str:
-    """str.capitalize(), except that a first letter whose lower case
-    title-cases to itself is written in that lower case: str.capitalize()
+    """str.capitalize(), except that a first letter whose lower case is
+    one letter that title-cases to itself, and is not the letter's own
+    title case, is written in that lower case: str.capitalize()
     title-cases the letter as it stands, and a Mtavruli letter's title
     case is itself, so 'ᲜᲘᲜᲝ' gave 'Ნინო'. The 46 Mtavruli letters are
     the only ones the test reaches (measured over every codepoint,
-    2026-11-08); a letter whose lower case is longer than it ('İ') keeps
-    str.capitalize()'s answer, so the word keeps its length."""
+    2026-11-08); 'İ' is not among them, its lower case 'i' plus U+0307
+    title-casing back to 'İ'. The one-letter guard keeps the word's
+    length should a later Unicode give a longer lower case that
+    title-cases to itself; no codepoint does today."""
     out = text.capitalize()
     if text:
         low = text[0].lower()
@@ -777,10 +781,12 @@ def _sub_words(cap: Callable[[str], str], text: str) -> str:
     return "".join(out) + text[at:]
 
 
-#: The apostrophes that are not word characters to _WORD: U+0027,
-#: U+2018 and U+2019. U+02BC, the one Ukrainian orthography prescribes,
-#: is a modifier letter, which \w matches, so it never divides a word.
-_APOSTROPHES = frozenset("'‘’")
+#: The apostrophes case repair joins a word across: U+0027, U+2018 and
+#: U+2019, none of them a word character to _WORD. U+02BC, the one
+#: Ukrainian orthography prescribes, is a modifier letter, which \w
+#: matches, so it never divides a word; the fullwidth U+FF07 and the
+#: Armenian U+055A still do.
+_APOSTROPHES = frozenset("'\u2018\u2019")
 #: The Cyrillic vowels a Ukrainian (я ю є ї) or Belarusian (е ё і ю я)
 #: apostrophe stands before, marking the vowel as pronounced apart.
 #: Lower case, and composed: a decomposed ї or ё opens with і or е.
@@ -801,7 +807,7 @@ def _inner_apostrophe(text: str, end: int, start: int) -> bool:
     before = end - 1
     while before >= 0 and unicodedata.category(text[before])[0] == "M":
         before -= 1
-    return (before >= 0 and text[before].isalpha()
+    return (before >= 0
             and unicodedata.name(text[before], "").startswith("CYRILLIC")
             and text[start].lower() in _APOSTROPHE_VOWELS)
 
@@ -881,7 +887,10 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         words: list[str] = []
 
         def first_word(word: str) -> str:
-            words.append(word)
+            # a run of bare periods or underscores is no word, as it is
+            # no worded part above
+            if any(c.isalnum() for c in word):
+                words.append(word)
             return _cap_word(word, role, tags, lex,
                              particle=len(words) > 1)
         return _sub_words(first_word, part)

@@ -895,7 +895,7 @@ def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
     after a Latin letter, whose question #1214 leaves open (Dem'Yan).
     U+02BC is a modifier letter, a word character, so it never divided
     the word."""
-    rows = (
+    rows: tuple[tuple[str, str], ...] = (
         ("БЕЗУГЛА МАР{a}ЯНА ВОЛОДИМИРІВНА", "Безугла Мар{a}яна Володимирівна"),
         ("ІВАН П{a}ЯТАК", "Іван П{a}ятак"),
         ("ар{a}єв володимир ігорович", "Ар{a}єв Володимир Ігорович"),
@@ -903,6 +903,7 @@ def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
         # a letter that decomposes on either side of the apostrophe
         ("ІВАН ВОРОБЙ{a}ЇВ", "Іван Воробй{a}їв"),
         ("ГАННА Б{a}ЁРН", "Ганна Б{a}ёрн"),
+        ("ОЛЕНА В{a}ЮН", "Олена В{a}юн"),
         # the boundaries
         ("ЛЮДМИЛА О{a}КОННОР", "Людмила О{a}Коннор"),
         ("ЛЮДМИЛА Д{a}АРТАНЬЯН", "Людмила Д{a}Артаньян"),
@@ -911,6 +912,12 @@ def test_a_cyrillic_apostrophe_before_a_vowel_stays_inside_the_word() -> None:
         ("ВАЛЕРІ Д{a}ЕСТЕН", "Валері Д{a}естен"),
         ("DEM{a}YAN SMITH", "Dem{a}Yan Smith"),
         ("JOHN O{a}BRIEN", "John O{a}Brien"),
+        # a Latin (or Greek) letter before the apostrophe, a Cyrillic
+        # vowel after it: no Cyrillic word to join
+        ("ІВАН O{a}ЯРОШ", "Іван O{a}Ярош"),
+        ("ΑΝΝΑ Μ{a}ЯНА", "Αννα Μ{a}Яна"),
+        # two apostrophes are not one
+        ("БЕЗУГЛА МАР{a}{a}ЯНА", "Безугла Мар{a}{a}Яна"),
     )
     for apostrophe in ("'", "‘", "’"):
         for text, repaired in rows:
@@ -944,11 +951,15 @@ def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
     assert _repairs("Ნინო Ბურჯანაძე", False) == "Ნინო Ბურჯანაძე"
     assert _repairs("Ნინო Ბურჯანაძე", True) == "ნინო ბურჯანაძე"
     assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
+    # the other cased scripts the repair reaches keep their title case
+    assert _repairs("ΟΔΥΣΣΕΑΣ ΕΛΥΤΗΣ", False) == "Οδυσσεας Ελυτης"
+    assert _repairs("ԼԵՎՈՆ ՏԵՐ-ՊԵՏՐՈՍՅԱՆ", False) == "Լեվոն Տեր-Պետրոսյան"
 
 
 def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     """rules/R4 (#1224): a particle that opens a hyphenated word is
-    written as a name word, whatever the particle; one inside the word
+    written as a name word, whichever particle it is, the particle arm
+    being the only clause left out for it; one inside the word
     keeps its lowercase, as does a spaced one, and a particle written
     with its hyphen and nothing after it ('az-') is one word, asked
     whole as before (#700)."""
@@ -961,6 +972,11 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
             ("MARIA VAN-DER", "Maria Van-der"),
             # only the opening part's first word leaves the particle arm
             ("JUAN D'LA-VEGA", "Juan D'la-Vega"),
+            # punctuation is no first word: the particle after it opens
+            ("juan .'de-vega", "Juan .'De-Vega"),
+            # one named part is no hyphenated word to open
+            ("MARIA VAN-", "Maria van-"),
+            ("jose -de", "Jose -de"),
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
             ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
             ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),
