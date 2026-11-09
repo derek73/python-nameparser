@@ -58,6 +58,7 @@ NAMES: tuple[str, ...] = (
     "Anne J.-P. Smith", "Jo. Garcia", "Joanne Garcia", "Ma Santos",
     "María Santos", "Jas Singh", "Jas. Singh", "James Singh", "Wm Smith",
     "WM SMITH", "WILLIAM SMITH", "Ana Mà. Cruz", "Ana María Cruz",
+    "Garcia, Jo.", "Garcia, José", "Ana Ma\u0300. Cruz",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -466,10 +467,11 @@ def test_consistent_names_always_share_a_key(
     pair shares a key, so grouping by key never separates names `check`
     accepts. Negative controls, each the first pair to fail, re-taken
     2026-11-08 after the period rule's names ("Jo. Garcia" through "Ana
-    María Cruz") joined NAMES, each mutation applied in-process, every
-    one unmoved since "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud"
-    joined it, and the symmetry test passing under every one: with only
-    the joined form of a hyphenated word keyed, the default, given-one-side, hyphenated-part, other-reading and
+    Mà. Cruz" written decomposed) joined NAMES, each mutation applied
+    in-process, every one unmoved since "Ahmed Al", "Ahmed Al-Saud" and
+    "Ahmed Saud" joined it, and the symmetry test passing under every
+    one: with only the joined form of a hyphenated word keyed, the
+    default, given-one-side, hyphenated-part, other-reading and
     across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
     family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
     with part-of-other keeping a hyphen half that is a particle while
@@ -904,8 +906,9 @@ def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:
     ("Ma. Santos", "Maria Santos", "given"),
     ("Ma. Cruz", "MARIA CRUZ", "given"), ("Ma. Cruz", "María Cruz", "given"),
     # the written word's accent folded away before it is looked up, in
-    # the middle name, where a period-marked word is no title by shape
+    # the middle name (a leading `Mà.` reads as a title by shape, H2)
     ("Ana Mà. Cruz", "Ana María Cruz", "middle"),
+    ("Ana Ma\u0300. Cruz", "Ana María Cruz", "middle"),
 ])
 def test_a_listed_spelling_holds_whatever_the_accents(
         a: str, b: str, field: str) -> None:
@@ -920,7 +923,8 @@ def test_a_listed_spelling_holds_whatever_the_accents(
 
 @pytest.mark.parametrize("a, b", [
     ("Jo. Garcia", "José Garcia"), ("Ma. Santos", "María Santos"),
-    ("Jas. Singh", "James Singh"),
+    ("Jas. Singh", "James Singh"), ("JO. GARCIA", "JOSÉ GARCIA"),
+    ("Garcia, Jo.", "Garcia, José"),
     # every full stop the vocabulary strips marks the period (#322)
     ("Jo\uff0e Garcia", "José Garcia"), ("Ma\uff61 Santos", "María Santos"),
     # a spelling of a word that is no name of its own needs no period
@@ -938,7 +942,8 @@ def test_a_listed_spelling_with_its_period_or_of_no_name_of_its_own(
 @pytest.mark.parametrize("a, b", [
     ("Jo Garcia", "José Garcia"), ("Jo Garcia", "Jose Garcia"),
     ("Jo Garcia", "Joanne Garcia"), ("Ma Santos", "María Santos"),
-    ("Jas Singh", "James Singh"),
+    ("Jas Singh", "James Singh"), ("JAS SINGH", "JAMES SINGH"),
+    ("Garcia, Jo", "Garcia, José"),
 ])
 def test_a_name_of_its_own_written_bare_is_itself(a: str, b: str) -> None:
     # `jo`, `ma` and `jas` are given names of their own as well as
@@ -947,6 +952,79 @@ def test_a_name_of_its_own_written_bare_is_itself(a: str, b: str) -> None:
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
         assert not r.consistent and r["given"].outcome is Outcome.CONFLICT
+
+
+def test_a_bare_middle_name_of_its_own_is_itself() -> None:
+    r = m.check("Ana Ma Cruz", "Ana María Cruz")
+    assert not r.consistent and r["middle"].outcome is Outcome.CONFLICT
+
+
+def test_the_mark_is_every_short_name_beside_a_plain_one() -> None:
+    # the property, computed from the lexicon's own readings: a word whose
+    # name reading carries `same_as` beside a name reading of the same
+    # kind carrying none
+    from nameparser import _reading_index as ri
+    lexicon = Lexicon.default()
+    short: dict[str, set[str]] = {}
+    plain: dict[str, set[str]] = {}
+    for text, readings in lexicon._pool().items():
+        for r in readings:
+            if not r.on_by_default or r.category != "name":
+                continue
+            group = ri.same_as_group(r.kind)
+            assert group is not None
+            into = short if "same_as" in r.props else plain
+            into.setdefault(group, set()).add(text)
+    for group, named in lexicon._same_as_named.items():
+        expected = short.get(group, set()) & plain.get(group, set())
+        assert named == expected, group
+        assert named <= set(lexicon._same_as[group]), group
+    assert lexicon._same_as_named["given"]
+    assert not any(lexicon._same_as_named[g] for g in ("family", "title", "suffix"))
+
+
+def _choice(languages: set[str], strict: bool) -> Parser:
+    from nameparser import Locale, parser_for
+    return parser_for(Locale(code="x", lexicon=Lexicon.empty(),
+                             languages=frozenset(languages)), strict=strict)
+
+
+# measured 2026-11-08: the mark follows the chosen vocabulary
+@pytest.mark.parametrize("languages, strict, named, jo, jas", [
+    (None, False, {"jas", "jo", "ma"}, False, False),
+    ({"fil"}, False, {"jas", "jo", "ma"}, False, False),
+    ({"en", "fil"}, True, {"jo", "ma"}, False, True),
+    ({"en", "pa"}, True, {"jas"}, False, False),
+    # Filipino alone: Jo has no reading as a name of its own (ruling)
+    ({"fil"}, True, set(), True, False),
+    # English alone: pa.toml's Jas left out, the accepted cost
+    ({"en"}, True, set(), False, True),
+])
+def test_the_mark_under_each_choice_of_languages(
+        languages: set[str] | None, strict: bool, named: set[str],
+        jo: bool, jas: bool) -> None:
+    parser = Parser() if languages is None else _choice(languages, strict)
+    assert parser.lexicon._same_as_named["given"] == named
+    matching = parser.matching()
+    assert matching.check("Jo Smith", "José Smith").consistent is jo
+    assert matching.check("Jas Singh", "James Singh").consistent is jas
+
+
+def test_a_callers_edit_moves_the_mark() -> None:
+    # removing jo's given kind removes both its readings, link and all
+    removed = Lexicon.default().remove("jo", kind="given")
+    assert "jo" not in removed._same_as_named["given"]
+    assert "jo" not in removed._same_as["given"]
+    # a caller's same_as is written onto every given reading of the
+    # word, replacing the link and leaving no plain reading to mark it
+    joseph = Lexicon.default().add("jo", kind="given", same_as="joseph")
+    assert joseph._same_as["given"]["jo"] == {"joseph"}
+    assert "jo" not in joseph._same_as_named["given"]
+    assert Matching(Parser(lexicon=joseph)).check(
+        "Jo Smith", "Joseph Smith").consistent
+    short = Lexicon.empty().add("zzq", kind="given", same_as="zzr")
+    assert short._same_as["given"]["zzq"] == {"zzr"}
+    assert not short._same_as_named["given"]
 
 
 def test_the_mark_follows_the_chosen_vocabulary() -> None:
