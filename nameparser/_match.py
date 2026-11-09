@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from nameparser._lexicon import _normalize
 from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
@@ -258,7 +259,9 @@ class Matching:
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
         """Grouping keys: for each word of the folded family base, and
-        each half of a hyphenated one beside its joined form, one key
+        each half of a hyphenated one beside its joined form, a half that
+        is a listed particle left out (`Al-Saud` keys `saud` and
+        `alsaud`, never `al`), one key
         `word;g` where `g` is the first letter of the given name (empty
         where there is none). A word is keyed by its headword, so two
         listed spellings of one surname share a key, each word under its
@@ -400,8 +403,15 @@ class Matching:
             bases += _maiden_base(parsed).split()
         words: set[str] = set()
         for raw in bases:
-            for word in (raw, _fold(raw)):
-                for form in (*word.split("-"), word.replace("-", "")):
+            folded = _fold(raw)
+            # the halves the check's part-of-other drops, by position, so
+            # the raw and the folded word drop the same ones
+            drop = {i for i, h in enumerate(folded.split("-"))
+                    if "-" in folded and _particle_half(h, lexicon)}
+            for word in (raw, folded):
+                halves = [h for i, h in enumerate(word.split("-"))
+                          if i not in drop]
+                for form in (*halves, word.replace("-", "")):
                     if form:
                         words |= heads(form)
         family = parsed.family.split()
@@ -568,8 +578,7 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
     if family:
         if bases[0] and _fold(bases[0]) == _fold(bases[1]):
             return Outcome.PARTICLES_ASIDE
-        sa = set(_WORDS.split(_fold(bases[0]))) - {""}
-        sb = set(_WORDS.split(_fold(bases[1]))) - {""}
+        sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
         if sa and sb and (sa <= sb or sb <= sa):
             return Outcome.PART_OF_OTHER
     if len(wa) == len(wb):
@@ -583,6 +592,26 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
             _first_half(a, b) or _first_half(b, a)):
         return Outcome.HYPHENATED_PART
     return Outcome.CONFLICT
+
+
+def _particle_half(folded: str, lexicon: Lexicon) -> bool:
+    """A folded half of a hyphenated family word that is a listed
+    particle (`al` in `Al-Saud`): set aside like a spaced particle, so it
+    is neither a family-base word for `part-of-other` nor a key."""
+    return _normalize(folded) in lexicon._sets.particles
+
+
+def _base_words(base: str, lexicon: Lexicon) -> set[str]:
+    """The folded family-base words `part-of-other` compares: each
+    word, and a hyphenated one as its halves less any listed particle."""
+    words: set[str] = set()
+    for word in _fold(base).split():
+        halves = word.split("-")
+        if len(halves) > 1:
+            words.update(h for h in halves if not _particle_half(h, lexicon))
+        else:
+            words.add(word)
+    return words - {""}
 
 
 def _first_half(word: str, hyphenated: str) -> bool:

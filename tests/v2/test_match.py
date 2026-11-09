@@ -45,6 +45,7 @@ NAMES: tuple[str, ...] = (
     "John Edgar Hoover", "Edgar E. Hoover", "John Edgar Allan Hoover",
     "Edgar Allan Hoover", 'Robert "Bobby Joe" Smith', "Bobby Joe Smith",
     "Bobby Smith", "John Wm. Smith", "John Smith, PhD",
+    "Ahmed Al", "Ahmed Al-Saud", "Ahmed Saud",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -369,10 +370,16 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
     accepts. Negative controls, each the first pair to fail, re-taken
-    2026-11-08 after "John Smith, PhD" joined NAMES: with only the
-    joined form of a hyphenated word keyed, the default, given-one-side,
-    hyphenated-part, other-reading and across-roles fail on
-    ("Ann Smith-Jones", "Ann Smith"); with the family-initial key
+    2026-11-08 after "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud" joined
+    NAMES: with only the joined form of a hyphenated word keyed, the
+    default, given-one-side, hyphenated-part, other-reading and
+    across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
+    family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
+    with part-of-other keeping a hyphen half that is a particle while
+    the keys drop it, the default, given-one-side, hyphenated-part,
+    other-reading and across-roles fail on ("Ahmed Al", "Ahmed
+    Al-Saud"), family-initial and all-opt-ins passing it through the
+    family-initial key; with the family-initial key
     removed, family-initial fails on ("J. Smith", "Jane S") and
     all-opt-ins on ("John A. Smith", "Mr. S"); with the bare family keys
     removed, given-one-side and all-opt-ins fail on ("John A. Smith",
@@ -399,6 +406,17 @@ def test_a_family_of_particles_alone_is_not_part_of_a_longer_one(
         a: str, b: str) -> None:
     assert not m.check(a, b).consistent
     assert not m.check(b, a).consistent
+
+
+def test_a_hyphen_half_that_is_a_particle_is_not_a_family_word() -> None:
+    assert m.keys("Ahmed Al-Saud") == {"saud;a", "alsaud;a"}
+    r = m.check("Ahmed Al", "Ahmed Al-Saud")
+    assert not r.consistent and role(r, Role.FAMILY).outcome is Outcome.CONFLICT
+    r = m.check("Ahmed Al-Saud", "Ahmed Saud")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.PART_OF_OTHER
+    assert m.keys("Ahmed Al-Saud") & m.keys("Ahmed Saud")
+    r = m.check("Ann Smith-Jones", "Ann Smith")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.PART_OF_OTHER
 
 
 @pytest.mark.parametrize("a, b", [

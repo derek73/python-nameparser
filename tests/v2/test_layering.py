@@ -652,8 +652,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 134 on #1138's tree (139 since
-#: #1131's, below) were 125 attribute loads, 3 roster
+#: reaches nothing. The library's 134 on #1138's tree (140 since
+#: #1006's, below) were 125 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 6 `sets =` bindings (#1000's Ph./D. gate
 #: added one binding and four of the loads; #999's gate
@@ -678,7 +678,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: #1131's every-chunk reading of a word the periods join, the
 #: honorific tail, the titles and the acronyms its set-apart word
 #: asks first, its S11 guard and the initials test of a word the
-#: periods join, 134 -> 139);
+#: periods join, 134 -> 139; #1006's name matching dropping a hyphen
+#: half that is a listed particle, the particles, 139 -> 140);
 #: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -689,7 +690,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 139, "tools": 19}
+_UNGUARDED_READS = {"library": 140, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

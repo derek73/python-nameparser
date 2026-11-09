@@ -1227,7 +1227,8 @@ checked:
 
 A family name of several words gets a key for each, because a source
 may cut a surname list short, and a hyphenated one a key for each half
-and for the two joined:
+and for the two joined, save a half that is a particle (``Al-Saud`` keys
+``saud`` and ``alsaud``, never ``al``):
 
 .. doctest::
 
