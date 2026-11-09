@@ -53,7 +53,8 @@ NAMES: tuple[str, ...] = (
     "Jo Garcia", "Jose Garcia", "José Garcia", "Ma. Santos", "Maria Santos",
     "Ma. Cruz", "MARIA CRUZ", "Ma, Jack", "María, Jack", "Ma Cruz",
     "María Cruz", "Junior Smith", "Jr Smith", "Sr. John Smith",
-    "Señor John Smith", "Senhor John Smith",
+    "Señor John Smith", "Senhor John Smith", "John J.-P. Smith", "J.-P. Smith",
+    "Anne J.-P. Smith",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -755,6 +756,33 @@ def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
     assert "clinton;b" not in m.keys('William "Bill" Clinton')
     assert _across.keys("Jane Doe (née Smith)") == {"doe;j", "smith;j"}
     assert m.keys("Jane Doe (née Smith)") == {"doe;j"}
+
+
+def test_across_roles_keys_no_middle_word_the_check_cannot_match() -> None:
+    # J.-P. is initials alone once split on its hyphen, so the check
+    # never matches it across roles, and the keys add no part for it;
+    # Anne's own letter tells the two apart
+    for name in ("John J.-P. Smith", "Anne J.-P. Smith"):
+        assert "smith;j" not in _across.keys(name) - m.keys(name), name
+    assert _across.keys("Anne J.-P. Smith") == {"smith;a"}
+    # and the check reads the pair as it did: J.-P. is no given name
+    # for John, so the middle is one-sided and the given conflicts
+    r = _across.check("John J.-P. Smith", "J.-P. Smith")
+    assert not r.consistent and r.across == ()
+    assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+    assert role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE
+
+
+def test_across_roles_keys_a_nickname_the_check_compares_whole() -> None:
+    # the check compares the nickname whole, so one that opens with an
+    # initial but is not initials alone can meet a given name, and its
+    # first word's letter is keyed
+    left = parse('Anne "J. Bob" Smith')
+    right = parse("Anne Smith").replace(given="J. Bob")
+    r = _across.check(left, right)
+    assert r.consistent and r.across == (CrossRoleMatch(
+        Role.NICKNAME, Role.GIVEN, Outcome.SAME, "J. Bob", "J. Bob"),)
+    assert _across.keys(left) & _across.keys(right) == {"smith;j"}
 
 
 def test_a_cross_role_row_says_the_side_that_held_both_roles_carried_more() -> None:

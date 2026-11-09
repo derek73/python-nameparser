@@ -378,10 +378,12 @@ class Matching:
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
-        words without particles as family words, and the first letter
-        of each middle word and of the nickname's first word, save one
-        written as an initial, as given letters. Where `other_readings`
-        is on, each other reading `check` tries adds its own keys."""
+        words without particles as family words, and as given letters
+        the first letter of each middle word and of the nickname's
+        first word, save a middle word or a nickname written in
+        initials alone, which the check never matches across roles.
+        Where `other_readings` is on, each other reading `check` tries
+        adds its own keys."""
         parsed = self._parsed(name)
         readings = (self._readings(parsed) if self.other_readings
                     else [(parsed, None)])
@@ -514,11 +516,15 @@ class Matching:
         initials = ({g[:1] for g in _spelling_keys(given[0], "given", lexicon)}
                     if given else {""})
         if across:
-            # a cross-role match is never made by an initial
-            for word in (*parsed.middle.split(), *parsed.nickname.split()[:1]):
-                if not _is_initial(_fold(word)):
-                    initials |= {g[:1] for g in _spelling_keys(
-                        word, "given", lexicon)}
+            # the texts the check matches against a given name, each
+            # refused as it refuses them: a cross-role match is never
+            # made by initials alone (`_initials_only`, so `J.-P.` is
+            # not keyed); a text is keyed by its first word's letter
+            for other in _ACROSS[Role.GIVEN]:
+                for text in _cross_texts(parsed, other):
+                    if not _initials_only(_fold(text)):
+                        initials |= {g[:1] for g in _spelling_keys(
+                            text.split()[0], "given", lexicon)}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
