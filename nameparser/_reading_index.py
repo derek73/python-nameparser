@@ -483,9 +483,10 @@ def changed_words(chosen: frozenset[str]) -> frozenset[str]:
     default, choice = compile_choice(frozenset()), compile_choice(chosen)
     words: set[str] = set()
     for key in default:
-        if key == "SAME_AS":
+        if key in ("SAME_AS", "SAME_AS_NAMED"):
             # a word's listed spelling moves no word between sets, so it
-            # changes no parse: a choice's `sr` of `senhor`, not `señor`
+            # changes no parse: a choice's `sr` of `senhor`, not `señor`,
+            # and whether the match reads the link written bare
             continue
         a: Any = default[key]  # type: ignore[literal-required]
         b: Any = choice[key]  # type: ignore[literal-required]
@@ -580,6 +581,7 @@ class Compiled(TypedDict):
     CAPITALIZED_PARTICLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
+    SAME_AS_NAMED: dict[str, frozenset[str]]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -630,10 +632,17 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     cased: dict[str, str] = {}
     same_as: dict[str, dict[str, set[str]]] = {
         g: {} for g in SAME_AS_GROUPS.values()}
+    # per name kind, the words a reading of it writes short (`same_as`)
+    # and the words it names with none: a name of its own
+    short_names: dict[str, set[str]] = {}
+    own_names: dict[str, set[str]] = {}
     for r, t in texts:
         p = r.props
         if "same_as" in p and (group := same_as_group(r.kind)) is not None:
             same_as[group].setdefault(t, set()).add(p["same_as"])
+        if r.category == "name":
+            into = short_names if "same_as" in p else own_names
+            into.setdefault(r.kind, set()).add(t)
         if "cased" in p:
             cased[t] = p["cased"]
         if r.category == "name" and r.flag("shared"):
@@ -783,6 +792,19 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         SAME_AS={g: {w: tuple(sorted(heads))
                      for w, heads in sorted(same_as[g].items())}
                  for g in sorted(same_as)},
+        # the derived marker of a listed spelling: a word whose name
+        # reading carries a `same_as` beside a reading of the same kind
+        # with none, a name written short that is a name of its own too
+        # (`jo`, José written short and the given name Jo), whose links
+        # the name match reads only where the word is written with its
+        # period (decisions/name-matching, 2026-11-08 #1006 follow-up).
+        # A bound given name's or a particle's `same_as` is a spelling
+        # written without one (`ابو` of `أبو`), and marks nothing
+        SAME_AS_NAMED={g: frozenset(
+            w for k, short in short_names.items()
+            if same_as_group(k) == g
+            for w in short & own_names.get(k, set()))
+            for g in sorted(same_as)},
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

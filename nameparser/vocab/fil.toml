@@ -71,7 +71,7 @@ issue = 725
 
 [[word]]
 text = "jo"
-given = { us_ssa = 180911, wikidata = 974, as_of = 2026-10-26, same_as = "josé", note = "José written short, in Philippine usage; the counts are of Jo, a given name of its own (US SSA births summed over both sexes, F 179,057, M 1,854; Wikidata a lower bound) and a Korean surname, so a period-marked Jo. opening the given part is a given name on every reading (#789)" }
+given = { same_as = "josé", note = "José written short, in Philippine usage; no source counts the abbreviation apart from Jo, a given name of its own and a Korean surname, whose given reading and counts are en.toml's, so a period-marked Jo. opening the given part is a given name on every reading (#789)" }
 
 [[word]]
 text = "ma"

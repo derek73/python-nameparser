@@ -685,9 +685,14 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     """The words `word` is a listed spelling of in `group`, the word
     itself included, read from the word as written and from it folded,
     each member beside its folded form: `Jose` among given names reaches
-    `jo`'s full form `josé` folded, so `Jo` and `Jose` meet."""
-    heads = (lexicon._headwords(word, group)
-             | lexicon._headwords(_fold(word), group))
+    `jo`'s full form `josé` folded, so `Jo.` and `Jose` meet. A word that
+    is a name of its own as well reaches its links only written with
+    its trailing period, read here off the word as written since both
+    the normalizing and the fold drop it: `Jo` is the given name Jo
+    alone (decisions/name-matching, 2026-11-08 #1006 follow-up)."""
+    period = word.endswith(".")
+    heads = (lexicon._headwords(word, group, period=period)
+             | lexicon._headwords(_fold(word), group, period=period))
     return heads | {_fold(h) for h in heads}
 
 

@@ -167,6 +167,9 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         # once into each Lexicon's own frozen `_same_as`: the same live
         # hazard, recorded beside the other in AGENTS.md
         "_compiled.SAME_AS",
+        # group -> the words of SAME_AS that are a name of their own too,
+        # read once into each Lexicon's `_same_as_named` beside it
+        "_compiled.SAME_AS_NAMED",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent

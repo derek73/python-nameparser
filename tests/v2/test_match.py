@@ -20,6 +20,7 @@ from nameparser._match import (
     RoleMatch,
     Side,
     _fold,
+    _spelling_keys,
 )
 
 #: Every name string the check's tests compare; the symmetry test runs
@@ -54,7 +55,9 @@ NAMES: tuple[str, ...] = (
     "Ma. Cruz", "MARIA CRUZ", "Ma, Jack", "María, Jack", "Ma Cruz",
     "María Cruz", "Junior Smith", "Jr Smith", "Sr. John Smith",
     "Señor John Smith", "Senhor John Smith", "John J.-P. Smith", "J.-P. Smith",
-    "Anne J.-P. Smith",
+    "Anne J.-P. Smith", "Jo. Garcia", "Joanne Garcia", "Ma Santos",
+    "María Santos", "Jas Singh", "Jas. Singh", "James Singh", "Wm Smith",
+    "WM SMITH", "WILLIAM SMITH", "Ana Mà. Cruz", "Ana María Cruz",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -465,7 +468,8 @@ def test_consistent_names_always_share_a_key(
     2026-11-08 after the listed-spelling names ("Jo Garcia" through
     "Senhor John Smith") joined NAMES with the per-role spelling sets,
     every one unmoved since "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud"
-    joined it: with only the joined form of a hyphenated word keyed, the
+    joined it, and taken over NAMES as it stood then, before the period
+    rule's names ("Jo. Garcia" through "Ana María Cruz") were appended: with only the joined form of a hyphenated word keyed, the
     default, given-one-side, hyphenated-part, other-reading and
     across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
     family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
@@ -490,7 +494,8 @@ def test_consistent_names_always_share_a_key(
     removed: the whole hyphenated word's spellings
     (test_a_hyphenated_listed_spelling_shares_a_key, under a caller's
     hyphenated full form) and the spellings read from the folded word
-    (test_a_listed_spelling_holds_whatever_the_accents, "Mà Cruz").
+    (test_a_listed_spelling_holds_whatever_the_accents, "Ana Mà. Cruz",
+    re-taken 2026-11-08 with the period rule).
     Other-reading names the setting with `other_readings=True`, which
     was the `other-reading` member of accept when these were taken."""
     matching = Matching(Parser(), *setting)
@@ -521,13 +526,14 @@ def test_a_hyphen_half_that_is_a_particle_is_not_a_family_word() -> None:
 
 
 @pytest.mark.parametrize("a, b", [
-    ("Jo Garcia", "José Garcia"), ("Jo Garcia", "Jose Garcia"),
+    ("Jo. Garcia", "José Garcia"), ("Jo. Garcia", "Jose Garcia"),
     ("Ma. Santos", "Maria Santos"), ("Ma. Cruz", "MARIA CRUZ"),
-    ("Ma Cruz", "María Cruz"), ("Maria Mà", "Maria Ma"),
+    ("Ma. Cruz", "María Cruz"), ("Maria Mà", "Maria Ma"),
 ])
 def test_listed_and_folded_spellings_share_a_key(a: str, b: str) -> None:
     # a listed spelling is read with the accent fold on both sides: `jo`
-    # is listed as `josé`, so `Jose` is one of its spellings too
+    # is listed as `josé`, so `Jose` is one of its spellings too (written
+    # `Jo.`, `jo` being a given name of its own as well)
     assert m.check(a, b).consistent
     assert m.keys(a) & m.keys(b)
 
@@ -888,16 +894,65 @@ def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:
 # -- listed spellings, read per role (decisions/name-matching, 2026-11-08)
 
 
-@pytest.mark.parametrize("a, b", [
-    ("Jo Garcia", "Jose Garcia"), ("Ma. Santos", "Maria Santos"),
-    ("Ma. Cruz", "MARIA CRUZ"), ("Ma Cruz", "María Cruz"),
-    # the written word's accent folded away before it is looked up
-    ("Mà Cruz", "María Cruz"),
+@pytest.mark.parametrize("a, b, field", [
+    ("Jo. Garcia", "Jose Garcia", "given"),
+    ("Ma. Santos", "Maria Santos", "given"),
+    ("Ma. Cruz", "MARIA CRUZ", "given"), ("Ma. Cruz", "María Cruz", "given"),
+    # the written word's accent folded away before it is looked up, in
+    # the middle name, where a period-marked word is no title by shape
+    ("Ana Mà. Cruz", "Ana María Cruz", "middle"),
 ])
-def test_a_listed_spelling_holds_whatever_the_accents(a: str, b: str) -> None:
+def test_a_listed_spelling_holds_whatever_the_accents(
+        a: str, b: str, field: str) -> None:
     r = m.check(a, b)
-    assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
+    assert r.consistent and r[field].outcome is Outcome.LISTED_SPELLING
     assert m.keys(a) & m.keys(b)
+
+
+# -- a listed spelling of a name of its own needs its period
+# (decisions/name-matching, 2026-11-08 #1006 follow-up)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Jo. Garcia", "José Garcia"), ("Ma. Santos", "María Santos"),
+    ("Jas. Singh", "James Singh"),
+    # a spelling of a word that is no name of its own needs no period
+    ("Wm Smith", "William Smith"), ("Wm. Smith", "William Smith"),
+    ("WM SMITH", "WILLIAM SMITH"),
+])
+def test_a_listed_spelling_with_its_period_or_of_no_name_of_its_own(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent and r["given"].outcome is Outcome.LISTED_SPELLING
+    assert m.keys(a) & m.keys(b)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Jo Garcia", "José Garcia"), ("Jo Garcia", "Jose Garcia"),
+    ("Jo Garcia", "Joanne Garcia"), ("Ma Santos", "María Santos"),
+    ("Jas Singh", "James Singh"),
+])
+def test_a_name_of_its_own_written_bare_is_itself(a: str, b: str) -> None:
+    # `jo`, `ma` and `jas` are given names of their own as well as
+    # spellings of José, María and James, so written without the period
+    # each is the name, and conflicts with the long form
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert not r.consistent and r["given"].outcome is Outcome.CONFLICT
+
+
+def test_a_bare_name_of_its_own_is_not_keyed_by_its_long_form() -> None:
+    # the keys are cut from the one spelling set the check reads, so the
+    # period is read there too: `Jo.` reaches José's folded form, `Jo`
+    # only itself (a key holds a given name's initial, which `Jo` and
+    # `José` share, so the set is what shows it)
+    lexicon = Lexicon.default()
+    assert _spelling_keys("Jo.", "given", lexicon) == {"jo", "jose"}
+    assert _spelling_keys("Jo", "given", lexicon) == {"jo"}
+    assert _spelling_keys("MA", "given", lexicon) == {"ma"}
+    assert _spelling_keys("Jas.", "given", lexicon) == {"jas", "james"}
+    assert _spelling_keys("WM", "given", lexicon) == {"wm", "william"}
 
 
 @pytest.mark.parametrize("a, b", [("Ma, Jack", "María, Jack"),
