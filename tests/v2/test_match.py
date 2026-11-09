@@ -651,3 +651,18 @@ def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
     assert "clinton;b" not in m.keys('William "Bill" Clinton')
     assert _across.keys("Jane Doe (née Smith)") == {"doe;j", "smith;j"}
     assert m.keys("Jane Doe (née Smith)") == {"doe;j"}
+
+
+def test_a_cross_role_row_says_the_side_that_held_both_roles_carried_more() -> None:
+    # the left name holds the given initial and the middle name used
+    # as the given name, so it carries more; the less specific name is
+    # the one that carries more of no role
+    r = _across.check("J. Edgar Hoover", "Edgar Hoover")
+    assert role(r, Role.GIVEN).more is Side.LEFT
+    assert role(r, Role.MIDDLE).more is Side.NEITHER
+    assert all(x.more is not Side.LEFT
+               for x in _across.check("Edgar Hoover", "J. Edgar Hoover").roles)
+    r = _across.check("Jane Doe (née Smith)", "Jane Smith")
+    assert role(r, Role.FAMILY).more is Side.LEFT
+    r = _across.check('William "Bill" Clinton', "Bill Clinton")
+    assert role(r, Role.GIVEN).more is Side.LEFT

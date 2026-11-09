@@ -75,7 +75,9 @@ _MIRROR = {Side.LEFT: Side.RIGHT, Side.RIGHT: Side.LEFT, Side.NEITHER: Side.NEIT
 @dataclass(frozen=True, slots=True)
 class RoleMatch:
     """One role's comparison: the outcome, both sides' text, and which
-    side carried more."""
+    side carried more. On a row read `across-roles`, the side carrying
+    more is the one whose name held both the role and the cross role
+    the match used (`J. Edgar Hoover` / `Edgar Hoover`: left)."""
 
     role: Role
     outcome: Outcome
@@ -307,8 +309,13 @@ class Matching:
                 if found is None:
                     continue
                 cross, side, index = found
+                # the side carrying more is the one whose name held both
+                # the role and the cross role the match used
+                holder = Side.RIGHT if cross.left_role is r.role else Side.LEFT
+                held = r.left if holder is Side.LEFT else r.right
                 roles[i] = dataclasses.replace(
-                    r, outcome=Outcome.ACROSS_ROLES, more=_more(r.left, r.right))
+                    r, outcome=Outcome.ACROSS_ROLES,
+                    more=holder if held else Side.NEITHER)
                 across.append(cross)
                 if side is not None:
                     # the middle word matched as the given name is

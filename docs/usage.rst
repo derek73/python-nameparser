@@ -1474,6 +1474,18 @@ has it carrying more:
     >>> less_specific(matcher.check("John A. Smith", "J. Smith"))
     False
 
+A role read ``across-roles`` has the side carrying more that held both
+the role and the role it was matched against, so ``J. Edgar Hoover``,
+which holds a given initial beside the middle name the other uses as
+its given name, is the more specific of the two:
+
+.. doctest::
+
+    >>> less_specific(with_across.check("Edgar Hoover", "J. Edgar Hoover"))
+    True
+    >>> less_specific(with_across.check("J. Edgar Hoover", "Edgar Hoover"))
+    False
+
 Link each record to its most specific consistent name rather than to
 every name it is consistent with.
 
