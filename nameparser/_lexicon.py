@@ -643,13 +643,20 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
     return out
 
 
+#: A group -> the words of it with a listed spelling that are a name of
+#: their own too (`SAME_AS_NAMED`).
+SameAsNamed = Mapping[str, frozenset[str]]
+
+
 #: What a lexicon's readings compile to: the vocabulary sets by
-#: `_LexiconSets` name, and the listed-spelling map.
-_Compiled = tuple[Mapping[str, frozenset[str]], SameAs]
+#: `_LexiconSets` name, the listed-spelling map, and the words in it
+#: that are a name of their own as well.
+_Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed]
 
 
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
-    return MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled)
+    return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
+            MappingProxyType(dict(compiled["SAME_AS_NAMED"])))
 
 
 @functools.cache
@@ -666,7 +673,8 @@ _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
         "particles_ambiguous": frozenset()})
 #: What the empty base compiles to: no sets and no listed spellings.
 _NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
-    {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}))
+    {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}),
+    MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}))
 
 
 # -- readings ------------------------------------------------------------
@@ -1022,7 +1030,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
            strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
-                                  SameAs]:
+                                  SameAs, SameAsNamed]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1071,8 +1079,8 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
         return _NOTHING_COMPILED
-    _, sets, same_as = _built(base, edits, chosen, strict)
-    return sets, same_as
+    _, sets, same_as, named = _built(base, edits, chosen, strict)
+    return sets, same_as, named
 
 
 @functools.lru_cache(maxsize=32)
@@ -1570,6 +1578,11 @@ class Lexicon:
     # of its kind; built at construction, never pickled, like `_cap_map`
     _same_as: SameAs = field(
         init=False, repr=False, compare=False, hash=False)
+    # group -> the words with a link there that are a name of their own
+    # too (`jo` among given names), whose links need the period
+    # (`_headwords`); built like `_same_as`
+    _same_as_named: SameAsNamed = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -1613,9 +1626,11 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled, same_as = _compiled_for(self._base, canon, chosen, _strict)
+        compiled, same_as, named = _compiled_for(
+            self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
         put("_same_as", same_as)
+        put("_same_as_named", named)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -1925,7 +1940,11 @@ class Lexicon:
             middle name and nickname, a ``family`` reading's in the
             family and maiden names, a title's and a suffix's in theirs),
             and which on a ``given`` reading also marks a given name
-            written short); a property
+            written short; written on a word, it applies to the word's
+            given readings, so the word keeps no plain given reading
+            and its link counts written bare, where a word the
+            vocabulary also holds as a name of its own counts only
+            written with its period); a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
@@ -1999,7 +2018,8 @@ class Lexicon:
     def _pool(self) -> Pool:
         return self._files.pool()
 
-    def _headwords(self, word: str, group: str) -> frozenset[str]:
+    def _headwords(self, word: str, group: str, *,
+                   period: bool = True) -> frozenset[str]:
         """Every word reachable from `word`, normalized, through the
         `same_as` links of `group` (`given`, `family`, `title` or
         `suffix`, the group of the readings' kinds), the word itself
@@ -2010,12 +2030,19 @@ class Lexicon:
         with no listed spelling is itself alone. A loop, which a
         caller's edits can write where the build refuses it in the
         files, yields every word in it. The name match reads two words
-        as listed spellings of each other where their sets meet."""
+        as listed spellings of each other where their sets meet. `period`
+        says whether the word was written with its trailing full stop,
+        which normalizing drops: a word that is a name of its own in
+        `group` as well as a spelling (`jo`, José written short and the
+        given name Jo) reaches its links only where it was, and is itself
+        alone where it was not."""
         links = self._same_as.get(group)
         if links is None:
             raise ValueError(f"unknown same_as group {group!r}; the groups "
                              f"are {', '.join(sorted(_SAME_AS_GROUPS))}")
         start = _normalize(word)
+        if not period and start in self._same_as_named[group]:
+            return frozenset({start})
         seen = {start}
         todo = [start]
         while todo:

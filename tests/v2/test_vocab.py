@@ -1200,7 +1200,22 @@ _MARKER_PROBES = {
     "possibly a name, a word": ("generation", "{}", "{}"),
     "possibly given": ("preposition", "{ may_be_given = false }", "{}"),
     "possibly a name, a title": ("office", "{}", "{}"),
+    # the clashing reading is a given name written short, so the plain
+    # given reading stands in a file of its own (a file holds one
+    # reading of a kind)
+    "a name of its own, a spelling": (
+        "given", '{ same_as = "zzr", note = "x" }', None),
 }
+
+
+def _holds(value: object, word: str) -> bool:
+    """`word` is in a compiled constant: a set, or a mapping keyed by
+    word, or one keyed by group whose groups are sets or mappings."""
+    assert isinstance(value, (frozenset, dict)), value
+    if isinstance(value, dict) and all(
+            isinstance(v, (frozenset, dict)) for v in value.values()):
+        return any(word in v for v in value.values())
+    return word in value
 
 
 def test_the_readme_states_each_derived_markers_effect() -> None:
@@ -1208,9 +1223,14 @@ def test_the_readme_states_each_derived_markers_effect() -> None:
     assert set(rows) == set(_MARKER_PROBES)
     for marker, (kind, without, with_) in _MARKER_PROBES.items():
         files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {without}')}
-        named = {"en.toml": _w(f'[[word]]\ntext = "zzq"\ngiven = {{ note = "x" }}\n{kind} = {with_}')}
+        if with_ is None:
+            named = {**files, "fil.toml": _w(
+                '[[word]]\ntext = "zzq"\ngiven = { note = "x" }')}
+        else:
+            named = {"en.toml": _w(f'[[word]]\ntext = "zzq"\ngiven = {{ note = "x" }}\n{kind} = {with_}')}
         a, b = build.compile_files(files), build.compile_files(named)
-        moved = {n for n in build.CONSTANTS if ("zzq" in a[n]) != ("zzq" in b[n])}
+        moved = {n for n in build.CONSTANTS
+                 if _holds(a[n], "zzq") != _holds(b[n], "zzq")}
         assert moved, marker
         assert set(_code(rows[marker])) & set(build.CONSTANTS) == moved, marker
 
@@ -1220,6 +1240,24 @@ def test_the_readme_names_every_compiled_constant() -> None:
     named = {name for heading in ("## Kinds", "## Properties", "### Derived markers")
              for row in _readme_table(heading) for cell in row[1:] for name in _code(cell)}
     assert set(build.CONSTANTS) <= named
+
+
+def test_only_a_name_written_short_beside_a_name_marks_a_spelling() -> None:
+    # SAME_AS_NAMED: a `given` reading's `same_as` beside a `given`
+    # reading with none, in any file; a bound given name's `same_as`, a
+    # spelling written without a period (ar `ابو` of `أبو`), beside a
+    # given reading marks nothing, nor does a short form alone
+    short = '[[word]]\ntext = "zzq"\ngiven = { same_as = "zzr", note = "x" }'
+    own = '[[word]]\ntext = "zzq"\ngiven = { note = "x" }'
+    bound = ('[[word]]\ntext = "zzr"\nbound_given = {}\n'
+             'given = { note = "x" }\n\n[[word]]\ntext = "zzq"\n'
+             'bound_given = { same_as = "zzr" }\ngiven = { note = "x" }')
+    assert _compile({"en.toml": _w(short), "fil.toml": _w(own)})[
+        "SAME_AS_NAMED"]["given"] == {"zzq"}
+    assert not _compile({"en.toml": _w(short)})["SAME_AS_NAMED"]["given"]
+    c = _compile({"ar.toml": _w(bound)})
+    assert c["SAME_AS"]["given"]["zzq"] == ("zzr",)
+    assert not c["SAME_AS_NAMED"]["given"]
 
 
 def test_the_readme_lists_the_name_reading_keys() -> None:
