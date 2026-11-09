@@ -822,8 +822,8 @@ def test_name_word_count_counts_names_not_tokens() -> None:
     assert name_word_count(["Smith", "Jr"], lex, pol) == 1
 
 
-# Stored form: space-joined, per-word normalized -- what _normset
-# writes for this field. Built as bare frozensets rather than through a
+# Stored form: space-joined, per-word normalized -- the key
+# add(..., kind="birth_marker") folds a phrase to (_lexicon._title_key). Built as bare frozensets rather than through a
 # Lexicon so these exercise the predicate and nothing else.
 _WORD_ONLY = frozenset({"née"})
 _PHRASE = frozenset({"z domu"})

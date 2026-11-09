@@ -931,9 +931,9 @@ def test_the_default_kind_sets_are_the_shipped_index_s() -> None:
 
 # -- the 2.x spellings, refused ----------------------
 
-#: (name, 2.x spelling, 3.0 spelling): the recipes the RFC's table
-#: carries (docs/design/vocabulary-model-rfc.md, item 1), each parsing
-#: every field alike under both.
+#: (name, 3.0 spelling): the recipes the RFC's table carries
+#: (docs/design/vocabulary-model-rfc.md, item 1), each moving the parse
+#: it names.
 _RECIPES = [
     ("Dean Smith", lambda L: L.remove("dean", kind="given")),
     ("John Smith LEED AP", lambda L: L.add("leed", "ap", kind="credential")),
@@ -1493,7 +1493,9 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
 #: The refusal of a 2.x Lexicon state, its remedy matched in full.
 _REFUSED_2X = re.escape(
     "this Lexicon pickle was written by nameparser 2.x, which 3.1 no "
-    "longer loads: load it under 3.0 and pickle the loaded object again")
+    "longer loads: if 2.7 or 2.8 wrote it, load it under 3.0 and pickle "
+    "the loaded object again; no 3.x release loads an older one, so build "
+    "the Lexicon again")
 
 
 def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
@@ -1528,9 +1530,9 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_are_refused() -> None:
     Parser(lexicon=Lexicon.default().add("leed", kind="credential")),
     locales.RU,
 ], ids=["lexicon", "parser", "locale"])
-def test_the_2x_refusals_remedy_runs(obj: object) -> None:
-    # what the message asks for: an object pickled under 3.0 loads,
-    # equal and with no warning
+def test_a_3x_pickle_is_not_mistaken_for_a_2x_one(obj: object) -> None:
+    # the refusal's test reads no field a 3.x state holds: an object
+    # pickled by this release loads, equal and with no warning
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         again = pickle.loads(pickle.dumps(obj))  # noqa: S301
@@ -1616,6 +1618,18 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
         assert got == expected
     else:
         assert set(got) == set(expected)
+
+
+@needs_docs
+def test_migrate_s_table_has_a_row_for_every_refused_field() -> None:
+    # a 2.x set field's refusal points at this table and names no call,
+    # so the row is the whole remedy: a field without one is refused
+    # with nowhere to go (#1003)
+    text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
+    section = text.split("Lexicon fields → readings\n", 1)[1]
+    section = section.split("\nA ``Lexicon`` pickled by 2.x", 1)[0]
+    rows = set(re.findall(r"^   \* - ``([a-z_]+)``$", section, re.M))
+    assert set(_SET_FIELDS) <= rows, set(_SET_FIELDS) - rows
 
 
 @needs_docs

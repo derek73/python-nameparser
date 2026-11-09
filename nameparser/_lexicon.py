@@ -42,29 +42,6 @@ _VOCAB_FIELDS = (
 #: importing `_types`, so tests/v2/test_lexicon.py holds the two equal.
 _ADDED_IN = "nameparser.added_in"
 
-#: The fields whose entries may be PHRASES: stored space-joined and
-#: folded per word (_title_key), and exempt from the dead-entry warning
-#: below. Every other field is matched one word at a time, where a
-#: multi-word entry can never match.
-#:
-#: The two are not the same mechanism, and the difference is why the
-#: exemption is a list rather than a rule. A given_name_titles run is
-#: identified per word FIRST -- 'lt' and 'col' are each title
-#: vocabulary -- and only then looked up, as the whole run's key or as
-#: its LAST word's (_run_addresses_by_given, #489). The whole-run arm
-#: is the one a phrase entry is matched by; the last-word arm is a
-#: single word and cannot reach a phrase, so storage stays what it was
-#: (the two are asked together, not in precedence). A maiden marker
-#: phrase has no such per-word foothold: 'z' and 'domu' are not markers
-#: individually, and adding them separately (which this warning used to
-#: advise) reads 'Maria Kowalska z domu Nowak' as maiden 'domu Nowak'
-#: and strips 'Anna z Nowak' of its family name. So markers are matched
-#: by a genuine multi-token lookahead instead --
-#: _pipeline._vocab.maiden_marker_run, longest first -- and only the
-#: STORAGE rule is shared with titles.
-_PHRASE_FIELDS = ("given_name_titles", "maiden_markers", "title_phrases")
-
-
 #: Every character the parser reads as a full stop at a WORD'S EDGE
 #: (#322/#323): the ASCII period, the fullwidth FULL STOP U+FF0E, the
 #: IDEOGRAPHIC FULL STOP U+3002 and its halfwidth form U+FF61. One
@@ -197,8 +174,8 @@ def _title_key(words: Iterable[str]) -> str:
 
     Defined once because it is built at match time
     (_run_addresses_by_given, which is how post_rules' H1 and group's
-    P5 licence both reach it) and at construction (_normset's
-    given_name_titles), and a divergence between them fails silently:
+    P5 licence both reach it) and at construction (_make_edit's fold
+    of a phrase reading), and a divergence between them fails silently:
     the entry simply stops matching."""
     return " ".join(_fold_words(words))
 
@@ -314,15 +291,7 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             raise TypeError(
                 f"Lexicon.{field_name} entries must be strings, got {w!r}"
             )
-        # A phrase field's entries are matched as a multi-word run, so
-        # they fold per word: stored as the same key the match site
-        # builds, or 'lt. col' (and 'z. domu') would be kept verbatim
-        # and never match anything -- a silent no-op on the config
-        # surface. Every other field holds single words, where the two
-        # folds agree. See _PHRASE_FIELDS for how the two differ once
-        # stored.
-        n = _title_key(w.split()) if field_name in _PHRASE_FIELDS \
-            else _normalize(w)
+        n = _normalize(w)
         # "." or "" is a data bug (stray split artifact, empty CSV
         # cell); dropping it silently would also let a data-module typo
         # vanish instead of failing CI.
@@ -331,16 +300,13 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
                 f"Lexicon.{field_name} entry {w!r} normalizes to empty "
                 f"(lowercase + strip full stops/whitespace leaves nothing)"
             )
-        # Every field outside _PHRASE_FIELDS is matched one word at a
-        # time, so a multi-word entry can never match -- the library
-        # itself shipped eight such dead entries for years (repaired
-        # 2026-07-26). Warn, never raise: an inert entry produces
-        # nothing, and the given_name_titles precedent says a raise
-        # here costs working configurations (see __post_init__).
-        if (field_name not in _PHRASE_FIELDS
-                # interior whitespace test; split() covers all Unicode
-                # whitespace
-                and n != "".join(n.split())):
+        # A list is matched one word at a time, so a multi-word entry
+        # can never match -- the library itself shipped eight such dead
+        # entries for years (repaired 2026-07-26). Warn, never raise: an
+        # inert entry produces nothing, and the given_name_titles
+        # precedent says a raise here costs working configurations (see
+        # __post_init__). split() covers all Unicode whitespace.
+        if n != "".join(n.split()):
             _warn_at_caller(
                 f"Lexicon.{field_name} entries are matched one word at "
                 f"a time; multi-word entry {w!r} can never match. "
@@ -1676,8 +1642,9 @@ class Lexicon:
         if "titles" in state:
             raise ValueError(
                 "this Lexicon pickle was written by nameparser 2.x, which "
-                "3.1 no longer loads: load it under 3.0 and pickle the "
-                "loaded object again")
+                "3.1 no longer loads: if 2.7 or 2.8 wrote it, load it under "
+                "3.0 and pickle the loaded object again; no 3.x release "
+                "loads an older one, so build the Lexicon again")
         fields = [f for f in dataclasses.fields(Lexicon) if f.init]
         expected = {f.name for f in fields}
         added = {f.name: f.default for f in fields
@@ -1854,8 +1821,8 @@ class Lexicon:
 
     # `kind` is required, and a type checker reads it so: the runtime
     # default exists only to catch a 2.x call, which names no kind, and
-    # refuse it naming the 3.0 spelling rather than with Python's own
-    # missing-argument error
+    # refuse it pointing at docs/migrate.rst's table of kinds rather than
+    # with Python's own missing-argument error
     if TYPE_CHECKING:
         def add(self, *words: str, kind: str,
                 **properties: object) -> Lexicon: ...
@@ -1864,8 +1831,8 @@ class Lexicon:
                 **properties: object) -> Lexicon:
             """This lexicon with a reading of `kind` added to each word.
             `kind` is required; the signature's default exists only so
-            that a 2.x call, which names no kind, is refused naming the
-            3.0 spelling. It is a vocabulary kind as the language files
+            that a 2.x call, which names no kind, is refused pointing at
+            docs/migrate.rst's table of kinds. It is a vocabulary kind as the language files
             write it, a key
             of ``nameparser._reading_index.CATEGORY`` (``"title"``,
             ``"office"``, ``"credential"``, ``"generation"``,

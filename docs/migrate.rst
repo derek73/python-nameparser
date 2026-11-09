@@ -465,8 +465,10 @@ Each 2.x spelling raises where it is written:
 
 A ``Lexicon`` pickled by 2.x holds the compiled sets, and 3.1 refuses
 it, as it refuses a ``Parser`` or a locale pack holding one, with a
-``ValueError``: load it under 3.0, which translates it onto readings,
-and pickle the loaded object again (``pickle.dumps(obj)``). The object
+``ValueError``. One written by 2.7 or 2.8 loads under 3.0, which
+translates it onto readings: pickle the loaded object again there
+(``pickle.dumps(obj)``). No 3.x release loads one written by 2.6 or
+earlier, so build that object again. A re-pickled object
 keeps the vocabulary it was first pickled with, not this release's;
 build a new ``Parser()`` for that.
 
