@@ -1226,14 +1226,15 @@ checked:
     {'smith;j': ['John A. Smith', 'J. Smith'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
 
 A family name of several words gets a key for each, because a source
-may cut a surname list short, and a hyphenated one a key for each half
-and for the two joined, save a half that is a particle (``Al-Saud`` keys
-``saud`` and ``alsaud``, never ``al``):
+may cut a surname list short, and a hyphenated one a key for each half,
+for the two joined and for the whole word, save a half that is a
+particle (``Al-Saud`` keys ``saud``, ``alsaud`` and ``al-saud``, never
+``al``):
 
 .. doctest::
 
     >>> sorted(matcher.keys("Mary Smith-Jones"))
-    ['jones;m', 'smith;m', 'smithjones;m']
+    ['jones;m', 'smith-jones;m', 'smith;m', 'smithjones;m']
 
 A key only gathers candidates: ``Jane Smith`` shares ``smith;j`` with
 ``John Smith``, and ``check()`` is what tells them apart. A name with
@@ -1251,7 +1252,9 @@ two :class:`~nameparser.ParsedName` objects, compared as they were
 parsed. It returns a :class:`~nameparser.MatchResult`: ``consistent``,
 and in ``roles`` one :class:`~nameparser.RoleMatch` per field in field
 order, each with its :class:`~nameparser.Outcome`, the text on each
-side, and which :class:`~nameparser.Side` carried more of it:
+side, and which :class:`~nameparser.Side` carried more of it. A row is
+read by its field's name or :class:`~nameparser.Role`
+(``result["family"]``), and ``weakest`` is the weakest row's outcome:
 
 .. doctest::
 
@@ -1267,6 +1270,8 @@ side, and which :class:`~nameparser.Side` carried more of it:
     suffix same '' '' neither
     nickname same '' '' neither
     maiden same '' '' neither
+    >>> smiths["given"].outcome.value, smiths.weakest.value
+    ('initial', 'one-side')
 
 **Consistent means nothing in the two names contradicts the match**,
 under the outcomes accepted. It does not mean the two are the same
@@ -1280,7 +1285,7 @@ consistent. A pair is inconsistent when a role's outcome is
 .. doctest::
 
     >>> johns = matcher.check("John Smith Jr.", "John Smith Sr.")
-    >>> johns.consistent, johns.roles[4].outcome.value
+    >>> johns.consistent, johns["suffix"].outcome.value
     (False, 'conflict')
 
 The check is symmetric: swapping the two names gives the same verdict
@@ -1298,7 +1303,11 @@ names parsed under different policies compare correctly:
 What the default accepts
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The outcomes, strongest first. The default accepts the writing
+The outcomes, in the order ``check()`` ranks them, strongest first.
+``Outcome.strength`` gives that rank as a number, larger for a stronger
+outcome; rank outcomes by it, since ``<`` on an
+:class:`~nameparser.Outcome` compares the names as strings (``folded``
+sorts before ``same``). The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
 conflict until you accept them. ``family-initial``, ``given-one-side``
 and ``hyphenated-part`` are reported in the table either way, so an
@@ -1320,7 +1329,7 @@ shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
    * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
      - ``María García`` / ``MARIA GARCIA``
      - yes
-   * - ``listed-spelling``: spellings the vocabulary lists as one
+   * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word
      - ``Wm. Smith`` / ``William Smith``
      - yes
    * - ``particles-aside``: the family names agree without their particles
@@ -1363,8 +1372,14 @@ shows the names as parsed, and ``Suharto`` / ``Suharto`` reads family
      - ``John Smith`` / ``Jane Smith``
      - never
 
-A middle name is compared word by word, in order, and takes the
-weakest of its words' outcomes. A different generation conflicts
+A listed spelling is read in the role's own kind of word: given names
+for the given name, middle name and nickname, surnames and particles
+for the family and maiden names, titles and suffixes for theirs. So
+``Ma`` (María written short) agrees with ``María`` as a given name and
+conflicts as a surname, ``Ma, Jack`` / ``María, Jack``. It is read
+with accents folded too, so ``Jo Garcia`` / ``Jose Garcia`` agree as
+``Jo`` / ``José`` do. A middle name is compared word by word, in order,
+and takes the weakest of its words' outcomes. A different generation conflicts
 (``Jr.`` / ``Sr.``), and a generation on one side only reads
 ``generation-one-side`` whatever credentials either side carries
 (``John Smith Jr.`` / ``John Smith, PhD``); a credential or title
@@ -1417,7 +1432,7 @@ a given name, has the family reading as its alternative:
 
     >>> with_other_reading = Parser().matching(accept=matcher.accept | {"other-reading"})
     >>> lone = with_other_reading.check("Suharto", "Suharto")
-    >>> lone.consistent, lone.roles[3].outcome.value
+    >>> lone.consistent, lone["family"].outcome.value
     (True, 'same')
     >>> lone.left_alternative.kind.value, lone.left_alternative.alternative.role.value
     ('given-or-family', 'family')
@@ -1437,7 +1452,7 @@ an initial, and records each match it made in ``across``:
 
     >>> with_across = Parser().matching(accept=matcher.accept | {"across-roles"})
     >>> hoover = with_across.check("J. Edgar Hoover", "Edgar Hoover")
-    >>> hoover.consistent, hoover.roles[1].outcome.value
+    >>> hoover.consistent, hoover["given"].outcome.value
     (True, 'across-roles')
     >>> hoover.across[0].left_role.value, hoover.across[0].right_role.value, hoover.across[0].left
     ('middle', 'given', 'Edgar')

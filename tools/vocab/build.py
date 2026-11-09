@@ -62,7 +62,9 @@ at fault:
    its word's letters (#459), at most one `cased` per word; on a
    `given` reading `same_as` is the full given name the word
    abbreviates, a name rather than a word of the vocabulary, written
-   normalized, and a `family` reading takes none;
+   normalized, and a `family` reading takes none. Every `same_as`
+   compiles into SAME_AS in the group of its reading's kind, and a
+   `given` reading's also into GIVEN_NAME_ABBREVIATIONS;
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has a given reading;
@@ -258,8 +260,11 @@ DERIVED = {
 #: compiler's, in nameparser/_reading_index.py.
 GATED_WORDS = _ri.GATED_WORDS
 #: Descriptive properties: recorded, validated, compiled to nothing --
-#: save `same_as` on a `given` reading, which is a NAME_KEYS entry, not
-#: this set's, and compiles the word into GIVEN_NAME_ABBREVIATIONS.
+#: save `same_as`, which compiles into SAME_AS in the group of its
+#: reading's kind (_reading_index.same_as_group), the map the name match
+#: reads listed spellings from, and on a `given` reading, where it is a
+#: NAME_KEYS entry rather than this set's, also compiles the word into
+#: GIVEN_NAME_ABBREVIATIONS.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
 #: What a name reading (`given`, `family`) may carry.
@@ -267,7 +272,8 @@ COUNT_SOURCES = frozenset({"us_census_2010", "us_ssa", "wikidata"})
 #: `same_as` on a `given` reading is the full name the word abbreviates
 #: (`chas` -> charles), which compiles it into GIVEN_NAME_ABBREVIATIONS:
 #: a period-marked abbreviation opening the given part is that given
-#: name, not rules/H2's title (#789)
+#: name, not rules/H2's title (#789); and into SAME_AS's `given` group,
+#: where the name match reads the two as listed spellings
 NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})

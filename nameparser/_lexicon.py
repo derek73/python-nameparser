@@ -1935,8 +1935,12 @@ class Lexicon:
             ``given`` reading, ``shared=True`` on a name reading, and
             ``same_as=...`` on a reading of any kind: the word this one
             is a spelling of, which name matching reads as a
-            ``listed-spelling`` and keys alike, and which on a ``given``
-            reading also marks a given name written short); a property
+            ``listed-spelling`` and keys alike in the roles that read
+            the kind's words (a ``given`` reading's in the given name,
+            middle name and nickname, a ``family`` reading's in the
+            family and maiden names, a title's and a suffix's in theirs),
+            and which on a ``given`` reading also marks a given name
+            written short); a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no
