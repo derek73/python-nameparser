@@ -368,19 +368,22 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     """The guarantee, over every ordered pair of NAMES, under the default,
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
-    accepts. Negative controls: with the hyphen halves removed from
-    `keys`, the default fails on ("Ann Smith-Jones", "Ann Smith"); with
-    the family-initial key removed, family-initial fails on
-    ("Cristiane S", "Cristiane Stallbaum"); with the bare family keys
-    removed, given-one-side fails on ("John A. Smith", "Mr. Smith"); with
-    the alternative readings' keys removed, other-reading fails on
-    ("Mr. Smith", "Della Smith"); with the middle words' initials removed,
-    across-roles fails on ("Wm. Smith", "John Wm. Smith"), and with the
-    nickname's on ('William "Bill" Clinton', "Bill Clinton"), the
-    all-opt-ins setting passing both through given-one-side's bare
+    accepts. Negative controls, each the first pair to fail, re-taken
+    2026-11-08 after "John Smith, PhD" joined NAMES: with only the
+    joined form of a hyphenated word keyed, the default, given-one-side,
+    hyphenated-part, other-reading and across-roles fail on
+    ("Ann Smith-Jones", "Ann Smith"); with the family-initial key
+    removed, family-initial fails on ("J. Smith", "Jane S") and
+    all-opt-ins on ("John A. Smith", "Mr. S"); with the bare family keys
+    removed, given-one-side and all-opt-ins fail on ("John A. Smith",
+    "Mr. Smith"); with the alternative readings' keys removed,
+    other-reading fails on ("Mr. Smith", "Della Smith") and all-opt-ins
+    on ("Cristiane S", "Suharto"); with the middle words' initials
+    removed, across-roles fails on ("Wm. Smith", "John Wm. Smith"), and
+    with the nickname's on ('William "Bill" Clinton', "Bill Clinton"),
+    the all-opt-ins setting passing both through given-one-side's bare
     family keys; with the maiden name's words removed, across-roles and
-    all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)"). Each
-    is the first pair to fail, measured 2026-11-08;
+    all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)").
     hyphenated-part adds no key, its halves sharing the given initial."""
     matching = Matching(Parser(), accept)
     for a, b in itertools.product(PARSED, repeat=2):
