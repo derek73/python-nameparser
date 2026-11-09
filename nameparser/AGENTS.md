@@ -98,7 +98,7 @@ An apostrophe inside a word is an elision dividing a prefix from a name (`O'Brie
 
 ### What is deliberately not covered
 
-Not covered, deliberately: the marks only some scripts write (Indic vowel signs, Arabic and Hebrew points), declined in decisions/nfd-shapes because widening the class would move readings nobody had measured; rules/H2's Accepted clause records the one consequence it names, that a period-marked abbreviation in Bengali or Devanagari never reads as a title by shape. That consequence was a property of the spellings tested, not of the scripts: a word written with no vowel sign is an unbroken run of letters, and the Latin initial spelled out that way (`एम.` for M., `এম.`, `ਐਮ.`) read as a title until #1191 made the veto a test of the script (`_vocab._ABUGIDA`). A claim that a mark keeps a script out of a shape is tested on a word of that script written without the mark.
+Not covered, deliberately: the marks only some scripts write (Indic vowel signs, Arabic and Hebrew points), declined in decisions/nfd-shapes because widening the class would move readings nobody had measured; rules/H2's Accepted clause records the one consequence it names, that a period-marked abbreviation in Bengali or Devanagari never reads as a title by shape (since #1191 an Except of H2 for the Brahmic scripts of India and Sri Lanka). That consequence was a property of the spellings tested, not of the scripts: a word written with no vowel sign is an unbroken run of letters, and the Latin initial spelled out that way (`एम.` for M., `এম.`, `ਐਮ.`) read as a title until #1191 made the veto a test of the script (`_vocab._ABUGIDA`). A claim that a mark keeps a script out of a shape is tested on a word of that script written without the mark.
 
 ### The guards
 

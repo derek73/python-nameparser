@@ -206,10 +206,9 @@ _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
-# rules/H2: "an abbreviation in a script whose letters carry combining
-# vowel signs (Bengali, Devanagari and the other Brahmic scripts of
-# India and Sri Lanka) never reads as a title by shape" -- the Unicode
-# blocks Devanagari through Sinhala, U+0900 to U+0DFF. A vowel sign
+# rules/H2: "A word in a Brahmic script of India or Sri Lanka" "never
+# reads as a title by shape, even where it is a run of letters" -- the
+# Unicode blocks Devanagari through Sinhala, U+0900 to U+0DFF. A vowel sign
 # already breaks `_LETTER`'s run, but a spelled initial written with
 # none (एम. for M., এম., ਐਮ.) is a run of two letters, and the shape
 # read it as a title; these scripts write initials, so the veto is the

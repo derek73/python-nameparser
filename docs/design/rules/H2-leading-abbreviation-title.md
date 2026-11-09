@@ -30,6 +30,15 @@
   "Smith, Esq."               →  suffix="Esq."
   ```
 
+- **A word in a Brahmic script of India or Sri Lanka** — Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada, Malayalam or Sinhala — never reads as a title by shape, even where it is a run of letters: these scripts spell a Latin initial out by its sound, and where the spelling needs no vowel sign, as "एम." spells "M.", it is two letters and an initial, not an abbreviation (#1191). A listed title there keeps its reading, and these scripts still write initials. Thai, Lao and Khmer, abugidas outside these, abbreviate titles with a period, and the shape reads them.
+  ```
+  "एम. एस. वर्मा"               →  given="एम."
+  "এম. আবদুল লতিফ"             →  title=""
+  "ਐਮ. ਸਿੰਘ"                    →  given="ਐਮ."
+  "डा. राम वर्मा"               →  title="डा."  · boundary
+  "ดร. สมชาย ใจดี"              →  title="ดร."  · boundary
+  ```
+
 **Precedence:**
 
 - **A credential opening the part after a family comma** ("Smith, Esq. John"): C13 wins, and the part is postnominal: a suffix word that starts S8's run makes the part its postnominals however it goes on. The shape still reads as a title there an abbreviation that starts no such run — an unlisted one, or a listed suffix word C13 does not open with, such as a word of the ambiguous class.
@@ -56,12 +65,9 @@
 
 **Accepted:**
 
-- The shape is only recognizable as an unbroken run of letters, so an abbreviation in a script whose letters carry combining vowel signs (Bengali, Devanagari and the other Brahmic scripts of India and Sri Lanka) never reads as a title by shape — an unlisted abugida honorific stays a name word, and only vocabulary can recognize it, which is what #343 and #344 supply for Bengali and Devanagari — and neither does a Latin initial spelled out in one of them with no vowel sign to break the run, as "एम." spells "M." (#1191).
+- The shape is only recognizable as an unbroken run of letters, so an abbreviation whose letters carry combining vowel signs never reads as a title by shape — an unlisted abugida honorific stays a name word, and only vocabulary can recognize it — which is what #343 and #344 supply for Bengali and Devanagari.
   ```
   "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
-  "एम. एस. वर्मा"               →  given="एम."
-  "এম. আবদুল লতিফ"             →  title=""
-  "ਐਮ. ਸਿੰਘ"                    →  given="ਐਮ."
   ```
 - The shape reads a Latin convention, and a script with no initials has no period abbreviations either, so a period-marked opening word carrying a Han, kana or hangul character — as the script table classifies them, halfwidth katakana included since #594 — is a name word and never a title by shape (#323; decisions/cjk-full-stops) — the same veto that keeps 씨. from reading as an initial. The Latin reading is unchanged, and W3's example block carries the CJK reading this clause vetoes into. The veto reads the composed spelling, so hangul typed decomposed, as conjoining jamo, is hangul to it too (#665); the second line below is typed that way.
   ```

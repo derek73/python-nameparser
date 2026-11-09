@@ -1094,6 +1094,11 @@ The rule is bounded so it doesn't swallow ordinary names:
   even with a period,
   since those scripts write no abbreviation with one (``"田中. 太郎"``
   has family ``田中.``).
+- **A word in a Brahmic script of India or Sri Lanka** (Devanagari,
+  Bengali, Gurmukhi and the scripts beside them) is a name word even with
+  a period, since those lists spell a Latin initial out by its sound
+  (``"एम. एस. वर्मा"`` has given ``एम.``, middle ``एस.``). A listed title
+  there (``डा.``) is still a title.
 - **Before a family comma** the inference does not run, since that
   slot holds a surname too: ``Xyz. Smith, John`` keeps family
   ``Xyz. Smith``. A listed title is still read there, so
