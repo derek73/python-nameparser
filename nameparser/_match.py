@@ -328,18 +328,20 @@ class Matching:
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
         """Grouping keys: for each word of the folded family base, and
-        each half of a hyphenated one beside its joined form, a half that
-        is a listed particle left out (`Al-Saud` keys `saud` and
-        `alsaud`, never `al`), one key
-        `word;g` where `g` is the first letter of the given name (empty
-        where there is none). A word is keyed by its headword, so two
-        listed spellings of one surname share a key, each word under its
-        headword folded and its folded form's headword, and a given name
-        by the first letter of its text and of its headword. The
-        guarantee rests on this: every family-base word the default check
-        compares is keyed, under both headword orders, so two names it
-        finds consistent share a key and grouping by key loses no match.
-        A name with no family has no key.
+        each half of a hyphenated one beside its joined and its whole
+        form, a half that is a listed particle left out (`Al-Saud` keys
+        `saud`, `alsaud` and `al-saud`, never `al`), one key `word;g`
+        where `g` is the first letter of the given name (empty where
+        there is none). A word is keyed by every word in its spelling
+        set among surnames (itself and the words it is listed as a
+        spelling of, read as written and folded, each folded), and a
+        given name by the first letter of every word in its set among
+        given names. The guarantee rests on this: two words the check
+        reads as listed spellings have sets that meet, so they share a
+        member and with it a key; every family-base word the default
+        check compares is keyed, so two names it finds consistent share
+        a key and grouping by key loses no match. A name with no family
+        has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
         `family-initial` a key `f;g` for the first letter `f` of the

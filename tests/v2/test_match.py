@@ -381,8 +381,10 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
     accepts. Negative controls, each the first pair to fail, re-taken
-    2026-11-08 after "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud" joined
-    NAMES: with only the joined form of a hyphenated word keyed, the
+    2026-11-08 after the listed-spelling names ("Jo Garcia" through
+    "Senhor John Smith") joined NAMES with the per-role spelling sets,
+    every one unmoved since "Ahmed Al", "Ahmed Al-Saud" and "Ahmed Saud"
+    joined it: with only the joined form of a hyphenated word keyed, the
     default, given-one-side, hyphenated-part, other-reading and
     across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
     family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
@@ -402,7 +404,12 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     the all-opt-ins setting passing both through given-one-side's bare
     family keys; with the maiden name's words removed, across-roles and
     all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)").
-    hyphenated-part adds no key, its halves sharing the given initial."""
+    hyphenated-part adds no key, its halves sharing the given initial.
+    Two keys no pair of NAMES needs, each failing a named test when
+    removed: the whole hyphenated word's spellings
+    (test_a_hyphenated_listed_spelling_shares_a_key, under a caller's
+    hyphenated full form) and the spellings read from the folded word
+    (test_a_listed_spelling_holds_whatever_the_accents, "Mà Cruz")."""
     matching = Matching(Parser(), accept)
     for a, b in itertools.product(PARSED, repeat=2):
         if matching.check(a, b).consistent:
@@ -771,6 +778,8 @@ def test_keys_are_recomposed_so_a_hangul_given_letter_is_a_syllable() -> None:
 @pytest.mark.parametrize("a, b", [
     ("Jo Garcia", "Jose Garcia"), ("Ma. Santos", "Maria Santos"),
     ("Ma. Cruz", "MARIA CRUZ"), ("Ma Cruz", "María Cruz"),
+    # the written word's accent folded away before it is looked up
+    ("Mà Cruz", "María Cruz"),
 ])
 def test_a_listed_spelling_holds_whatever_the_accents(a: str, b: str) -> None:
     r = m.check(a, b)
