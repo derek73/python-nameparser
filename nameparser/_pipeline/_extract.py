@@ -138,10 +138,12 @@ def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
     k = i + 1
     while k < len(text):
         ch = text[k]
-        # the narrower question inline: an ASCII character other than
-        # whitespace and the comma never ends the word, so a quoted
-        # nickname pays no frame per letter (_ignorable's own fast path)
-        if ch.isascii() and not ch.isspace() and ch != ",":
+        # the narrower question inline: a letter, or an ASCII character
+        # other than whitespace and the comma, never ends the word (no
+        # letter is _ignorable or a comma), so a quoted nickname pays a
+        # frame only per mark, digit or symbol beyond ASCII
+        if ch.isalpha() or (ch.isascii() and not ch.isspace()
+                            and ch != ","):
             k += 1
             continue
         if ch in COMMA_CHARS or _ignorable(ch, state):

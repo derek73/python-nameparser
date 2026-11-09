@@ -395,8 +395,9 @@ def test_narrow_no_break_space_joins_only_between_mongolian_letters(
                                    FAMILY_FIRST_GIVEN_LAST])
 @pytest.mark.parametrize("text, expect", [
     # #1202's comma shapes, read as the ASCII comma reads them under
-    # every order: a full name before a suffix comma, a two-word family
-    # before a family comma, nothing before the comma, a third part
+    # every order: a two-word family before a family comma, nothing
+    # before the comma, a third part (a full name before a suffix comma
+    # is the next test, its reading moving with the order)
     ("ከበደ ተሰማ፣ አበበ", {"family": "ከበደ ተሰማ", "given": "አበበ"}),
     ("အောင် ဆန်း၊ ဦး", {"family": "အောင် ဆန်း", "given": "ဦး"}),
     ("፣ አበበ", {"given": "አበበ"}),
