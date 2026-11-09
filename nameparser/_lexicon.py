@@ -643,24 +643,30 @@ def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
     return out
 
 
+#: What a lexicon's readings compile to: the vocabulary sets by
+#: `_LexiconSets` name, and the listed-spelling map.
+_Compiled = tuple[Mapping[str, frozenset[str]], SameAs]
+
+
+def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
+    return MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled)
+
+
 @functools.cache
-def _default_compiled() -> Mapping[str, frozenset[str]]:
+def _default_compiled() -> _Compiled:
     # the compiled data module is the default's one source, so the
     # default never loads the reading index (decisions/vocabulary-
     # model, 2026-10-29 3a; its 2026-11-02 #754 entry, item 4)
     import nameparser.config._compiled as compiled
-    return MappingProxyType(_vocab_fields(vars(compiled)))
-
-
-@functools.cache
-def _default_same_as() -> SameAs:
-    import nameparser.config._compiled as compiled
-    return _same_as_of(vars(compiled))
+    return _compiled_of(vars(compiled))
 
 
 _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
     {name: frozenset() for name in _COMPILED_FIELDS} | {
         "particles_ambiguous": frozenset()})
+#: What the empty base compiles to: no sets and no listed spellings.
+_NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
+    {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}))
 
 
 # -- readings ------------------------------------------------------------
@@ -1042,8 +1048,7 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
             r for rs in pool.values() for r in rs)
     except ri.CompileError as exc:
         raise ValueError(str(exc)) from None
-    return (MappingProxyType(pool), MappingProxyType(_vocab_fields(compiled)),
-            _same_as_of(compiled))
+    return (MappingProxyType(pool), *_compiled_of(compiled))
 
 
 def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
@@ -1058,42 +1063,22 @@ def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
 
 def _compiled_for(base: object, edits: tuple[_Edit, ...],
                   chosen: frozenset[str] = frozenset(),
-                  strict: bool = False) -> Mapping[str, frozenset[str]]:
+                  strict: bool = False) -> _Compiled:
     if not edits and base == "default":
         # under a choice, the shipped index compiled once per choice by
         # the reader every pack shares
         return (_choice_compiled(chosen, strict) if chosen
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
-        return _NO_SETS
-    return _built(base, edits, chosen, strict)[1]
-
-
-def _same_as_for(base: object, edits: tuple[_Edit, ...],
-                 chosen: frozenset[str] = frozenset(),
-                 strict: bool = False) -> SameAs:
-    """`_compiled_for`'s twin for the listed-spelling map."""
-    if not edits and base == "default":
-        return (_choice_same_as(chosen, strict) if chosen
-                else _default_same_as())
-    if not edits and not chosen and base == "empty":
-        return MappingProxyType({g: MappingProxyType({})
-                                 for g in sorted(_SAME_AS_GROUPS)})
-    return _built(base, edits, chosen, strict)[2]
+        return _NOTHING_COMPILED
+    _, sets, same_as = _built(base, edits, chosen, strict)
+    return sets, same_as
 
 
 @functools.lru_cache(maxsize=32)
-def _choice_same_as(chosen: frozenset[str],
-                    strict: bool) -> SameAs:
+def _choice_compiled(chosen: frozenset[str], strict: bool) -> _Compiled:
     ri = _index_module()
-    return _same_as_of(ri.compile_choice(chosen, strict))
-
-
-@functools.lru_cache(maxsize=32)
-def _choice_compiled(chosen: frozenset[str],
-                     strict: bool) -> Mapping[str, frozenset[str]]:
-    ri = _index_module()
-    return MappingProxyType(_vocab_fields(ri.compile_choice(chosen, strict)))
+    return _compiled_of(ri.compile_choice(chosen, strict))
 
 
 class _ReadingFiles:
@@ -1628,9 +1613,9 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled = _compiled_for(self._base, canon, chosen, _strict)
+        compiled, same_as = _compiled_for(self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
-        put("_same_as", _same_as_for(self._base, canon, chosen, _strict))
+        put("_same_as", same_as)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:

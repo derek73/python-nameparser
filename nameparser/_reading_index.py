@@ -125,14 +125,14 @@ CAPITALIZED_PARTICLE_KINDS = frozenset({"saint", "rank"})
 #: name stands in the given name and a particle in the surname, so
 #: theirs are read there; a conjunction's and a birth marker's stand in
 #: no role a match compares, and compile to no group.
-SAME_AS_GROUPS: dict[str, str] = {
+SAME_AS_GROUPS: Mapping[str, str] = MappingProxyType({
     "given": "given",
     "bound_given": "given",
     "family": "family",
     "particle": "family",
     "title": "title",
     "suffix": "suffix",
-}
+})
 
 
 def same_as_group(kind: str) -> str | None:

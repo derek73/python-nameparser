@@ -1802,9 +1802,9 @@ def test_same_as_follows_a_choice_of_languages(strict: bool) -> None:
 
 
 def test_an_unedited_lexicons_built_same_as_is_the_defaults() -> None:
-    from nameparser._lexicon import _built, _default_same_as
+    from nameparser._lexicon import _built, _default_compiled
     built = _built("default", (), frozenset(), False)[2]
-    assert dict(built) == dict(_default_same_as()) == dict(
+    assert dict(built) == dict(_default_compiled()[1]) == dict(
         Lexicon.default()._same_as)
 
 
