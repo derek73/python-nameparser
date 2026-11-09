@@ -1,3 +1,5 @@
+import pytest
+
 from nameparser import PatronymicRule, parse
 from nameparser._pipeline._vocab import _EAST_SLAVIC as _LATIN
 from nameparser._pipeline._vocab import _EAST_SLAVIC_CYR as _CYRILLIC
@@ -132,6 +134,36 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
     """Names that must NOT be reordered even when the flag is on."""
 
     policy_kwargs = _BOTH_RULES
+
+    # rules/O1's bullet "A name word written as an initial in the first
+    # or the middle place blocks the reading" (#1185, #1217's rows among
+    # them): (input, given, middle, family), each the default reading
+    @pytest.mark.parametrize(("text", "given", "middle", "family"), [
+        ("И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
+        ("Ирина Б. Зубкевич", "Ирина", "Б.", "Зубкевич"),
+        ("Roman A. Abramovich", "Roman", "A.", "Abramovich"),
+        ("I. B. Akulovich", "I.", "B.", "Akulovich"),
+        ("A. B. Abramovich", "A.", "B.", "Abramovich"),
+        ("Л. С. Григорович", "Л.", "С.", "Григорович"),
+        ("Леонід С. Григорович", "Леонід", "С.", "Григорович"),
+        ("Dr. И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
+        ("И. Борис Зубкевич", "И.", "Борис", "Зубкевич"),
+        # unchanged by the Except
+        ("И.Б. Зубкевич", "И.Б.", "", "Зубкевич"),
+        ("Роман Аркадьевич Абрамович", "Роман", "Аркадьевич", "Абрамович"),
+        ("И. Петрович Сидоров", "И.", "Петрович", "Сидоров"),
+        # the Accepted cost: one shape with 'Ирина Б. Зубкевич'
+        ("Сидоров И. Петрович", "Сидоров", "И.", "Петрович"),
+    ])
+    def test_an_initial_before_the_ending_blocks_the_rotation(
+            self, text: str, given: str, middle: str, family: str) -> None:
+        n = self.hn(text)
+        assert (n.given, n.middle, n.family) == (given, middle, family)
+
+    def test_a_full_family_first_listing_still_rotates(self) -> None:
+        # the boundary of the Except: no initial, so O1 restores the order
+        n = self.hn("Сидоров Иван Петрович")
+        assert (n.given, n.middle, n.family) == ("Иван", "Петрович", "Сидоров")
 
     def test_already_correct_order(self) -> None:
         # middle is patronymic → already in Western order, do not rotate
