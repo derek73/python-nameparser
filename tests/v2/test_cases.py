@@ -425,9 +425,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 2026-11-07, #1138's 'John (MA/PhD) Smith' reporting
     # suffix-or-nickname under three orders; 1675 -> 1678 on
     # 2026-11-08, #1202's 'John Smith (Msc.Ed، Bob)' reporting
-    # suffix-or-nickname under three orders.
-    assert claims == 1678, (
-        f"the field sweep checks {claims} claims, recorded as 1678 on "
+    # suffix-or-nickname under three orders; 1678 -> 1681 the same day,
+    # #1191's lone 'एम.' reporting given-or-family under three orders.
+    assert claims == 1681, (
+        f"the field sweep checks {claims} claims, recorded as 1681 on "
         f"2026-11-08")
 
 
