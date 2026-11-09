@@ -189,8 +189,8 @@ def in_initialless_script(text: str) -> bool:
 #
 # v1's "period_abbreviation" shape, composed from `_LETTER` below, so
 # the text is v1's plus the marks. This is the only definition:
-# `_pieces._PERIOD_ABBREV` and `_assemble._PERIOD_ABBREV` are imports
-# of it, which tests/v2/test_regex_sync.py declares as such.
+# `_pieces._PERIOD_ABBREV` is an import of it, which
+# tests/v2/test_regex_sync.py declares as such.
 
 # `_LETTER` is the letter every shape regex in this module spells
 # (`_PERIOD_ABBREV`, `_DOTTED`, `_CHUNKED`, `_PAIRED_INITIALS`): one
@@ -258,9 +258,11 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     (is_title_piece/lexicon._sets.titles), and the one vocabulary read here
     the given name written short, which outranks the shape (rules/H2,
     #789: 'Chas.' is no title). `name_word_count` and `title_readings`
-    below are its callers; `_pieces.is_leading_title` asks the same question
-    but keeps this body inline, its path being hot (every leading
-    piece of every parse) where this one is cold (comma names only)
+    below are its callers, and `_assemble`'s, naming the source of a
+    title no vocabulary tags; `_pieces.is_leading_title` asks the same
+    question but keeps this body inline, its path being hot (every
+    leading piece of every parse) where this one is cold (comma names,
+    and a title token no vocabulary tags, one frame each)
     -- the measured figure lives at that inline copy and is not
     restated here, two homes for one measurement being how they come
     to disagree. Touch one, touch both:

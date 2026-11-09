@@ -580,11 +580,14 @@ def assemble(state: ParseState) -> ParsedName:
                 elif not tags.isdisjoint(_TITLE_TAGS):
                     kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
                 elif is_title_shaped(t.text, state.lexicon):
-                    # rules/H2's shape: an unlisted abbreviation, asked
-                    # as H2 asks it, so a word its Except refuses (a
-                    # given name written short, a word in a script
-                    # with no period abbreviations) is a title only by
-                    # where it stands
+                    # rules/H2's shape, asked through H2's own
+                    # predicate: a word its Except refuses -- "an
+                    # abbreviation the vocabulary reads as a given name
+                    # written short", a "word in one of the ten Brahmic
+                    # scripts from Devanagari to Sinhala", and a word in
+                    # a script with no initials, which "has no period
+                    # abbreviations either" -- is a title only by where
+                    # it stands (decisions/A1, 2026-11-09)
                     kind, source = ReadingKind.TITLE, ReadingSource.SHAPE
                 else:
                     # a title phrase's connective object ('of
