@@ -889,6 +889,152 @@ def _dotted(text: str) -> bool:
             or _CHUNKED.fullmatch(text) is not None)
 
 
+# rules/T8: "glued to the next at its full stop" -- the shapes
+# `glued_cuts` reads (decisions/T8 (#1230, #1235)): one chunk of letters
+# closed by a stop with something after it
+_GLUED_CHUNK = re.compile(r"((?:" + _LETTER + r")+)\.(?=\S)")
+# a run of two or more single letters closed by stops, a letter after
+# it (the name is `glued_cuts`' to find)
+_GLUED_RUN = re.compile(r"(?:" + _LETTER + r"\.){2,}(?=[^\W\d_])")
+#: a letter (its marks with it, so NFD text passes), a full stop and a
+#: letter: the C-level test `_script_segment` asks before `glued_cuts`
+GLUED_SHAPE = re.compile(_LETTER + r"\.[^\W\d_]")
+# one word of letters, apostrophes and hyphens: what can follow a chunk
+# and be a name
+_GLUED_WORD = re.compile(r"(?:" + _LETTER + r")(?:" + _LETTER + r"|['’\-])*")
+
+
+def _reads_alone(chunk: str, lexicon: Lexicon) -> bool:
+    """A chunk the parser reads on its own before a full stop: one
+    letter in a script with case, a transliteration digraph rules/H2
+    names, a listed title that is no saint particle, or a listed given
+    name written short (decisions/period-joined-words, #1255)."""
+    chunk = unicodedata.normalize("NFC", chunk)
+    if len(chunk) == 1:
+        return chunk.upper() != chunk.lower()
+    n = _normalize(chunk)
+    sets = lexicon._sets
+    if n in _DIGRAPH_INITIALS or n in sets.given_name_abbreviations:
+        return True
+    return is_title_chunk(chunk, lexicon)
+
+
+def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
+    """Where a word glued to the next at a full stop divides (T8,
+    #1230, #1235): the offset after each stop at which a chunk the
+    parser reads alone (`_reads_alone`) meets a name, so the word reads
+    as it does with a space there ('Dr.John' as 'Dr. John',
+    'Ц.Сандаг-Очир' as 'Ц. Сандаг-Очир', 'Yu.A.Chibrikova' as 'Yu. A.
+    Chibrikova'). A run of single letters stays one chunk before the name
+    ('J.R.Smith' as 'J.R. Smith', rules/T7), while titles glued to each
+    other divide at each stop, as they read written apart ('Lt.Gov.John'
+    as 'Lt. Gov. John'). Empty where the vocabulary reads the word whole
+    (a suffix spelled without its stops, 'M.Sc', 'M.Sc.'; a title listed
+    whole), and wherever the
+    word does not divide through to its end: at a word in lower case
+    ('Dr.med', 'G.ppe'), at one closed by its own stop or followed by
+    another chunk ('Dr.Med.', 'J.Smith.', 'Dr.John.Smith'), and at an
+    unambiguous title or credential after the stop ('Dr.MD')."""
+    sets = lexicon._sets
+    n = _normalize(text)
+    bare = n.replace(".", "")
+    # a title listed whole is read whole, as a suffix spelled without its
+    # stops is: with its stops, or without them where no initial ends it
+    # ('Dr.Ma' where a caller lists 'drma'; 'Dr.A.' divides, 'dra' being
+    # the title and the initial T8 reads behind one)
+    if (bare in sets.suffix_acronyms or n in sets.titles
+            or bare in sets.titles and len(unicodedata.normalize(
+                "NFC", n.rsplit(".", 1)[-1])) > 1):
+        return ()
+    cuts: list[int] = []
+    at = 0
+    titled = False
+    # the cuts stand only where the word divides through to its end: a
+    # name closing it ('Yu.A.Chibrikova'), or initials closing one a
+    # title opens ('Dr.J.', 'Dr.J.R.'); never initials alone ('Kim
+    # Yu.A.', the surname-first initials #1254 asks about), an initial
+    # opening a chunk that stays whole ('Q.R.ST.'), nor a word holding a
+    # delimiter or a digit, which no chunk or name matches ('M.D./Ph.D.')
+    while True:
+        if _LETTER_RUN.fullmatch(text, at):
+            return tuple(cuts) if titled else ()
+        run = _GLUED_RUN.match(text, at)
+        if run is not None:
+            # a run of initials before the name stays one word (T7)
+            end, letter = run.end(), True
+        else:
+            m = _GLUED_CHUNK.match(text, at)
+            if m is None or not _reads_alone(m.group(1), lexicon):
+                return ()
+            end = m.end()
+            letter = len(unicodedata.normalize("NFC", m.group(1))) == 1
+            if not letter and is_title_chunk(m.group(1), lexicon):
+                titled = titled or not cuts
+                nxt = _GLUED_CHUNK.match(text, end)
+                if nxt is not None and is_title_chunk(nxt.group(1), lexicon):
+                    # titles glued to each other divide at each stop, as
+                    # the titles written apart read ('Lt.Gov.John',
+                    # 'Maj.Gen.John', a phrase H9 reads)
+                    cuts.append(end)
+                    at = end
+                    continue
+        word = _GLUED_WORD.match(text, end)
+        # its first letter with case, so a modifier letter opening it
+        # ('m.ʿali') does not hide a word in lower case; a script with
+        # no case gives none, and divides
+        if word is None or next(
+                (c.islower() for c in word.group() if c.upper() != c.lower()),
+                False):
+            return ()
+        initial = len(unicodedata.normalize("NFC", word.group())) == 1
+        tail = text[word.end():]
+        # a word closed by its own stop is a field or a name closed by
+        # one ('Dr.Med.', 'J.Smith.'), save an initial behind a title
+        # ('Dr.J.'); one followed by another chunk stays whole
+        # ('Dr.John.Smith'), save an initial opening the next division
+        # ('Yu.A.Chibrikova')
+        if tail == "." and not (initial and not letter):
+            return ()
+        if len(tail) > 1 and not initial:
+            return ()
+        w = _normalize(word.group())
+        if w in sets.titles or (
+                w in sets.suffix_acronyms
+                and w not in sets.suffix_acronyms_ambiguous) or (
+                (w in sets.suffix_words or w in sets.credential_words)
+                and w not in sets.suffix_words_ambiguous):
+            return ()
+        cuts.append(end)
+        at = end
+        if word.end() == len(text) or tail == ".":
+            return tuple(cuts) if titled or not initial else ()
+
+
+def is_initial_chunk(chunk: str) -> bool:
+    """Initials before a full stop, as T8's report asks of the chunks it
+    cut (rules/T8): one letter in a script with case, a run of them
+    ('J.R'), or a transliteration digraph rules/H2 names ('Yu'), and no
+    title or given name written short."""
+    parts = chunk.split(".")
+    if len(parts) == 1 and _normalize(chunk) in _DIGRAPH_INITIALS:
+        return True
+    for part in parts:
+        part = unicodedata.normalize("NFC", part)
+        if len(part) != 1 or part.upper() == part.lower():
+            return False
+    return True
+
+
+def is_title_chunk(chunk: str, lexicon: Lexicon) -> bool:
+    """A listed title that is no saint particle, read as a chunk before
+    a full stop (rules/T8; a saint particle's chunk is #1071's)."""
+    sets = lexicon._sets
+    n = _normalize(chunk)
+    return n not in sets.saint_particles and (
+        n in sets.titles or n in sets.titles_ambiguous
+        or n in sets.title_modifiers or n in sets.title_styles)
+
+
 def is_dotted_title(text: str, n: str, lexicon: Lexicon) -> bool:
     """A run of single letters joined by full stops ('U.S.', 'P.D.')
     whose spelling without them is a title written `dotted`

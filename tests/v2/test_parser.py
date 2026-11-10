@@ -1459,6 +1459,12 @@ _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
 #: reads the marker as a word too.
 _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
                                "Smith, John, PhD née Jones"})
+#: The third (2026-11-10, #1230/#1235): a glued word the whole name reads
+#: as its suffix and keeps whole, being after a comma, and the
+#: value's own sub-parse divides, being the part before any comma there
+#: (rules/T8) -- 'M.Filho' revising to 'M. Filho', as a CJK value's
+#: sub-parse divides it (`revise(family="김민준")`).
+_GLUED_IN_SUFFIX = frozenset({"Smith, Pedro M.Filho"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:
@@ -1466,7 +1472,7 @@ def _suffix_bearing_corpus_names() -> list[str]:
     p = Parser()
     return [n for n in _CORPUS_NAMES
             if p.parse(n).suffix and n not in _HONORIFIC_PEEL
-            and n not in _MARKER_IN_SUFFIX]
+            and n not in _MARKER_IN_SUFFIX and n not in _GLUED_IN_SUFFIX]
 
 
 def test_the_known_round_trip_exceptions_are_one_limit() -> None:
@@ -1504,6 +1510,19 @@ def test_the_known_round_trip_exceptions_are_one_limit() -> None:
     assert all(takes_a_clause_on_its_own(n) for n in _MARKER_IN_SUFFIX)
     assert not [n for n in _suffix_bearing_corpus_names()
                 if takes_a_clause_on_its_own(n)]
+
+    # the glued limit, characterized the same way: a word of the parsed
+    # suffix that T8 divides when read on its own
+    from nameparser._pipeline._vocab import glued_cuts
+    lex = p.lexicon
+
+    def divides_on_its_own(name: str) -> bool:
+        return any(glued_cuts(word.rstrip(","), lex)
+                   for word in p.parse(name).suffix.split())
+
+    assert all(divides_on_its_own(n) for n in _GLUED_IN_SUFFIX)
+    assert not [n for n in _suffix_bearing_corpus_names()
+                if divides_on_its_own(n)]
 
 
 def test_the_suffix_bearing_corpus_is_not_empty() -> None:

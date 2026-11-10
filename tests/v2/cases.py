@@ -1221,11 +1221,14 @@ CASES: tuple[Case, ...] = (
                "a title; listed whole, the vocabulary reads it first"),
     Case("glued_initial_and_surname_still_read_by_position",
          "Ahmed Ali M.Hassan",
-         {"given": "Ahmed", "family": "Ali", "suffix": "M.Hassan"},
-         classification="fix(#516)", ambiguities=("suffix-or-name",),
-         notes="unchanged by #998's batch, the cost its proposal accepts: "
-               "rules/S3 reads the unlisted shape as a suffix where a word "
-               "is to spare, and reports it; 1.4.0 gave family 'M.Hassan'"),
+         {"given": "Ahmed", "middle": "Ali M.", "family": "Hassan"},
+         classification="fix(#1235)", ambiguities=("suffix-or-name",),
+         notes="rules/T8 divides the glued initial from the surname, as "
+               "'Ahmed Ali M. Hassan' reads, the credential S3's shape read "
+               "the word as still reported; #998's batch had read it as "
+               "an unlisted suffix, and 1.4.0 gave family 'M.Hassan'. The "
+               "id keeps #998's wording, which "
+               "decisions/suffix-acronym-collisions cites"),
     Case("refused_peng_keeps_the_surname", "Wang Xiao Peng",
          {"given": "Wang", "middle": "Xiao", "family": "Peng"},
          classification="parity",
@@ -2341,12 +2344,13 @@ CASES: tuple[Case, ...] = (
          notes="Fo is a surname too (Dario Fo), and a name of two words "
                "has none to spare for the agnomen (rules/S11)"),
     Case("an_agnomen_glued_behind_an_initial", "Pedro M.Filho",
-         {"given": "Pedro", "family": "M.Filho"},
-         classification="parity",
+         {"given": "Pedro", "family": "M.", "suffix": "Filho"},
+         classification="fix(#1235)",
          ambiguities=("suffix-or-name",),
-         notes="no chunk claim for a suffix word that is also a name "
-               "(rules/S11): the joined word is weighed by its dotted shape, "
-               "as it was"),
+         notes="divided from the initial before any comma (rules/T8), "
+               "the agnomen is weighed as it is written apart (rules/S11), "
+               "as 'Pedro M. Filho' reads; 1.4.0 through 3.0.1 read family "
+               "'M.Filho'"),
     Case("a_generation_word_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro Jnr Filho",
          {"given": "Pedro", "middle": "Jnr", "family": "Filho"},
          classification="parity",
@@ -10237,10 +10241,12 @@ CASES: tuple[Case, ...] = (
                "classify's own fall-through has not already tagged "
                "'vocab:suffix' -- unchanged either side of the switch",
          shape=1),
-    Case("period_joined_any_rule", "Mr.Smith",
-         {"title": "Mr.Smith"},
-         notes="the ANY rule is deliberate v1 parity: one title chunk "
-               "claims the whole token"),
+    Case("period_joined_title_and_name_divide", "Mr.Smith",
+         {"title": "Mr.", "family": "Smith"},
+         classification="fix(#1230)",
+         notes="rules/T8 divides a listed title glued to a name, as "
+               "'Mr. Smith' reads; through 3.0.1 v1's ANY rule let the "
+               "title chunk claim the whole word, title 'Mr.Smith'"),
     Case("doubled_comma_suffix", "Doe,, Jr.",
          {"family": "Doe", "suffix": "Jr."},
          notes="the EMPTY given segment keeps its position: 'Jr.' is a "

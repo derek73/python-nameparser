@@ -5,7 +5,10 @@ one_case where segment recorded it, and comma_offsets, for the
 own-words span `_one_case` asks the fact over where segment did not
 (#613; the answer is not recorded, classify recording its own), and
 original, for the peel's ASCII bail.
-Produces: tokens, by two independent splits into sub-slices -- a
+Produces: tokens, by three independent splits into sub-slices -- a
+word of the part before any comma glued to the next at its full stop
+divided there (rules/T8), with a SUFFIX_OR_NAME report where an
+initial is cut from the word ending the name, a
 listed honorific peeled off the END of the name's last
 non-post-nominal token, in whichever of the name's runs that falls
 (the tail token also carries this module's _PEELED_TAG), and the
@@ -16,7 +19,12 @@ SURNAME_PAIR_TAG for post_rules, rules/W5) -- segments (index runs remapped past
 (indices likewise remapped, plus a SEGMENTATION report when more than
 one split was vocabulary-supported, or when a segmenter's answer
 scored under the confidence floor).
-Reads: Policy.segment_scripts, Lexicon.surnames, Policy.script_orders
+Reads: the vocabulary `_vocab.glued_cuts` reads for T8 (Lexicon.titles,
+titles_ambiguous, title_modifiers, title_styles, saint_particles,
+given_name_abbreviations, suffix_acronyms and its ambiguous set,
+suffix_words and its ambiguous set, credential_words, and
+period_joined_vocab's), and Lexicon.suffix_words, suffix_acronyms and
+titles DIRECTLY (the end-of-name report's tests), Policy.segment_scripts, Lexicon.surnames, Policy.script_orders
 and Policy.name_order (the order W5's pair needs, rules/W4),
 Lexicon.honorific_tails, ParseState.segmenter, Lexicon.maiden_markers
 DIRECTLY (the own-words span `_one_case` takes, _pieces.own_words),
@@ -47,22 +55,24 @@ delimiter-core token as a suffix and splits a token on a core, the
 split being the half that flips "田中さん, Jr./V." under {"/"} and the
 bare core the half that flips "田中さん, /").
 
-Implements rules W1 (the vocabulary/segmenter division), W2 (the
-glued-honorific peel), W3 (the writer's divisions are respected) and
-W5's division (a Han surname pair)
-of docs/design/rules/, cited at their code below; the decision
+Implements rules T8 (a word glued at its full stop), W1 (the
+vocabulary/segmenter division), W2 (the glued-honorific peel), W3 (the
+writer's divisions are respected) and W5's division (a Han surname
+pair) of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
-spaced-honorific trade) is decisions/W1, #W2 and #W3. Both splits
-make sub-slices of one token, rewriting nothing -- spans still index
+spaced-honorific trade) is decisions/W1, #W2 and #W3, and T8's
+decisions/T8. Every split makes sub-slices of one token, rewriting nothing -- spans still index
 the original exactly, so the anti-#100 invariant holds by
-construction. Both also match on the token's CORE, its
+construction. The script splits also match on the token's CORE, its
 text.rstrip(FULL_STOPS) (#323) -- rstrip and never strip, because
 both offsets are measured from the text's START, so the core has to
 stay a prefix of the text for the offset the match yields to land
-where the match did. The peel runs FIRST, so suffix classification
+where the match did. The peel runs before the script splits, so suffix classification
 can claim the tail and the surname match or segmenter consult sees
-the name rather than name-plus-honorific; its
-ASCII bail sits above everything here, so a caller-added LATIN tail
+the name rather than name-plus-honorific; its ASCII bail sits above
+every script split, T8's division alone running ahead of it, since
+it divides glued words in any cased script, ASCII ones included, so
+a caller-added LATIN tail
 fires only on a name carrying at least one non-ASCII character (see
 the bail's own comment, and honorific_tails' field note).
 """
@@ -71,20 +81,23 @@ from __future__ import annotations
 import functools
 from collections.abc import Callable, Sequence
 
-from nameparser._lexicon import FULL_STOPS
+from nameparser._lexicon import FULL_STOPS, _normalize
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
-    SURNAME_PAIR_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
-    copy_with,
+    SURNAME_PAIR_TAG, ParseState, PendingAmbiguity, PendingReading,
+    Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    effective_script, is_one_case,
+    GLUED_SHAPE, effective_script, glued_cuts, is_initial_chunk, is_one_case,
+    period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
 from nameparser._policy import Script
-from nameparser._types import AmbiguityKind, Role, Segmentation, Span
+from nameparser._types import (
+    AmbiguityKind, ReadingKind, ReadingSource, Role, Segmentation, Span,
+)
 
 #: Marks the tail token the peel below MANUFACTURED, so the segmenter's
 #: neighbour test can tell it from a token somebody wrote. Namespaced,
@@ -155,11 +168,13 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
     strictly ascending with each >= 1 is Segmentation.__post_init__'s,
     and the last offset is < len(text) -- checked by the caller. From
     the vocabulary: the single offset is >= 1 and < len(text) by the
-    range(cap, 0, -1) construction and its len-1 cap.
+    range(cap, 0, -1) construction and its len-1 cap. From T8's
+    division: `_vocab.glued_cuts` appends each offset after a matched
+    stop, so each is >= 2, ascending, and < len(text), a name following.
 
-    The ONE split path: the vocabulary hit is the single-offset case
-    and the segmenter's answer the general one, so neither can drift
-    from the other's index arithmetic. `tail_tag` is part of keeping it
+    The ONE split path: the vocabulary hit is the single-offset case,
+    and the segmenter's answer and T8's division the general one, so
+    none can drift from the others' index arithmetic. `tail_tag` is part of keeping it
     one path: the piece is tagged HERE, where it is built, rather than
     by the caller, which would have to re-derive where its own tail
     landed after handing the index arithmetic off. Only the peel passes
@@ -804,6 +819,81 @@ def _split_surname_site(state: ParseState) -> ParseState:
     return _split(state, i, answer.splits, detail)
 
 
+# rules/T8: "the word reads as it does with a space there" -- the part
+# before any comma, where the division acts (decisions/T8 (#1230, #1235))
+def _divide_glued(state: ParseState) -> ParseState:
+    """Every word of the part before the first comma divided where
+    `_vocab.glued_cuts` finds a chunk read alone meeting a name, last
+    word first, so the indices still to visit do not move."""
+    head = state.segments[0]
+    lexicon = state.lexicon
+    # the words as written, before any of them divides: the report reads
+    # the words after its own, which may have divided already
+    texts = [state.tokens[j].text for j in head]
+    for k in range(len(head) - 1, -1, -1):
+        i = head[k]
+        text = texts[k]
+        # a C-level test first, so a word with no stop pays no frame
+        if GLUED_SHAPE.search(text) is None:
+            continue
+        cuts = glued_cuts(text, lexicon)
+        if not cuts:
+            continue
+        state = _split(state, i, cuts, None)
+        if _ends_the_name(text, cuts, texts, k, state):
+            # initials glued to the word ending the name, behind a word
+            # to spare: S3 would have read the whole as a credential by
+            # its shape, and the reading not taken is still that one
+            # ('John Smith B.Eng', 'Ahmed Ali M.Hassan', 'John Smith
+            # A.Brown PhD')
+            state = copy_with(state, ambiguities=(
+                *state.ambiguities, PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{text!r} ending the name may be a credential "
+                    f"written short; read as ",
+                    (i + len(cuts),), field_tail="",
+                    alternative=PendingReading(
+                        ReadingKind.CREDENTIAL, ReadingSource.SHAPE,
+                        Role.SUFFIX))))
+    return state
+
+
+def _ends_the_name(text: str, cuts: tuple[int, ...], texts: Sequence[str],
+                   k: int, state: ParseState) -> bool:
+    """Whether T8's division of `texts[k]` took the credential S3's
+    shape read: initials (a letter, a run of them, a digraph) before a
+    name that is no suffix word or acronym, which reports itself
+    (rules/S11, 'Pedro M.Filho'); the last name word of the part, only
+    post-nominals after it; a word before it that is no unambiguous
+    title; and no family comma's surname, which S3 never read so, the
+    comma asked here as group will decide it ('John Smith A.Brown,
+    PhD' is a suffix comma, 'Smith A.Brown, John' a family one)."""
+    sets = state.lexicon._sets
+    starts = (0, *cuts[:-1])
+    if not all(is_initial_chunk(text[a:b - 1])
+               for a, b in zip(starts, cuts)):
+        return False
+    name = _normalize(text[cuts[-1]:])
+    if name in sets.suffix_words or name in sets.suffix_acronyms:
+        return False
+    for later in texts[k + 1:]:
+        n = _normalize(later)
+        # an acronym is listed without its stops ('Ph.D.' as 'phd')
+        if (n not in sets.suffix_words
+                and n.replace(".", "") not in sets.suffix_acronyms):
+            return False
+    # a title, or titles glued at their stops with no name after them, is
+    # no word to spare ('Prof.Dr. A.Brown' as 'Prof. Dr. A.Brown'); a
+    # glued word that divides holds a name ('Dr.John J.Smith')
+    if not any(_normalize(before) not in sets.titles
+               and (period_joined_vocab(before, state.lexicon) != "title"
+                    or glued_cuts(before, state.lexicon))
+               for before in texts[:k]):
+        return False
+    return (state.structure is not Structure.FAMILY_COMMA
+            or _postnominal_behind_a_whole_name(state))
+
+
 # rules/W1: "an undivided word in the family position of a name
 # written in an activated script divides after a recognized surname,
 # the longest recognized surname first; where the vocabulary
@@ -812,6 +902,8 @@ def _split_surname_site(state: ParseState) -> ParseState:
 # family by declaration and never divides, and the post-comma side
 # is given text with no family to find" (history: decisions/W3)
 def script_segment(state: ParseState) -> ParseState:
+    if state.segments and GLUED_SHAPE.search(state.original):
+        state = _divide_glued(state)
     if state.original.isascii():
         # spans index the original exactly (the anti-#100 invariant),
         # so an ASCII original has only ASCII tokens: nothing here is
@@ -824,9 +916,10 @@ def script_segment(state: ParseState) -> ParseState:
         # post-nominals ("John Smith PhD"), so the glued position this
         # peel exists for is a CJK one to begin with. What Latin does
         # glue is PREnominal and period-joined (Mr.Smith, Lt.Gov.),
-        # which _vocab.period_joined_vocab classifies as one token
-        # rather than splitting -- a different mechanism, and no peel
-        # site either way. A glued Latin POST-nominal is spelled the
+        # which T8's division above divides where a name follows the
+        # stop, and _vocab.period_joined_vocab classifies as one token
+        # where none does -- a different mechanism, and no peel site
+        # either way. A glued Latin POST-nominal is spelled the
         # same way, so it reaches that same mechanism rather than
         # nothing: period_joined_vocab reads "Smith.Jr." by its shape,
         # 'smith' being no chunk that counts (#1131), and position
