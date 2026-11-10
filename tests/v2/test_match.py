@@ -1794,6 +1794,9 @@ _JOINED_NAMES: tuple[str, ...] = (
     # middle name and nickname across-roles compares it with
     "-Pierre Dupont", "Pierre Dupont", "Dupont, -Pierre",
     "Jean -Pierre Dupont", "Jean (-Pierre) Dupont",
+    # no given name beside a nickname: the empty given letter stays
+    # beside the nickname's under across-roles
+    "Pastor Saycon", 'Pastor "Boy" Saycon',
 )
 
 

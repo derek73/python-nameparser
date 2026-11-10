@@ -548,13 +548,17 @@ class Matching:
         # a given letter is the first letter once joined, as the check
         # compares by `joined` too (`-Pierre` keys `p`, not `-`)
         initials = {_letter(g) for g in _spelling_keys(
-            given[0], given_rule.group, lexicon)} if given else set()
+            given[0], given_rule.group, lexicon)} - {""} if given else set()
         if given and Outcome.FAMILIAR_FORM in self.accept:
             # every name the check pairs with it as a familiar form,
             # either way (`_familiar`), so `Bill` and `William` share
             # each other's keys
             initials |= {_letter(g) for g in _paired_forms(
-                _spellings(given[0], given_rule.group, lexicon), lexicon)}
+                _spellings(given[0], given_rule.group, lexicon), lexicon)} - {""}
+        # no given letter, a name with no given name or one of hyphens
+        # alone, keys the empty letter, as the cross-role letters below
+        # stand beside it rather than for it
+        initials = initials or {""}
         if across:
             # the texts the check matches against a given name, each
             # refused as it refuses them: a cross-role match is never
@@ -564,8 +568,7 @@ class Matching:
                 for text in _cross_texts(parsed, other):
                     if not _initials_only(_fold(text)):
                         initials |= {_letter(g) for g in _spelling_keys(
-                            text.split()[0], given_rule.group, lexicon)}
-        initials = (initials - {""}) or {""}
+                            text.split()[0], given_rule.group, lexicon)} - {""}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
