@@ -216,6 +216,13 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 # Searched on the raw text: a nukta letter decomposes inside the range.
 _INDIC_BRAHMIC = re.compile('[\u0900-\u0dff]')
 
+# rules/H2: "A transliteration digraph" "never reads as a title by
+# shape" -- the digraphs that Except names, lowercase and periodless,
+# so the test is a C-level membership of the word less its period;
+# the ones it leaves out are its own clause (decisions/H2, #1136).
+_DIGRAPH_INITIALS = frozenset({"yu", "ya", "ye", "yo", "zh", "kh",
+                               "shch", "dzh"})
+
 #: The hyphens and the dashes that join two family names in one written
 #: word (rules/O6), and the parts of an abbreviation written hyphenated
 #: (rules/H5, 'Dipl.‐Ing.' as a word processor writes it): hyphen-minus,
@@ -289,10 +296,15 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     #1191): those scripts write initials, and spell a Latin one out by
     its sound with no vowel sign (एम. for M.), a run of letters the
     shape would misread. Its search is C-level, so it costs no frame.
+
+    A transliteration digraph (`Yu.`, `Zh.`, `Kh.`, `_DIGRAPH_INITIALS`)
+    declines the shape too, being the initial of one Cyrillic letter
+    (rules/H2's Except, #1136).
     """
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
                                         or in_initialless_script(text)))
+            and text[:-1].lower() not in _DIGRAPH_INITIALS
             and _normalize(text) not in lexicon._sets.given_name_abbreviations)
 
 

@@ -792,6 +792,14 @@ def test_is_title_shaped_is_h2_s_shape_alone() -> None:
     assert not is_title_shaped("MA.", lex)
     assert is_title_shaped("Chas.", lex.add(
         "chas", kind="given", same_as=None))
+    # rules/H2's Except: a transliteration digraph is the initial of one
+    # Cyrillic letter, in any case (#1136); the digraphs that are also
+    # titles written short keep the shape, as a Latin digraph does
+    for word in ("Yu.", "YU.", "yu.", "Ya.", "Ye.", "Yo.", "Zh.", "Kh.",
+                 "Shch.", "Dzh."):
+        assert not is_title_shaped(word, lex), word
+    for word in ("Ts.", "Ch.", "Sh.", "Th.", "Iu.", "Yuk."):
+        assert is_title_shaped(word, lex), word
 
 
 def test_name_word_count_counts_names_not_tokens() -> None:

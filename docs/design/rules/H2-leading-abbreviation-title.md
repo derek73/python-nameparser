@@ -40,6 +40,18 @@
   "ດຣ. ສົມ"                     →  title="ດຣ."  · boundary
   ```
 
+- **A transliteration digraph** — the Latin spelling of one Cyrillic letter, Yu, Ya, Ye, Yo, Zh, Kh, Shch or Dzh, in any case — never reads as a title by shape: it is the initial of that letter, so a romanized byline reads as its Cyrillic original does, where the one-letter initial is no title either (#1136). Ch, Sh and Ts still read as titles by shape, each also written short for a title (Chaudhry, Sheikh or Shri, the Malaysian Ts.), and so does a Latin digraph such as Th. The digraph reads as a name word wherever it stands, behind a title too, and not as the initial a single letter is, so a lone one is placed as any lone unlisted word is.
+  ```
+  "Yu. A. Chibrikova"         →  given="Yu."
+  "Ю. А. Чибрикова"           →  given="Ю."
+  "Chibrikova, Yu. A."        →  given="Yu."
+  "Dr. Yu. Petrov"            →  title="Dr."
+  "ZH. I. ALFEROV"            →  given="ZH."
+  "Kh. O. Bezirdzhyan"        →  given="Kh."
+  "Ts. Sandag-Ochir"          →  title="Ts."  · boundary
+  "Th. Markopoulos"           →  title="Th."  · boundary
+  ```
+
 **Precedence:**
 
 - **A credential opening the part after a family comma** ("Smith, Esq. John"): C13 wins, and the part is postnominal: a suffix word that starts S8's run makes the part its postnominals however it goes on. The shape still reads as a title there an abbreviation that starts no such run — an unlisted one, or a listed suffix word C13 does not open with, such as a word of the ambiguous class.
@@ -82,5 +94,5 @@
   ```
 
 ---
-**Signal:** shape + script: an unlisted word of two or more letters ending in its one period, opening the given-name part, which a given name written short declines, and which a word in a CJK or Brahmic script never is
+**Signal:** shape + script: an unlisted word of two or more letters ending in its one period, opening the given-name part, which a given name written short or a transliteration digraph declines, and which a word in a CJK or Brahmic script never is
 **history:** decisions/H2 · **implemented:** nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
