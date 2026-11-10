@@ -431,10 +431,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # reporting suffix-or-name under three orders; 1684 -> 1702 the same
     # day, the six reports of its reviews' boundary rows under three
     # orders; 1702 -> 1705 the same day, its PR review's words-to-spare
-    # rows.
-    assert claims == 1705, (
-        f"the field sweep checks {claims} claims, recorded as 1705 on "
-        f"2026-11-08")
+    # rows; 1705 -> 1711 on 2026-11-09, #998's 'Ahmed Ali M.Hassan'
+    # reporting suffix-or-name and 'Ali C.Psych' given-or-family under
+    # three orders.
+    assert claims == 1711, (
+        f"the field sweep checks {claims} claims, recorded as 1711 on "
+        f"2026-11-09")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -841,8 +843,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # under the three orders, each stand-in keeping the taken one;
     # 537 -> 540 and 338 -> 350 the same day, its reviews' boundary
     # rows under the three orders; 540 -> 542 and 350 -> 354 the same
-    # day, its PR review's two words-to-spare rows under the three orders
-    assert (checked, skipped) == (542, 354), (checked, skipped)
+    # day, its PR review's two words-to-spare rows under the three orders;
+    # 542 -> 545 on 2026-11-09, #998's 'Ahmed Ali M.Hassan' under the
+    # three orders
+    assert (checked, skipped) == (545, 354), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

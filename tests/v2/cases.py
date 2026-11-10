@@ -1190,6 +1190,50 @@ CASES: tuple[Case, ...] = (
                "refused (en.toml's cota): marked ambiguous, a name in "
                "capitals with a word to spare read it as the suffix, as "
                "it would have in 49 tse-donors names"),
+    # -- #998: credentials written in two chunks joined at a full stop
+    # (B.Pharm, M.Kes), listed so the vocabulary reads them whole, where
+    # rules/S3 read them by shape alone.
+    Case("two_chunk_credential_is_listed", "Ahmed Ali B.Pharm",
+         {"given": "Ahmed", "family": "Ali", "suffix": "B.Pharm"},
+         classification="fix(#998)",
+         notes="the same fields before #998, read by rules/S3's shape "
+               "with a suffix-or-name report; listed, it reports nothing"),
+    Case("two_chunk_credential_with_no_word_to_spare", "Ali C.Psych",
+         {"given": "Ali", "suffix": "C.Psych"},
+         classification="fix(#998)", ambiguities=("given-or-family",),
+         notes="before #998 family 'C.Psych', the shape's suffix "
+               "reading needing a word to spare; the lone name word "
+               "reports given-or-family, as 'Ali M.Med' does"),
+    Case("family_comma_given_part_ends_in_two_chunk_credential",
+         "Hassan, Ahmed M.Kes",
+         {"given": "Ahmed", "family": "Hassan", "suffix": "M.Kes"},
+         classification="fix(#998)",
+         notes="rules/S5's given part: the same fields before #998, "
+               "with a suffix-or-name report"),
+    Case("indonesian_credentials_after_a_comma",
+         "Ayu Pangestu, S.Pd, M.Pd",
+         {"given": "Ayu", "family": "Pangestu", "suffix": "S.Pd, M.Pd"},
+         classification="fix(#998)",
+         notes="before #998 title 'S.Pd M.Pd': the chunk Pd is a listed "
+               "title, and rules/S3 reads a word holding a title chunk as "
+               "a title; listed whole, the vocabulary reads it first"),
+    Case("glued_initial_and_surname_still_read_by_position",
+         "Ahmed Ali M.Hassan",
+         {"given": "Ahmed", "family": "Ali", "suffix": "M.Hassan"},
+         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         notes="unchanged by #998's batch, the cost its proposal accepts: "
+               "rules/S3 reads the unlisted shape as a suffix where a word "
+               "is to spare, and reports it; 1.4.0 gave family 'M.Hassan'"),
+    Case("refused_peng_keeps_the_surname", "Wang Xiao Peng",
+         {"given": "Wang", "middle": "Xiao", "family": "Peng"},
+         classification="parity",
+         notes="P.Eng, Professional Engineer, is refused (en.toml's peng): "
+               "Peng is a Chinese surname and given name"),
+    Case("refused_bed_keeps_the_given_name", "Bed Bahadur Thapa",
+         {"given": "Bed", "middle": "Bahadur", "family": "Thapa"},
+         classification="parity",
+         notes="B.Ed is refused (en.toml's bed): Bed is a Nepali given "
+               "name, in 59 nepal-candidates names"),
     # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
     # and Romanian names, is marked ambiguous as PA is, the surname
     # reading being substantial (Census 1,814).

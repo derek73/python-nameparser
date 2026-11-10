@@ -5,6 +5,95 @@ text = "bapak"
 salutation = { issue = 662, gender = "m", note = "under 100 US Census bearers and none found on Wikidata (tools/name_usage.py, 2026-10-17)", after_given = true }
 
 [[word]]
+text = "mak"
+excluded = { credential = { reason = "M.Ak, Magister Akuntansi (1 ORCID record), is the surname Mak: US Census 2010 5,170 bearers, Wikidata 787 family, written Mak in 68 PSC and 48 PatentsView names (2026-11-09). M.Ak is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "merg"
+excluded = { credential = { reason = "M.Erg, Magister Ergonomi (1 ClinicalTrials.gov official), is borne as a name: FEC writes MERG twice, tse-donors once and jrc-names once, none after a comma, and Wikidata has a family bearer (2026-11-09). M.Erg is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "mfarm"
+credential = { cased = "MFarm", expands = "Magister Farmasi", note = "ORCID records 1, 1 after a comma, written M.Farm 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mgizi"
+credential = { cased = "MGizi", expands = "Magister Gizi", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written M.Gizi 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mhum"
+credential = { cased = "MHum", expands = "Magister Humaniora", note = "ORCID records 3, 3 after a comma, written M.Hum. 2, M.Hum 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mikom"
+credential = { cased = "MIkom", expands = "Magister Ilmu Komunikasi", note = "ORCID records 1, 1 after a comma, written M.Ikom 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mkeb"
+credential = { cased = "MKeb", expands = "Magister Kebidanan", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written M.Keb 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mkep"
+credential = { cased = "MKep", expands = "Magister Keperawatan", note = "ClinicalTrials.gov study officials 6, 6 after a comma, written M.Kep. 3, M.Kep 3; ORCID records 2, 2 after a comma, written M.Kep 1, M.Kep. 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mkes"
+credential = { cased = "MKes", expands = "Magister Kesehatan", note = "ClinicalTrials.gov study officials 13, 13 after a comma, written M.Kes 7, MKes 4, M.Kes. 2; ORCID records 4, 3 after a comma, written MKes 1, M.Kes. 1, M.Kes 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mkn"
+credential = { cased = "MKn", expands = "Magister Kenotariatan", note = "ORCID records 2, 2 after a comma, written M.Kn 2, M.Kn. 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mkom"
+credential = { cased = "MKom", expands = "Magister Komputer", note = "ORCID records 2, 2 after a comma, written M.Kom 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mor"
+excluded = { credential = { reason = "M.Or, Magister Olahraga (1 ORCID record), is the surname and given name Mor: US Census 2010 822 bearers, Wikidata 55 family and 17 given, written Mor in 85 ORCID and 50 PatentsView names (2026-11-09). M.Or is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "mpd"
+credential = { cased = "MPd", expands = "Magister Pendidikan", note = "NPPES 1 US healthcare provider (August 2026 file); ClinicalTrials.gov study officials 1, 1 after a comma, written MPD 1; ORCID records 26, 24 after a comma, written M.Pd. 14, M.Pd 11, MPd. 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mpsi"
+credential = { cased = "MPsi", expands = "Magister Psikologi", note = "ClinicalTrials.gov study officials 4, 4 after a comma, written M.Psi 2, M.Psi. 1, MPSI 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "msi"
+credential = { excluded = { cased = { reason = "a mask applies in every role, and Msi is a Xhosa surname: 'Andiswa Zanele Msi' would render 'Andiswa Zanele MSi' (measured 2026-11-09)", issue = 998 } }, expands = "Magister Sains", note = "NPPES 1 US healthcare provider (August 2026 file); ClinicalTrials.gov study officials 5, 4 after a comma, written MSi 3, MSi. 1, M.Si 1; cz-candidates records 1, 1 after a comma, written MSI 1; ORCID records 18, 17 after a comma, written M.Si 11, M.Si. 4, M.S.I. 1; PSC filings 1, 0 after a comma, written Msi 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+family = { note = "Msi, a Xhosa surname: Andiswa Zanele Msi in ORCID (South Africa) and Mr Afikile Manduleli Msi in PSC, which read the credential with it listed plain (#998); no Census 2010 (floor 100) or Wikidata bearer (2026-11-09)" }
+
+[[word]]
+text = "sfarm"
+credential = { cased = "SFarm", expands = "Sarjana Farmasi", note = "ORCID records 1, 1 after a comma, written S.Farm 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "shut"
+excluded = { credential = { reason = "S.Hut, Sarjana Kehutanan (2 ORCID records), is borne as a surname: Wikidata 2 family bearers, and Shut ends a PatentsView and a PSC name (2026-11-09). S.Hut is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "sked"
+excluded = { credential = { reason = "S.Ked, Sarjana Kedokteran (1 ClinicalTrials.gov official), is a surname: PSC files Sked 6 times and jrc-names once, none after a comma (2026-11-09). S.Ked is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "skom"
+credential = { cased = "SKom", expands = "Sarjana Komputer", note = "ORCID records 6, 6 after a comma, written S.Kom. 5, S.Kom 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "spd"
+credential = { cased = "SPd", expands = "Sarjana Pendidikan", note = "NPPES 1 US healthcare provider (August 2026 file); jrc-names spellings 1, 0 after a comma, written SPD 1; ORCID records 19, 15 after a comma, written S.Pd. 15, S.Pd 4; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "ssi"
+excluded = { credential = { reason = "S.Si, Sarjana Sains (5 ClinicalTrials.gov officials and 3 ORCID records after a comma), is ssi, the romanized Korean honorific 씨 the corpora write after a name (Park Ji-hoon ssi): listed, it would recase there as SSi (measured 2026-11-09). S.Si is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
+text = "ssos"
+credential = { cased = "SSos", expands = "Sarjana Sosial", note = "ORCID records 2, 1 after a comma, written S.Sos. 1, S.Sos 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "ach"
 given = { same_as = "achmad", note = "Achmad written short: ORCID given boxes 94 (Indonesia 48), family boxes 17 (2026-11-06); written with its period at the head of a name (Ach. Arfan Adinata), it read as a title by the leading-abbreviation shape (#1115)" }
 
