@@ -827,6 +827,21 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
         == ["PhD", "MD"]
 
 
+def test_a_credential_written_in_two_chunks_takes_its_mask() -> None:
+    """#998 listed credentials written in two chunks joined at a full
+    stop, each with a `cased` mask, so repair writes the chunks as
+    their writers do, stops included (#459), where the acronym clause
+    wrote them in capitals ('B.PHARM'). The mask lays its letters over
+    the word as written, so the spelling without stops takes it too."""
+    for text, repaired in (
+            ("ahmed ali b.pharm", "Ahmed Ali B.Pharm"),
+            ("JOHN SMITH, M.TECH", "John Smith, M.Tech"),
+            ("jane doe, mkes", "Jane Doe, MKes")):
+        name = parse(text)
+        assert str(name.capitalized()) == repaired, text
+        assert str(name.capitalized(force=True)) == repaired, text
+
+
 def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
 ) -> None:
     """rules/R5 (decided 2026-09-24): the gate leaves the suffixes

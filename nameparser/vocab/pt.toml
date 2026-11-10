@@ -91,6 +91,10 @@ agnomen = { gender = "m", issue = [843, 752], expands = "the nephew", note = "an
 family = { us_census_2010 = 166, wikidata = 18, as_of = 2026-10-25 }
 
 [[word]]
+text = "menf"
+credential = { cased = "MEnf", expands = "Mestre em Enfermagem", note = "ORCID records 2, 2 after a comma, written M.Enf. 1, M.Enf 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "da"
 preposition = { expands = "of the, fem. sg." }
 

@@ -2575,6 +2575,10 @@ issue = 342
 note = "Ba is a real surname (Vietnamese; Senegalese Fula) about as common as BA is a credential, the ma/Ma shape"
 
 [[word]]
+text = "barch"
+excluded = { credential = { reason = "B.Arch, Bachelor of Architecture, is a surname: US Census 2010 672 bearers, written Barch in 9 ClinicalTrials.gov officials' names and 7 FEC ones, none after a comma (2026-11-09). B.Arch is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
 text = "bca"
 credential = {}
 
@@ -2585,6 +2589,10 @@ credential = { expands = "Board Certified Behavior Analyst", note = "NPPES 31,70
 [[word]]
 text = "bch"
 excluded = { credential = { reason = "Bachelor of Surgery (B.Ch., 270 ClinicalTrials.gov officials after a comma), the second half of the split MB BCh (rules/S12), kept out as chb is (measured 2026-11-07); B.Ch is read by its shape, rules/S3", issue = 1131, decided = 2026-11-07 } }
+
+[[word]]
+text = "bchir"
+excluded = { credential = { reason = "B.Chir, Bachelor of Surgery (BChir 62 and B.Chir 3 of 71 ClinicalTrials.gov officials after a comma), is the Tunisian surname Bchir: Wikidata 2 family bearers, ORCID and PSC 3 names, none after a comma (2026-11-09); kept out as bch is. B.Chir is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
 
 [[word]]
 text = "bcl"
@@ -2599,6 +2607,10 @@ text = "bds"
 credential = {}
 
 [[word]]
+text = "bed"
+excluded = { credential = { reason = "B.Ed, Bachelor of Education (NPPES 55, 5 ClinicalTrials.gov officials after a comma), is the Nepali given name Bed (59 nepal-candidates names, Bed Bahadur), and listed it is read as the suffix where the given part after a family comma holds it (Thapa, Bed reads suffix 'Bed'), though no local corpus writes that shape, against 6 readings gained, 3 of them in a field, of the 10 records writing the credential (ClinicalTrials.gov BEd 4 and B.Ed 1, ORCID 4, cz-candidates 1), the other 4 already reading the suffix by rules/S3 or the comma (2026-11-09). B.Ed is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
 text = "bem"
 family = { us_census_2010 = 339, wikidata = 29, as_of = 2026-10-21 }
 credential = { note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
@@ -2608,16 +2620,36 @@ text = "bls-i"
 credential = {}
 
 [[word]]
+text = "bmed"
+credential = { cased = "BMed", expands = "Bachelor of Medicine", note = "NPPES 9 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 18, 18 after a comma, written BMed 11, B.Med 4, B.Med. 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "bn"
 credential = {}
+
+[[word]]
+text = "bnutr"
+credential = { cased = "BNutr", expands = "Bachelor of Nutrition", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written B.Nutr 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "bpe"
 credential = {}
 
 [[word]]
+text = "bpharm"
+credential = { cased = "BPharm", expands = "Bachelor of Pharmacy", note = "NPPES 332 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 63, 61 after a comma, written BPharm 37, B.Pharm 18, B.pharm 2; ORCID records 2, 2 after a comma, written BPharm 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "bphysio"
+credential = { cased = "BPhysio", expands = "Bachelor of Physiotherapy", note = "NPPES 2 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 6, 6 after a comma, written B.Physio 4, BPhysio 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "bpi"
 credential = {}
+
+[[word]]
+text = "bpsych"
+credential = { cased = "BPsych", expands = "Bachelor of Psychology", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written B.Psych 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "bpt"
@@ -2626,6 +2658,10 @@ credential = {}
 [[word]]
 text = "bs"
 credential = { expands = "Bachelor of Science", note = "NPPES 18,880 US healthcare providers (August 2026 file); 449 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "bsci"
+credential = { cased = "BSci", expands = "Bachelor of Science", note = "NPPES 4 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 2, 2 after a comma, written B.Sci 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "bscmed"
@@ -2927,6 +2963,10 @@ credential = { note = "NPPES 1 US healthcare provider writes it (healthcare only
 [[word]]
 text = "cem"
 credential = {}
+
+[[word]]
+text = "ceng"
+excluded = { credential = { reason = "C.Eng, Chartered Engineer, is the Chinese surname Ceng: Wikidata 2,484 family bearers, and PSC files Ceng 7 times, never after a comma (2026-11-09). C.Eng is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
 
 [[word]]
 text = "cep"
@@ -3376,6 +3416,10 @@ text = "cpss"
 credential = {}
 
 [[word]]
+text = "cpsych"
+credential = { cased = "CPsych", expands = "member of the College of Psychologists of Ontario", note = "NPPES 2 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 50, 50 after a comma, written CPsych 25, C.Psych 19, C.Psych. 6; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "cpwa"
 credential = {}
 
@@ -3671,6 +3715,10 @@ issue = 965
 note = "govuk-people 18 names, 6 after a comma; ukec-individuals 6; ctgov-officials 12 (counted 2026-10-30). A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe, DL' ends in the suffix, 'Anna DL' keeps the family; the dotted D.L. stays the paired initials rules/S3 leaves to the name"
 
 [[word]]
+text = "dlitt"
+credential = { cased = "DLitt", expands = "Doctor of Letters", note = "NPPES 1 US healthcare provider (August 2026 file); ClinicalTrials.gov study officials 1, 1 after a comma, written DLitt 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "dm"
 credential = { expands = "Doctor of Medicine", note = "NPPES 80 US healthcare providers (August 2026 file); 471 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -3709,8 +3757,16 @@ text = "dphil"
 credential = { cased = "DPhil", expands = "Doctor of Philosophy", note = "NPPES 72 US healthcare providers (August 2026 file); 296 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "dphysio"
+credential = { cased = "DPhysio", expands = "Doctor of Physiotherapy", note = "ClinicalTrials.gov study officials 3, 3 after a comma, written DPhysio 2, D.Physio 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "dpm"
 credential = {}
+
+[[word]]
+text = "dpsych"
+credential = { cased = "DPsych", expands = "Doctor of Psychology", note = "NPPES 2 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 7, 7 after a comma, written DPsych 6, D.Psych 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "dpt"
@@ -3733,6 +3789,10 @@ text = "dsc"
 credential = { cased = "DSc" }
 
 [[word]]
+text = "dsci"
+credential = { cased = "DSci", expands = "Doctor of Science", note = "NPPES 3 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 30, 30 after a comma, written DSci 19, D.sci 4, D.Sci 3; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "dsm"
 credential = {}
 
@@ -3743,6 +3803,10 @@ credential = {}
 [[word]]
 text = "dss"
 credential = {}
+
+[[word]]
+text = "dtech"
+credential = { cased = "DTech", expands = "Doctor of Technology", note = "NPPES 3 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 2, 2 after a comma, written DTech 1, D.Tech 1; ORCID records 1, 1 after a comma, written D.Tech 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "dtr"
@@ -4484,6 +4548,10 @@ reason = "Mai, a Vietnamese given and family name, a Chinese surname (麥) and a
 issue = 687
 
 [[word]]
+text = "manaes"
+credential = { cased = "MAnaes", expands = "Master of Anaesthesia", note = "ClinicalTrials.gov study officials 6, 6 after a comma, written MAnaes 4, M.Anaes 2; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "mb"
 credential = { expands = "Bachelor of Medicine", note = "NPPES 596 US healthcare providers (August 2026 file); 314 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4502,6 +4570,14 @@ credential = { cased = "MBChB", expands = "Bachelor of Medicine, Bachelor of Sur
 [[word]]
 text = "mbe"
 credential = {}
+
+[[word]]
+text = "mbiomed"
+credential = { cased = "MBiomed", expands = "Master of Biomedicine", note = "ClinicalTrials.gov study officials 3, 3 after a comma, written M.Biomed 2, MBiomed 1; ORCID records 2, 1 after a comma, written M.Biomed 1, M.Biomed. 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
+text = "mbiostat"
+credential = { cased = "MBiostat", expands = "Master of Biostatistics", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written M.Biostat 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mbs"
@@ -4588,6 +4664,10 @@ text = "mem"
 credential = {}
 
 [[word]]
+text = "mendo"
+excluded = { credential = { reason = "M.Endo, a master's in endodontics (1 ClinicalTrials.gov official), is a surname: US Census 2010 274 bearers, Wikidata 7 family and 14 given, and 36 names in the local corpora, none after a comma (2026-11-09). M.Endo is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
 text = "meng"
 family = { us_census_2010 = 5729, wikidata = 1319, as_of = 2026-10-25 }
 given = { us_ssa = 568, wikidata = 23, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 6 in China" }
@@ -4597,6 +4677,10 @@ issue = 540
 note = "Meng is a Chinese surname and given name"
 [word.credential.excluded]
 cased = { reason = "a mask applies in every role, and Meng is borne as a given name and a surname: 'MENG LI' would render 'MEng Li' and 'meng wang' 'MEng Wang' (measured 2026-09-24)", issue = 459 }
+
+[[word]]
+text = "mepid"
+credential = { cased = "MEpid", expands = "Master of Epidemiology", note = "ClinicalTrials.gov study officials 3, 3 after a comma, written M.Epid 3; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mfa"
@@ -4663,6 +4747,10 @@ text = "mmas"
 credential = {}
 
 [[word]]
+text = "mmath"
+credential = { cased = "MMath", expands = "Master of Mathematics", note = "ClinicalTrials.gov study officials 10, 10 after a comma, written MMath 7, M.Math. 1, MMATH 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "mmed"
 credential = { cased = "MMed", expands = "Master of Medicine", note = "NPPES 25 US healthcare providers (August 2026 file); 189 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4687,6 +4775,10 @@ text = "moid"
 excluded = { credential = { reason = "Moid is a borne given name, written last in South Asian and Arabic names (Syed Abdul Moid): psc-individuals writes it Moid 4, nepal-candidates 2, ORCID's given box 20 (IN 2, PK 2, US 2) and family box 14 (IN 4, US 2, 8 with no country). Listed and gated by a given reading, it would read the suffix only spelled MOID in a mixed-case name or after a comma, and take the family from a three-word name written in one case (SYED ABDUL MOID); spelled MoID, as GOV.UK writes it, it would still read as the name (rules/S6), and GOV.UK's one MoID already reads as the suffix behind a listed credential. Measured 2026-10-30 on fec-individuals (3 names writing it), govuk-people (1), orcid-researchers (0) and psc-individuals (4): no name reads differently gated or refused", issue = 965 } }
 
 [[word]]
+text = "moptom"
+credential = { cased = "MOptom", expands = "Master of Optometry", note = "ClinicalTrials.gov study officials 16, 16 after a comma, written MOptom 14, M.Optom 2; ORCID records 1, 0 after a comma, written (M.optom) 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "mot"
 family = { us_census_2010 = 109, wikidata = 3, as_of = 2026-11-03, note = "Wikidata is a lower bound; family by citizenship France 1, Belgium 1" }
 credential = { expands = "Master of Occupational Therapy", note = "NPPES 4,681 US healthcare providers (August 2026 file); 10 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it. Marked on C-i although its surname counts are under the 200 Census threshold: listed plain it read the surname as the credential in every case (Jane Doe Mot read suffix 'Mot'); marked, it costs only a name written in one case with a word to spare, such as tse-donors' DIVA DA MOT (family 'DA', suffix 'MOT', reported) (decisions/suffix-acronym-collisions)", issue = 993 }
@@ -4700,12 +4792,24 @@ text = "mpa"
 credential = {}
 
 [[word]]
+text = "mpharm"
+credential = { cased = "MPharm", expands = "Master of Pharmacy", note = "NPPES 38 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 30, 30 after a comma, written MPharm 21, M.Pharm 5, Mpharm 2; ORCID records 5, 4 after a comma, written MPharm 2, M.Pharm. 1, Mpharm 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "mphil"
 credential = { cased = "MPhil", expands = "Master of Philosophy", note = "NPPES 153 US healthcare providers (August 2026 file); 110 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "mphysio"
+credential = { cased = "MPhysio", expands = "Master of Physiotherapy", note = "NPPES 1 US healthcare provider (August 2026 file); ClinicalTrials.gov study officials 2, 2 after a comma, written M.Physio 1, MPhysio 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "mpse"
 credential = {}
+
+[[word]]
+text = "mpsych"
+credential = { cased = "MPsych", expands = "Master of Psychology", note = "NPPES 7 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 9, 9 after a comma, written MPsych 6, M.Psych. 2, M.Psych 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mpt"
@@ -4726,6 +4830,10 @@ credential = { expands = "Member of the Royal Town Planning Institute", note = "
 [[word]]
 text = "msa"
 credential = {}
+
+[[word]]
+text = "msci"
+credential = { expands = "Master of Science in Clinical Investigation, or the UK's integrated Master in Science", note = "NPPES 62 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 191, 191 after a comma, written MSCI 152, MSci 28, M.Sci 5; cz-candidates records 1, 1 after a comma, written MSci 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); no case mask, since it is written in capitals far more often than as MSci; written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mscmsm"
@@ -4762,6 +4870,10 @@ credential = {}
 [[word]]
 text = "mt-bc"
 credential = { expands = "Music Therapist, Board Certified", note = "NPPES 2,984 US healthcare providers (August 2026 file); 29 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "mtech"
+credential = { cased = "MTech", expands = "Master of Technology", note = "NPPES 2 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 6, 6 after a comma, written MTech 3, M.Tech 3; ORCID records 3, 2 after a comma, written M.Tech. 1, (MTECH 1, M.Tech 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mts"
@@ -4977,6 +5089,10 @@ family = { us_census_2010 = 582, wikidata = 305, as_of = 2026-10-21 }
 credential = { note = "NPPES 44 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
+text = "peng"
+excluded = { credential = { reason = "P.Eng, Professional Engineer (4 ORCID and ClinicalTrials.gov names write it joined at the stop), is the Chinese surname and given name Peng: US Census 2010 10,575 bearers, Wikidata 2,432 family and 413 given (2026-11-09); listed, Wang Xiao Peng would lose its family name. P.Eng is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+
+[[word]]
 text = "pfmp"
 credential = {}
 
@@ -5084,6 +5200,10 @@ text = "pta/l"
 credential = { expands = "Physical Therapist Assistant, Licensed", note = "NPPES 38 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
 
 [[word]]
+text = "ptech"
+credential = { cased = "PTech", expands = "Professional Technologist", note = "NPPES 8 US healthcare providers (August 2026 file); ORCID records 3, 3 after a comma, written PTech 2, P.Tech 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "qam"
 credential = {}
 
@@ -5186,6 +5306,10 @@ text = "rid"
 credential = {}
 
 [[word]]
+text = "rkin"
+credential = { cased = "RKin", expands = "Registered Kinesiologist", note = "ClinicalTrials.gov study officials 1, 1 after a comma, written R.Kin 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+
+[[word]]
 text = "rls"
 credential = {}
 
@@ -5220,6 +5344,10 @@ credential = { cased = "RPh" }
 [[word]]
 text = "rpl"
 credential = {}
+
+[[word]]
+text = "rpsych"
+credential = { cased = "RPsych", expands = "Registered Psychologist", note = "NPPES 2 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 7, 7 after a comma, written RPsych 5, R.Psych. 1, R.Psych 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "rpt"
