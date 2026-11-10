@@ -390,6 +390,13 @@ uv run python tools/differential/config_diff.py score default plain:ES --switche
 uv run python tools/differential/match_diff.py --base ../master-checkout
 ```
 
+**Measuring a change to the group suggester.** `Parser.suggest` moves no parse either, so its check is `suggest_measure.py`: it draws groups of 5 to 200 names (`--sizes`, `--trials`, `--seed`) from populations whose order is known because each name is composed from the boxes its filer typed it into -- PatentsView inventors by country, UK company filers (`psc-individuals`) by nationality, Czech candidates and Vietnamese names, all local corpora -- writes each group given-first and family-first, and prints the share of groups whose suggested `name_order` writes the family at the end the group was written with, under a given-first and a family-first base. The two rows where the group is written in its base's own order are the anti-goal (decisions/group-suggestion): a suggestion must not move a group the base already reads right, and the thresholds in `nameparser/_suggest.py` were chosen so that neither falls below 95% at any size. It also prints each population's votes per name (right, wrong, contested, none) and per signal, with `--wrong-words N` each signal's commonest words in a wrong vote; the opensanctions-parliaments table of the 2026-11-10 TURKIC entry; and every parliament list's own suggestion beside the order it was read by eye to write. `--set NAME=VALUE` tries another threshold without editing the module, and is the harness's proof that it can report a difference: `--set _MIN_VOTES=1000000` decides nothing, so every group written against its base reads 0% (all 46 such rows on 2026-11-10). `--base <checkout>` measures another tree in a child process and lists the cells that moved. A whole run with every source fetched took 18s with `--jobs 12` on a 12-CPU machine (2026-11-10).
+
+```
+uv run python tools/differential/suggest_measure.py
+uv run python tools/differential/suggest_measure.py --set _MIN_VOTES=1000000
+```
+
 For a vocabulary word whose reading acts on a name position, `tools/vocab/word_report.py` gives the per-word view before and alongside this: the word in a grid of shapes, its incidence in every fetched local corpus, and its `name_usage.py` rows (`nameparser/vocab/README.md`, "Adding a word").
 
 ## Corpus provenance

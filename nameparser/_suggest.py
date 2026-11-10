@@ -186,13 +186,29 @@ def name_votes(text: str, lexicon: Lexicon
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
 
-#: The fewest names voting for a value that can decide it. Provisional:
-#: the thresholds are measured and tuned in a later step of the feature.
-_MIN_VOTES = 1
-#: The share of the voting names that one value must hold STRICTLY MORE
-#: THAN to decide it, so a tie decides nothing. Provisional, like
-#: _MIN_VOTES.
-_MIN_SHARE = 0.5
+# The three thresholds were chosen with
+# tools/differential/suggest_measure.py, which draws groups of 5 to 200
+# names written in a known order and counts the groups suggested right
+# under both base orders; the table behind them, and the rule they meet
+# (a group read right under its own base stays right in at least 95% of
+# draws at every size), are in decisions/group-suggestion, 2026-11-10
+# THRESHOLDS.
+
+#: The fewest names voting for a value that can decide it: one name
+#: alone moved 7-8% of Indian inventors' given-first groups of five to
+#: family-first.
+_MIN_VOTES = 2
+#: The share of the names casting an order vote that one end must hold
+#: STRICTLY MORE THAN to decide the order: more than two thirds, so a
+#: tie, or two names against one, decides nothing.
+_MIN_SHARE = 2 / 3
+#: The share of the names casting any vote that one patronymic rule
+#: must hold strictly more than to decide it. Higher than _MIN_SHARE
+#: because a decided East Slavic rule forces a given-first order: in
+#: PatentsView's Russian inventors, written family-first, 44% of the
+#: names carry a patronymic, and under a share of a half a third of
+#: their groups were moved to given-first.
+_MIN_PATRONYMIC_SHARE = 0.8
 
 _NAME_ORDER = "name_order"
 _PATRONYMIC_RULES = "patronymic_rules"
@@ -532,16 +548,19 @@ class _Tally:
 
 def _patronymic_winner(tally: _Tally, any_voters: int
                        ) -> PatronymicRule | None:
-    """The rule whose names are strictly more than _MIN_SHARE of the
-    names that cast any vote, and at least _MIN_VOTES of them. A name
-    casts at most one patronymic vote, so its votes count names: a
-    share of the group, not of the patronymic votes alone, so one
-    patronymic among many given-first names decides nothing."""
+    """The rule whose names are strictly more than _MIN_PATRONYMIC_SHARE
+    of the names that cast any vote, and at least _MIN_VOTES of them. A
+    name whose order signals are contested still counts among the names
+    that cast a vote: it carries evidence, and leaving it out moved no
+    measured group by more than a point. A name casts at most one
+    patronymic vote, so its votes count names: a share of the group,
+    not of the patronymic votes alone, so one patronymic among many
+    given-first names decides nothing."""
     counts = tally.by_name
     if not counts:
         return None
     rule, count = max(counts.items(), key=lambda item: item[1])
-    if count < _MIN_VOTES or count <= _MIN_SHARE * any_voters:
+    if count < _MIN_VOTES or count <= _MIN_PATRONYMIC_SHARE * any_voters:
         return None
     return rule  # type: ignore[return-value]
 

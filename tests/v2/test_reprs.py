@@ -199,9 +199,10 @@ def test_order_repr_survives_smuggled_setstate_values() -> None:
 
 def test_suggestion_repr_shows_the_patch_and_counts_never_the_names(
         ) -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith"])
+    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+                          "Jason Smith"])
     assert repr(s) == ("Suggestion(PolicyPatch(name_order=FAMILY_FIRST), "
-                       "names=3, disagreeing=1)")
+                       "names=4, disagreeing=1)")
     for evidence in s.evidence:
         for text in ("Priem", "Kim", "Smith"):
             assert text not in repr(evidence)
