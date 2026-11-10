@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
 
-from nameparser._suggest import fold  # noqa: E402,F401  (the one fold)
+from nameparser._suggest import fold  # noqa: E402  (the one fold)
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
 UNIHAN_URL = "https://www.unicode.org/Public/16.0.0/ucd/Unihan.zip"

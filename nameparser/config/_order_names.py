@@ -12,19 +12,12 @@ Sources and licences:
   single-character surname ``locales.ZH`` lists, from the first
   ``kMandarin`` reading in the Unicode Consortium's Unihan database
   (Unicode License v3), tones dropped. See tools/vocab/order_names.py.
-- ``_ZH_OTHER_SPELLINGS``: the Wade-Giles, Hong Kong (Cantonese),
-  Hokkien and Southeast Asian Chinese spellings by which the same
-  surnames are written outside the PRC (hand list, customary
-  romanizations; Hong Kong and Singapore usage as seen in public
-  registers and passports).
-- ``_KO_SPELLINGS``: the common Korean surnames and their usual
-  romanizations, including the variants beside the Revised Romanization
-  (Statistics Korea's 2015 population and housing census surname ranks
-  for the surnames; the customary spellings from the Korean passport
-  romanization practice, which lets a holder keep a spelling).
-- ``_VI_SURNAMES``: the common Vietnamese surnames, diacritics folded
-  (hand list ordered by the published frequency ranking of Vietnamese
-  surnames, where the top ten cover about 85% of the population).
+- ``_ZH_OTHER_SPELLINGS``, ``_KO_SPELLINGS`` and ``_VI_SURNAMES``:
+  hand-curated common romanizations (Wade-Giles, Cantonese, Hokkien and
+  Southeast Asian Chinese spellings; Korean spellings beside the Revised
+  Romanization; Vietnamese surnames with diacritics folded), assembled
+  for this feature on 2026-11-10 and not checked against any published
+  ranking or register.
 
 The hand lists are curated, so a word that is also a given name in
 another culture may appear in two tables; the table lists spellings,

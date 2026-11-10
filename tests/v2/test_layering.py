@@ -696,17 +696,18 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: the chunks read alone, the titles a chunk chains, the word after
 #: the stop and the end-of-name report's suffix and title tests,
 #: 147 -> 169);
-#: the tools' 19 are 17
+#: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
-#: with one of the loads moved the count from 16. 4i-a's own count was 114 (on
+#: with one of the loads moved the count from 16, and the 20th is
+#: tools/vocab/order_names.py reading `locales.ZH.lexicon._sets.surnames`
+#: (group suggestions). 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-#: Re-taken to 20 tools for tools/vocab/order_names.py (group suggestions).
 _UNGUARDED_READS = {"library": 169, "tools": 20}
 
 
