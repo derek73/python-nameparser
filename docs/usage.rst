@@ -1343,7 +1343,7 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
      - ``María García`` / ``MARIA GARCIA``
      - yes
-   * - ``joined``: equal once folded and stripped of spaces and hyphens, save two roles written in initials alone
+   * - ``joined``: equal once folded and stripped of spaces and hyphen-minus signs, save where both are initials alone
      - ``Ignazio LaRussa`` / ``Ignazio La Russa``
      - yes
    * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
@@ -1413,8 +1413,8 @@ never conflicts, so a career from ``Mr.`` to ``Dr.`` does not separate
 a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
-read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
-Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
+into one word agree with the same letters written apart as ``joined``
+(``J.P. Smith`` / ``J.-P. Smith``). Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
 transliterations unless the vocabulary lists the pair as a familiar
 form (``Igor`` / ``Ihor`` is one, below). A familiar form you have not
 accepted keeps the pair inconsistent though its row reads

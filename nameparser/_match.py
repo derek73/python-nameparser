@@ -366,9 +366,11 @@ class Matching:
         """Grouping keys: for each word of the folded family base, and
         each half of a hyphenated one beside its joined and its whole
         form, a half that is a listed particle left out (`Al-Saud` keys
-        `saud`, `alsaud` and `al-saud`, never `al`), one key `word;g`
-        where `g` is the first letter of the given name (empty where
-        there is none). A word is keyed by every word in its spelling
+        `saud`, `alsaud` and `al-saud`, never `al`), and for the family's
+        whole text, particles kept, folded and joined (`de la Vega` keys
+        `delavega` beside `vega`), one key `word;g` where `g` is the
+        first letter of the given name once joined (empty where there is
+        none; `-Pierre` gives `p`). A word is keyed by every word in its spelling
         set among surnames (itself and the words it is listed as a
         spelling of, read as written and folded, each folded), and a
         given name by the first letter of every word in its set among
@@ -382,16 +384,18 @@ class Matching:
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
-        check compares is keyed, so two names it finds consistent share
-        a key and grouping by key loses no match. A name with no family
-        has no key.
+        check compares is keyed, and so is the whole family joined,
+        which two family names read `joined` share, so two names it finds
+        consistent share a key and grouping by key loses no match. A
+        name with no family has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
         `familiar-form` the given letters of the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
-        words without particles as family words, and as given letters
+        words without particles as family words, and its whole text
+        joined, and as given letters
         the first letter of each middle word and of the nickname's
         first word, save a middle word or a nickname written in
         initials alone, which the check never matches across roles.
@@ -800,8 +804,8 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     family role after the first of its chain (decisions/name-matching,
     2026-11-08 FAMILIAR FORMS, the review's ruling 1).
 
-    - A full-name outcome (`_full_outcome`: same, folded, listed
-      spelling) implies every weaker one, two texts equal once folded
+    - A full-name outcome (`_full_outcome`: same, folded, joined,
+      listed spelling) implies every weaker one, two texts equal once folded
       or listed as one needing no other leniency, so it is the only
       outcome yielded. `joined` is the exception: two texts equal once
       their spaces and hyphens go may still need the weaker leniencies
