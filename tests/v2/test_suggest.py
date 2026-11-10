@@ -245,6 +245,24 @@ def test_a_turkic_group_keeps_the_order_its_own_votes_decide() -> None:
     assert s.parser.parse("BÜLBÜLOĞLU Polad").family == "BÜLBÜLOĞLU"
 
 
+def test_a_turkic_group_on_a_family_first_base_follows_its_names() -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(["Ali Huseyn oglu Mamedov", "Leyla Rasim qizi Aliyeva",
+                      "Rauf Ilham oglu Aliyev"])
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
+    # the rule forces no order, and the names' own votes decide it
+    assert s.patch.name_order == GIVEN_FIRST
+    assert s.parser.parse("Ali Huseyn oglu Mamedov").family == "Mamedov"
+
+
+def test_a_base_holding_the_turkic_rule_leaves_the_patch_empty() -> None:
+    base = Parser(policy=Policy(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    s = base.suggest(["Mamedov Ali Huseyn oglu"])
+    assert s.patch.patronymic_rules is UNSET
+    assert _patronymic_evidence(s).decided
+
+
 def test_a_base_holding_the_rule_already_leaves_the_patch_empty() -> None:
     base = Parser(policy=Policy(
         patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})))
