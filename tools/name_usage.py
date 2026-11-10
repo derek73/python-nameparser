@@ -1299,9 +1299,23 @@ SELECT ?role ?country (COUNT(DISTINCT ?p) AS ?n) WHERE {{{_people(match)}
 }} GROUP BY ?role ?country"""
 
 
+class _ShapeError(ValueError):
+    """A SPARQL reply that parsed but is not the shape asked for. Not an
+    overrun, so the CJK index does not halve and resend on it."""
+
+
 def _bindings(response: dict[str, Any]) -> list[dict[str, str]]:
-    return [{key: cell["value"] for key, cell in row.items()}
-            for row in response["results"]["bindings"]]
+    """The rows of a SPARQL JSON reply. A reply of another shape raises
+    ValueError, which every caller reports as a failed row, rather than
+    the TypeError or AttributeError it would otherwise raise past them
+    and end the run."""
+    try:
+        rows = response["results"]["bindings"]
+        return [{key: str(cell["value"]) for key, cell in row.items()}
+                for row in rows]
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise _ShapeError(f"a SPARQL reply of the wrong shape "
+                         f"({type(exc).__name__}: {exc})") from exc
 
 
 def read_wikidata(totals: list[dict[str, str]],
@@ -1594,6 +1608,8 @@ def _index_sparql(query: str, as_csv: bool = False) -> list[dict[str, str]]:
             exc.close()
         if overran:
             raise _Overrun(f"HTTP {exc.code}") from None
+        raise
+    except _ShapeError:
         raise
     except (ValueError, TimeoutError, http.client.IncompleteRead) as exc:
         # At its limit WDQS cuts a 200 off mid-stream, which surfaces as
@@ -1911,24 +1927,22 @@ def people_source(wiki: str) -> str:
 
 
 def _people_key(text: str) -> str:
-    """One word as the index matches it: NFC, invisible characters out,
-    and edge periods off (`பா.உ` is `பா.உ.`). Applied to words already
-    cut at _WORD_BREAK, so a single strip reaches the edge."""
-    return unicodedata.normalize("NFC", text).translate(_INVISIBLE).strip(".")
+    """One word as the index matches it: NFC and invisible characters
+    out first, so none hides an edge, then quotes, brackets and periods
+    off its edges (`பா.உ` is `பா.உ.`). Applied to words already cut at
+    _WORD_BREAK, so a single strip reaches the edge."""
+    folded = unicodedata.normalize("NFC", text).translate(_INVISIBLE)
+    return folded.strip("\"'“”‘’()[].")
 
 
 def name_words(name: str, disambiguators: bool = True) -> list[str]:
     """A name's words, each folded by _people_key. With `disambiguators`,
     every group in round brackets is dropped first (a title's
     disambiguator, `முதலாம் பாஸ்கால் (திருத்தந்தை)`); the rest is cut at
-    _WORD_BREAK, and quotes, brackets and periods come off each word's
-    edges. A looked-up word is cut with `disambiguators` off, so a word
-    written in brackets (`(செல்வி)`, as #1244's titles are) is matched
-    rather than dropped."""
+    _WORD_BREAK."""
     if disambiguators:
         name = re.sub(r"\s*\([^)]*\)", "", name)
-    words = (_people_key(w.strip("\"'“”‘’()[]."))
-             for w in _WORD_BREAK.split(name))
+    words = (_people_key(w) for w in _WORD_BREAK.split(name))
     return [w for w in words if w]
 
 
@@ -1951,12 +1965,18 @@ class PeopleIndex:
         """Each person one of whose names holds the word, once, with
         where it stands there and the name it was found in. The word is
         cut as a name is and matched as its words in a row, so a spaced
-        word (`பா. உ.`) is found; kept whole, it would match nothing. A
-        name that is the word alone wins over any placing; otherwise the
-        first name holding it decides, the label before the title, and
-        within a name its first occurrence. An empty word raises
-        ValueError: it would match nobody, a false zero."""
-        key = name_words(word, disambiguators=False)
+        word (`பா. உ.`) is found; kept whole, it would match nothing. Only
+        a word that is nothing but a bracketed group (`(செல்வி)`, as
+        #1244 writes its titles) keeps that group's content, since cut as
+        a name it would be empty; folding the word otherwise than the
+        names it is matched against loses a word pasted with its
+        disambiguator. A name that is the word alone wins over any
+        placing; otherwise the first name holding it decides, the label
+        before the title, and within a name its first occurrence. An
+        empty word raises ValueError: it would match nobody, a false
+        zero."""
+        key = (name_words(word)
+               or name_words(word, disambiguators=False))
         if not key:
             raise ValueError(f"{word!r} has nothing left to match once "
                              "folded")
@@ -2056,6 +2076,10 @@ def _fetch_people(wiki: str) -> PeopleIndex:
                          f"{sorted(rows[0])}, not p and title")
     names: dict[str, list[str]] = {}
     for row in rows:
+        # csv returns a short row's missing cells as None, which would be
+        # cached as a name and fail every later match.
+        if not (isinstance(row.get("p"), str) and isinstance(row.get("title"), str)):
+            raise ValueError(f"the {language} listing has a short row: {row!r}")
         names.setdefault(_qid(row["p"]), []).append(row["title"])
     expected = int(count["n"])
     if not names or len(names) < expected - expected // 1000:
@@ -2089,9 +2113,7 @@ def load_people(wiki: str, download: bool,
     language = PEOPLE_WIKIS[wiki][0]
     try:
         index = _fetch_people(wiki)
-    # TypeError too: a reply of the right keys but the wrong shape
-    # ({"results": []}) fails there, and must fail this row, not the run.
-    except (*_QUERY_ERRORS, TypeError) as exc:
+    except _QUERY_ERRORS as exc:
         if isinstance(exc, urllib.error.HTTPError):
             exc.close()
         raise ValueError(f"fetching the {language} Wikipedia people failed: "

@@ -2683,11 +2683,17 @@ def test_an_invisible_character_does_not_hide_a_match(spelling: str) -> None:
         "Q1": "first", "Q2": "last"}
 
 
+@pytest.mark.parametrize("reply", [
+    {"results": []}, {"results": {"bindings": None}},
+    {"results": {"bindings": [1]}}, {"results": {"bindings": ["ab"]}},
+    {"results": {"bindings": [{"n": "3"}]}}])
 def test_a_reply_of_the_wrong_shape_fails_the_row_not_the_run(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, reply: object) -> None:
+    # Each raised TypeError or AttributeError past _attempt and ended the
+    # run, taking every other source's answer with it.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(tool, "_sparql", lambda query: {"results": []})
-    with pytest.raises(ValueError, match="failed: TypeError"):
+    monkeypatch.setattr(tool, "_sparql", lambda query: reply)
+    with pytest.raises(ValueError, match="wrong shape"):
         tool.load_people("ta", download=True)
 
 
@@ -2714,3 +2720,53 @@ def test_an_older_index_read_offline_says_it_is_from_another_version(
     row = json.loads(capsys.readouterr().out)["ராஜா"][-1]
     assert row["status"] == "not downloaded"
     assert "written by another version" in row["note"]
+
+
+@pytest.mark.parametrize(("word", "found"), [
+    # Rows the first bracket fix lost by folding the word otherwise than
+    # the names: each matched before it, and must still.
+    ("முதலாம் பாஸ்கால் (திருத்தந்தை)", {"Q1": "alone"}),
+    ("செல்வி (நடிகை)", {"Q2": "last"}),
+    ("(செல்வி)", {"Q2": "last"}),
+])
+def test_a_word_is_folded_as_the_names_it_is_matched_against(
+        word: str, found: dict[str, str]) -> None:
+    index = _people_index(("Q1", ("முதலாம் பாஸ்கால் (திருத்தந்தை)",)),
+                          ("Q2", ("ராஜா செல்வி",)))
+    assert {p.qid: pos for pos, p, _ in index.holding(word)} == found
+
+
+def test_an_invisible_character_before_a_quote_does_not_keep_the_quote() -> None:
+    assert tool.name_words("\u2060'செல்வி' ராஜா") == ["செல்வி", "ராஜா"]
+
+
+def test_a_short_listing_row_is_refused_not_cached(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "_sparql_csv", lambda query: [
+        {"p": "http://www.wikidata.org/entity/Q5", "title": None}])
+    _stub_sparql(monkeypatch, [[{"n": "1"}]])
+    with pytest.raises(ValueError, match="short row"):
+        tool.load_people("ta", download=True)
+    assert not (tmp_path / tool.PEOPLE_DIR / "ta.json").exists()
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_reply_of_the_wrong_shape_is_not_read_as_an_overrun(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # An overrun halves the batch and asks again; a wrong shape would only
+    # fail again, smaller, so it fails at once.
+    labels: list[str] = []
+
+    def answer(query: str) -> dict[str, Any]:
+        if "rdfs:label" in query:
+            labels.append(query)
+            return {"results": {"bindings": [1]}}
+        rows = ([{"n": "2"}] if "COUNT" in query else
+                [{"item": f"http://www.wikidata.org/entity/Q{n}"} for n in (1, 2)])
+        return {"results": {"bindings": [
+            {k: {"value": v} for k, v in row.items()} for row in rows]}}
+    monkeypatch.setattr(tool, "_sparql", answer)
+    with pytest.raises(ValueError, match="wrong shape"):
+        tool.load_index(download=True)
+    assert len(labels) == 1
