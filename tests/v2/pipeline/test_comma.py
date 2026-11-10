@@ -455,3 +455,141 @@ def test_a_shape_only_generation_reads_as_a_listed_one(
             if got != listed:
                 moved.append(text)
     assert not moved
+
+
+# C16's run of initials behind one word, read as the given name
+# whatever it spells (#1238). Synthetic vocabulary: 'jp' and 'md'
+# unambiguous credentials, 'ma' a credential with a family reading, 'bin'
+# a particle that may be a given name.
+_RUN_LEX = (Lexicon()
+            .add("phd", "md", "jp", "ma", kind="credential", acronym=True)
+            .add("ma", kind="family")
+            .add("jr", kind="suffix")
+            .add("de", "bin", kind="particle")
+            .add("bin", kind="given")
+            .add("dr", "knight", kind="title"))
+_RUN_PARSER = Parser(lexicon=_RUN_LEX,
+                     policy=Policy(segment_scripts=frozenset()))
+
+
+@pytest.mark.parametrize(("text", "fields"), [
+    # a listed run reads as an unlisted one does, whatever it spells
+    ("Jansen, J.P.", {"given": "J.", "middle": "P.", "family": "Jansen"}),
+    ("Jansen, M.A.", {"given": "M.", "middle": "A.", "family": "Jansen"}),
+    # the suffix after a further comma stays the suffix
+    ("Jansen, J.P., Jr.", {"given": "J.", "middle": "P.", "suffix": "Jr."}),
+    # a title in front leaves it a name: the run is tagged an initial so
+    # the given part's walk does not peel it as a trailing suffix
+    ("Jansen, Dr. J.P.", {"title": "Dr.", "given": "J.", "middle": "P."}),
+    # a particle written in lower case before a capitalized word is no
+    # second name word
+    ("de Waart, J.P.", {"given": "J.", "family": "de Waart"}),
+    # a name written in one case parts its run as its capitals would
+    ("jansen, j.p.", {"given": "j.", "middle": "p.", "family": "jansen"}),
+    # a suffix word ending the head is no second word
+    ("Jansen Jr., J.P.", {"given": "J.", "family": "Jansen",
+                          "suffix": "Jr."}),
+])
+def test_a_listed_run_behind_one_name_word_is_the_given_name(
+        text: str, fields: dict[str, str]) -> None:
+    n = _RUN_PARSER.parse(text)
+    assert {k: getattr(n, k) for k in fields} == fields
+    # the decision is reported where it was taken, the credential its
+    # other branch
+    [report] = n.ambiguities
+    assert report.kind is AmbiguityKind.SUFFIX_OR_NAME
+    assert report.alternative is not None
+    assert report.alternative.role is Role.SUFFIX
+
+
+@pytest.mark.parametrize(("text", "suffix"), [
+    # two name words before the comma: C4's count reads the credential
+    ("Jan Jansen, J.P.", "J.P."),
+    # a capitalized particle that may be the given name counts as a word
+    ("Bin Zhang, M.D.", "M.D."),
+    # a head written all in lower case in a name of mixed case
+    ("de jansen, M.D.", "M.D."),
+
+    # every other word of the part a credential: C8's run
+    ("Jansen, M.D. PhD", "M.D. PhD"),
+    # a second listed run is company like any credential
+    ("Jansen, J.P. M.A.", "J.P. M.A."),
+    # a credential in front makes the run (the paired-initials Except)
+    ("Jansen, PhD J.P.", "PhD J.P."),
+    # lower case among capitals is no initials' writing, as rules/T7 has
+    # it
+    ("Jansen, j.p.", "j.p."),
+    # undotted, the credential's own spelling
+    ("Jansen, JP", "JP"),
+])
+def test_a_listed_run_stays_the_credential_outside_the_lone_word(
+        text: str, suffix: str) -> None:
+    assert _RUN_PARSER.parse(text).suffix == suffix
+
+
+def test_a_word_the_count_leaves_out_is_a_word_as_written() -> None:
+    # the default vocabulary's 'knight', a title C4's count does not
+    # read as a name word: one word as written, the head is two, and the
+    # part stays the credential run (ClinicalTrials.gov's officials)
+    n = parse("Ashley Knight, M.S. BME")
+    assert (n.given, n.family, n.suffix) == ("Ashley", "Knight", "M.S. BME")
+
+
+def test_a_listed_run_behind_a_name_word_is_the_given_parts_to_read() -> None:
+    # 'John' made the part the given part, so the run is not the one the
+    # reading stopped at: it ends the given part as a credential, unreported
+    n = _RUN_PARSER.parse("Jansen, John J.P.")
+    assert (n.given, n.suffix, n.ambiguities) == ("John", "J.P.", ())
+
+
+def test_a_run_holding_an_uncased_letter_is_no_initials() -> None:
+    # 'J.씨' is a glued honorific, its second letter in a script with no
+    # capitals: not every letter is one, so it is no run of initials
+    n = parse("김민준씨, J.씨")
+    assert (n.family, n.suffix) == ("김민준", "씨, J.씨")
+
+
+def test_a_decomposed_run_reads_as_its_composed_twin() -> None:
+    import unicodedata
+    lex = _RUN_LEX.add("ép", kind="credential", acronym=True)
+    p = Parser(lexicon=lex, policy=Policy(segment_scripts=frozenset()))
+    composed = p.parse("Jansen, É.P.")
+    decomposed = p.parse(unicodedata.normalize("NFD", "Jansen, É.P."))
+    assert composed.given == "É."
+    assert unicodedata.normalize("NFC", decomposed.given) == "É."
+
+
+@pytest.mark.parametrize(("text", "given", "suffix"), [
+    # a capitalized particle that is the whole head is one word
+    ("Le, J.P.", "J.", ""),
+    # a numeral of two or more letters ending the head is none, as C3
+    # counts it
+    ("Jansen VI, J.P.", "J.", "VI"),
+    # only the suffix words ENDING the head are none: one in front of a
+    # name word is a word, so the head is two (ClinicalTrials.gov)
+    ("Dr.B. Akila., M.D", "Dr.B.", "M.D"),
+    # a numeral is passed over only in capitals ('Vi' a surname), a
+    # single letter never ('Smith V' a whole name, C1), and a title
+    # alone is no surname
+    ("Le Vi, M.D.", "", "M.D."),
+    ("Smith V, M.D.", "Smith", "M.D."),
+    ("Dr. VI, M.D.", "", "M.D."),
+    # a generation behind the run is no company, nor a dual written as
+    # a title rather than a credential
+    ("Rinehart, J.D. Jr.", "J.", "Jr."),
+    ("Smith, J.P. Ms.", "J.", "Ms."),
+    # a capitals word is company only where C6 finds the name's contrast
+    ("McDONALD, J.P. ANNE", "J.", ""),
+    # C10: a glued delimiter reads as a space in its place, as the
+    # unlisted twin 'Smith, X.Q.;' reads
+    ("Smith, J.P.;", "J.P.;", ""),
+    # behind the run a title/suffix dual, a spaced delimiter and an
+    # unlisted capitals credential C6 admits are company: C8's run
+    ("Smith, M.D. MS", "", "M.D. MS"),
+    ("Smith, M.D. / PhD", "", "M.D. / PhD"),
+    ("Smith, M.D. FRCS", "", "M.D. FRCS"),
+])
+def test_a_listed_run_behind_one_word_in_the_default_vocabulary(
+        text: str, given: str, suffix: str) -> None:
+    n = parse(text)
+    assert (n.given, n.suffix) == (given, suffix)

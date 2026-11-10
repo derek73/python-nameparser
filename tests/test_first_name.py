@@ -14,12 +14,18 @@ class FirstNameHandlingTests(ParsedNameTestBase):
         self.m(hn.family, "Andrews", hn)
 
     def test_assume_suffix_title_and_one_other_name_is_last_name(self) -> None:
-        # xfail in v1 (which parsed first='M.D.'); 2.0's family-comma
-        # suffix peel routes the post-comma suffix piece to suffix and
-        # keeps the pre-comma piece in last, so the long-desired
-        # expectation now holds. 2.0: fix(comma-family/suffix-routing).
+        # xfail in v1 (which parsed first='M.D.'); 2.0.0 through 3.0.1
+        # read suffix 'M.D.'. Since #1238 initials run together behind
+        # one name word are the given name whatever they spell
+        # (rules/C16), the credential reported as the other reading; the
+        # undotted credential keeps this test's expectation.
         hn = parse("Andrews, M.D.")
-        self.m(hn.suffix, "M.D.", hn)
+        self.m(hn.given_names, "M.D.", hn)
+        self.m(hn.suffix, "", hn)
+        self.m(hn.family, "Andrews", hn)
+        assert [a.kind.value for a in hn.ambiguities] == ["suffix-or-name"]
+        hn = parse("Andrews, MD")
+        self.m(hn.suffix, "MD", hn)
         self.m(hn.family, "Andrews", hn)
 
     def test_suffix_in_lastname_part_of_lastname_comma_format(self) -> None:

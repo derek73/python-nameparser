@@ -572,6 +572,13 @@ _PREFIXED_SHAPES: dict[
         "John Smith, MD ", "G.J. ", Parser(),
         lambda text: parse(text).given == "John",
     ),
+    # every word a run of initials spelling a listed credential behind
+    # one name word (rules/C5, #1238): each is gathered, and the rest of
+    # the part scanned once for company, never per run
+    "listed_runs": (
+        "Jansen, ", "M.A. ", Parser(),
+        lambda text: parse(text).suffix.startswith("M.A."),
+    ),
     # every two-capital word is a caps-shape pair, through the same
     # per-pair test and the members list scanned per piece
     "caps_pairs": (

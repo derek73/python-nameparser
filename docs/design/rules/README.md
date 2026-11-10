@@ -188,6 +188,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [C13 — a credential opening the part after the comma](C13-credential-opening-the-part-after-the-comma.md)
 - [C14 — strict mode: a suffix word written as an initial](C14-strict-mode-a-suffix-word-written-as-an-initial.md)
 - [C15 — a comma with nothing before it](C15-comma-with-nothing-before-it.md)
+- [C16 — initials spelling a credential after one word and a comma](C16-initials-spelling-a-credential-after-one-word-and-a-comma.md)
 
 ## [Name order (O)](O-name-order.md)
 

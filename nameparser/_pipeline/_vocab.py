@@ -853,6 +853,14 @@ _DOTTED = re.compile(r"(?:" + _LETTER + r"\.)+")
 # optional ('E.T.', 'J.R.R', #1296); _RUN_LETTER is one letter of it
 # with its stop. _render holds a copy of each (tests/v2/test_regex_sync.py)
 _LETTER_RUN = re.compile(r"(?:" + _LETTER + r"\.)+" + _LETTER + r"\.?")
+
+
+def is_letter_run(text: str) -> bool:
+    """Two or more single letters joined by full stops ('J.P.', 'J.R.R'),
+    the way a person's initials are written run together: rules/T7's
+    run, and the shape rules/C16 reads as a name after the comma behind
+    one name word whatever it spells (#1238)."""
+    return _LETTER_RUN.fullmatch(text) is not None
 _RUN_LETTER = re.compile(_LETTER + r"\.?")
 # #544: the CHUNKED spelling -- two or more runs of letters, each
 # closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the

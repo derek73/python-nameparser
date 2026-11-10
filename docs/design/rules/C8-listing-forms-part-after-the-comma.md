@@ -27,6 +27,7 @@
 **Precedence:**
 
 - **A credential opening the part after the comma** ("Doe, PhD Jones"): C13 governs, and the part is postnominal however it goes on, not the given name.
+- **Initials spelling a credential behind one word** ("Jansen, J.P."): C16 governs, and the run is the given name there, not a part of suffix words.
 
 **Accepted:**
 

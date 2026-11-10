@@ -1333,12 +1333,15 @@ CASES: tuple[Case, ...] = (
                "credential even after a one-word head, where 'Novak, "
                "Ing.' keeps the title; master read title 'ING.'"),
     Case("comma_dotted_initials_ing_are_a_credential", "Smith, I.N.G.",
-         {"family": "Smith", "suffix": "I.N.G."},
-         classification="fix(#848)",
-         notes="the accepted cost: the dotted spelling of an ambiguous "
-               "member reads as the credential with no report, as "
-               "'Smith, M.A.' does; before #848 this read given 'I.N.G.', "
-               "reported"),
+         {"given": "I.", "middle": "N.G.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1238)",
+         notes="#848's accepted cost, the dotted spelling of an "
+               "ambiguous member read as the credential with no report, "
+               "lifted by #1238 behind one name word: a run of initials "
+               "there is the given name whatever it spells (rules/C16), "
+               "reported; the id keeps #848's wording, which "
+               "decisions/suffix-acronym-collisions cites"),
     # #965: King's Counsel, a credential listed as a WORD and gated by
     # its family reading (rules/S11), since KC is also the Nepali surname
     Case("kc_ends_the_name_as_a_suffix", "John Smith KC",
@@ -5368,13 +5371,16 @@ CASES: tuple[Case, ...] = (
                ". Since #1296 the run of letters parts into initials (rules/T7): "
                "given 'A.', middle 'B.'",
          shape=2),
-    Case("whole_token_vocabulary_wins_over_the_shape",
+    Case("a_listed_run_behind_one_word_is_read_as_initials",
          "Smith, A.B.C.",
-         {"family": "Smith", "suffix": "A.B.C."},
-         notes="'abc' IS a suffix acronym, so the whole-token lookup "
-               "settles this before any shape reading and the count "
-               "never runs. The boundary between #516's shape class "
-               "and the vocabulary it does not touch",
+         {"given": "A.", "middle": "B.C.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1238)",
+         notes="'abc' IS a suffix acronym, which settled this before "
+               "#1238 as the credential; behind one name word a run of "
+               "initials is the given name whatever it spells "
+               "(rules/C16), as #516's unlisted 'X.Y.Z.' is, the "
+               "credential reported",
          shape=2),
     Case("a_leading_dotted_run_is_untouched", "X.Y.Z. Smith",
          {"given": "X.", "middle": "Y.Z.", "family": "Smith"},
@@ -9983,12 +9989,16 @@ CASES: tuple[Case, ...] = (
                "whatever stands behind it ('Eric H. Holder, Jr. Chief "
                "Witness', 'witness' being no title word, reads suffix "
                "'Jr. Witness', title 'Chief')"),
-    Case("family_comma_lone_suffix_piece", "Andrews, M.D.",
-         {"family": "Andrews", "suffix": "M.D."},
-         classification="fix(comma-family)",
-         notes="v1 made the lone post-comma strict-suffix piece the "
-               "given; 2.0 routes it to suffix (same family as the "
-               "'Smith, Dr.' row)"),
+    Case("family_comma_lone_dotted_credential_is_initials",
+         "Andrews, M.D.",
+         {"given": "M.", "middle": "D.", "family": "Andrews"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1238)",
+         notes="1.4.0 read given 'M.D.' and 2.0.0 through 3.0.1 suffix "
+               "'M.D.'; since #1238 initials run together behind one "
+               "name word are the given name whatever they spell "
+               "(rules/C16), parted by T7, the credential reported. "
+               "Undotted, 'Smith, MD' stays the suffix"),
     Case("family_comma_suffix_run_renders_unjoined", "Smith, MD PhD",
          {"family": "Smith", "suffix": "MD PhD"},
          classification="fix(comma-family)",
@@ -13835,8 +13845,15 @@ CASES: tuple[Case, ...] = (
                "what the ambiguous gate would have cost"),
     Case("audit_ms_leading_is_the_honorific", "Ms. Smith",
          {"title": "Ms.", "family": "Smith"}),
-    Case("audit_perioded_ms_is_the_degree", "Smith, M.S.",
-         {"family": "Smith", "suffix": "M.S."}),
+    Case("audit_perioded_ms_after_a_one_word_head_is_initials",
+         "Smith, M.S.",
+         {"given": "M.", "middle": "S.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1238)",
+         notes="read the degree until #1238: initials run together "
+               "behind one name word are the given name whatever they "
+               "spell (rules/C16), the degree reported as the other "
+               "reading"),
     Case("audit_ms_honorific_spelling_after_comma_is_the_postnominal",
          "Smith, Ms.",
          {"family": "Smith", "suffix": "Ms."},
@@ -13948,8 +13965,14 @@ CASES: tuple[Case, ...] = (
                "gate handles the real collision, which is that 'Do' is "
                "a name -- but the bare, all-caps spelling is now read "
                "the way a credential is written"),
-    Case("audit_perioded_do_after_comma_is_a_suffix", "Smith, D.O.",
-         {"family": "Smith", "suffix": "D.O."}),
+    Case("audit_perioded_do_after_a_one_word_head_is_initials",
+         "Smith, D.O.",
+         {"given": "D.", "middle": "O.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1238)",
+         notes="read the degree until #1238, as 'Smith, M.S.' did; "
+               "rules/C16's run of initials behind one word, the "
+               "degree reported"),
     # -- the TRAILING half of the same two removals. `dr` and `sra` are
     # the ONLY audit words that lose SUFFIX membership; every other
     # audit word keeps its suffix membership, so trailing position is

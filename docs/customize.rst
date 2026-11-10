@@ -1838,7 +1838,12 @@ is taken silently:
     ('X.Y.Z.', ())
 
 Five things are not this shape. A token the vocabulary already knows
-(``M.A.``, ``Ph.D.``) is read by the vocabulary. A single trailing
+(``M.A.``, ``Ph.D.``) is read by the vocabulary, save capital letters
+run together right after a one-word surname and a comma, which are the
+given name whatever they spell, as ``Doe, X.Y.Z.`` is, unless a
+credential other than a generation stands beside them (``"Jansen, J.P."`` gives given ``J.``,
+middle ``P.``, the credential reported; ``"Jansen, J.P. PhD"`` keeps
+suffix ``J.P. PhD``). A single trailing
 period is how any word is abbreviated, so ``"John Smith Xyz."`` keeps
 family ``Xyz.``. Every chunk must be alphabetic, so a digit anywhere
 refuses it (``"John Smith 1.4"`` keeps family ``1.4``). A script
