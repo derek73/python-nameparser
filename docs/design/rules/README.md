@@ -124,6 +124,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [H7 — a joined name unit carrying title vocabulary](H7-joined-name-unit-carrying-title-vocabulary.md)
 - [H8 — a salutation ending the given part](H8-salutation-ending-the-given-part.md)
 - [H9 — the title phrase](H9-title-phrase.md)
+- [H10 — a title written as a run of letters](H10-title-written-as-a-run-of-letters.md)
 
 ## [Particles & surname prefixes (P)](P-particles-and-surname-prefixes.md)
 

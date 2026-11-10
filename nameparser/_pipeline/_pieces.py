@@ -60,7 +60,7 @@ from typing import NamedTuple
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     GENERATION_WORD_TAG, TITLE_CASE_NAME_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
-    JOINED_TITLE_TAG, PendingReading, TRAILING_TITLE_TAG,
+    DOTTED_TITLE_TAG, JOINED_TITLE_TAG, PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -470,7 +470,8 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     that piece is one word and is not itself suffix vocabulary
     (rules/H3, decisions/H3 -- the block at the floor below
     carries the examples of each half, and the ordering its two inline
-    tag reads were measured on).
+    tag reads were measured on). A dotted run (rules/H10) the run ends
+    on is given back after the floor.
     One definition, read by assign (which sets the roles), by the
     chain's trailing-run walk, and by `chain_lead`, which finds the
     chain's leading position inside this run for group's chain and the
@@ -478,7 +479,9 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     n = 0
     while n < len(pieces):
         if ((n + 1 < len(pieces) or len(pieces) == 1)
-                and is_leading_title(pieces[n], ptags[n], tokens)):
+                and (is_leading_title(pieces[n], ptags[n], tokens)
+                     or (len(pieces[n]) == 1 and DOTTED_TITLE_TAG
+                         in tokens[pieces[n][0]].tags))):
             n += 1
             continue
         break
@@ -523,6 +526,15 @@ def leading_titles(pieces: Sequence[Sequence[int]],
         else:
             # nothing behind the run but suffix pieces
             n -= 1
+    # rules/H10: "where a title the run keeps stands behind it, after
+    # H3's floor has given its word back" -- so a dotted run the run
+    # ends on is given back too, and so is each dotted run before it,
+    # while a title before them stays ('U.S. Grant', 'Hon. U.S. Grant');
+    # the tag is classify's, on a
+    # word no other title test takes (decisions/H10, #490)
+    while (n and len(pieces[n - 1]) == 1
+           and DOTTED_TITLE_TAG in tokens[pieces[n - 1][0]].tags):
+        n -= 1
     return n
 
 

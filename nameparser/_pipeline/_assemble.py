@@ -56,7 +56,7 @@ from nameparser._pipeline._state import (
     SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, BOUND_PHRASE_TAG,
     FIRST_SURNAME_TAG, SURNAME_PAIR_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, PAST_REACH_TAG,
-    JOINED_TITLE_TAG, TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+    DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
@@ -289,10 +289,11 @@ _SUFFIX_EVIDENCE = frozenset({
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
 
 #: The tags that say the vocabulary lists a word as a title, in any of
-#: the title sets.
+#: the title sets, a dotted run's spelling without its stops included
+#: (rules/H10).
 _TITLE_TAGS = frozenset({
     "vocab:title", TITLE_AMBIGUOUS_TAG, "vocab:given-title",
-    "vocab:after-given-title"})
+    "vocab:after-given-title", DOTTED_TITLE_TAG})
 
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],

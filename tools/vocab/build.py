@@ -971,6 +971,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         # reading takes one (rules/R12)
         raise VocabError(f"{where}: capital_opening must be true, or left "
                          f"unwritten")
+    if "dotted" in p and p["dotted"] is not True:
+        # unwritten is false, so only true says anything; a key of the
+        # title category alone (BEHAVIORAL), so only a title reading
+        # takes one (rules/H10)
+        raise VocabError(f"{where}: dotted must be true, or left unwritten")
     _check_default(where, p)
     if "completed_by" in p:
         # the words that complete a bound given name into one given
@@ -1400,7 +1405,7 @@ def _behavior(r: Reading, prop: str) -> object:
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
                 "title_case_is_name", "shared", "after_particle",
-                "capital_opening"):
+                "capital_opening", "dotted"):
         return r.flag(prop)
     if prop in ("attaches", "completed_by"):
         att = r.props.get(prop)
@@ -1446,6 +1451,7 @@ CONSTANTS = (
     "SAINT_PARTICLES",
     "CAPITALIZED_PARTICLES",
     "CAPITAL_OPENING_PARTICLES",
+    "DOTTED_TITLES",
     "BOUND_PHRASES",
     "SAME_AS",
     "SAME_AS_NAMED",

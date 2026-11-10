@@ -2291,7 +2291,7 @@ modifier = {}
 
 [[word]]
 text = "uk"
-modifier = {}
+modifier = { dotted = true }
 
 [[word]]
 text = "united"
@@ -2299,7 +2299,7 @@ modifier = {}
 
 [[word]]
 text = "us"
-modifier = {}
+modifier = { dotted = true }
 
 [[word]]
 text = "vice"

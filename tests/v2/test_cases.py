@@ -434,9 +434,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # rows; 1705 -> 1711 on 2026-11-09, #998's 'Ahmed Ali M.Hassan'
     # reporting suffix-or-name and 'Ali C.Psych' given-or-family under
     # three orders; 1711 -> 1720 the same day, its review's three msi
-    # rows reporting suffix-or-name under three orders.
-    assert claims == 1720, (
-        f"the field sweep checks {claims} claims, recorded as 1720 on "
+    # rows reporting suffix-or-name under three orders; 1720 -> 1747 the
+    # same day, #490's rows reporting suffix-or-name under three orders
+    # ('Treadwell, U.S. District Judge Marc', its code review's 'Smith,
+    # U.S. Marshal John' and 'U.S. Senator Smith, Ed', its fix commit's
+    # review's 'John Smith U.S. Dean.' and its test review's five comma
+    # rows, C4's count of a dotted run).
+    assert claims == 1747, (
+        f"the field sweep checks {claims} claims, recorded as 1747 on "
         f"2026-11-09")
 
 
@@ -847,8 +852,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # day, its PR review's two words-to-spare rows under the three orders;
     # 542 -> 545 on 2026-11-09, #998's 'Ahmed Ali M.Hassan' under the
     # three orders; 545 -> 551 the same day, its review's 'Jane Doe, MSi'
-    # and 'ANDISWA ZANELE MSI' under the three orders
-    assert (checked, skipped) == (551, 354), (checked, skipped)
+    # and 'ANDISWA ZANELE MSI' under the three orders; 551 -> 560 the
+    # same day, #490's 'P.D. Grant, Ed', 'P.D. Grant PhD, Ed' and 'Jones
+    # U.S. Senator PhD, Ed' under the three orders
+    assert (checked, skipped) == (560, 354), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

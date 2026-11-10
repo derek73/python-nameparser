@@ -869,6 +869,21 @@ def _dotted(text: str) -> bool:
             or _CHUNKED.fullmatch(text) is not None)
 
 
+# rules/H10: "a run of single letters joined by full stops" -- two
+# or more, the closing stop optional, as `period_joined_vocab`'s shape
+# verdict lets it be ('U.S.', 'U.S').
+_DOTTED_RUN = re.compile(_LETTER + r"(?:\." + _LETTER + r")+\.?")
+
+
+def is_dotted_title(text: str, n: str, lexicon: Lexicon) -> bool:
+    """A run of single letters joined by full stops ('U.S.', 'P.D.')
+    whose spelling without them is a title written `dotted`
+    (`Lexicon.dotted_titles`, rules/H10, #490); `n` is the folded
+    text, which both callers already have."""
+    return (n.replace(".", "") in lexicon._sets.dotted_titles
+            and _DOTTED_RUN.fullmatch(text) is not None)
+
+
 # #563: exactly two single letters, each closed by a period -- the way
 # a given and a middle initial are written run together ('M.J.',
 # 'G.J.'). The trailing period is optional, as `period_joined_vocab`'s
@@ -2240,6 +2255,19 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     lead_suffix = False
     # map, not a comprehension, which is a frame of its own on 3.11
     folded = list(map(_normalize, texts))
+    # rules/H10: "the run reads as that title where a title the run
+    # keeps stands behind it" -- the run read as the title it spells, so
+    # the title test and H9's phrase test below see it. Unlike classify's
+    # fold, which runs only where the name already holds a word H9
+    # reads, this one always runs, so a run alone brings the phrase test
+    # in. The set test first, C-level, so a dotted word that spells no
+    # marked title pays no frame
+    dotted: set[int] = set()
+    for i, n in enumerate(folded):
+        if ("." in n and n.replace(".", "") in lexicon._sets.dotted_titles
+                and is_dotted_title(texts[i], n, lexicon)):
+            folded[i] = n.replace(".", "")
+            dotted.add(i)
     # rules/H9: "the word is a title only inside a title phrase" -- the
     # part before the comma is the head of the name, read as classify
     # reads it
@@ -2249,6 +2277,19 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     for i, n in enumerate(folded):
         text = texts[i]
         title = n in lexicon._sets.titles if titled is None else titled[i]
+        if title and i in dotted:
+            # a title only opening the part (behind any titles), and only
+            # with a title, listed or by H2's shape, behind it and a word
+            # of any kind behind that: H6 leaves the part's last word to
+            # the family, so a title ending the part is not kept and the
+            # run is given back ('U.S. Senator, Ed'); H3's floor is not
+            # modelled here (decisions/H10)
+            nxt = i + 1
+            title = (lead is None and nxt < len(folded)
+                     and ((folded[nxt] in lexicon._sets.titles
+                           if titled is None else titled[nxt])
+                          or is_title_shaped(texts[nxt], lexicon))
+                     and nxt + 1 < len(folded))
         if n in lexicon._sets.particles:
             has_particle = True
         suffix = (is_suffix_lenient(text, lexicon) if lenient

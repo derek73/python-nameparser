@@ -122,7 +122,7 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, DOTTED_TITLE_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
@@ -1947,29 +1947,49 @@ def assign(state: ParseState) -> ParseState:
         # refuse the shape agree on what a title word is, save H5's
         # written-short clause, which this slot does not read
         # (decisions/H9, #999: 'Maj. Smith, John' keeps family 'Maj. Smith').
+        #
+        # rules/H10: "where a title the run keeps stands behind it" --
+        # a dotted run ('U.S. Senator Smith, John') counts as a title
+        # word here as in the leading run, and one the run ends on is
+        # given back ('U.S. Grant Smith, John' keeps family 'U.S. Grant
+        # Smith'), so the roles are set once the run is known.
         lead = 0
         floor = len(fam_pieces)
         # the length test and the tag test first, both C-level: a part
         # no title opens ('Smith, John', 'Smith Jones, John') pays no
-        # frame. The tags are the two arms `is_title_piece` answers yes
-        # from, so the predicate stays the one that answers
+        # frame. "title" and "vocab:title" are the two arms
+        # `is_title_piece` answers yes from, so for a listed title the
+        # predicate stays the one that answers; a lone piece carrying
+        # classify's DOTTED_TITLE_TAG is taken on the tag alone
+        # (rules/H10) and given back below unless a title the run keeps
+        # stands behind it
+        tags0 = tokens[fam_pieces[0][0]].tags if fam_pieces else frozenset()
         if (floor > 1
-                and ("title" in fam_tags[0]
-                     or "vocab:title" in tokens[fam_pieces[0][0]].tags)
-                and is_title_piece(fam_pieces[0], fam_tags[0], tokens)):
+                and ("title" in fam_tags[0] or "vocab:title" in tags0
+                     or DOTTED_TITLE_TAG in tags0)
+                and ((len(fam_pieces[0]) == 1 and DOTTED_TITLE_TAG in tags0)
+                     or is_title_piece(fam_pieces[0], fam_tags[0], tokens))):
             # where the trailing post-nominal run starts: walked once,
             # and only for a part a title opens
             while floor > 1 and is_suffix_piece(fam_pieces[floor - 1],
                                                 fam_tags[floor - 1],
                                                 tokens):
                 floor -= 1
-            # the first piece is a title, asked above
+            # the first piece is a title or a dotted run, asked above; a
+            # dotted run the run ends on is given back after the walk
             while (lead + 1 < floor
                    and (lead == 0 or is_title_piece(
-                       fam_pieces[lead], fam_tags[lead], tokens))
+                       fam_pieces[lead], fam_tags[lead], tokens)
+                        or (len(fam_pieces[lead]) == 1 and DOTTED_TITLE_TAG
+                            in tokens[fam_pieces[lead][0]].tags))
                    and "particle" not in tokens[fam_pieces[lead][0]].tags):
-                _set_roles(tokens, fam_pieces[lead], Role.TITLE)
                 lead += 1
+            while (lead and len(fam_pieces[lead - 1]) == 1
+                   and DOTTED_TITLE_TAG
+                   in tokens[fam_pieces[lead - 1][0]].tags):
+                lead -= 1
+            for k in range(lead):
+                _set_roles(tokens, fam_pieces[k], Role.TITLE)
         # rules/P9: "a particle that is also suffix vocabulary heads
         # the name word behind it" -- with a name piece behind it in
         # this part (vd, mc), it heads that name, as P2's join does,

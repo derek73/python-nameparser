@@ -113,6 +113,7 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # #563: paired initials ('M.J.'), C5's exception to C4's name-word
     # count after a comma
     ("_vocab", "_PAIRED_INITIALS"): None,
+    ("_vocab", "_DOTTED_RUN"): None,
     ("_vocab", "_ROMAN"): None,
     # SAME object, imported for the trailing read's weighed-word test
     # (#620), as _PERIOD_ABBREV is above
