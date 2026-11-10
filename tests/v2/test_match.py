@@ -1634,3 +1634,42 @@ def test_a_hand_built_middle_of_whitespace_alone_compares_without_raising() -> N
                        (*name.tokens, Token("　", None, Role.MIDDLE)))
     r = m.check(blank, blank)
     assert r["middle"].outcome is Outcome.SAME and r.consistent
+
+
+# -- a listed surname spelling inside a compound surname (#1262) -------------
+
+_SMYTH = Matching(Parser(lexicon=Lexicon.default().add(
+    "smyth", kind="family", same_as="smith")))
+
+
+@pytest.mark.parametrize("a, b, outcome", [
+    ("Ann Smyth", "Ann Smith", Outcome.LISTED_SPELLING),
+    # a listed half among the other's words
+    ("Ann Smyth-Jones", "Ann Smith", Outcome.PART_OF_OTHER),
+    ("Ann Smyth-Jones", "Ann Smith-Jones", Outcome.PART_OF_OTHER),
+    # the bases listed word for word, particles set aside
+    ("Ann de Smyth", "Ann Smith", Outcome.PARTICLES_ASIDE),
+    ("Ann de la Smyth", "Ann de Smith", Outcome.PARTICLES_ASIDE),
+    # a half that is no listed spelling still conflicts
+    ("Ann Smyth-Jones", "Ann Brown", Outcome.CONFLICT),
+])
+def test_a_listed_surname_spelling_counts_inside_a_compound_surname(
+        a: str, b: str, outcome: Outcome) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = _SMYTH.check(x, y)
+        assert r["family"].outcome is outcome, (x, y)
+        if outcome is not Outcome.CONFLICT:
+            assert r.consistent and _SMYTH.keys(x) & _SMYTH.keys(y)
+
+
+@pytest.mark.parametrize("a, b", [
+    # Ma is listed as María among given names only: a surname half is
+    # read in the family group, where Ma is a word of its own
+    ("Jack Ma-Lee", "Jack María"),
+    ("Jack de Ma", "Jack María"),
+])
+def test_a_given_name_spelling_does_not_count_inside_a_surname(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["family"].outcome is Outcome.CONFLICT and not r.consistent

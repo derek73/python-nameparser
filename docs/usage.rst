@@ -1394,7 +1394,10 @@ and ``Jas`` (James) are, is read as its long form only written with
 its period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia``
 / ``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while
 ``Wm Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm``
-being no name of its own. It is read with accents folded too, so
+being no name of its own. Inside a family name it counts word by
+word as it does whole: with ``smyth`` added to a lexicon as a spelling
+of ``smith``, ``Ann de Smyth`` / ``Ann Smith`` read ``particles-aside``
+and ``Ann Smyth-Jones`` / ``Ann Smith`` ``part-of-other``. It is read with accents folded too, so
 ``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A
 middle name is compared word by word, in order, and takes the weakest
 of its words' outcomes. A different generation conflicts
