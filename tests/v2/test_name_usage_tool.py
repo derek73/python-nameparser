@@ -2403,6 +2403,11 @@ def test_a_country_asked_for_twice_or_blank_is_listed_once(
     ("செல்வி", "ta"), ("பா.உ.", "ta"), ("ගරු", "si"), ("වෛද්\u200dය", "si"),
     ("ดร.สุดา", "th"), ("ወ/ሮ", "am"), ("ဒေါက်တာ", "my"), ("ਸ਼੍ਰੀ", "pa"),
     ("ბ-ნი", "ka"), ("ᲑᲐᲢᲝᲜᲘ", "ka"), ("Պարոն", "hy"),
+    # Each script's supplementary blocks: Ethiopic Supplement, Extended,
+    # Extended-A and Extended-B; Myanmar Extended-A and -B; Nuskhuri; the
+    # Armenian ligatures.
+    ("\u1380", "am"), ("\u2d80", "am"), ("\uab01", "am"), ("\U0001e7e0", "am"),
+    ("\uaa60", "my"), ("\ua9e0", "my"), ("\u2d00", "ka"), ("\ufb13", "hy"),
     ("Selvi", None), ("殿", None), ("श्री", None), ("Иван", None),
 ])
 def test_a_word_goes_to_the_wikipedia_of_its_script(word: str, wiki: str | None) -> None:
@@ -2448,6 +2453,32 @@ def test_holding_matches_with_or_without_a_joiner() -> None:
     index = tool.PeopleIndex("si", [tool.Person("Q1", ("වෛද්ය ජගත් ගුණවර්ධන",))],
                              fetched="2026-11-09")
     assert [p.qid for _, p, _ in index.holding("වෛද්\u200dය")] == ["Q1"]
+
+
+def test_holding_ignores_case_in_a_cased_script() -> None:
+    # Armenian and Georgian have case, and the vocabulary writes a word
+    # lowercase; Mtavruli is Georgian's capitals.
+    hy = tool.PeopleIndex("hy", [tool.Person("Q1", ("Դավիթ Հարությունյան",))],
+                          fetched="2026-11-10")
+    ka = tool.PeopleIndex("ka", [tool.Person("Q2", ("დავით ყიფიანი",))],
+                          fetched="2026-11-10")
+    for word in ("Դավիթ", "դավիթ", "ԴԱՎԻԹ"):
+        assert [p.qid for _, p, _ in hy.holding(word)] == ["Q1"], word
+    for word in ("დავით", "ᲓᲐᲕᲘᲗ"):
+        assert [p.qid for _, p, _ in ka.holding(word)] == ["Q2"], word
+
+
+def test_holding_strips_a_geez_full_stop_off_a_word() -> None:
+    index = tool.PeopleIndex("am", [tool.Person("Q1", ("አበበ ቢቂላ።",))],
+                             fetched="2026-11-10")
+    assert [pos for pos, _, _ in index.holding("ቢቂላ")] == ["last"]
+
+
+def test_people_usage_writes_an_before_a_vowel() -> None:
+    index = tool.PeopleIndex("hy", [tool.Person("Q1", ("Տիկին Ճեն",))],
+                             fetched="2026-11-10")
+    assert "1 of 1 people with an Armenian Wikipedia article" in (
+        tool.people_usage("Տիկին", index).note)
 
 
 def test_people_usage_reports_positions_and_examples_without_roles() -> None:
@@ -2664,7 +2695,7 @@ def test_refresh_people_without_a_word_of_its_scripts_is_refused(
     with pytest.raises(SystemExit):
         tool.main(["--refresh-people", "Selvi"])
     err = capsys.readouterr().err
-    assert "give a word in a script it indexes: Tamil, Sinhala," in err
+    assert "give a word in the script of one of its Wikipedias: Tamil, Sinhala," in err
     assert "Armenian" in err
 
 

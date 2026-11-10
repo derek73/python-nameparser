@@ -63,10 +63,9 @@ What a number means depends on its source, and the report says so:
   family ending 部 + given 長 for 部長. A lower bound, like the row
   above, and blind to people whose name has no item at all.
 - Wikipedia people (CC0, through Wikidata), only for a word holding a
-  character of a script PEOPLE_WIKIS lists (the Tamil, Sinhala, Thai,
-  Amharic, Burmese, Punjabi, Georgian and Armenian Wikipedias' scripts,
-  #1244, #1225): the people with an article on that language's
-  Wikipedia, each named by the article's title and the language's label,
+  character of a script PEOPLE_WIKIS lists (Tamil, Thai and Georgian
+  among them; #1244, #1225): the people with an article on that script's
+  Wikipedia, each named by the article's title and the wiki's label,
   and how many of them write the word in their name, counted by where it
   stands -- alone, first, inner or last. Wikidata's name items carry
   almost no labels in these scripts, so the label row above answered 0
@@ -249,7 +248,8 @@ WIKIDATA_LANGUAGES = (
     "is", "ar", "fa", "ur", "he", "hi", "bn", "ta", "te", "ja", "ko",
     "vi", "th", "id", "ms", "tl", "sw", "ha", "yo", "ig", "am", "so", "si",
     # The scripts and Cyrillic languages of the open issues of 2026-11-10
-    # (#1187, #1188, #1192, #1212, #1225, #1226, #1233, #1237, #1273).
+    # (#1187, #1188, #1200, #1201, #1212, #1225, #1226, #1233, #1237,
+    # #1273).
     "ka", "hy", "my", "pa", "mr", "ne", "ti", "be", "kk", "ky", "mn",
     # Chinese labels sit under script and region tags far more often
     # than plain `zh`: neither 关 surname item has a `zh` or `mul` label,
@@ -1897,19 +1897,27 @@ def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
 #: answered 0 for #1244's words on 2026-11-09 (`செல்வி` among them, though
 #: `Selvi` is a given name), while 45,297 people had a Tamil article and
 #: 3,402 a Sinhala one. On 2026-11-10 it answered 0 given and 0 family for
-#: a common given name in each script below it too (สมชาย, አበበ, အောင်,
-#: ਗੁਰਪ੍ਰੀਤ, დავით, Դավիթ), the last two before `ka` and `hy` joined
-#: WIKIDATA_LANGUAGES. A script written by several Wikipedias' languages
-#: (Ge'ez: Amharic and Tigrinya) is read from the largest. Burmese
-#: Wikipedia writes a name before its honorific (`နု၊ ဦး`, U Nu), so there
-#: an honorific mostly counts as last; and a Burmese name's syllables are
-#: often written unspaced (`ထင်အောင်`), so a syllable inside one is not
-#: seen: အောင် counted 0 on 2026-11-10. Adding a Wikipedia is a row here.
+#: a common given name in each script listed below too (สมชาย, አበበ, အောင်,
+#: ਗੁਰਪ੍ਰੀਤ, დავით, Դավիթ), measured before `my`, `pa`, `ka` and `hy` joined
+#: WIKIDATA_LANGUAGES; after, ਗੁਰਪ੍ਰੀਤ still answered 0 and အောင် 0 given.
+#: A script written by several Wikipedias' languages is read from the
+#: largest: Ge'ez from Amharic's (not Tigrinya's), Myanmar from Burmese's
+#: (not Mon's or Shan's, so a Shan word in its Extended blocks is read
+#: against Burmese names), Georgian from Georgian's (not Mingrelian's).
+#: Burmese Wikipedia often writes a name before its honorific and a comma
+#: (`သန့်၊ ဦး`, U Thant) and a foreign name surname first
+#: (`ဝါရှင်တန်၊ ဂျော့ချ်`, Washington, George), so there an honorific mostly
+#: counts as last and a foreign given name as last; an honorific written
+#: first is glued to the name (`ဦးနု`, U Nu) and not seen. And a Burmese
+#: name's syllables are often written unspaced (`ထင်အောင်`), so a syllable
+#: inside one is not seen: အောင် stood in the names of 246 of the 4,848
+#: people on 2026-11-10 and counted 1. Adding a Wikipedia is a row here.
 PEOPLE_WIKIS: dict[str, tuple[str, str]] = {
     "ta": ("Tamil", "\u0b80-\u0bff"),
     "si": ("Sinhala", "\u0d80-\u0dff"),
     "th": ("Thai", "\u0e00-\u0e7f"),
-    "am": ("Amharic", "\u1200-\u139f\u2d80-\u2ddf\uab00-\uab2f"),
+    "am": ("Amharic",
+           "\u1200-\u139f\u2d80-\u2ddf\uab00-\uab2f\U0001e7e0-\U0001e7ff"),
     "my": ("Burmese", "\u1000-\u109f\ua9e0-\ua9ff\uaa60-\uaa7f"),
     "pa": ("Punjabi", "\u0a00-\u0a7f"),
     "ka": ("Georgian", "\u10a0-\u10ff\u1c90-\u1cbf\u2d00-\u2d2f"),
@@ -1929,9 +1937,8 @@ _INVISIBLE = str.maketrans("", "", "\u200c\u200d\u00ad\u2060")
 #: Where a name is cut into words: whitespace, commas, and the zero-width
 #: space and BOM, which the parser reads as separators too (#851), and the
 #: commas of the scripts indexed: Burmese `၊`, which the names of 1,049 of the
-#: 4,848 Burmese people held on 2026-11-10, most a name written before its
-#: honorific (`နု၊ ဦး`, U Nu), and Ge'ez `፣`, with its wordspace `፡`
-#: (#1202).
+#: 4,848 Burmese people held on 2026-11-10 (PEOPLE_WIKIS says what stands
+#: either side of it), and Ge'ez `፣`, with its wordspace `፡` (#1202).
 _WORD_BREAK = re.compile("[\\s,\u200b\ufeff\u104a\u1361\u1363]+")
 #: Where a word stands in a name, in the order the report lists them.
 POSITIONS = ("alone", "first", "inner", "last")
@@ -1951,12 +1958,16 @@ def people_source(wiki: str) -> str:
 
 
 def _people_key(text: str) -> str:
-    """One word as the index matches it: NFC and invisible characters
-    out first, so none hides an edge, then quotes, brackets and periods
-    off its edges (`பா.உ` is `பா.உ.`). Applied to words already cut at
-    _WORD_BREAK, so a single strip reaches the edge."""
-    folded = unicodedata.normalize("NFC", text).translate(_INVISIBLE)
-    return folded.strip("\"'“”‘’()[].")
+    """One word as the index matches it: NFC, case-folded (Armenian and
+    Georgian have case, and the vocabulary writes a word lowercase:
+    `պարոն` must find `Պարոն`, `ᲓᲐᲕᲘᲗ` find `დავით`) and invisible
+    characters out first, so none hides an edge, then quotes, brackets
+    and full stops off its edges (`பா.உ` is `பா.உ.`; Ge'ez `።`). Applied
+    to words already cut at _WORD_BREAK, so a single strip reaches the
+    edge."""
+    folded = (unicodedata.normalize("NFC", text).casefold()
+              .translate(_INVISIBLE))
+    return folded.strip("\"'“”‘’()[].\u1362")
 
 
 def name_words(name: str, disambiguators: bool = True) -> list[str]:
@@ -2182,8 +2193,8 @@ def people_usage(word: str, index: PeopleIndex, examples: int = 5) -> Usage:
             f"e.g. {sample}" if sample else
             "a zero proves little: only notable people have an article",
             "a title written into a name counts where it stands; matched "
-            "ignoring joiners and edge periods, words cut at spaces and commas "
-            "only, so a word glued to an initial (மு.கருணாநிதி) is not seen; "
+            "ignoring case, joiners and edge full stops, words cut at spaces, "
+            "commas and word separators only, so a word glued to an initial (மு.கருணாநிதி) is not seen; "
             f"index fetched {index.fetched}"))
 
 
@@ -2433,7 +2444,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--unlisted goes with --rank")
     if args.refresh_people and not any(people_wiki(w) for w in args.words):
         parser.error("--refresh-people refreshes the index of each word's "
-                     "script; give a word in a script it indexes: "
+                     "script; give a word in the script of one of its "
+                     "Wikipedias: "
                      + ", ".join(lang for lang, _ in PEOPLE_WIKIS.values()))
     if args.refresh_people and args.no_wikidata:
         # Refreshing skips the cache, and offline nothing is fetched to
