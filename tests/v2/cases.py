@@ -1220,7 +1220,7 @@ CASES: tuple[Case, ...] = (
     Case("glued_initial_and_surname_still_read_by_position",
          "Ahmed Ali M.Hassan",
          {"given": "Ahmed", "family": "Ali", "suffix": "M.Hassan"},
-         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         classification="fix(#516)", ambiguities=("suffix-or-name",),
          notes="unchanged by #998's batch, the cost its proposal accepts: "
                "rules/S3 reads the unlisted shape as a suffix where a word "
                "is to spare, and reports it; 1.4.0 gave family 'M.Hassan'"),
@@ -1229,11 +1229,48 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="P.Eng, Professional Engineer, is refused (en.toml's peng): "
                "Peng is a Chinese surname and given name"),
-    Case("refused_bed_keeps_the_given_name", "Bed Bahadur Thapa",
-         {"given": "Bed", "middle": "Bahadur", "family": "Thapa"},
+    Case("refused_bed_keeps_the_given_name", "Thapa, Bed",
+         {"given": "Bed", "family": "Thapa"},
          classification="parity",
          notes="B.Ed is refused (en.toml's bed): Bed is a Nepali given "
-               "name, in 59 nepal-candidates names"),
+               "name, in 59 nepal-candidates names; listed, the given "
+               "part after the family comma read suffix 'Bed'"),
+    Case("refused_ssi_keeps_the_word", "Park Ji-hoon ssi",
+         {"given": "Park", "middle": "Ji-hoon", "family": "ssi"},
+         classification="parity",
+         notes="S.Si is refused (id.toml's ssi): ssi is the romanized "
+               "Korean honorific 씨; listed, it read family 'Ji-hoon', "
+               "suffix 'ssi', and recased as SSi"),
+    Case("refused_msi_keeps_the_surname_in_capitals",
+         "ANDISWA ZANELE MSI",
+         {"given": "ANDISWA", "middle": "ZANELE", "family": "MSI"},
+         classification="parity",
+         notes="M.Si is refused (id.toml's msi): Msi is a Xhosa surname, "
+               "and marked ambiguous a name in one case with a word to "
+               "spare still read it as the suffix, as cota's did"),
+    Case("two_chunk_credential_written_without_stops_after_a_comma",
+         "Anna Gelavis, BPharm",
+         {"given": "Anna", "family": "Gelavis", "suffix": "BPharm"},
+         classification="fix(#998)",
+         notes="the listed spelling without stops, the vocabulary path: "
+               "before #998 given 'BPharm', family 'Anna Gelavis', rules/C5 "
+               "reading an unlisted two-capital word as paired initials"),
+    Case("two_chunk_credential_in_capitals_without_stops",
+         "JOHN SMITH MPHARM",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MPHARM"},
+         classification="fix(#998)",
+         notes="a name in one case: before #998 middle 'SMITH', family "
+               "'MPHARM'"),
+    Case("indonesian_credentials_with_no_comma",
+         "Ayu Pangestu S.Pd M.Pd",
+         {"given": "Ayu", "family": "Pangestu", "suffix": "S.Pd M.Pd"},
+         classification="fix(#998)",
+         notes="before #998 middle 'Pangestu S.Pd', family 'M.Pd'"),
+    Case("two_chunk_credential_after_a_one_word_head", "Smith, M.Tech",
+         {"family": "Smith", "suffix": "M.Tech"},
+         classification="fix(#998)",
+         notes="the one-word head before the comma: before #998 given "
+               "'M.Tech', with a suffix-or-name report"),
     # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
     # and Romanian names, is marked ambiguous as PA is, the surname
     # reading being substantial (Census 1,814).

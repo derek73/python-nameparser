@@ -12,7 +12,7 @@ Then check the word against real names, not memory: `uv run python tools/name_us
 
 ## Step 2, for a credential written with stops: vet the spelling without them
 
-An acronym credential is matched with every full stop removed, so listing `P.Eng` lists `peng`, and the fold is the word to vet, not the dotted spelling: #998's batch of credentials written in two chunks (`B.Pharm`, `M.Kes`) found twelve folds that are names or another word, among them the Chinese surname Peng, the Nepali given name Bed (`B.Ed`), the Xhosa surname Msi (`M.Si`, marked ambiguous) and `ssi`, the romanized Korean honorific 씨 (`S.Si`), which only the committed snapshot's `Park Ji-hoon ssi` showed. Run `tools/name_usage.py` on the fold, and parse the fold in Title case and in capitals ending a name with a word to spare.
+An acronym credential is matched with every full stop removed, so listing `P.Eng` lists `peng`, and the fold is the word to vet, not the dotted spelling: #998's batch of credentials written in two chunks (`B.Pharm`, `M.Kes`) refused thirteen folds that are names or another word, among them the Chinese surname Peng, the Nepali given name Bed (`B.Ed`), the Xhosa surname Msi (`M.Si`, refused after a family reading still lost it in capitals) and `ssi`, the romanized Korean honorific 씨 (`S.Si`), which only the committed snapshot's `Park Ji-hoon ssi` showed. Run `tools/name_usage.py` on the fold, and parse the fold in Title case and in capitals ending a name with a word to spare.
 
 ## Step 2, for a reading a language file adds: score it under the choice that reads it
 

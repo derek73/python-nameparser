@@ -2608,7 +2608,7 @@ credential = {}
 
 [[word]]
 text = "bed"
-excluded = { credential = { reason = "B.Ed, Bachelor of Education (NPPES 55, 5 ClinicalTrials.gov officials after a comma), is the Nepali given name Bed: 59 nepal-candidates names, none after a comma (Bed Bahadur) (2026-11-09). B.Ed is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+excluded = { credential = { reason = "B.Ed, Bachelor of Education (NPPES 55, 5 ClinicalTrials.gov officials after a comma), is the Nepali given name Bed (59 nepal-candidates names, Bed Bahadur), and listed it is read as the suffix where the given part after a family comma holds it (Thapa, Bed reads suffix 'Bed'), though no local corpus writes that shape, against about 7 credentials gained (B.Ed 2, BEd 4 in ClinicalTrials.gov; 2026-11-09). B.Ed is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
 
 [[word]]
 text = "bem"
@@ -4833,7 +4833,7 @@ credential = {}
 
 [[word]]
 text = "msci"
-credential = { cased = "MSci", expands = "Master in Science", note = "NPPES 62 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 191, 191 after a comma, written MSCI 152, MSci 28, M.Sci 5; cz-candidates records 1, 1 after a comma, written MSci 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
+credential = { expands = "Master of Science in Clinical Investigation, or the UK's integrated Master in Science", note = "NPPES 62 US healthcare providers (August 2026 file); ClinicalTrials.gov study officials 191, 191 after a comma, written MSCI 152, MSci 28, M.Sci 5; cz-candidates records 1, 1 after a comma, written MSci 1; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer (counted 2026-11-09); no case mask, since it is written in capitals far more often than as MSci; written in two chunks joined at a full stop, it read as a suffix only by its shape (rules/S3) with a suffix-or-name report", issue = 998 }
 
 [[word]]
 text = "mscmsm"
