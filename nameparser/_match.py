@@ -418,7 +418,8 @@ class Matching:
                  for role in Role]
         across: list[CrossRoleMatch] = []
         if Outcome.ACROSS_ROLES in self.accept:
-            middles = [left.middle.split(), right.middle.split()]
+            middles = [_role_text(left, Role.MIDDLE).split(),
+                       _role_text(right, Role.MIDDLE).split()]
             for i, r in enumerate(roles):
                 if r.outcome in self.accept or not _RULES[r.role].across:
                     continue
@@ -574,7 +575,7 @@ class Matching:
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
                 family[0], family_rule.group, lexicon)} - {""}
-        given = _lettered_words(parsed.given)
+        given = _lettered_words(_role_text(parsed, Role.GIVEN))
         # a given letter is the first letter once joined, as the check
         # compares by `joined` too (`-Pierre` keys `p`, not `-`)
         initials = {_letter(g) for g in _spelling_keys(
@@ -640,9 +641,36 @@ def _cross_texts(name: ParsedName, role: Role) -> list[str]:
     """The texts of `role` a cross-role match compares: a middle name's
     words one by one, any other role whole."""
     if role is Role.MIDDLE:
-        return name.middle.split()
-    text: str = getattr(name, role)
+        return _role_text(name, role).split()
+    text = _role_text(name, role)
     return [text] if text else []
+
+
+def _role_text(name: ParsedName, role: Role) -> str:
+    """The text of `role` the name match reads: the field as written,
+    save that in the given and middle names two initials written with
+    nothing between them are two words, as rules/T7 parts a given name
+    written as a run of initials ('J.R.R. Tolkien' has the middle names
+    'R. R.', the field writing them 'R.R.'), so each compares as the
+    initial it is (decisions/T7, #1296)."""
+    text: str = getattr(name, role)
+    if role not in _RUN_ROLES or "." not in text:
+        return text
+    words: list[str] = []
+    end = -1
+    initial = False
+    for tok in name.tokens_for(role):
+        joined = tok.span is not None and tok.span.start == end
+        if words and joined and not (initial and "initial" in tok.tags):
+            words[-1] += tok.text
+        else:
+            words.append(tok.text)
+        end = -1 if tok.span is None else tok.span.end
+        initial = "initial" in tok.tags
+    return " ".join(words)
+
+
+_RUN_ROLES = frozenset({Role.GIVEN, Role.MIDDLE})
 
 
 
@@ -1273,7 +1301,9 @@ def _role_outcome(rule: _RoleRule, a: str, b: str, left: ParsedName,
 def _compare_role(role: Role, left: ParsedName, right: ParsedName,
                   lexicon: Lexicon, accept: frozenset[Outcome]) -> RoleMatch:
     """One role's `RoleMatch`, decided by its `_RULES` entry."""
-    a, b = getattr(left, role), getattr(right, role)
+    a, b = _role_text(left, role), _role_text(right, role)
     outcome = _role_outcome(_RULES[role], a, b, left, right, lexicon, accept)
     more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)
-    return RoleMatch(role, outcome, a, b, more)
+    # the table shows each field as written; `_role_text` is the reading
+    return RoleMatch(role, outcome, getattr(left, role), getattr(right, role),
+                     more)

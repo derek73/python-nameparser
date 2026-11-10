@@ -2036,3 +2036,40 @@ def test_aligned_middle_names_keep_the_key_guarantee_and_symmetry(
             assert matching.check(b, a) == r.mirrored(), (a, b)
             if r.consistent:
                 assert matching.keys(a) & matching.keys(b), (a, b)
+
+
+# rules/T7 (#1296): a given name written as a run of initials parts
+# into them, and the name match reads each initial as a word of its
+# own, the field writing a longer run's middle letters together
+@pytest.mark.parametrize("glued,apart", [
+    ("E.T. Smith", "E. T. Smith"),
+    ("E.T. Smith", "Edward T. Smith"),
+    ("E.T. Smith", "Edward Thomas Smith"),
+    ("E.T. Smith", "Edward Smith"),
+    ("Smith, E.T.", "Edward Smith"),
+    ("J.R.R. Tolkien", "John Ronald Reuel Tolkien"),
+    ("J.R.R. Tolkien", "J. R. R. Tolkien"),
+    ("J.R.R. Tolkien", "J. R. Tolkien"),
+    ("J.R. Smith", "j.r. smith"),
+])
+def test_a_given_name_written_as_initials_run_together_matches_them_apart(
+        glued: str, apart: str) -> None:
+    matching = Parser().matching()
+    assert matching.check(glued, apart).consistent
+    assert set(matching.keys(glued)) & set(matching.keys(apart))
+
+
+def test_initials_run_together_still_conflict_where_a_letter_does() -> None:
+    # the control: parted letters are compared, not waved through
+    matching = Parser().matching()
+    assert not matching.check("J.R.R. Tolkien", "John Ronald Peter Tolkien"
+                              ).consistent
+    assert not matching.check("E.T. Smith", "T. Smith").consistent
+
+
+def test_the_table_shows_a_run_of_initials_as_written() -> None:
+    # the comparison reads 'R. R.'; the table keeps the field's 'R.R.'
+    result = Parser().matching().check("J.R.R. Tolkien",
+                                       "John Ronald Reuel Tolkien")
+    middle = next(r for r in result.roles if r.role is Role.MIDDLE)
+    assert (middle.left, middle.right) == ("R.R.", "Ronald Reuel")
