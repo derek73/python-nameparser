@@ -139,13 +139,16 @@ pytestmark = pytest.mark.serial
 #: `facade` rows went with HumanName in 3.0 (decisions/parse-cost).
 #: Lowered 2026-11-05 by 18 on 3.11 and 8 on 3.12-3.15 (#1089), when
 #: post_rules' ten one-role index scans became two walks of all four
-#: roles (decisions/parse-cost).
+#: roles (decisions/parse-cost). Lowered 2026-11-09 by 4 on 3.11 and
+#: 3 on 3.12-3.15 (#1170), to the figures below: three post_rules
+#: helpers stopped making calls they did not need, saving 7 and 6 from
+#: a tree that had drifted up inside the band (decisions/parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 289},
-    (3, 12): {"parse": 280},
-    (3, 13): {"parse": 280},
-    (3, 14): {"parse": 280},
-    (3, 15): {"parse": 280},
+    (3, 11): {"parse": 285},
+    (3, 12): {"parse": 277},
+    (3, 13): {"parse": 277},
+    (3, 14): {"parse": 277},
+    (3, 15): {"parse": 277},
 }
 _BAND = 0.02
 
@@ -1026,6 +1029,30 @@ def test_a_part_ending_in_no_numeral_skips_the_generation_test() -> None:
     assert _frames_for("Dumas VI, Jr.", only="ends_in_a_generation") == 1
 
 
+def test_post_rules_helpers_return_before_their_frames() -> None:
+    """Two post_rules helpers every parse calls make no call of their
+    own where they need none (#1170): `_leading_name_piece` walks the
+    pieces in plain loops rather than an `any()` generator, whose every
+    resume is a frame, and `_mark_suffix_entries` returns before
+    `delimiter_cores` on a name holding fewer than two suffixes. The
+    band cannot see one of these put back. Recorded negative control
+    (2026-11-09, py3.11, on 9f6264e4, the tree before):
+    `_leading_name_piece` made 2 calls on `John Smith` and on
+    `Smith, John`, and 4 on `Dr. John Smith Jr.`, and `_mark_suffix_entries` called `delimiter_cores` once on each
+    of the three."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("John Smith", "Smith, John", "Dr. John Smith Jr."):
+        assert _frames_for(text, caller="_leading_name_piece") == 0, text
+        assert _frames_for(text, only="delimiter_cores",
+                           caller="_mark_suffix_entries") == 0, text
+    # REACHABILITY: two suffixes ask the cores, and the lead is found
+    assert _frames_for("John Smith Jr., PhD", only="delimiter_cores",
+                       caller="_mark_suffix_entries") == 1
+    assert _frames_for("Dr. John Smith Jr.",
+                       only="_leading_name_piece") >= 1
+
+
 def test_post_rules_walks_the_roles_once_per_reader() -> None:
     """On a name no gated reader reaches, post_rules reads the TITLE,
     GIVEN, MIDDLE and FAMILY positions in two `_positions` walks, at its
@@ -1046,13 +1073,15 @@ def test_post_rules_walks_the_roles_once_per_reader() -> None:
     interpreter, an inline comprehension only on 3.11, where it is a
     frame of its own. Recorded negative
     control (2026-11-05, py3.11 and py3.12): 15 on 21a4fe15, the tree
-    before, and 8 with one `_idx`-style helper call added. A deliberate new
-    call moves this pin with a reason beside it."""
+    before, and 8 with one `_idx`-style helper call added, against the
+    pin of 7 that stood then (one call over the pin). A deliberate new
+    call moves this pin with a reason beside it: 7 -> 6 in #1170, which
+    asks `_rotations_apply` only where `patronymic_rules` is set."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     for text in ("John Smith", "Smith, John", _REFERENCE.format(i=1)):
         assert _frames_for(text, only="_positions") == 2, text
-        assert _frames_for(text, caller="post_rules") == 7, text
+        assert _frames_for(text, caller="post_rules") == 6, text
     # REACHABILITY: a rule that fires walks again, O1's rotation and
     # O2's, and a gated reader walks where its gate opens: P10's tag
     # under the default policy

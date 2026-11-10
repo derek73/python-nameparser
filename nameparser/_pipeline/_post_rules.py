@@ -144,9 +144,16 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # never holds SUFFIX, and the filter keeps `suffixes` and the
     # `parted` scan agreeing on what a dropped index is.
     dropped = set(state.dropped)
+    # a plain loop and an early return, where a comprehension and the
+    # cores ahead of the count cost frames on every parse, and most
+    # names hold fewer than two suffixes (decisions/parse-cost, #1170)
+    suffixes: list[int] = []
+    for i, tok in enumerate(tokens):
+        if tok.role is Role.SUFFIX and i not in dropped:
+            suffixes.append(i)
+    if len(suffixes) < 2:
+        return
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
-    suffixes = [i for i, tok in enumerate(tokens)
-                if tok.role is Role.SUFFIX and i not in dropped]
     for previous, current in zip(suffixes, suffixes[1:]):
         same_part = (comma_bucket(tokens[previous].span.start,
                                   state.comma_offsets)
@@ -232,9 +239,12 @@ def _leading_name_piece(state: ParseState,
            and state.order is None else 0)
     if seg >= len(state.pieces):
         return ()
+    # nested loops, where an any() generator cost frames on every parse
+    # (decisions/parse-cost, #1170)
     for piece in state.pieces[seg]:
-        if any(tokens[i].role in NAME_ROLES for i in piece):
-            return piece
+        for i in piece:
+            if tokens[i].role in NAME_ROLES:
+                return piece
     return ()
 
 
@@ -1069,7 +1079,9 @@ def post_rules(state: ParseState) -> ParseState:
     # middle_as_family fold below runs comma or not (v1 order:
     # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
-    rotations_apply = _rotations_apply(state)
+    # gated on the rules, which a default parse leaves empty, so it
+    # asks nothing (decisions/parse-cost, #1170)
+    rotations_apply = bool(rules) and _rotations_apply(state)
     # rules/O1: "a name of exactly three name words — titles,
     # suffixes and nicknames aside — whose last name word carries a
     # patronymic ending and whose middle name word does not reads as
