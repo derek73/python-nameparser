@@ -848,6 +848,12 @@ def lexicon_cue(n: str, lexicon: Lexicon) -> Cue:
 
 
 _DOTTED = re.compile(r"(?:" + _LETTER + r"\.)+")
+# rules/T7: "a run of single letters joined by full stops" -- two or
+# more letters, each closed by a stop but the last, whose stop is
+# optional ('E.T.', 'J.R.R', #1296); _RUN_LETTER is one letter of it
+# with its stop. _render holds a copy of each (tests/v2/test_regex_sync.py)
+_LETTER_RUN = re.compile(r"(?:" + _LETTER + r"\.)+" + _LETTER + r"\.?")
+_RUN_LETTER = re.compile(_LETTER + r"\.?")
 # #544: the CHUNKED spelling -- two or more runs of letters, each
 # closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the
 # period-free letters against the listed member, so the chunks must

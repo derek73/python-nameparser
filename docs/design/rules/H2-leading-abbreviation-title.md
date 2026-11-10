@@ -7,7 +7,7 @@
 - **A single-letter initial does not** (T5), and neither does anything with interior periods, hyphens or digits.
   ```
   "J. Smith"                  →  given="J."  · boundary
-  "J.R. Smith"                →  given="J.R."  · boundary
+  "J.R. Smith"                →  given_names="J.R."  · boundary
   "Ю. А. Чибрикова"           →  given="Ю."  · boundary
   ```
 - **A letter written decomposed is the same letter.** An accented Latin, Greek or Cyrillic letter written as a base letter plus a combining mark (NFD) is the same letter as the composed one, for this shape and for the dotted and all-caps credential shapes C5, C6, S9 and S3 read (#652), so such a name parses the same in either encoding and the output keeps the one written.

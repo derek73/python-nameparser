@@ -1799,7 +1799,7 @@ opposite:
     >>> parse("García Márquez, MJ XYZ").suffix
     'MJ XYZ'
     >>> cred = parse("García Márquez, Ms G.J.")
-    >>> cred.title, cred.given
+    >>> cred.title, cred.given_names
     ('Ms', 'G.J.')
 
 .. _dotted-credentials:
@@ -1828,7 +1828,7 @@ is taken silently:
     >>> cred = parse("Doe, John X.Y.Z.")
     >>> cred.given, cred.suffix
     ('John', 'X.Y.Z.')
-    >>> parse("Doe, X.Y.Z.").given
+    >>> parse("Doe, X.Y.Z.").given_names
     'X.Y.Z.'
     >>> cred = parse("Jane Doe nee Smith X.Y.Z.")
     >>> cred.maiden, cred.suffix

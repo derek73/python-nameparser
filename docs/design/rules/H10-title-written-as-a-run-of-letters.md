@@ -6,9 +6,9 @@
 
 - **A run with no title behind it is given back to the name**, whether nothing follows it but name words, a title opens the run in front of it, or H3's floor has returned the title behind it; and before a family comma, where H6 reads the run, it is given back to the family.
   ```
-  "U.S. Grant"                →  given="U.S."
+  "U.S. Grant"                →  given_names="U.S."
   "Hon. U.S. Grant"           →  title="Hon."
-  "Hon. U.S. Grant"           →  given="U.S."
+  "Hon. U.S. Grant"           →  given_names="U.S."
   "U.S. Senator Jr"           →  family="Senator"
   "U.S. Grant Smith, John"    →  family="U.S. Grant Smith"
   ```
@@ -31,8 +31,8 @@
 
 - **Initials that spell a title the vocabulary does not mark stay a name**, a title word behind them or not.
   ```
-  "D.R. Judge Smith"          →  given="D.R."
-  "M.S. Pope Jones"           →  given="M.S."
+  "D.R. Judge Smith"          →  given="D."
+  "M.S. Pope Jones"           →  given="M."
   ```
 
 **Precedence:**
@@ -40,7 +40,7 @@
 - **Paired initials opening the part after a comma** (C5): C5 keeps them as the given part rather than the credential, and where a title the run keeps follows them, they are this rule's title.
   ```
   "García Márquez, U.S. Senator John"  →  title="U.S. Senator"
-  "García Márquez, U.S. Grant"  →  given="U.S."
+  "García Márquez, U.S. Grant"  →  given="U."
   ```
 
 **Accepted:**

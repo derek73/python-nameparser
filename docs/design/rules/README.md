@@ -215,6 +215,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [T4 — the bare letter as an initial](T4-bare-letter-as-an-initial.md)
 - [T5 — the written shape of an initial](T5-written-shape-of-an-initial.md)
 - [T6 — a narrow no-break space between Mongolian letters joins them](T6-narrow-no-break-space-between-mongolian-letters-joins-them.md)
+- [T7 — a given name written as a run of initials](T7-given-name-written-as-a-run-of-initials.md)
 
 ## [Ambiguity & tie-breaking (A)](A-ambiguity-and-tie-breaking.md)
 

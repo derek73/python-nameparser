@@ -1,0 +1,20 @@
+# T7 — a given name written as a run of initials
+
+## Standing
+
+- A given name written as a run of single letters joined by full stops, in capitals, with a family beside it or a family comma, parts into one initial per letter once roles are final: the letter in the given name's place in the order is the given name and the others are middle names (`E.T. Smith` → given 'E.', middle 'T.'); `initials()` gives one initial per letter of any such run left whole — 2026-11-10 #1296.
+- A run in lower case, in another field, with no family, or under `middle_as_family` or `two_given_names` keeps its one word — 2026-11-10 #1296.
+
+Elsewhere: that a run of single letters stays one word while the name is read, so rules/S3 still sees `John Smith E.T.` as one dotted word, is decisions/period-joined-words' 2026-11-09 #1255 entry.
+
+Open: none in this file.
+
+## Log
+
+- 2026-11-10 #1296 — A GIVEN NAME WRITTEN AS A RUN OF INITIALS PARTS INTO THEM ONCE ROLES ARE FINAL. `E.T. Smith` read given 'E.T.' where `E. T. Smith` reads given 'E.', middle 'T.', and `initials()` gave one letter for the run (`J.R.R. Tolkien` → 'J. T.'). #490 recorded that any split must come after roles are assigned, so that rules/S3 still sees `John Smith E.T.` as one dotted word, and decisions/period-joined-words keeps a run of single letters one word while the name is read. So the run parts at assemble, the one point where every role is final, and reads as the same letters written apart do: the first letter is the given name and the rest middle names, or the last letter under `FAMILY_FIRST_GIVEN_LAST`, as `Smith E. T.` reads there. The rendering keeps the run written together (rules/R1), so `str()` is unchanged.
+  WHERE IT STOPS, each limit measured on the parse it would otherwise move:
+  - Capitals. `Dr. h.c. Hans Meier` (honoris causa, a caller's own mask in `tests/v2/test_render.py`) read given 'h.c.', and parted it became 'H.C.' under case repair. A lower-case run may be an abbreviation of its own, and a name written wholly in lower case gives no case to tell, so only a run in capitals parts. A first version let a name written wholly in lower case part too, and `test_a_maiden_clause_changes_nothing_else` caught `j.r.r. tolkien` reading differently once a capitalized maiden clause followed it. `initials()` reads the same gate.
+  - A family beside it. A lone run (`E.T.`) is all the name holds, and its spaced writing reads given 'E.', family 'T.', which no split of a given name gives, so it keeps its one word. A family comma counts as a family, since rules/C15 holds `, X` to `Smith, X` less its surname. `test_an_empty_head_reads_as_its_family_comma_twin`'s rules/H1 exception, where the empty head reads a title's lone name word as the family, now also covers a lone word the twin parts, which is one written word all the same; its recorded count, 963 rows per order, did not move.
+  - The policies that move a middle name. `middle_as_family` folds the middle into the family and marks first-surname views at post_rules, and `two_given_names` reads a second word as a given name. The split runs after both and cannot redo them, so under either the run keeps its one word.
+  - A report on the run. After a comma `Smith, J.R.` reports `suffix-or-name`, the run having a credential's shape. A first version kept such a run whole, and `test_variations_of_TEST_NAMES` failed: `Smith, E.T., Jr.` must read as `E.T. Smith, Jr.` does, and only the comma form reports. So the run parts and the report names its letters, worded "read as the name's initials", because "a given name" would name one field of two.
+  MEASURED, 2026-11-10, `tests/v2/test_snapshot.py` against master 9f6264e4: 35 corpus names part a given run (`J.R. Smith`, `A.M. Barrett, MD`, `García Márquez, G.J.`), and 24 more change only their initials (`Ana J.R. García` → 'A. J. R. G.', `Bahadur, Ram B.K.`). 24 case rows moved, each relabelled `fix(#1296)`, and 18 rule examples that asserted a run as the given name now assert `given_names`, which keeps it whole, or the given letter.

@@ -33,7 +33,7 @@
   ```
   "Md Rahman, PhD"            →  given="Md"
   "JP Clancy, MD"             →  given="JP"
-  "A.M. Barrett, MD"          →  given="A.M."
+  "A.M. Barrett, MD"          →  given_names="A.M."
   "Cem Akin, Prof."           →  given="Cem"
   "Md Rahman Jr., PhD"        →  given="Md"
   "Dr. Md Rahman, Ing"        →  given="Md"
@@ -48,7 +48,7 @@
 **Because:** the listing form puts a surname before the comma, and a particle surname is one surname. A word opening the part is a word of the name the writer put there, a given name written short (Md), initials (JP) or a name a credential happens to spell (Cem), and S2 reads it so where no comma follows.
 
 ```
-"De La Cruz, M.J. K.L."     →  given="M.J."
+"De La Cruz, M.J. K.L."     →  given="M."
 "De La Cruz, Ed"            →  given="Ed"
 "van der Berg, MA"          →  family="van der Berg"
 "van der Berg, MA"          →  suffix="MA"

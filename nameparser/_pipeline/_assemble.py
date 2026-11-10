@@ -9,7 +9,8 @@ one carrying ``field_tail`` is worded from its word's final role,
 #626), segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721), and comma_offsets, for the comma part
 rules/R9's Turkic arm keeps a marker and its father's name in.
-Produces: a validated ParsedName, each token carrying the reading the
+Produces: a validated ParsedName, a given name written as a run of
+initials parted into them (rules/T7), each token carrying the reading the
 parse took (`Token.reading`), a word of the family's second unit
 marked `Reading.second_surname` where O6's or W5's tag says so
 (rules/R10) and `Reading.first_surname` where a first-surname tag
@@ -19,7 +20,8 @@ invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
-policy folds a middle; Policy.name_order, for ParsedName.order where
+policy folds a middle, and with Policy.two_given_names keeping a given
+name written as a run of initials whole (rules/T7); Policy.name_order, for ParsedName.order where
 no positional read happened; Policy.patronymic_rules, for the words
 an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms,
 suffix_acronyms_ambiguous and given_name_abbreviations (the last
@@ -60,6 +62,7 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
+    _LETTER_RUN, _RUN_LETTER,
     has_patronymic_ending, is_patronymic_marker, is_title_shaped,
     name_source, suffix_kind,
 )
@@ -831,7 +834,71 @@ def assemble(state: ParseState) -> ParsedName:
     order = (state.order if state.order is not None
              else GIVEN_FIRST if state.structure is Structure.FAMILY_COMMA
              else state.policy.name_order)
+    # rules/T7: "the given name is a run of single letters joined by
+    # full stops" -- found inline (a helper would cost every parse a
+    # frame, decisions/parse-cost): the one given word, a stop in it,
+    # and a family beside it, a family comma marking one where it
+    # names none (rules/C15)
+    run_at = None
+    has_family = state.structure is Structure.FAMILY_COMMA
+    for j, tok in final.items():
+        if tok.role is Role.GIVEN:
+            run_at = (-1 if run_at is not None or "." not in tok.text
+                      else j)
+        elif tok.role is Role.FAMILY:
+            has_family = True
+    out = tuple(final.values())
+    if (run_at is not None and run_at >= 0 and has_family
+            and not state.policy.middle_as_family
+            and not state.policy.two_given_names
+            and final[run_at].span is not None
+            and _LETTER_RUN.fullmatch(final[run_at].text)
+            # written in capitals: a run in lower case may be an
+            # abbreviation of its own ('Dr. h.c. Hans Meier', honoris
+            # causa), and a name in one case says nothing either way
+            and final[run_at].text.isupper()):
+        out, ambiguities = _part_letter_run(final[run_at], out,
+                                            ambiguities, order)
     return ParsedName(original=state.original,
-                      tokens=tuple(final.values()),
+                      tokens=out,
                       ambiguities=tuple(ambiguities),
                       order=order)
+
+
+# rules/T7: "it reads as its letters written with a space between
+# them would: the letter in the given name's place in the order is the
+# given name, and the others are middle names" (decisions/T7, #1296)
+def _part_letter_run(whole: Token, tokens: tuple[Token, ...],
+                     ambiguities: list[Ambiguity],
+                     order: tuple[Role, Role, Role],
+                     ) -> tuple[tuple[Token, ...], list[Ambiguity]]:
+    """`tokens` with `whole`, a given name written as a run of single
+    letters, parted into one initial per letter, and every report
+    naming it naming its letters instead ('Smith, J.R.', a credential's
+    shape after a comma), worded for them: the field it named is now
+    the name's initials. The given name is the first letter, or the
+    last where the order lays the given name out after the middle
+    names."""
+    assert whole.span is not None
+    letters = _RUN_LETTER.findall(whole.text)
+    given = (len(letters) - 1
+             if order.index(Role.GIVEN) > order.index(Role.MIDDLE) else 0)
+    start = whole.span.start
+    parts: list[Token] = []
+    for n, text in enumerate(letters):
+        role = Role.GIVEN if n == given else Role.MIDDLE
+        parts.append(Token(text, Span(start, start + len(text)), role,
+                           _INITIAL_TAGS,
+                           _READINGS[(ReadingKind.INITIAL, role,
+                                      ReadingSource.SHAPE)]))
+        start += len(text)
+    at = tokens.index(whole)
+    reported = [a if whole not in a.tokens else Ambiguity(
+        a.kind, a.detail.replace(FIELD_READING[Role.GIVEN],
+                                 "the name's initials"),
+        tuple(p for t in a.tokens for p in (parts if t == whole else (t,))),
+        a.alternative) for a in ambiguities]
+    return tokens[:at] + tuple(parts) + tokens[at + 1:], reported
+
+
+_INITIAL_TAGS = frozenset({"initial"})

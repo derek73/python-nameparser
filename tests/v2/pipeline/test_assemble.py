@@ -270,6 +270,10 @@ def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
 #: names a reading by, so a branch that stops being reached, or starts
 #: naming another reading, fails here by name.
 _EXPECTED_READINGS = [
+    # rules/T7 parts a given name written as a run of initials: each
+    # letter is an initial by its shape, in its own field (#1296)
+    ("E.T. Smith", None, "E.", "initial", "shape"),
+    ("E.T. Smith", None, "T.", "initial", "shape"),
     ("Dr. Juan de la Vega III", None, "Dr.", "title", "vocabulary"),
     ("Insp. Jane Morse", None, "Insp.", "title", "shape"),
     ("Esq. Smith", None, "Esq.", "title", "shape"),

@@ -1,5 +1,3 @@
-import pytest
-
 from nameparser import parse
 
 from tests.base import ParsedNameTestBase
@@ -87,9 +85,9 @@ class ConjunctionTestCase(ParsedNameTestBase):
         self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
-    @pytest.mark.xfail(reason="#1296")
     def test_two_initials_conflict_with_conjunction(self) -> None:
-        # Supporting this seems to screw up titles with periods in them like M.B.A.
+        # rules/T7 (#1296): a given name written as a run of initials
+        # parts into them, as 'E. T. Smith' reads
         hn = parse('E.T. Smith')
         self.m(hn.given, "E.", hn)
         self.m(hn.middle, "T.", hn)

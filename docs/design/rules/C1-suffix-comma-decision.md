@@ -33,7 +33,7 @@
 - **An unlisted all-caps word** ("John Smith, XYZ"): C6 decides whether it joins C4's class at all, only where the name carries a case contrast, and once it has joined, C4's count reads it.
 - **A generation ending the name before the comma against paired initials after it** ("John Smith Jr., M.J."): written dotted, the initials keep C5's reading and are the given name, the generation staying the suffix; written undotted as two capitals, they are C12's credential, read as the credential they look like. A numeral ending the family part is read as the comma-less name reads it (S10), so the roman numerals S10 reads by their shape stay the suffix as the listed ones do, save that a particle or a connective in the part counts as no word to spare there, the comma having named the part a surname (S10).
   ```
-  "John Smith Jr., M.J."      →  given="M.J."
+  "John Smith Jr., M.J."      →  given_names="M.J."
   "John Smith Jr., MJ"        →  suffix="Jr., MJ"
   "John Smith V, M.J."        →  suffix="V"
   "John Smith VI, M.J."       →  suffix="VI"

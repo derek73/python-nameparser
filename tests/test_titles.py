@@ -140,8 +140,9 @@ class TitleTestCase(ParsedNameTestBase):
 
     def test_initials_also_suffix(self) -> None:
         hn = parse("Smith, J.R.")
-        self.m(hn.given, "J.R.", hn)
-        # self.m(hn.middle, "R.", hn)
+        # rules/T7 (#1296): the run parts into its initials
+        self.m(hn.given, "J.", hn)
+        self.m(hn.middle, "R.", hn)
         self.m(hn.family, "Smith", hn)
 
     def test_two_title_parts_separated_by_periods(self) -> None:
@@ -343,7 +344,9 @@ class TitleTestCase(ParsedNameTestBase):
 
     def test_leading_internal_period_abbreviation_excluded(self) -> None:
         hn = parse("E.T. Smith")
-        self.m(hn.given, "E.T.", hn)
+        # rules/T7 (#1296): the run parts into its initials
+        self.m(hn.given, "E.", hn)
+        self.m(hn.middle, "T.", hn)
         self.m(hn.family, "Smith", hn)
         self.m(hn.title, "", hn)
 

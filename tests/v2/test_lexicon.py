@@ -880,7 +880,8 @@ def test_dotted_is_rule_h10s_switch_both_ways() -> None:
     assert Parser().parse("C.E.O. Prof. Jane Smith").title == ""
     off = Parser(lexicon=Lexicon.default().add("us", kind="modifier",
                                                dotted=False))
-    assert off.parse("U.S. Senator John Smith").given == "U.S."
+    # a name, which rules/T7 parts into its initials (#1296)
+    assert off.parse("U.S. Senator John Smith").given == "U."
     assert Parser().parse("U.S. Senator John Smith").title == "U.S. Senator"
 
 

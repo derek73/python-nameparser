@@ -375,9 +375,19 @@ def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
             if empty == twin:
                 continue
             fields, kinds = twin
+            # the lone name word may be a run of single letters the
+            # twin parts into given and middle names (rules/T7, #1296):
+            # one written word all the same, which the empty head reads
+            # whole as the family
+            parted = (fields["middle"]
+                      and re.fullmatch(r"\w\.", fields["given"])
+                      and re.fullmatch(r"\w\.(?: \w\.?)*", fields["middle"]))
             if (fields["title"] and fields["given"]
-                    and not fields["middle"] and not fields["family"]):
-                moved = dict(fields, given="", family=fields["given"])
+                    and (not fields["middle"] or parted)
+                    and not fields["family"]):
+                moved = dict(fields, given="", middle="",
+                             family=fields["given"]
+                             + fields["middle"].replace(" ", ""))
                 if empty == (moved, kinds):
                     h1_rows[label] += 1
                     continue

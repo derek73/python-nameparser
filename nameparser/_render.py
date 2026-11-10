@@ -103,6 +103,16 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 #: by tests/v2/test_regex_sync.py.
 _DOTTED_INITIAL = re.compile(r"^\w\.$")
 
+#: rules/T7's run of single letters joined by full stops and one
+#: letter of it, _pipeline._vocab's _LETTER_RUN and _RUN_LETTER copied
+#: by hand (layering, as for _INITIAL above) and pinned by
+#: tests/v2/test_regex_sync.py. Read by initials(), which gives such a
+#: word one initial per letter wherever the parse left it whole.
+_LETTER = (r'[^\W\d_]'
+           '[̀-ͯ᪰-᫿᷀-᷿⃐-⃿︠-︯]*')
+_LETTER_RUN = re.compile(r"(?:" + _LETTER + r"\.)+" + _LETTER + r"\.?")
+_RUN_LETTER = re.compile(_LETTER + r"\.?")
+
 # v1's "roman_numeral" pattern, the pipeline's _vocab._ROMAN copied
 # by hand (layering, as for _INITIAL above) and pinned by
 # tests/v2/test_regex_sync.py. Read only by _cap_word's numeral
@@ -405,10 +415,18 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         # (a loop, not a generator, which would resume a frame per word)
         letters: list[str] = []
         for t in _ordered(tokens):
-            letter = _first_letter(t.text)
-            if letter.isascii() or not _initialless(
-                    unicodedata.normalize("NFC", letter)):
-                letters.append(letter + delimiter)
+            # rules/T7: "a run of single letters joined by full stops,
+            # in capitals, gives one initial per letter" -- 'J. E. T.
+            # S.' for 'John E.T. Smith', as the letters written apart
+            # give
+            firsts = ([_first_letter(c) for c in _RUN_LETTER.findall(t.text)]
+                      if "." in t.text and t.text.isupper()
+                      and _LETTER_RUN.fullmatch(t.text)
+                      else (_first_letter(t.text),))
+            for letter in firsts:
+                if letter.isascii() or not _initialless(
+                        unicodedata.normalize("NFC", letter)):
+                    letters.append(letter + delimiter)
         values[key] = separator.join(letters)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
