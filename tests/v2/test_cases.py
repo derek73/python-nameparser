@@ -436,9 +436,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1714 the same day, its code review's 'Smith, U.S. Marshal John' and
     # 'U.S. Senator Smith, Ed' the same; 1714 -> 1717 the same day, the
     # fix commit's review's 'John Smith U.S. Dean.' reporting S3's
-    # suffix-or-name under three orders.
-    assert claims == 1717, (
-        f"the field sweep checks {claims} claims, recorded as 1717 on "
+    # suffix-or-name under three orders; 1717 -> 1732 the same day, its
+    # test review's five comma rows (C4's count of a dotted run)
+    # reporting suffix-or-name under three orders.
+    assert claims == 1732, (
+        f"the field sweep checks {claims} claims, recorded as 1732 on "
         f"2026-11-09")
 
 
@@ -846,8 +848,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # under the three orders, each stand-in keeping the taken one;
     # 537 -> 540 and 338 -> 350 the same day, its reviews' boundary
     # rows under the three orders; 540 -> 542 and 350 -> 354 the same
-    # day, its PR review's two words-to-spare rows under the three orders
-    assert (checked, skipped) == (542, 354), (checked, skipped)
+    # day, its PR review's two words-to-spare rows under the three orders;
+    # 542 -> 551 on 2026-11-09, #490's 'P.D. Grant, Ed', 'P.D. Grant PhD,
+    # Ed' and 'Jones U.S. Senator PhD, Ed' under the three orders
+    assert (checked, skipped) == (551, 354), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

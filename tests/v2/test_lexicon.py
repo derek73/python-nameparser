@@ -884,6 +884,15 @@ def test_dotted_is_rule_h10s_switch_both_ways() -> None:
     assert Parser().parse("U.S. Senator John Smith").title == "U.S. Senator"
 
 
+def test_a_dotted_title_reads_as_listed_in_its_language() -> None:
+    # assemble counts classify's dotted tag as a listed title's
+    # (rules/H10), so the reading names the vocabulary and its file
+    us = Parser().parse("U.S. Senator John Smith").tokens[0].reading
+    pd = Parser().parse("P.D. Dr. Hans Meier").tokens[0].reading
+    assert (us.source, us.languages) == ("vocabulary", ("en",))
+    assert (pd.source, pd.languages) == ("vocabulary", ("de",))
+
+
 def test_every_shipped_dotted_title_is_reachable() -> None:
     # each marked title, spelled with a stop after each letter, reads as
     # the title before another (rules/H10), so a word another reading
