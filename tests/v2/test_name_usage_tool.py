@@ -2401,7 +2401,9 @@ def test_a_country_asked_for_twice_or_blank_is_listed_once(
 
 @pytest.mark.parametrize(("word", "wiki"), [
     ("செல்வி", "ta"), ("பா.உ.", "ta"), ("ගරු", "si"), ("වෛද්\u200dය", "si"),
-    ("Selvi", None), ("殿", None), ("श्री", None),
+    ("ดร.สุดา", "th"), ("ወ/ሮ", "am"), ("ဒေါက်တာ", "my"), ("ਸ਼੍ਰੀ", "pa"),
+    ("ბ-ნი", "ka"), ("ᲑᲐᲢᲝᲜᲘ", "ka"), ("Պարոն", "hy"),
+    ("Selvi", None), ("殿", None), ("श्री", None), ("Иван", None),
 ])
 def test_a_word_goes_to_the_wikipedia_of_its_script(word: str, wiki: str | None) -> None:
     assert tool.people_wiki(word) == wiki
@@ -2413,6 +2415,9 @@ def test_name_words_drop_a_disambiguator_and_fold_each_word() -> None:
     # and commas cut it.
     assert tool.name_words("முதலாம் பாஸ்கால் (திருத்தந்தை)") == ["முதலாம்", "பாஸ்கால்"]
     assert tool.name_words("டாக்டர். புஷ்பா, லீலா") == ["டாக்டர்", "புஷ்பா", "லீலா"]
+    # Burmese and Ge'ez write their own commas, and Ge'ez its wordspace.
+    assert tool.name_words("နု၊ ဦး") == ["နု", "ဦး"]
+    assert tool.name_words("መንግስቱ፡ኃይለ፣ማርያም") == ["መንግስቱ", "ኃይለ", "ማርያም"]
     assert tool.name_words("වෛද්\u200dය ජගත්") == ["වෛද්ය", "ජගත්"]
 
 
@@ -2658,7 +2663,9 @@ def test_refresh_people_without_a_word_of_its_scripts_is_refused(
         capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit):
         tool.main(["--refresh-people", "Selvi"])
-    assert "give a Tamil or Sinhala word" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "give a word in a script it indexes: Tamil, Sinhala," in err
+    assert "Armenian" in err
 
 
 def test_a_word_written_in_brackets_is_matched_not_dropped() -> None:
