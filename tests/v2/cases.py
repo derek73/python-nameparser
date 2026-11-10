@@ -1190,6 +1190,100 @@ CASES: tuple[Case, ...] = (
                "refused (en.toml's cota): marked ambiguous, a name in "
                "capitals with a word to spare read it as the suffix, as "
                "it would have in 49 tse-donors names"),
+    # -- #998: credentials written in two chunks joined at a full stop
+    # (B.Pharm, M.Kes), listed so the vocabulary reads them whole, where
+    # rules/S3 read them by shape alone.
+    Case("two_chunk_credential_is_listed", "Ahmed Ali B.Pharm",
+         {"given": "Ahmed", "family": "Ali", "suffix": "B.Pharm"},
+         classification="fix(#998)",
+         notes="the same fields before #998, read by rules/S3's shape "
+               "with a suffix-or-name report; listed, it reports nothing"),
+    Case("two_chunk_credential_with_no_word_to_spare", "Ali C.Psych",
+         {"given": "Ali", "suffix": "C.Psych"},
+         classification="fix(#998)", ambiguities=("given-or-family",),
+         notes="before #998 family 'C.Psych', the shape's suffix "
+               "reading needing a word to spare; the lone name word "
+               "reports given-or-family, as 'Ali M.Med' does"),
+    Case("family_comma_given_part_ends_in_two_chunk_credential",
+         "Hassan, Ahmed M.Kes",
+         {"given": "Ahmed", "family": "Hassan", "suffix": "M.Kes"},
+         classification="fix(#998)",
+         notes="rules/S5's given part: the same fields before #998, "
+               "with a suffix-or-name report"),
+    Case("indonesian_credentials_after_a_comma",
+         "Ayu Pangestu, S.Pd, M.Pd",
+         {"given": "Ayu", "family": "Pangestu", "suffix": "S.Pd, M.Pd"},
+         classification="fix(#998)",
+         notes="before #998 title 'S.Pd M.Pd': the chunk Pd is a listed "
+               "title, and rules/S3 reads a word holding a title chunk as "
+               "a title; listed whole, the vocabulary reads it first"),
+    Case("glued_initial_and_surname_still_read_by_position",
+         "Ahmed Ali M.Hassan",
+         {"given": "Ahmed", "family": "Ali", "suffix": "M.Hassan"},
+         classification="fix(#516)", ambiguities=("suffix-or-name",),
+         notes="unchanged by #998's batch, the cost its proposal accepts: "
+               "rules/S3 reads the unlisted shape as a suffix where a word "
+               "is to spare, and reports it; 1.4.0 gave family 'M.Hassan'"),
+    Case("refused_peng_keeps_the_surname", "Wang Xiao Peng",
+         {"given": "Wang", "middle": "Xiao", "family": "Peng"},
+         classification="parity",
+         notes="P.Eng, Professional Engineer, is refused (en.toml's peng): "
+               "Peng is a Chinese surname and given name"),
+    Case("refused_bed_keeps_the_given_name", "Thapa, Bed",
+         {"given": "Bed", "family": "Thapa"},
+         classification="parity",
+         notes="B.Ed is refused (en.toml's bed): Bed is a Nepali given "
+               "name, in 59 nepal-candidates names; listed, the given "
+               "part after the family comma read suffix 'Bed'"),
+    Case("refused_ssi_keeps_the_word", "Park Ji-hoon ssi",
+         {"given": "Park", "middle": "Ji-hoon", "family": "ssi"},
+         classification="parity",
+         notes="S.Si is refused (id.toml's ssi): ssi is the romanized "
+               "Korean honorific 씨; listed, it read family 'Ji-hoon', "
+               "suffix 'ssi', and recased as SSi"),
+    Case("ambiguous_msi_keeps_the_surname", "Andiswa Zanele Msi",
+         {"given": "Andiswa", "middle": "Zanele", "family": "Msi"},
+         classification="parity", ambiguities=("suffix-or-name",),
+         notes="M.Si is marked ambiguous (id.toml's msi): Msi is a Xhosa "
+               "surname, and listed plain it read suffix 'Msi'; the "
+               "report is new with #998"),
+    Case("ambiguous_msi_after_a_comma_is_the_credential", "Jane Doe, MSi",
+         {"given": "Jane", "family": "Doe", "suffix": "MSi"},
+         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         notes="before #998 given 'MSi', family 'Jane Doe'"),
+    Case("ambiguous_msi_in_capitals_takes_the_surname",
+         "ANDISWA ZANELE MSI",
+         {"given": "ANDISWA", "family": "ZANELE", "suffix": "MSI"},
+         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         notes="the accepted cost of marking msi rather than refusing "
+               "it: a name in one case with a word to spare gives no case "
+               "signal, so the credential reading takes the surname, as "
+               "the ambiguous mot's does (DIVA DA MOT); no local corpus "
+               "writes the shape, while refusing msi reversed Jane Doe, "
+               "MSi; before #998 middle 'ZANELE', family 'MSI'"),
+    Case("two_chunk_credential_written_without_stops_after_a_comma",
+         "Anna Gelavis, BPharm",
+         {"given": "Anna", "family": "Gelavis", "suffix": "BPharm"},
+         classification="fix(#998)",
+         notes="the listed spelling without stops, the vocabulary path: "
+               "before #998 given 'BPharm', family 'Anna Gelavis', rules/C5 "
+               "reading an unlisted two-capital word as paired initials"),
+    Case("two_chunk_credential_in_capitals_without_stops",
+         "JOHN SMITH MPHARM",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MPHARM"},
+         classification="fix(#998)",
+         notes="a name in one case: before #998 middle 'SMITH', family "
+               "'MPHARM'"),
+    Case("indonesian_credentials_with_no_comma",
+         "Ayu Pangestu S.Pd M.Pd",
+         {"given": "Ayu", "family": "Pangestu", "suffix": "S.Pd M.Pd"},
+         classification="fix(#998)",
+         notes="before #998 middle 'Pangestu S.Pd', family 'M.Pd'"),
+    Case("two_chunk_credential_after_a_one_word_head", "Smith, M.Tech",
+         {"family": "Smith", "suffix": "M.Tech"},
+         classification="fix(#998)",
+         notes="the one-word head before the comma: before #998 given "
+               "'M.Tech', with a suffix-or-name report"),
     # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
     # and Romanian names, is marked ambiguous as PA is, the surname
     # reading being substantial (Census 1,814).
