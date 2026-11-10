@@ -46,6 +46,7 @@
   "Yu. A. Chibrikova"         →  given="Yu."
   "Chibrikova, Yu. A."        →  given="Yu."
   "Dr. Yu. Petrov"            →  title="Dr."
+  "Vice Yu. Petrov"           →  given="Vice"
   "ZH. I. ALFEROV"            →  given="ZH."
   "Kh. O. Bezirdzhyan"        →  given="Kh."
   "Yu. Smith, Ed"             →  suffix="Ed"

@@ -792,9 +792,11 @@ def test_is_title_shaped_is_h2_s_shape_alone() -> None:
     assert not is_title_shaped("MA.", lex)
     assert is_title_shaped("Chas.", lex.add(
         "chas", kind="given", same_as=None))
-    # rules/H2's Except: a transliteration digraph is the initial of one
-    # Cyrillic letter, in any case (#1136); the digraphs that are also
-    # titles written short keep the shape, as a Latin digraph does
+    # rules/H2's transliteration-digraph Except: a digraph in the set is
+    # the initial of one Cyrillic letter, in any case (#1136). Ts, Ch and
+    # Sh, also titles written short, keep the shape; so do the spellings
+    # outside the set (Greek or Dutch Th., LC's Iu.) and a longer word
+    # opening with a digraph (Yuk.) -- decisions/H2 (#1136)
     for word in ("Yu.", "YU.", "yu.", "Ya.", "Ye.", "Yo.", "Zh.", "Kh.",
                  "Shch.", "Dzh."):
         assert not is_title_shaped(word, lex), word

@@ -219,7 +219,8 @@ _INDIC_BRAHMIC = re.compile('[\u0900-\u0dff]')
 # rules/H2: "A transliteration digraph" "never reads as a title by
 # shape" -- the digraphs that Except names, lowercase and periodless,
 # so the test is a C-level membership of the word less its period;
-# the ones it leaves out are its own clause (decisions/H2, #1136).
+# the Except itself names the digraphs it leaves out (Ts, Ch, Sh) --
+# decisions/H2 (#1136).
 _DIGRAPH_INITIALS = frozenset({"yu", "ya", "ye", "yo", "zh", "kh",
                                "shch", "dzh"})
 
@@ -299,7 +300,7 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
 
     A transliteration digraph (`Yu.`, `Zh.`, `Kh.`, `_DIGRAPH_INITIALS`)
     declines the shape too, being the initial of one Cyrillic letter
-    (rules/H2's Except, #1136).
+    (rules/H2's transliteration-digraph Except, #1136).
     """
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not (_INDIC_BRAHMIC.search(text)

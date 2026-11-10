@@ -1289,7 +1289,8 @@ A transliteration digraph opening a name, the Latin spelling of one
 Cyrillic letter (``Yu.``, ``Ya.``, ``Ye.``, ``Yo.``, ``Zh.``, ``Kh.``,
 ``Shch.``, ``Dzh.``), is a given name where 1.4 through 3.0 read it as a
 title. ``Ts.``, ``Ch.`` and ``Sh.``, each also a title written short,
-are still titles:
+are still titles, and other spellings of the same letters (the Library
+of Congress ``Iu.``) are unchanged:
 
 .. doctest::
 

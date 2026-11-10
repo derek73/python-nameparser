@@ -451,8 +451,8 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
                                         or in_initialless_script(text)))
-            # rules/H2's Except, a transliteration digraph (#1136) --
-            # a C-level membership test
+            # rules/H2's transliteration-digraph Except (#1136) -- a
+            # C-level membership test
             and text[:-1].lower() not in _DIGRAPH_INITIALS
             # rules/H2's precedence: a given name written short outranks
             # the shape ('Chas.', #789) -- classify's tag, a C-level test
