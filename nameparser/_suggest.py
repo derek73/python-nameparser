@@ -18,8 +18,9 @@ are the pipeline's own predicates, never a copy of them.
 
 ``suggest`` tallies the group's votes and decides two settings
 together, ``patronymic_rules`` first and ``name_order`` second: a
-decided East Slavic rule reorders each name itself, so it suppresses
-the order decision (the spec's "Patronymics and order"). A setting is
+decided East Slavic rule reorders each name itself and stands down
+under a family-first order, so it decides the order as given-first
+(the spec's "Patronymics and order"). A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
 votes, gives back a parser that reads exactly as the base does. The
@@ -439,15 +440,32 @@ class _Tally:
             rows, note)
 
 
-def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule]
+def _patronymic_winner(tally: _Tally, any_voters: int
+                       ) -> PatronymicRule | None:
+    """The rule whose names are strictly more than _MIN_SHARE of the
+    names that cast any vote, and at least _MIN_VOTES of them. A name
+    casts at most one patronymic vote, so its votes count names: a
+    share of the group, not of the patronymic votes alone, so one
+    patronymic among many given-first names decides nothing."""
+    counts = tally.counts()
+    if not counts:
+        return None
+    rule, count = max(counts.items(), key=lambda item: item[1])
+    if count < _MIN_VOTES or count <= _MIN_SHARE * any_voters:
+        return None
+    return rule  # type: ignore[return-value]
+
+
+def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule],
+                       any_voters: int
                        ) -> tuple[SettingEvidence, dict[str, object], bool]:
     """Decide ``patronymic_rules``: the evidence, the patch fields, and
-    whether the decision takes the place of an order decision."""
-    rule = tally.winner()
+    whether the decided rule needs a given-first order."""
+    rule = _patronymic_winner(tally, any_voters)
     if rule is PatronymicRule.EAST_SLAVIC:
         # the rule reorders a family-first East Slavic name itself, and
         # stands down under a declared family-first order, so the group
-        # gets the rule and no order
+        # gets the rule with a given-first order (what locales.RU ships)
         value = base_rules | {rule}
         fields: dict[str, object] = (
             {} if rule in base_rules else {_PATRONYMIC_RULES: frozenset({rule})})
@@ -471,21 +489,26 @@ def _decide_turkic(tally: _Tally, base_rules: frozenset[PatronymicRule]
 
 
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
-                  settled_by_rule: bool
+                  rule_needs_given_first: bool
                   ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``name_order`` in either direction. A family-first answer
-    keeps the base's family-first spelling where the base has one."""
-    if settled_by_rule:
-        note = ("not decided: the East Slavic rule reorders each name"
-                if tally.by_signal else "")
-        return (tally.evidence(_NAME_ORDER, base_order, False,
-                               lambda v: v == _end(base_order), note), {})
+    keeps the base's family-first spelling where the base has one. A
+    decided East Slavic rule decides the order instead: given-first,
+    whatever the names' own order votes say, since the rule reorders
+    each name and stands down under a family-first order."""
+    if rule_needs_given_first:
+        fields: dict[str, object] = (
+            {} if base_order == GIVEN_FIRST else {_NAME_ORDER: GIVEN_FIRST})
+        return (tally.evidence(
+            _NAME_ORDER, GIVEN_FIRST, True, lambda v: v == GIVEN_FIRST,
+            note="the East Slavic rule reorders each name; it needs a "
+                 "given-first order"), fields)
     end = tally.winner()
     if end is None:
         return (tally.evidence(_NAME_ORDER, base_order, False,
                                lambda v: v == _end(base_order)), {})
     order = (base_order if _end(base_order) == end else end)
-    fields: dict[str, object] = (
+    fields = (
         {} if order == base_order else {_NAME_ORDER: order})
     return (tally.evidence(_NAME_ORDER, order, True,
                            lambda v: v == end), fields)
@@ -530,10 +553,12 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     base: see :meth:`Parser.suggest`."""
     tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
     evidence: list[NameEvidence] = []
+    any_voters = 0
     for text in _texts(names):
         votes = name_votes(text, parser.lexicon)
         evidence.append(NameEvidence(text, votes))
         cast = set()
+        any_voters += bool(votes)
         for signal, vote in votes.items():
             setting = _setting_of(signal)
             tallies[setting].by_signal[(signal, vote)] += 1
@@ -543,7 +568,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
             tally.voters += setting in cast
     policy = parser.policy
     patronymic, patronymic_fields, settled = _decide_patronymic(
-        tallies[_PATRONYMIC_RULES], policy.patronymic_rules)
+        tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
     order, order_fields = _decide_order(
         tallies[_NAME_ORDER], policy.name_order, settled)
     patch = PolicyPatch(**order_fields, **patronymic_fields)  # type: ignore[arg-type]

@@ -312,8 +312,10 @@ class Parser:
         patronymic shape, read with this parser's lexicon; a name with
         a comma, no words or one word casts none. ``name_order`` is
         decided in either direction, keeping this parser's family-first
-        spelling where it has one, and a group of East Slavic
-        patronymics gets the East Slavic rule instead of an order. A
+        spelling where it has one. A group in which most of the names
+        that cast a vote carry an East Slavic patronymic gets the East
+        Slavic rule with a given-first order, since the rule reorders
+        each name and stands down under a family-first order. A
         setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
