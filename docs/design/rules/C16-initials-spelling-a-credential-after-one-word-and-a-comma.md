@@ -11,7 +11,7 @@
   "jansen, j.p."              →  given_names="j.p."
   "Jansen, j.p."              →  suffix="j.p."  · boundary
   ```
-- **One word is C4's count of one name word, and one word as written too**: a title word the count passes over is a word here, and a capitalized particle is a word, since before another word it may be the given name; a particle in lower case before a word with a capital, in a name of mixed case, is the Dutch tussenvoegsel's writing and no word; and a suffix word of two or more letters ending the head behind a word is none, as is a numeral written in capitals, as C3 counts it; a single letter there ends a whole name (C1), and a title alone is no surname.
+- **One word is C4's count of one name word, and one word as written too**: a title word the count passes over is a word here, and a capitalized particle is a word, since before another word it may be the given name; a particle in lower case before a word with a capital, in a name of mixed case, is the Dutch tussenvoegsel's writing and no word; and a suffix word of two or more letters ending the head behind a word is none, as is a numeral written in capitals, as C3 counts it; a single letter there ends a whole name (C1), and a title alone is no surname. An empty head reads as C15 has it, as a one-word head less the surname.
   ```
   "de Waart, J.P."            →  given_names="J.P."
   "Le, J.P."                  →  given_names="J.P."
@@ -21,6 +21,7 @@
   "Ashley Knight, M.S. BME"   →  suffix="M.S. BME"
   "Le Vi, M.D."               →  suffix="M.D."
   "Smith V, M.D."             →  given="Smith"
+  ", J.P."                    →  given_names="J.P."
   ```
 - **Titles in front of the run leave it the given name, and a particle behind it joins the family** as behind any given part.
   ```

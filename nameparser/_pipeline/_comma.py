@@ -352,28 +352,35 @@ def _lone_word(state: ParseState, seg0: Sequence[int]) -> bool:
     # as C3 counts it: one in front of a word is a word ('Dr.B. Akila.,
     # M.D'), a single letter ends a whole name (C1)
     end = len(seg0)
-    while end > 1 and len(stem := tokens[seg0[end - 1]].text.rstrip(
-            ".")) >= 2 and ("vocab:suffix" in tokens[seg0[end - 1]].tags
-                            or stem.isupper()
-                            and ROMAN.match(stem) is not None):
+    while end > 1:
+        token = tokens[seg0[end - 1]]
+        stem = token.text.rstrip(".")
+        if len(stem) < 2 or not ("vocab:suffix" in token.tags
+                                 or stem.isupper()
+                                 and ROMAN.match(stem) is not None):
+            break
         end -= 1
-    words = 0
-    particle = capital = titled = False
+    word: WorkToken | None = None
+    particle = False
     for i in seg0[:end]:
         token = tokens[i]
-        text = token.text
         if ("particle" in token.tags and not state.one_case
-                and text.islower()):
+                and token.text.islower()):
             particle = True
+        elif word is not None:
+            return False
         else:
             # a capitalized particle is a word ('Le, J.P.' one, 'Bin
-            # Zhang, M.D.' two), and so is a title word, though a title
-            # alone is no surname ('Dr. VI, M.D.')
-            words += 1
-            titled = "vocab:title" in token.tags
-            if not text.islower():
-                capital = True
-    return words <= 1 and not titled and (capital or not particle)
+            # Zhang, M.D.' two), and so is a title word
+            word = token
+    if word is None:
+        # an empty head reads as C15 has it, as 'Smith, X' less the
+        # surname
+        return not particle
+    # a title alone is no surname ('Dr. VI, M.D.'); a lower-case word
+    # behind lower-case particles is a name all in lower case
+    return ("vocab:title" not in word.tags
+            and not (particle and word.text.islower()))
 
 
 def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
@@ -560,7 +567,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
     runs: set[int] = set()
-    for p in p1:
+    at = -1
+    for at, p in enumerate(p1):
         if len(p) == 1 and "." in (text := texts[p[0]]):
             tags = tokens[p[0]].tags
             if (("vocab:suffix" in tags or AMBIGUOUS_ACRONYM_TAG in tags)
@@ -574,14 +582,14 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                         "NFC", text.replace(".", ""))))
                          or state.one_case
                          and all(map(str.islower, letters)))):
+                # the first run is the one asked about; another run
+                # beside it is company like any credential ('Anderson,
+                # M.T. B.A.')
                 runs.add(p[0])
+                break
+    contrast_box: list[bool] = []
     if runs:
-        # the first run is the one asked about; another run beside it is
-        # company like any credential ('Anderson, M.T. B.A.')
-        contrast_box: list[bool] = []
-        at = next(k for k, p in enumerate(p1) if p[0] in runs)
         first = p1[at][0]
-        runs = {first}
         # titles in front of the run are the given part's (C16);
         # behind it a credential is company: a title/suffix dual only in
         # capitals ('Smith, M.D. MS', but 'Smith, J.P. Ms.'), never a
@@ -613,7 +621,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         "vocab:suffix-word" in tokens[seg0[-1]].tags
         or ROMAN.match(tokens[seg0[-1]].text.rstrip(".")) is not None)
     behind_generation = listing = False
-    contrast: bool | None = None
+    # C6's contrast, where the run's company has already asked it
+    contrast: bool | None = contrast_box[0] if contrast_box else None
     if not maybe:
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
@@ -727,12 +736,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:
+        lone = bool(runs) and names < 2 and _lone_word(state, seg0)
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
             anchored, absorbed, licensed, head_named=names >= 2,
-            runs=runs if names < 2 and _lone_word(state, seg0) else ())
-        if reading is None and runs and names < 2 and _lone_word(
-                state, seg0):
+            runs=runs if lone else ())
+        if reading is None and lone:
             # rules/C16: "behind one word, initials run together are the
             # given name whatever they spell" -- the run the reading
             # stopped at, the part's first piece that is no title (a

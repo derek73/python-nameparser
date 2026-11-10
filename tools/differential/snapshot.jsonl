@@ -39,6 +39,7 @@
 {"name": ", Dr. abdul Rahman", "title": "Dr.", "family": "abdul Rahman", "initials": "a. R.", "capitalized_force": "Dr. Abdul Rahman"}
 {"name": ", Dr. fils", "title": "Dr.", "family": "fils", "initials": "f.", "capitalized_force": "Dr. Fils"}
 {"name": ", E.T.", "given": "E.", "middle": "T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "E. T."}
+{"name": ", J.P.", "given": "J.", "middle": "P.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. P."}
 {"name": ", Jane", "given": "Jane", "initials": "J."}
 {"name": ", Jane Mrs", "title": "Mrs", "family": "Jane", "initials": "J."}
 {"name": ", Jane van", "given": "Jane", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. v.", "capitalized_force": "Jane Van"}
