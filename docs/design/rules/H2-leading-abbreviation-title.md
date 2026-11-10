@@ -8,6 +8,7 @@
   ```
   "J. Smith"                  →  given="J."  · boundary
   "J.R. Smith"                →  given="J.R."  · boundary
+  "Ю. А. Чибрикова"           →  given="Ю."  · boundary
   ```
 - **A letter written decomposed is the same letter.** An accented Latin, Greek or Cyrillic letter written as a base letter plus a combining mark (NFD) is the same letter as the composed one, for this shape and for the dotted and all-caps credential shapes C5, C6, S9 and S3 read (#652), so such a name parses the same in either encoding and the output keeps the one written.
   ```
@@ -40,16 +41,15 @@
   "ດຣ. ສົມ"                     →  title="ດຣ."  · boundary
   ```
 
-- **A transliteration digraph** — the Latin spelling of one Cyrillic letter, Yu, Ya, Ye, Yo, Zh, Kh, Shch or Dzh, in any case — never reads as a title by shape: it is the initial of that letter, so a romanized byline reads as its Cyrillic original does, where the one-letter initial is no title either (#1136). Ch, Sh and Ts still read as titles by shape, each also written short for a title (Chaudhry, Sheikh or Shri, the Malaysian Ts.), and so does a Latin digraph such as Th. The digraph reads as a name word wherever it stands, behind a title too, and not as the initial a single letter is, so a lone one is placed as any lone unlisted word is.
+- **A transliteration digraph** — the Latin spelling of one Cyrillic letter, Yu, Ya, Ye, Yo, Zh, Kh, Shch or Dzh, in any case — never reads as a title by shape: it is the initial of that letter, so a romanized byline reads as its Cyrillic original does, where the one-letter initial is no title either (#1136). Ch, Sh and Ts still read as titles by shape, each also written short for a title (Chaudhry, Sheikh or Shri, the Malaysian Ts.), and a digraph of another alphabet, such as Th for Greek Θ or Dutch Theodorus, is outside this clause. The digraph reads as a name word wherever it stands, behind a title too, and not as the initial a single letter is, so a lone one is placed as any lone unlisted word is.
   ```
   "Yu. A. Chibrikova"         →  given="Yu."
-  "Ю. А. Чибрикова"           →  given="Ю."
   "Chibrikova, Yu. A."        →  given="Yu."
   "Dr. Yu. Petrov"            →  title="Dr."
   "ZH. I. ALFEROV"            →  given="ZH."
   "Kh. O. Bezirdzhyan"        →  given="Kh."
-  "Ts. Sandag-Ochir"          →  title="Ts."  · boundary
-  "Th. Markopoulos"           →  title="Th."  · boundary
+  "Ts. Dr. Norziha Che Him"   →  title="Ts. Dr."  · boundary
+  "Ch. Tahir Mehmood"         →  title="Ch."  · boundary
   ```
 
 **Precedence:**

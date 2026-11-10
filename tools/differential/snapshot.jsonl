@@ -602,6 +602,7 @@
 {"name": "Cem Akin, Prof.", "title": "Prof.", "given": "Cem", "family": "Akin", "initials": "C. A."}
 {"name": "Cerda y Aragón, Tomás Antonio de la", "given": "Tomás", "middle": "Antonio", "family": "de la Cerda y Aragón", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "T. A. C. A."}
 {"name": "Cetto, August von", "given": "August", "family": "von Cetto", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. C."}
+{"name": "Ch. Tahir Mehmood", "title": "Ch.", "given": "Tahir", "family": "Mehmood", "initials": "T. M."}
 {"name": "Chancellor Jane Smith", "given": "Chancellor", "middle": "Jane", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. J. S."}
 {"name": "Chancellor Smith", "given": "Chancellor", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. S."}
 {"name": "Chang, Andy C I", "given": "Andy", "middle": "C", "family": "Chang", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "A. C. C.", "generation": "I"}
@@ -3975,7 +3976,6 @@
 {"name": "Teresa Mañé i Miravet", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
 {"name": "Tewolde Berhan Gebre Egziabher", "given": "Tewolde", "middle": "Berhan Gebre", "family": "Egziabher", "initials": "T. B. G. E."}
 {"name": "Teógenes Díaz-Corralejo Fernández", "given": "Teógenes", "middle": "Díaz-Corralejo", "family": "Fernández", "initials": "T. D. F."}
-{"name": "Th. Markopoulos", "title": "Th.", "family": "Markopoulos", "initials": "M."}
 {"name": "Tham Jun", "given": "Tham", "family": "Jun", "initials": "T. J."}
 {"name": "Tham Jun Hoe", "given": "Tham", "middle": "Jun", "family": "Hoe", "initials": "T. J. H."}
 {"name": "Tham Junhoe", "given": "Tham", "family": "Junhoe", "initials": "T. J."}
@@ -4018,7 +4018,7 @@
 {"name": "Tounens, Antoine de", "given": "Antoine", "family": "de Tounens", "initials": "A. T."}
 {"name": "Traberth, Julie", "given": "Julie", "family": "Traberth", "initials": "J. T."}
 {"name": "Tran Thi Mai", "order": "FAMILY_FIRST", "given": "Thi", "middle": "Mai", "family": "Tran", "initials": "T. M. T."}
-{"name": "Ts. Sandag-Ochir", "title": "Ts.", "family": "Sandag-Ochir", "initials": "S."}
+{"name": "Ts. Dr. Norziha Che Him", "title": "Ts. Dr.", "given": "Norziha", "middle": "Che", "family": "Him", "initials": "N. C. H."}
 {"name": "Tschagribeg", "given": "Tschagribeg", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "T."}
 {"name": "Tschurtschenthaler, Anton von", "given": "Anton", "family": "von Tschurtschenthaler", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. T."}
 {"name": "Tunde Seun Okeke", "given": "Tunde", "middle": "Seun", "family": "Okeke", "initials": "T. S. O."}
