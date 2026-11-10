@@ -89,7 +89,8 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    GLUED_SHAPE, effective_script, glued_cuts, is_initial_chunk, is_one_case,
+    GLUED_SHAPE, effective_script, glued_cuts, glued_saint_cut,
+    is_initial_chunk, is_one_case,
     period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
@@ -838,6 +839,17 @@ def _divide_glued(state: ParseState) -> ParseState:
             continue
         cuts = glued_cuts(text, lexicon)
         if not cuts:
+            # rules/T8: "a saint particle glued to a name is one name
+            # word" -- save as the last name word of the part behind
+            # another, where it divides and the particle opens the
+            # surname as written apart (rules/P10, 'Juan dela Cruz
+            # Sta.Maria'; decisions/T8 (#1071))
+            saint = glued_saint_cut(text, lexicon)
+            if (saint is not None
+                    and state.policy.name_order[-1] is Role.FAMILY
+                    and _a_word_to_spare(texts[:k], state)
+                    and _only_post_nominals(texts[k + 1:], state)):
+                state = _split(state, i, (saint,), None)
             continue
         state = _split(state, i, cuts, None)
         if _ends_the_name(text, cuts, texts, k, state):
@@ -858,6 +870,39 @@ def _divide_glued(state: ParseState) -> ParseState:
     return state
 
 
+def _only_post_nominals(texts: Sequence[str], state: ParseState) -> bool:
+    """Whether every word in `texts` is suffix vocabulary, an acronym
+    looked up without its stops ('Ph.D.' as 'phd'), up to a maiden
+    marker, whose clause holds no word of the name ('Juan dela Cruz
+    Sta.Maria née Jones'): what may follow the last name word of a
+    part."""
+    sets = state.lexicon._sets
+    for j, later in enumerate(texts):
+        n = _normalize(later)
+        # a marker of one word or two ('née', 'z domu')
+        if n in sets.maiden_markers or (
+                j + 1 < len(texts) and f"{n} {_normalize(texts[j + 1])}"
+                in sets.maiden_markers):
+            return True
+        if (n not in sets.suffix_words
+                and n.replace(".", "") not in sets.suffix_acronyms):
+            return False
+    return True
+
+
+def _a_word_to_spare(texts: Sequence[str], state: ParseState) -> bool:
+    """Whether a word of `texts` is no unambiguous title, nor titles
+    glued at their stops with no name after them ('Prof.Dr.'): a word
+    of the name before the last one, which a title is not ('Mr.
+    St.Clair', 'Dr. A.Smith')."""
+    sets = state.lexicon._sets
+    lexicon = state.lexicon
+    return any(_normalize(before) not in sets.titles
+               and (period_joined_vocab(before, lexicon) != "title"
+                    or glued_cuts(before, lexicon))
+               for before in texts)
+
+
 def _ends_the_name(text: str, cuts: tuple[int, ...], texts: Sequence[str],
                    k: int, state: ParseState) -> bool:
     """Whether T8's division of `texts[k]` took the credential S3's
@@ -876,19 +921,12 @@ def _ends_the_name(text: str, cuts: tuple[int, ...], texts: Sequence[str],
     name = _normalize(text[cuts[-1]:])
     if name in sets.suffix_words or name in sets.suffix_acronyms:
         return False
-    for later in texts[k + 1:]:
-        n = _normalize(later)
-        # an acronym is listed without its stops ('Ph.D.' as 'phd')
-        if (n not in sets.suffix_words
-                and n.replace(".", "") not in sets.suffix_acronyms):
-            return False
+    if not _only_post_nominals(texts[k + 1:], state):
+        return False
     # a title, or titles glued at their stops with no name after them, is
     # no word to spare ('Prof.Dr. A.Brown' as 'Prof. Dr. A.Brown'); a
     # glued word that divides holds a name ('Dr.John J.Smith')
-    if not any(_normalize(before) not in sets.titles
-               and (period_joined_vocab(before, state.lexicon) != "title"
-                    or glued_cuts(before, state.lexicon))
-               for before in texts[:k]):
+    if not _a_word_to_spare(texts[:k], state):
         return False
     return (state.structure is not Structure.FAMILY_COMMA
             or _postnominal_behind_a_whole_name(state))

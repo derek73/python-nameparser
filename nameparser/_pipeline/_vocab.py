@@ -1010,6 +1010,35 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             return tuple(cuts) if titled or not initial else ()
 
 
+def glued_saint_cut(text: str, lexicon: Lexicon) -> int | None:
+    """The offset after the stop where a listed saint particle is glued
+    to the name it opens ('Sta.Ana', 'St.John', 'STE.MARIE'): the
+    particle, one full stop and one name word whose first letter with
+    case is a capital, nothing after it; None for any other word
+    (rules/T8, #1071). The word is one name word wherever it stands,
+    and divides here only as the last word of a part (`_script_segment`
+    asks that)."""
+    m = _GLUED_CHUNK.match(text)
+    if m is None or _normalize(m.group(1)) not in lexicon._sets.saint_particles:
+        return None
+    word = _GLUED_WORD.fullmatch(text, m.end())
+    if word is None or next(
+            (c.islower() for c in word.group() if c.upper() != c.lower()),
+            True):
+        return None
+    # an unambiguous title or suffix word after the stop is no name
+    # ('St.MD', 'St.Jr')
+    sets = lexicon._sets
+    w = _normalize(word.group())
+    if w in sets.titles or (
+            w in sets.suffix_acronyms
+            and w not in sets.suffix_acronyms_ambiguous) or (
+            (w in sets.suffix_words or w in sets.credential_words)
+            and w not in sets.suffix_words_ambiguous):
+        return None
+    return m.end()
+
+
 def is_initial_chunk(chunk: str) -> bool:
     """Initials before a full stop, as T8's report asks of the chunks it
     cut (rules/T8): one letter in a script with case, a run of them
@@ -1027,7 +1056,8 @@ def is_initial_chunk(chunk: str) -> bool:
 
 def is_title_chunk(chunk: str, lexicon: Lexicon) -> bool:
     """A listed title that is no saint particle, read as a chunk before
-    a full stop (rules/T8; a saint particle's chunk is #1071's)."""
+    a full stop (rules/T8; a saint particle glued to a name is one name
+    word, `glued_saint_cut`)."""
     sets = lexicon._sets
     n = _normalize(chunk)
     return n not in sets.saint_particles and (
@@ -1702,6 +1732,11 @@ def period_joined_vocab(
     decides whether it is class membership.
     """
     if not _PERIOD_NOT_AT_END.match(text):
+        return None
+    # rules/T8: "a saint particle glued to a name is one name word" --
+    # no title chunk claims it and no dotted shape reads it
+    # (decisions/T8 (#1071))
+    if glued_saint_cut(text, lexicon) is not None:
         return None
     chunks = [_normalize(c) for c in text.split(".") if c]
     if any(c in lexicon._sets.titles for c in chunks):

@@ -52,12 +52,19 @@
   "Ole Simonsen, Dr.Med"      →  title="Dr.Med"
   "Smith, Dr.John"            →  title="Dr.John"  · boundary
   ```
-- **A word the shape refuses** keeps its one word: a name in lower case after the stop, one closed by its own stop or followed by another chunk, an unambiguous title or credential, a word holding a delimiter or a digit, and a saint particle's chunk, which P10 reads with its name.
+- **A word the shape refuses** keeps its one word: a name in lower case after the stop, one closed by its own stop or followed by another chunk, an unambiguous title or credential, and a word holding a delimiter or a digit.
   ```
   "Dr.med. Lukas Mayer"       →  title="Dr.med."
   "J.Smith. Jones"            →  given="J.Smith."
   "Dr.MD Smith"               →  title="Dr.MD"
-  "St.John Smith"             →  title="St.John"
+  ```
+- **A saint particle glued to a name is one name word**, read neither as a title nor as a credential by its dotted shape, since `St John` is also a given name and a middle name, which written apart it would not stay; only as the last name word of the part, behind a word that is no title, and under an order that ends the name with the family, does it divide, so P10's saint run opens the surname as written apart.
+  ```
+  "St.John Price"             →  given="St.John"
+  "Jeremy St.John Middleton"  →  middle="St.John"
+  "Mark Jhon Sta.Ana"         →  family="Sta.Ana"
+  "Juan dela Cruz Sta.Maria"  →  middle="dela Cruz"
+  "Mr. St.Clair"              →  family="St.Clair"
   ```
 
 **Precedence:**
@@ -71,7 +78,8 @@
 **Accepted:**
 
 - A name glued to its chunk and closed by a stop of its own stays one word ('J.Smith.', 'Mrs.Smith.'), the stop being how a field is closed too ('Dr.Med.').
-- In a name written wholly in lower case nothing after the stop has the capital the test reads, so it stays one word ('dr.john smith'), where its capitals divide ('DR.JOHN SMITH').
+- In a name written wholly in lower case nothing after the stop has the capital the test reads, so it stays one word ('dr.john smith'), where its capitals divide ('DR.JOHN SMITH'), and a saint particle glued to a name keeps the reading its chunks give it there ('st.john price' title 'st.john').
+- A saint word followed by another name word stays one word where its spaced writing reads a saint run opening the surname: `Juan Sta.Maria Reyes` reads middle 'Sta.Maria', family 'Reyes', where `Juan Sta. Maria Reyes` reads family 'Sta. Maria Reyes' (P10), the price of keeping the British middle name whole ('Jeremy St.John Middleton').
 - A listed title before the initials is no word to spare, though rarely a given name, so the report is not made there ('Vice A.Smith').
 - `Parser.revise` reads a value on its own, so a glued word in it divides, and the revised field renders the pieces apart ('M.Hassan' revising to 'M. Hassan'), as a CJK value's own parse divides it.
 - After a family comma a glued word stays whole though it is the given name the comma names ('SMITH, J.MICHAEL' → given 'J.MICHAEL').
