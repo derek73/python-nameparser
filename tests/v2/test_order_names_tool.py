@@ -98,3 +98,62 @@ def test_the_shipped_surname_block_is_what_the_tool_writes(
         tool.pinyin_surnames(singles, mandarin)))
     text = Path(_order_names.__file__).read_text(encoding="utf-8")
     assert tool.rewrite(text, "PINYIN", block) == text
+
+
+def _namdict(tool: ModuleType, countries: dict[str, dict[str, int]]):
+    """A NamDict whose only entries are ``{country: {name: band}}``."""
+    names: dict[str, list[tuple[str, dict[str, int]]]] = {}
+    for country, bands in countries.items():
+        for name, band in bands.items():
+            names.setdefault(name, []).append((name, {country: band}))
+    return tool.name_usage.NamDict(
+        countries=list(countries), names=names, short_for={})
+
+
+@needs_checkout
+def test_a_name_mostly_written_as_a_family_name_is_dropped(
+        tool: ModuleType) -> None:
+    nd = _namdict(tool, {"X": {"thomas": 9, "kim": 9, "anna": 9}})
+    from collections import Counter
+    given = Counter({"thomas": 90, "kim": 50, "anna": 100})
+    family = Counter({"thomas": 10, "kim": 50, "anna": 1})
+    got = tool.common_given(nd, given, family, top=10, max_family_share=0.05,
+                            min_uses=20, exclude=set())
+    assert got == {"anna"}
+
+
+@needs_checkout
+def test_a_romanized_surname_and_a_one_letter_name_never_enter(
+        tool: ModuleType) -> None:
+    from collections import Counter
+    nd = _namdict(tool, {"X": {"lee": 9, "a": 9, "anna": 9}})
+    given = Counter({"lee": 100, "a": 100, "anna": 100})
+    got = tool.common_given(nd, given, Counter(), top=10, max_family_share=0.05,
+                            min_uses=20, exclude={"lee"})
+    assert got == {"anna"}
+
+
+@needs_checkout
+def test_top_is_per_country_then_unioned(tool: ModuleType) -> None:
+    from collections import Counter
+    nd = _namdict(tool, {"X": {"anna": 9, "bea": 5}, "Y": {"carl": 9, "dan": 5}})
+    given = Counter({"anna": 99, "bea": 99, "carl": 99, "dan": 99})
+    got = tool.common_given(nd, given, Counter(), top=1, max_family_share=0.05,
+                            min_uses=20, exclude=set())
+    assert got == {"anna", "carl"}
+
+
+@needs_checkout
+def test_the_shipped_given_block_is_what_the_tool_writes(
+        tool: ModuleType) -> None:
+    cache = tool.name_usage.cache_dir()
+    namdict = cache / "nam_dict.txt"
+    orcid = cache / "local" / "orcid-researchers" / "raw.jsonl"
+    if not (namdict.exists() and orcid.exists()):
+        pytest.skip("nam_dict or the ORCID local corpus is not cached")
+    words = tool.load_common_given()
+    block = tool.render_block("COMMON_GIVEN", words)
+    text = Path(_order_names.__file__).read_text(encoding="utf-8")
+    assert tool.rewrite(text, "COMMON_GIVEN", block) == text
+    assert not words & _order_names.ROMANIZED_SURNAMES
+    assert _order_names.COMMON_GIVEN_NAMES == frozenset(words)
