@@ -13,6 +13,7 @@ import sys
 import zipfile
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -100,7 +101,7 @@ def test_the_shipped_surname_block_is_what_the_tool_writes(
     assert tool.rewrite(text, "PINYIN", block) == text
 
 
-def _namdict(tool: ModuleType, countries: dict[str, dict[str, int]]):
+def _namdict(tool: ModuleType, countries: dict[str, dict[str, int]]) -> Any:
     """A NamDict whose only entries are ``{country: {name: band}}``."""
     names: dict[str, list[tuple[str, dict[str, int]]]] = {}
     for country, bands in countries.items():
