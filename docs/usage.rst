@@ -1404,8 +1404,12 @@ being no name of its own. It is read with accents folded too, so
 listed spelling counts inside a family name word by word as it does
 whole: with ``smyth`` added to a lexicon as a spelling of ``smith``,
 ``Ann de Smyth`` / ``Ann Smith`` read ``particles-aside`` and
-``Ann Smyth-Jones`` / ``Ann Smith`` ``part-of-other``. A middle name is compared word by word, in order, and takes the weakest
-of its words' outcomes. A different generation conflicts
+``Ann Smyth-Jones`` / ``Ann Smith`` ``part-of-other``. A middle name
+is compared word by word, in order, and takes the weakest of its
+words' outcomes; where one side holds more words, the shorter side's
+may align with any of the longer side's in order, the rest one-sided,
+so ``John Beth Smith`` / ``John Anne Beth Smith`` reads ``one-side``.
+A different generation conflicts
 (``Jr.`` / ``Sr.``), and a generation on one side only reads
 ``generation-one-side`` whatever credentials either side carries
 (``John Smith Jr.`` / ``John Smith, PhD``); a credential or title

@@ -1869,3 +1869,63 @@ def test_a_given_name_opening_with_a_stray_mark_keys_its_first_letter(
     a, b = base.replace(given=stray + "Pierre"), base.replace(given="Pierre")
     assert m.check(a, b).consistent
     assert m.keys(a) == m.keys(b) == {"dupont;p"}
+
+
+# -- middle names aligned as a subsequence (#1263) -----------------------------
+
+@pytest.mark.parametrize("a, b", [
+    ("John Beth Smith", "John Anne Beth Smith"),
+    ("John B. Smith", "John A. B. Smith"),
+    ("Gonzalo Fernández Llona", "Gonzalo José Fernández Llona"),
+    ("John Anne Smith", "John Anne Marie Beth Smith"),
+])
+def test_a_middle_name_aligns_with_any_words_of_a_longer_one(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and r.consistent
+        assert m.keys(x) & m.keys(y)
+
+
+@pytest.mark.parametrize("a, b", [
+    # as many words: compared pair by pair, so a typo still conflicts
+    ("Abdon Assis Injosa Andrade", "Abdon Assis Inojosa Andrade"),
+    # the order of the words is kept
+    ("John Anne Beth Smith", "John Beth Anne Smith"),
+    # a word of the shorter side that no word of the longer agrees with
+    ("John Clara Smith", "John Anne Beth Smith"),
+])
+def test_a_middle_name_still_conflicts_where_no_alignment_holds(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["middle"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+def test_a_consumed_middle_word_leaves_the_rest_to_align() -> None:
+    # across-roles: John is the other's middle name, consumed, and what is
+    # left of the middle names compares as before
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    r = across.check("John Edgar Hoover", "Edgar John Hoover")
+    assert r.consistent and r["given"].outcome is Outcome.ACROSS_ROLES
+    assert r["middle"].outcome is Outcome.ONE_SIDE
+
+
+_MIDDLES: tuple[str, ...] = (
+    "John Smith", "John A. Smith", "John Anne Smith", "John Beth Smith",
+    "John Anne Beth Smith", "John Beth Anne Smith", "John A. B. Smith",
+    "John Anne B. Smith", "John Anne Marie Beth Smith", "John Ann Smith",
+)
+
+
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_aligned_middle_names_keep_the_key_guarantee_and_symmetry(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    accept, other_readings = setting
+    matching = Matching(Parser(), accept, other_readings=other_readings)
+    for a in _MIDDLES:
+        for b in _MIDDLES:
+            r = matching.check(a, b)
+            assert matching.check(b, a) == r.mirrored(), (a, b)
+            if r.consistent:
+                assert matching.keys(a) & matching.keys(b), (a, b)
