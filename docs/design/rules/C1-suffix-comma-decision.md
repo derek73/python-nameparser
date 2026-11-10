@@ -6,7 +6,7 @@
 
 - **Only the part after the first comma decides**, but for a suffix word ending a whole name before it (C12).
 - **How the words before the comma are counted** is C3's.
-- **The ambiguous credential class**, counted by name words (C4), with paired initials (C5) and an unlisted all-caps word (C6) read there by rules of their own.
+- **The ambiguous credential class**, counted by name words (C4), with paired initials (C5) and an unlisted all-caps word (C6) read there by rules of their own, and initials spelling a listed credential behind one word read as paired initials are (C16).
 - **A part read as postnominal** is read before any join (C7).
 - **The listing form's part after the comma** is still read for what it is (C8), and a credential opening it makes it the postnominal part (C13).
 - **A one-character suffix word inside a comma part** is read by what stands before it (C9).
@@ -45,5 +45,5 @@
 - The vocabulary question this rule asks — is the part after the comma nothing but suffix words — is asked a second time, without the word-count condition, to decide whether a glued East Asian honorific standing before a family comma comes off. That composition is tolerated input rather than contract — a comma between a family name and a given name is no part of CJK writing — so the precedence is stated at W3, with its examples, and not here. It is also the one consequence of this question Latin script cannot witness, nothing there being glued to the end of a name — which is why this bullet carries no example of its own.
 
 ---
-**Signal:** hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13
+**Signal:** hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C16
 **history:** decisions/C1 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py

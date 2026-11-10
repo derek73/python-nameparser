@@ -859,6 +859,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            absorbed: list[int] | None = None,
                            licensed: Container[int] = (),
                            head_named: bool = True,  # rules/S11
+                           runs: Container[int] = (),  # rules/C16
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -911,6 +912,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     credentials -- ambiguous-class words in a credential run behind
     two name words -- and each reads as a suffix whatever its writing
     or company.
+
+    `runs` holds a run of initials spelling a listed credential that
+    stands behind one word (rules/C16, #1238), passed only there:
+    reached while the part is still in its leading run of titles, it
+    makes the part the given part and the answer None.
 
     The initial veto (`_vocab.is_initial`) keeps a roman numeral out
     of a suffix reading, which is right after a NAME word (rules/C9's
@@ -1003,6 +1009,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # sites, and a fourth branch that appended without assigning would
         # have diverged silently
         after_suffix = bool(out) and out[-1]
+        # rules/C16: "behind one word, initials run together are the
+        # given name whatever they spell" -- `runs`, which the
+        # caller passes only there; a suffix word in front of the run
+        # makes it the credential run, titles and duals leave it a name
+        # (decisions/C16 (#1238))
+        if leading and piece[0] in runs:
+            return None
         if is_suffix_piece(piece, tags, tokens):
             if (leading and len(piece) == 1
                     and "vocab:title" in tokens[piece[0]].tags):

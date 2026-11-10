@@ -850,10 +850,24 @@ def lexicon_cue(n: str, lexicon: Lexicon) -> Cue:
 _DOTTED = re.compile(r"(?:" + _LETTER + r"\.)+")
 # rules/T7: "a run of single letters joined by full stops" -- two or
 # more letters, each closed by a stop but the last, whose stop is
-# optional ('E.T.', 'J.R.R', #1296); _RUN_LETTER is one letter of it
+# optional ('E.T.', 'J.R.R', #1296), and the same run rules/H10 reads as
+# a title ('U.S.', 'U.S', the closing stop optional as
+# `period_joined_vocab`'s shape verdict lets it be); _RUN_LETTER is one letter of it
 # with its stop. _render holds a copy of each (tests/v2/test_regex_sync.py)
 _LETTER_RUN = re.compile(r"(?:" + _LETTER + r"\.)+" + _LETTER + r"\.?")
+
+
 _RUN_LETTER = re.compile(_LETTER + r"\.?")
+
+
+def is_letter_run(text: str) -> bool:
+    """Two or more single letters joined by full stops ('J.P.', 'J.R.R'),
+    the way a person's initials are written run together: rules/T7's
+    run, and the shape rules/C16 reads as a name after the comma behind
+    one name word whatever it spells (#1238)."""
+    return _LETTER_RUN.fullmatch(text) is not None
+
+
 # #544: the CHUNKED spelling -- two or more runs of letters, each
 # closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the
 # period-free letters against the listed member, so the chunks must
@@ -875,19 +889,13 @@ def _dotted(text: str) -> bool:
             or _CHUNKED.fullmatch(text) is not None)
 
 
-# rules/H10: "a run of single letters joined by full stops" -- two
-# or more, the closing stop optional, as `period_joined_vocab`'s shape
-# verdict lets it be ('U.S.', 'U.S').
-_DOTTED_RUN = re.compile(_LETTER + r"(?:\." + _LETTER + r")+\.?")
-
-
 def is_dotted_title(text: str, n: str, lexicon: Lexicon) -> bool:
     """A run of single letters joined by full stops ('U.S.', 'P.D.')
     whose spelling without them is a title written `dotted`
     (`Lexicon.dotted_titles`, rules/H10, #490); `n` is the folded
     text, which both callers already have."""
     return (n.replace(".", "") in lexicon._sets.dotted_titles
-            and _DOTTED_RUN.fullmatch(text) is not None)
+            and _LETTER_RUN.fullmatch(text) is not None)
 
 
 # #563: exactly two single letters, each closed by a period -- the way

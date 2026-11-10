@@ -4,9 +4,10 @@
 
 **Then:** a decision either way at the comma C1 reads is reported; for a run of words the decision is the flip to the credential run, reported once over the whole part.
 
-- **Paired initials the comma keeps as the given name (C5) report where they open the part**; behind a title they do not, the comma's report reaching only the first word after it ('Smith, Ms G.J.').
+- **Paired initials the comma keeps as the given name (C5) report where they open the part**; behind a title they do not, the comma's report reaching only the first word after it ('Smith, Ms G.J.'). Initials spelling a listed credential that C16 keeps as the given name report behind a title too, the comma having read them against the credential they spell ('Jansen, Ir. J.P.').
   ```
   "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
+  "Jansen, Ir. J.P."          →  ambiguities=("suffix-or-name",)
   ```
 - **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not, wherever it stands in the part (S6). So a run whose every such word is written in capitals reads whole in silence ('Doe, MA PhD', 'John Smith, MA MA', 'John Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms RA Ma').
   ```

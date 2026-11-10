@@ -439,10 +439,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # ('Treadwell, U.S. District Judge Marc', its code review's 'Smith,
     # U.S. Marshal John' and 'U.S. Senator Smith, Ed', its fix commit's
     # review's 'John Smith U.S. Dean.' and its test review's five comma
-    # rows, C4's count of a dotted run).
-    assert claims == 1747, (
-        f"the field sweep checks {claims} claims, recorded as 1747 on "
-        f"2026-11-09")
+    # rows, C4's count of a dotted run); 1747 -> 1762 on 2026-11-10,
+    # #1238's five rows of initials spelling a credential behind one
+    # name word ('Andrews, M.D.') reporting suffix-or-name under three
+    # orders.
+    assert claims == 1762, (
+        f"the field sweep checks {claims} claims, recorded as 1762 on "
+        f"2026-11-10")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

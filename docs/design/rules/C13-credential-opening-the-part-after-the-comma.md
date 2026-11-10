@@ -25,6 +25,7 @@
 
 **Precedence:**
 
+- **Initials spelling a credential behind one word** ("Smith, J.P. Jones"): C16 governs, and the run opens the given part rather than the postnominal part.
 - **Under the strict comma-suffix switch** ("Smith, PSM I."): the opened run reads as it does without the switch, taking in the word the switch vetoes; C14 states that veto and this exception to it.
 
 ---
