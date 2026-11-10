@@ -1702,7 +1702,7 @@ _COMPOUNDS: tuple[str, ...] = (
 )
 
 
-@pytest.mark.parametrize("setting", SETTINGS)
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
 def test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry(
         setting: tuple[frozenset[Outcome], bool]) -> None:
     accept, other_readings = setting
