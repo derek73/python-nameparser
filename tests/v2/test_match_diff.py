@@ -266,7 +266,7 @@ def test_a_mutated_package_reports_the_pairs_it_moves(
     base = _copy(tmp_path, "base")
     mutant = _copy(tmp_path, "mutant")
     match = mutant / "nameparser" / "_match.py"
-    step = ("    if bases[0] and _fold(bases[0]) == _fold(bases[1]):\n"
+    step = ("    if bases[0] and _bases_agree(bases[0], bases[1], lexicon, group):\n"
             "        return Outcome.PARTICLES_ASIDE\n")
     text = match.read_text(encoding="utf-8")
     assert text.count(step) == 1
