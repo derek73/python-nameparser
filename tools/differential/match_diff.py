@@ -102,7 +102,8 @@ SETTINGS: tuple[Setting, ...] = (
     *((f"+{o}", (o,), (), False, None) for o in OPT_INS),
     ("all", OPT_INS, (), False, None),
     *((f"-{o}", (), (o,), False, None) for o in (
-        "folded", "listed-spelling", "particles-aside", "part-of-other",
+        "folded", "joined", "listed-spelling", "particles-aside",
+        "part-of-other",
         "initial", "initials-agree", "one-side", "generation-one-side",
         "noted")),
     ("default+other", (), (), True, None),

@@ -503,7 +503,12 @@ def test_consistent_names_always_share_a_key(
     with the nickname's on ('William "Bill" Clinton', "Bill Clinton"),
     the all-opt-ins setting passing both through given-one-side's bare
     family keys; with the maiden name's words removed, across-roles and
-    all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)").
+    all-opt-ins both failed on ("J. Smith", "Jane Doe (née Smith)")
+    until #1261 keyed the maiden name whole, joined, which covers that
+    pair: the words' keys are held since by
+    test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry's
+    ("Ann Smith", "Ann Doe (née Schmidt)"), a listed spelling the whole
+    text cannot give (re-taken 2026-11-09).
     hyphenated-part adds no key, its halves sharing the given initial.
     Two keys no pair of NAMES needs, each failing a named test when
     removed (re-taken the same day): the whole hyphenated word's
@@ -1701,6 +1706,7 @@ _COMPOUNDS: tuple[str, ...] = (
     "Ann Smithe-Brown", "Ann de Smyth", "Ann van Smith", "Ann de la Smith",
     "A. Smyth-Jones", "Smyth Jones, Ann", "de Smith Jones, Ann",
     "Ann Jones", "Ann Smith (née Smyth-Jones)", "Ann Smyth (née Jones)",
+    "Ann Doe (née Schmidt)",
 )
 
 
@@ -1783,6 +1789,11 @@ _JOINED_NAMES: tuple[str, ...] = (
     "Jane Doe (née LaRussa)", "Jane LaRussa (née Doe)",
     "Jane Doe (née La Russa)", "J. LaRussa", "Jean-Pierre Martin",
     "Jeanpierre Martin",
+    # a stray leading hyphen, which joined reads past: the given letter
+    # is the first letter once joined, in the given name and in the
+    # middle name and nickname across-roles compares it with
+    "-Pierre Dupont", "Pierre Dupont", "Dupont, -Pierre",
+    "Jean -Pierre Dupont", "Jean (-Pierre) Dupont",
 )
 
 
@@ -1797,3 +1808,48 @@ def test_joined_names_keep_the_key_guarantee_and_symmetry(
             assert matching.check(b, a) == r.mirrored(), (a, b)
             if r.consistent:
                 assert matching.keys(a) & matching.keys(b), (a, b)
+
+
+
+def test_a_noted_role_reads_noted_where_its_spelling_is_not_accepted() -> None:
+    # a title or a suffix never conflicts: equal by an outcome the caller
+    # refuses, it reads noted, which is accepted, as it did before joined
+    for dropped, a, b, role_name in (
+            (Outcome.JOINED, "John Smith Ph D", "John Smith PhD", "suffix"),
+            (Outcome.JOINED, "Lt Col John Smith", "LtCol John Smith", "title"),
+            (Outcome.FOLDED, "John Smith PHD", "John Smith PhD", "suffix")):
+        without = Matching(Parser(), DEFAULT_ACCEPT - {dropped})
+        r = without.check(a, b)
+        assert r[role_name].outcome is Outcome.NOTED and r.consistent
+        assert m.check(a, b)[role_name].outcome is dropped
+
+
+def test_a_caller_without_joined_keeps_a_hyphenated_part_it_accepted() -> None:
+    # the given role's leniencies are asked after joined too
+    accept = (DEFAULT_ACCEPT | {Outcome.HYPHENATED_PART}) - {Outcome.JOINED}
+    matching = Matching(Parser(), accept)
+    base = parse("Hong Smith")
+    for a, b in ((base, base.replace(given="Hong-")),
+                 ("Hong Smith", "Hong- Smith"), ("Smith, Hong", "Smith, Hong-")):
+        r = matching.check(a, b)
+        assert r["given"].outcome is Outcome.HYPHENATED_PART and r.consistent
+
+
+def test_joined_ranks_below_folded_and_above_listed_spelling() -> None:
+    # the decided place in the order, seen through weakest
+    assert m.check("IGNAZIO LARUSSA", "Ignazio La Russa").weakest is (
+        Outcome.JOINED)
+    assert m.check("Wm. LaRussa", "William La Russa").weakest is (
+        Outcome.LISTED_SPELLING)
+
+
+@pytest.mark.parametrize("a, b", [
+    # one side written in initials alone, the other joined into one word,
+    # reads joined: only two texts of initials alone are initials-agree's
+    ("JP", "J. P."), ("JP", "J.-P."), ("J.P.", "J.-P."),
+])
+def test_initials_against_their_letters_joined_read_joined(
+        a: str, b: str) -> None:
+    base = parse("John Smith")
+    r = m.check(base.replace(given=a), base.replace(given=b))
+    assert r["given"].outcome is Outcome.JOINED and r.consistent

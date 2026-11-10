@@ -533,21 +533,24 @@ class Matching:
         # across-roles each text it compares the family against
         texts = [parsed.family]
         if across:
-            texts += [getattr(parsed, other) for other in family_rule.across]
+            texts += [t for other in family_rule.across
+                      for t in _cross_texts(parsed, other)]
         words |= {_joined(_fold(t)) for t in texts if t} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
                 family[0], family_rule.group, lexicon)} - {""}
         given = parsed.given.split()
-        initials = ({g[:1] for g in _spelling_keys(
-            given[0], given_rule.group, lexicon)} if given else {""})
+        # a given letter is the first letter once joined, as the check
+        # compares by `joined` too (`-Pierre` keys `p`, not `-`)
+        initials = {_letter(g) for g in _spelling_keys(
+            given[0], given_rule.group, lexicon)} if given else set()
         if given and Outcome.FAMILIAR_FORM in self.accept:
             # every name the check pairs with it as a familiar form,
             # either way (`_familiar`), so `Bill` and `William` share
             # each other's keys
-            initials |= {g[:1] for g in _paired_forms(
-                _spellings(given[0], given_rule.group, lexicon), lexicon)} - {""}
+            initials |= {_letter(g) for g in _paired_forms(
+                _spellings(given[0], given_rule.group, lexicon), lexicon)}
         if across:
             # the texts the check matches against a given name, each
             # refused as it refuses them: a cross-role match is never
@@ -556,8 +559,9 @@ class Matching:
             for other in given_rule.across:
                 for text in _cross_texts(parsed, other):
                     if not _initials_only(_fold(text)):
-                        initials |= {g[:1] for g in _spelling_keys(
+                        initials |= {_letter(g) for g in _spelling_keys(
                             text.split()[0], given_rule.group, lexicon)}
+        initials = (initials - {""}) or {""}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
@@ -745,6 +749,12 @@ def _familiar_outcome(wa: list[str], wb: list[str],
             return None
         found = True
     return Outcome.FAMILIAR_FORM if found else None
+
+
+def _letter(folded: str) -> str:
+    """A folded word's first letter once joined, the given letter a key
+    is cut on; empty for a word of hyphens alone."""
+    return _joined(folded)[:1]
 
 
 def _joined(folded: str) -> str:
@@ -1004,18 +1014,24 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     return _weakest(outcomes)
 
 
-def _noted(a: str, b: str, lexicon: Lexicon, group: str) -> Outcome:
-    """A role that never conflicts: equal by any spelling, else noted."""
+def _noted(a: str, b: str, lexicon: Lexicon, group: str,
+           accept: frozenset[Outcome]) -> Outcome:
+    """A role that never conflicts: equal by any spelling the caller
+    accepts, else noted, so a caller who does not accept `folded` or
+    `joined` reads `noted` rather than an outcome they refuse
+    (decisions/name-matching, 2026-11-09 #1261)."""
     if not a and not b:
         return Outcome.SAME
     if a and b:
-        return (_full_outcome(a, b, _fold(a), _fold(b), lexicon, group)
-                or Outcome.NOTED)
+        full = _full_outcome(a, b, _fold(a), _fold(b), lexicon, group)
+        if full is not None and full in accept:
+            return full
     return Outcome.NOTED
 
 
 def _suffix_outcome(left: ParsedName, right: ParsedName,
-                    lexicon: Lexicon, group: str) -> Outcome:
+                    lexicon: Lexicon, group: str,
+                    accept: frozenset[Outcome]) -> Outcome:
     """A different generation conflicts and one on one side only is its
     own outcome, whatever credentials either side carries; where the
     generations agree, the rest of the suffix (credentials, honorifics)
@@ -1034,7 +1050,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         generation = Outcome.SAME
     rest = _noted(" ".join(filter(None, (left.credentials, left.honorifics))),
                   " ".join(filter(None, (right.credentials, right.honorifics))),
-                  lexicon, group)
+                  lexicon, group, accept)
     return _weakest((generation, rest))
 
 
@@ -1105,13 +1121,13 @@ def _compare_middle(a: str, b: str, left: ParsedName, right: ParsedName,
 def _compare_noted(a: str, b: str, left: ParsedName, right: ParsedName,
                    lexicon: Lexicon, accept: frozenset[Outcome],
                    rule: _RoleRule) -> Outcome:
-    return _noted(a, b, lexicon, rule.group)
+    return _noted(a, b, lexicon, rule.group, accept)
 
 
 def _compare_suffix(a: str, b: str, left: ParsedName, right: ParsedName,
                     lexicon: Lexicon, accept: frozenset[Outcome],
                     rule: _RoleRule) -> Outcome:
-    return _suffix_outcome(left, right, lexicon, rule.group)
+    return _suffix_outcome(left, right, lexicon, rule.group, accept)
 
 
 _EMPTY = (Outcome.SAME, Outcome.ONE_SIDE)
