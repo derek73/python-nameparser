@@ -83,7 +83,7 @@ academic = { gender = "f", issue = 753, expands = "Doctora, the feminine of doct
 
 [[word]]
 text = "dr.c"
-academic = { gender = "m", issue = 1305, expands = "Doctor en Ciencias", note = "Doctor en Ciencias, the Cuban doctorate, written with its field's initial; glued at the stop it reads whole rather than as Dr. and an initial (rules/T8). ORCID opens 12 names with it, written Dr.C. or Dr.C (11 Cuban, 1 Venezuelan, DR.C YONI TEJEDA DILOU), against 1 Indian name whose C is an initial (Dr.C Kamaraj), the accepted cost; no other local corpus writes it, and no source tools/name_usage.py reads has a bearer of drc (2026-11-10)" }
+academic = { gender = "m", issue = 1305, expands = "Doctor en Ciencias", note = "Doctor en Ciencias, the Cuban doctorate, written with its field's initial; glued at the stop it reads whole rather than as Dr. and an initial (rules/T8). ORCID writes it, spaced from the name, before 11 names (10 Cuban, DR.C YONI TEJEDA DILOU, and 1 Venezuelan, Dr.C. Victor Colina Ollarves, by the record's country), against 1 Indian name whose C is an initial (Dr.C Kamaraj), the accepted cost; no other local corpus writes it, and no source tools/name_usage.py reads has a bearer of drc (2026-11-10)" }
 
 [[word]]
 text = "dra"

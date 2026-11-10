@@ -81,7 +81,7 @@
   ```
   "Sabiha Arshad M.Phill"     →  family="Phill"
   ```
-- A degree listed with its stops is read whole where its letter is an initial behind the title ('Dr.C Kamaraj' → title 'Dr.C'), the Cuban and Czech degrees so spelled being the commoner writing.
+- A degree listed with its stops is read whole where its letter is an initial behind the title ('Dr.C Kamaraj' → title 'Dr.C', and so 'Mgr.A Novák'), the Cuban and Czech degrees so spelled being the commoner writing.
   ```
   "Dr.C Kamaraj"              →  title="Dr.C"
   ```

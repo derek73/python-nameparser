@@ -1209,6 +1209,9 @@ def test_the_divided_readings_the_reviews_found(
     ("Dr.A. Supriya", "Dr.", "A."),
     ("Dra.A. Silva", "Dra.", "A."),
     ("Mgr.B. Novák", "Mgr.", "B."),
+    # ending the name (H5's trailing chain) and before a family comma
+    ("John Smith Dr.C.", "Dr.C.", "John"),
+    ("Saavedra Castellanos, Dr.C. Andrés", "Dr.C.", "Andrés"),
 ])
 def test_a_degree_listed_with_its_stops_stays_whole(
         text: str, title: str, given: str) -> None:
@@ -1217,9 +1220,30 @@ def test_a_degree_listed_with_its_stops_stays_whole(
     assert (n.title, n.given) == (title, given)
 
 
+def test_a_degree_listed_with_its_stops_stays_whole_family_first() -> None:
+    from nameparser import FAMILY_FIRST, Parser, Policy
+    n = Parser(policy=Policy(name_order=FAMILY_FIRST)).parse(
+        "Dr.C. Saavedra Andrés")
+    assert (n.title, n.given, n.family) == ("Dr.C.", "Andrés", "Saavedra")
+
+
+@pytest.mark.parametrize(("pack", "text", "title", "given"), [
+    # a strict choice of the language that lists them reads them whole
+    ("ES", "Dr.C. Andrés Saavedra", "Dr.C.", "Andrés"),
+    ("ES", "Dra.C. María García", "Dra.C.", "María"),
+    ("CS", "Mgr.A. Marek Rejent", "Mgr.A.", "Marek"),
+    ("CS", "Mg.A. Tereza Kučerová", "Mg.A.", "Tereza"),
+])
+def test_a_degree_listed_with_its_stops_stays_whole_under_its_choice(
+        pack: str, text: str, title: str, given: str) -> None:
+    from nameparser import locales, parser_for
+    n = parser_for(getattr(locales, pack), strict=True).parse(text)
+    assert (n.title, n.given) == (title, given)
+
+
 @pytest.mark.parametrize(("pack", "text", "title", "given"), [
     # es.toml and cs.toml list them, so a strict choice of neither reads
-    # the title and the initial the spaced writing gives
+    # them as before: the title and the initial where it lists the title
     ("PT", "Dr.C. Andrés Saavedra", "Dr.", "C."),
     ("PT", "Dra.C. María García", "Dra.", "C."),
     ("SK", "Mgr.A. Marek Rejent", "Mgr.", "A."),
