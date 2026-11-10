@@ -696,7 +696,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: the chunks read alone, the titles a chunk chains, the word after
 #: the stop and the end-of-name report's suffix and title tests,
 #: 147 -> 169);
-#: the tools' 20 are 18
+#: the tools' 20 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
