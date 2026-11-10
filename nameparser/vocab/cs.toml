@@ -44,6 +44,14 @@ text = "mga"
 academic = { default = false, cased = "MgA", issue = [753, 848], expands = "magistr umění, Master of Arts" }
 
 [[word]]
+text = "mg.a"
+academic = { issue = 1305, same_as = "mga", expands = "magistr umění, Master of Arts", note = "MgA, magistr umění, written with a stop inside; glued at the stop it reads whole rather than as Mgr. or Mg. and an initial (rules/T8). cz-candidates opens 5 of its 170,181 records with the two spellings (Mgr.A. Marek Rejent 4, Mg.A. Tereza Kučerová 1), no other local corpus any. On by default where mga is not: mga's collision is bare initials (MGA Dinusha), which these spellings are not written as; none of the folds mga and mgra has a bearer in any source tools/name_usage.py reads (2026-11-10)" }
+
+[[word]]
+text = "mgr.a"
+academic = { issue = 1305, same_as = "mga", expands = "magistr umění, Master of Arts", note = "the spelling of mg.a written with mgr's letters; see mg.a (2026-11-10)" }
+
+[[word]]
 text = "mgr"
 academic = { default = false, issue = [753, 848], expands = "magistr, Master", note = "en and fr read mgr as Monsignor (religious), on by default, so the Czech choice changes only the kind its title reading names; 44 of ClinicalTrials.gov's 536,981 officials write it, all after a comma (data 2026-10-21)" }
 

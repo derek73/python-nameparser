@@ -1193,6 +1193,44 @@ def test_the_divided_readings_the_reviews_found(
     assert (n.given, n.family) == (given, family)
 
 
+@pytest.mark.parametrize(("text", "title", "given"), [
+    # a degree listed with its stops is read whole, not as a title and an
+    # initial (#1305): Cuban Doctor/Doctora en Ciencias, Czech MgA
+    ("Dr.C. Andrés Saavedra Castellanos", "Dr.C.", "Andrés"),
+    ("DR.C YONI TEJEDA DILOU", "DR.C", "YONI"),
+    ("Dra.C. María Eugenia García Céspedes", "Dra.C.", "María"),
+    ("Mgr.A. Marek Rejent", "Mgr.A.", "Marek"),
+    ("Mg.A. Tereza Kučerová", "Mg.A.", "Tereza"),
+    # the same spelling after a comma, which T8 never divided
+    ("Andrés Saavedra, Dr.C.", "Dr.C.", "Andrés"),
+    # the accepted cost: an initial C behind a glued Dr. (India)
+    ("Dr.C Kamaraj", "Dr.C", ""),
+    # a title and another letter still divide ('dra', 'mgr' being listed)
+    ("Dr.A. Supriya", "Dr.", "A."),
+    ("Dra.A. Silva", "Dra.", "A."),
+    ("Mgr.B. Novák", "Mgr.", "B."),
+])
+def test_a_degree_listed_with_its_stops_stays_whole(
+        text: str, title: str, given: str) -> None:
+    from nameparser import parse
+    n = parse(text)
+    assert (n.title, n.given) == (title, given)
+
+
+@pytest.mark.parametrize(("pack", "text", "title", "given"), [
+    # es.toml and cs.toml list them, so a strict choice of neither reads
+    # the title and the initial the spaced writing gives
+    ("PT", "Dr.C. Andrés Saavedra", "Dr.", "C."),
+    ("PT", "Dra.C. María García", "Dra.", "C."),
+    ("SK", "Mgr.A. Marek Rejent", "Mgr.", "A."),
+])
+def test_a_degree_listed_with_its_stops_divides_where_no_choice_reads_it(
+        pack: str, text: str, title: str, given: str) -> None:
+    from nameparser import locales, parser_for
+    n = parser_for(getattr(locales, pack), strict=True).parse(text)
+    assert (n.title, n.given) == (title, given)
+
+
 @pytest.mark.parametrize("text", [
     "John Smith B.Eng", "Ahmed Ali M.Hassan",
     # post-nominals after it, a run, a digraph
