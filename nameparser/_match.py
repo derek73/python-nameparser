@@ -422,7 +422,7 @@ class Matching:
             for i, r in enumerate(roles):
                 if r.outcome in self.accept or not _RULES[r.role].across:
                     continue
-                found = self._across(r.role, left, right)
+                found = self._pick_across(r.role, left, right, middles)
                 if found is None:
                     continue
                 cross, index = found
@@ -451,17 +451,47 @@ class Matching:
                            tuple(roles), tuple(across),
                            left_alternative, right_alternative)
 
+    def _pick_across(self, role: Role, left: ParsedName, right: ParsedName,
+                     middles: list[list[str]],
+                     ) -> tuple[CrossRoleMatch, int | None] | None:
+        """The cross-role match `role` takes (`_across`), judged with
+        the middle names it leaves: a match that consumes a middle word
+        leaves the rest to compare, so the matches are ranked by
+        whether that comparison is accepted, then by the match's own
+        outcome, then by that comparison's outcome, then as `_across`
+        orders them, which names no side, so the pick is the same with
+        the names swapped (decisions/name-matching, 2026-11-09 #1263).
+        `middles` holds each side's middle words still to compare."""
+        found = self._across(role, left, right)
+        if not found:
+            return None
+        lexicon, rule = self.parser.lexicon, _RULES[Role.MIDDLE]
+
+        def rank(item: tuple[tuple[object, ...],
+                             tuple[CrossRoleMatch, int | None]]
+                 ) -> tuple[object, ...]:
+            order, (cross, index) = item
+            rest = [list(words) for words in middles]
+            if index is not None:
+                del rest[0 if cross.left_role is Role.MIDDLE else 1][index]
+            la, lb = (" ".join(words) for words in rest)
+            middle = _role_outcome(rule, la, lb, left, right, lexicon,
+                                   self.accept)
+            return (middle not in self.accept, -_STRENGTH[cross.outcome],
+                    -_STRENGTH[middle], *order)
+        return min(found, key=rank)[1]
+
     def _across(self, role: Role, left: ParsedName, right: ParsedName,
-                ) -> tuple[CrossRoleMatch, int | None] | None:
-        """The strongest match of `role` on one side against one of its
-        cross roles (its `_RULES` row's `across`) on the other, or
-        `None`, with the index of the middle word it used (`None` for a
-        role other than the middle; the match's middle role names the
-        side): a middle name
-        word by word, the other roles whole. Only a full name on both
-        sides counts (`_full_outcome`), never an initial. The pick is by
-        outcome, then by texts and roles named without a side, so it is
-        the same with the names swapped."""
+                ) -> list[tuple[tuple[object, ...],
+                                tuple[CrossRoleMatch, int | None]]]:
+        """Every match of `role` on one side against one of its cross
+        roles (its `_RULES` row's `across`) on the other, each with the
+        index of the middle word it used (`None` for a role other than
+        the middle; the match's middle role names the side) and its
+        place in the order that names no side: by outcome, then by texts
+        and roles. A middle name is read word by word, the other roles
+        whole. Only a full name on both sides counts (`_full_outcome`),
+        never an initial."""
         lexicon = self.parser.lexicon
         rule = _RULES[role]
         found: list[tuple[tuple[object, ...],
@@ -484,7 +514,7 @@ class Matching:
                             (-_STRENGTH[outcome], _RANK_ROLE[other], theirs, mine),
                             (CrossRoleMatch(lrole, rrole, outcome, la, ra),
                              index)))
-        return min(found, key=lambda f: f[0])[1] if found else None
+        return found
 
     def _readings(self, name: ParsedName
                   ) -> list[tuple[ParsedName, Ambiguity | None]]:

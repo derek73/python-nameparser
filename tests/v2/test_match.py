@@ -1911,6 +1911,22 @@ def test_a_consumed_middle_word_leaves_the_rest_to_align() -> None:
     assert r["middle"].outcome is Outcome.ONE_SIDE
 
 
+@pytest.mark.parametrize("a, b", [
+    # Edgar and John each match the other's given name across roles;
+    # consuming Edgar leaves Anne Beth / John Beth, which conflict, and
+    # consuming John leaves Edgar Anne Beth / Beth, which align
+    ("John Edgar Anne Beth Hoover", "Edgar John Beth Hoover"),
+    ("John Anne Beth Carol Smith", "Anne John Carol Smith"),
+])
+def test_the_middle_word_consumed_is_the_one_that_leaves_the_rest_agreeing(
+        a: str, b: str) -> None:
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    for x, y in ((a, b), (b, a)):
+        r = across.check(x, y)
+        assert r.consistent and r["middle"].outcome is Outcome.ONE_SIDE
+        assert [c.left for c in r.across] == ["John"]
+
+
 def test_an_aligned_pair_must_be_accepted() -> None:
     # B. aligns with Beth only by initial: refused, it aligns nowhere
     without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})
@@ -1959,6 +1975,7 @@ _MIDDLES: tuple[str, ...] = (
     # rest left to align; familiar-form: a middle name's familiar form
     "Edgar John Anne Beth Smith", "John Edgar Beth Smith",
     "John Max Smith", "John Maximilian Max Smith",
+    "John Edgar Anne Beth Smith", "Edgar John Beth Smith",
 )
 
 
