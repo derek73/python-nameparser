@@ -838,11 +838,12 @@ def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
     counts inside a compound surname as it does whole, in `group`
     (`Smyth-Jones` / `Smith` with `smyth` listed as `smith`;
     decisions/name-matching, 2026-11-09 #1262)."""
-    if bases[0] and _bases_agree(bases[0], bases[1], lexicon, group):
+    spellings = _SpellingSets(lexicon, group)
+    if bases[0] and _bases_agree(bases[0], bases[1], spellings):
         return Outcome.PARTICLES_ASIDE
     wa_, wb_ = _base_forms(bases[0], lexicon), _base_forms(bases[1], lexicon)
-    if wa_ and wb_ and (_covered(wa_, wb_, lexicon, group)
-                        or _covered(wb_, wa_, lexicon, group)):
+    if wa_ and wb_ and (_covered(wa_, wb_, spellings)
+                        or _covered(wb_, wa_, spellings)):
         return Outcome.PART_OF_OTHER
     initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
     return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
@@ -907,24 +908,47 @@ def _base_forms(base: str, lexicon: Lexicon) -> list[tuple[str, str]]:
     return [(w, f) for w in _family_words(base, lexicon) if (f := _fold(w))]
 
 
-def _bases_agree(a: str, b: str, lexicon: Lexicon, group: str) -> bool:
+class _SpellingSets:
+    """Each word's spelling set in one group (`_spellings`), built once
+    per family comparison: the two leniencies ask a word's set against
+    several others, and a set takes two `Lexicon._headwords` searches."""
+
+    __slots__ = ("_lexicon", "_group", "_sets")
+
+    def __init__(self, lexicon: Lexicon, group: str) -> None:
+        self._lexicon, self._group = lexicon, group
+        self._sets: dict[str, frozenset[str]] = {}
+
+    def of(self, word: str) -> frozenset[str]:
+        found = self._sets.get(word)
+        if found is None:
+            found = self._sets[word] = _spellings(word, self._group,
+                                                  self._lexicon)
+        return found
+
+    def listed(self, a: str, b: str) -> bool:
+        """`_listed`, from the sets already built."""
+        return not self.of(a).isdisjoint(self.of(b))
+
+
+def _bases_agree(a: str, b: str, spellings: _SpellingSets) -> bool:
     """Two family bases are equal once folded, or of as many words, each
-    pair equal once folded or listed as one spelling in `group`."""
+    pair equal once folded or listed as one spelling in the group."""
     if _fold(a) == _fold(b):
         return True
     wa, wb = a.split(), b.split()
     return len(wa) == len(wb) and all(
-        _fold(x) == _fold(y) or _listed(x, y, group, lexicon)
+        _fold(x) == _fold(y) or spellings.listed(x, y)
         for x, y in zip(wa, wb))
 
 
 def _covered(words: list[tuple[str, str]], others: list[tuple[str, str]],
-             lexicon: Lexicon, group: str) -> bool:
+             spellings: _SpellingSets) -> bool:
     """Every word of `words` is among `others` once folded, or listed as
-    a spelling of one of them in `group`; each a (written, folded) pair."""
+    a spelling of one of them in the group; each a (written, folded)
+    pair."""
     folded = {f for _, f in others}
-    return all(f in folded or any(_listed(w, o, group, lexicon)
-                                  for o, _ in others)
+    return all(f in folded or any(spellings.listed(w, o) for o, _ in others)
                for w, f in words)
 
 

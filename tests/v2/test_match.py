@@ -1638,8 +1638,13 @@ def test_a_hand_built_middle_of_whitespace_alone_compares_without_raising() -> N
 
 # -- a listed surname spelling inside a compound surname (#1262) -------------
 
-_SMYTH = Matching(Parser(lexicon=Lexicon.default().add(
-    "smyth", kind="family", same_as="smith")))
+#: smyth and schmidt listed as smith, smithe as smyth (a chain), and the
+#: surname vance as the particle van, which a base sets aside.
+_SMYTH_LEXICON = (Lexicon.default()
+                  .add("smyth", "schmidt", kind="family", same_as="smith")
+                  .add("smithe", kind="family", same_as="smyth")
+                  .add("vance", kind="family", same_as="van"))
+_SMYTH = Matching(Parser(lexicon=_SMYTH_LEXICON))
 
 
 @pytest.mark.parametrize("a, b, outcome", [
@@ -1647,29 +1652,65 @@ _SMYTH = Matching(Parser(lexicon=Lexicon.default().add(
     # a listed half among the other's words
     ("Ann Smyth-Jones", "Ann Smith", Outcome.PART_OF_OTHER),
     ("Ann Smyth-Jones", "Ann Smith-Jones", Outcome.PART_OF_OTHER),
-    # the bases listed word for word, particles set aside
+    ("Ann Smithe-Jones", "Ann Smith", Outcome.PART_OF_OTHER),
+    # the bases listed word for word, particles set aside, a family
+    # comma giving a base of several words
     ("Ann de Smyth", "Ann Smith", Outcome.PARTICLES_ASIDE),
     ("Ann de la Smyth", "Ann de Smith", Outcome.PARTICLES_ASIDE),
-    # a half that is no listed spelling still conflicts
+    ("de Smyth Jones, Ann", "Smith Jones, Ann", Outcome.PARTICLES_ASIDE),
+    # every word of one side must be covered, not one of them
+    ("Ann Smyth-Jones", "Ann Smith-Brown", Outcome.CONFLICT),
+    ("Ann Smith-Jones", "Ann Smith-Brown", Outcome.CONFLICT),
+    ("de Smyth Jones, Ann", "Smith Brown, Ann", Outcome.CONFLICT),
+    ("García López, Ann", "García Pérez, Ann", Outcome.CONFLICT),
+    # a half that is no listed spelling, and a surname listed as a
+    # particle, which the base sets aside before comparing
     ("Ann Smyth-Jones", "Ann Brown", Outcome.CONFLICT),
+    ("Ann Vance", "Ann van Smith", Outcome.CONFLICT),
 ])
 def test_a_listed_surname_spelling_counts_inside_a_compound_surname(
         a: str, b: str, outcome: Outcome) -> None:
     for x, y in ((a, b), (b, a)):
         r = _SMYTH.check(x, y)
         assert r["family"].outcome is outcome, (x, y)
-        if outcome is not Outcome.CONFLICT:
-            assert r.consistent and _SMYTH.keys(x) & _SMYTH.keys(y)
+        assert r.consistent is (outcome is not Outcome.CONFLICT)
+        if r.consistent:
+            assert _SMYTH.keys(x) & _SMYTH.keys(y)
 
 
 @pytest.mark.parametrize("a, b", [
-    # Ma is listed as María among given names only: a surname half is
-    # read in the family group, where Ma is a word of its own
-    ("Jack Ma-Lee", "Jack María"),
-    ("Jack de Ma", "Jack María"),
+    # Wm is listed as William among given names: a surname word is read
+    # in the family group, where Wm is no spelling of anything
+    ("Jack Wm-Lee", "Jack William"),
+    ("Jack de Wm", "Jack William"),
 ])
 def test_a_given_name_spelling_does_not_count_inside_a_surname(
         a: str, b: str) -> None:
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
         assert r["family"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+#: Compound surnames written with the caller's spellings and without,
+#: hyphenated, behind particles and before a family comma.
+_COMPOUNDS: tuple[str, ...] = (
+    "Ann Smith", "Ann Smyth", "Ann Schmidt", "Ann Smithe", "Ann Vance",
+    "Ann Smith-Jones", "Ann Smyth-Jones", "Ann Jones-Schmidt",
+    "Ann Smithe-Brown", "Ann de Smyth", "Ann van Smith", "Ann de la Smith",
+    "A. Smyth-Jones", "Smyth Jones, Ann", "de Smith Jones, Ann",
+    "Ann Jones", "Ann Smith (née Smyth-Jones)", "Ann Smyth (née Jones)",
+)
+
+
+@pytest.mark.parametrize("setting", SETTINGS)
+def test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    accept, other_readings = setting
+    matching = Matching(Parser(lexicon=_SMYTH_LEXICON), accept,
+                        other_readings=other_readings)
+    for a in _COMPOUNDS:
+        for b in _COMPOUNDS:
+            r = matching.check(a, b)
+            assert matching.check(b, a) == r.mirrored(), (a, b)
+            if r.consistent:
+                assert matching.keys(a) & matching.keys(b), (a, b)
