@@ -162,6 +162,7 @@ Entry conventions:
 - [nfd-shapes — shape tests read letters, and a decomposed letter is one letter](nfd-shapes.md)
 - [normalization-fold — lower(), not casefold(); comparison folds harder](normalization-fold.md)
 - [parse-cost — what a parse is allowed to cost](parse-cost.md)
+- [period-joined-words — a word joined at its full stop: the vocabulary reads it whole first, and it divides only into a name](period-joined-words.md)
 - [phd-merge — the "Ph. D." split](phd-merge.md)
 - [render-default — the default view's format](render-default.md)
 - [review-agent-single-source — the review axes live in one file](review-agent-single-source.md)
