@@ -818,8 +818,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # lowercase, rules/R4 (#1069)
         CAPITALIZED_PARTICLES=frozenset(capitalized),
         # the particles written `capital_opening` (`ter`, `der`), which
-        # case repair writes with a capital where one opens the family
-        # name, no particle before it there, rules/R12
+        # case repair writes with a capital where no particle stands
+        # before one in the family name, nor, where it opens the family
+        # name, written right before it in any role, rules/R12
         CAPITAL_OPENING_PARTICLES=frozenset(capital_opening),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),

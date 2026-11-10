@@ -1117,13 +1117,16 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     # with the deliberate one ('Iii' stays 'Iii'); force repairs both.
     # rules/R12: "the word is written as a name word is where the word
     # before it in the family name" is no particle -- repaired with the
-    # particle arm left out; a loop over the family's tags first, so a
-    # name with no family particle pays no frame for it. decisions/R12
-    # (#1224).
+    # particle arm left out; a loop over the family's words first, so a
+    # name whose ASCII family holds no such word pays no frame for it
+    # (the fold below is _normalize's, in str methods, for an ASCII
+    # word). decisions/R12 (#1224).
     openings: frozenset[int] = frozenset()
+    capital = lex._sets.capital_opening_particles
     for t in name.tokens:
-        if t.role is Role.FAMILY and ("particle" in t.tags
-                                      or UNCLASSIFIED_TAG in t.tags):
+        if (t.role is Role.FAMILY and capital
+                and (t.text.lower().strip(FULL_STOPS) if t.text.isascii()
+                     else _normalize(t.text)) in capital):
             openings = _capital_openings(name.tokens, lex)
             break
     new_tokens = tuple(

@@ -1052,6 +1052,15 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
             ("VAN DER WALT", "Van der Walt"),
             ("VAN TER HORST", "Van ter Horst"),
             ("DR. VAN TER HORST", "Dr. Van ter Horst"),
+            # a hyphenated word ending in a particle right before it,
+            # read as the given name, counts by its last part
+            ("MAITLAND-VAN DER ZEE", "Maitland-Van der Zee"),
+            ("DR. MAITLAND-VAN DER ZEE", "Dr. Maitland-Van der Zee"),
+            # a title that is also a particle counts; one that is not,
+            # does not
+            ("FREIHERR TER HORST", "Freiherr ter Horst"),
+            ("ST. TER HORST", "St. ter Horst"),
+            ("SIR TER HORST", "Sir Ter Horst"),
             # a nickname spelling a particle counts too
             ('JAN "VAN" TER HORST', 'Jan "Van" ter Horst'),
             # after a particle in the family, by its tag
@@ -1070,6 +1079,7 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
             ("TER HORST, ANNA VAN", "Anna van ter Horst"),
             # after a particle closing a hyphenated word, untagged
             ("ANNA SMITH-VAN DER BERG", "Anna Smith-van der Berg"),
+            ("MAITLAND-VAN DER ZEE, ANKE", "Anke Maitland-van der Zee"),
             ("ANKE MAITLAND-VAN DER ZEE", "Anke Maitland-van der Zee"),
             ("DER ZEE, ANKE MAITLAND-VAN", "Anke Maitland-van der Zee"),
             # a middle ter is no family word

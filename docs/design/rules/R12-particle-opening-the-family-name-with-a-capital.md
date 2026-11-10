@@ -52,5 +52,5 @@
   ```
 
 ---
-**Signal:** neighbor: the word before it in the family name, a particle or not
+**Signal:** neighbor: the word before it in the family name, or the word written right before the family name in any role where it opens the family, a particle or not
 **history:** decisions/R12 · **implemented:** nameparser/_render.py
