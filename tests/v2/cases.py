@@ -15680,8 +15680,8 @@ CASES: tuple[Case, ...] = (
           "family": "Treadwell"},
          ambiguities=("suffix-or-name",), classification="fix(#490)",
          notes="H10 at the head of the given part after a family "
-               "comma; the report is C5's, the dotted run after a comma "
-               "being a credential's shape too, as on master"),
+               "comma; the report is C11's for the paired initials "
+               "opening the part (C5's shape), as 3.0.1 gave it"),
     Case("dotted_title_before_a_family_comma", "U.S. Senator Smith, John",
          {"title": "U.S. Senator", "given": "John", "family": "Smith"},
          classification="fix(#490)",
@@ -15719,7 +15719,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#490)",
          notes="H10 with H9: the run is the modifier it spells, so the "
                "gated 'Marshal' has its partner, as in 'US Marshal John "
-               "Smith' (the code review)"),
+               "Smith' (#490's code review)"),
     Case("dotted_title_as_a_gated_title_s_partner_after_a_comma",
          "Smith, U.S. Marshal John",
          {"title": "U.S. Marshal", "given": "John", "family": "Smith"},
@@ -15730,7 +15730,7 @@ CASES: tuple[Case, ...] = (
          {"given": "U.S.", "middle": "Vice", "family": "Smith"},
          notes="H10 with H9: 'us' and 'vice' are modifiers with no head "
                "title behind them, so neither is a title and the run is "
-               "given back, as 'US Vice Smith' reads (the fix commit's "
+               "given back, as 'US Vice Smith' reads (#490's fix-commit "
                "review)"),
     Case("dotted_modifier_partnering_a_gated_title_ending_the_name",
          "John Smith U.S. Dean.",
@@ -15750,7 +15750,7 @@ CASES: tuple[Case, ...] = (
          notes="C4's count reads the run as H10's title, so 'Ed' is "
                "the given name, as in 'US Senator Smith, Ed'; counted as "
                "a name word, it made 'Ed' the credential and left no "
-               "given name (the code review)"),
+               "given name (#490's code review)"),
     Case("dotted_title_run_counted_before_a_numeral_and_comma",
          "U.S. Senator Smith V, AD",
          {"title": "U.S. Senator", "given": "AD", "family": "Smith V"},

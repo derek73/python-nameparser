@@ -1957,8 +1957,12 @@ def assign(state: ParseState) -> ParseState:
         floor = len(fam_pieces)
         # the length test and the tag test first, both C-level: a part
         # no title opens ('Smith, John', 'Smith Jones, John') pays no
-        # frame. The tags are the two arms `is_title_piece` answers yes
-        # from, so the predicate stays the one that answers
+        # frame. "title" and "vocab:title" are the two arms
+        # `is_title_piece` answers yes from, so for a listed title the
+        # predicate stays the one that answers; a lone piece carrying
+        # classify's DOTTED_TITLE_TAG is taken on the tag alone
+        # (rules/H10) and given back below unless a title the run keeps
+        # stands behind it
         tags0 = tokens[fam_pieces[0][0]].tags if fam_pieces else frozenset()
         if (floor > 1
                 and ("title" in fam_tags[0] or "vocab:title" in tags0
@@ -1971,7 +1975,8 @@ def assign(state: ParseState) -> ParseState:
                                                 fam_tags[floor - 1],
                                                 tokens):
                 floor -= 1
-            # the first piece is a title, asked above
+            # the first piece is a title or a dotted run, asked above; a
+            # dotted run the run ends on is given back after the walk
             while (lead + 1 < floor
                    and (lead == 0 or is_title_piece(
                        fam_pieces[lead], fam_tags[lead], tokens)

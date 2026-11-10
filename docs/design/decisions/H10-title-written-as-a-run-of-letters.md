@@ -6,7 +6,7 @@
 - Where the comma's decision reports paired initials opening the part after it (rules/C11), the report stands on a run this rule reads as the title (`Smith, U.S. Senator John`) — 2026-11-09 #490.
 - Only the titles that abbreviate several words are marked, so initials spelling a title of one word stay a name with a title word behind them (`D.R. Judge Smith` → given 'D.R.'); the cost kept is a person whose initials spell a marked title and whose next name is a title word (`P.D. Judge Smith` → title 'P.D. Judge') — 2026-11-09 #490, DECIDED.
 
-Open: none in this file. Whether `E.T. Smith` reads given 'E.', middle 'T.', the other half of #490, is left out of this entry and of #490's fix, as #490's 2026-10-02 comment proposed. Which vocabulary reads a degree acronym written this way at the front of a name in the `es` pack (`L.C.P.`) is [#979](https://github.com/derek73/python-nameparser/issues/979)'s, which can now mark its titles `dotted` or ask for more.
+Open: [#1296](https://github.com/derek73/python-nameparser/issues/1296), whether `E.T. Smith` reads given 'E.', middle 'T.', the other half of #490, left out of #490's fix as its 2026-10-02 comment proposed. Which vocabulary reads a degree acronym written this way at the front of a name in the `es` pack (`L.C.P.`) is [#979](https://github.com/derek73/python-nameparser/issues/979)'s, which can now mark its titles `dotted` or ask for more.
 
 Elsewhere: why a run of single letters joined by full stops stays one word and is never divided, decisions/period-joined-words.
 

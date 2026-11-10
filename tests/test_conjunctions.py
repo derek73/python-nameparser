@@ -87,7 +87,7 @@ class ConjunctionTestCase(ParsedNameTestBase):
         self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
-    @pytest.mark.xfail(reason="#490")
+    @pytest.mark.xfail(reason="#1296")
     def test_two_initials_conflict_with_conjunction(self) -> None:
         # Supporting this seems to screw up titles with periods in them like M.B.A.
         hn = parse('E.T. Smith')

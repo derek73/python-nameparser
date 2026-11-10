@@ -176,10 +176,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(JOINED_TITLE_TAG)
     # rules/H10: "a run of single letters joined by full stops whose
     # spelling without them is a title the vocabulary marks as written
-    # that way" -- the tag; whether a title follows it is the leading
-    # run's to ask (`_pieces.leading_titles`). The `"." in n` test
-    # keeps every word without a stop out of a frame.
-    elif "." in n and is_dotted_title(token.text, n, lex):
+    # that way" -- the tag; whether a title the run keeps follows it is
+    # for the title runs to ask (`_pieces.leading_titles`, and H6's in
+    # assign). The stop and set tests first, C-level, so a word with no
+    # interior stop, or one spelling no marked title, pays no frame.
+    elif ("." in n and n.replace(".", "") in lex._sets.dotted_titles
+          and is_dotted_title(token.text, n, lex)):
         tags.add(DOTTED_TITLE_TAG)
     if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
@@ -550,13 +552,13 @@ def classify(state: ParseState) -> ParseState:
     # a contested word keeps TITLE_AMBIGUOUS_TAG either way, for the
     # report where it opens the name (assign)
     lex = state.lexicon
-    # rules/H10: "the run reads as that title where a title the run
-    # keeps stands behind it" -- so H9's phrase test reads the run as
-    # the title it spells, and `U.S. Marshal` is the phrase `US Marshal`
-    # is. Only where the name holds a word that test reads, so a name
-    # with none ('U.S. Grant') does not run it for the run alone; and
-    # in every position, as it reads the run's undotted twin ('John
-    # Smith U.S. Dean.' reads as 'John Smith US Dean.', decisions/H10)
+    # rules/H10: "a title that is also a given name reads it as the
+    # title it spells when asking for a partner in its title phrase
+    # (H9)" -- the run's spelling without stops goes to the phrase test
+    # wherever it stands, as its undotted twin does. Only where the name
+    # holds a word that test reads, so a run alone ('U.S. Grant') runs
+    # no phrase test; whether the run is kept as a title is the title
+    # runs' question, not this one (decisions/H10)
     if not (lex._sets.titles_ambiguous.isdisjoint(folded)
             and lex._sets.title_modifiers.isdisjoint(folded)):
         for i, t in enumerate(tokens):

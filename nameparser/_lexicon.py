@@ -576,8 +576,9 @@ class _LexiconSets:
     capital_opening_particles: frozenset[str]
     #: the titles written `dotted=True` (`us`, `uk`, `pd`): rules/H10
     #: reads a run of single letters joined by full stops that spells
-    #: one, at the head of the part carrying the given name, as that
-    #: title where a title follows it (`U.S. District Judge`, #490)
+    #: one, at the head of a name (the given part's title run, or H6's
+    #: before a family comma), as that title where a title the run keeps
+    #: stands behind it (`U.S. District Judge`, #490)
     dotted_titles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)

@@ -827,9 +827,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # name, written right before it in any role, rules/R12
         CAPITAL_OPENING_PARTICLES=frozenset(capital_opening),
         # the titles written `dotted` (`us`, `uk`, `pd`), which a run of
-        # single letters joined by full stops spells at the head of the
-        # part carrying the given name where a title follows it,
-        # rules/H10
+        # single letters joined by full stops spells at the head of a
+        # name where a title the run keeps stands behind it, rules/H10
         DOTTED_TITLES=frozenset(dotted),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),
