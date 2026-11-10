@@ -20,6 +20,7 @@ This answers the question with counts instead.
     uv run python tools/name_usage.py --fetch-nppes ma do   # credentials too
     uv run python tools/name_usage.py --rank 50 --unlisted  # top credentials
     uv run python tools/name_usage.py --boxes del --country PH  # by box, country
+    uv run python tools/name_usage.py செல்வி ගරු   # Tamil, Sinhala: Wikipedia people
 
 A suffix that collides with a name is the same question from the other
 side: `ma`, `do` and `ba` are credentials and surnames both, and
@@ -61,6 +62,22 @@ What a number means depends on its source, and the report says so:
   also counts the names the word ends ACROSS the family/given join,
   family ending 部 + given 長 for 部長. A lower bound, like the row
   above, and blind to people whose name has no item at all.
+- Wikipedia people (CC0, through Wikidata), only for a word holding a
+  Tamil or Sinhala character: the people with an article on that language's
+  Wikipedia, each named by the article's title and the language's label,
+  and how many of them write the word in their name, counted by where it
+  stands -- alone, first, inner or last. Wikidata's name items carry
+  almost no labels in these scripts, so the label row above answered 0
+  for #1244's words on 2026-11-09 (`செல்வி` among them, though `Selvi`
+  is a given name);
+  this row reads the names themselves. The names have no roles, and a
+  title written into one (`டாக்டர் கேதன் தேசாய்`, Dr. Ketan Desai) stands
+  where a given name would, so read the examples before the counts. A
+  selection of notable people, foreign names transcribed among them, and
+  a lower bound. Fetched once per language (Tamil and Sinhala together
+  took 2 min 43 s on 2026-11-09) and kept
+  beside the other downloads; --refresh-people fetches it again, and
+  --no-wikidata reads it from the cache.
 
 - nam_dict given names (Jörg Michael, 2008; GNU FDL 1.2), the
   dictionary shipped in the gender-guesser 0.4.0 sdist: 45,371 given-name
@@ -161,6 +178,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import date
+from functools import partial
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
@@ -226,7 +244,7 @@ WIKIDATA_LANGUAGES = (
     "fi", "et", "lv", "lt", "pl", "cs", "sk", "sl", "hr", "sr", "bs",
     "hu", "ro", "bg", "ru", "uk", "el", "tr", "az", "sq", "ga", "cy",
     "is", "ar", "fa", "ur", "he", "hi", "bn", "ta", "te", "ja", "ko",
-    "vi", "th", "id", "ms", "tl", "sw", "ha", "yo", "ig", "am", "so",
+    "vi", "th", "id", "ms", "tl", "sw", "ha", "yo", "ig", "am", "so", "si",
     # Chinese labels sit under script and region tags far more often
     # than plain `zh`: neither 关 surname item has a `zh` or `mul` label,
     # so without these a simplified-script surname finds nothing.
@@ -286,6 +304,9 @@ class Usage:
     #: Where the word can end a name across the family/given boundary,
     #: the ends-with row only.
     splits: list[Split] = field(default_factory=list)
+    #: People whose name holds the word, by where it stands in the name
+    #: (alone, first, inner, last), a Wikipedia people row only.
+    positions: dict[str, int] = field(default_factory=dict)
 
 
 def cache_dir() -> Path:
@@ -1278,9 +1299,23 @@ SELECT ?role ?country (COUNT(DISTINCT ?p) AS ?n) WHERE {{{_people(match)}
 }} GROUP BY ?role ?country"""
 
 
+class _ShapeError(ValueError):
+    """A SPARQL reply that parsed but is not the shape asked for. Not an
+    overrun, so the CJK index does not halve and resend on it."""
+
+
 def _bindings(response: dict[str, Any]) -> list[dict[str, str]]:
-    return [{key: cell["value"] for key, cell in row.items()}
-            for row in response["results"]["bindings"]]
+    """The rows of a SPARQL JSON reply. A reply of another shape raises
+    ValueError, which every caller reports as a failed row, rather than
+    the TypeError or AttributeError it would otherwise raise past them
+    and end the run."""
+    try:
+        rows = response["results"]["bindings"]
+        return [{key: str(cell["value"]) for key, cell in row.items()}
+                for row in rows]
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise _ShapeError(f"a SPARQL reply of the wrong shape "
+                         f"({type(exc).__name__}: {exc})") from exc
 
 
 def read_wikidata(totals: list[dict[str, str]],
@@ -1574,6 +1609,8 @@ def _index_sparql(query: str, as_csv: bool = False) -> list[dict[str, str]]:
         if overran:
             raise _Overrun(f"HTTP {exc.code}") from None
         raise
+    except _ShapeError:
+        raise
     except (ValueError, TimeoutError, http.client.IncompleteRead) as exc:
         # At its limit WDQS cuts a 200 off mid-stream, which surfaces as
         # JSON that stops (ValueError), a CSV line with no end, or a
@@ -1588,9 +1625,9 @@ def _write(path: Path, data: object) -> None:
     tmp.replace(path)
 
 
-def _unusable(path: Path, why: str) -> ValueError:
+def _unusable(path: Path, why: str, flag: str = "--refresh-index") -> ValueError:
     return ValueError(f"{path} is unusable ({why}); delete it, or run "
-                      "again with --refresh-index")
+                      f"again with {flag}")
 
 
 def _read_json(path: Path) -> object:
@@ -1845,6 +1882,286 @@ def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
     return usage
 
 
+# -- Wikipedia people, by script -------------------------------------------
+
+#: The Wikipedias whose people are indexed, each with its language's name
+#: and the Unicode block that sends a word to it: a word holding any
+#: character of the block (a digit too) gets the wiki's row. Wikidata's
+#: name items carry almost no labels in these scripts, so the label row
+#: answered 0 for #1244's words on 2026-11-09 (`செல்வி` among them, though
+#: `Selvi` is a given name), while 45,297 people had a Tamil article and
+#: 3,402 a Sinhala one. Adding a Wikipedia is a row here.
+PEOPLE_WIKIS: dict[str, tuple[str, str]] = {
+    "ta": ("Tamil", "\u0b80-\u0bff"),
+    "si": ("Sinhala", "\u0d80-\u0dff"),
+}
+PEOPLE_DIR = "wikipedia_people"
+#: Bumped whenever what an index file holds changes; a file written by
+#: another version is fetched again.
+PEOPLE_VERSION = 1
+#: Q-ids per label query. The listing and the labels are asked apart:
+#: together, Tamil's ran 60 s on 2026-11-09 and came back cut off.
+PEOPLE_CHUNK = 2000
+#: Invisible characters a word may be written with or without, folded out
+#: of both sides of a match: the joiners (Sinhala's yansaya and rakaransaya
+#: take a ZWJ, `වෛද්‍ය`), the soft hyphen and the word joiner.
+_INVISIBLE = str.maketrans("", "", "\u200c\u200d\u00ad\u2060")
+#: Where a name is cut into words: whitespace, commas, and the zero-width
+#: space and BOM, which the parser reads as separators too (#851).
+_WORD_BREAK = re.compile("[\\s,\u200b\ufeff]+")
+#: Where a word stands in a name, in the order the report lists them.
+POSITIONS = ("alone", "first", "inner", "last")
+
+
+def people_wiki(word: str) -> str | None:
+    """The indexed Wikipedia a word is looked up in: the first whose
+    block holds one of its characters, or None."""
+    for wiki, (_, block) in PEOPLE_WIKIS.items():
+        if re.search(f"[{block}]", word):
+            return wiki
+    return None
+
+
+def people_source(wiki: str) -> str:
+    return f"{PEOPLE_WIKIS[wiki][0]} Wikipedia people"
+
+
+def _people_key(text: str) -> str:
+    """One word as the index matches it: NFC and invisible characters
+    out first, so none hides an edge, then quotes, brackets and periods
+    off its edges (`பா.உ` is `பா.உ.`). Applied to words already cut at
+    _WORD_BREAK, so a single strip reaches the edge."""
+    folded = unicodedata.normalize("NFC", text).translate(_INVISIBLE)
+    return folded.strip("\"'“”‘’()[].")
+
+
+def name_words(name: str, disambiguators: bool = True) -> list[str]:
+    """A name's words, each folded by _people_key. With `disambiguators`,
+    every group in round brackets is dropped first (a title's
+    disambiguator, `முதலாம் பாஸ்கால் (திருத்தந்தை)`); the rest is cut at
+    _WORD_BREAK."""
+    if disambiguators:
+        name = re.sub(r"\s*\([^)]*\)", "", name)
+    words = (_people_key(w) for w in _WORD_BREAK.split(name))
+    return [w for w in words if w]
+
+
+@dataclass(frozen=True, slots=True)
+class Person:
+    qid: str
+    #: The wiki's label, then the article's title where it differs: on
+    #: 2026-11-09 it did for 4,350 of 45,297 Tamil people and 340 of 3,402
+    #: Sinhala (another transcription, a title written in).
+    names: tuple[str, ...]
+
+
+@dataclass(slots=True)
+class PeopleIndex:
+    wiki: str
+    people: list[Person]
+    fetched: str
+
+    def holding(self, word: str) -> list[tuple[str, Person, str]]:
+        """Each person one of whose names holds the word, once, with
+        where it stands there and the name it was found in. The word is
+        cut as a name is and matched as its words in a row, so a spaced
+        word (`பா. உ.`) is found; kept whole, it would match nothing. Only
+        a word that is nothing but a bracketed group (`(செல்வி)`, as
+        #1244 writes its titles) keeps that group's content, since cut as
+        a name it would be empty; folding the word otherwise than the
+        names it is matched against loses a word pasted with its
+        disambiguator. A name that is the word alone wins over any
+        placing; otherwise the first name holding it decides, the label
+        before the title, and within a name its first occurrence. An
+        empty word raises ValueError: it would match nobody, a false
+        zero."""
+        key = (name_words(word)
+               or name_words(word, disambiguators=False))
+        if not key:
+            raise ValueError(f"{word!r} has nothing left to match once "
+                             "folded")
+        n = len(key)
+        found = []
+        for person in self.people:
+            best: tuple[str, str] | None = None
+            for name in person.names:
+                words = name_words(name)
+                at = next((i for i in range(len(words) - n + 1)
+                           if words[i:i + n] == key), None)
+                if at is None:
+                    continue
+                if len(words) == n:
+                    best = ("alone", name)
+                    break
+                if best is None:
+                    best = ("first" if at == 0 else
+                            "last" if at + n == len(words) else "inner", name)
+            if best is not None:
+                found.append((best[0], person, best[1]))
+        return found
+
+
+def people_count_query(wiki: str) -> str:
+    return f"""
+SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE {{
+  ?article schema:isPartOf <https://{wiki}.wikipedia.org/> ; schema:about ?p .
+  ?p wdt:P31 wd:Q5 .
+}}"""
+
+
+def people_titles_query(wiki: str) -> str:
+    return f"""
+SELECT ?p ?title WHERE {{
+  ?article schema:isPartOf <https://{wiki}.wikipedia.org/> ;
+           schema:about ?p ; schema:name ?title .
+  ?p wdt:P31 wd:Q5 .
+}}"""
+
+
+def people_labels_query(wiki: str, qids: list[str]) -> str:
+    return f"""
+SELECT ?p ?label WHERE {{
+  VALUES ?p {{ {" ".join(f"wd:{q}" for q in qids)} }}
+  ?p rdfs:label ?label .
+  FILTER(LANG(?label) = "{wiki}")
+}}"""
+
+
+def _people_path(wiki: str) -> Path:
+    return cache_dir() / PEOPLE_DIR / f"{wiki}.json"
+
+
+def _people_unusable(path: Path, why: str) -> ValueError:
+    # Online: --refresh-people is refused beside --no-wikidata.
+    return _unusable(path, why, flag="--refresh-people (online)")
+
+
+def _read_people(path: Path, wiki: str) -> PeopleIndex | None:
+    """The cached index, or None when another version wrote it."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise _people_unusable(path, f"{type(exc).__name__}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise _people_unusable(path, "not an index")
+    if data.get("version") != PEOPLE_VERSION:
+        return None
+    people = data.get("people")
+    if not (data.get("wiki") == wiki and isinstance(data.get("fetched"), str)
+            and isinstance(people, list) and people):
+        raise _people_unusable(path, f"needs version, wiki {wiki!r}, fetched "
+                                     "and a non-empty list of people")
+    out = []
+    for row in people:
+        if not (isinstance(row, list) and len(row) == 2 and _is_qid(row[0])
+                and isinstance(row[1], list) and row[1]
+                and all(isinstance(n, str) for n in row[1])):
+            raise _people_unusable(path, f"row {row!r} is not a Q-id and its names")
+        out.append(Person(row[0], tuple(row[1])))
+    return PeopleIndex(wiki, out, data["fetched"])
+
+
+def _fetch_people(wiki: str) -> PeopleIndex:
+    """Every person with an article on the wiki, named by the wiki
+    language's label and the article's title. CSV has no closing bracket
+    to show a listing cut short, so the listing is held to a count taken
+    just before it, as a CJK class listing is."""
+    language = PEOPLE_WIKIS[wiki][0]
+    print(f"building the {language} Wikipedia people index -- a one-time "
+          "fetch of a few minutes", file=sys.stderr)
+    [count] = _bindings(_sparql(people_count_query(wiki)))
+    rows = _sparql_csv(people_titles_query(wiki))
+    if rows and not {"p", "title"} <= set(rows[0]):
+        raise ValueError(f"the {language} listing has columns "
+                         f"{sorted(rows[0])}, not p and title")
+    names: dict[str, list[str]] = {}
+    for row in rows:
+        # csv returns a short row's missing cells as None, which would be
+        # cached as a name and fail every later match.
+        if not (isinstance(row.get("p"), str) and isinstance(row.get("title"), str)):
+            raise ValueError(f"the {language} listing has a short row: {row!r}")
+        names.setdefault(_qid(row["p"]), []).append(row["title"])
+    expected = int(count["n"])
+    if not names or len(names) < expected - expected // 1000:
+        raise ValueError(f"the {language} listing returned {len(names):,} of "
+                         f"{expected:,} people; it was cut short")
+    qids = sorted(names, key=lambda q: int(q[1:]))
+    for start in range(0, len(qids), PEOPLE_CHUNK):
+        chunk = qids[start:start + PEOPLE_CHUNK]
+        for row in _bindings(_sparql(people_labels_query(wiki, chunk))):
+            label = names[_qid(row["p"])]
+            if row["label"] not in label:
+                label.insert(0, row["label"])
+    return PeopleIndex(wiki, [Person(q, tuple(names[q])) for q in qids],
+                       date.today().isoformat())
+
+
+def load_people(wiki: str, download: bool,
+                refresh: bool = False) -> PeopleIndex | None:
+    """The cached index of the wiki's people, fetched when it is missing,
+    from another version of this tool, or `refresh` asks; None when it
+    would need fetching and `download` is off. Raises ValueError naming a
+    cache file it cannot use or write, or the fetch that failed; a cached
+    index is left as it was until a fetch has succeeded."""
+    path = _people_path(wiki)
+    if path.exists() and not refresh:
+        index = _read_people(path, wiki)
+        if index is not None:
+            return index
+    if not download:
+        return None
+    language = PEOPLE_WIKIS[wiki][0]
+    try:
+        index = _fetch_people(wiki)
+    except _QUERY_ERRORS as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            exc.close()
+        raise ValueError(f"fetching the {language} Wikipedia people failed: "
+                         f"{type(exc).__name__}: {exc}") from exc
+    try:
+        _write(path, {
+            "version": PEOPLE_VERSION, "wiki": wiki, "fetched": index.fetched,
+            "people": [[p.qid, list(p.names)] for p in index.people]})
+    except OSError as exc:
+        raise ValueError(f"the {language} Wikipedia people were fetched, but "
+                         f"writing them to {path} failed: "
+                         f"{type(exc).__name__}: {exc}") from exc
+    return index
+
+
+def people_usage(word: str, index: PeopleIndex, examples: int = 5) -> Usage:
+    """The people whose name holds the word, by where it stands. Neither
+    a given nor a family count: a Wikipedia name has no roles, and a
+    title written into it (`டாக்டர் கேதன் தேசாய்`) stands where a given
+    name would, so the examples are what tell the two apart. A word with
+    nothing left to match once folded fails the row, never reads 0."""
+    source = people_source(index.wiki)
+    try:
+        found = index.holding(word)
+    except ValueError as exc:
+        return Usage(source, status="failed", lower_bound=True, note=str(exc))
+    counts = Counter(position for position, _, _ in found)
+    order = {p: i for i, p in enumerate(POSITIONS)}
+    shown = sorted(found, key=lambda f: (order[f[0]], int(f[1].qid[1:])))
+    sample = "; ".join(f"{name} {person.qid} ({position})"
+                       for position, person, name in shown[:examples])
+    if len(found) > examples:
+        sample += "; ..."
+    language = PEOPLE_WIKIS[index.wiki][0]
+    return Usage(
+        source, lower_bound=True,
+        positions={p: counts[p] for p in POSITIONS},
+        note=_join(
+            f"{len(found):,} of {len(index.people):,} people with a "
+            f"{language} Wikipedia article write it in their name",
+            f"e.g. {sample}" if sample else
+            "a zero proves little: only notable people have an article",
+            "a title written into a name counts where it stands; matched "
+            "ignoring joiners and edge periods, words cut at spaces and commas "
+            "only, so a word glued to an initial (மு.கருணாநிதி) is not seen; "
+            f"index fetched {index.fetched}"))
+
+
 # -- output --------------------------------------------------------------
 
 def _attempt(load: Callable[[], T | None]) -> tuple[T | None, str]:
@@ -1890,6 +2207,9 @@ def render(word: str, usages: list[Usage]) -> str:
                     parts.append(f"{stateless} with no citizenship stated")
                 lines.append(f"  {'':<{width}}    {role} by citizenship: "
                              + ", ".join(parts))
+        if u.positions:
+            lines.append(f"  {'':<{width}}    people by where it stands: "
+                         + ", ".join(f"{p} {n:,}" for p, n in u.positions.items()))
         if u.given_bands:
             lines.append(f"  {'':<{width}}    given band by country: "
                          + ", ".join(f"{c} {b:X}" for c, b in u.given_bands))
@@ -2074,6 +2394,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--refresh-index", action="store_true",
                         help="fetch the CJK name index again")
+    parser.add_argument("--refresh-people", action="store_true",
+                        help="fetch the Wikipedia people index of each "
+                             "word's script again (Tamil, Sinhala)")
     args = parser.parse_args(argv)
     if args.rank is None and not args.words:
         parser.error("give words to report, or --rank N")
@@ -2081,6 +2404,13 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--rank lists credentials; it takes no words")
     if args.unlisted and args.rank is None:
         parser.error("--unlisted goes with --rank")
+    if args.refresh_people and not any(people_wiki(w) for w in args.words):
+        parser.error("--refresh-people refreshes the index of each word's "
+                     "script; give a Tamil or Sinhala word")
+    if args.refresh_people and args.no_wikidata:
+        # Refreshing skips the cache, and offline nothing is fetched to
+        # replace it: the row would read "not downloaded" over a good index.
+        parser.error("--refresh-people fetches; it cannot go with --no-wikidata")
 
     census, census_error = _attempt(
         lambda: load_census(download=not args.no_wikidata))
@@ -2102,6 +2432,14 @@ def main(argv: list[str] | None = None) -> int:
                                  or any(map(is_cjk, words))):
         index, index_error = _attempt(
             lambda: load_index(download=True, refresh=args.refresh_index))
+
+    # Read from the cache offline, as the census and nam_dict are (unlike
+    # the CJK index, read only online); fetched only online.
+    people: dict[str, tuple[PeopleIndex | None, str]] = {}
+    for wiki in dict.fromkeys(filter(None, map(people_wiki, words))):
+        people[wiki] = _attempt(partial(
+            load_people, wiki, download=not args.no_wikidata,
+            refresh=args.refresh_people))
 
     locals_ = load_locals()
     wanted = list(dict.fromkeys(c.strip().upper() for c in args.country if c.strip()))
@@ -2128,6 +2466,19 @@ def main(argv: list[str] | None = None) -> int:
                     if index is not None else
                     Usage(ENDS_WITH_SOURCE, status="failed", lower_bound=True,
                           note=index_error or "the index did not load"))
+        word_wiki = people_wiki(word)
+        if word_wiki is not None:
+            people_index, people_error = people[word_wiki]
+            usages.append(
+                people_usage(word, people_index) if people_index is not None
+                else Usage(people_source(word_wiki), lower_bound=True,
+                           status="failed" if people_error else "not downloaded",
+                           note=people_error or (
+                               "the cached index was written by another "
+                               "version of this tool; run without "
+                               "--no-wikidata to fetch it again"
+                               if _people_path(word_wiki).exists() else
+                               "run without --no-wikidata to fetch it")))
         report[word] = usages
     if args.json:
         print(json.dumps({w: [asdict(u) for u in us] for w, us in report.items()},
