@@ -1214,7 +1214,9 @@ Grouping by key
 ~~~~~~~~~~~~~~~
 
 ``keys()`` gives each name a set of short strings, the family name's
-words without their particles beside the given name's first letter.
+words without their particles, and the whole family name joined (its
+spaces and hyphens dropped, particles kept), each beside the given
+name's first letter.
 Two names ``check()`` calls consistent always share a key, so grouping
 by key loses no match, and a pair that shares no key need never be
 checked:
@@ -1225,13 +1227,13 @@ checked:
     >>> from nameparser import Parser
     >>> matcher = Parser().matching()
     >>> sorted(matcher.keys("Jane A. de la Vega"))
-    ['vega;j']
+    ['delavega;j', 'vega;j']
     >>> groups = defaultdict(list)
     >>> for written in ["John A. Smith", "J. Smith", "Juan de la Vega", "Juan Vega"]:
     ...     for key in matcher.keys(written):
     ...         groups[key].append(written)
-    >>> dict(groups)
-    {'smith;j': ['John A. Smith', 'J. Smith'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
+    >>> dict(sorted(groups.items()))
+    {'delavega;j': ['Juan de la Vega'], 'smith;j': ['John A. Smith', 'J. Smith'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
 
 A family name of several words gets a key for each, because a source
 may cut a surname list short, and a hyphenated one a key for each half,
@@ -1341,6 +1343,9 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
      - ``María García`` / ``MARIA GARCIA``
      - yes
+   * - ``joined``: equal once folded and stripped of spaces and hyphen-minus signs, save where both are initials alone
+     - ``Ignazio LaRussa`` / ``Ignazio La Russa``
+     - yes
    * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
      - ``Wm. Smith`` / ``William Smith``
      - yes
@@ -1408,8 +1413,8 @@ never conflicts, so a career from ``Mr.`` to ``Dr.`` does not separate
 a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
-read as one word, so ``J.P. Smith`` / ``J.-P. Smith`` is a conflict.
-Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
+into one word agree with the same letters written apart as ``joined``
+(``J.P. Smith`` / ``J.-P. Smith``). Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
 transliterations unless the vocabulary lists the pair as a familiar
 form (``Igor`` / ``Ihor`` is one, below). A familiar form you have not
 accepted keeps the pair inconsistent though its row reads

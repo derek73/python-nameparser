@@ -59,6 +59,7 @@ class Outcome(StrEnum):
 
     SAME = "same"
     FOLDED = "folded"
+    JOINED = "joined"
     LISTED_SPELLING = "listed-spelling"
     PARTICLES_ASIDE = "particles-aside"
     PART_OF_OTHER = "part-of-other"
@@ -208,7 +209,7 @@ class MatchResult:
 
 #: The outcomes accepted when a caller states none.
 DEFAULT_ACCEPT: frozenset[Outcome] = frozenset({
-    Outcome.SAME, Outcome.FOLDED, Outcome.LISTED_SPELLING,
+    Outcome.SAME, Outcome.FOLDED, Outcome.JOINED, Outcome.LISTED_SPELLING,
     Outcome.PARTICLES_ASIDE, Outcome.PART_OF_OTHER, Outcome.INITIAL,
     Outcome.INITIALS_AGREE, Outcome.ONE_SIDE, Outcome.GENERATION_ONE_SIDE,
     Outcome.NOTED,
@@ -340,7 +341,8 @@ class Matching:
         the other name: a given name with each word of the other's
         middle name and with its nickname, a family name with the
         other's maiden name. Only a full name on both sides counts, at
-        `same`, `folded` or `listed-spelling`, never an initial. The
+        `same`, `folded`, `joined` or `listed-spelling`, never an
+        initial. The
         strongest match resolves the role, which then reads
         `across-roles`, and is recorded in the result's `across`; a
         middle word it used is taken out of the middle comparison, the
@@ -364,9 +366,11 @@ class Matching:
         """Grouping keys: for each word of the folded family base, and
         each half of a hyphenated one beside its joined and its whole
         form, a half that is a listed particle left out (`Al-Saud` keys
-        `saud`, `alsaud` and `al-saud`, never `al`), one key `word;g`
-        where `g` is the first letter of the given name (empty where
-        there is none). A word is keyed by every word in its spelling
+        `saud`, `alsaud` and `al-saud`, never `al`), and for the family's
+        whole text, particles kept, folded and joined (`de la Vega` keys
+        `delavega` beside `vega`), one key `word;g` where `g` is the
+        first letter of the given name once joined (empty where there is
+        none; `-Pierre` gives `p`). A word is keyed by every word in its spelling
         set among surnames (itself and the words it is listed as a
         spelling of, read as written and folded, each folded), and a
         given name by the first letter of every word in its set among
@@ -380,16 +384,18 @@ class Matching:
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
-        check compares is keyed, so two names it finds consistent share
-        a key and grouping by key loses no match. A name with no family
-        has no key.
+        check compares is keyed, and so is the whole family joined,
+        which two family names read `joined` share, so two names it finds
+        consistent share a key and grouping by key loses no match. A
+        name with no family has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
         `familiar-form` the given letters of the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
-        words without particles as family words, and as given letters
+        words without particles as family words, and its whole text
+        joined, and as given letters
         the first letter of each middle word and of the nickname's
         first word, save a middle word or a nickname written in
         initials alone, which the check never matches across roles.
@@ -526,19 +532,33 @@ class Matching:
                       for form in (raw.replace("-", ""), raw)]
         words = set().union(*(_spelling_keys(form, family_rule.group, lexicon)
                               for form in forms if form))
+        # the whole text the check compares a family name by, particles
+        # kept, joined (`La Russa` and `LaRussa` key `larussa`), and under
+        # across-roles each text it compares the family against
+        texts = [parsed.family]
+        if across:
+            texts += [t for other in family_rule.across
+                      for t in _cross_texts(parsed, other)]
+        words |= {_joined(_fold(t)) for t in texts if t} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
                 family[0], family_rule.group, lexicon)} - {""}
-        given = parsed.given.split()
-        initials = ({g[:1] for g in _spelling_keys(
-            given[0], given_rule.group, lexicon)} if given else {""})
+        given = _lettered_words(parsed.given)
+        # a given letter is the first letter once joined, as the check
+        # compares by `joined` too (`-Pierre` keys `p`, not `-`)
+        initials = {_letter(g) for g in _spelling_keys(
+            given[0], given_rule.group, lexicon)} - {""} if given else set()
         if given and Outcome.FAMILIAR_FORM in self.accept:
             # every name the check pairs with it as a familiar form,
             # either way (`_familiar`), so `Bill` and `William` share
             # each other's keys
-            initials |= {g[:1] for g in _paired_forms(
+            initials |= {_letter(g) for g in _paired_forms(
                 _spellings(given[0], given_rule.group, lexicon), lexicon)} - {""}
+        # no given letter, a name with no given name or one of hyphens
+        # alone, keys the empty letter, as the cross-role letters below
+        # stand beside it rather than for it
+        initials = initials or {""}
         if across:
             # the texts the check matches against a given name, each
             # refused as it refuses them: a cross-role match is never
@@ -547,8 +567,9 @@ class Matching:
             for other in given_rule.across:
                 for text in _cross_texts(parsed, other):
                     if not _initials_only(_fold(text)):
-                        initials |= {g[:1] for g in _spelling_keys(
-                            text.split()[0], given_rule.group, lexicon)}
+                        initials |= {_letter(g) for g in _spelling_keys(
+                            _lettered_words(text)[0], given_rule.group,
+                            lexicon)} - {""}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
@@ -738,6 +759,31 @@ def _familiar_outcome(wa: list[str], wb: list[str],
     return Outcome.FAMILIAR_FORM if found else None
 
 
+def _lettered_words(text: str) -> list[str]:
+    """A text's words from the first that is not hyphens or full stops
+    alone: the word a given letter is cut from, since `joined` reads
+    `- Pierre` as `Pierre`; all of them where none is (decisions/
+    name-matching, 2026-11-09 #1261)."""
+    words = text.split()
+    for i, word in enumerate(words):
+        if _joined(_fold(word)):
+            return words[i:]
+    return words
+
+
+def _letter(folded: str) -> str:
+    """A folded word's first letter once joined, the given letter a key
+    is cut on; empty for a word of hyphens alone."""
+    return _joined(folded)[:1]
+
+
+def _joined(folded: str) -> str:
+    """A folded text without its spaces and hyphens, the form `joined`
+    compares and the keys cut a family's whole key from (decisions/
+    name-matching, 2026-11-09 #1261)."""
+    return _WORDS.sub("", folded)
+
+
 def _initials_only(folded: str) -> bool:
     """A folded text is initials alone."""
     return all(_is_initial(w) for w in _WORDS.split(folded) if w)
@@ -746,12 +792,18 @@ def _initials_only(folded: str) -> bool:
 def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
                   group: str) -> Outcome | None:
     """Two non-empty texts, `fa` and `fb` their folded forms, as full
-    names: same, folded, or listed spelling (word by word, in the role's
-    `same_as` `group`), else `None`."""
+    names: same, folded, joined (equal once folded and stripped of
+    spaces and hyphens, `La Russa` / `LaRussa`, unless both are initials
+    alone), or listed spelling (word by word, in the role's `same_as`
+    `group`), else `None`."""
     if a == b:
         return Outcome.SAME
     if fa == fb:
         return Outcome.FOLDED
+    if _joined(fa) == _joined(fb) and not (
+            _initials_only(fa) and _initials_only(fb)):
+        # two texts of initials alone are `initials-agree`'s to read
+        return Outcome.JOINED
     wa, wb = a.split(), b.split()
     if len(wa) == len(wb) and all(
             _listed(x, y, group, lexicon) for x, y in zip(wa, wb)):
@@ -768,10 +820,15 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     family role after the first of its chain (decisions/name-matching,
     2026-11-08 FAMILIAR FORMS, the review's ruling 1).
 
-    - A full-name outcome (`_full_outcome`: same, folded, listed
-      spelling) implies every weaker one, two texts equal once folded
+    - A full-name outcome (`_full_outcome`: same, folded, joined,
+      listed spelling) implies every weaker one, two texts equal once folded
       or listed as one needing no other leniency, so it is the only
-      outcome yielded.
+      outcome yielded. `joined` is the exception: two texts equal once
+      their spaces and hyphens go may still need the weaker leniencies
+      read their words apart (`De La Cruz` / `Dela Cruz`, its particles
+      set aside), so they are yielded after it, and a caller who does
+      not accept `joined` keeps what they accepted before it
+      (decisions/name-matching, 2026-11-09 #1261).
     - Given `bases`, the family role's (`_compare_family`), the outcomes are
       treated as one chain, particles set aside, part of the other,
       family initial, initials agree, and the first that holds is the
@@ -791,20 +848,21 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     wa, wb = a.split(), b.split()
     if full is not None:
         yield full
-    elif bases is not None:
-        chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
-        if chain is not None:
-            yield chain
-    else:
-        initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
-        if initials is not None:
-            yield initials
-        if group == "given" and (
-                familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
-            yield familiar
-        if len(wa) == len(wb) == 1 and (
-                _first_half(fa, fb) or _first_half(fb, fa)):
-            yield Outcome.HYPHENATED_PART
+    if full is None or full is Outcome.JOINED:
+        if bases is not None:
+            chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
+            if chain is not None:
+                yield chain
+        else:
+            initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+            if initials is not None:
+                yield initials
+            if group == "given" and (
+                    familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+                yield familiar
+            if len(wa) == len(wb) == 1 and (
+                    _first_half(fa, fb) or _first_half(fb, fa)):
+                yield Outcome.HYPHENATED_PART
     yield Outcome.CONFLICT
 
 
@@ -976,18 +1034,24 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     return _weakest(outcomes)
 
 
-def _noted(a: str, b: str, lexicon: Lexicon, group: str) -> Outcome:
-    """A role that never conflicts: equal by any spelling, else noted."""
+def _noted(a: str, b: str, lexicon: Lexicon, group: str,
+           accept: frozenset[Outcome]) -> Outcome:
+    """A role that never conflicts: equal by any spelling the caller
+    accepts, else noted, so a caller who does not accept `folded` or
+    `joined` reads `noted` rather than an outcome they refuse
+    (decisions/name-matching, 2026-11-09 #1261)."""
     if not a and not b:
         return Outcome.SAME
     if a and b:
-        return (_full_outcome(a, b, _fold(a), _fold(b), lexicon, group)
-                or Outcome.NOTED)
+        full = _full_outcome(a, b, _fold(a), _fold(b), lexicon, group)
+        if full is not None and full in accept:
+            return full
     return Outcome.NOTED
 
 
 def _suffix_outcome(left: ParsedName, right: ParsedName,
-                    lexicon: Lexicon, group: str) -> Outcome:
+                    lexicon: Lexicon, group: str,
+                    accept: frozenset[Outcome]) -> Outcome:
     """A different generation conflicts and one on one side only is its
     own outcome, whatever credentials either side carries; where the
     generations agree, the rest of the suffix (credentials, honorifics)
@@ -1006,7 +1070,7 @@ def _suffix_outcome(left: ParsedName, right: ParsedName,
         generation = Outcome.SAME
     rest = _noted(" ".join(filter(None, (left.credentials, left.honorifics))),
                   " ".join(filter(None, (right.credentials, right.honorifics))),
-                  lexicon, group)
+                  lexicon, group, accept)
     return _weakest((generation, rest))
 
 
@@ -1077,13 +1141,13 @@ def _compare_middle(a: str, b: str, left: ParsedName, right: ParsedName,
 def _compare_noted(a: str, b: str, left: ParsedName, right: ParsedName,
                    lexicon: Lexicon, accept: frozenset[Outcome],
                    rule: _RoleRule) -> Outcome:
-    return _noted(a, b, lexicon, rule.group)
+    return _noted(a, b, lexicon, rule.group, accept)
 
 
 def _compare_suffix(a: str, b: str, left: ParsedName, right: ParsedName,
                     lexicon: Lexicon, accept: frozenset[Outcome],
                     rule: _RoleRule) -> Outcome:
-    return _suffix_outcome(left, right, lexicon, rule.group)
+    return _suffix_outcome(left, right, lexicon, rule.group, accept)
 
 
 _EMPTY = (Outcome.SAME, Outcome.ONE_SIDE)
