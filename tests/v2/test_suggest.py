@@ -1,6 +1,8 @@
 """The per-name signals of the group suggester (nameparser/_suggest.py)."""
 from __future__ import annotations
 
+import unicodedata
+
 import pytest
 
 from nameparser import Lexicon
@@ -16,6 +18,11 @@ _VOTES = [
     ("Armitage J.", Signal.TRAILING_INITIAL, FAMILY_FIRST),
     ("van Berg Jan", Signal.PARTICLE, FAMILY_FIRST),
     ("Jan van Berg", Signal.PARTICLE, GIVEN_FIRST),
+    ("O'BRIEN Sean", Signal.CAPITALS, FAMILY_FIRST),
+    ("GOMINA-MUSA Abɖu", Signal.CAPITALS, FAMILY_FIRST),
+    ("Mary de Jean", Signal.PARTICLE, GIVEN_FIRST),
+    (unicodedata.normalize("NFD", "Nguyễn Minh"), Signal.SURNAME, FAMILY_FIRST),
+    (unicodedata.normalize("NFC", "Nguyễn Minh"), Signal.SURNAME, FAMILY_FIRST),
     ("Kim Minjun", Signal.SURNAME, FAMILY_FIRST),
     ("Minjun Kim", Signal.SURNAME, GIVEN_FIRST),
     ("Priem Jason", Signal.GIVEN_NAME, FAMILY_FIRST),
@@ -35,6 +42,9 @@ def test_a_name_casts_its_vote(
 
 @pytest.mark.parametrize(("text", "signal"), [
     ("Jeffrey LAM Kin-fung", Signal.CAPITALS),
+    ("Smith J.-P.", Signal.CAPITALS),
+    ("Smith J-P", Signal.CAPITALS),
+    ("Smith J.P.", Signal.CAPITALS),
     ("JOHN SMITH", Signal.CAPITALS),
     ("john smith", Signal.CAPITALS),
     ("S. Ramesh", Signal.TRAILING_INITIAL),

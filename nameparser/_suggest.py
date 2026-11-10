@@ -73,8 +73,12 @@ def _is_initialed(word: str) -> bool:
 def _is_caps_word(word: str) -> bool:
     """Two or more letters, all of them capitals, and no initial."""
     letters = [c for c in word if c.isalpha()]
+    # single letters joined by stops or hyphens ('J.-P.', 'J-P') are
+    # initials, however many letters they hold
+    chunks = [c for c in word.replace(".", "-").split("-") if c]
+    paired_initials = len(chunks) > 1 and all(len(c) == 1 for c in chunks)
     return (len(letters) >= 2 and word.isupper()
-            and not _is_initialed(word))
+            and not paired_initials and not _is_initialed(word))
 
 
 def _capitals(words: list[str]) -> tuple[Role, Role, Role] | None:
