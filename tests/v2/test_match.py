@@ -2093,3 +2093,22 @@ def test_a_run_of_initials_matches_under_the_given_last_order(
     assert matching.check(left, right).consistent is consistent
     assert bool(set(matching.keys(left)) & set(matching.keys(right))) \
         is consistent
+
+
+def test_only_two_initials_written_together_read_as_two_words() -> None:
+    # _role_text parts two written-together tokens only where both are
+    # initials (rules/T7, #1296); two that are not stay one word, as the
+    # field writes them. No parse builds the second today, so it is
+    # built by hand.
+    from nameparser._match import _role_text
+    from nameparser._types import Span, Token
+    initials = ParsedName(original="J.R. Smith", tokens=(
+        Token("J.", Span(0, 2), Role.GIVEN, frozenset({"initial"})),
+        Token("R.", Span(2, 4), Role.GIVEN, frozenset({"initial"})),
+        Token("Smith", Span(5, 10), Role.FAMILY)))
+    words = ParsedName(original="Ab.c Smith", tokens=(
+        Token("Ab.", Span(0, 3), Role.GIVEN),
+        Token("c", Span(3, 4), Role.GIVEN),
+        Token("Smith", Span(5, 10), Role.FAMILY)))
+    assert (initials.given, _role_text(initials, Role.GIVEN)) == ("J.R.", "J. R.")
+    assert (words.given, _role_text(words, Role.GIVEN)) == ("Ab.c", "Ab.c")
