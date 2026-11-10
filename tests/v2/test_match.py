@@ -1589,15 +1589,27 @@ def test_a_nickname_of_several_words_is_compared_whole() -> None:
     assert r["nickname"].outcome is Outcome.CONFLICT and not r.consistent
 
 
+def test_a_nickname_is_not_matched_across_into_the_given_name() -> None:
+    # the given name is tried against the other's nickname; the nickname
+    # is not tried against the other's given name, so a swap still
+    # conflicts in the nickname
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    r = across.check('John "Billy" Smith', 'Billy "John" Smith')
+    assert r["given"].outcome is Outcome.ACROSS_ROLES
+    assert r["nickname"].outcome is Outcome.CONFLICT and not r.consistent
+    assert len(r.across) == 1
+
+
 def test_a_title_on_one_side_is_noted() -> None:
     r = m.check("Sir John Smith", "John Smith")
     assert r["title"].outcome is Outcome.NOTED and r.consistent
 
 
 def test_another_reading_is_tried_into_the_middle_and_the_given_name() -> None:
-    # only a family-first parse offers one: `Smith John V` reads V as the
-    # generation, its other reading as a middle name (family first) or
-    # as the given name's second word (given last)
+    # `Smith John V` read family first reads V as the generation, its
+    # other reading as a middle name (family first) or as the given
+    # name's second word (given last); a family comma offers the same
+    # under the default order (`Smith, John V`)
     from nameparser import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, Policy
     first = Parser(policy=Policy(name_order=FAMILY_FIRST))
     r = first.matching(other_readings=True).check(
