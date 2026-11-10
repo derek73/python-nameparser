@@ -62,6 +62,7 @@
   "maria da-silva"            →  capitalized="Maria Da-Silva"
   "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
   "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
+  "'S-JACOB SMIT"             →  capitalized="'S-Jacob Smit"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
@@ -140,13 +141,14 @@
   "anh van do"                →  capitalized="Anh Van Do"
   "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"
   ```
-- **An elided particle opening a hyphenated word** — one whose listed spelling opens with an apostrophe, the Dutch 's (des) and 't (het) — keeps its lowercase, as it does spaced: Dutch writes the article lowercase whether a space or a hyphen joins it to the name, and it is the particle written whole that the hyphen clause gives a capital.
+- **An elided particle in a hyphenated word** — one whose listed spelling opens with an apostrophe, the Dutch 's (des) and 't (het) — keeps its lowercase wherever it stands in the word, as it does spaced, where the hyphen clause would write it as a name word: Dutch writes the elided article lowercase whether a space or a hyphen joins it to the name. A hyphenated word of particles alone carries no unjoined mark, so the all-particle Except below does not reach it.
   ```
   "WILLEM 'S-GRAVESANDE"      →  capitalized="Willem 's-Gravesande"
   "ARENT VAN 'S-GRAVESANDE"   →  capitalized="Arent van 's-Gravesande"
   "PIETER 'T-HART"            →  capitalized="Pieter 't-Hart"
   "Willem 'S-Gravesande"      →  capitalized_forced="Willem 's-Gravesande"
-  "'S-JACOB SMIT"             →  capitalized="'S-Jacob Smit"  · boundary
+  "WILLEM SMIT-'S-GRAVESANDE" →  capitalized="Willem Smit-'s-Gravesande"
+  "JAN 'S-VAN"                →  capitalized="Jan 's-van"  · boundary
   ```
 - **A connective the parse read as the generation it also spells** is not a connective of this name at all, and is repaired as the generation it was read as.
   ```
@@ -175,10 +177,11 @@
   ```
   "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary
   ```
-- A middle word written in one case that opens with an elided particle and a hyphen is repaired as the particle it spells, though the writer may mean a nickname: nothing in the letters of `'T-BONE` tells it from `'T-HART`. Written in mixed case it is left as written (R5).
+- A middle word written in one case that opens with an elided particle and a hyphen is repaired as the particle it spells, though the writer may mean a nickname: nothing in the letters of `'T-BONE` tells it from `'T-HART`. Written in mixed case it is left as written (R5) unless repair is forced, which lowers it as well.
   ```
   "AARON 'T-BONE WALKER"      →  capitalized="Aaron 't-Bone Walker"  · boundary
   "Aaron 'T-Bone Walker"      →  capitalized="Aaron 'T-Bone Walker"  · boundary
+  "Aaron 'T-Bone Walker"      →  capitalized_forced="Aaron 't-Bone Walker"  · boundary
   ```
 - An abbreviation the vocabulary does not list, whose letters after a full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```

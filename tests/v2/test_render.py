@@ -1021,16 +1021,16 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
 
 
-def test_an_elided_particle_opening_a_hyphenated_word_keeps_its_lowercase(
+def test_an_elided_particle_in_a_hyphenated_word_keeps_its_lowercase(
 ) -> None:
     """rules/R4 (#1280): a particle whose listed spelling opens with an
     apostrophe -- Dutch 's and 't, straight or typographic -- keeps its
-    lowercase where it opens a hyphenated word, as it does spaced; a
-    particle written with no apostrophe still opens with a capital
-    (Ter-Petrosyan), and outside the middle and family roles nothing
-    lowers. A one-case nickname spelled with the particle pays for it
-    ('T-Bone, the rule's Accepted bullet); written in mixed case it is
-    left as written (rules/R5)."""
+    lowercase in any part of a hyphenated word, as it does spaced, where
+    a particle written with no apostrophe opens one with a capital
+    (Ter-Petrosyan); outside the middle and family roles nothing lowers.
+    A one-case nickname spelled with the particle pays for it ('T-Bone,
+    the rule's Accepted bullet), and so does a forced repair of it in
+    mixed case; unforced, mixed case is left as written (rules/R5)."""
     for text, repaired in (
             ("WILLEM 'S-GRAVESANDE", "Willem 's-Gravesande"),
             ("willem 's-gravesande", "Willem 's-Gravesande"),
@@ -1042,12 +1042,23 @@ def test_an_elided_particle_opening_a_hyphenated_word_keeps_its_lowercase(
             ("WILLEM 'S-GRAVESANDE-SMIT", "Willem 's-Gravesande-Smit"),
             ("WILLEM 'S GRAVESANDE", "Willem 's Gravesande"),
             ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
+            # wherever it stands in the hyphenated word, as 'de' does
+            # (Garcia-de-Vega): the walk would split it at the apostrophe
+            ("WILLEM SMIT-'S-GRAVESANDE", "Willem Smit-'s-Gravesande"),
+            ("WILLEM 'S-'T-HART", "Willem 's-'t-Hart"),
+            ("JAN SMIT-'S", "Jan Smit-'s"),
+            ("JUAN GARCIA-DE-VEGA", "Juan Garcia-de-Vega"),
+            # an all-particle hyphenated word carries no unjoined mark
+            ("JAN 'S-VAN", "Jan 's-van"),
             ("'S-JACOB SMIT", "'S-Jacob Smit"),
             ("AARON 'T-BONE WALKER", "Aaron 't-Bone Walker")):
         for written in (text, _nfd(text)):
             assert _repairs(written, False) == repaired, written
     assert _repairs("Aaron 'T-Bone Walker", False) == "Aaron 'T-Bone Walker"
+    assert _repairs("Aaron 'T-Bone Walker", True) == "Aaron 't-Bone Walker"
     assert _repairs("Willem 'S-Gravesande", True) == "Willem 's-Gravesande"
+    assert (_repairs("Willem Smit-'s-Gravesande", True)
+            == "Willem Smit-'s-Gravesande")
     assert _repairs("Willem 's-Gravesande", False) == "Willem 's-Gravesande"
 
 

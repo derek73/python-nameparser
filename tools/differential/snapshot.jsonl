@@ -1534,6 +1534,7 @@
 {"name": "JA KD", "given": "JA", "family": "KD", "initials": "J. K.", "capitalized": "Ja Kd"}
 {"name": "JACK MA", "given": "JACK", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "Jack Ma"}
 {"name": "JAMES MACKENZIE", "given": "JAMES", "family": "MACKENZIE", "initials": "J. M.", "capitalized": "James Mackenzie"}
+{"name": "JAN 'S-VAN", "given": "JAN", "family": "'S-VAN", "initials": "J. '.", "capitalized": "Jan 's-van"}
 {"name": "JAN TER HORST VAN DER BERG", "given": "JAN", "middle": "TER HORST", "family": "VAN DER BERG", "initials": "J. H. B.", "capitalized": "Jan ter Horst van der Berg"}
 {"name": "JAN VAN DER BERG", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
 {"name": "JAN VAN TER HORST", "given": "JAN", "family": "VAN TER HORST", "initials": "J. H.", "capitalized": "Jan van ter Horst"}
@@ -4126,6 +4127,7 @@
 {"name": "W. Russell (Jr.) Withers", "given": "W.", "middle": "Russell", "family": "Withers", "suffix": "Jr.", "initials": "W. R. W.", "generation": "Jr."}
 {"name": "W. Russell Jr. Withers", "given": "W.", "middle": "Russell Jr.", "family": "Withers", "initials": "W. R. J. W."}
 {"name": "WILLEM 'S-GRAVESANDE", "given": "WILLEM", "family": "'S-GRAVESANDE", "initials": "W. '.", "capitalized": "Willem 's-Gravesande"}
+{"name": "WILLEM SMIT-'S-GRAVESANDE", "given": "WILLEM", "family": "SMIT-'S-GRAVESANDE", "initials": "W. S.", "capitalized": "Willem Smit-'s-Gravesande"}
 {"name": "WOOT ALFRED DOUGHERTY III", "given": "WOOT", "middle": "ALFRED", "family": "DOUGHERTY", "suffix": "III", "initials": "W. A. D.", "capitalized": "Woot Alfred Dougherty III", "generation": "III"}
 {"name": "Waldburg-Truchsess, Friedrich Ludwig von", "given": "Friedrich", "middle": "Ludwig", "family": "von Waldburg-Truchsess", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "F. L. W."}
 {"name": "Wallin Johan Harald", "order": "FAMILY_FIRST", "given": "Johan", "middle": "Harald", "family": "Wallin", "initials": "J. H. W."}
