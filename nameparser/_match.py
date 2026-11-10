@@ -828,16 +828,21 @@ def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
                     bases: tuple[str, str], lexicon: Lexicon,
                     group: str) -> Outcome | None:
     """The family role's leniencies, treated as one chain, the first
-    that holds: the bases equal once folded (particles set aside), one
-    base's words among the other's (part of the other), an initial
-    against the family name (family initial), initials alone agreeing.
-    A later one is not always implied by an earlier (`John S.` /
-    `John S.-Jones` holds part of the other and family initial both),
-    and only the first is returned (`_text_outcomes`)."""
-    if bases[0] and _fold(bases[0]) == _fold(bases[1]):
+    that holds: the bases equal once folded or listed as spellings word
+    for word (particles set aside), one base's words each among the
+    other's or listed as a spelling of one of them (part of the other),
+    an initial against the family name (family initial), initials alone
+    agreeing. A later one is not always implied by an earlier (`John S.`
+    / `John S.-Jones` holds part of the other and family initial both),
+    and only the first is returned (`_text_outcomes`). A listed spelling
+    counts inside a compound surname as it does whole, in `group`
+    (`Smyth-Jones` / `Smith` with `smyth` listed as `smith`;
+    decisions/name-matching, 2026-11-09 #1262)."""
+    if bases[0] and _bases_agree(bases[0], bases[1], lexicon, group):
         return Outcome.PARTICLES_ASIDE
-    sa, sb = _base_words(bases[0], lexicon), _base_words(bases[1], lexicon)
-    if sa and sb and (sa <= sb or sb <= sa):
+    wa_, wb_ = _base_forms(bases[0], lexicon), _base_forms(bases[1], lexicon)
+    if wa_ and wb_ and (_covered(wa_, wb_, lexicon, group)
+                        or _covered(wb_, wa_, lexicon, group)):
         return Outcome.PART_OF_OTHER
     initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
     return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
@@ -879,7 +884,7 @@ def _particle_half(folded: str, lexicon: Lexicon) -> bool:
 def _family_words(base: str, lexicon: Lexicon) -> list[str]:
     """A family base's comparable words, as written: each word, and a
     hyphenated one as its halves less any listed particle, an empty half
-    dropped. Read by `part-of-other` (`_base_words`) and by `keys`, so
+    dropped. Read by `part-of-other` (`_base_forms`) and by `keys`, so
     the two set aside the same halves. Raw and folded agree half for
     half: `_fold` never adds or removes a hyphen or a space (test_match.py
     holds it over every assigned code point in context), so a word's
@@ -896,10 +901,31 @@ def _family_words(base: str, lexicon: Lexicon) -> list[str]:
     return words
 
 
-def _base_words(base: str, lexicon: Lexicon) -> set[str]:
-    """The folded family-base words `part-of-other` compares, a word
-    that folds to empty left out."""
-    return {_fold(w) for w in _family_words(base, lexicon)} - {""}
+def _base_forms(base: str, lexicon: Lexicon) -> list[tuple[str, str]]:
+    """The family-base words `part-of-other` compares, each as written
+    and folded, a word that folds to empty left out."""
+    return [(w, f) for w in _family_words(base, lexicon) if (f := _fold(w))]
+
+
+def _bases_agree(a: str, b: str, lexicon: Lexicon, group: str) -> bool:
+    """Two family bases are equal once folded, or of as many words, each
+    pair equal once folded or listed as one spelling in `group`."""
+    if _fold(a) == _fold(b):
+        return True
+    wa, wb = a.split(), b.split()
+    return len(wa) == len(wb) and all(
+        _fold(x) == _fold(y) or _listed(x, y, group, lexicon)
+        for x, y in zip(wa, wb))
+
+
+def _covered(words: list[tuple[str, str]], others: list[tuple[str, str]],
+             lexicon: Lexicon, group: str) -> bool:
+    """Every word of `words` is among `others` once folded, or listed as
+    a spelling of one of them in `group`; each a (written, folded) pair."""
+    folded = {f for _, f in others}
+    return all(f in folded or any(_listed(w, o, group, lexicon)
+                                  for o, _ in others)
+               for w, f in words)
 
 
 def _first_half(w: str, hyphenated: str) -> bool:
