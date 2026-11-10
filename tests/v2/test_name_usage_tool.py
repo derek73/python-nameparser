@@ -2395,3 +2395,378 @@ def test_a_country_asked_for_twice_or_blank_is_listed_once(
                       "--country", "US", "--country", " ", "del"]) == 0
     line = next(l for l in capsys.readouterr().out.splitlines() if "family box" in l)
     assert line.count("US 5") == 1 and line.count("--") == 1
+
+
+# -- Wikipedia people, by script (#1244) -------------------------------------
+
+@pytest.mark.parametrize(("word", "wiki"), [
+    ("செல்வி", "ta"), ("பா.உ.", "ta"), ("ගරු", "si"), ("වෛද්\u200dය", "si"),
+    ("Selvi", None), ("殿", None), ("श्री", None),
+])
+def test_a_word_goes_to_the_wikipedia_of_its_script(word: str, wiki: str | None) -> None:
+    assert tool.people_wiki(word) == wiki
+
+
+def test_name_words_drop_a_disambiguator_and_fold_each_word() -> None:
+    # The title's bracketed disambiguator is not part of the name; a
+    # joiner and an edge period are folded out of a word, while spaces
+    # and commas cut it.
+    assert tool.name_words("முதலாம் பாஸ்கால் (திருத்தந்தை)") == ["முதலாம்", "பாஸ்கால்"]
+    assert tool.name_words("டாக்டர். புஷ்பா, லீலா") == ["டாக்டர்", "புஷ்பா", "லீலா"]
+    assert tool.name_words("වෛද්\u200dය ජගත්") == ["වෛද්ය", "ජගත්"]
+
+
+class _PeopleIndex(Protocol):
+    # tools/ is loaded by path, so mypy cannot see PeopleIndex itself.
+    def holding(self, word: str) -> list[Any]: ...
+
+
+def _people_index(*people: tuple[str, tuple[str, ...]]) -> _PeopleIndex:
+    return tool.PeopleIndex("ta", [tool.Person(q, names) for q, names in people],
+                            fetched="2026-11-09")
+
+
+def test_holding_counts_a_person_once_by_where_the_word_stands() -> None:
+    index = _people_index(
+        ("Q1", ("செல்வி திருச்சந்திரன்", "செல்வி திருச்சந்திரன் (எழுத்தாளர்)")),
+        ("Q2", ("பி. செல்வி தாஸ்",)),
+        ("Q3", ("மஞ்சு செல்வி",)),
+        # The label places it first, the title holds it alone: alone wins.
+        ("Q4", ("செல்வி பூஜா", "செல்வி")),
+        ("Q5", ("செல்விகா ராஜ்",)),  # a longer word is not the word
+    )
+    found = {person.qid: position for position, person, _ in index.holding("செல்வி")}
+    assert found == {"Q1": "first", "Q2": "inner", "Q3": "last", "Q4": "alone"}
+
+
+def test_holding_matches_with_or_without_a_joiner() -> None:
+    index = tool.PeopleIndex("si", [tool.Person("Q1", ("වෛද්ය ජගත් ගුණවර්ධන",))],
+                             fetched="2026-11-09")
+    assert [p.qid for _, p, _ in index.holding("වෛද්\u200dය")] == ["Q1"]
+
+
+def test_people_usage_reports_positions_and_examples_without_roles() -> None:
+    index = _people_index(("Q7", ("ஏ. கலாநிதி",)), ("Q3", ("கலாநிதி மாறன்",)),
+                          ("Q9", ("ராஜா",)))
+    usage = tool.people_usage("கலாநிதி", index)
+    assert (usage.source, usage.given, usage.family) == (
+        "Tamil Wikipedia people", None, None)
+    assert usage.positions == {"alone": 0, "first": 1, "inner": 0, "last": 1}
+    assert "2 of 3 people with a Tamil Wikipedia article" in usage.note
+    # Examples follow POSITIONS (alone, first, inner, last), so the
+    # readings that threaten a title lead.
+    assert "e.g. கலாநிதி மாறன் Q3 (first); ஏ. கலாநிதி Q7 (last)" in usage.note
+    assert "people by where it stands: alone 0, first 1, inner 0, last 1" in (
+        tool.render("கலாநிதி", [usage]))
+
+
+def test_people_usage_says_a_zero_proves_little() -> None:
+    usage = tool.people_usage("கௌரவ", _people_index(("Q1", ("கௌரவ் சோப்ரா",))))
+    assert usage.positions["first"] == 0
+    assert "a zero proves little" in usage.note
+
+
+def _stub_people_fetch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+                       count: int, titles: list[tuple[str, str]],
+                       labels: list[tuple[str, str]]) -> list[str]:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "_sparql_csv", lambda query: [
+        {"p": f"http://www.wikidata.org/entity/{q}", "title": t} for q, t in titles])
+    return _stub_sparql(monkeypatch, [
+        [{"n": str(count)}],
+        [{"p": f"http://www.wikidata.org/entity/{q}", "label": label}
+         for q, label in labels],
+    ])
+
+
+def test_load_people_fetches_once_and_reads_the_cache_after(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    queries = _stub_people_fetch(
+        monkeypatch, tmp_path, 2,
+        titles=[("Q20", "கலாநிதி மாறன்"), ("Q3", "ராஜா (நடிகர்)")],
+        labels=[("Q3", "ராஜா"), ("Q20", "கலாநிதி மாறன்")])
+    index = tool.load_people("ta", download=True)
+    assert index is not None
+    # The label leads the names; one equal to the title is not repeated.
+    assert [(p.qid, p.names) for p in index.people] == [
+        ("Q3", ("ராஜா", "ராஜா (நடிகர்)")), ("Q20", ("கலாநிதி மாறன்",))]
+    assert "VALUES ?p { wd:Q3 wd:Q20 }" in queries[1]
+    assert 'LANG(?label) = "ta"' in queries[1]
+    _stub_sparql(monkeypatch, [])
+    cached = tool.load_people("ta", download=False)
+    assert cached is not None and cached.people == index.people
+
+
+def test_load_people_offline_without_a_cache_is_not_downloaded(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    _stub_sparql(monkeypatch, [])
+    assert tool.load_people("si", download=False) is None
+
+
+def test_a_listing_cut_short_is_an_error_and_nothing_is_cached(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A cached short listing would make every later row a quiet
+    # undercount, the false zero this tool exists to withhold.
+    _stub_people_fetch(monkeypatch, tmp_path, 5000,
+                       titles=[("Q1", "ராஜா")], labels=[])
+    with pytest.raises(ValueError, match="returned 1 of 5,000 people"):
+        tool.load_people("ta", download=True)
+    assert not (tmp_path / tool.PEOPLE_DIR / "ta.json").exists()
+
+
+def test_an_index_from_another_version_is_fetched_again(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _stub_people_fetch(monkeypatch, tmp_path, 1, titles=[("Q1", "ராஜா")], labels=[])
+    path = tmp_path / tool.PEOPLE_DIR / "ta.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"version": 0, "wiki": "ta"}), encoding="utf-8")
+    assert tool.load_people("ta", download=False) is None
+    index = tool.load_people("ta", download=True)
+    assert index is not None and index.people == [tool.Person("Q1", ("ராஜா",))]
+    assert json.loads(path.read_text(encoding="utf-8"))["version"] == tool.PEOPLE_VERSION
+
+
+def test_a_damaged_people_index_names_its_file(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    path = tmp_path / tool.PEOPLE_DIR / "ta.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"version": tool.PEOPLE_VERSION, "wiki": "ta",
+                                "fetched": "2026-11-09", "people": [["Q1", []]]}),
+                    encoding="utf-8")
+    # The remedy names the flag that rebuilds THIS file, not the CJK one.
+    with pytest.raises(ValueError, match=r"ta.json is unusable.*--refresh-people \(online\)$"):
+        tool.load_people("ta", download=False)
+    path.write_text("{bad", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"JSONDecodeError.*--refresh-people \(online\)$"):
+        tool.load_people("ta", download=False)
+
+
+def test_a_failed_people_fetch_closes_its_http_error(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    error = urllib.error.HTTPError("u", 500, "boom", {},  # type: ignore[arg-type]
+                                   io.BytesIO(b""))
+    _stub_sparql(monkeypatch, [error])
+    with pytest.raises(ValueError, match="Tamil Wikipedia people failed: HTTPError"):
+        tool.load_people("ta", download=True)
+    assert error.fp is None or error.fp.closed
+
+
+def test_main_adds_the_people_row_for_a_tamil_word_only(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    asked: list[str] = []
+
+    def load(wiki: str, download: bool, refresh: bool = False) -> object:
+        asked.append(wiki)
+        return _people_index(("Q1", ("செல்வி ராமஜெயம்",)))
+    monkeypatch.setattr(tool, "load_people", load)
+    assert tool.main(["--no-wikidata", "--json", "Selvi", "செல்வி"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert asked == ["ta"]
+    assert "Tamil Wikipedia people" not in [u["source"] for u in report["Selvi"]]
+    row = report["செல்வி"][-1]
+    assert (row["source"], row["positions"]["first"]) == ("Tamil Wikipedia people", 1)
+
+
+@pytest.mark.parametrize(("loaded", "status", "code"), [
+    (None, "not downloaded", 0), (OSError("down"), "failed", 2)])
+def test_main_says_why_the_people_row_has_no_answer(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+        loaded: Exception | None, status: str, code: int) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+
+    def load(wiki: str, download: bool, refresh: bool = False) -> None:
+        if loaded is not None:
+            raise loaded
+    monkeypatch.setattr(tool, "load_people", load)
+    assert tool.main(["--no-wikidata", "--json", "ගරු"]) == code
+    row = json.loads(capsys.readouterr().out)["ගරු"][-1]
+    assert (row["source"], row["status"]) == ("Sinhala Wikipedia people", status)
+
+
+def test_main_passes_refresh_people_to_the_loader(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    calls: list[tuple[str, bool, bool]] = []
+
+    def load(wiki: str, download: bool, refresh: bool = False) -> object:
+        calls.append((wiki, download, refresh))
+        return _people_index(("Q1", ("ராஜா",)))
+    monkeypatch.setattr(tool, "load_people", load)
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    # The label row's two queries (totals, countries), per word.
+    _stub_sparql(monkeypatch, [[], [], [], []])
+    assert tool.main(["--refresh-people", "ராஜா", "செல்வி"]) == 0
+    assert calls == [("ta", True, True)]  # one load for two Tamil words
+
+
+def test_refresh_people_offline_is_refused(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        tool.main(["--no-wikidata", "--refresh-people", "ராஜா"])
+    assert "cannot go with --no-wikidata" in capsys.readouterr().err
+
+
+def test_a_spaced_word_is_matched_as_its_words_in_a_row() -> None:
+    # Kept whole, the key would hold a space no name word holds: a clean
+    # zero for exactly #1244's spaced abbreviations.
+    index = _people_index(("Q1", ("பா. உ. ராஜா",)), ("Q2", ("ராஜா பா. உ.",)),
+                          ("Q3", ("பா. ராஜா உ.",)), ("Q4", ("பா. உ.",)))
+    found = {p.qid: pos for pos, p, _ in index.holding("பா. உ.")}
+    assert found == {"Q1": "first", "Q2": "last", "Q4": "alone"}
+
+
+def test_an_edge_period_outside_a_quote_comes_off_too() -> None:
+    assert tool.name_words('"செல்வி". ராணி') == ["செல்வி", "ராணி"]
+
+
+def test_labels_are_asked_for_every_chunk_of_people(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Asking only the first chunk would leave everyone past it matched by
+    # title alone, an undercount the listing's count check cannot see.
+    monkeypatch.setattr(tool, "PEOPLE_CHUNK", 1)
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "_sparql_csv", lambda query: [
+        {"p": f"http://www.wikidata.org/entity/{q}", "title": f"t{q}"}
+        for q in ("Q1", "Q2", "Q3")])
+    queries = _stub_sparql(monkeypatch, [[{"n": "3"}], *(
+        [{"p": f"http://www.wikidata.org/entity/{q}", "label": f"l{q}"}]
+        for q in ("Q1", "Q2", "Q3"))])
+    index = tool.load_people("ta", download=True)
+    assert index is not None
+    assert [p.names for p in index.people] == [
+        ("lQ1", "tQ1"), ("lQ2", "tQ2"), ("lQ3", "tQ3")]
+    assert ["VALUES ?p { wd:Q1 }" in queries[1], "VALUES ?p { wd:Q2 }" in queries[2],
+            "VALUES ?p { wd:Q3 }" in queries[3]] == [True] * 3
+
+
+def test_a_failed_refresh_keeps_the_index_it_meant_to_replace(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _stub_people_fetch(monkeypatch, tmp_path, 1, titles=[("Q1", "ராஜா")], labels=[])
+    assert tool.load_people("ta", download=True) is not None
+    path = tmp_path / tool.PEOPLE_DIR / "ta.json"
+    before = path.read_bytes()
+    _stub_sparql(monkeypatch, [OSError("down")])
+    with pytest.raises(ValueError, match="failed: OSError"):
+        tool.load_people("ta", download=True, refresh=True)
+    assert path.read_bytes() == before
+
+
+def test_refresh_people_without_a_word_of_its_scripts_is_refused(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        tool.main(["--refresh-people", "Selvi"])
+    assert "give a Tamil or Sinhala word" in capsys.readouterr().err
+
+
+def test_a_word_written_in_brackets_is_matched_not_dropped() -> None:
+    # #1244's titles are written in brackets; dropped as a disambiguator,
+    # the word left nothing to match and read as an "ok" zero.
+    index = _people_index(("Q1", ("செல்வி ராஜா",)))
+    assert [p.qid for _, p, _ in index.holding("(செல்வி)")] == ["Q1"]
+
+
+def test_a_word_with_nothing_left_to_match_fails_its_row() -> None:
+    usage = tool.people_usage("(.)", _people_index(("Q1", ("ராஜா",))))
+    assert (usage.status, usage.positions) == ("failed", {})
+
+
+@pytest.mark.parametrize("spelling", [
+    "\u200bசெல்வி", "செல்வி\u00ad", "செல்\u2060வி", "\ufeffசெல்வி"])
+def test_an_invisible_character_does_not_hide_a_match(spelling: str) -> None:
+    # Pasted from a page, a word often carries one; the parser cuts at a
+    # zero-width space and a BOM (#851), and the rest fold away.
+    index = _people_index(("Q1", ("செல்வி ராஜா",)), ("Q2", ("மாறன்\u200bசெல்வி",)))
+    assert {p.qid: pos for pos, p, _ in index.holding(spelling)} == {
+        "Q1": "first", "Q2": "last"}
+
+
+@pytest.mark.parametrize("reply", [
+    {"results": []}, {"results": {"bindings": None}},
+    {"results": {"bindings": [1]}}, {"results": {"bindings": ["ab"]}},
+    {"results": {"bindings": [{"n": "3"}]}}])
+def test_a_reply_of_the_wrong_shape_fails_the_row_not_the_run(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, reply: object) -> None:
+    # Each raised TypeError or AttributeError past _attempt and ended the
+    # run, taking every other source's answer with it.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "_sparql", lambda query: reply)
+    with pytest.raises(ValueError, match="wrong shape"):
+        tool.load_people("ta", download=True)
+
+
+def test_a_cache_that_cannot_be_written_says_so_not_that_the_fetch_failed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _stub_people_fetch(monkeypatch, tmp_path, 1, titles=[("Q1", "ராஜா")], labels=[])
+
+    def refuse(path: Path, data: object) -> None:
+        raise PermissionError("read-only")
+    monkeypatch.setattr(tool, "_write", refuse)
+    with pytest.raises(ValueError, match="were fetched, but writing them .* failed"):
+        tool.load_people("ta", download=True)
+
+
+def test_an_older_index_read_offline_says_it_is_from_another_version(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    path = tmp_path / tool.PEOPLE_DIR / "ta.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"version": 0}), encoding="utf-8")
+    assert tool.main(["--no-wikidata", "--json", "ராஜா"]) == 0
+    row = json.loads(capsys.readouterr().out)["ராஜா"][-1]
+    assert row["status"] == "not downloaded"
+    assert "written by another version" in row["note"]
+
+
+@pytest.mark.parametrize(("word", "found"), [
+    # Rows the first bracket fix lost by folding the word otherwise than
+    # the names: each matched before it, and must still.
+    ("முதலாம் பாஸ்கால் (திருத்தந்தை)", {"Q1": "alone"}),
+    ("செல்வி (நடிகை)", {"Q2": "last"}),
+    ("(செல்வி)", {"Q2": "last"}),
+])
+def test_a_word_is_folded_as_the_names_it_is_matched_against(
+        word: str, found: dict[str, str]) -> None:
+    index = _people_index(("Q1", ("முதலாம் பாஸ்கால் (திருத்தந்தை)",)),
+                          ("Q2", ("ராஜா செல்வி",)))
+    assert {p.qid: pos for pos, p, _ in index.holding(word)} == found
+
+
+def test_an_invisible_character_before_a_quote_does_not_keep_the_quote() -> None:
+    assert tool.name_words("\u2060'செல்வி' ராஜா") == ["செல்வி", "ராஜா"]
+
+
+def test_a_short_listing_row_is_refused_not_cached(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "_sparql_csv", lambda query: [
+        {"p": "http://www.wikidata.org/entity/Q5", "title": None}])
+    _stub_sparql(monkeypatch, [[{"n": "1"}]])
+    with pytest.raises(ValueError, match="short row"):
+        tool.load_people("ta", download=True)
+    assert not (tmp_path / tool.PEOPLE_DIR / "ta.json").exists()
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_reply_of_the_wrong_shape_is_not_read_as_an_overrun(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # An overrun halves the batch and asks again; a wrong shape would only
+    # fail again, smaller, so it fails at once.
+    labels: list[str] = []
+
+    def answer(query: str) -> dict[str, Any]:
+        if "rdfs:label" in query:
+            labels.append(query)
+            return {"results": {"bindings": [1]}}
+        rows = ([{"n": "2"}] if "COUNT" in query else
+                [{"item": f"http://www.wikidata.org/entity/Q{n}"} for n in (1, 2)])
+        return {"results": {"bindings": [
+            {k: {"value": v} for k, v in row.items()} for row in rows]}}
+    monkeypatch.setattr(tool, "_sparql", answer)
+    with pytest.raises(ValueError, match="wrong shape"):
+        tool.load_index(download=True)
+    assert len(labels) == 1
