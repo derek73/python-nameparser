@@ -936,6 +936,12 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
                 and not _DOTTED_INITIAL.fullmatch(
                     unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex._sets.conjunctions)
+        # rules/R4: "An elided particle opening a hyphenated word" keeps
+        # its lowercase, the hyphen clause's capital being for a
+        # particle written whole. decisions/R4 (#1280).
+        or (at == first and particle and part[:1] in _APOSTROPHES
+            and _lowers_as_particle(_normalize(part), part, role, tags,
+                                    lex))
         else opening(part) if at == first
         else _sub_words(cap, part)
         for at, part in enumerate(parts))

@@ -1021,6 +1021,36 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
 
 
+def test_an_elided_particle_opening_a_hyphenated_word_keeps_its_lowercase(
+) -> None:
+    """rules/R4 (#1280): a particle whose listed spelling opens with an
+    apostrophe -- Dutch 's and 't, straight or typographic -- keeps its
+    lowercase where it opens a hyphenated word, as it does spaced; a
+    particle written with no apostrophe still opens with a capital
+    (Ter-Petrosyan), and outside the middle and family roles nothing
+    lowers. A one-case nickname spelled with the particle pays for it
+    ('T-Bone, the rule's Accepted bullet); written in mixed case it is
+    left as written (rules/R5)."""
+    for text, repaired in (
+            ("WILLEM 'S-GRAVESANDE", "Willem 's-Gravesande"),
+            ("willem 's-gravesande", "Willem 's-Gravesande"),
+            ("ARENT VAN 'S-GRAVESANDE", "Arent van 's-Gravesande"),
+            ("PIETER 'T-HART", "Pieter 't-Hart"),
+            ("PIETER ’T-HART", "Pieter ’t-Hart"),
+            ("WILLEM ’S-GRAVESANDE", "Willem ’s-Gravesande"),
+            ("'S-GRAVESANDE, WILLEM", "Willem 's-Gravesande"),
+            ("WILLEM 'S-GRAVESANDE-SMIT", "Willem 's-Gravesande-Smit"),
+            ("WILLEM 'S GRAVESANDE", "Willem 's Gravesande"),
+            ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
+            ("'S-JACOB SMIT", "'S-Jacob Smit"),
+            ("AARON 'T-BONE WALKER", "Aaron 't-Bone Walker")):
+        for written in (text, _nfd(text)):
+            assert _repairs(written, False) == repaired, written
+    assert _repairs("Aaron 'T-Bone Walker", False) == "Aaron 'T-Bone Walker"
+    assert _repairs("Willem 'S-Gravesande", True) == "Willem 's-Gravesande"
+    assert _repairs("Willem 's-Gravesande", False) == "Willem 's-Gravesande"
+
+
 def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
     """rules/R12 (decisions/R12): a family word whose particle reading
     is written `capital_opening` (`ter`, `der`) is repaired with the

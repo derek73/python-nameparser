@@ -140,6 +140,14 @@
   "anh van do"                →  capitalized="Anh Van Do"
   "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"
   ```
+- **An elided particle opening a hyphenated word** — one whose listed spelling opens with an apostrophe, the Dutch 's (des) and 't (het) — keeps its lowercase, as it does spaced: Dutch writes the article lowercase whether a space or a hyphen joins it to the name, and it is the particle written whole that the hyphen clause gives a capital.
+  ```
+  "WILLEM 'S-GRAVESANDE"      →  capitalized="Willem 's-Gravesande"
+  "ARENT VAN 'S-GRAVESANDE"   →  capitalized="Arent van 's-Gravesande"
+  "PIETER 'T-HART"            →  capitalized="Pieter 't-Hart"
+  "Willem 'S-Gravesande"      →  capitalized_forced="Willem 's-Gravesande"
+  "'S-JACOB SMIT"             →  capitalized="'S-Jacob Smit"  · boundary
+  ```
 - **A connective the parse read as the generation it also spells** is not a connective of this name at all, and is repaired as the generation it was read as.
   ```
   "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
@@ -166,6 +174,11 @@
 - A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
   ```
   "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary
+  ```
+- A middle word written in one case that opens with an elided particle and a hyphen is repaired as the particle it spells, though the writer may mean a nickname: nothing in the letters of `'T-BONE` tells it from `'T-HART`. Written in mixed case it is left as written (R5).
+  ```
+  "AARON 'T-BONE WALKER"      →  capitalized="Aaron 't-Bone Walker"  · boundary
+  "Aaron 'T-Bone Walker"      →  capitalized="Aaron 'T-Bone Walker"  · boundary
   ```
 - An abbreviation the vocabulary does not list, whose letters after a full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```

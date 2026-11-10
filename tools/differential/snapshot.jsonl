@@ -2,6 +2,7 @@
 {"name": ""}
 {"name": "\"Rick\" Edmonds", "family": "Edmonds", "nickname": "Rick", "initials": "E."}
 {"name": "\"Smitty\" Jones Jr.", "family": "Jones", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
+{"name": "'S-JACOB SMIT", "given": "'S-JACOB", "family": "SMIT", "initials": "'. S.", "capitalized": "'S-Jacob Smit"}
 {"name": "'Smitty' Abdul Jr.", "given": "Abdul", "suffix": "Jr.", "nickname": "Smitty", "initials": "A.", "generation": "Jr."}
 {"name": "'Smitty' Dr. Jones", "title": "Dr.", "family": "Jones", "nickname": "Smitty", "initials": "J."}
 {"name": "'Smitty' J.", "family": "J.", "nickname": "Smitty", "initials": "J."}
@@ -68,14 +69,16 @@
 {"name": "A. R., Sr. de la Cruz Maria García Rosa Jr.", "order": "FAMILY_FIRST", "title": "Sr.", "family": "A. R. de la Cruz Maria García Rosa", "suffix": "Jr.", "initials": "A. R. C. M. G. R.", "generation": "Jr."}
 {"name": "A.B. Vajpayee", "given": "A.B.", "family": "Vajpayee", "initials": "A. V."}
 {"name": "A.M. Barrett, MD", "given": "A.M.", "family": "Barrett", "suffix": "MD", "initials": "A. B."}
+{"name": "AARON 'T-BONE WALKER", "given": "AARON", "middle": "'T-BONE", "family": "WALKER", "initials": "A. '. W.", "capitalized": "Aaron 't-Bone Walker"}
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ALEXANDRE DUMAS DER ÄLTERE", "given": "ALEXANDRE", "middle": "DUMAS", "family": "DER ÄLTERE", "initials": "A. D. Ä.", "capitalized": "Alexandre Dumas Der Ältere"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
 {"name": "ANKE MAITLAND-VAN DER ZEE", "given": "ANKE", "middle": "MAITLAND-VAN", "family": "DER ZEE", "initials": "A. M. Z.", "capitalized": "Anke Maitland-van der Zee"}
 {"name": "ANNA AZ- DER BERG", "given": "ANNA", "family": "AZ- DER BERG", "initials": "A. B.", "capitalized": "Anna az- der Berg"}
+{"name": "ARENT VAN 'S-GRAVESANDE", "given": "ARENT", "family": "VAN 'S-GRAVESANDE", "initials": "A. '.", "capitalized": "Arent van 's-Gravesande"}
 {"name": "ARMEN DER KIUREGHIAN", "given": "ARMEN", "family": "DER KIUREGHIAN", "initials": "A. K.", "capitalized": "Armen Der Kiureghian"}
-{"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W."}
+{"name": "Aaron 'T-Bone Walker", "given": "Aaron", "middle": "'T-Bone", "family": "Walker", "initials": "A. '. W.", "capitalized_force": "Aaron 't-Bone Walker"}
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
@@ -351,7 +354,7 @@
 {"name": "Arenas Betancourt, Rodrigo", "given": "Rodrigo", "family": "Arenas Betancourt", "initials": "R. A. B."}
 {"name": "Arenberg, Auguste Marie Raymond d'", "given": "Auguste", "middle": "Marie Raymond", "family": "d' Arenberg", "initials": "A. M. R. A."}
 {"name": "Arend, Arie den", "given": "Arie", "family": "den Arend", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. A."}
-{"name": "Arent van 's-Gravesande", "given": "Arent", "family": "van 's-Gravesande", "initials": "A. '.", "capitalized_force": "Arent van 'S-Gravesande"}
+{"name": "Arent van 's-Gravesande", "given": "Arent", "family": "van 's-Gravesande", "initials": "A. '."}
 {"name": "Arie den Arend", "given": "Arie", "family": "den Arend", "initials": "A. A."}
 {"name": "Armando Domínguez Borrás", "given": "Armando", "middle": "Domínguez", "family": "Borrás", "initials": "A. D. B."}
 {"name": "Armando de Lacerda", "given": "Armando", "family": "de Lacerda", "initials": "A. L."}
@@ -3196,6 +3199,7 @@
 {"name": "PEDRO FILHO", "given": "PEDRO", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. F.", "capitalized": "Pedro Filho"}
 {"name": "PEDRO JNR FILHO", "given": "PEDRO", "middle": "JNR", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. F.", "capitalized": "Pedro Jnr Filho"}
 {"name": "PETROSYAN, LEVON TER", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon Ter Petrosyan"}
+{"name": "PIETER 'T-HART", "given": "PIETER", "family": "'T-HART", "initials": "P. '.", "capitalized": "Pieter 't-Hart"}
 {"name": "Pablo Emilio Riveros Reina", "given": "Pablo", "middle": "Emilio Riveros", "family": "Reina", "initials": "P. E. R. R."}
 {"name": "Pablo Pérez Miguel Ángel Juan Antonio II", "order": "FAMILY_FIRST", "given": "Pérez", "middle": "Miguel Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "P. M. Á. J. A. P.", "generation": "II"}
 {"name": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo Pérez", "initials": "M. Á. J. A. P. P."}
@@ -4121,6 +4125,7 @@
 {"name": "Víctor Luna Gómez", "given": "Víctor", "middle": "Luna", "family": "Gómez", "initials": "V. L. G."}
 {"name": "W. Russell (Jr.) Withers", "given": "W.", "middle": "Russell", "family": "Withers", "suffix": "Jr.", "initials": "W. R. W.", "generation": "Jr."}
 {"name": "W. Russell Jr. Withers", "given": "W.", "middle": "Russell Jr.", "family": "Withers", "initials": "W. R. J. W."}
+{"name": "WILLEM 'S-GRAVESANDE", "given": "WILLEM", "family": "'S-GRAVESANDE", "initials": "W. '.", "capitalized": "Willem 's-Gravesande"}
 {"name": "WOOT ALFRED DOUGHERTY III", "given": "WOOT", "middle": "ALFRED", "family": "DOUGHERTY", "suffix": "III", "initials": "W. A. D.", "capitalized": "Woot Alfred Dougherty III", "generation": "III"}
 {"name": "Waldburg-Truchsess, Friedrich Ludwig von", "given": "Friedrich", "middle": "Ludwig", "family": "von Waldburg-Truchsess", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "F. L. W."}
 {"name": "Wallin Johan Harald", "order": "FAMILY_FIRST", "given": "Johan", "middle": "Harald", "family": "Wallin", "initials": "J. H. W."}
@@ -4180,6 +4185,7 @@
 {"name": "Wilhelm IV.", "given": "Wilhelm", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "W.", "generation": "IV."}
 {"name": "Wilkins, Charles", "given": "Charles", "family": "Wilkins", "initials": "C. W."}
 {"name": "Will De Groot", "given": "Will", "family": "De Groot", "initials": "W. G.", "capitalized_force": "Will de Groot"}
+{"name": "Willem 'S-Gravesande", "given": "Willem", "family": "'S-Gravesande", "initials": "W. '.", "capitalized_force": "Willem 's-Gravesande"}
 {"name": "Willem Antonie van Deventer", "given": "Willem", "middle": "Antonie", "family": "van Deventer", "initials": "W. A. D."}
 {"name": "Willem van Haren", "given": "Willem", "family": "van Haren", "initials": "W. H."}
 {"name": "Willemse Bertus Wilbers Henri Retief LP", "order": "FAMILY_FIRST", "given": "Bertus", "middle": "Wilbers Henri Retief", "family": "Willemse", "suffix": "LP", "initials": "B. W. H. R. W."}
