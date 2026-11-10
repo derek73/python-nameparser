@@ -90,6 +90,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     GLUED_SHAPE, effective_script, glued_cuts, is_initial_chunk, is_one_case,
+    period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
@@ -877,9 +878,16 @@ def _ends_the_name(text: str, cuts: tuple[int, ...], texts: Sequence[str],
         return False
     for later in texts[k + 1:]:
         n = _normalize(later)
-        if n not in sets.suffix_words and n not in sets.suffix_acronyms:
+        # an acronym is listed without its stops ('Ph.D.' as 'phd')
+        if (n not in sets.suffix_words
+                and n.replace(".", "") not in sets.suffix_acronyms):
             return False
+    # a title, or titles glued at their stops with no name after them, is
+    # no word to spare ('Prof.Dr. A.Brown' as 'Prof. Dr. A.Brown'); a
+    # glued word that divides holds a name ('Dr.John J.Smith')
     if not any(_normalize(before) not in sets.titles
+               and (period_joined_vocab(before, state.lexicon) != "title"
+                    or glued_cuts(before, state.lexicon))
                for before in texts[:k]):
         return False
     return (state.structure is not Structure.FAMILY_COMMA

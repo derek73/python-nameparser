@@ -1205,6 +1205,8 @@ def test_the_divided_readings_the_reviews_found(
     "Dean A.Smith",
     # two glued words, the last one reported
     "Dr.John J.Smith",
+    # a dotted post-nominal after it (#1304's fix-commit review)
+    "John Smith A.Brown Ph.D.", "John Smith A.Brown M.D.",
 ])
 def test_initials_cut_from_the_word_ending_the_name_are_reported(
         text: str) -> None:
@@ -1232,6 +1234,8 @@ def test_initials_cut_from_the_word_ending_the_name_are_reported(
     "John A.Brown Smith",   # not the last name word
     # a later word divided first is read as written, not as its piece
     "John Smith A.Brown Sr.Jones",
+    # titles glued at their stops are no word to spare, as spaced
+    "Prof.Dr. A.Brown", "Lt.Gov. A.Brown",
 ])
 def test_no_division_report_where_s3_read_no_credential(text: str) -> None:
     from nameparser import parse
