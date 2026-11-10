@@ -61,6 +61,7 @@
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
   "maria da-silva"            →  capitalized="Maria Da-Silva"
   "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
+  "WILLEM SMIT-'S-GRAVESANDE" →  capitalized="Willem Smit-'s-Gravesande"
   "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
   "'S-JACOB SMIT"             →  capitalized="'S-Jacob Smit"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
@@ -141,13 +142,12 @@
   "anh van do"                →  capitalized="Anh Van Do"
   "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"
   ```
-- **An elided particle in a hyphenated word** — one whose listed spelling opens with an apostrophe, the Dutch 's (des) and 't (het) — keeps its lowercase wherever it stands in the word, as it does spaced, where the hyphen clause would write it as a name word: Dutch writes the elided article lowercase whether a space or a hyphen joins it to the name. A hyphenated word of particles alone carries no unjoined mark, so the all-particle Except below does not reach it.
+- **An elided particle opening a hyphenated word** — one whose listed spelling opens with an apostrophe, the Dutch 's (des) and 't (het) — keeps its lowercase, as it does spaced, where the hyphen clause would write it as a name word: Dutch writes the elided article lowercase whether a space or a hyphen joins it to the name. Inside the word it is a particle like any other. A hyphenated word of particles alone carries no unjoined mark, so the all-particle Except does not reach it.
   ```
   "WILLEM 'S-GRAVESANDE"      →  capitalized="Willem 's-Gravesande"
   "ARENT VAN 'S-GRAVESANDE"   →  capitalized="Arent van 's-Gravesande"
   "PIETER 'T-HART"            →  capitalized="Pieter 't-Hart"
   "Willem 'S-Gravesande"      →  capitalized_forced="Willem 's-Gravesande"
-  "WILLEM SMIT-'S-GRAVESANDE" →  capitalized="Willem Smit-'s-Gravesande"
   "JAN 'S-VAN"                →  capitalized="Jan 's-van"  · boundary
   ```
 - **A connective the parse read as the generation it also spells** is not a connective of this name at all, and is repaired as the generation it was read as.

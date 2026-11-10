@@ -936,8 +936,9 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
                 and not _DOTTED_INITIAL.fullmatch(
                     unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex._sets.conjunctions)
-        # rules/R4: "An elided particle in a hyphenated word" keeps its
-        # lowercase wherever it stands there, asked whole: the per-word
+        # rules/R4: "An elided particle opening a hyphenated word" keeps
+        # its lowercase, and inside one "A particle is written in
+        # lowercase" -- asked whole in every part, since the per-word
         # walk would split it at its apostrophe and ask only its stem
         # ('s'). decisions/R4 (#1280).
         or (particle and part[:1] in _APOSTROPHES
