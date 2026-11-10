@@ -11,6 +11,7 @@
 Elsewhere: a run of single letters spelling a title at the front of a name, decisions/H10's 2026-11-09 #490 entry.
 Elsewhere: the division itself and the name test that left it open, answered by position (a chunk read alone and a name before any comma divide, nothing after a comma does), with the one-case, caseless-script and unlisted-credential writings the Open lines here named, decisions/T8's 2026-11-10 #1230/#1235 entry.
 Elsewhere: a given name written as a run of single letters, parted into its initials once roles are final (`E.T. Smith` → given 'E.', middle 'T.'), decisions/T7's 2026-11-10 #1296 entry.
+Elsewhere: a title listed with its stops, read whole before any division too (`Univ.Prof`, `Dott.ssa`, and the degrees written with their field's initial, `Dr.C.`, `Mgr.A.`), decisions/T8's 2026-11-10 #1305 entry.
 Open: [#1255](https://github.com/derek73/python-nameparser/issues/1255)'s comment, a given name written short and glued to the next given name (`Gio.Batta`, `Alex.John`). An unlisted stub is not divided, because its spaced twin reads it as a title by rules/H2 (`Gio. Batta Rossi` → title 'Gio.'). The Italian contraction `Fr.co` keeps its title reading through its listed first chunk.
 Open: [#1306](https://github.com/derek73/python-nameparser/issues/1306), which field a Mongolian glued initial takes under the default order. This is a pack question, the same one the spaced `Ц. Сандаг-Очир` already raises; it moved from #1235, closed by decisions/T8's division.
 
