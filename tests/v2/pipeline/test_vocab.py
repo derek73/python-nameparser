@@ -1467,3 +1467,72 @@ def test_trailing_title_shape(text: str, admitted: bool) -> None:
     assert bool(_TRAILING_TITLE_SHAPE.match(text)) is admitted
     if _PERIOD_ABBREV.match(text):
         assert admitted, "every _PERIOD_ABBREV match is one of its matches"
+
+
+# rules/T8's division (#1230, #1235), on a synthetic vocabulary: 'dr' a
+# title, 'st' a saint particle and a title, 'ma' a given name written
+# short, 'msc' and 'md' credentials, 'filho' a suffix word
+_GLUED_LEX = (Lexicon()
+              .add("dr", "lt", "gov", "dra", kind="title")
+              .add("st", kind="saint")
+              .add("st", kind="title")
+              .add("ma", kind="given", same_as="maria")
+              .add("msc", "md", kind="credential", acronym=True)
+              .add("filho", kind="generation"))
+
+
+def _pieces_of(text: str) -> list[str]:
+    from nameparser._pipeline._vocab import glued_cuts
+    cuts = glued_cuts(text, _GLUED_LEX)
+    return [text[a:b] for a, b in zip((0, *cuts), (*cuts, len(text)))]
+
+
+@pytest.mark.parametrize(("text", "pieces"), [
+    # a chunk read alone meets a name: a title, a letter, a digraph, a
+    # given name written short
+    ("Dr.John", ["Dr.", "John"]),
+    ("J.Smith", ["J.", "Smith"]),
+    ("Ц.Сандаг-Очир", ["Ц.", "Сандаг-Очир"]),
+    ("Yu.Petrov", ["Yu.", "Petrov"]),
+    ("Ma.Refugio", ["Ma.", "Refugio"]),
+    ("B.TURAN", ["B.", "TURAN"]),
+    ("Dr.O'Brien", ["Dr.", "O'Brien"]),
+    ("Dr.McDonald", ["Dr.", "McDonald"]),
+    # the division repeats, an initial opening the next one
+    ("Yu.A.Chibrikova", ["Yu.", "A.", "Chibrikova"]),
+    # a run of initials before the name stays one word (rules/T7)
+    ("J.R.Smith", ["J.R.", "Smith"]),
+    # titles glued to each other divide at each stop, as written apart
+    ("Lt.Gov.John", ["Lt.", "Gov.", "John"]),
+    # an initial behind a title, alone or a run
+    ("Dr.J.", ["Dr.", "J."]),
+    ("Dr.J.R.", ["Dr.", "J.R."]),
+    # a title spelled without its stops is no bar where an initial ends
+    # the word, 'dra' being listed (the review's 'Dr.A. Supriya')
+    ("Dr.A.", ["Dr.", "A."]),
+])
+def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
+        text: str, pieces: list[str]) -> None:
+    assert _pieces_of(text) == pieces
+
+
+@pytest.mark.parametrize("text", [
+    "J.R.R",            # a run of initials (rules/T7)
+    "E.T.",
+    "Dr.med",           # lower case after the stop
+    "m.ʿali",           # the first letter with case is lower case
+    "Dr.Med.",          # closed by its own stop
+    "J.Smith.",
+    "Dr.John.Smith",    # followed by another chunk
+    "Q.R.ST.",          # an initial opening a chunk that stays whole
+    "M.Sc",             # read whole: a suffix without its stops
+    "Lt.Gov.",          # read whole: every chunk a title
+    "Dr.MD",            # a credential after the stop
+    "Yu.A.",            # initials alone, no name closing the word
+    "M.D./Ph.D.",       # a delimiter inside
+    "St.John",          # a saint particle's chunk (#1071)
+    "Gen.Ademola",      # a chunk nothing lists
+    "Mr2.Smith",        # a digit
+])
+def test_a_glued_word_the_shape_refuses_stays_whole(text: str) -> None:
+    assert _pieces_of(text) == [text]

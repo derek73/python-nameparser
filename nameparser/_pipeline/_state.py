@@ -407,9 +407,10 @@ class ParseState:
     separators record NOTHING); segment -> segments/structure/one_case
     (lazily, only where C2's flag asks for it -- #289/#516, #613);
     script_segment -> tokens and segments again (the one stage that
-    changes the token COUNT: an unspaced CJK token splits into n+1
-    pieces, still as sub-slices of the original, and every later index
-    in the segment runs shifts by n); classify -> token tags AND
+    changes the token COUNT: an unspaced CJK token, or a word glued at
+    its full stop before any comma (rules/T8), splits into n+1 pieces,
+    still as sub-slices of the original, and every later index in the
+    segment runs shifts by n); classify -> token tags AND
     one_case; group -> structure (its head decides a comma form, #613)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,

@@ -104,6 +104,10 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # assemble imports the SAME objects to part a given name, and
     # render copies them by hand for initials()
     ("_vocab", "_LETTER_RUN"): None,
+    ("_vocab", "_GLUED_CHUNK"): None,
+    ("_vocab", "_GLUED_WORD"): None,
+    ("_vocab", "_GLUED_RUN"): None,
+    ("_vocab", "GLUED_SHAPE"): None,
     ("_vocab", "_RUN_LETTER"): None,
     ("_assemble", "_LETTER_RUN"): ("_vocab", "_LETTER_RUN"),
     ("_assemble", "_RUN_LETTER"): ("_vocab", "_RUN_LETTER"),

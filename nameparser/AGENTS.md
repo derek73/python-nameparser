@@ -76,7 +76,7 @@ A predicate over ADJACENT PAIRS of words meets two shapes no grid of one word ho
 
 ## Sweep the encoding: a letter class written `[^\W\d_]` or tested with `isalpha()` is blind to a combining mark
 
-Python's `\w` and `isalpha()` do not match Mn, so a letter written as base plus accent (NFD) ends a word early; the vocabulary path is immune because `_normalize` NFC-folds, the shape path is not.
+Python's `\w` and `isalpha()` do not match Mn, so a letter written as base plus accent (NFD) ends a word early; the vocabulary path is immune because `_normalize` NFC-folds, the shape path is not. A C-level pre-filter in front of a shape test is a third copy of the letter class and goes blind the same way: #1230/#1235's first `[^\W\d_]\.[^\W\d_]` filter on the original kept `É.Dupont` (NFD) from ever reaching `glued_cuts`, which read it right, and its single-letter test counted code points (`Dr.É.`), both found by the code review -- build a filter from `_vocab._LETTER` and take a length after NFC, and put an NFD row in front of every filter's test, not only the predicate's.
 
 ### The two families #652 found
 

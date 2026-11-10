@@ -64,11 +64,16 @@
 
 - **Glued behind an initial** with a period between, the word is part of that one word and is weighed only by the shape the joined word wears (S3), as it was before the word was listed: the name word it is with no word to spare, the dotted credential shape with words to spare.
   ```
-  "Pedro M.Filho"             →  family="M.Filho"
-  "Pedro Alves M.Filho"       →  suffix="M.Filho"
+  "Silva, M.Filho"            →  given="M.Filho"
+  "Smith, Pedro M.Filho"      →  suffix="M.Filho"
   ```
 
 **Precedence:**
+
+- **An initial glued to the word before any comma** ("Pedro M.Filho"): T8 divides the word at its stop first, and the word is weighed as it is written apart.
+  ```
+  "Pedro M.Filho"             →  suffix="Filho"
+  ```
 
 - **Written case in a mixed-case name** ("Marie Fils", "Dumas fils"): the Title case of a word written `title_case_is_name` (`fils`, `KC`) outranks the count, as an acronym's does (S6), while its lower case gives way to the floor, a name keeping its family word; an agnomen or Junior has no case to weigh.
   ```

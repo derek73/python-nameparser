@@ -1119,3 +1119,121 @@ def test_the_stand_in_answers_no_where_there_is_no_part_after_a_comma() -> None:
     state = segment(tokenize(ParseState(
         original="김민준 박", lexicon=Lexicon.default(), policy=Policy())))
     assert _postnominal_behind_a_whole_name(state) is False
+
+
+@pytest.mark.parametrize(("text", "fields"), [
+    # T8's division (#1230, #1235): before any comma the word reads as
+    # its spaced twin
+    ("Dr.John Smith", {"title": "Dr.", "given": "John", "family": "Smith"}),
+    ("Ц.Сандаг-Очир", {"given": "Ц.", "family": "Сандаг-Очир"}),
+    ("Ahmed Ali M.Hassan", {"middle": "Ali M.", "family": "Hassan"}),
+    ("M.SMITH, VALERIA", {"given": "VALERIA", "family": "M.SMITH"}),
+    ("Dr.Smith", {"title": "Dr.", "family": "Smith"}),
+    # after a comma nothing divides: the slot of degrees
+    ("Smith, Dr.John", {"title": "Dr.John", "family": "Smith"}),
+    ("Ole Simonsen, Dr.Med", {"title": "Dr.Med", "family": "Simonsen"}),
+    ("SMITH, J.MICHAEL", {"given": "J.MICHAEL", "family": "SMITH"}),
+])
+def test_a_glued_word_divides_before_any_comma_only(
+        text: str, fields: dict[str, str]) -> None:
+    from nameparser import parse
+    n = parse(text)
+    assert {k: getattr(n, k) for k in fields} == fields
+
+
+@pytest.mark.parametrize("text", [
+    "Dr.John Smith", "Ц.Сандаг-Очир", "Yu.A.Chibrikova", "J.R.Smith Jones",
+])
+def test_a_divided_word_reads_as_its_spaced_twin_and_renders_as_written(
+        text: str) -> None:
+    from nameparser import parse
+    spaced = text.replace(".", ". ")
+    glued, apart = parse(text), parse(spaced)
+    # token by token: a field's text keeps pieces written together joined
+    # (rules/R1), so 'R.Smith' and 'R. Smith' differ there by design
+    assert ([(t.text, t.role) for t in glued.tokens]
+            == [(t.text, t.role) for t in apart.tokens])
+    assert str(glued) == text
+
+
+@pytest.mark.parametrize("text", [
+    "É.Dupont Jean", "Jean É.Dupont", "Dr.É. Smith", "Yu.É.Chibrikova",
+])
+def test_a_decomposed_glued_word_divides_as_its_composed_twin(
+        text: str) -> None:
+    # the filter in front of the division and its initial test read a
+    # letter with its marks (#1230/#1235's code review)
+    import unicodedata
+    from nameparser import parse
+    nfd = parse(unicodedata.normalize("NFD", text))
+    nfc = parse(text)
+    assert [unicodedata.normalize("NFC", t.text) for t in nfd.tokens] == [
+        t.text for t in nfc.tokens]
+    assert [t.role for t in nfd.tokens] == [t.role for t in nfc.tokens]
+
+
+@pytest.mark.parametrize(("text", "given", "family"), [
+    # an ambiguous credential after the stop is a name, as written apart
+    ("Mr.Ed Smith", "Ed", "Smith"),
+    ("Dr.Do Nguyen", "Do", "Nguyen"),
+    # a run of initials stays one chunk; titles divide at each stop, a
+    # phrase H9 reads included
+    ("J.R.Smith", "J.", "Smith"),
+    ("Lt.Gov.John Smith", "John", "Smith"),
+    ("Maj.Gen.John Smith", "John", "Smith"),
+    # a title and an initial divide, though the two spell a title
+    ("Dr.A. Supriya", "A.", "Supriya"),
+    # initials alone behind a digraph stay one word
+    ("Kim Yu.A.", "Kim", "Yu.A."),
+])
+def test_the_divided_readings_the_reviews_found(
+        text: str, given: str, family: str) -> None:
+    from nameparser import parse
+    n = parse(text)
+    assert (n.given, n.family) == (given, family)
+
+
+@pytest.mark.parametrize("text", [
+    "John Smith B.Eng", "Ahmed Ali M.Hassan",
+    # post-nominals after it, a run, a digraph
+    "John Smith A.Brown PhD", "John Smith J.R.Jones", "Ivan Petrov Yu.Ivanov",
+])
+def test_initials_cut_from_the_word_ending_the_name_are_reported(
+        text: str) -> None:
+    # where S3's shape read the whole as a credential, the reading not
+    # taken is still that one, by its shape
+    from nameparser import parse
+    from nameparser._types import AmbiguityKind, ReadingSource, Role
+    [report] = parse(text).ambiguities
+    assert report.kind is AmbiguityKind.SUFFIX_OR_NAME
+    assert report.alternative is not None
+    assert report.alternative.role is Role.SUFFIX
+    assert report.alternative.source is ReadingSource.SHAPE
+
+
+@pytest.mark.parametrize("text", [
+    "Dr. A.Smith",          # a title is no word to spare
+    "Smith A.Brown, John",  # a family comma's surname
+    "Dr.John Smith",        # a title chunk is no initial
+    "Pedro M.Filho",        # a suffix word reports itself (S11), once
+])
+def test_no_division_report_where_s3_read_no_credential(text: str) -> None:
+    from nameparser import parse
+    assert not [a for a in parse(text).ambiguities
+                if "written short" in a.detail]
+
+
+def test_a_word_with_no_stop_pays_no_division(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # only a word the C-level shape test passes reaches glued_cuts
+    from nameparser._pipeline import _script_segment
+    from nameparser import parse
+    calls: list[str] = []
+    real = _script_segment.glued_cuts
+
+    def counting(text: str, lexicon: Lexicon) -> tuple[int, ...]:
+        calls.append(text)
+        return real(text, lexicon)
+    monkeypatch.setattr(_script_segment, "glued_cuts", counting)
+    parse("John Quincy Adams Smith, M.D.")
+    assert calls == []
