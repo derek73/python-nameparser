@@ -1927,6 +1927,34 @@ def test_the_middle_word_consumed_is_the_one_that_leaves_the_rest_agreeing(
         assert [c.left for c in r.across] == ["John"]
 
 
+def test_the_consumption_leaving_the_middle_accepted_outranks_a_stronger_match(
+        ) -> None:
+    # John matches John (same) and Jose matches José (folded): consuming
+    # John leaves Anne Beth / José Beth, a conflict, so the weaker match,
+    # which leaves an accepted middle, is the one taken
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    a, b = "Jose John Anne Beth Smith", "John José Beth Smith"
+    for x, y in ((a, b), (b, a)):
+        r = across.check(x, y)
+        assert r.consistent and r["middle"].outcome is Outcome.ONE_SIDE
+        assert {r.across[0].left, r.across[0].right} == {"Jose", "José"}
+
+
+@pytest.mark.parametrize("a, b", [
+    # the left reading pairs Max with Maximilian, a familiar form, refused
+    # here; the alignment pairs it with Max-Paul, a hyphenated part,
+    # accepted: the accepted reading is taken though it is weaker
+    ("John Max Smith", "John Maximilian Max-Paul Smith"),
+    ("John Bill Smith", "John William Bill-Bob Smith"),
+])
+def test_an_accepted_reading_of_a_middle_name_outranks_a_refused_one(
+        a: str, b: str) -> None:
+    hyphenated = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.HYPHENATED_PART})
+    for x, y in ((a, b), (b, a)):
+        r = hyphenated.check(x, y)
+        assert r["middle"].outcome is Outcome.HYPHENATED_PART and r.consistent
+
+
 def test_an_aligned_pair_must_be_accepted() -> None:
     # B. aligns with Beth only by initial: refused, it aligns nowhere
     without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})

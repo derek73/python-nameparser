@@ -488,8 +488,8 @@ class Matching:
         roles (its `_RULES` row's `across`) on the other, each with the
         index of the middle word it used (`None` for a role other than
         the middle; the match's middle role names the side) and its
-        place in the order that names no side: by outcome, then by texts
-        and roles. A middle name is read word by word, the other roles
+        place in the order that names no side: by outcome, then by the
+        cross role, then by texts. A middle name is read word by word, the other roles
         whole. Only a full name on both sides counts (`_full_outcome`),
         never an initial."""
         lexicon = self.parser.lexicon
@@ -1056,8 +1056,10 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     empty. Where one side holds more words, the shorter side's words
     may instead align, in order, with any of the longer side's, every
     aligned pair accepted and the words left over one-sided (`Beth` /
-    `Anne Beth`); the stronger of that alignment and the left-aligned
-    reading is taken, so accepting more never weakens the row
+    `Anne Beth`); the accepted one of that alignment and the
+    left-aligned reading is taken, or where both or neither are, the
+    stronger, so accepting more never weakens the middle row compared
+    on its own
     (decisions/name-matching, 2026-11-09 #1263). Two middle names of
     as many words compare pair by pair."""
     wa, wb = a.split(), b.split()
