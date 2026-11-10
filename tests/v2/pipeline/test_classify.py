@@ -12,7 +12,7 @@ from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
-    SHAPE_ACRONYM_TAG, ParseState, WorkToken,
+    CHAIN_TITLE_TAG, SHAPE_ACRONYM_TAG, ParseState, WorkToken,
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
@@ -106,6 +106,36 @@ def test_vocabulary_tags() -> None:
 def test_given_title_tag() -> None:
     out = _classified("Sir John")
     assert {"vocab:title", "vocab:given-title"} <= _tags(out, "Sir")
+
+
+@pytest.mark.parametrize(("text", "word", "takes"), [
+    # a listed title wearing the trailing shape, plain and joined
+    ("John Smith Prof.", "Prof.", True),
+    ("Hans Meier Priv.-Doz.", "Priv.-Doz.", True),
+    ("John Smith Lt.Gov.", "Lt.Gov.", True),
+    # listed whole with a period inside it: no final period needed
+    ("Maria Rossi Dott.ssa", "Dott.ssa", True),
+    # a gated title written short, whichever way H9 read it (#999)
+    ("John Smith Maj.", "Maj.", True),
+    # a gated title H9 reads in its phrase, and the same word read out
+    ("Associate Dean. Smith", "Dean.", True),
+    ("John Smith Dean.", "Dean.", False),
+    # a bare title word, an unlisted abbreviation, a name word
+    ("John Smith Prof", "Prof", False),
+    ("John Smith Xyz.", "Xyz.", False),
+    ("John Smith", "Smith", False),
+    # a glued delimiter after the comma: tagged as its stem (C10), but
+    # the text as written wears no shape
+    ("Smith, John Prof.;", "Prof.;", False),
+])
+def test_chain_title_tag_marks_the_words_h5s_chain_takes(
+        text: str, word: str, takes: bool) -> None:
+    """CHAIN_TITLE_TAG is the one statement of H5's word test, read by
+    `_pieces.trailing_titles`, `is_trailing_title_word` and `_weighed`
+    (#1171), so it must be written after H9's phrase test has settled
+    "vocab:title" ('Dean.' in and out of its phrase)."""
+    tags = _tags_by_text(text, lexicon=Lexicon.default())[word]
+    assert (CHAIN_TITLE_TAG in tags) is takes
 
 
 def test_initial_tag() -> None:

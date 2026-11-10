@@ -76,8 +76,9 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # rules/H5's trailing shape, _PERIOD_ABBREV widened to an
     # abbreviation written joined or hyphenated (#1116)
     ("_vocab", "_TRAILING_TITLE_SHAPE"): None,
-    # SAME object, imported for H5's trailing chain
-    ("_pieces", "_TRAILING_TITLE_SHAPE"): ("_vocab", "_TRAILING_TITLE_SHAPE"),
+    # SAME object, imported for classify's CHAIN_TITLE_TAG, the word
+    # test of H5's trailing chain (#1171)
+    ("_classify", "_TRAILING_TITLE_SHAPE"): ("_vocab", "_TRAILING_TITLE_SHAPE"),
     # rules/H5's listed joined title (#1104's narrow half)
     ("_vocab", "_JOINED_WORD"): None,
     # SAME object, imported for classify's JOINED_TITLE_TAG

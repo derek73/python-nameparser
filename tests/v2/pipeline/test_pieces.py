@@ -1390,7 +1390,8 @@ def test_the_second_unit_is_found_once_per_read(
 
 
 # H5's listed joined title (decisions/H5, #1104): the three readers of
-# classify's JOINED_TITLE_TAG besides the chain itself (which the
+# classify's CHAIN_TITLE_TAG, which a JOINED_TITLE_TAG word carries
+# (#1171), besides the chain itself (which the
 # tests/v2/cases.py rows pin), each asked through the shape its reader serves: P13's
 # trailing title ('y'), the maiden take's candidates (`trailing_candidates`
 # via `is_trailing_title_word`) and the particle run's weighed word

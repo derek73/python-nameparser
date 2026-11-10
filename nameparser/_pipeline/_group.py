@@ -559,7 +559,7 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         # trailing title H5 reads" -- H5's own word test, asked rather
         # than copied, so the walk steps over every title the chain
         # takes (decisions/P13, #1168)
-        if not (is_trailing_title_word(piece, ptags[e], tokens)
+        if not (is_trailing_title_word(piece, tokens)
                 or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
                     # reads_as_generation's own first test, asked at C
@@ -591,8 +591,7 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
                        and text.lower() != text.upper())
               and "vocab:suffix" not in word.tags
               and not (len(text) > 1 and e + 1 < len(pieces)
-                       and is_trailing_title_word(
-                           pieces[e + 1], ptags[e + 1], tokens))):
+                       and is_trailing_title_word(pieces[e + 1], tokens))):
         return
     if (at - 1 >= leading_titles(pieces, ptags, tokens) + keep_a_name
             and _is_name_word(pieces[at - 1], ptags[at - 1], tokens)):

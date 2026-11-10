@@ -56,7 +56,7 @@ from nameparser._pipeline._state import (
     SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, BOUND_PHRASE_TAG,
     FIRST_SURNAME_TAG, SURNAME_PAIR_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, PAST_REACH_TAG,
-    DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+    CHAIN_TITLE_TAG, DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
@@ -266,12 +266,12 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: TITLE_AMBIGUOUS_TAG; and the shared-name and particle-given marks
 #: rules/O6 and O7 read (#704), the bound-phrase mark rules/P12
 #: reads (#694), the past-reach mark on a particle chain past rules/P1's
-#: fold (#828), and the joined-title mark rules/H5's chain reads
-#: (#1104).
+#: fold (#828), and the joined-title mark (#1104) and the
+#: chain-title mark (#1171) rules/H5's chain reads.
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG,
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG,
-                        BOUND_PHRASE_TAG, JOINED_TITLE_TAG,
+                        BOUND_PHRASE_TAG, JOINED_TITLE_TAG, CHAIN_TITLE_TAG,
                         SURNAME_PAIR_TAG})
 
 #: The second-surname mark O6 or W5 writes (rules/R10) and the

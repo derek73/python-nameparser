@@ -48,10 +48,10 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:generation-word", "vocab:credential-word",
-"vocab:honorific-word", "vocab:patronymic", "vocab:trailing-title"
-and "vocab:joined-title" (read by the later stages and dropped by
-assemble, Token.reading carrying the kind out, save the last two,
-which mark no kind), "vocab:title-case-name" (a suffix word whose
+"vocab:honorific-word", "vocab:patronymic", "vocab:trailing-title",
+"vocab:joined-title" and "vocab:chain-title" (read by the later stages
+and dropped by assemble, Token.reading carrying the kind out, save the
+last three, which mark no kind), "vocab:title-case-name" (a suffix word whose
 Title case leans to the name, rules/S6, kept on the published token),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
@@ -97,13 +97,15 @@ from nameparser._pipeline._state import (
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
-    DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TRAILING_TITLE_TAG, ParseState,
+    CHAIN_TITLE_TAG, DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TRAILING_TITLE_TAG,
+    ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
-    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, caps_shape_candidate,
+    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD,
+    _TRAILING_TITLE_SHAPE, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
     is_dotted_title, is_initial, is_one_case,
     period_joined_title, period_joined_vocab,
@@ -653,6 +655,26 @@ def classify(state: ParseState) -> ParseState:
         for i, tag in split.items():
             written[i] = copy_with(written[i], tags=written[i].tags | {tag})
         tokens = tuple(written)
+    # rules/H5: "successive single words that wear the abbreviation
+    # shape and are title vocabulary chain into the title from the end"
+    # -- which words those are, written once as CHAIN_TITLE_TAG for
+    # every reader of the chain (#1171). After H9's phrase test, which
+    # settles "vocab:title"; against the text as written, which the
+    # readers saw before the tag ('Prof.;' wears no shape, C10's stem
+    # notwithstanding). The tag tests first, in C, so only a title word
+    # pays the regex, and only one wearing the shape pays a frame, in
+    # any position ('Dr.' too: position is the readers' question).
+    chain: list[WorkToken] | None = None
+    for i, token in enumerate(tokens):
+        tags = token.tags
+        if (JOINED_TITLE_TAG in tags
+                or ("vocab:title" in tags or TRAILING_TITLE_TAG in tags)
+                and _TRAILING_TITLE_SHAPE.match(token.text) is not None):
+            if chain is None:
+                chain = list(tokens)
+            chain[i] = copy_with(token, tags=tags | {CHAIN_TITLE_TAG})
+    if chain is not None:
+        tokens = tuple(chain)
     ambiguities = list(state.ambiguities)
     for i, token in enumerate(tokens):
         # #383/#479: narrows the fork's own "initial" tag with the same
