@@ -652,7 +652,10 @@ def _role_text(name: ParsedName, role: Role) -> str:
     nothing between them are two words, as rules/T7 parts a given name
     written as a run of initials ('J.R.R. Tolkien' has the middle names
     'R. R.', the field writing them 'R.R.'), so each compares as the
-    initial it is (decisions/T7, #1296)."""
+    initial it is. A run T7 leaves whole, as in the middle names of
+    'John E.T. Smith', is one token and compares as one word, though
+    `initials()` reads it letter by letter (rules/R3) -- decisions/T7
+    (#1296)."""
     text: str = getattr(name, role)
     if role not in _RUN_ROLES or "." not in text:
         return text

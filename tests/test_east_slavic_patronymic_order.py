@@ -163,9 +163,9 @@ class PatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         ("Леонід С. Григорович", "Леонід", "С.", "Григорович"),
         ("Dr. И. Б. Зубкевич", "И.", "Б.", "Зубкевич"),
         ("И. Борис Зубкевич", "И.", "Борис", "Зубкевич"),
-        # unchanged by the precedence
         # rules/T7 (#1296): the glued run reads as its spaced twin
         ("И.Б. Зубкевич", "И.", "Б.", "Зубкевич"),
+        # unchanged by the precedence
         ("Роман Аркадьевич Абрамович", "Роман", "Аркадьевич", "Абрамович"),
         ("И. Петрович Сидоров", "И.", "Петрович", "Сидоров"),
         # T4: a one-case name's lower-case letter is an initial

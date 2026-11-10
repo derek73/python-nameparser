@@ -957,6 +957,8 @@
 {"name": "Dr. de la Vega, Juan", "title": "Dr.", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Dr. h.c. Hans Meier", "title": "Dr.", "given": "h.c.", "middle": "Hans", "family": "Meier", "initials": "h. H. M.", "capitalized_force": "Dr. H.C. Hans Meier"}
 {"name": "Dr. inž. Janez Novak", "title": "Dr. inž.", "given": "Janez", "family": "Novak", "initials": "J. N.", "capitalized_force": "Dr. Inž. Janez Novak"}
+{"name": "Dr. j.r. smith", "title": "Dr.", "given": "j.", "middle": "r.", "family": "smith", "initials": "j. r. s.", "capitalized_force": "Dr. J.R. Smith"}
+{"name": "Dr. john e.t. smith", "title": "Dr.", "given": "john", "middle": "e.t.", "family": "smith", "initials": "j. e. t. s.", "capitalized_force": "Dr. John E.T. Smith"}
 {"name": "Dr. juan garcia", "title": "Dr.", "given": "juan", "family": "garcia", "initials": "j. g.", "capitalized_force": "Dr. Juan Garcia"}
 {"name": "Dr. med. univ.", "title": "Dr. med.", "family": "univ.", "initials": "u.", "capitalized_force": "Dr. Med. Univ."}
 {"name": "Dr. med. univ. Margit Popp", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "initials": "M. P.", "capitalized_force": "Dr. Med. Univ. Margit Popp"}
@@ -1565,6 +1567,7 @@
 {"name": "JOHN MACHADO", "given": "JOHN", "family": "MACHADO", "initials": "J. M.", "capitalized": "John Machado"}
 {"name": "JOHN NEE JONES SMITH MA PHD", "family": "JOHN", "suffix": "PHD", "maiden": "JONES SMITH MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J.", "capitalized": "John (Jones Smith Ma) PhD"}
 {"name": "JOHN PROF. MA", "title": "PROF.", "given": "JOHN", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "Prof. John Ma"}
+{"name": "JOHN Q.R.ST. SMITH", "given": "JOHN", "middle": "Q.R.ST.", "family": "SMITH", "initials": "J. Q. S.", "capitalized": "John Q.R.St. Smith"}
 {"name": "JOHN QUINCY SMITH I", "given": "JOHN", "middle": "QUINCY", "family": "SMITH", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. Q. S.", "capitalized": "John Quincy Smith I", "generation": "I"}
 {"name": "JOHN SMITH", "given": "JOHN", "family": "SMITH", "initials": "J. S.", "capitalized": "John Smith"}
 {"name": "JOHN SMITH (M.A)", "given": "JOHN", "family": "SMITH", "suffix": "M.A", "initials": "J. S.", "capitalized": "John Smith M.A"}
@@ -2471,6 +2474,7 @@
 {"name": "Jānis", "given": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jānis", "order": "FAMILY_FIRST", "given": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "K. Sivakumar", "given": "K.", "family": "Sivakumar", "initials": "K. S."}
+{"name": "K.T. Smith", "given": "K.", "middle": "T.", "family": "Smith", "initials": "K. T. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
 {"name": "KAREN AUS DER FÜNTEN", "given": "KAREN", "middle": "AUS", "family": "DER FÜNTEN", "initials": "K. A. F.", "capitalized": "Karen Aus Der Fünten"}

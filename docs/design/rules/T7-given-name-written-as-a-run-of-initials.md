@@ -12,6 +12,7 @@
   "Smith E.T."  family-first  →  given="E."
   "Smith E.T."  family-first-given-last  →  given="T."
   "e.t. smith"                →  given="e."
+  "Dr. j.r. smith"            →  given="j."
   ```
 - **A family comma names a family**, so the run after one parts though the comma names none (C15), and a report the comma made on the run names its letters.
   ```
@@ -29,14 +30,15 @@
 
 **Except:**
 
-- **A run in lower case among capitals** keeps its one word: the capitals around it say it is no run of initials, and it may be an abbreviation of its own, as honoris causa is. A name written wholly in lower case says nothing about any letter, and reads as its capitals do.
+- **A run in lower case among capitals** keeps its one word: the capitals of the given, middle and family names around it say it is no run of initials, and it may be an abbreviation of its own, as honoris causa is. Names written wholly in lower case say nothing about any letter, and read as their capitals do, a title in capitals beside them included.
   ```
   "Dr. h.c. Hans Meier"       →  given="h.c."
   "Dr. h.c. Hans Meier"       →  initials="h. H. M."
   ```
-- **A run the vocabulary lists as a word of its own** keeps its one word: a vocabulary entry written with its full stops, or a case mask that writes a lower-case letter, such as a caller's `h.c` for honoris causa. The spelling without stops is not asked, since that is how initials spell a word (J.R. is no Jr).
+- **A run the vocabulary lists as a word of its own** keeps its one word: a vocabulary entry written with its full stops, or a case mask keyed or written with them, such as a caller's `h.c` for honoris causa. The spelling without stops is not asked, since that is how initials spell a word: J.R. is no Jr, and K.T. no Kt, though the credential's mask writes it in mixed case.
   ```
   "J.R. Smith"                →  given="J."
+  "K.T. Smith"                →  given="K."
   ```
 - **A run in another field** keeps its one word: a middle name's run, and the family name some surnames are written as (B.K.).
   ```

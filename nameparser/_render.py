@@ -391,13 +391,14 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     if not isinstance(separator, str):
         raise TypeError(f"separator must be a str, got {separator!r}")
     values: dict[str, str] = {}
-    # rules/R3's run of initials reads a lower-case run where the name's
-    # words are written wholly in lower case, as the parse does (T7);
+    # rules/R3's run of initials reads a lower-case run where the given,
+    # middle and family words are written wholly in lower case, as the
+    # parse does (T7), a title not asked;
     # a loop, not a generator, which would resume a frame per word
-    one_case = True
+    all_lower = True
     for t in name.tokens:
         if t.role in _NAME_WORD_ROLES and not t.text.islower():
-            one_case = False
+            all_lower = False
             break
     for key in _INITIALS_KEYS:
         role = Role(key)
@@ -426,9 +427,9 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
             # rules/R3: "A word written as a run of initials gives one
             # initial per letter" -- 'J. E. T. S.' for 'John E.T.
             # Smith', in capitals or in a name written wholly in lower
-            # case (decisions/T7, #1296)
+            # case -- decisions/T7 (#1296)
             firsts = ([_first_letter(c) for c in _RUN_LETTER.findall(t.text)]
-                      if "." in t.text and (one_case or t.text.isupper())
+                      if "." in t.text and (all_lower or t.text.isupper())
                       and _LETTER_RUN.fullmatch(t.text)
                       else (_first_letter(t.text),))
             for letter in firsts:

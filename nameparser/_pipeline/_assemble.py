@@ -3,7 +3,8 @@
 Consumes: tokens (all roles set, and their tags, which name each
 token's reading), dropped, order (for ParsedName.order, and for the
 field a report's alternative names under rules/P1's family-first fold)
-and structure (for ParsedName.order),
+and structure (for ParsedName.order, and for rules/T7's family comma,
+which names a family where C15 reads none),
 ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), segments, for the part a withdrawn connective report's
@@ -29,7 +30,9 @@ through _vocab.is_title_shaped), for the source of a token's reading
 where no tag gives it; and the Lexicon's readings by word (Lexicon._files),
 for Reading.languages, the files whose reading is on in it, with
 every vocabulary field (`_lexicon._VOCAB_FIELDS`, `_listed_whole`)
-for whether the lexicon lists a word whole rather than by its parts.
+for whether the lexicon lists a word whole rather than by its parts;
+and every vocabulary field and Lexicon.capitalization_exceptions
+(`_listed_run`) for a run of initials listed whole (rules/T7).
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -838,7 +841,7 @@ def assemble(state: ParseState) -> ParsedName:
     # full stops" -- found inline (a helper would cost every parse a
     # frame, decisions/parse-cost): the one given word, a stop in it,
     # and a family beside it, a family comma marking one where it
-    # names none (rules/C15)
+    # names none (rules/C15) -- decisions/T7 (#1296)
     run_at = None
     has_family = state.structure is Structure.FAMILY_COMMA
     capitals = False
@@ -856,10 +859,11 @@ def assemble(state: ParseState) -> ParsedName:
             and not state.policy.two_given_names
             and final[run_at].span is not None
             and _LETTER_RUN.fullmatch(final[run_at].text)
-            # written in capitals, or in a name whose words are written
-            # in lower case, which reads as its capitals do: a run in
-            # lower case among capitals may be an abbreviation of its
-            # own ('Dr. h.c. Hans Meier', honoris causa)
+            # written in capitals, or among given, middle and family
+            # names written wholly in lower case, which read as their
+            # capitals do (a title is not asked): a run in lower case
+            # among capitals may be an abbreviation of its own ('Dr.
+            # h.c. Hans Meier', honoris causa)
             and (final[run_at].text.isupper() or not capitals)
             # a run the vocabulary lists or masks whole is that word
             and not _listed_run(final[run_at].text, state.lexicon)):
@@ -873,7 +877,7 @@ def assemble(state: ParseState) -> ParsedName:
 
 # rules/T7: "it reads as its letters written with a space between
 # them would: the letter in the given name's place in the order is the
-# given name, and the others are middle names" (decisions/T7, #1296)
+# given name, and the others are middle names" -- decisions/T7 (#1296)
 def _part_letter_run(whole: Token, tokens: tuple[Token, ...],
                      ambiguities: list[Ambiguity],
                      order: tuple[Role, Role, Role],
@@ -912,14 +916,20 @@ _INITIAL_TAGS = frozenset({"initial"})
 
 def _listed_run(text: str, lexicon: Lexicon) -> bool:
     """Whether the lexicon lists `text`, a run of single letters, as a
-    word of its own: in a vocabulary field as it is written, with its
-    full stops (the spelling without them is how initials spell a word,
-    'J.R.' being no 'jr'), or under a case mask that writes a lower-case
-    letter, which says the word is no run of capitals ('h.c' or 'hc', a
-    caller's honoris causa; 'KC' and 'PC' leave initials to part)."""
+    word of its own, written as it is, with its full stops: in a
+    vocabulary set, or under a case mask keyed with them or writing one
+    (a caller's honoris causa, 'h.c' or 'hc' masked 'h.c'). The spelling
+    without stops is how initials spell a word, so a vocabulary word or
+    a mask spelled without them says nothing about the run: 'J.R.' is
+    no 'jr', and 'K.T.' and 'B.T.' part though 'Kt' and 'Bt' are
+    credentials masked in mixed case."""
     n = _normalize(text)
-    mask = lexicon._cap_map.get(n) or lexicon._cap_map.get(n.replace(".", ""))
+    cap_map = lexicon._cap_map
+    mask = cap_map.get(n)
     if mask is not None and not mask.isupper():
+        return True
+    bare = cap_map.get(n.replace(".", ""))
+    if bare is not None and "." in bare:
         return True
     sets = lexicon._sets
     return any(n in getattr(sets, name) for name in _VOCAB_FIELDS)

@@ -2073,3 +2073,23 @@ def test_the_table_shows_a_run_of_initials_as_written() -> None:
                                        "John Ronald Reuel Tolkien")
     middle = next(r for r in result.roles if r.role is Role.MIDDLE)
     assert (middle.left, middle.right) == ("R.R.", "Ronald Reuel")
+
+
+@pytest.mark.parametrize("left,right,consistent", [
+    ("Smith J.R.R.", "Smith J. R. R.", True),
+    ("Smith E.T.", "Smith Edward Thomas", True),
+    ("Smith E.T.", "Smith Thomas", True),
+    # the given name is the last letter there, T. against Edward
+    ("Smith E.T.", "Smith Edward", False),
+])
+def test_a_run_of_initials_matches_under_the_given_last_order(
+        left: str, right: str, consistent: bool) -> None:
+    # rules/T7 makes the run's last letter the given name under
+    # FAMILY_FIRST_GIVEN_LAST, and the middle letters stay written
+    # together, which the match reads one by one (#1296)
+    from nameparser import FAMILY_FIRST_GIVEN_LAST, Policy
+    matching = Parser(
+        policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)).matching()
+    assert matching.check(left, right).consistent is consistent
+    assert bool(set(matching.keys(left)) & set(matching.keys(right))) \
+        is consistent

@@ -33,7 +33,9 @@
   "J.R.R. Tolkien"            →  initials="J. R. R. T."
   "John E.T. Smith"           →  initials="J. E. T. S."
   "Ram Bahadur B.K."          →  initials="R. B. B. K."
+  "Dr. john e.t. smith"       →  initials="j. e. t. s."
   "Dr. h.c. Hans Meier"       →  initials="h. H. M."  · boundary
+  "JOHN Q.R.ST. SMITH"        →  initials="J. Q. S."  · boundary
   ```
 
 **Because:** initials abbreviate the person's name words. Titles, suffixes, particles and nicknames are not name words.
