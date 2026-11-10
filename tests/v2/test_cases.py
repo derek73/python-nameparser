@@ -431,10 +431,15 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # reporting suffix-or-name under three orders; 1684 -> 1702 the same
     # day, the six reports of its reviews' boundary rows under three
     # orders; 1702 -> 1705 the same day, its PR review's words-to-spare
-    # rows.
-    assert claims == 1705, (
-        f"the field sweep checks {claims} claims, recorded as 1705 on "
-        f"2026-11-08")
+    # rows; 1705 -> 1708 on 2026-11-09, #490's 'Treadwell, U.S. District
+    # Judge Marc' reporting suffix-or-name under three orders; 1708 ->
+    # 1714 the same day, its code review's 'Smith, U.S. Marshal John' and
+    # 'U.S. Senator Smith, Ed' the same; 1714 -> 1717 the same day, the
+    # fix commit's review's 'John Smith U.S. Dean.' reporting S3's
+    # suffix-or-name under three orders.
+    assert claims == 1717, (
+        f"the field sweep checks {claims} claims, recorded as 1717 on "
+        f"2026-11-09")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

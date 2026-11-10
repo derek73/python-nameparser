@@ -15668,6 +15668,104 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "middle": "Doe", "family": "Mrs"},
          notes="rules/H5's bare title word: without the comma the "
                "surname is not fixed, so the word stays a name word"),
+    Case("dotted_title_opening_a_title_run", "U.S. Senator John Smith",
+         {"title": "U.S. Senator", "given": "John", "family": "Smith"},
+         classification="fix(#490)",
+         notes="H10: 'us' is a title written `dotted`, so the run "
+               "of single letters spells it where a title follows it, "
+               "as 'US Senator John Smith' reads"),
+    Case("dotted_title_after_a_family_comma",
+         "Treadwell, U.S. District Judge Marc",
+         {"title": "U.S. District Judge", "given": "Marc",
+          "family": "Treadwell"},
+         ambiguities=("suffix-or-name",), classification="fix(#490)",
+         notes="H10 at the head of the given part after a family "
+               "comma; the report is C5's, the dotted run after a comma "
+               "being a credential's shape too, as on master"),
+    Case("dotted_title_before_a_family_comma", "U.S. Senator Smith, John",
+         {"title": "U.S. Senator", "given": "John", "family": "Smith"},
+         classification="fix(#490)",
+         notes="H10 in H6's run before a family comma, as 'US "
+               "Senator Smith, John' reads"),
+    Case("dotted_title_behind_a_title", "Hon. U.K. Ambassador Jane Smith",
+         {"title": "Hon. U.K. Ambassador", "given": "Jane",
+          "family": "Smith"}, classification="fix(#490)",
+         notes="H10: the run need not open with the dotted word"),
+    Case("dotted_title_with_no_title_behind_it_is_a_name", "U.S. Grant",
+         {"given": "U.S.", "family": "Grant"},
+         notes="H10: no title follows the run of letters, so it "
+               "stays the initials it is"),
+    Case("dotted_title_behind_a_title_with_no_title_behind_it",
+         "Hon. U.S. Grant",
+         {"title": "Hon.", "given": "U.S.", "family": "Grant"},
+         notes="H10: the run ends on the dotted word, which it "
+               "gives back"),
+    Case("dotted_title_whose_title_the_floor_gives_back", "U.S. Senator Jr",
+         {"given": "U.S.", "family": "Senator", "suffix": "Jr"},
+         notes="H10 after H3: the floor gives 'Senator' back "
+               "to the name, leaving no title behind the run of letters"),
+    Case("dotted_title_before_a_family_comma_with_no_title_behind_it",
+         "U.S. Grant Smith, John",
+         {"given": "John", "family": "U.S. Grant Smith"},
+         notes="H10 in H6's run: given back, so the family keeps it"),
+    Case("initials_spelling_a_title_not_written_dotted", "D.R. Judge Smith",
+         {"given": "D.R.", "middle": "Judge", "family": "Smith"},
+         notes="H10's Except: 'dr' is no title written `dotted`, so "
+               "initials that spell it stay a name though a title word "
+               "follows (decisions/H10, #490)"),
+    Case("dotted_title_as_the_partner_of_a_gated_title",
+         "U.S. Marshal John Smith",
+         {"title": "U.S. Marshal", "given": "John", "family": "Smith"},
+         classification="fix(#490)",
+         notes="H10 with H9: the run is the modifier it spells, so the "
+               "gated 'Marshal' has its partner, as in 'US Marshal John "
+               "Smith' (the code review)"),
+    Case("dotted_title_as_a_gated_title_s_partner_after_a_comma",
+         "Smith, U.S. Marshal John",
+         {"title": "U.S. Marshal", "given": "John", "family": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#490)",
+         notes="H10 with H9 at the head of the given part"),
+    Case("dotted_modifier_before_a_modifier_with_no_head",
+         "U.S. Vice Smith",
+         {"given": "U.S.", "middle": "Vice", "family": "Smith"},
+         notes="H10 with H9: 'us' and 'vice' are modifiers with no head "
+               "title behind them, so neither is a title and the run is "
+               "given back, as 'US Vice Smith' reads (the fix commit's "
+               "review)"),
+    Case("dotted_modifier_partnering_a_gated_title_ending_the_name",
+         "John Smith U.S. Dean.",
+         {"title": "Dean.", "given": "John", "middle": "Smith",
+          "family": "U.S."},
+         ambiguities=("suffix-or-name",), classification="fix(#490)",
+         notes="1.4.0 through 3.0.1 read family 'Dean.'; the report is "
+               "S3's, the unlisted dotted shape ending the name, which the "
+               "undotted twin cannot raise. H10's Accepted: H9 reads the run as the modifier it spells "
+               "wherever it stands, so the gated title ending the name "
+               "has its partner and H5 takes it, as 'John Smith US "
+               "Dean.' reads; the run itself stays a name word there"),
+    Case("dotted_title_run_counted_before_the_comma",
+         "U.S. Senator Smith, Ed",
+         {"title": "U.S. Senator", "given": "Ed", "family": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#490)",
+         notes="C4's count reads the run as H10's title, so 'Ed' is "
+               "the given name, as in 'US Senator Smith, Ed'; counted as "
+               "a name word, it made 'Ed' the credential and left no "
+               "given name (the code review)"),
+    Case("dotted_title_run_counted_before_a_numeral_and_comma",
+         "U.S. Senator Smith V, AD",
+         {"title": "U.S. Senator", "given": "AD", "family": "Smith V"},
+         classification="fix(#490)",
+         notes="the numeral clause's count reads it as C4's does"),
+    Case("dotted_titles_joined_by_a_connective_stay_a_name",
+         "U.S. and U.K. Ambassador Jane Doe",
+         {"given": "U.S. and U.K.", "middle": "Ambassador Jane",
+          "family": "Doe"},
+         notes="H10's Accepted: the connective joins the two runs into "
+               "one unit of several words, which the run does not read"),
+    Case("dotted_academic_title_in_german", "P.D. Dr. Hans Meier",
+         {"title": "P.D. Dr.", "given": "Hans", "family": "Meier"},
+         classification="fix(#490)",
+         notes="H10: 'pd', Privatdozent, is written `dotted`"),
     Case("title_word_trailing_ahead_of_a_reserved_acronym",
          "John Smith Prof. MA",
          {"title": "Prof.", "given": "John", "family": "Smith",

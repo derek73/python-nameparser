@@ -25,7 +25,8 @@ titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
 written behind a particle (particle_given_names, #704) and the
 two-word given names a bound word completes into (bound_phrases,
-#694); and, since
+#694) and the titles a run of single letters may spell
+(dotted_titles, rules/H10, #490); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -96,7 +97,7 @@ from nameparser._pipeline._state import (
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
-    JOINED_TITLE_TAG, TRAILING_TITLE_TAG, ParseState,
+    DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
@@ -104,7 +105,7 @@ from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
     BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_initial, is_one_case,
+    is_dotted_title, is_initial, is_one_case,
     period_joined_title, period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
@@ -173,6 +174,13 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # 'д-р', is a credential there to CLDR (decisions/H5, #1104)
         if "." in n and _JOINED_WORD.match(n):
             tags.add(JOINED_TITLE_TAG)
+    # rules/H10: "a run of single letters joined by full stops whose
+    # spelling without them is a title the vocabulary marks as written
+    # that way" -- the tag; whether a title follows it is the leading
+    # run's to ask (`_pieces.leading_titles`). The `"." in n` test
+    # keeps every word without a stop out of a frame.
+    elif "." in n and is_dotted_title(token.text, n, lex):
+        tags.add(DOTTED_TITLE_TAG)
     if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
     # rules/H5: "a title that may be a given name is title vocabulary
@@ -542,6 +550,18 @@ def classify(state: ParseState) -> ParseState:
     # a contested word keeps TITLE_AMBIGUOUS_TAG either way, for the
     # report where it opens the name (assign)
     lex = state.lexicon
+    # rules/H10: "the run reads as that title where a title the run
+    # keeps stands behind it" -- so H9's phrase test reads the run as
+    # the title it spells, and `U.S. Marshal` is the phrase `US Marshal`
+    # is. Only where the name holds a word that test reads, so a name
+    # with none ('U.S. Grant') does not run it for the run alone; and
+    # in every position, as it reads the run's undotted twin ('John
+    # Smith U.S. Dean.' reads as 'John Smith US Dean.', decisions/H10)
+    if not (lex._sets.titles_ambiguous.isdisjoint(folded)
+            and lex._sets.title_modifiers.isdisjoint(folded)):
+        for i, t in enumerate(tokens):
+            if DOTTED_TITLE_TAG in t.tags:
+                folded[i] = folded[i].replace(".", "")
     if not (lex._sets.titles_ambiguous.isdisjoint(folded)
             and lex._sets.title_modifiers.isdisjoint(folded)):
         written = list(tokens)

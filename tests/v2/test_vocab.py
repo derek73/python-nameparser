@@ -537,6 +537,10 @@ MUTATIONS = [
     ("capital-opening-not-true", {"nl.toml": _w('[[word]]\ntext = "ter"\npreposition = { may_be_given = false, capital_opening = false }')}, "capital_opening must be true, or left unwritten"),
     ("capital-opening-on-a-family-reading", {"hy.toml": _w('[[word]]\ntext = "ter"\nfamily = { note = "x", capital_opening = true }')}, "capital_opening"),
     ("capital-opening-on-a-conjunction", {"nl.toml": _w('[[word]]\ntext = "en"\nconjunction = { capital_opening = true }')}, "capital_opening"),
+    # rules/H10's dotted: true or unwritten, and a title reading's alone
+    # (BEHAVIORAL), so any other refuses it as unknown
+    ("dotted-not-true", {"en.toml": _w('[[word]]\ntext = "us"\nmodifier = { dotted = false }')}, "dotted must be true, or left unwritten"),
+    ("dotted-on-a-suffix-reading", {"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = { dotted = true }')}, "dotted"),
 ]
 
 
@@ -1142,6 +1146,7 @@ _PROPERTY_PROBES = {
     "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
     "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
     "capital_opening": ("preposition", "{ capital_opening = true }", "zzq"),
+    "dotted": ("modifier", "{ dotted = true }", "zzq"),
     "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",

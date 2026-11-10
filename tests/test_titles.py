@@ -1,4 +1,3 @@
-import pytest
 
 from nameparser import parse
 
@@ -56,12 +55,9 @@ class TitleTestCase(ParsedNameTestBase):
         hn = parse("Coach")
         self.m(hn.title, "Coach", hn)
 
-    # TODO: fix handling of U.S. -- 2.0 matches v1 here: lc()-style
-    # normalization keeps 'u.s' out of the titles vocabulary, so the
-    # chain never starts (an interim 2.0 build that stripped interior
-    # periods made this pass, but that normalization wrongly turned
-    # 'J.R.' into the title 'jr'; v1 parity won)
-    @pytest.mark.xfail(reason="#490")
+    # rules/H10 (#490): 'us' is a title written `dotted`, so the run of
+    # letters spells it where a title follows it; 'U.S. Grant' keeps
+    # its given name (tests/v2/cases.py)
     def test_chained_title_first_name_title_is_initials(self) -> None:
         hn = parse("U.S. District Judge Marc Thomas Treadwell")
         self.m(hn.title, "U.S. District Judge", hn)

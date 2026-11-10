@@ -38,6 +38,10 @@
 
 **Precedence:**
 
+- **A title the run of letters spells, with a title behind it** ("García Márquez, U.S. Senator John"): the paired initials C5 keeps as the given part are H10's title where the vocabulary marks the title they spell as written that way.
+  ```
+  "García Márquez, U.S. Senator John"  →  title="U.S. Senator"
+  ```
 - **A generation ending the name before the comma** ("John Smith Jr., M.J."): dotted, the paired initials keep this rule's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are the credential C12 reads (C1, where a roman numeral S10 reads stays the suffix as a listed generation does).
 
 **Accepted:**

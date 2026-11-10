@@ -45,7 +45,7 @@ academic = { expands = "Privatdozent" }
 
 [[word]]
 text = "pd"
-academic = { same_as = "priv.-doz" }
+academic = { same_as = "priv.-doz", dotted = true }
 
 [[word]]
 text = "ra"

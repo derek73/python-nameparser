@@ -491,7 +491,7 @@ _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "title_case_name_words", "shared_names",
                 "particle_given_names", "saint_particles",
                 "capitalized_particles", "capital_opening_particles",
-                "bound_phrases")
+                "dotted_titles", "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -574,6 +574,11 @@ class _LexiconSets:
     #: the family name, written right before it in any role (`Levon Ter
     #: Petrosyan`, but `Van der Walt`)
     capital_opening_particles: frozenset[str]
+    #: the titles written `dotted=True` (`us`, `uk`, `pd`): rules/H10
+    #: reads a run of single letters joined by full stops that spells
+    #: one, at the head of the part carrying the given name, as that
+    #: title where a title follows it (`U.S. District Judge`, #490)
+    dotted_titles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
@@ -615,6 +620,7 @@ _COMPILED_FIELDS = {
     "saint_particles": "SAINT_PARTICLES",
     "capitalized_particles": "CAPITALIZED_PARTICLES",
     "capital_opening_particles": "CAPITAL_OPENING_PARTICLES",
+    "dotted_titles": "DOTTED_TITLES",
     "bound_phrases": "BOUND_PHRASES",
 }
 
@@ -829,7 +835,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
         return None
     if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
                 "title_case_is_name", "shared", "after_particle",
-                "capital_opening"):
+                "capital_opening", "dotted"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1464,7 +1470,7 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
             "may_be_initial", "title_case_is_name", "shared",
-            "after_particle", "capital_opening"):
+            "after_particle", "capital_opening", "dotted"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a reading's list may name every title word it
@@ -2074,7 +2080,8 @@ class Lexicon:
             ``may_be_initial=True``, ``completed_by=[...]`` on a
             ``bound_given`` reading, ``after_particle=True`` on a
             ``given`` reading, ``shared=True`` on a name reading,
-            ``capital_opening=True`` on a particle reading, and
+            ``capital_opening=True`` on a particle reading,
+            ``dotted=True`` on a title reading, and
             ``same_as=...`` on a reading of any kind: the word this one
             is a spelling of, which name matching reads as a
             ``listed-spelling`` and keys alike in the roles that read

@@ -64,6 +64,7 @@ _SET = {"abbreviation": True, "addresses": "given", "after_given": True,
         "cased": "ZzQ", "acronym": None, "attached": {"side": "after"},
         "may_be_initial": True, "title_case_is_name": True,
         "shared": True, "after_particle": True, "capital_opening": True,
+        "dotted": True,
         "completed_by": ["zzq"]}
 
 

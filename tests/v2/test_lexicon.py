@@ -871,6 +871,30 @@ def test_removing_after_given_is_rule_h8s_off_switch() -> None:
             gone.parse("Doe, Jane Mrs").middle) == ("", "Mrs")
 
 
+def test_dotted_is_rule_h10s_switch_both_ways() -> None:
+    # a caller's dotted=True reaches the parse as a file's does, and
+    # dotted=False turns a shipped one off (rules/H10, #490)
+    ceo = Parser(lexicon=Lexicon.default().add("ceo", kind="office",
+                                               dotted=True))
+    assert ceo.parse("C.E.O. Prof. Jane Smith").title == "C.E.O. Prof."
+    assert Parser().parse("C.E.O. Prof. Jane Smith").title == ""
+    off = Parser(lexicon=Lexicon.default().add("us", kind="modifier",
+                                               dotted=False))
+    assert off.parse("U.S. Senator John Smith").given == "U.S."
+    assert Parser().parse("U.S. Senator John Smith").title == "U.S. Senator"
+
+
+def test_every_shipped_dotted_title_is_reachable() -> None:
+    # each marked title, spelled with a stop after each letter, reads as
+    # the title before another (rules/H10), so a word another reading
+    # claims first shows up as silently inert
+    p = Parser()
+    unreached = [w for w in sorted(p.lexicon._sets.dotted_titles)
+                 if p.parse(f"{'.'.join(w.upper())}. Senator Jane Smith"
+                            ).title != f"{'.'.join(w.upper())}. Senator"]
+    assert p.lexicon._sets.dotted_titles and not unreached, unreached
+
+
 def test_every_shipped_after_given_title_is_reachable() -> None:
     # each entry must reach rules/H8 at the slot it is listed for, so a
     # member another reading claims first shows up as silently inert
@@ -1718,7 +1742,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
-        "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES",
+        "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES", "DOTTED_TITLES",
         "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code

@@ -32,6 +32,7 @@ Entry conventions:
 - [H7 — a joined name unit carrying title vocabulary](H7-joined-name-unit-carrying-title-vocabulary.md)
 - [H8 — a salutation ending the given part](H8-salutation-ending-the-given-part.md)
 - [H9 — the title phrase](H9-title-phrase.md)
+- [H10 — a title written as a run of letters](H10-title-written-as-a-run-of-letters.md)
 
 ## Particles & surname prefixes (P)
 
@@ -172,7 +173,7 @@ Entry conventions:
 - [suffix-acronym-collisions — the trailing-position collision class, decided (2026-09-07, #342/#454)](suffix-acronym-collisions.md)
 - [suffix-field-composition — three kinds of thing in one field](suffix-field-composition.md)
 - [two-input-invariants — checking a rule against something that is not the code](two-input-invariants.md)
-- [v1-xfail-triage — the eight inherited aspirations, four retired and four kept (three of those eight since fixed, 2026-09-08 and 2026-09-23)](v1-xfail-triage.md)
+- [v1-xfail-triage — the eight inherited aspirations, four retired and four kept (four of those eight since fixed, 2026-09-08, 2026-09-23 and 2026-11-09)](v1-xfail-triage.md)
 - [vocabulary-collisions — when a word earns the ambiguous marking](vocabulary-collisions.md)
 - [vocabulary-model — each word described by its readings (2026-10-15 → 2026-10-18)](vocabulary-model.md)
 

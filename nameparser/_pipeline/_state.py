@@ -208,6 +208,14 @@ TRAILING_TITLE_TAG = "vocab:trailing-title"
 #: from the published token like the kind tags above.
 JOINED_TITLE_TAG = "vocab:joined-title"
 
+#: On a run of two or more single letters joined by full stops whose
+#: spelling without them is a title written `dotted`
+#: (`Lexicon.dotted_titles`: 'U.S.', 'P.D.', #490), a word the
+#: vocabulary does not list as a title as written: rules/H10's leading
+#: run (`_pieces.leading_titles`) takes it as a title only where a title
+#: the run keeps stands behind it, so 'U.S. Grant' stays a name.
+DOTTED_TITLE_TAG = "vocab:dotted-title"
+
 #: On a word of `Lexicon.given_name_abbreviations`, a given name written
 #: short ('Chas.', 'Ma.'): rules/H2's shape test declines a word
 #: carrying it, so the given reading outranks the shape-derived title

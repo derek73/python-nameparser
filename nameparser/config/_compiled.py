@@ -3261,6 +3261,12 @@ CAPITAL_OPENING_PARTICLES: frozenset[str] = frozenset({
     'ter',
 })
 
+DOTTED_TITLES: frozenset[str] = frozenset({
+    'pd',
+    'uk',
+    'us',
+})
+
 BOUND_PHRASES: frozenset[str] = frozenset({
     'عبد الآخر',
     'عبد الأحد',
