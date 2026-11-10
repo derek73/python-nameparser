@@ -152,8 +152,9 @@ def test_passing_accept_replaces_the_default() -> None:
 
 def test_the_default_accepts_what_the_spec_lists() -> None:
     assert DEFAULT_ACCEPT == {
-        Outcome.SAME, Outcome.FOLDED, Outcome.LISTED_SPELLING,
-        Outcome.PARTICLES_ASIDE, Outcome.PART_OF_OTHER, Outcome.INITIAL,
+        Outcome.SAME, Outcome.FOLDED, Outcome.JOINED,
+        Outcome.LISTED_SPELLING, Outcome.PARTICLES_ASIDE,
+        Outcome.PART_OF_OTHER, Outcome.INITIAL,
         Outcome.INITIALS_AGREE, Outcome.ONE_SIDE,
         Outcome.GENERATION_ONE_SIDE, Outcome.NOTED,
     }
@@ -163,7 +164,7 @@ def test_the_default_accepts_what_the_spec_lists() -> None:
 def test_outcomes_are_declared_strongest_first() -> None:
     names = [o.value for o in Outcome]
     assert names[0] == "same" and names[-1] == "conflict"
-    assert len(names) == 16
+    assert len(names) == 17
 
 
 def test_match_types_round_trip_through_pickle() -> None:
@@ -457,7 +458,8 @@ def test_a_devanagari_anusvara_is_not_folded_away() -> None:
 
 
 def test_default_keys_are_family_words_with_the_given_initial() -> None:
-    assert m.keys("Jane A. de la Vega") == {"vega;j"}
+    # the base's words, and the whole family joined, particles kept
+    assert m.keys("Jane A. de la Vega") == {"vega;j", "delavega;j"}
     # a hyphenated word is keyed by each half, joined, and whole
     assert m.keys("Ann Smith-Jones") == {
         "smith;a", "jones;a", "smithjones;a", "smith-jones;a"}
@@ -1710,6 +1712,87 @@ def test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry(
                         other_readings=other_readings)
     for a in _COMPOUNDS:
         for b in _COMPOUNDS:
+            r = matching.check(a, b)
+            assert matching.check(b, a) == r.mirrored(), (a, b)
+            if r.consistent:
+                assert matching.keys(a) & matching.keys(b), (a, b)
+
+
+# -- a family name written with its spaces or hyphens dropped (#1261) --------
+
+@pytest.mark.parametrize("a, b, role_name", [
+    ("Ignazio LaRussa", "Ignazio La Russa", "family"),
+    ("IGNAZIO LARUSSA", "Ignazio La Russa", "family"),
+    ("Ann SmithJones", "Ann Smith-Jones", "family"),
+    ("Ann Vanderberg", "Ann Van der Berg", "family"),
+    ("Charles DeGaulle", "Charles de Gaulle", "family"),
+    ("ALCIDES DINIZ DASILVA", "ALCIDES DINIZ DA SILVA", "family"),
+    ("Jeanpierre Martin", "Jean-Pierre Martin", "given"),
+    ("Jane Doe (née LaRussa)", "Jane Doe (née La Russa)", "maiden"),
+])
+def test_a_name_written_with_its_spaces_or_hyphens_dropped_is_joined(
+        a: str, b: str, role_name: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r[role_name].outcome is Outcome.JOINED, (x, y)
+        assert r.consistent and m.keys(x) & m.keys(y)
+
+
+@pytest.mark.parametrize("a, b", [
+    # letters that differ, not only their spacing
+    ("Ann LaRusso", "Ann La Russa"),
+    ("Ann Smith Jones", "Ann SmithJones"),  # Smith is the middle name here
+])
+def test_a_joined_name_needs_the_same_letters(a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        assert not m.check(x, y).consistent
+
+
+def test_initials_written_apart_stay_initials_agree_beside_joined() -> None:
+    # two texts of initials alone are initials-agree's to read, so a
+    # caller who does not accept joined keeps accepting them
+    base = parse("John Smith")
+    without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.JOINED})
+    for matching in (m, without):
+        r = matching.check(base.replace(given="J.-P."),
+                           base.replace(given="J. P."))
+        assert r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.INITIALS_AGREE
+
+
+def test_a_caller_without_joined_keeps_the_leniencies_it_accepted() -> None:
+    # joined does not end the outcomes the way folded does: the family
+    # leniencies that read the words apart are still asked after it
+    without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.JOINED})
+    r = without.check("Ann De La Cruz", "Ann Dela Cruz")
+    assert r["family"].outcome is Outcome.PARTICLES_ASIDE and r.consistent
+    assert m.check("Ann De La Cruz", "Ann Dela Cruz")["family"].outcome is (
+        Outcome.JOINED)
+    # and a pair only joined reads is refused, as on master
+    r = without.check("Ignazio LaRussa", "Ignazio La Russa")
+    assert r["family"].outcome is Outcome.JOINED and not r.consistent
+
+
+#: Family names written joined and apart, behind particles, hyphenated,
+#: before a family comma and as a maiden name.
+_JOINED_NAMES: tuple[str, ...] = (
+    "Ignazio LaRussa", "Ignazio La Russa", "Ignazio La-Russa",
+    "Ann Vanderberg", "Ann Van der Berg", "Ann van der-Berg",
+    "Ann SmithJones", "Ann Smith-Jones", "Smith Jones, Ann",
+    "Ann De La Cruz", "Ann Dela Cruz", "Ann Delacruz",
+    "Jane Doe (née LaRussa)", "Jane LaRussa (née Doe)",
+    "Jane Doe (née La Russa)", "J. LaRussa", "Jean-Pierre Martin",
+    "Jeanpierre Martin",
+)
+
+
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_joined_names_keep_the_key_guarantee_and_symmetry(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    accept, other_readings = setting
+    matching = Matching(Parser(), accept, other_readings=other_readings)
+    for a in _JOINED_NAMES:
+        for b in _JOINED_NAMES:
             r = matching.check(a, b)
             assert matching.check(b, a) == r.mirrored(), (a, b)
             if r.consistent:

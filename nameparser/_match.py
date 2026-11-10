@@ -59,6 +59,7 @@ class Outcome(StrEnum):
 
     SAME = "same"
     FOLDED = "folded"
+    JOINED = "joined"
     LISTED_SPELLING = "listed-spelling"
     PARTICLES_ASIDE = "particles-aside"
     PART_OF_OTHER = "part-of-other"
@@ -208,7 +209,7 @@ class MatchResult:
 
 #: The outcomes accepted when a caller states none.
 DEFAULT_ACCEPT: frozenset[Outcome] = frozenset({
-    Outcome.SAME, Outcome.FOLDED, Outcome.LISTED_SPELLING,
+    Outcome.SAME, Outcome.FOLDED, Outcome.JOINED, Outcome.LISTED_SPELLING,
     Outcome.PARTICLES_ASIDE, Outcome.PART_OF_OTHER, Outcome.INITIAL,
     Outcome.INITIALS_AGREE, Outcome.ONE_SIDE, Outcome.GENERATION_ONE_SIDE,
     Outcome.NOTED,
@@ -526,6 +527,13 @@ class Matching:
                       for form in (raw.replace("-", ""), raw)]
         words = set().union(*(_spelling_keys(form, family_rule.group, lexicon)
                               for form in forms if form))
+        # the whole text the check compares a family name by, particles
+        # kept, joined (`La Russa` and `LaRussa` key `larussa`), and under
+        # across-roles each text it compares the family against
+        texts = [parsed.family]
+        if across:
+            texts += [getattr(parsed, other) for other in family_rule.across]
+        words |= {_joined(_fold(t)) for t in texts if t} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
@@ -738,6 +746,13 @@ def _familiar_outcome(wa: list[str], wb: list[str],
     return Outcome.FAMILIAR_FORM if found else None
 
 
+def _joined(folded: str) -> str:
+    """A folded text without its spaces and hyphens, the form `joined`
+    compares and the keys cut a family's whole key from (decisions/
+    name-matching, 2026-11-09 #1261)."""
+    return _WORDS.sub("", folded)
+
+
 def _initials_only(folded: str) -> bool:
     """A folded text is initials alone."""
     return all(_is_initial(w) for w in _WORDS.split(folded) if w)
@@ -746,12 +761,18 @@ def _initials_only(folded: str) -> bool:
 def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
                   group: str) -> Outcome | None:
     """Two non-empty texts, `fa` and `fb` their folded forms, as full
-    names: same, folded, or listed spelling (word by word, in the role's
-    `same_as` `group`), else `None`."""
+    names: same, folded, joined (equal once folded and stripped of
+    spaces and hyphens, `La Russa` / `LaRussa`, unless both are initials
+    alone), or listed spelling (word by word, in the role's `same_as`
+    `group`), else `None`."""
     if a == b:
         return Outcome.SAME
     if fa == fb:
         return Outcome.FOLDED
+    if _joined(fa) == _joined(fb) and not (
+            _initials_only(fa) and _initials_only(fb)):
+        # two texts of initials alone are `initials-agree`'s to read
+        return Outcome.JOINED
     wa, wb = a.split(), b.split()
     if len(wa) == len(wb) and all(
             _listed(x, y, group, lexicon) for x, y in zip(wa, wb)):
@@ -771,7 +792,12 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     - A full-name outcome (`_full_outcome`: same, folded, listed
       spelling) implies every weaker one, two texts equal once folded
       or listed as one needing no other leniency, so it is the only
-      outcome yielded.
+      outcome yielded. `joined` is the exception: two texts equal once
+      their spaces and hyphens go may still need the weaker leniencies
+      read their words apart (`De La Cruz` / `Dela Cruz`, its particles
+      set aside), so they are yielded after it, and a caller who does
+      not accept `joined` keeps what they accepted before it
+      (decisions/name-matching, 2026-11-09 #1261).
     - Given `bases`, the family role's (`_compare_family`), the outcomes are
       treated as one chain, particles set aside, part of the other,
       family initial, initials agree, and the first that holds is the
@@ -791,20 +817,21 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     wa, wb = a.split(), b.split()
     if full is not None:
         yield full
-    elif bases is not None:
-        chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
-        if chain is not None:
-            yield chain
-    else:
-        initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
-        if initials is not None:
-            yield initials
-        if group == "given" and (
-                familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
-            yield familiar
-        if len(wa) == len(wb) == 1 and (
-                _first_half(fa, fb) or _first_half(fb, fa)):
-            yield Outcome.HYPHENATED_PART
+    if full is None or full is Outcome.JOINED:
+        if bases is not None:
+            chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
+            if chain is not None:
+                yield chain
+        else:
+            initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
+            if initials is not None:
+                yield initials
+            if group == "given" and (
+                    familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+                yield familiar
+            if len(wa) == len(wb) == 1 and (
+                    _first_half(fa, fb) or _first_half(fb, fa)):
+                yield Outcome.HYPHENATED_PART
     yield Outcome.CONFLICT
 
 
