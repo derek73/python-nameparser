@@ -337,5 +337,126 @@ def test_the_new_types_are_exported() -> None:
         assert getattr(nameparser, name) is not None
 
 
+# -- one order vote per name (fix round 1) --------------------------------
+
+
+def test_one_heavily_marked_name_does_not_outvote_two() -> None:
+    # `KIM Jason J.` carries three family-first signals, but is one name
+    s = Parser().suggest(["Jason Smith", "Mary Jones", "KIM Jason J."])
+    assert s.patch.name_order is UNSET
+    order = _order_evidence(s)
+    assert order.decided
+    assert (order.votes_for, order.votes_against) == (2, 1)
+    assert (Signal.CAPITALS, FAMILY_FIRST, 1) in order.by_signal
+    assert (Signal.TRAILING_INITIAL, FAMILY_FIRST, 1) in order.by_signal
+
+
+def test_a_two_signal_name_against_a_one_signal_name_is_a_tie() -> None:
+    s = Parser().suggest(["Jason Smith", "van Berg Mary"])
+    assert s.patch == PolicyPatch()
+    assert not _order_evidence(s).decided
+    assert s.disagreeing() == ()
+
+
+def test_a_name_whose_signals_conflict_is_contested() -> None:
+    # `Jason Kim J.`: the trailing initial says family-first, the given
+    # name at the front says given-first
+    s = Parser().suggest(["Priem Jason", "Jason Kim J."])
+    assert s.patch.name_order == FAMILY_FIRST
+    order = _order_evidence(s)
+    assert (order.votes_for, order.votes_against, order.contested,
+            order.no_evidence) == (1, 0, 1, 0)
+    assert s.disagreeing() == ()
+    # the signal breakdown still holds both of its votes
+    assert (Signal.GIVEN_NAME, GIVEN_FIRST, 1) in order.by_signal
+    assert (Signal.TRAILING_INITIAL, FAMILY_FIRST, 1) in order.by_signal
+
+
+@pytest.mark.parametrize("names", [
+    [],
+    ["Xyzzy Plugh"],
+    ["Priem Jason", "Jason Kim J.", "Smith, John", "", "Jason Smith"],
+    ["Jason Smith", "Mary Jones", "KIM Jason J."],
+    ["Сидоров Иван Петрович", "SIDOROV Ivan Petrovich", "Kim Minjun"],
+    ["Mamedov Ali Huseyn oglu", "Jason Kim J.", "Priem Jason"],
+])
+def test_the_counts_add_up_to_the_group(names: list[str]) -> None:
+    s = Parser().suggest(names)
+    for e in s.evidence:
+        assert (e.votes_for + e.votes_against + e.contested
+                + e.no_evidence) == len(names), e
+
+
+def test_an_east_slavic_name_never_disagrees_on_order() -> None:
+    # `SIDOROV Ivan Petrovich` votes family-first by its capitals, but
+    # the decided East Slavic rule reorders it
+    s = Parser().suggest(["Сидоров Иван Петрович", "Иванов Пётр Сергеевич",
+                          "SIDOROV Ivan Petrovich"])
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
+    assert _order_evidence(s).votes_against == 1
+    assert s.disagreeing() == ()
+
+
+def test_a_non_east_slavic_name_still_disagrees_in_an_east_slavic_group(
+        ) -> None:
+    s = Parser().suggest(["Сидоров Иван Петрович", "Иванов Пётр Сергеевич",
+                          "Kim Minjun"])
+    assert [n.text for n in s.disagreeing()] == ["Kim Minjun"]
+
+
+# -- eager validation of the result types -----------------------------------
+
+
+@pytest.mark.parametrize("votes, error, fragment", [
+    ({Signal.SURNAME: "family-first"}, TypeError, "must be an order"),
+    ({Signal.SURNAME: FAMILY_FIRST_GIVEN_LAST}, ValueError, "GIVEN_FIRST or FAMILY_FIRST"),
+    ({Signal.SURNAME: PatronymicRule.TURKIC}, TypeError, "must be an order"),
+    ({Signal.PATRONYMIC: FAMILY_FIRST}, TypeError, "PatronymicRule"),
+    ({Signal.PATRONYMIC: "turkic"}, TypeError, "PatronymicRule"),
+    ({"no-such-signal": FAMILY_FIRST}, ValueError, "no-such-signal"),
+])
+def test_name_evidence_refuses_a_vote_of_the_wrong_kind(
+        votes: dict[object, object], error: type[Exception],
+        fragment: str) -> None:
+    with pytest.raises(error, match=fragment):
+        NameEvidence("Priem Jason", votes)  # type: ignore[arg-type]
+
+
+def test_name_evidence_accepts_an_order_written_as_a_list() -> None:
+    evidence = NameEvidence("Priem Jason", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
+    assert evidence.votes[Signal.SURNAME] == FAMILY_FIRST
+
+
+def _setting_evidence(**changes: object) -> SettingEvidence:
+    fields: dict[str, object] = dict(
+        setting="name_order", value=FAMILY_FIRST, decided=True, votes_for=1,
+        votes_against=0, contested=0, no_evidence=0, by_signal=())
+    fields.update(changes)
+    return SettingEvidence(**fields)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("changes, error, fragment", [
+    ({"decided": 1}, TypeError, "decided must be a bool, got 1"),
+    ({"decided": "yes"}, TypeError, "decided must be a bool"),
+    ({"votes_for": -1}, ValueError, "votes_for must not be negative, got -1"),
+    ({"votes_against": -2}, ValueError, "votes_against must not be negative"),
+    ({"contested": -1}, ValueError, "contested must not be negative"),
+    ({"no_evidence": -1}, ValueError, "no_evidence must not be negative"),
+    ({"votes_for": 1.5}, TypeError, "votes_for must be an int"),
+    ({"no_evidence": True}, TypeError, "no_evidence must be an int"),
+    ({"setting": 5}, TypeError, "setting must be a Policy field name"),
+    ({"note": None}, TypeError, "note must be a str"),
+])
+def test_setting_evidence_refuses_bad_counts_and_flags(
+        changes: dict[str, object], error: type[Exception],
+        fragment: str) -> None:
+    with pytest.raises(error, match=fragment):
+        _setting_evidence(**changes)
+
+
+def test_setting_evidence_accepts_a_well_formed_value() -> None:
+    assert _setting_evidence().votes_for == 1
+
+
 def _decline(token: str) -> None:
     return None

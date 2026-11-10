@@ -186,12 +186,12 @@ def name_votes(text: str, lexicon: Lexicon
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
 
-#: The fewest votes on a setting that can decide it. Provisional: the
-#: thresholds are measured and tuned in a later step of the feature.
+#: The fewest names voting for a value that can decide it. Provisional:
+#: the thresholds are measured and tuned in a later step of the feature.
 _MIN_VOTES = 1
-#: The share of the votes cast on a setting that one value must hold
-#: STRICTLY MORE THAN to decide it, so a tie decides nothing.
-#: Provisional, like _MIN_VOTES.
+#: The share of the voting names that one value must hold STRICTLY MORE
+#: THAN to decide it, so a tie decides nothing. Provisional, like
+#: _MIN_VOTES.
 _MIN_SHARE = 0.5
 
 _NAME_ORDER = "name_order"
@@ -203,6 +203,40 @@ def _end(order: tuple[Role, ...]) -> tuple[Role, Role, Role]:
     """The end an order writes the family name at, spelled as a vote:
     ``FAMILY_FIRST`` for either family-first order."""
     return FAMILY_FIRST if order[0] is Role.FAMILY else GIVEN_FIRST
+
+
+def _order_ends(pairs: Iterable[tuple[Signal, Vote]]
+                ) -> frozenset[tuple[Role, Role, Role]]:
+    """The ends a name's order signals voted for: none, one (the name's
+    order vote) or both (the name is contested and casts no order
+    vote)."""
+    return frozenset(vote for signal, vote in pairs  # type: ignore[misc]
+                     if signal is not Signal.PATRONYMIC)
+
+
+def _checked_vote(signal: object, vote: object) -> tuple[Signal, Vote]:
+    """One (signal, vote) pair, validated: an order signal votes
+    ``GIVEN_FIRST`` or ``FAMILY_FIRST``, the patronymic signal a
+    ``PatronymicRule``."""
+    signal = Signal(signal)  # type: ignore[arg-type]  # ValueError names it
+    if signal is Signal.PATRONYMIC:
+        if not isinstance(vote, PatronymicRule):
+            raise TypeError(
+                f"NameEvidence vote for {signal.value!r} must be a "
+                f"PatronymicRule, got {vote!r}; pass e.g. "
+                f"{{Signal.PATRONYMIC: PatronymicRule.EAST_SLAVIC}}")
+        return signal, vote
+    if not isinstance(vote, (tuple, list)):
+        raise TypeError(
+            f"NameEvidence vote for {signal.value!r} must be an order, "
+            f"got {vote!r}; pass GIVEN_FIRST or FAMILY_FIRST")
+    order = tuple(vote)
+    if order not in (GIVEN_FIRST, FAMILY_FIRST):
+        raise ValueError(
+            f"NameEvidence vote for {signal.value!r} must name an end, "
+            f"GIVEN_FIRST or FAMILY_FIRST, got {vote!r}; a vote never "
+            f"spells FAMILY_FIRST_GIVEN_LAST, which is FAMILY_FIRST's end")
+    return signal, order  # type: ignore[return-value]
 
 
 def _label(value: object) -> str:
@@ -220,7 +254,11 @@ def _label(value: object) -> str:
 class NameEvidence:
     """One input name and the votes it cast, read with the base
     parser's lexicon. A name with a comma, no words or one word casts
-    none, and a name that casts none never disagrees with the group."""
+    none, and a name that casts none never disagrees with the group.
+    Order votes are one per NAME: the end the name's order signals
+    agree on. A name whose order signals point at both ends is
+    contested, casts no order vote and never disagrees on order.
+    ``votes`` keeps every signal's vote all the same."""
 
     #: The name exactly as the caller passed it.
     text: str
@@ -241,7 +279,7 @@ class NameEvidence:
                 f"NameEvidence votes must be a mapping of Signal to vote, "
                 f"got {votes!r}")
         pairs = tuple(sorted(
-            ((Signal(signal), vote) for signal, vote in votes.items()),
+            (_checked_vote(signal, vote) for signal, vote in votes.items()),
             key=lambda pair: _SIGNAL_RANK[pair[0]]))
         object.__setattr__(self, "text", text)
         object.__setattr__(self, "_votes", pairs)
@@ -264,13 +302,15 @@ class SettingEvidence:
     ``value`` is the setting's value under the suggested parser: the
     decided value where ``decided`` is true, else the base's. A decided
     value equal to the base's is not in the patch, which holds only
-    changes, but is still ``decided``. ``votes_for`` counts the votes
-    cast for ``value`` and ``votes_against`` the votes cast for any
-    other value, one vote per signal per name, so a name two signals
-    read casts two; ``no_evidence`` counts the NAMES that cast no vote
-    on this setting. ``by_signal`` breaks the votes down as
-    ``(signal, vote, count)`` rows. ``note``, where it is not empty,
-    says why a setting with votes was left undecided."""
+    changes, but is still ``decided``. The four counts are of NAMES and
+    add up to the group's size: ``votes_for`` the names whose vote is
+    for ``value``, ``votes_against`` the names whose vote is for
+    another value, ``contested`` the names whose signals point both
+    ways on this setting (and so cast no vote), and ``no_evidence`` the
+    names with no signal on it. ``by_signal`` breaks the signals' own
+    votes down as ``(signal, vote, count)`` rows, so a name two signals
+    read appears in two of them. ``note``, where it is not empty, says
+    why the setting was decided or left undecided as it was."""
 
     #: The ``Policy`` field this evidence is about.
     setting: str
@@ -280,6 +320,7 @@ class SettingEvidence:
     decided: bool
     votes_for: int
     votes_against: int
+    contested: int
     no_evidence: int
     by_signal: tuple[tuple[Signal, object, int], ...]
     note: str = ""
@@ -287,11 +328,38 @@ class SettingEvidence:
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.setting, str):
+            raise TypeError(
+                f"SettingEvidence setting must be a Policy field name "
+                f"(str), got {self.setting!r}; pass e.g. 'name_order'")
+        if not isinstance(self.decided, bool):
+            raise TypeError(
+                f"SettingEvidence decided must be a bool, got "
+                f"{self.decided!r}; pass True or False")
+        for name in ("votes_for", "votes_against", "contested",
+                     "no_evidence"):
+            count = getattr(self, name)
+            if isinstance(count, bool) or not isinstance(count, int):
+                raise TypeError(
+                    f"SettingEvidence {name} must be an int count of "
+                    f"names, got {count!r}; pass e.g. 0")
+            if count < 0:
+                raise ValueError(
+                    f"SettingEvidence {name} must not be negative, got "
+                    f"{count!r}; a count of names is 0 or more")
+        if not isinstance(self.note, str):
+            raise TypeError(
+                f"SettingEvidence note must be a str, got {self.note!r}; "
+                f"pass '' for no note")
+        object.__setattr__(self, "by_signal", tuple(self.by_signal))
+
     def __repr__(self) -> str:
         state = "decided" if self.decided else "undecided"
         return (f"SettingEvidence({self.setting}={_label(self.value)}, "
                 f"{state}, {self.votes_for} for, {self.votes_against} "
-                f"against, {self.no_evidence} no evidence)")
+                f"against, {self.contested} contested, {self.no_evidence} "
+                f"no evidence)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -343,9 +411,11 @@ class Suggestion:
                 state = _label(e.value) + ("" if changed else " (as the base)")
             else:
                 state = f"unchanged ({_label(e.value)})"
-            if e.votes_for or e.votes_against:
+            if e.votes_for or e.votes_against or e.contested:
+                contested = (f"{e.contested} contested, "
+                             if e.contested else "")
                 counts = (f"{e.votes_for} for, {e.votes_against} against, "
-                          f"{e.no_evidence} no evidence")
+                          f"{contested}{e.no_evidence} no evidence")
             else:
                 counts = "no evidence"
             lines.append(f"  {e.setting}  {state}  {counts}")
@@ -369,75 +439,95 @@ class Suggestion:
             self.base, policy=apply_patch(self.base.policy, self.patch))
 
     def disagreeing(self) -> tuple[NameEvidence, ...]:
-        """The names that cast a vote against a decided setting's
-        value, in input order. A setting left undecided has no answer
-        to disagree with, and a name that cast no vote never
-        disagrees."""
+        """The names whose vote is against a decided setting's value,
+        in input order. A setting left undecided has no answer to
+        disagree with; a name that cast no vote, or whose order signals
+        are contested, never disagrees on order; and a name carrying an
+        East Slavic patronymic never disagrees on order where the East
+        Slavic rule is decided, since the rule reorders it."""
         decided = {e.setting: e.value for e in self.evidence if e.decided}
         if not decided:
             return ()
-        return tuple(n for n in self.names
-                     if any(_against(signal, vote, decided)
-                            for signal, vote in n._votes))
+        return tuple(n for n in self.names if _disagrees(n, decided))
 
 
 def _setting_of(signal: Signal) -> str:
     return _PATRONYMIC_RULES if signal is Signal.PATRONYMIC else _NAME_ORDER
 
 
-def _against(signal: Signal, vote: Vote, decided: dict[str, object]) -> bool:
-    """Whether one vote contradicts a decided setting's value."""
-    setting = _setting_of(signal)
-    if setting not in decided:
+def _disagrees(name: NameEvidence, decided: dict[str, object]) -> bool:
+    """Whether one name's votes contradict a decided setting."""
+    patronymic = dict(name._votes).get(Signal.PATRONYMIC)
+    rules = decided.get(_PATRONYMIC_RULES)
+    if rules is not None and patronymic is not None:
+        if patronymic not in rules:  # type: ignore[operator]
+            return True
+    order = decided.get(_NAME_ORDER)
+    if order is None:
         return False
-    value = decided[setting]
-    if setting == _NAME_ORDER:
-        return vote != _end(value)  # type: ignore[arg-type]
-    return vote not in value  # type: ignore[operator]
+    if (rules is not None and patronymic is PatronymicRule.EAST_SLAVIC
+            and patronymic in rules):  # type: ignore[operator]
+        return False
+    ends = _order_ends(name._votes)
+    return len(ends) == 1 and next(iter(ends)) != _end(order)  # type: ignore[arg-type]
 
 
 class _Tally:
-    """The group's votes on one setting, gathered in one pass. A plain
-    class rather than a dataclass: it is never pickled or returned."""
+    """The group's votes on one setting, one per name, gathered in one
+    pass. A plain class rather than a dataclass: it is never pickled or
+    returned."""
 
-    __slots__ = ("names", "voters", "by_signal")
+    __slots__ = ("names", "contested", "by_name", "by_signal")
 
     def __init__(self) -> None:
         self.names = 0
-        self.voters = 0
+        self.contested = 0
+        #: names per value voted for
+        self.by_name: Counter[Vote] = Counter()
+        #: signal votes per (signal, value)
         self.by_signal: Counter[tuple[Signal, Vote]] = Counter()
 
-    def counts(self) -> Counter[Vote]:
-        totals: Counter[Vote] = Counter()
-        for (_, vote), count in self.by_signal.items():
-            totals[vote] += count
-        return totals
+    def add(self, pairs: list[tuple[Signal, Vote]]) -> None:
+        """One name's votes on this setting: its signals' votes, and
+        one name vote where they agree."""
+        self.names += 1
+        for pair in pairs:
+            self.by_signal[pair] += 1
+        values = {vote for _, vote in pairs}
+        if len(values) == 1:
+            self.by_name[values.pop()] += 1
+        elif values:
+            self.contested += 1
 
     def winner(self) -> Vote | None:
-        """The value holding strictly more than _MIN_SHARE of at least
-        _MIN_VOTES votes, if one does."""
-        counts = self.counts()
+        """The value whose names are at least _MIN_VOTES and strictly
+        more than _MIN_SHARE of the names that cast a vote, if one
+        is."""
+        counts = self.by_name
         total = sum(counts.values())
-        if total < _MIN_VOTES:
+        if not counts:
             return None
         vote, count = max(counts.items(), key=lambda item: item[1])
-        return vote if count > _MIN_SHARE * total else None
+        if count < _MIN_VOTES or count <= _MIN_SHARE * total:
+            return None
+        return vote
 
     def evidence(self, setting: str, value: object, decided: bool,
                  is_for: Callable[[Vote], bool], note: str = ""
                  ) -> SettingEvidence:
-        """Evidence for ``value``; ``is_for`` says which votes are for
-        it."""
-        counts = self.counts()
+        """Evidence for ``value``; ``is_for`` says which name votes are
+        for it."""
+        counts = self.by_name
         votes_for = sum(c for v, c in counts.items() if is_for(v))
         rows = tuple(sorted(
             ((signal, vote, count)
              for (signal, vote), count in self.by_signal.items()),
             key=lambda row: (_SIGNAL_RANK[row[0]], _label(row[1]))))
+        voters = sum(counts.values())
         return SettingEvidence(
-            setting, value, decided, votes_for,
-            sum(counts.values()) - votes_for, self.names - self.voters,
-            rows, note)
+            setting, value, decided, votes_for, voters - votes_for,
+            self.contested, self.names - voters - self.contested, rows,
+            note)
 
 
 def _patronymic_winner(tally: _Tally, any_voters: int
@@ -447,7 +537,7 @@ def _patronymic_winner(tally: _Tally, any_voters: int
     casts at most one patronymic vote, so its votes count names: a
     share of the group, not of the patronymic votes alone, so one
     patronymic among many given-first names decides nothing."""
-    counts = tally.counts()
+    counts = tally.by_name
     if not counts:
         return None
     rule, count = max(counts.items(), key=lambda item: item[1])
@@ -557,15 +647,13 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     for text in _texts(names):
         votes = name_votes(text, parser.lexicon)
         evidence.append(NameEvidence(text, votes))
-        cast = set()
         any_voters += bool(votes)
+        per_setting: dict[str, list[tuple[Signal, Vote]]] = {
+            setting: [] for setting in tallies}
         for signal, vote in votes.items():
-            setting = _setting_of(signal)
-            tallies[setting].by_signal[(signal, vote)] += 1
-            cast.add(setting)
+            per_setting[_setting_of(signal)].append((signal, vote))
         for setting, tally in tallies.items():
-            tally.names += 1
-            tally.voters += setting in cast
+            tally.add(per_setting[setting])
     policy = parser.policy
     patronymic, patronymic_fields, settled = _decide_patronymic(
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
