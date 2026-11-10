@@ -817,13 +817,16 @@ def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
     ("Jack B. al", "Jack S. (née al)"),
     ("de, Jack", "Smith, Jack (née de)"),
     ("Jack de la", "Jack Smith (née de la)"),
+    ("Jack van der", "Smith, Jack (née van der)"),
+    ("Jack De", "Jack Smith (née De)"),
 ])
 def test_a_birth_name_of_particles_alone_is_keyed_as_the_check_compares_it(
         a: str, b: str) -> None:
     # the check matches the family against the birth name whole, its
     # particles kept, so the keys add it whole too: its base, the text
     # less its particles, is empty and once added no key (#1286)
-    assert _across.check(a, b).consistent
+    for x, y in ((a, b), (b, a)):
+        assert _across.check(x, y).consistent
     assert _across.keys(a) & _across.keys(b)
 
 
