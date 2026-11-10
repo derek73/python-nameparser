@@ -889,6 +889,7 @@ def test_a_dotted_title_reads_as_listed_in_its_language() -> None:
     # (rules/H10), so the reading names the vocabulary and its file
     us = Parser().parse("U.S. Senator John Smith").tokens[0].reading
     pd = Parser().parse("P.D. Dr. Hans Meier").tokens[0].reading
+    assert us is not None and pd is not None
     assert (us.source, us.languages) == ("vocabulary", ("en",))
     assert (pd.source, pd.languages) == ("vocabulary", ("de",))
 
