@@ -602,6 +602,7 @@
 {"name": "Cem Akin, Prof.", "title": "Prof.", "given": "Cem", "family": "Akin", "initials": "C. A."}
 {"name": "Cerda y Aragón, Tomás Antonio de la", "given": "Tomás", "middle": "Antonio", "family": "de la Cerda y Aragón", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "T. A. C. A."}
 {"name": "Cetto, August von", "given": "August", "family": "von Cetto", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. C."}
+{"name": "Ch. Tahir Mehmood", "title": "Ch.", "given": "Tahir", "family": "Mehmood", "initials": "T. M."}
 {"name": "Chancellor Jane Smith", "given": "Chancellor", "middle": "Jane", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. J. S."}
 {"name": "Chancellor Smith", "given": "Chancellor", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. S."}
 {"name": "Chang, Andy C I", "given": "Andy", "middle": "C", "family": "Chang", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "A. C. C.", "generation": "I"}
@@ -615,6 +616,7 @@
 {"name": "Cheikh Anta Diop", "given": "Cheikh", "middle": "Anta", "family": "Diop", "initials": "C. A. D."}
 {"name": "Chemistry Jane Smith", "given": "Chemistry", "middle": "Jane", "family": "Smith", "initials": "C. J. S."}
 {"name": "Cherice J. (Johnson) Williams", "given": "Cherice", "middle": "J.", "family": "Williams", "nickname": "Johnson", "initials": "C. J. W."}
+{"name": "Chibrikova, Yu. A.", "given": "Yu.", "middle": "A.", "family": "Chibrikova", "initials": "Y. A. C."}
 {"name": "Chief Dean and Mary Smith", "title": "Chief Dean and Mary", "family": "Smith", "initials": "S."}
 {"name": "Chief Judge J. Leon Holmes", "title": "Chief Judge", "given": "J.", "middle": "Leon", "family": "Holmes", "initials": "J. L. H."}
 {"name": "Chief Judge Sharon Lovelace Blackburn", "title": "Chief Judge", "given": "Sharon", "middle": "Lovelace", "family": "Blackburn", "initials": "S. L. B."}
@@ -946,6 +948,7 @@
 {"name": "Dr. Wang Xiaoming Jr.", "title": "Dr.", "given": "Wang", "family": "Xiaoming", "suffix": "Jr.", "initials": "W. X.", "generation": "Jr."}
 {"name": "Dr. Wang, Xiaoming", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Xiaoming", "family": "Wang", "initials": "X. W."}
 {"name": "Dr. Williams", "title": "Dr.", "family": "Williams", "initials": "W."}
+{"name": "Dr. Yu. Petrov", "title": "Dr.", "given": "Yu.", "family": "Petrov", "initials": "Y. P."}
 {"name": "Dr. abdul salam", "title": "Dr.", "given": "abdul", "family": "salam", "initials": "a. s.", "capitalized_force": "Dr. Abdul Salam"}
 {"name": "Dr. abdul salam ahmed salem", "title": "Dr.", "given": "abdul salam", "middle": "ahmed", "family": "salem", "initials": "a. s. a. s.", "capitalized_force": "Dr. Abdul Salam Ahmed Salem"}
 {"name": "Dr. de la Vega, Juan", "title": "Dr.", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
@@ -2508,6 +2511,7 @@
 {"name": "Ketill Jensson", "given": "Ketill", "family": "Jensson", "initials": "K. J."}
 {"name": "Kevin", "given": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Kevin", "order": "FAMILY_FIRST", "given": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
+{"name": "Kh. O. Bezirdzhyan", "given": "Kh.", "middle": "O.", "family": "Bezirdzhyan", "initials": "K. O. B."}
 {"name": "Khaled el-Hassani ben el-Hachemi", "given": "Khaled", "middle": "el-Hassani ben", "family": "el-Hachemi", "initials": "K. e. b. e.", "capitalized_force": "Khaled El-Hassani Ben El-Hachemi"}
 {"name": "Kho Liang Ie", "given": "Kho", "middle": "Liang", "family": "Ie", "initials": "K. L. I."}
 {"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
@@ -4014,6 +4018,7 @@
 {"name": "Tounens, Antoine de", "given": "Antoine", "family": "de Tounens", "initials": "A. T."}
 {"name": "Traberth, Julie", "given": "Julie", "family": "Traberth", "initials": "J. T."}
 {"name": "Tran Thi Mai", "order": "FAMILY_FIRST", "given": "Thi", "middle": "Mai", "family": "Tran", "initials": "T. M. T."}
+{"name": "Ts. Dr. Norziha Che Him", "title": "Ts. Dr.", "given": "Norziha", "middle": "Che", "family": "Him", "initials": "N. C. H."}
 {"name": "Tschagribeg", "given": "Tschagribeg", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "T."}
 {"name": "Tschurtschenthaler, Anton von", "given": "Anton", "family": "von Tschurtschenthaler", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. T."}
 {"name": "Tunde Seun Okeke", "given": "Tunde", "middle": "Seun", "family": "Okeke", "initials": "T. S. O."}
@@ -4104,6 +4109,7 @@
 {"name": "Velasquez y Garcia, Juan Q., Jr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. Q. V. G.", "generation": "Jr."}
 {"name": "Velasquez y Garcia, Juan, Jr.", "given": "Juan", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. V. G.", "generation": "Jr."}
 {"name": "Venerable Ananda", "title": "Venerable", "family": "Ananda", "initials": "A."}
+{"name": "Vice Yu. Petrov", "given": "Vice", "middle": "Yu.", "family": "Petrov", "initials": "V. Y. P."}
 {"name": "Vicente Becerra Vaca", "given": "Vicente", "middle": "Becerra", "family": "Vaca", "initials": "V. B. V."}
 {"name": "Vicente Gómez Mier", "given": "Vicente", "middle": "Gómez", "family": "Mier", "initials": "V. G. M."}
 {"name": "Vicente Martín y Soler", "given": "Vicente", "family": "Martín y Soler", "initials": "V. M. S."}
@@ -4242,6 +4248,8 @@
 {"name": "Yin a Le", "given": "Yin", "middle": "a", "family": "Le", "initials": "Y. a. L.", "capitalized_force": "Yin A Le"}
 {"name": "Yoshi Emomoto", "given": "Yoshi", "family": "Emomoto", "initials": "Y. E."}
 {"name": "Yrsa Sigurðardóttir", "given": "Yrsa", "family": "Sigurðardóttir", "initials": "Y. S."}
+{"name": "Yu. A. Chibrikova", "given": "Yu.", "middle": "A.", "family": "Chibrikova", "initials": "Y. A. C."}
+{"name": "Yu. Smith, Ed", "given": "Yu.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "Y. S.", "capitalized_force": "Yu. Smith, ED"}
 {"name": "Yāzīǧī, Ibrāhīm al-", "given": "Ibrāhīm", "family": "al- Yāzīǧī", "initials": "I. Y."}
 {"name": "Yıldırım, Fatma Su", "given": "Fatma", "middle": "Su", "family": "Yıldırım", "initials": "F. S. Y."}
 {"name": "Yılmaz Irmak", "order": "FAMILY_FIRST", "given": "Irmak", "family": "Yılmaz", "initials": "I. Y."}
@@ -4250,6 +4258,7 @@
 {"name": "Z. Dara, Gavril", "given": "Gavril", "family": "Z. Dara", "initials": "G. Z. D."}
 {"name": "Z. Dara, Gavril A.", "order": "FAMILY_FIRST", "given": "Gavril", "middle": "A.", "family": "Z. Dara", "initials": "G. A. Z. D."}
 {"name": "Z. Gavril Dara", "given": "Z.", "middle": "Gavril", "family": "Dara", "initials": "Z. G. D."}
+{"name": "ZH. I. ALFEROV", "given": "ZH.", "middle": "I.", "family": "ALFEROV", "initials": "Z. I. A.", "capitalized": "Zh. I. Alferov"}
 {"name": "Zabala Carlos", "order": "FAMILY_FIRST", "given": "Carlos", "family": "Zabala", "initials": "C. Z."}
 {"name": "Zabala, Carlos", "given": "Carlos", "family": "Zabala", "initials": "C. Z."}
 {"name": "Zacharias Konrad von Uffenbach", "given": "Zacharias", "middle": "Konrad", "family": "von Uffenbach", "initials": "Z. K. U."}
@@ -5371,6 +5380,7 @@
 {"name": "Штёбер, Цецилия Хэмиш", "given": "Цецилия", "middle": "Хэмиш", "family": "Штёбер", "initials": "Ц. Х. Ш."}
 {"name": "Шцёбер Зазілія Хэміш", "order": "FAMILY_FIRST", "given": "Зазілія", "middle": "Хэміш", "family": "Шцёбер", "initials": "З. Х. Ш."}
 {"name": "Шцёбер, Зазілія Хэміш", "given": "Зазілія", "middle": "Хэміш", "family": "Шцёбер", "initials": "З. Х. Ш."}
+{"name": "Ю. А. Чибрикова", "given": "Ю.", "middle": "А.", "family": "Чибрикова", "initials": "Ю. А. Ч."}
 {"name": "Юлия Кръстева", "given": "Юлия", "family": "Кръстева", "initials": "Ю. К."}
 {"name": "Юлія Волчкова", "given": "Юлія", "family": "Волчкова", "initials": "Ю. В."}
 {"name": "Юрий Борисович Хржановский", "given": "Юрий", "middle": "Борисович", "family": "Хржановский", "initials": "Ю. Б. Х."}
