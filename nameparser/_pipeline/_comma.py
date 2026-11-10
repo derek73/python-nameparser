@@ -364,8 +364,7 @@ def _lone_word(state: ParseState, seg0: Sequence[int]) -> bool:
     particle = False
     for i in seg0[:end]:
         token = tokens[i]
-        if ("particle" in token.tags and not state.one_case
-                and token.text.islower()):
+        if "particle" in token.tags and token.text.islower():
             particle = True
         elif word is not None:
             return False
@@ -377,9 +376,10 @@ def _lone_word(state: ParseState, seg0: Sequence[int]) -> bool:
         # an empty head reads as C15 has it, as 'Smith, X' less the
         # surname
         return not particle
-    # a title alone is no surname ('Dr. VI, M.D.'); a lower-case word
-    # behind lower-case particles is a name all in lower case
-    return ("vocab:title" not in word.tags
+    # a title left alone by the walk is no surname ('Dr. VI, M.D.'), a
+    # title word standing alone is one ('Knight, J.P.'); a lower-case
+    # word behind lower-case particles is a name all in lower case
+    return ((end == len(seg0) or "vocab:title" not in word.tags)
             and not (particle and word.text.islower()))
 
 
@@ -405,10 +405,11 @@ def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
             or ROMAN.match(text.rstrip(".")) is not None):
         return False
     if is_suffix_piece(p, pt, tokens):
-        return "vocab:title" not in token.tags or text.isupper()
+        return ("vocab:title" not in token.tags or text.isupper()
+                or bool(state.one_case))
     if AMBIGUOUS_ACRONYM_TAG in token.tags:
         return True
-    if (state.one_case or "particle" in token.tags
+    if (state.one_case
             or not caps_shape_candidate(text, state.lexicon, state.policy,
                                         one_case=False)):
         return False
@@ -571,7 +572,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     for at, p in enumerate(p1):
         if len(p) == 1 and "." in (text := texts[p[0]]):
             tags = tokens[p[0]].tags
-            if (("vocab:suffix" in tags or AMBIGUOUS_ACRONYM_TAG in tags)
+            if ("vocab:suffix" in tags
                     and SHAPE_ACRONYM_TAG not in tags
                     and is_letter_run(text)
                     # every letter a capital ('J.씨' is a glued

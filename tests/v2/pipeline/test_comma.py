@@ -16,7 +16,7 @@ import dataclasses
 
 import pytest
 
-from nameparser._policy import Policy
+from nameparser._policy import CapsSuffixes, Policy
 from nameparser._types import AmbiguityKind, Role
 
 # synthetic vocabulary: behavior given a lexicon, never default() contents
@@ -500,6 +500,9 @@ def test_a_listed_run_behind_one_name_word_is_the_given_name(
     assert report.kind is AmbiguityKind.SUFFIX_OR_NAME
     assert report.alternative is not None
     assert report.alternative.role is Role.SUFFIX
+    # naming the run's own letters, which T7 parts
+    assert [t.text for t in report.tokens] == [
+        t.text for t in n.tokens if t.role in (Role.GIVEN, Role.MIDDLE)][:2]
 
 
 @pytest.mark.parametrize(("text", "suffix"), [
@@ -524,7 +527,11 @@ def test_a_listed_run_behind_one_name_word_is_the_given_name(
 ])
 def test_a_listed_run_stays_the_credential_outside_the_lone_word(
         text: str, suffix: str) -> None:
-    assert _RUN_PARSER.parse(text).suffix == suffix
+    n = _RUN_PARSER.parse(text)
+    assert n.suffix == suffix
+    # no letter of the run read as a name
+    assert not any(t.role in (Role.GIVEN, Role.MIDDLE)
+                   and "initial" in t.tags for t in n.tokens)
 
 
 def test_a_word_the_count_leaves_out_is_a_word_as_written() -> None:
@@ -585,6 +592,27 @@ def test_a_decomposed_run_reads_as_its_composed_twin() -> None:
     ("Smith, J.P. Ph. D.", "", "J.P. Ph. D."),
     # a run of words that is no suffix piece is none
     ("Smith, J.P. Mr. and Mrs.", "J.", ""),
+    # an empty or nickname-only head reads as C15 has it, as 'Smith, X'
+    # less the surname, the company arm included
+    (", J.P.", "J.", ""),
+    ("(Jo), M.D.", "M.", ""),
+    (", M.D. PhD", "", "M.D. PhD"),
+    # a suffix word in front makes the run; a dual in front is a title,
+    # as C5's paired initials read behind one
+    ("Smith, Jr. J.P.", "", "Jr. J.P."),
+    ("Smith, MS J.P.", "J.", ""),
+    # a member of the ambiguous class behind the run is company; a
+    # numeral by shape is none
+    ("Jansen, J.P. MA", "", "J.P. MA"),
+    ("Smith, M.D. VI", "M.", "VI"),
+    # one case: a dual is company whatever its case, and the caps shape
+    # has no contrast to ask
+    ("smith, m.d. ms", "", "m.d. ms"),
+    ("SMITH, M.D. FRCS", "M.", ""),
+    # a title word that is the whole head is a surname ('Knight'); the
+    # run needs no closing stop
+    ("Knight, J.P.", "J.", ""),
+    ("Smith, M.D", "M.", ""),
     # C10: a glued delimiter reads as a space in its place, as the
     # unlisted twin 'Smith, X.Q.;' reads
     ("Smith, J.P.;", "J.P.;", ""),
@@ -598,3 +626,31 @@ def test_a_listed_run_behind_one_word_in_the_default_vocabulary(
         text: str, given: str, suffix: str) -> None:
     n = parse(text)
     assert (n.given, n.suffix) == (given, suffix)
+
+
+@pytest.mark.parametrize(("text", "caps", "suffix"), [
+    # the caps shape decides whether an unlisted capitals word is company
+    ("Smith, M.D. FRCS", CapsSuffixes.OFF, ""),
+    ("McDONALD, J.P. ANNE", CapsSuffixes.EVERYWHERE, "J.P. ANNE"),
+])
+def test_the_caps_switch_reaches_the_runs_company(
+        text: str, caps: CapsSuffixes, suffix: str) -> None:
+    p = Parser(policy=Policy(unlisted_caps_suffixes=caps))
+    assert p.parse(text).suffix == suffix
+
+
+@pytest.mark.parametrize("policy", [
+    Policy(lenient_comma_suffixes=False),
+    Policy(unlisted_dotted_suffixes=False),
+])
+def test_the_comma_switches_leave_a_listed_run_the_given_name(
+        policy: Policy) -> None:
+    n = Parser(policy=policy).parse("Jansen, J.P.")
+    assert (n.given, n.middle, n.suffix) == ("J.", "P.", "")
+
+
+def test_a_listed_run_read_as_initials_matches_the_name_written_out() -> None:
+    # the C16 parse reaches the name match as initials, as 'J. P.' does
+    check = Parser().matching().check
+    assert check("Jansen, J.P.", "Jan Pieter Jansen").consistent
+    assert check("Jansen, J.P.", "J. P. Jansen").consistent

@@ -3842,6 +3842,7 @@
 {"name": "Smith, Jr., John", "family": "Smith", "suffix": "Jr., John", "ambiguities": ["COMMA_STRUCTURE"], "initials": "S.", "generation": "Jr.", "credentials": "John"}
 {"name": "Smith, Jr., PhD", "family": "Smith", "suffix": "Jr., PhD", "initials": "S.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "Smith, LEED AP", "given": "LEED", "middle": "AP", "family": "Smith", "initials": "L. A. S.", "capitalized_force": "Leed Ap Smith"}
+{"name": "Smith, M.B. ChB", "given": "M.", "middle": "B. ChB", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. B. C. S.", "capitalized_force": "M.B. Chb Smith"}
 {"name": "Smith, M.D.", "given": "M.", "middle": "D.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. D. S."}
 {"name": "Smith, M.D. / PhD", "family": "Smith", "suffix": "M.D. / PhD", "initials": "S."}
 {"name": "Smith, M.D. MS", "family": "Smith", "suffix": "M.D. MS", "initials": "S."}
