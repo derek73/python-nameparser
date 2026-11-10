@@ -45,7 +45,7 @@ academic = { default = false, cased = "MgA", issue = [753, 848], expands = "magi
 
 [[word]]
 text = "mg.a"
-academic = { issue = 1305, same_as = "mga", expands = "magistr umění, Master of Arts", note = "MgA, magistr umění, written with a stop inside; glued at the stop it reads whole rather than as Mgr. or Mg. and an initial (rules/T8). cz-candidates opens 5 of its 170,181 records with the two spellings (Mgr.A. Marek Rejent 4, Mg.A. Tereza Kučerová 1), no other local corpus any. On by default where mga is not: mga's collision is bare initials (MGA Dinusha), which these spellings are not written as; none of the folds mga and mgra has a bearer in any source tools/name_usage.py reads (2026-11-10)" }
+academic = { issue = 1305, same_as = "mga", expands = "magistr umění, Master of Arts", note = "MgA, magistr umění, written with a stop inside; glued at the stop it reads whole rather than as Mgr. or Mg. and an initial (rules/T8). cz-candidates holds the two spellings in 5 of its 170,181 records (Mgr.A. 4, as Mgr.A. Marek Rejent, Mg.A. 1, Mg.A. Tereza Kučerová), 4 opening the name and 1 behind doc., no other local corpus any. On by default where mga is not: mga's collision is bare initials (MGA Dinusha), which these spellings are not written as; none of the folds mga and mgra has a bearer in any source tools/name_usage.py reads (2026-11-10)" }
 
 [[word]]
 text = "mgr.a"

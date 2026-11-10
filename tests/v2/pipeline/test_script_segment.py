@@ -1209,9 +1209,10 @@ def test_the_divided_readings_the_reviews_found(
     ("Dr.A. Supriya", "Dr.", "A."),
     ("Dra.A. Silva", "Dra.", "A."),
     ("Mgr.B. Novák", "Mgr.", "B."),
-    # ending the name (H5's trailing chain) and before a family comma
+    # ending the name (H5's trailing chain), and opening a family name
+    # before a family comma (H6)
     ("John Smith Dr.C.", "Dr.C.", "John"),
-    ("Saavedra Castellanos, Dr.C. Andrés", "Dr.C.", "Andrés"),
+    ("Dr.C. Saavedra Castellanos, Andrés", "Dr.C.", "Andrés"),
 ])
 def test_a_degree_listed_with_its_stops_stays_whole(
         text: str, title: str, given: str) -> None:
