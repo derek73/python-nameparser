@@ -422,7 +422,7 @@ class Matching:
             for i, r in enumerate(roles):
                 if r.outcome in self.accept or not _RULES[r.role].across:
                     continue
-                found = self._across(r.role, left, right)
+                found = self._pick_across(r.role, left, right, middles)
                 if found is None:
                     continue
                 cross, index = found
@@ -451,17 +451,47 @@ class Matching:
                            tuple(roles), tuple(across),
                            left_alternative, right_alternative)
 
+    def _pick_across(self, role: Role, left: ParsedName, right: ParsedName,
+                     middles: list[list[str]],
+                     ) -> tuple[CrossRoleMatch, int | None] | None:
+        """The cross-role match `role` takes (`_across`), judged with
+        the middle names it leaves: a match that consumes a middle word
+        leaves the rest to compare, so the matches are ranked by
+        whether that comparison is accepted, then by the match's own
+        outcome, then by that comparison's outcome, then as `_across`
+        orders them, which names no side, so the pick is the same with
+        the names swapped (decisions/name-matching, 2026-11-09 #1263).
+        `middles` holds each side's middle words still to compare."""
+        found = self._across(role, left, right)
+        if not found:
+            return None
+        lexicon, rule = self.parser.lexicon, _RULES[Role.MIDDLE]
+
+        def rank(item: tuple[tuple[object, ...],
+                             tuple[CrossRoleMatch, int | None]]
+                 ) -> tuple[object, ...]:
+            order, (cross, index) = item
+            rest = [list(words) for words in middles]
+            if index is not None:
+                del rest[0 if cross.left_role is Role.MIDDLE else 1][index]
+            la, lb = (" ".join(words) for words in rest)
+            middle = _role_outcome(rule, la, lb, left, right, lexicon,
+                                   self.accept)
+            return (middle not in self.accept, -_STRENGTH[cross.outcome],
+                    -_STRENGTH[middle], *order)
+        return min(found, key=rank)[1]
+
     def _across(self, role: Role, left: ParsedName, right: ParsedName,
-                ) -> tuple[CrossRoleMatch, int | None] | None:
-        """The strongest match of `role` on one side against one of its
-        cross roles (its `_RULES` row's `across`) on the other, or
-        `None`, with the index of the middle word it used (`None` for a
-        role other than the middle; the match's middle role names the
-        side): a middle name
-        word by word, the other roles whole. Only a full name on both
-        sides counts (`_full_outcome`), never an initial. The pick is by
-        outcome, then by texts and roles named without a side, so it is
-        the same with the names swapped."""
+                ) -> list[tuple[tuple[object, ...],
+                                tuple[CrossRoleMatch, int | None]]]:
+        """Every match of `role` on one side against one of its cross
+        roles (its `_RULES` row's `across`) on the other, each with the
+        index of the middle word it used (`None` for a role other than
+        the middle; the match's middle role names the side) and its
+        place in the order that names no side: by outcome, then by the
+        cross role, then by texts. A middle name is read word by word, the other roles
+        whole. Only a full name on both sides counts (`_full_outcome`),
+        never an initial."""
         lexicon = self.parser.lexicon
         rule = _RULES[role]
         found: list[tuple[tuple[object, ...],
@@ -484,7 +514,7 @@ class Matching:
                             (-_STRENGTH[outcome], _RANK_ROLE[other], theirs, mine),
                             (CrossRoleMatch(lrole, rrole, outcome, la, ra),
                              index)))
-        return min(found, key=lambda f: f[0])[1] if found else None
+        return found
 
     def _readings(self, name: ParsedName
                   ) -> list[tuple[ParsedName, Ambiguity | None]]:
@@ -1023,15 +1053,74 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     """The middle role word by word, in order: each aligned pair by
     `_text_outcome` in `group`, each word past the shorter side
     one-sided, the role taking the weakest; `same` where both are
-    empty."""
+    empty. Where one side holds more words, the shorter side's words
+    may instead align, in order, with any of the longer side's, every
+    aligned pair accepted and the words left over one-sided (`Beth` /
+    `Anne Beth`); the accepted one of that alignment and the
+    left-aligned reading is taken, or where both or neither are, the
+    stronger, so accepting more never weakens the middle row compared
+    on its own
+    (decisions/name-matching, 2026-11-09 #1263). Two middle names of
+    as many words compare pair by pair."""
     wa, wb = a.split(), b.split()
     if not wa and not wb:
         return Outcome.SAME
     outcomes = [_text_outcome(x, y, lexicon, group, accept)
                 for x, y in zip(wa, wb)]
-    if len(wa) != len(wb):
-        outcomes.append(Outcome.ONE_SIDE)
-    return _weakest(outcomes)
+    if len(wa) == len(wb):
+        return _weakest(outcomes)
+    left = _one_sided(_weakest(outcomes), accept)
+    short, long = (wa, wb) if len(wa) < len(wb) else (wb, wa)
+    aligned = _subsequence_outcome(short, long, lexicon, group, accept)
+    if aligned is None:
+        return left
+    aligned = _one_sided(aligned, accept)
+    # an accepted reading over one that is not, else the stronger, as a
+    # row reports the strongest outcome that holds and is accepted, else
+    # the strongest that holds (`_pick`)
+    if (aligned in accept) != (left in accept):
+        return aligned if aligned in accept else left
+    return aligned if _STRENGTH[aligned] > _STRENGTH[left] else left
+
+
+def _one_sided(outcome: Outcome, accept: frozenset[Outcome]) -> Outcome:
+    """`outcome` with a word left over on one side: the weaker of it and
+    `one-side`, and `one-side` itself where the caller does not accept
+    it, so an accepted outcome weaker than it (`familiar-form`) never
+    hides the one-sided word."""
+    weakest = _weakest((outcome, Outcome.ONE_SIDE))
+    if Outcome.ONE_SIDE not in accept and weakest in accept:
+        return Outcome.ONE_SIDE
+    return weakest
+
+
+def _subsequence_outcome(short: list[str], long: list[str], lexicon: Lexicon,
+                         group: str, accept: frozenset[Outcome],
+                         ) -> Outcome | None:
+    """The strongest weakest outcome over the in-order alignments of
+    every word of `short` with words of `long`, each aligned pair's
+    outcome accepted; `None` where no such alignment exists. Word `i`
+    of `short` can only align with words `i` to `i + slack` of `long`,
+    so only that band is compared."""
+    slack = len(long) - len(short)
+    # best[i, j]: the strongest weakest outcome aligning short[i:] into
+    # long[j:], or None; only cells with 0 <= j - i <= slack are read
+    best: dict[tuple[int, int], Outcome | None] = {}
+    for i in range(len(short), -1, -1):
+        for j in range(i + slack, i - 1, -1):
+            if i == len(short):
+                best[i, j] = Outcome.SAME
+                continue
+            found = best[i, j + 1] if j < i + slack else None
+            outcome = _text_outcome(short[i], long[j], lexicon, group, accept)
+            if outcome in accept:
+                rest = best[i + 1, j + 1]
+                if rest is not None:
+                    here = _weakest((outcome, rest))
+                    if found is None or _STRENGTH[here] > _STRENGTH[found]:
+                        found = here
+            best[i, j] = found
+    return best[0, 0]
 
 
 def _noted(a: str, b: str, lexicon: Lexicon, group: str,

@@ -1869,3 +1869,152 @@ def test_a_given_name_opening_with_a_stray_mark_keys_its_first_letter(
     a, b = base.replace(given=stray + "Pierre"), base.replace(given="Pierre")
     assert m.check(a, b).consistent
     assert m.keys(a) == m.keys(b) == {"dupont;p"}
+
+
+# -- middle names aligned as a subsequence (#1263) -----------------------------
+
+@pytest.mark.parametrize("a, b", [
+    ("John Beth Smith", "John Anne Beth Smith"),
+    ("John B. Smith", "John A. B. Smith"),
+    ("Gonzalo Fernández Llona", "Gonzalo José Fernández Llona"),
+    ("John Anne Smith", "John Anne Marie Beth Smith"),
+])
+def test_a_middle_name_aligns_with_any_words_of_a_longer_one(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and r.consistent
+        assert m.keys(x) & m.keys(y)
+
+
+@pytest.mark.parametrize("a, b", [
+    # as many words: compared pair by pair, so a typo still conflicts
+    ("Abdon Assis Injosa Andrade", "Abdon Assis Inojosa Andrade"),
+    # the order of the words is kept
+    ("John Anne Beth Smith", "John Beth Anne Smith"),
+    # a word of the shorter side that no word of the longer agrees with
+    ("John Clara Smith", "John Anne Beth Smith"),
+])
+def test_a_middle_name_still_conflicts_where_no_alignment_holds(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["middle"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+def test_a_consumed_middle_word_leaves_the_rest_to_align() -> None:
+    # across-roles: John is the other's middle name, consumed, and what is
+    # left (Beth against Anne Beth) aligns, a conflict from the left
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    r = across.check("John Beth Hoover", "Edgar John Anne Beth Hoover")
+    assert r.consistent and r["given"].outcome is Outcome.ACROSS_ROLES
+    assert r["middle"].outcome is Outcome.ONE_SIDE
+
+
+@pytest.mark.parametrize("a, b", [
+    # Edgar and John each match the other's given name across roles;
+    # consuming Edgar leaves Anne Beth / John Beth, which conflict, and
+    # consuming John leaves Edgar Anne Beth / Beth, which align
+    ("John Edgar Anne Beth Hoover", "Edgar John Beth Hoover"),
+    ("John Anne Beth Carol Smith", "Anne John Carol Smith"),
+])
+def test_the_middle_word_consumed_is_the_one_that_leaves_the_rest_agreeing(
+        a: str, b: str) -> None:
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    for x, y in ((a, b), (b, a)):
+        r = across.check(x, y)
+        assert r.consistent and r["middle"].outcome is Outcome.ONE_SIDE
+        assert [c.left for c in r.across] == ["John"]
+
+
+def test_the_consumption_leaving_the_middle_accepted_outranks_a_stronger_match(
+        ) -> None:
+    # John matches John (same) and Jose matches José (folded): consuming
+    # John leaves Anne Beth / José Beth, a conflict, so the weaker match,
+    # which leaves an accepted middle, is the one taken
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    a, b = "Jose John Anne Beth Smith", "John José Beth Smith"
+    for x, y in ((a, b), (b, a)):
+        r = across.check(x, y)
+        assert r.consistent and r["middle"].outcome is Outcome.ONE_SIDE
+        assert {r.across[0].left, r.across[0].right} == {"Jose", "José"}
+
+
+@pytest.mark.parametrize("a, b", [
+    # the left reading pairs Max with Maximilian, a familiar form, refused
+    # here; the alignment pairs it with Max-Paul, a hyphenated part,
+    # accepted: the accepted reading is taken though it is weaker
+    ("John Max Smith", "John Maximilian Max-Paul Smith"),
+    ("John Bill Smith", "John William Bill-Bob Smith"),
+])
+def test_an_accepted_reading_of_a_middle_name_outranks_a_refused_one(
+        a: str, b: str) -> None:
+    hyphenated = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.HYPHENATED_PART})
+    for x, y in ((a, b), (b, a)):
+        r = hyphenated.check(x, y)
+        assert r["middle"].outcome is Outcome.HYPHENATED_PART and r.consistent
+
+
+def test_an_aligned_pair_must_be_accepted() -> None:
+    # B. aligns with Beth only by initial: refused, it aligns nowhere
+    without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})
+    for x, y in (("John B. Smith", "John Anne Beth Smith"),
+                 ("John Anne Beth Smith", "John B. Smith")):
+        r = without.check(x, y)
+        assert r["middle"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    # the left reading pairs Max with Maximilian, a familiar form; the
+    # alignment pairs it with Max, the same word: the stronger is taken,
+    # so accepting familiar-form does not weaken the row
+    ("John Max Smith", "John Maximilian Max Smith"),
+    # among the alignments the strongest is taken, wherever it stands
+    ("John Max Smith", "John Anne Maximilian Max Smith"),
+    ("John Max Smith", "John Anne Max Maximilian Smith"),
+])
+def test_the_strongest_reading_of_a_middle_name_is_taken(
+        a: str, b: str) -> None:
+    familiar = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for x, y in ((a, b), (b, a)):
+        r = familiar.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and r.consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    ("John Bill Smith", "John William Anne Smith"),  # from the left
+    ("John Bill Smith", "John Anne William Smith"),  # aligned
+])
+def test_a_word_left_over_is_refused_where_one_side_is(a: str, b: str) -> None:
+    # an accepted familiar form, weaker than one-side, does not hide the
+    # one-sided word from a caller who refuses one-side
+    accept = (DEFAULT_ACCEPT - {Outcome.ONE_SIDE}) | {Outcome.FAMILIAR_FORM}
+    matching = Matching(Parser(), accept)
+    for x, y in ((a, b), (b, a)):
+        r = matching.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and not r.consistent
+
+
+_MIDDLES: tuple[str, ...] = (
+    "John Smith", "John A. Smith", "John Anne Smith", "John Beth Smith",
+    "John Anne Beth Smith", "John Beth Anne Smith", "John A. B. Smith",
+    "John Anne B. Smith", "John Anne Marie Beth Smith", "John Ann Smith",
+    # across-roles: a given name the other holds as a middle name, the
+    # rest left to align; familiar-form: a middle name's familiar form
+    "Edgar John Anne Beth Smith", "John Edgar Beth Smith",
+    "John Max Smith", "John Maximilian Max Smith",
+    "John Edgar Anne Beth Smith", "Edgar John Beth Smith",
+)
+
+
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_aligned_middle_names_keep_the_key_guarantee_and_symmetry(
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    accept, other_readings = setting
+    matching = Matching(Parser(), accept, other_readings=other_readings)
+    for a in _MIDDLES:
+        for b in _MIDDLES:
+            r = matching.check(a, b)
+            assert matching.check(b, a) == r.mirrored(), (a, b)
+            if r.consistent:
+                assert matching.keys(a) & matching.keys(b), (a, b)
