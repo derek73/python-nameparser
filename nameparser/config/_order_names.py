@@ -6,7 +6,7 @@ often than its last is evidence the group is written family name first.
 Every entry is FOLDED (``nameparser._suggest.fold``: lower case, no
 diacritics, ``đ`` as ``d``, ``ü`` as ``v``) and has two or more letters.
 
-Sources and licences:
+Provenance and licences:
 
 - ``_PINYIN`` (generated below): the Hanyu Pinyin of every
   single-character surname ``locales.ZH`` lists, from the first

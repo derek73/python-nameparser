@@ -6,7 +6,9 @@ surname is its evidence. The table, ``nameparser/config/_order_names.py``,
 holds folded spellings: the generated block is the Hanyu Pinyin of every
 single-character surname ``locales.ZH`` lists, from Unihan's first
 ``kMandarin`` reading (Unicode License v3), and the Wade-Giles, Korean and
-Vietnamese lists are kept by hand above it, each naming its source.
+Vietnamese lists are kept by hand above the generated block, hand-curated
+and unchecked against any ranking (see the note in
+nameparser/config/_order_names.py).
 
     uv run python tools/vocab/order_names.py           # print the block
     uv run python tools/vocab/order_names.py --write   # rewrite it
