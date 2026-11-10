@@ -3860,7 +3860,7 @@
 {"name": "Sr. Miguel Ángel Juan Antonio Pablo II", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "M. Á. J. A. P.", "generation": "II"}
 {"name": "Sr. Smith, Ma", "title": "Sr.", "given": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S."}
 {"name": "Sr. Xosé Carlos Francisco Xavier de Castro Sáez", "title": "Sr.", "given": "Xosé", "middle": "Carlos Francisco Xavier", "family": "de Castro Sáez", "initials": "X. C. F. X. C. S."}
-{"name": "Sr. van der Berg, PhD", "title": "Sr.", "given": "van", "family": "der Berg", "suffix": "PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. B.", "capitalized_force": "Sr. Van Der Berg, PhD"}
+{"name": "Sr. van der Berg, PhD", "title": "Sr.", "given": "van", "family": "der Berg", "suffix": "PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. B.", "capitalized_force": "Sr. Van der Berg, PhD"}
 {"name": "Srta. Andréia da Silva", "title": "Srta.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
 {"name": "St Clair", "title": "St", "family": "Clair", "initials": "C."}
 {"name": "St Pierre, Ed", "given": "Ed", "family": "St Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. P."}
@@ -4045,8 +4045,9 @@
 {"name": "Uxía", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "Uxía", "order": "FAMILY_FIRST", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "VAN DER BERG, JAN", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
+{"name": "VAN DER WALT", "given": "VAN", "family": "DER WALT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W.", "capitalized": "Van der Walt"}
 {"name": "VAN GOGH VINCENT", "given": "VAN", "middle": "GOGH", "family": "VINCENT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. G. V.", "capitalized": "Van Gogh Vincent"}
-{"name": "VAN TER HORST", "given": "VAN", "family": "TER HORST", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. H.", "capitalized": "Van Ter Horst"}
+{"name": "VAN TER HORST", "given": "VAN", "family": "TER HORST", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. H.", "capitalized": "Van ter Horst"}
 {"name": "VI, AD", "given": "AD", "family": "VI", "initials": "A. V.", "capitalized": "Ad Vi"}
 {"name": "VINCENT VAN GOGH", "given": "VINCENT", "family": "VAN GOGH", "initials": "V. G.", "capitalized": "Vincent van Gogh"}
 {"name": "Va'apu'u Vitale", "given": "Va'apu'u", "family": "Vitale", "initials": "V. V.", "capitalized_force": "Va'Apu'U Vitale"}
@@ -4064,10 +4065,10 @@
 {"name": "Van Maximilian Carlson", "given": "Van", "middle": "Maximilian", "family": "Carlson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. C."}
 {"name": "Van Nguyen", "given": "Van", "family": "Nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. N."}
 {"name": "Van Rooten, Luis", "given": "Luis", "family": "Van Rooten", "initials": "L. R.", "capitalized_force": "Luis van Rooten"}
-{"name": "Van der Merwe Jan", "given": "Van", "family": "der Merwe Jan", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. J.", "capitalized_force": "Van Der Merwe Jan"}
+{"name": "Van der Merwe Jan", "given": "Van", "family": "der Merwe Jan", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. J."}
 {"name": "Van der Merwe Jan Koos", "order": "FAMILY_FIRST", "given": "der Merwe Jan Koos", "family": "Van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "d. M. J. K. V.", "capitalized_force": "Van Der Merwe Jan Koos"}
 {"name": "Van der Merwe, Jan Koos", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M.", "capitalized_force": "Jan Koos van der Merwe"}
-{"name": "Van der Walt", "given": "Van", "family": "der Walt", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W.", "capitalized_force": "Van Der Walt"}
+{"name": "Van der Walt", "given": "Van", "family": "der Walt", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W."}
 {"name": "Van née Jones", "family": "Van", "maiden": "Jones", "initials": "V."}
 {"name": "Varano, Costanza da", "given": "Costanza", "family": "da Varano", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. V."}
 {"name": "Vatson Con Hamiş", "order": "FAMILY_FIRST", "given": "Con", "middle": "Hamiş", "family": "Vatson", "initials": "C. H. V."}

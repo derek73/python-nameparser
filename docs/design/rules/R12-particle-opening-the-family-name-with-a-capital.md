@@ -5,7 +5,7 @@
 **Then:** the word is written as a name word is where the word before it in the family name, in the order the family is written out, is no particle, and keeps a particle's lowercase after one.
 
 - **A particle closing a hyphenated word counts as one**, the hyphenated word's last part being particle vocabulary, in the family name or, where the word opens the family name, as the last middle name, a surname's first half the parse read as a middle name (`Maitland-van der Zee`).
-- **A word of another role is no particle of the family's**, so a given name or a nickname that spells a particle leaves the family's first word opening it (`Van Ter Horst`).
+- **A particle written right before the family name counts whatever its role**, where the word opens the family name: a Dutch surname written without a given name capitalizes only its first particle, which the parse reads as the given name (`Van der Walt`, `Van ter Horst`).
 
 **Because:** the Armenian priestly prefix (Ter, Der) opens a surname with a capital, where the Dutch and German particles it spells stand behind another particle written in lowercase (van der, von der, van ter). The particle before the word is the one thing in the written name that tells the two apart, and a spelling-based guess at the language is no signal.
 
@@ -15,7 +15,9 @@
 "TER PETROSYAN, LEVON"      →  capitalized="Levon Ter Petrosyan"
 "PETROSYAN, LEVON TER"      →  capitalized="Levon Ter Petrosyan"
 "Levon ter Petrosyan"       →  capitalized_forced="Levon Ter Petrosyan"
-"VAN TER HORST"             →  capitalized="Van Ter Horst"
+"VAN DER WALT"              →  capitalized="Van der Walt"  · boundary
+"VAN TER HORST"             →  capitalized="Van ter Horst"  · boundary
+"Van der Walt"              →  capitalized_forced="Van der Walt"  · boundary
 "JAN VAN DER BERG"          →  capitalized="Jan van der Berg"  · boundary
 "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
 "URSULA VON DER LEYEN"      →  capitalized="Ursula von der Leyen"  · boundary
@@ -43,10 +45,6 @@
   ```
   "ALEXANDRE DUMAS DER ÄLTERE"  →  capitalized="Alexandre Dumas Der Ältere"  · boundary
   "JOHANN DER JÜNGERE"        →  capitalized="Johann Der Jüngere"  · boundary
-  ```
-- A particle the parse read as the given name, the family name then opening with the word, leaves that word its capital, so a surname whose first particle opens the name takes a capital on its second where repair is forced on it.
-  ```
-  "Van der Walt"              →  capitalized_forced="Van Der Walt"  · boundary
   ```
 - A Taiwanese given-name syllable `Der`, which the parse places in the family name, takes the capital its writers give it, the parse itself being unchanged.
   ```

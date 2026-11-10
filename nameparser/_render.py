@@ -949,9 +949,10 @@ def _capital_openings(tokens: Sequence[Token],
     before it in the family name, as the view joins the family's words
     (_ordered), is no particle -- by its tag or, in a hyphenated word,
     by the vocabulary of the word's last part. Opening the family, it
-    asks the last middle word that hyphen question alone, a surname's
-    first half the parse read as a middle name (`Maitland-van der
-    Zee`); a word of another role is no particle of the family's.
+    asks the same of the word written right before it, whatever its role
+    (`Van der Walt`, the given name the parse reads `Van`), and the
+    hyphen question of the last middle word, a surname's first half the
+    parse read as a middle name (`DER ZEE, ANKE MAITLAND-VAN`).
     A token spliced in unread (UNCLASSIFIED_TAG) carries no tag, so the
     vocabulary answers for it, as revise() would."""
     capital = lex._sets.capital_opening_particles
@@ -973,7 +974,11 @@ def _capital_openings(tokens: Sequence[Token],
     for i, t in ([(i, t) for i, t in family if FOLDED_TAG in t.tags]
                  + [(i, t) for i, t in family if FOLDED_TAG not in t.tags]):
         if before is None:
-            follows = bool(middle) and ends_in_particle(middle[-1])
+            written = tokens[i - 1] if i else None
+            follows = ((written is not None
+                        and (is_particle(written)
+                             or ends_in_particle(written)))
+                       or (bool(middle) and ends_in_particle(middle[-1])))
         else:
             follows = is_particle(before) or ends_in_particle(before)
         if (not follows and is_particle(t)

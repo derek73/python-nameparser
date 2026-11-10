@@ -1027,8 +1027,8 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
     particle arm left out where the word before it in the family name,
     in the order the family view joins them, is no particle -- by its
     tag, or as the last part of a hyphenated word; opening the family,
-    a last middle word ending in such a part counts too. A word of
-    another role is no particle of the family's, and a middle `ter`
+    the word written right before it counts whatever its role, and a
+    last middle word ending in such a part counts too. A middle `ter`
     keeps its lowercase. Every comma shape, a title before, a full stop
     on the word and the repair of the repaired name."""
     for text, repaired in (
@@ -1047,10 +1047,13 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
             ("KAREN AUS DER FÜNTEN", "Karen Aus Der Fünten"),
             ("ALEXANDRE DUMAS DER ÄLTERE", "Alexandre Dumas Der Ältere"),
             ("JOHANN DER JÜNGERE", "Johann Der Jüngere"),
-            # the word before is another role's: ter opens the family
-            ("VAN TER HORST", "Van Ter Horst"),
-            ("DR. VAN TER HORST", "Dr. Van Ter Horst"),
-            ('JAN "VAN" TER HORST', 'Jan "Van" Ter Horst'),
+            # a particle right before the family counts whatever its
+            # role: a Dutch surname written without a given name
+            ("VAN DER WALT", "Van der Walt"),
+            ("VAN TER HORST", "Van ter Horst"),
+            ("DR. VAN TER HORST", "Dr. Van ter Horst"),
+            # a nickname spelling a particle counts too
+            ('JAN "VAN" TER HORST', 'Jan "Van" ter Horst'),
             # after a particle in the family, by its tag
             ("JAN VAN DER BERG", "Jan van der Berg"),
             ("JAN VAN TER HORST", "Jan van ter Horst"),
@@ -1081,6 +1084,8 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
         assert once.capitalized(force=True) == once, text
     assert _repairs("Levon ter Petrosyan", True) == "Levon Ter Petrosyan"
     assert _repairs("Jan van der Berg", True) == "Jan van der Berg"
+    assert _repairs("Van der Walt", True) == "Van der Walt"
+    assert _repairs("Sr. van der Berg, PhD", True) == "Sr. Van der Berg, PhD"
     # the middle role under a family-first order keeps its lowercase
     family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
     middle = family_first.parse("PETROSYAN LEVON TER ARAM")
@@ -1108,9 +1113,10 @@ def test_a_spliced_ter_reads_as_a_revised_one() -> None:
         revised = str(parser.revise(base, family=family).capitalized())
         fresh = str(parse(f"JAN {family}").capitalized())
         assert spliced == revised == fresh == repaired, family
-    # the word before in another role, revised in: ter opens the family
+    # a particle revised into the given name right before the family
+    # counts, whatever its role
     revised_given = parser.revise(parse("JAN TER BERG"), given="JAN VAN")
-    assert str(revised_given.capitalized()) == "Jan Van Ter Berg"
+    assert str(revised_given.capitalized()) == "Jan Van ter Berg"
 
 
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
