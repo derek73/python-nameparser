@@ -188,10 +188,9 @@ TITLE_AMBIGUOUS_TAG = "vocab:title-ambiguous"
 #: Written by classify on every occurrence of a word of
 #: `Lexicon.titles_ambiguous` whose title reading is written short
 #: (`Lexicon.title_abbreviations`, `maj`), whichever way the phrase
-#: test read it; read by rules/H5's trailing chain
-#: (`_pieces.trailing_titles`, `is_trailing_title_word`), which takes
-#: the word where it wears the abbreviation shape, by `_pieces._weighed`
-#: and by group's P5 decline. Dropped from the published token like
+#: test read it; read by classify's CHAIN_TITLE_TAG below, rules/H5's
+#: trailing chain taking the word where it wears the abbreviation
+#: shape, and by group's P5 decline. Dropped from the published token like
 #: the kind tags above; the published token keeps TITLE_AMBIGUOUS_TAG.
 TRAILING_TITLE_TAG = "vocab:trailing-title"
 
@@ -201,12 +200,23 @@ TRAILING_TITLE_TAG = "vocab:trailing-title"
 #: 'Priv.-Doz'), and on a word with interior periods every chunk of
 #: which is a title ('Lt.Gov', #1131), never on one read as a title
 #: through some chunk only ('Dr.PhD', 'St.John') nor on one a hyphen
-#: alone joins ('Co-Founder'); read by
-#: rules/H5's trailing chain (`_pieces.trailing_titles`,
-#: `is_trailing_title_word`), which takes it without a final period,
-#: by `_pieces._weighed` and by P13's trailing title (#1104). Dropped
-#: from the published token like the kind tags above.
+#: alone joins ('Co-Founder'); read by classify's CHAIN_TITLE_TAG
+#: below, rules/H5's trailing chain taking it without a final period
+#: (#1104). Dropped from the published token like the kind tags above.
 JOINED_TITLE_TAG = "vocab:joined-title"
+
+#: Written by classify, after rules/H9's phrase test has settled which
+#: words keep "vocab:title", on every word rules/H5's trailing chain
+#: takes: a word carrying JOINED_TITLE_TAG, or one wearing the trailing
+#: abbreviation shape (`_vocab._TRAILING_TITLE_SHAPE`) that carries
+#: "vocab:title" or TRAILING_TITLE_TAG. The one statement of that test,
+#: read as a set membership by the chain (`_pieces.trailing_titles`),
+#: by its one-word form (`_pieces.is_trailing_title_word`, which the
+#: maiden take and P13's walk back ask) and by `_pieces._weighed`
+#: (#1171). Whether the word stands where the chain reaches is the
+#: reader's question. Dropped from the published token like the kind
+#: tags above.
+CHAIN_TITLE_TAG = "vocab:chain-title"
 
 #: On a run of two or more single letters joined by full stops whose
 #: spelling without them is a title written `dotted`
