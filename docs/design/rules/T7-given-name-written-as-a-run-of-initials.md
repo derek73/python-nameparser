@@ -35,7 +35,7 @@
   "Dr. h.c. Hans Meier"       →  given="h.c."
   "Dr. h.c. Hans Meier"       →  initials="h. H. M."
   ```
-- **A run the vocabulary lists as a word of its own** keeps its one word: a vocabulary entry written with its full stops, or a case mask keyed or written with them, such as a caller's `h.c` for honoris causa. The spelling without stops is not asked, since that is how initials spell a word: J.R. is no Jr, and K.T. no Kt, though the credential's mask writes it in mixed case.
+- **A run the vocabulary lists as a word of its own** keeps its one word: a vocabulary entry written with its full stops, or a case mask keyed with them that writes a lower-case letter, or one that writes them, such as a caller's `h.c` for honoris causa; a mask writing the letters as capitals says they are initials. The spelling without stops is not asked, since that is how initials spell a word: J.R. is no Jr, and K.T. no Kt, though the credential's mask writes it in mixed case.
   ```
   "J.R. Smith"                →  given="J."
   "K.T. Smith"                →  given="K."

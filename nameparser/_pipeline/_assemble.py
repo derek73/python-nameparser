@@ -917,8 +917,10 @@ _INITIAL_TAGS = frozenset({"initial"})
 def _listed_run(text: str, lexicon: Lexicon) -> bool:
     """Whether the lexicon lists `text`, a run of single letters, as a
     word of its own, written as it is, with its full stops: in a
-    vocabulary set, or under a case mask keyed with them or writing one
-    (a caller's honoris causa, 'h.c' or 'hc' masked 'h.c'). The spelling
+    vocabulary set, or under a case mask keyed with them that writes a
+    lower-case letter, or keyed without them and writing one (a caller's
+    honoris causa, 'h.c' or 'hc' masked 'h.c'; 'h.c' masked 'H.C' says
+    the letters are capitals, and parts). The spelling
     without stops is how initials spell a word, so a vocabulary word or
     a mask spelled without them says nothing about the run: 'J.R.' is
     no 'jr', and 'K.T.' and 'B.T.' part though 'Kt' and 'Bt' are

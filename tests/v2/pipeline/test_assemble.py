@@ -739,3 +739,18 @@ def test_a_decomposed_run_of_initials_parts_as_its_composed_twin() -> None:
     assert (name.given, name.middle) == (
         unicodedata.normalize("NFD", "É."), unicodedata.normalize("NFD", "Ñ."))
     assert unicodedata.normalize("NFC", name.initials()) == "É. Ñ. S."
+
+
+@pytest.mark.parametrize("mask,given", [
+    (("h.c", "h.c"), "H.C."),   # keyed with stops, a lower-case letter
+    (("hc", "h.c"), "H.C."),    # keyed without, writing a stop
+    (("h.c", "H.C"), "H."),     # in capitals: the letters are initials
+    (("hc", "Hc"), "H."),       # no stop: a credential's mixed case
+])
+def test_a_case_mask_keeps_a_run_whole_only_where_it_writes_no_initials(
+        mask: tuple[str, str], given: str) -> None:
+    # T7's listed-run exception, read off a caller's case mask (#1296)
+    import dataclasses
+    lexicon = dataclasses.replace(Lexicon.default(),
+                                  capitalization_exceptions=(mask,))
+    assert Parser(lexicon=lexicon).parse("H.C. Smith").given == given
