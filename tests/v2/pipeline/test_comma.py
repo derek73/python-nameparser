@@ -580,6 +580,11 @@ def test_a_decomposed_run_reads_as_its_composed_twin() -> None:
     ("Smith, J.P. Ms.", "J.", "Ms."),
     # a capitals word is company only where C6 finds the name's contrast
     ("McDONALD, J.P. ANNE", "J.", ""),
+    # a split credential and one of several words are company too
+    ("Smith, J.P. Pharm D", "", "J.P. Pharm D"),
+    ("Smith, J.P. Ph. D.", "", "J.P. Ph. D."),
+    # a run of words that is no suffix piece is none
+    ("Smith, J.P. Mr. and Mrs.", "J.", ""),
     # C10: a glued delimiter reads as a space in its place, as the
     # unlisted twin 'Smith, X.Q.;' reads
     ("Smith, J.P.;", "J.P.;", ""),

@@ -341,19 +341,17 @@ def _lone_word(state: ParseState, seg0: Sequence[int]) -> bool:
     rules/C16's run of initials (#1238), where C4's count reads one name
     word: a word the count leaves out as a title is a word here
     ('Ashley Knight, M.S. BME'), and so is a particle unless written in
-    lower case before a word with a capital, in a name of mixed case
+    lower case in a head that holds a capital, in a name of mixed case
     ('de Waart, J.P.', but 'Bin Zhang, M.D.', whose 'Bin' is as likely
     the given name, and 'du juan, M.D.', written all in lower case). A
-    suffix word or a numeral of two or more letters ending the head is
-    none ('Jansen Jr., J.P.', 'Jansen VI, J.P.')."""
+    suffix word, or a numeral in capitals, of two or more letters ending
+    the head behind a word is none ('Jansen Jr., J.P.', 'Jansen VI,
+    J.P.', but 'Le Vi, M.D.' and 'Smith V, M.D.' are two words), and a
+    title left alone is no surname ('Dr. VI, M.D.')."""
     tokens = state.tokens
-    # the suffix words and numerals of two or more letters ending the
-    # head are none ('Jansen VI, J.P.', as C3 counts it); one in front of
-    # a word is a word ('Dr.B. Akila., M.D')
+    # as C3 counts it: one in front of a word is a word ('Dr.B. Akila.,
+    # M.D'), a single letter ends a whole name (C1)
     end = len(seg0)
-    # a word of two or more letters, behind a word: a single letter ends
-    # a whole name ('Smith V, M.D.', C1), and a numeral in capitals only,
-    # since 'Le Vi' is a surname
     while end > 1 and len(stem := tokens[seg0[end - 1]].text.rstrip(
             ".")) >= 2 and ("vocab:suffix" in tokens[seg0[end - 1]].tags
                             or stem.isupper()
@@ -386,7 +384,9 @@ def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
     no generation and, if it is title vocabulary too, written in
     capitals; a word of the ambiguous class; or an unlisted capitals
     word C6 admits where the name carries its contrast (`contrast`
-    holds that answer once asked)."""
+    holds that answer once asked). A split credential, or a piece of
+    several words that is a suffix piece ('Ph. D.'), always is; a
+    numeral by shape, like a listed generation, never is."""
     tokens = state.tokens
     if "split" in pt:
         return True
@@ -423,8 +423,8 @@ def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
         *state.ambiguities,
         PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{token.text!r} after the comma is also an ordinary name "
-            f"word; read as ", (i,), field_tail="",
+            f"{token.text!r} after the comma also spells a credential; "
+            f"read as ", (i,), field_tail="",
             alternative=suffix_reading(token))))
 
 
@@ -556,7 +556,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # name whatever they spell" -- the runs that spell a listed
     # credential ('J.P.', 'M.A.'), joined to the class so C4's count is
     # taken (decisions/C16 (#1238)). Gathered only
-    # where the part holds a full stop, so 'Smith, John' pays nothing;
+    # where the part holds a full stop, so 'Smith, John' pays no frame;
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
     runs: set[int] = set()
@@ -582,7 +582,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         at = next(k for k, p in enumerate(p1) if p[0] in runs)
         first = p1[at][0]
         runs = {first}
-        # titles in front of the run are the given part's (C5's Except);
+        # titles in front of the run are the given part's (C16);
         # behind it a credential is company: a title/suffix dual only in
         # capitals ('Smith, M.D. MS', but 'Smith, J.P. Ms.'), never a
         # generation ('Rinehart, J.D. Jr.'), a spaced delimiter none
@@ -738,8 +738,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             # stopped at, the part's first piece that is no title (a
             # name word in front of the run made the part the given part
             # itself, and the run is that part's to read). Asked before
-            # C10's glued reading, so 'Smith, J.P.;' reads as 'Smith,
-            # J.P.' does
+            # C10's glued reading, so 'Smith, J.P.;' is the given name as
+            # its unlisted twin 'Smith, X.Q.;' is
             k = next((j for j, p in enumerate(p1)
                       if not is_title_piece(p, pt1[j], tokens)), -1)
             if k >= 0 and p1[k][0] in runs:

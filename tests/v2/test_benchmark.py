@@ -573,7 +573,7 @@ _PREFIXED_SHAPES: dict[
         lambda text: parse(text).given == "John",
     ),
     # every word a run of initials spelling a listed credential behind
-    # one name word (rules/C5, #1238): each is gathered, and the rest of
+    # one name word (rules/C16, #1238): each is gathered, and the rest of
     # the part scanned once for company, never per run
     "listed_runs": (
         "Jansen, ", "M.A. ", Parser(),

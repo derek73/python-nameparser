@@ -1013,6 +1013,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # given name whatever they spell" -- `runs`, which the
         # caller passes only there; a suffix word in front of the run
         # makes it the credential run, titles and duals leave it a name
+        # (decisions/C16 (#1238))
         if leading and piece[0] in runs:
             return None
         if is_suffix_piece(piece, tags, tokens):
