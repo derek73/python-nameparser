@@ -1232,8 +1232,8 @@ checked:
     >>> for written in ["John A. Smith", "J. Smith", "Juan de la Vega", "Juan Vega"]:
     ...     for key in matcher.keys(written):
     ...         groups[key].append(written)
-    >>> dict(groups)
-    {'smith;j': ['John A. Smith', 'J. Smith'], 'delavega;j': ['Juan de la Vega'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
+    >>> dict(sorted(groups.items()))
+    {'delavega;j': ['Juan de la Vega'], 'smith;j': ['John A. Smith', 'J. Smith'], 'vega;j': ['Juan de la Vega', 'Juan Vega']}
 
 A family name of several words gets a key for each, because a source
 may cut a surname list short, and a hyphenated one a key for each half,
