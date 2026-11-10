@@ -266,11 +266,15 @@ def test_a_mutated_package_reports_the_pairs_it_moves(
     base = _copy(tmp_path, "base")
     mutant = _copy(tmp_path, "mutant")
     match = mutant / "nameparser" / "_match.py"
-    step = ("    if bases[0] and _bases_agree(bases[0], bases[1], lexicon, group):\n"
-            "        return Outcome.PARTICLES_ASIDE\n")
-    text = match.read_text(encoding="utf-8")
-    assert text.count(step) == 1
-    match.write_text(text.replace(step, ""), encoding="utf-8")
+    # the family chain's particles-aside step, found by what it returns
+    # so a rewording of its condition does not lose it: its `if` line
+    # and the return below it
+    lines = match.read_text(encoding="utf-8").splitlines(keepends=True)
+    at = [i for i, line in enumerate(lines)
+          if line.strip() == "return Outcome.PARTICLES_ASIDE"]
+    assert len(at) == 1 and lines[at[0] - 1].lstrip().startswith("if ")
+    del lines[at[0] - 1:at[0] + 1]
+    match.write_text("".join(lines), encoding="utf-8")
     argv = ["--base", str(base), "--tree", str(mutant), "--jobs", "1"]
     assert tool.main(argv) == 1
     out = capsys.readouterr().out
