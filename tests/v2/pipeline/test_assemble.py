@@ -1,3 +1,5 @@
+import unicodedata
+
 import pytest
 
 from nameparser import (
@@ -270,6 +272,10 @@ def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
 #: names a reading by, so a branch that stops being reached, or starts
 #: naming another reading, fails here by name.
 _EXPECTED_READINGS = [
+    # rules/T7 parts a given name written as a run of initials: each
+    # letter is an initial by its shape, in its own field (#1296)
+    ("E.T. Smith", None, "E.", "initial", "shape"),
+    ("E.T. Smith", None, "T.", "initial", "shape"),
     ("Dr. Juan de la Vega III", None, "Dr.", "title", "vocabulary"),
     ("Insp. Jane Morse", None, "Insp.", "title", "shape"),
     ("Esq. Smith", None, "Esq.", "title", "shape"),
@@ -712,3 +718,39 @@ def test_every_particle_reads_patronymic_exactly_where_the_index_says(
             mismatched.append((word, tok.reading))
     assert not mismatched, mismatched[:10]
     assert {"bin", "binti", "ibn", "bar", "بن"} <= found
+
+
+def test_a_run_of_initials_the_lexicon_lists_whole_keeps_its_word() -> None:
+    # T7's listed-run exception: a vocabulary entry written with its
+    # stops keeps the run whole; the default lexicon lists none, so a
+    # caller's does (#1296)
+    listed = Parser(lexicon=Lexicon.default().add("h.c", kind="credential"))
+    assert listed.parse("H.C. Smith").given == "H.C."
+    assert Parser().parse("H.C. Smith").given == "H."
+
+
+def test_a_decomposed_run_of_initials_parts_as_its_composed_twin() -> None:
+    # nameparser/AGENTS.md's encoding sweep: the run's letter class
+    # reads a combining mark, so each part keeps its accent (#1296)
+    nfd = unicodedata.normalize("NFD", "É.Ñ. Smith")
+    name = parse(nfd)
+    assert [t.text for t in name.tokens] == [
+        unicodedata.normalize("NFD", w) for w in ("É.", "Ñ.", "Smith")]
+    assert (name.given, name.middle) == (
+        unicodedata.normalize("NFD", "É."), unicodedata.normalize("NFD", "Ñ."))
+    assert unicodedata.normalize("NFC", name.initials()) == "É. Ñ. S."
+
+
+@pytest.mark.parametrize("mask,given", [
+    (("h.c", "h.c"), "H.C."),   # keyed with stops, a lower-case letter
+    (("hc", "h.c"), "H.C."),    # keyed without, writing a stop
+    (("h.c", "H.C"), "H."),     # in capitals: the letters are initials
+    (("hc", "Hc"), "H."),       # no stop: a credential's mixed case
+])
+def test_a_case_mask_keeps_a_run_whole_only_where_it_writes_no_initials(
+        mask: tuple[str, str], given: str) -> None:
+    # T7's listed-run exception, read off a caller's case mask (#1296)
+    import dataclasses
+    lexicon = dataclasses.replace(Lexicon.default(),
+                                  capitalization_exceptions=(mask,))
+    assert Parser(lexicon=lexicon).parse("H.C. Smith").given == given

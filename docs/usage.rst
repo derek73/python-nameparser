@@ -914,6 +914,19 @@ stays. A spec you pass renders exactly as written, in its own order:
     >>> parse("김민준").render("{given} {family}")
     '민준 김'
 
+A given name written as initials run together with full stops, in
+capitals, reads as those initials: the first is the given name and the
+rest are middle names, as they would be written apart, and ``str()``
+keeps them as written (since 3.1):
+
+.. doctest::
+
+    >>> tolkien = parse("J.R.R. Tolkien")
+    >>> tolkien.given, tolkien.middle, str(tolkien)
+    ('J.', 'R.R.', 'J.R.R. Tolkien')
+    >>> tolkien.initials()
+    'J. R. R. T.'
+
 Fixing case
 -----------
 
@@ -1119,7 +1132,7 @@ The rule is bounded so it doesn't swallow ordinary names:
     'Ma.'
     >>> parse("J. Smith").given
     'J.'
-    >>> parse("E.T. Jones").given
+    >>> parse("E.T. Jones").given_names
     'E.T.'
     >>> parse("Jane Insp. Morse").middle
     'Insp.'

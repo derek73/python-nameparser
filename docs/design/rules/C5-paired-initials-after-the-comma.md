@@ -2,7 +2,7 @@
 
 **When:** paired initials — two single letters joined by a period, with or without a period after the second ('M.J.', 'M.J') — stand in the part after the comma, as in "García Márquez, G.J.".
 
-**Then:** paired initials are the exception to the ambiguous credential class's count (C4): the one dotted shape a person's own initials are written in, they are read as the given name after the comma.
+**Then:** paired initials are the exception to the ambiguous credential class's count (C4): the one dotted shape a person's own initials are written in, they are read as the given name after the comma, which T7 then parts into a given and a middle initial where it reaches them.
 
 - **Undotted, where the name carries the case contrast C6 asks for**, an unlisted word of two capitals after the comma is the paired initials' shape and is decided at this comma exactly as they are ('García Márquez, MJ' and 'García Márquez, MJ PhD' keep given 'MJ').
   ```
@@ -13,11 +13,11 @@
 **Because:** two words before the comma may be one surname written in two ('García Márquez'), and the count cannot tell them from a given name and a family name.
 
 ```
-"Smith, A.B."               →  given="A.B."  · boundary
-"García Márquez, G.J."      →  given="G.J."
+"Smith, A.B."               →  given_names="A.B."  · boundary
+"García Márquez, G.J."      →  given_names="G.J."
 "García Márquez, G.J."      →  family="García Márquez"
-"John Smith, A.B."          →  given="A.B."
-"García Márquez, G.J"       →  given="G.J"
+"John Smith, A.B."          →  given_names="A.B."
+"García Márquez, G.J"       →  given_names="G.J"
 ```
 
 **Except:**
@@ -25,10 +25,10 @@
 - **Only an unambiguous suffix word in front of them that is not also title vocabulary, or another word the class admits by its dotted shape standing in the same part, makes them the credential run.** A word of this class in front of them speaks for nothing, as S7's company has it, and where nothing but words of both the suffix and the title vocabulary stands in front of them, those are the titles of the given part the initials open, as S7 reads them there.
   ```
   "John Smith, PhD X.Y."      →  suffix="PhD X.Y."
-  "De La Cruz, M.J. PhD"      →  given="M.J."  · boundary
-  "García Márquez, Ms G.J."   →  given="G.J."  · boundary
+  "De La Cruz, M.J. PhD"      →  given_names="M.J."  · boundary
+  "García Márquez, Ms G.J."   →  given_names="G.J."  · boundary
   "García Márquez, Ed G.J."   →  given="Ed"  · boundary
-  "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
+  "John Smith, A.B. Ph.D."    →  given_names="A.B."  · boundary
   ```
 - **Behind two or more name words, paired initials that are not the only shape word in the part are a credential** however little else speaks for them, since no one writes a person's initials as two dotted groups.
   ```
@@ -42,7 +42,7 @@
   ```
   "García Márquez, U.S. Senator John"  →  title="U.S. Senator"
   ```
-- **A generation ending the name before the comma** ("John Smith Jr., M.J."): dotted, the paired initials keep this rule's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are the credential C12 reads (C1, where a roman numeral S10 reads stays the suffix as a listed generation does).
+- **A generation ending the name before the comma** ("John Smith Jr., M.J."): dotted, the paired initials keep this rule's reading and are the given name, parted by T7, the generation staying the suffix; undotted as two capitals, they are the credential C12 reads (C1, where a roman numeral S10 reads stays the suffix as a listed generation does).
 
 **Accepted:**
 

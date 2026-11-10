@@ -51,7 +51,7 @@
   "Lloret Palol II, Josep Antoni"  →  given="Josep"  · boundary
   "Garcia Lopez Jr., Juan"    →  given="Juan"  · boundary
   "John Smith Jr., J."        →  given="J."  · boundary
-  "Smith Jones Jr., J.A."     →  given="J.A."  · boundary
+  "Smith Jones Jr., J.A."     →  given_names="J.A."  · boundary
   ```
 
 **Precedence:**

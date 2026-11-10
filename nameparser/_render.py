@@ -103,6 +103,16 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 #: by tests/v2/test_regex_sync.py.
 _DOTTED_INITIAL = re.compile(r"^\w\.$")
 
+#: rules/T7's run of single letters joined by full stops and one
+#: letter of it, _pipeline._vocab's _LETTER_RUN and _RUN_LETTER copied
+#: by hand (layering, as for _INITIAL above) and pinned by
+#: tests/v2/test_regex_sync.py. Read by initials(), which gives such a
+#: word one initial per letter wherever the parse left it whole.
+_LETTER = (r'[^\W\d_]'
+           '[̀-ͯ᪰-᫿᷀-᷿⃐-⃿︠-︯]*')
+_LETTER_RUN = re.compile(r"(?:" + _LETTER + r"\.)+" + _LETTER + r"\.?")
+_RUN_LETTER = re.compile(_LETTER + r"\.?")
+
 # v1's "roman_numeral" pattern, the pipeline's _vocab._ROMAN copied
 # by hand (layering, as for _INITIAL above) and pinned by
 # tests/v2/test_regex_sync.py. Read only by _cap_word's numeral
@@ -381,6 +391,15 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     if not isinstance(separator, str):
         raise TypeError(f"separator must be a str, got {separator!r}")
     values: dict[str, str] = {}
+    # rules/R3's run of initials reads a lower-case run where the given,
+    # middle and family words are written wholly in lower case, as the
+    # parse does (T7), a title not asked;
+    # a loop, not a generator, which would resume a frame per word
+    all_lower = True
+    for t in name.tokens:
+        if t.role in _NAME_WORD_ROLES and not t.text.islower():
+            all_lower = False
+            break
     for key in _INITIALS_KEYS:
         role = Role(key)
         tokens = name.tokens_for(role)
@@ -405,10 +424,18 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         # (a loop, not a generator, which would resume a frame per word)
         letters: list[str] = []
         for t in _ordered(tokens):
-            letter = _first_letter(t.text)
-            if letter.isascii() or not _initialless(
-                    unicodedata.normalize("NFC", letter)):
-                letters.append(letter + delimiter)
+            # rules/R3: "A word written as a run of initials gives one
+            # initial per letter" -- 'J. E. T. S.' for 'John E.T.
+            # Smith', in capitals or in a name written wholly in lower
+            # case -- decisions/T7 (#1296)
+            firsts = ([_first_letter(c) for c in _RUN_LETTER.findall(t.text)]
+                      if "." in t.text and (all_lower or t.text.isupper())
+                      and _LETTER_RUN.fullmatch(t.text)
+                      else (_first_letter(t.text),))
+            for letter in firsts:
+                if letter.isascii() or not _initialless(
+                        unicodedata.normalize("NFC", letter)):
+                    letters.append(letter + delimiter)
         values[key] = separator.join(letters)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 

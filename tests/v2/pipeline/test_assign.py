@@ -802,9 +802,10 @@ def test_the_comma_report_says_which_way_it_read_the_word() -> None:
     assert detail["Smith, Ma"] == [
         "'Ma' after the comma is also an ordinary name word; read as "
         "a given name"]
+    # rules/T7 parts the run (#1296), and its report names its letters
     assert detail["Smith, A.B."] == [
         "'A.B.' after the comma is also an ordinary name word; read as "
-        "a given name"]
+        "the name's initials"]
     # #626's review: with nothing before the comma, H1 moves the word
     # to the family behind the title after this report is made, so the
     # field is worded from where it lands

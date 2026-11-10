@@ -100,6 +100,15 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_PH"): None,
     ("_vocab", "_D"): None,
     ("_vocab", "_DOTTED"): None,
+    # rules/T7's run of single letters and one letter of it (#1296);
+    # assemble imports the SAME objects to part a given name, and
+    # render copies them by hand for initials()
+    ("_vocab", "_LETTER_RUN"): None,
+    ("_vocab", "_RUN_LETTER"): None,
+    ("_assemble", "_LETTER_RUN"): ("_vocab", "_LETTER_RUN"),
+    ("_assemble", "_RUN_LETTER"): ("_vocab", "_RUN_LETTER"),
+    ("_render", "_LETTER_RUN"): ("_vocab", "_LETTER_RUN"),
+    ("_render", "_RUN_LETTER"): ("_vocab", "_RUN_LETTER"),
     # #544: the chunked sibling of _DOTTED ('M.Eng.'), S3's period gate
     # for a member with a lower-case tail
     ("_vocab", "_CHUNKED"): None,

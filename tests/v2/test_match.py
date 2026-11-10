@@ -2036,3 +2036,79 @@ def test_aligned_middle_names_keep_the_key_guarantee_and_symmetry(
             assert matching.check(b, a) == r.mirrored(), (a, b)
             if r.consistent:
                 assert matching.keys(a) & matching.keys(b), (a, b)
+
+
+# rules/T7 (#1296): a given name written as a run of initials parts
+# into them, and the name match reads each initial as a word of its
+# own, the field writing a longer run's middle letters together
+@pytest.mark.parametrize("glued,apart", [
+    ("E.T. Smith", "E. T. Smith"),
+    ("E.T. Smith", "Edward T. Smith"),
+    ("E.T. Smith", "Edward Thomas Smith"),
+    ("E.T. Smith", "Edward Smith"),
+    ("Smith, E.T.", "Edward Smith"),
+    ("J.R.R. Tolkien", "John Ronald Reuel Tolkien"),
+    ("J.R.R. Tolkien", "J. R. R. Tolkien"),
+    ("J.R.R. Tolkien", "J. R. Tolkien"),
+    ("J.R. Smith", "j.r. smith"),
+])
+def test_a_given_name_written_as_initials_run_together_matches_them_apart(
+        glued: str, apart: str) -> None:
+    matching = Parser().matching()
+    assert matching.check(glued, apart).consistent
+    assert set(matching.keys(glued)) & set(matching.keys(apart))
+
+
+def test_initials_run_together_still_conflict_where_a_letter_does() -> None:
+    # the control: parted letters are compared, not waved through
+    matching = Parser().matching()
+    assert not matching.check("J.R.R. Tolkien", "John Ronald Peter Tolkien"
+                              ).consistent
+    assert not matching.check("E.T. Smith", "T. Smith").consistent
+
+
+def test_the_table_shows_a_run_of_initials_as_written() -> None:
+    # the comparison reads 'R. R.'; the table keeps the field's 'R.R.'
+    result = Parser().matching().check("J.R.R. Tolkien",
+                                       "John Ronald Reuel Tolkien")
+    middle = next(r for r in result.roles if r.role is Role.MIDDLE)
+    assert (middle.left, middle.right) == ("R.R.", "Ronald Reuel")
+
+
+@pytest.mark.parametrize("left,right,consistent", [
+    ("Smith J.R.R.", "Smith J. R. R.", True),
+    ("Smith E.T.", "Smith Edward Thomas", True),
+    ("Smith E.T.", "Smith Thomas", True),
+    # the given name is the last letter there, T. against Edward
+    ("Smith E.T.", "Smith Edward", False),
+])
+def test_a_run_of_initials_matches_under_the_given_last_order(
+        left: str, right: str, consistent: bool) -> None:
+    # rules/T7 makes the run's last letter the given name under
+    # FAMILY_FIRST_GIVEN_LAST, and the middle letters stay written
+    # together, which the match reads one by one (#1296)
+    from nameparser import FAMILY_FIRST_GIVEN_LAST, Policy
+    matching = Parser(
+        policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)).matching()
+    assert matching.check(left, right).consistent is consistent
+    assert bool(set(matching.keys(left)) & set(matching.keys(right))) \
+        is consistent
+
+
+def test_only_two_initials_written_together_read_as_two_words() -> None:
+    # _role_text parts two written-together tokens only where both are
+    # initials (rules/T7, #1296); two that are not stay one word, as the
+    # field writes them. No parse builds the second today, so it is
+    # built by hand.
+    from nameparser._match import _role_text
+    from nameparser._types import Span, Token
+    initials = ParsedName(original="J.R. Smith", tokens=(
+        Token("J.", Span(0, 2), Role.GIVEN, frozenset({"initial"})),
+        Token("R.", Span(2, 4), Role.GIVEN, frozenset({"initial"})),
+        Token("Smith", Span(5, 10), Role.FAMILY)))
+    words = ParsedName(original="Ab.c Smith", tokens=(
+        Token("Ab.", Span(0, 3), Role.GIVEN),
+        Token("c", Span(3, 4), Role.GIVEN),
+        Token("Smith", Span(5, 10), Role.FAMILY)))
+    assert (initials.given, _role_text(initials, Role.GIVEN)) == ("J.R.", "J. R.")
+    assert (words.given, _role_text(words, Role.GIVEN)) == ("Ab.c", "Ab.c")

@@ -393,7 +393,8 @@ def test_each_vi_removal_moves_its_own_row() -> None:
     # credential, unless past a second comma; CHI only without a comma
     ("Nguyen Van Anh, DO", "", "Nguyen Van Anh", "", "DO", ""),
     ("Nguyen Van Anh DO", "", "Nguyen", "Van Anh", "DO", ""),
-    ("Nguyen Van Anh D.O.", "", "Nguyen", "Van Anh", "D.O.", ""),
+    # and dotted, rules/T7 parts it as the initials it is written as
+    ("Nguyen Van Anh D.O.", "", "Nguyen", "Van Anh D.", "O.", ""),
     ("Nguyen Van Anh MD, DO", "", "Nguyen Van Anh", "", "DO", "MD"),
     ("Nguyen, Van Anh DO", "", "Nguyen", "Anh DO", "Van", ""),
     ("Nguyen, Van Anh, DO", "", "Nguyen", "Anh", "Van", "DO"),
@@ -2438,8 +2439,8 @@ _3H_ROWS = [
      ("JOSE", "CARLOS", "SILVA SB", "", ()), ("JOSE", "CARLOS", "SILVA SB", "", ())),
     # the dotted S.B. after a comma is paired initials either way (rules/C5)
     ("PT_BR", "John Smith, S.B.",
-     ("S.B.", "", "John Smith", "", ("SUFFIX_OR_NAME",)),
-     ("S.B.", "", "John Smith", "", ("SUFFIX_OR_NAME",))),
+     ("S.", "B.", "John Smith", "", ("SUFFIX_OR_NAME",)),
+     ("S.", "B.", "John Smith", "", ("SUFFIX_OR_NAME",))),
     # F and N, written as an initial is, are excluded, the pack included
     # (pt-BR.toml): the family name they spell, by default and under it
     ("PT_BR", "JOSE CARLOS SILVA F",

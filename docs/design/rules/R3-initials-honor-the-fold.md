@@ -28,6 +28,15 @@
   ```
   "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  initials="M. A. A. H."
   ```
+- **A word written as a run of initials gives one initial per letter**: single letters joined by full stops, in capitals or in a name written wholly in lower case, in any of the three groups, as the same letters written apart would. In the given name the parse parts such a run itself (T7); elsewhere it stays one word and still initials letter by letter.
+  ```
+  "J.R.R. Tolkien"            →  initials="J. R. R. T."
+  "John E.T. Smith"           →  initials="J. E. T. S."
+  "Ram Bahadur B.K."          →  initials="R. B. B. K."
+  "Dr. john e.t. smith"       →  initials="j. e. t. s."
+  "Dr. h.c. Hans Meier"       →  initials="h. H. M."  · boundary
+  "JOHN Q.R.ST. SMITH"        →  initials="J. Q. S."  · boundary
+  ```
 
 **Because:** initials abbreviate the person's name words. Titles, suffixes, particles and nicknames are not name words.
 

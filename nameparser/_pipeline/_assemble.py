@@ -3,13 +3,15 @@
 Consumes: tokens (all roles set, and their tags, which name each
 token's reading), dropped, order (for ParsedName.order, and for the
 field a report's alternative names under rules/P1's family-first fold)
-and structure (for ParsedName.order),
+and structure (for ParsedName.order, and for rules/T7's family comma,
+which names a family where C15 reads none),
 ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721), and comma_offsets, for the comma part
 rules/R9's Turkic arm keeps a marker and its father's name in.
-Produces: a validated ParsedName, each token carrying the reading the
+Produces: a validated ParsedName, a given name written as a run of
+initials parted into them (rules/T7), each token carrying the reading the
 parse took (`Token.reading`), a word of the family's second unit
 marked `Reading.second_surname` where O6's or W5's tag says so
 (rules/R10) and `Reading.first_surname` where a first-surname tag
@@ -19,7 +21,8 @@ invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
-policy folds a middle; Policy.name_order, for ParsedName.order where
+policy folds a middle, and with Policy.two_given_names keeping a given
+name written as a run of initials whole (rules/T7); Policy.name_order, for ParsedName.order where
 no positional read happened; Policy.patronymic_rules, for the words
 an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms,
 suffix_acronyms_ambiguous and given_name_abbreviations (the last
@@ -27,7 +30,9 @@ through _vocab.is_title_shaped), for the source of a token's reading
 where no tag gives it; and the Lexicon's readings by word (Lexicon._files),
 for Reading.languages, the files whose reading is on in it, with
 every vocabulary field (`_lexicon._VOCAB_FIELDS`, `_listed_whole`)
-for whether the lexicon lists a word whole rather than by its parts.
+for whether the lexicon lists a word whole rather than by its parts;
+and every vocabulary field and Lexicon.capitalization_exceptions
+(`_listed_run`) for a run of initials listed whole (rules/T7).
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -60,6 +65,7 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
+    _LETTER_RUN, _RUN_LETTER,
     has_patronymic_ending, is_patronymic_marker, is_title_shaped,
     name_source, suffix_kind,
 )
@@ -831,7 +837,101 @@ def assemble(state: ParseState) -> ParsedName:
     order = (state.order if state.order is not None
              else GIVEN_FIRST if state.structure is Structure.FAMILY_COMMA
              else state.policy.name_order)
+    # rules/T7: "the given name is a run of single letters joined by
+    # full stops" -- found inline (a helper would cost every parse a
+    # frame, decisions/parse-cost): the one given word, a stop in it,
+    # and a family beside it, a family comma marking one where it
+    # names none (rules/C15) -- decisions/T7 (#1296)
+    run_at = None
+    has_family = state.structure is Structure.FAMILY_COMMA
+    capitals = False
+    for j, tok in final.items():
+        if tok.role is Role.GIVEN:
+            run_at = (-1 if run_at is not None or "." not in tok.text
+                      else j)
+        elif tok.role is Role.FAMILY:
+            has_family = True
+        if tok.role in NAME_ROLES and not tok.text.islower():
+            capitals = True
+    out = tuple(final.values())
+    if (run_at is not None and run_at >= 0 and has_family
+            and not state.policy.middle_as_family
+            and not state.policy.two_given_names
+            and final[run_at].span is not None
+            and _LETTER_RUN.fullmatch(final[run_at].text)
+            # written in capitals, or among given, middle and family
+            # names written wholly in lower case, which read as their
+            # capitals do (a title is not asked): a run in lower case
+            # among capitals may be an abbreviation of its own ('Dr.
+            # h.c. Hans Meier', honoris causa)
+            and (final[run_at].text.isupper() or not capitals)
+            # a run the vocabulary lists or masks whole is that word
+            and not _listed_run(final[run_at].text, state.lexicon)):
+        out, ambiguities = _part_letter_run(final[run_at], out,
+                                            ambiguities, order)
     return ParsedName(original=state.original,
-                      tokens=tuple(final.values()),
+                      tokens=out,
                       ambiguities=tuple(ambiguities),
                       order=order)
+
+
+# rules/T7: "it reads as its letters written with a space between
+# them would: the letter in the given name's place in the order is the
+# given name, and the others are middle names" -- decisions/T7 (#1296)
+def _part_letter_run(whole: Token, tokens: tuple[Token, ...],
+                     ambiguities: list[Ambiguity],
+                     order: tuple[Role, Role, Role],
+                     ) -> tuple[tuple[Token, ...], list[Ambiguity]]:
+    """`tokens` with `whole`, a given name written as a run of single
+    letters, parted into one initial per letter, and every report
+    naming it naming its letters instead ('Smith, J.R.', a credential's
+    shape after a comma), worded for them: the field it named is now
+    the name's initials. The given name is the first letter, or the
+    last where the order lays the given name out after the middle
+    names."""
+    assert whole.span is not None
+    letters = _RUN_LETTER.findall(whole.text)
+    given = (len(letters) - 1
+             if order.index(Role.GIVEN) > order.index(Role.MIDDLE) else 0)
+    start = whole.span.start
+    parts: list[Token] = []
+    for n, text in enumerate(letters):
+        role = Role.GIVEN if n == given else Role.MIDDLE
+        parts.append(Token(text, Span(start, start + len(text)), role,
+                           _INITIAL_TAGS,
+                           _READINGS[(ReadingKind.INITIAL, role,
+                                      ReadingSource.SHAPE)]))
+        start += len(text)
+    at = tokens.index(whole)
+    reported = [a if whole not in a.tokens else Ambiguity(
+        a.kind, a.detail.replace(FIELD_READING[Role.GIVEN],
+                                 "the name's initials"),
+        tuple(p for t in a.tokens for p in (parts if t == whole else (t,))),
+        a.alternative) for a in ambiguities]
+    return tokens[:at] + tuple(parts) + tokens[at + 1:], reported
+
+
+_INITIAL_TAGS = frozenset({"initial"})
+
+
+def _listed_run(text: str, lexicon: Lexicon) -> bool:
+    """Whether the lexicon lists `text`, a run of single letters, as a
+    word of its own, written as it is, with its full stops: in a
+    vocabulary set, or under a case mask keyed with them that writes a
+    lower-case letter, or keyed without them and writing one (a caller's
+    honoris causa, 'h.c' or 'hc' masked 'h.c'; 'h.c' masked 'H.C' says
+    the letters are capitals, and parts). The spelling
+    without stops is how initials spell a word, so a vocabulary word or
+    a mask spelled without them says nothing about the run: 'J.R.' is
+    no 'jr', and 'K.T.' and 'B.T.' part though 'Kt' and 'Bt' are
+    credentials masked in mixed case."""
+    n = _normalize(text)
+    cap_map = lexicon._cap_map
+    mask = cap_map.get(n)
+    if mask is not None and not mask.isupper():
+        return True
+    bare = cap_map.get(n.replace(".", ""))
+    if bare is not None and "." in bare:
+        return True
+    sets = lexicon._sets
+    return any(n in getattr(sets, name) for name in _VOCAB_FIELDS)

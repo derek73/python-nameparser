@@ -42,7 +42,7 @@
 
 ```
 "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
-"John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."
+"John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given_names="X.Y.Z."
 ```
 
 **Precedence:**
