@@ -69,6 +69,12 @@ ALLOWED = {
     # TYPE_CHECKING
     "_match.py": ("nameparser._types", "nameparser._lexicon",
                   "nameparser._policy"),
+    # the group suggester: types, policy, the lexicon's particles, the
+    # pipeline's patronymic predicates and its private word tables;
+    # Parser is TYPE_CHECKING
+    "_suggest.py": ("nameparser._types", "nameparser._policy",
+                    "nameparser._lexicon", "nameparser._pipeline",
+                    "nameparser.config."),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since
@@ -700,7 +706,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 169, "tools": 19}
+#: Re-taken to 20 tools for tools/vocab/order_names.py (group suggestions).
+_UNGUARDED_READS = {"library": 169, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
