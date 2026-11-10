@@ -569,13 +569,18 @@ def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule],
 
 def _decide_turkic(tally: _Tally, base_rules: frozenset[PatronymicRule]
                    ) -> tuple[SettingEvidence, dict[str, object], bool]:
-    """A group whose patronymics are Turkic. Which combination of the
-    rule and an order reads such names right is still to be measured,
-    so for now it suggests neither, and reports the votes."""
-    return (tally.evidence(
-        _PATRONYMIC_RULES, base_rules, False, lambda v: v in base_rules,
-        note="Turkic patronymics found; no Turkic setting is suggested yet"),
-        {}, False)
+    """A group whose patronymics are Turkic gets the rule alone. Unlike
+    the East Slavic rule it reads a name written either way round
+    (``Mamedov Ali Huseyn oglu`` and ``Ali Huseyn oglu Mamedov`` both
+    read family Mamedov), so it forces no order: the order is decided
+    from the names' own votes (decisions/group-suggestion, 2026-11-10
+    TURKIC)."""
+    rule = PatronymicRule.TURKIC
+    value = base_rules | {rule}
+    fields: dict[str, object] = (
+        {} if rule in base_rules else {_PATRONYMIC_RULES: frozenset({rule})})
+    return (tally.evidence(_PATRONYMIC_RULES, value, True,
+                           lambda v: v in value), fields, False)
 
 
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
