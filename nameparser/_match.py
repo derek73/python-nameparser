@@ -1023,26 +1023,43 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     """The middle role word by word, in order: each aligned pair by
     `_text_outcome` in `group`, each word past the shorter side
     one-sided, the role taking the weakest; `same` where both are
-    empty. The words are aligned from the left; where that reading is
-    not accepted and one side holds more words, the shorter side's
-    words may instead align, in order, with any of the longer side's,
-    every aligned pair accepted and the words left over one-sided
-    (`Beth` / `Anne Beth`), the alignment whose weakest pair is
-    strongest taken (decisions/name-matching, 2026-11-09 #1263). Two
-    middle names of as many words still compare pair by pair."""
+    empty. Where one side holds more words, the shorter side's words
+    may instead align, in order, with any of the longer side's, every
+    aligned pair accepted and the words left over one-sided (`Beth` /
+    `Anne Beth`); the stronger of that alignment and the left-aligned
+    reading is taken, so accepting more never weakens the row
+    (decisions/name-matching, 2026-11-09 #1263). Two middle names of
+    as many words compare pair by pair."""
     wa, wb = a.split(), b.split()
     if not wa and not wb:
         return Outcome.SAME
     outcomes = [_text_outcome(x, y, lexicon, group, accept)
                 for x, y in zip(wa, wb)]
-    if len(wa) != len(wb):
-        outcomes.append(Outcome.ONE_SIDE)
-    left = _weakest(outcomes)
-    if left in accept or len(wa) == len(wb):
-        return left
+    if len(wa) == len(wb):
+        return _weakest(outcomes)
+    left = _one_sided(_weakest(outcomes), accept)
     short, long = (wa, wb) if len(wa) < len(wb) else (wb, wa)
     aligned = _subsequence_outcome(short, long, lexicon, group, accept)
-    return left if aligned is None else _weakest((aligned, Outcome.ONE_SIDE))
+    if aligned is None:
+        return left
+    aligned = _one_sided(aligned, accept)
+    # an accepted reading over one that is not, else the stronger, as a
+    # row reports the strongest outcome that holds and is accepted, else
+    # the strongest that holds (`_pick`)
+    if (aligned in accept) != (left in accept):
+        return aligned if aligned in accept else left
+    return aligned if _STRENGTH[aligned] > _STRENGTH[left] else left
+
+
+def _one_sided(outcome: Outcome, accept: frozenset[Outcome]) -> Outcome:
+    """`outcome` with a word left over on one side: the weaker of it and
+    `one-side`, and `one-side` itself where the caller does not accept
+    it, so an accepted outcome weaker than it (`familiar-form`) never
+    hides the one-sided word."""
+    weakest = _weakest((outcome, Outcome.ONE_SIDE))
+    if Outcome.ONE_SIDE not in accept and weakest in accept:
+        return Outcome.ONE_SIDE
+    return weakest
 
 
 def _subsequence_outcome(short: list[str], long: list[str], lexicon: Lexicon,
@@ -1050,24 +1067,24 @@ def _subsequence_outcome(short: list[str], long: list[str], lexicon: Lexicon,
                          ) -> Outcome | None:
     """The strongest weakest outcome over the in-order alignments of
     every word of `short` with words of `long`, each aligned pair's
-    outcome accepted; `None` where no such alignment exists."""
-    pair = {(i, j): _text_outcome(x, y, lexicon, group, accept)
-            for i, x in enumerate(short) for j, y in enumerate(long)}
-    # best[i][j]: the strongest weakest outcome aligning short[i:] into
-    # long[j:], or None
+    outcome accepted; `None` where no such alignment exists. Word `i`
+    of `short` can only align with words `i` to `i + slack` of `long`,
+    so only that band is compared."""
+    slack = len(long) - len(short)
+    # best[i, j]: the strongest weakest outcome aligning short[i:] into
+    # long[j:], or None; only cells with 0 <= j - i <= slack are read
     best: dict[tuple[int, int], Outcome | None] = {}
     for i in range(len(short), -1, -1):
-        for j in range(len(long), -1, -1):
+        for j in range(i + slack, i - 1, -1):
             if i == len(short):
                 best[i, j] = Outcome.SAME
                 continue
-            found: Outcome | None = None
-            if len(long) - j > len(short) - i:
-                found = best[i, j + 1]
-            if j < len(long) and pair[i, j] in accept:
+            found = best[i, j + 1] if j < i + slack else None
+            outcome = _text_outcome(short[i], long[j], lexicon, group, accept)
+            if outcome in accept:
                 rest = best[i + 1, j + 1]
                 if rest is not None:
-                    here = _weakest((pair[i, j], rest))
+                    here = _weakest((outcome, rest))
                     if found is None or _STRENGTH[here] > _STRENGTH[found]:
                         found = here
             best[i, j] = found

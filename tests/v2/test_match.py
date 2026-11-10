@@ -1904,17 +1904,61 @@ def test_a_middle_name_still_conflicts_where_no_alignment_holds(
 
 def test_a_consumed_middle_word_leaves_the_rest_to_align() -> None:
     # across-roles: John is the other's middle name, consumed, and what is
-    # left of the middle names compares as before
+    # left (Beth against Anne Beth) aligns, a conflict from the left
     across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
-    r = across.check("John Edgar Hoover", "Edgar John Hoover")
+    r = across.check("John Beth Hoover", "Edgar John Anne Beth Hoover")
     assert r.consistent and r["given"].outcome is Outcome.ACROSS_ROLES
     assert r["middle"].outcome is Outcome.ONE_SIDE
+
+
+def test_an_aligned_pair_must_be_accepted() -> None:
+    # B. aligns with Beth only by initial: refused, it aligns nowhere
+    without = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})
+    for x, y in (("John B. Smith", "John Anne Beth Smith"),
+                 ("John Anne Beth Smith", "John B. Smith")):
+        r = without.check(x, y)
+        assert r["middle"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    # the left reading pairs Max with Maximilian, a familiar form; the
+    # alignment pairs it with Max, the same word: the stronger is taken,
+    # so accepting familiar-form does not weaken the row
+    ("John Max Smith", "John Maximilian Max Smith"),
+    # among the alignments the strongest is taken, wherever it stands
+    ("John Max Smith", "John Anne Maximilian Max Smith"),
+    ("John Max Smith", "John Anne Max Maximilian Smith"),
+])
+def test_the_strongest_reading_of_a_middle_name_is_taken(
+        a: str, b: str) -> None:
+    familiar = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for x, y in ((a, b), (b, a)):
+        r = familiar.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and r.consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    ("John Bill Smith", "John William Anne Smith"),  # from the left
+    ("John Bill Smith", "John Anne William Smith"),  # aligned
+])
+def test_a_word_left_over_is_refused_where_one_side_is(a: str, b: str) -> None:
+    # an accepted familiar form, weaker than one-side, does not hide the
+    # one-sided word from a caller who refuses one-side
+    accept = (DEFAULT_ACCEPT - {Outcome.ONE_SIDE}) | {Outcome.FAMILIAR_FORM}
+    matching = Matching(Parser(), accept)
+    for x, y in ((a, b), (b, a)):
+        r = matching.check(x, y)
+        assert r["middle"].outcome is Outcome.ONE_SIDE and not r.consistent
 
 
 _MIDDLES: tuple[str, ...] = (
     "John Smith", "John A. Smith", "John Anne Smith", "John Beth Smith",
     "John Anne Beth Smith", "John Beth Anne Smith", "John A. B. Smith",
     "John Anne B. Smith", "John Anne Marie Beth Smith", "John Ann Smith",
+    # across-roles: a given name the other holds as a middle name, the
+    # rest left to align; familiar-form: a middle name's familiar form
+    "Edgar John Anne Beth Smith", "John Edgar Beth Smith",
+    "John Max Smith", "John Maximilian Max Smith",
 )
 
 
