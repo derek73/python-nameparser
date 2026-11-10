@@ -31,9 +31,11 @@
   "Dr.John Smith"             →  str="Dr.John Smith"
   ```
 
-- **Initials cut from the last name word of a part, behind a word that is no title, are reported**, the credential S3 read the whole as by its shape being the reading not taken, post-nominals after the word making no difference; not on a family comma's surname, which S3 never read so, nor where the word after the stop is suffix vocabulary, which reports itself (S11).
+- **Initials cut from the last name word of a part, behind a word that is no unambiguous title, are reported**, the credential S3 read the whole as by its shape being the reading not taken, post-nominals after the word, or a suffix comma, making no difference; not on a family comma's surname, which S3 never read so, not for a title or a given name written short before the stop, nor where the word after the stop is suffix vocabulary, which reports itself (S11).
   ```
   "John Smith B.Eng"          →  ambiguities=("suffix-or-name",)
+  "John Smith A.Brown, PhD"   →  ambiguities=("suffix-or-name",)
+  "Dr. A.Smith"               →  ambiguities=()
   ```
 
 **Because:** a name glued to the title or initial before it is the same name written without its space, Mongolian writes every short form that way (`У.Хүрэлсүх`), and in the part before a comma the word after a chunk read on its own is a name in nearly every case that the local corpora hold. After a comma the same shape is a degree written with its field (`Dr.med`, `M.Sc`, `B.Chir`), so the division stops at the comma.
@@ -69,6 +71,9 @@
 **Accepted:**
 
 - A name glued to its chunk and closed by a stop of its own stays one word ('J.Smith.', 'Mrs.Smith.'), the stop being how a field is closed too ('Dr.Med.').
+- In a name written wholly in lower case nothing after the stop has the capital the test reads, so it stays one word ('dr.john smith'), where its capitals divide ('DR.JOHN SMITH').
+- A listed title before the initials is no word to spare, though rarely a given name, so the report is not made there ('Vice A.Smith').
+- `Parser.revise` reads a value on its own, so a glued word in it divides, and the revised field renders the pieces apart ('M.Hassan' revising to 'M. Hassan'), as a CJK value's own parse divides it.
 - After a family comma a glued word stays whole though it is the given name the comma names ('SMITH, J.MICHAEL' → given 'J.MICHAEL').
 - An unlisted credential glued at its stop and ending the name divides as a name would, reported ('John Smith B.Eng' → family 'Eng'); a degree spelled as a title and its field before any comma divides too ('Dr.Med Hans Meier' → given 'Med'), as does a degree spelled as a title and one letter ('Mgr.A.', 'Dr.C'), which a vocabulary entry for the spelling would keep whole.
   ```

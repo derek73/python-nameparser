@@ -1459,8 +1459,8 @@ _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
 #: reads the marker as a word too.
 _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
                                "Smith, John, PhD née Jones"})
-#: The third (2026-11-10, #1230/#1235): a suffix word glued at its full
-#: stop that the whole name keeps whole, being after a comma, and the
+#: The third (2026-11-10, #1230/#1235): a glued word the whole name reads
+#: as its suffix and keeps whole, being after a comma, and the
 #: value's own sub-parse divides, being the part before any comma there
 #: (rules/T8) -- 'M.Filho' revising to 'M. Filho', as a CJK value's
 #: sub-parse divides it (`revise(family="김민준")`).

@@ -890,15 +890,17 @@ def _dotted(text: str) -> bool:
 
 
 # rules/T8: "glued to the next at its full stop" -- the shapes
-# `glued_cuts` reads (decisions/T8 (#1230, #1235)). One chunk of letters closed by a stop with something after
-# it; one word of letters, apostrophes and hyphens, which is what can
-# follow a chunk and be a name.
+# `glued_cuts` reads (decisions/T8 (#1230, #1235)): one chunk of letters
+# closed by a stop with something after it
 _GLUED_CHUNK = re.compile(r"((?:" + _LETTER + r")+)\.(?=\S)")
-# a run of two or more single letters closed by stops, a name behind it
+# a run of two or more single letters closed by stops, a letter after
+# it (the name is `glued_cuts`' to find)
 _GLUED_RUN = re.compile(r"(?:" + _LETTER + r"\.){2,}(?=[^\W\d_])")
 #: a letter (its marks with it, so NFD text passes), a full stop and a
 #: letter: the C-level test `_script_segment` asks before `glued_cuts`
 GLUED_SHAPE = re.compile(_LETTER + r"\.[^\W\d_]")
+# one word of letters, apostrophes and hyphens: what can follow a chunk
+# and be a name
 _GLUED_WORD = re.compile(r"(?:" + _LETTER + r")(?:" + _LETTER + r"|['’\-])*")
 
 
@@ -923,14 +925,16 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     parser reads alone (`_reads_alone`) meets a name, so the word reads
     as it does with a space there ('Dr.John' as 'Dr. John',
     'Ц.Сандаг-Очир' as 'Ц. Сандаг-Очир', 'Yu.A.Chibrikova' as 'Yu. A.
-    Chibrikova'). A run of single letters ('J.R.Smith') and a run of
-    titles ('Lt.Gov.John') stay one word before the name. Empty where
-    the vocabulary reads the word whole (a suffix spelled without its
-    stops, 'M.Sc'; a credential of chunks, 'Msc.Ed.'), and wherever the
+    Chibrikova'). A run of single letters stays one chunk before the name
+    ('J.R.Smith' as 'J.R. Smith', rules/T7), while titles glued to each
+    other divide at each stop, as they read written apart ('Lt.Gov.John'
+    as 'Lt. Gov. John'). Empty where the vocabulary reads the word whole
+    (a suffix spelled without its stops, 'M.Sc', 'M.Sc.'; a title listed
+    whole), and wherever the
     word does not divide through to its end: at a word in lower case
     ('Dr.med', 'G.ppe'), at one closed by its own stop or followed by
     another chunk ('Dr.Med.', 'J.Smith.', 'Dr.John.Smith'), and at an
-    unambiguous title or credential ('M.Sc.', 'Dr.MD')."""
+    unambiguous title or credential after the stop ('Dr.MD')."""
     sets = lexicon._sets
     n = _normalize(text)
     bare = n.replace(".", "")
@@ -939,7 +943,6 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     # ('Dr.Ma' where a caller lists 'drma'; 'Dr.A.' divides, 'dra' being
     # the title and the initial T8 reads behind one)
     if (bare in sets.suffix_acronyms or n in sets.titles
-            or period_joined_vocab(text, lexicon) == "suffix"
             or bare in sets.titles and len(unicodedata.normalize(
                 "NFC", n.rsplit(".", 1)[-1])) > 1):
         return ()
@@ -1007,9 +1010,24 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             return tuple(cuts) if titled or not initial else ()
 
 
+def is_initial_chunk(chunk: str) -> bool:
+    """Initials before a full stop, as T8's report asks of the chunks it
+    cut (rules/T8): one letter in a script with case, a run of them
+    ('J.R'), or a transliteration digraph rules/H2 names ('Yu'), and no
+    title or given name written short."""
+    parts = chunk.split(".")
+    if len(parts) == 1 and _normalize(chunk) in _DIGRAPH_INITIALS:
+        return True
+    for part in parts:
+        part = unicodedata.normalize("NFC", part)
+        if len(part) != 1 or part.upper() == part.lower():
+            return False
+    return True
+
+
 def is_title_chunk(chunk: str, lexicon: Lexicon) -> bool:
-    """A listed title that is no saint particle, as a chunk before a
-    full stop (rules/T8; a saint particle's chunk is #1071's)."""
+    """A listed title that is no saint particle, read as a chunk before
+    a full stop (rules/T8; a saint particle's chunk is #1071's)."""
     sets = lexicon._sets
     n = _normalize(chunk)
     return n not in sets.saint_particles and (

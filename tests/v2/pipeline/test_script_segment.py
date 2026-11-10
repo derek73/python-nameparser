@@ -1197,6 +1197,14 @@ def test_the_divided_readings_the_reviews_found(
     "John Smith B.Eng", "Ahmed Ali M.Hassan",
     # post-nominals after it, a run, a digraph
     "John Smith A.Brown PhD", "John Smith J.R.Jones", "Ivan Petrov Yu.Ivanov",
+    # after a suffix comma, which segment's provisional family comma
+    # hides from this stage (the comma's own decision is asked)
+    "John Smith A.Brown, PhD", "John Smith B.Eng, Jr.",
+    "Ahmed Ali M.Hassan, PhD",
+    # a title that is also a given name is a word to spare
+    "Dean A.Smith",
+    # two glued words, the last one reported
+    "Dr.John J.Smith",
 ])
 def test_initials_cut_from_the_word_ending_the_name_are_reported(
         text: str) -> None:
@@ -1204,18 +1212,26 @@ def test_initials_cut_from_the_word_ending_the_name_are_reported(
     # taken is still that one, by its shape
     from nameparser import parse
     from nameparser._types import AmbiguityKind, ReadingSource, Role
-    [report] = parse(text).ambiguities
+    from nameparser._types import ReadingKind
+    [report] = [a for a in parse(text).ambiguities
+                if "written short" in a.detail]
     assert report.kind is AmbiguityKind.SUFFIX_OR_NAME
     assert report.alternative is not None
     assert report.alternative.role is Role.SUFFIX
     assert report.alternative.source is ReadingSource.SHAPE
+    assert report.alternative.kind is ReadingKind.CREDENTIAL
 
 
 @pytest.mark.parametrize("text", [
     "Dr. A.Smith",          # a title is no word to spare
+    "Vice A.Smith",         # a listed title, though rarely a name
     "Smith A.Brown, John",  # a family comma's surname
-    "Dr.John Smith",        # a title chunk is no initial
+    "John Smith Dr.Brown",  # a title chunk is no initial
+    "John Smith Ma.Refugio",  # nor a given name written short
     "Pedro M.Filho",        # a suffix word reports itself (S11), once
+    "John A.Brown Smith",   # not the last name word
+    # a later word divided first is read as written, not as its piece
+    "John Smith A.Brown Sr.Jones",
 ])
 def test_no_division_report_where_s3_read_no_credential(text: str) -> None:
     from nameparser import parse
@@ -1237,3 +1253,96 @@ def test_a_word_with_no_stop_pays_no_division(
     monkeypatch.setattr(_script_segment, "glued_cuts", counting)
     parse("John Quincy Adams Smith, M.D.")
     assert calls == []
+
+
+def test_the_report_names_the_field_its_name_lands_in() -> None:
+    from nameparser import parse
+    [report] = parse("Ahmed Ali M.Hassan").ambiguities
+    assert report.detail.endswith("read as a family name")
+
+
+def test_a_suffix_acronym_after_the_stop_reports_once() -> None:
+    from nameparser import parse
+    from nameparser._types import ReadingSource
+    [report] = parse("John Smith M.Ed").ambiguities
+    assert report.alternative is not None
+    assert report.alternative.source is ReadingSource.VOCABULARY
+
+
+@pytest.mark.parametrize(("text", "fields"), [
+    # an empty or nickname-only head is no part before a comma
+    (", Dr.John", {"title": "Dr.John"}),
+    ('"Bo", Dr.John', {"title": "Dr.John"}),
+    # a name written in one case: capitals divide, lower case does not
+    ("DR.JOHN SMITH", {"title": "DR.", "given": "JOHN"}),
+    ("dr.john smith", {"title": "dr.john", "family": "smith"}),
+])
+def test_the_heads_the_division_leaves_or_reads(
+        text: str, fields: dict[str, str]) -> None:
+    from nameparser import parse
+    n = parse(text)
+    assert {k: getattr(n, k) for k in fields} == fields
+
+
+def test_the_division_runs_under_the_script_opt_outs() -> None:
+    # T8 is no script split: neither opt-out reaches it
+    from nameparser import Parser, Policy
+    p = Parser(policy=Policy(segment_scripts=frozenset(), script_orders=()))
+    n = p.parse("Ц.Сандаг-Очир")
+    assert (n.given, n.family) == ("Ц.", "Сандаг-Очир")
+
+
+def test_a_divided_name_matches_its_spaced_writing() -> None:
+    from nameparser import parse
+    assert parse("Dr.John Smith").matches("Dr. John Smith")
+    assert parse("Mr.Smith").matches("Mr. Smith")
+
+
+def test_revise_respaces_a_glued_value() -> None:
+    # the accepted limit (rules/T8): a value's own sub-parse divides it,
+    # and the revised field renders the pieces apart, as a CJK value's
+    # does ('김민준' revising to '김 민준')
+    from nameparser import Parser
+    p = Parser()
+    n = p.parse("Ahmed Ali Hassan")
+    assert p.revise(n, family="M.Hassan").family == "M. Hassan"
+
+
+_GLUED_WORDS = ("Dr.John", "J.Smith", "J.R.Smith", "Yu.A.Chibrikova",
+                "Ц.Сандаг-Очир", "Ma.Refugio", "Lt.Gov.John", "Mr.Smith",
+                "Dr.J.", "M.Hassan", "Dr.McDonald", "Gen.Ademola",
+                "B.TURAN")
+_HEADS = ("{w}", "{w} Jones", "Ali {w}", "Ali {w} Jones", "Ali {w} Jr.",
+          "{w}, Ali", "Ali {w}, PhD", "Ali {w}, Jr., MD", "{w} (Bo) Jones",
+          "Dr. {w}", "Ali de {w}", "Ali {w} III")
+
+
+@pytest.mark.parametrize("order", ["given-first", "family-first",
+                                   "family-first-given-last"])
+def test_a_glued_word_reads_as_its_spaced_twin_under_every_order(
+        order: str) -> None:
+    # the spaced twin is built from glued_cuts itself, so a run kept
+    # whole stays whole in it; tokens, roles and ambiguity kinds agree,
+    # T8's own report aside (rules/T8)
+    from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+                            GIVEN_FIRST, Parser, Policy)
+    from nameparser._pipeline._vocab import glued_cuts
+    orders = {"given-first": GIVEN_FIRST, "family-first": FAMILY_FIRST,
+              "family-first-given-last": FAMILY_FIRST_GIVEN_LAST}
+    p = Parser(policy=Policy(name_order=orders[order]))
+    failures = []
+    for word in _GLUED_WORDS:
+        cuts = glued_cuts(word, p.lexicon)
+        spaced_word = " ".join(
+            word[a:b] for a, b in zip((0, *cuts), (*cuts, len(word))))
+        for head in _HEADS:
+            glued = p.parse(head.format(w=word))
+            spaced = p.parse(head.format(w=spaced_word))
+            g = ([(t.text, t.role) for t in glued.tokens],
+                 sorted(a.kind for a in glued.ambiguities
+                        if "written short" not in a.detail))
+            s = ([(t.text, t.role) for t in spaced.tokens],
+                 sorted(a.kind for a in spaced.ambiguities))
+            if g != s:
+                failures.append((head.format(w=word), g, s))
+    assert not failures, failures[:3]
