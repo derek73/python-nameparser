@@ -41,13 +41,14 @@
   "ດຣ. ສົມ"                     →  title="ດຣ."  · boundary
   ```
 
-- **A transliteration digraph** — the Latin spelling of one Cyrillic letter, Yu, Ya, Ye, Yo, Zh, Kh, Shch or Dzh, in any case — never reads as a title by shape: it is the initial of that letter, so a romanized byline reads as its Cyrillic original does, where the one-letter initial is no title either (#1136). Ch, Sh and Ts still read as titles by shape, each also written short for a title (Chaudhry, Sheikh or Shri, the Malaysian Ts.), and a digraph of another alphabet, such as Th for Greek Θ or Dutch Theodorus, is outside this clause. The digraph reads as a name word wherever it stands, behind a title too, and not as the initial a single letter is, so a lone one is placed as any lone unlisted word is.
+- **A transliteration digraph** — the Latin spelling of one Cyrillic letter, Yu, Ya, Ye, Yo, Zh, Kh, Shch or Dzh, in any case — never reads as a title by shape: it is the initial of that letter, so a romanized byline reads as its Cyrillic original does, where the one-letter initial is no title either (#1136). Ch, Sh and Ts still read as titles by shape, each also written short for a title (Chaudhry, Sheikh or Shri, the Malaysian Ts.), and outside this clause are a digraph of another alphabet, such as Th for the Greek Θ, and a Latin given name written short, such as the Dutch Th. for Theodorus. The digraph reads as a name word wherever it stands, behind a title too, and not as the initial a single letter is, so a lone one is placed as any lone unlisted word is.
   ```
   "Yu. A. Chibrikova"         →  given="Yu."
   "Chibrikova, Yu. A."        →  given="Yu."
   "Dr. Yu. Petrov"            →  title="Dr."
   "ZH. I. ALFEROV"            →  given="ZH."
   "Kh. O. Bezirdzhyan"        →  given="Kh."
+  "Yu. Smith, Ed"             →  suffix="Ed"
   "Ts. Dr. Norziha Che Him"   →  title="Ts. Dr."  · boundary
   "Ch. Tahir Mehmood"         →  title="Ch."  · boundary
   ```

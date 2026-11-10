@@ -4248,6 +4248,7 @@
 {"name": "Yoshi Emomoto", "given": "Yoshi", "family": "Emomoto", "initials": "Y. E."}
 {"name": "Yrsa Sigurðardóttir", "given": "Yrsa", "family": "Sigurðardóttir", "initials": "Y. S."}
 {"name": "Yu. A. Chibrikova", "given": "Yu.", "middle": "A.", "family": "Chibrikova", "initials": "Y. A. C."}
+{"name": "Yu. Smith, Ed", "given": "Yu.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "Y. S.", "capitalized_force": "Yu. Smith, ED"}
 {"name": "Yāzīǧī, Ibrāhīm al-", "given": "Ibrāhīm", "family": "al- Yāzīǧī", "initials": "I. Y."}
 {"name": "Yıldırım, Fatma Su", "given": "Fatma", "middle": "Su", "family": "Yıldırım", "initials": "F. S. Y."}
 {"name": "Yılmaz Irmak", "order": "FAMILY_FIRST", "given": "Irmak", "family": "Yılmaz", "initials": "I. Y."}
