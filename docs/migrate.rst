@@ -1284,3 +1284,18 @@ capitalizes a particle that opens a hyphenated word, save Dutch 's and
     ...     "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "LEVON TER-PETROSYAN",
     ...     "WILLEM 'S-GRAVESANDE")]
     ["Безугла Мар'яна", 'ნინო ბურჯანაძე', 'Levon Ter-Petrosyan', "Willem 's-Gravesande"]
+
+A transliteration digraph opening a name, the Latin spelling of one
+Cyrillic letter (``Yu.``, ``Ya.``, ``Ye.``, ``Yo.``, ``Zh.``, ``Kh.``,
+``Shch.``, ``Dzh.``), is a given name where 1.4 through 3.0 read it as a
+title. ``Ts.``, ``Ch.`` and ``Sh.``, each also a title written short,
+are still titles, and other spellings of the same letters (the Library
+of Congress ``Iu.``) are unchanged:
+
+.. doctest::
+
+    >>> digraph = parse("Yu. A. Chibrikova")
+    >>> digraph.title, digraph.given, digraph.middle
+    ('', 'Yu.', 'A.')
+    >>> parse("Ts. Sandag-Ochir").title
+    'Ts.'
