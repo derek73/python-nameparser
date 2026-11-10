@@ -1621,3 +1621,16 @@ def test_another_reading_is_tried_into_the_middle_and_the_given_name() -> None:
     r = last.matching(other_readings=True).check("Smith John V", other)
     assert r.consistent and r.left_alternative is not None
     assert r["given"].outcome is Outcome.INITIAL
+
+
+def test_a_hand_built_middle_of_whitespace_alone_compares_without_raising() -> None:
+    # parse() never writes one, but a ParsedName built by hand may: the
+    # table hands both texts to the middle's comparator as present, and
+    # its words are none, so the two middles agree rather than the
+    # weakest of no outcomes raising (decisions/name-matching #1260)
+    from nameparser import Token
+    name = parse("John Smith")
+    blank = ParsedName(name.original,
+                       (*name.tokens, Token("　", None, Role.MIDDLE)))
+    r = m.check(blank, blank)
+    assert r["middle"].outcome is Outcome.SAME and r.consistent
