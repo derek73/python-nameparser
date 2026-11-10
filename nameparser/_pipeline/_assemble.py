@@ -841,22 +841,28 @@ def assemble(state: ParseState) -> ParsedName:
     # names none (rules/C15)
     run_at = None
     has_family = state.structure is Structure.FAMILY_COMMA
+    capitals = False
     for j, tok in final.items():
         if tok.role is Role.GIVEN:
             run_at = (-1 if run_at is not None or "." not in tok.text
                       else j)
         elif tok.role is Role.FAMILY:
             has_family = True
+        if tok.role in NAME_ROLES and not tok.text.islower():
+            capitals = True
     out = tuple(final.values())
     if (run_at is not None and run_at >= 0 and has_family
             and not state.policy.middle_as_family
             and not state.policy.two_given_names
             and final[run_at].span is not None
             and _LETTER_RUN.fullmatch(final[run_at].text)
-            # written in capitals: a run in lower case may be an
-            # abbreviation of its own ('Dr. h.c. Hans Meier', honoris
-            # causa), and a name in one case says nothing either way
-            and final[run_at].text.isupper()):
+            # written in capitals, or in a name whose words are written
+            # in lower case, which reads as its capitals do: a run in
+            # lower case among capitals may be an abbreviation of its
+            # own ('Dr. h.c. Hans Meier', honoris causa)
+            and (final[run_at].text.isupper() or not capitals)
+            # a run the vocabulary lists or masks whole is that word
+            and not _listed_run(final[run_at].text, state.lexicon)):
         out, ambiguities = _part_letter_run(final[run_at], out,
                                             ambiguities, order)
     return ParsedName(original=state.original,
@@ -902,3 +908,18 @@ def _part_letter_run(whole: Token, tokens: tuple[Token, ...],
 
 
 _INITIAL_TAGS = frozenset({"initial"})
+
+
+def _listed_run(text: str, lexicon: Lexicon) -> bool:
+    """Whether the lexicon lists `text`, a run of single letters, as a
+    word of its own: in a vocabulary field as it is written, with its
+    full stops (the spelling without them is how initials spell a word,
+    'J.R.' being no 'jr'), or under a case mask that writes a lower-case
+    letter, which says the word is no run of capitals ('h.c' or 'hc', a
+    caller's honoris causa; 'KC' and 'PC' leave initials to part)."""
+    n = _normalize(text)
+    mask = lexicon._cap_map.get(n) or lexicon._cap_map.get(n.replace(".", ""))
+    if mask is not None and not mask.isupper():
+        return True
+    sets = lexicon._sets
+    return any(n in getattr(sets, name) for name in _VOCAB_FIELDS)

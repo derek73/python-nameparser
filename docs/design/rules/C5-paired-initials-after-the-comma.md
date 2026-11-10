@@ -2,7 +2,7 @@
 
 **When:** paired initials — two single letters joined by a period, with or without a period after the second ('M.J.', 'M.J') — stand in the part after the comma, as in "García Márquez, G.J.".
 
-**Then:** paired initials are the exception to the ambiguous credential class's count (C4): the one dotted shape a person's own initials are written in, they are read as the given name after the comma, which T7 then parts into a given and a middle initial.
+**Then:** paired initials are the exception to the ambiguous credential class's count (C4): the one dotted shape a person's own initials are written in, they are read as the given name after the comma, which T7 then parts into a given and a middle initial where it reaches them.
 
 - **Undotted, where the name carries the case contrast C6 asks for**, an unlisted word of two capitals after the comma is the paired initials' shape and is decided at this comma exactly as they are ('García Márquez, MJ' and 'García Márquez, MJ PhD' keep given 'MJ').
   ```

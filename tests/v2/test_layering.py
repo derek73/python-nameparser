@@ -684,7 +684,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: 140 -> 141; case repair's opening `ter` and `der`, the particles
 #: before one, 141 -> 142; #490's C4 count asking for a title behind
 #: a dotted run, the titles, 142 -> 143; classify's gate on that
-#: run's fold, the contested titles and the modifiers, 143 -> 145);
+#: run's fold, the contested titles and the modifiers, 143 -> 145;
+#: #1296's run of initials listed whole, its `sets =` binding and the
+#: roster `getattr` through it, 145 -> 147);
 #: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -695,7 +697,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 145, "tools": 19}
+_UNGUARDED_READS = {"library": 147, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

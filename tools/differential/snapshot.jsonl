@@ -87,6 +87,7 @@
 {"name": "Abd van der Berg", "given": "Abd", "family": "van der Berg", "initials": "A. B."}
 {"name": "Abd van der Berg née Jones", "given": "Abd", "family": "van der Berg", "maiden": "Jones", "initials": "A. B."}
 {"name": "Abdul Aziz Yassin", "given": "Abdul Aziz", "family": "Yassin", "initials": "A. A. Y."}
+{"name": "Abdul E.T. Smith", "given": "Abdul E.T.", "family": "Smith", "initials": "A. E. T. S."}
 {"name": "Abdul MA Smith", "given": "Abdul MA", "family": "Smith", "initials": "A. M. S.", "capitalized_force": "Abdul Ma Smith"}
 {"name": "Abdul Rahman bin Ahmad", "given": "Abdul Rahman", "family": "bin Ahmad", "initials": "A. R. A.", "patronymic": "bin Ahmad"}
 {"name": "Abdul Razak Hussein", "given": "Abdul Razak", "family": "Hussein", "initials": "A. R. H."}
@@ -4441,7 +4442,7 @@
 {"name": "du Ménil Thi Mai", "order": "FAMILY_FIRST_GIVEN_LAST", "given": "Mai", "middle": "Thi", "family": "du Ménil", "initials": "M. T. M."}
 {"name": "e and e", "given": "e and e", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. e.", "capitalized": "E and E"}
 {"name": "e j smith", "given": "e", "middle": "j", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. j. s.", "capitalized": "E J Smith"}
-{"name": "e.t. smith", "given": "e.t.", "family": "smith", "initials": "e. s.", "capitalized": "E.T. Smith"}
+{"name": "e.t. smith", "given": "e.", "middle": "t.", "family": "smith", "initials": "e. t. s.", "capitalized": "E.T. Smith"}
 {"name": "émile zola", "given": "émile", "family": "zola", "initials": "é. z.", "capitalized": "Émile Zola"}
 {"name": "fan ƉAM Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "given": "ƉAM", "middle": "Fostɛɛŋ Samʊwɛl", "family": "fan", "initials": "Ɖ. F. S. f.", "capitalized_force": "Fan Ɖam Fostɛɛŋ Samʊwɛl"}
 {"name": "fon Brül Ada Kornelia Sezar Martin, hirurg-stomatolog lukman", "order": "FAMILY_FIRST", "given": "hirurg-stomatolog", "middle": "lukman", "family": "fon Brül Ada Kornelia Sezar Martin", "initials": "h. l. f. B. A. K. S. M.", "capitalized_force": "Hirurg-Stomatolog Lukman Fon Brül Ada Kornelia Sezar Martin"}
@@ -4460,7 +4461,7 @@
 {"name": "j nee Smith", "given": "j", "maiden": "Smith", "initials": "j.", "capitalized_force": "J (Smith)"}
 {"name": "j nee smith", "given": "j", "maiden": "smith", "initials": "j.", "capitalized": "J (Smith)"}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d.", "capitalized": "J.-E.-P. Dupont"}
-{"name": "j.r.r. tolkien", "given": "j.r.r.", "family": "tolkien", "initials": "j. t.", "capitalized": "J.R.R. Tolkien"}
+{"name": "j.r.r. tolkien", "given": "j.", "middle": "r.r.", "family": "tolkien", "initials": "j. r. r. t.", "capitalized": "J.R.R. Tolkien"}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "j. m.", "capitalized": "Jack Ma"}
 {"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "initials": "j. h. h.", "capitalized": "Jacobus Henricus van 't Hoff"}
 {"name": "jane doe nee smith ma", "given": "jane", "family": "doe", "suffix": "ma", "maiden": "smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "j. d.", "capitalized": "Jane Doe (Smith) MA"}
