@@ -341,7 +341,8 @@ class Matching:
         the other name: a given name with each word of the other's
         middle name and with its nickname, a family name with the
         other's maiden name. Only a full name on both sides counts, at
-        `same`, `folded` or `listed-spelling`, never an initial. The
+        `same`, `folded`, `joined` or `listed-spelling`, never an
+        initial. The
         strongest match resolves the role, which then reads
         `across-roles`, and is recorded in the result's `across`; a
         middle word it used is taken out of the middle comparison, the
