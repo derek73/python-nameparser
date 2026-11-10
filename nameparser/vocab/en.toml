@@ -2608,7 +2608,7 @@ credential = {}
 
 [[word]]
 text = "bed"
-excluded = { credential = { reason = "B.Ed, Bachelor of Education (NPPES 55, 5 ClinicalTrials.gov officials after a comma), is the Nepali given name Bed (59 nepal-candidates names, Bed Bahadur), and listed it is read as the suffix where the given part after a family comma holds it (Thapa, Bed reads suffix 'Bed'), though no local corpus writes that shape, against about 7 credentials gained (B.Ed 2, BEd 4 in ClinicalTrials.gov; 2026-11-09). B.Ed is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+excluded = { credential = { reason = "B.Ed, Bachelor of Education (NPPES 55, 5 ClinicalTrials.gov officials after a comma), is the Nepali given name Bed (59 nepal-candidates names, Bed Bahadur), and listed it is read as the suffix where the given part after a family comma holds it (Thapa, Bed reads suffix 'Bed'), though no local corpus writes that shape, against 10 credentials gained (ClinicalTrials.gov BEd 4 and B.Ed 1, ORCID 4, cz-candidates 1; 2026-11-09). B.Ed is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
 
 [[word]]
 text = "bem"

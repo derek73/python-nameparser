@@ -2302,6 +2302,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('msed', (('en', 'credential', (('cased', 'MSEd'),)),)),
     ('msg', (('en', 'military', ()),)),
     ('msgt', (('en', 'military', (('same_as', 'msg'),)),)),
+    ('msi', (('id', 'credential', ()), ('id', 'family', ()))),
     ('msm', (('en', 'credential', ()),)),
     ('msn', (('en', 'credential', ()),)),
     ('mspt', (('en', 'credential', ()),)),

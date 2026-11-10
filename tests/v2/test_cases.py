@@ -433,9 +433,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # orders; 1702 -> 1705 the same day, its PR review's words-to-spare
     # rows; 1705 -> 1711 on 2026-11-09, #998's 'Ahmed Ali M.Hassan'
     # reporting suffix-or-name and 'Ali C.Psych' given-or-family under
-    # three orders.
-    assert claims == 1711, (
-        f"the field sweep checks {claims} claims, recorded as 1711 on "
+    # three orders; 1711 -> 1720 the same day, its review's three msi
+    # rows reporting suffix-or-name under three orders.
+    assert claims == 1720, (
+        f"the field sweep checks {claims} claims, recorded as 1720 on "
         f"2026-11-09")
 
 
@@ -845,8 +846,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # rows under the three orders; 540 -> 542 and 350 -> 354 the same
     # day, its PR review's two words-to-spare rows under the three orders;
     # 542 -> 545 on 2026-11-09, #998's 'Ahmed Ali M.Hassan' under the
-    # three orders
-    assert (checked, skipped) == (545, 354), (checked, skipped)
+    # three orders; 545 -> 551 the same day, its review's 'Jane Doe, MSi'
+    # and 'ANDISWA ZANELE MSI' under the three orders
+    assert (checked, skipped) == (551, 354), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

@@ -62,7 +62,8 @@ credential = { cased = "MPsi", expands = "Magister Psikologi", note = "ClinicalT
 
 [[word]]
 text = "msi"
-excluded = { credential = { reason = "M.Si, Magister Sains (ORCID 18 records, 17 after a comma; ClinicalTrials.gov 5), is the Xhosa surname Msi: Andiswa Zanele Msi in ORCID and Mr Afikile Manduleli Msi in PSC read suffix 'Msi' with it listed plain, and marked ambiguous by a family reading it still took the surname from a name written in one case (ANDISWA ZANELE MSI), the shape cota was refused for, while the dotted M.Si already reads as a suffix through si's own reading (measured 2026-11-09)", issue = 998, decided = 2026-11-09 } }
+credential = { excluded = { cased = { reason = "a mask applies in every role, and Msi is a Xhosa surname: 'Andiswa Zanele Msi' would render 'Andiswa Zanele MSi' (measured 2026-11-09)", issue = 998 } }, expands = "Magister Sains", note = "NPPES 1 US healthcare provider (August 2026 file); ClinicalTrials.gov study officials 5, 4 after a comma, written MSi 3, MSi. 1, M.Si 1; cz-candidates records 1, 1 after a comma, written MSI 1; ORCID records 18, 17 after a comma, written M.Si 11, M.Si. 4, M.S.I. 1; marked ambiguous by its family reading: refused, a comma name loses it (Jane Doe, MSi reversed; Saprudin S.Sos., M.Si. read given 'M.Si.'), while marked, a name in one case with a word to spare reads it as the suffix (ANDISWA ZANELE MSI), which no local corpus writes (2026-11-09)", issue = 998 }
+family = { note = "Msi, a Xhosa surname: Andiswa Zanele Msi in ORCID (South Africa) and Mr Afikile Manduleli Msi in PSC, which read the credential with it listed plain (#998); no Census 2010 (floor 100) or Wikidata bearer (2026-11-09)" }
 
 [[word]]
 text = "sfarm"

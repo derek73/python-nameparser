@@ -1241,13 +1241,26 @@ CASES: tuple[Case, ...] = (
          notes="S.Si is refused (id.toml's ssi): ssi is the romanized "
                "Korean honorific 씨; listed, it read family 'Ji-hoon', "
                "suffix 'ssi', and recased as SSi"),
-    Case("refused_msi_keeps_the_surname_in_capitals",
+    Case("ambiguous_msi_keeps_the_surname", "Andiswa Zanele Msi",
+         {"given": "Andiswa", "middle": "Zanele", "family": "Msi"},
+         classification="parity", ambiguities=("suffix-or-name",),
+         notes="M.Si is marked ambiguous (id.toml's msi): Msi is a Xhosa "
+               "surname, and listed plain it read suffix 'Msi'; the "
+               "report is new with #998"),
+    Case("ambiguous_msi_after_a_comma_is_the_credential", "Jane Doe, MSi",
+         {"given": "Jane", "family": "Doe", "suffix": "MSi"},
+         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         notes="before #998 given 'MSi', family 'Jane Doe'"),
+    Case("ambiguous_msi_in_capitals_takes_the_surname",
          "ANDISWA ZANELE MSI",
-         {"given": "ANDISWA", "middle": "ZANELE", "family": "MSI"},
-         classification="parity",
-         notes="M.Si is refused (id.toml's msi): Msi is a Xhosa surname, "
-               "and marked ambiguous a name in one case with a word to "
-               "spare still read it as the suffix, as cota's did"),
+         {"given": "ANDISWA", "family": "ZANELE", "suffix": "MSI"},
+         classification="fix(#998)", ambiguities=("suffix-or-name",),
+         notes="the accepted cost of marking msi rather than refusing "
+               "it: a name in one case with a word to spare gives no case "
+               "signal, so the credential reading takes the surname, as "
+               "the ambiguous mot's does (DIVA DA MOT); no local corpus "
+               "writes the shape, while refusing msi reversed Jane Doe, "
+               "MSi; before #998 middle 'ZANELE', family 'MSI'"),
     Case("two_chunk_credential_written_without_stops_after_a_comma",
          "Anna Gelavis, BPharm",
          {"given": "Anna", "family": "Gelavis", "suffix": "BPharm"},
