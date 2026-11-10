@@ -95,13 +95,15 @@ UNPREFERRED = frozenset({"name", "familiar"})
 #: reading's are `default` (phase 3a), `cased`, the word's case mask
 #: (the shipped ones on `family` readings, #1014), `shared`, which
 #: rules/P10, O6 and O7 read, and `after_particle`, which P10 and O6 read
-#: (#704): its other keys are evidence.
+#: (#704): its other keys are evidence. A particle reading's
+#: `capital_opening` is rules/R12's: the particle takes a capital where
+#: it opens the family name, the Armenian `Ter` and `Der`.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),
     "suffix": frozenset({"acronym", "attached", "cased", "default",
                          "title_case_is_name"}),
-    "particle": frozenset({"cased", "default"}),
+    "particle": frozenset({"capital_opening", "cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
     "bound_given": frozenset({"completed_by", "cased", "default"}),
     "relation": frozenset({"cased", "default"}),
@@ -200,8 +202,8 @@ class ReadingProperties:
 
     def flag(self, prop: str) -> bool:
         """A `may_be_*` flag, `after_given`, `abbreviation`,
-        `title_case_is_name`, `shared` or `after_particle`: unwritten,
-        false."""
+        `title_case_is_name`, `shared`, `after_particle` or
+        `capital_opening`: unwritten, false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -603,6 +605,7 @@ class Compiled(TypedDict):
     PARTICLE_GIVEN_NAMES: frozenset[str]
     SAINT_PARTICLES: frozenset[str]
     CAPITALIZED_PARTICLES: frozenset[str]
+    CAPITAL_OPENING_PARTICLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
@@ -650,6 +653,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     patronymics: set[str] = set()
     saints: set[str] = set()
     capitalized: set[str] = set()
+    capital_opening: set[str] = set()
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
@@ -718,6 +722,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 saints.add(t)
             if r.kind in CAPITALIZED_PARTICLE_KINDS:
                 capitalized.add(t)
+            if r.flag("capital_opening"):
+                capital_opening.add(t)
             if t not in given:
                 never_given.add(t)
         elif r.category == "conjunction":
@@ -811,6 +817,11 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # `San`, `Freiherr`, `Graf`), which case repair does not
         # lowercase, rules/R4 (#1069)
         CAPITALIZED_PARTICLES=frozenset(capitalized),
+        # the particles written `capital_opening` (`ter`, `der`), which
+        # case repair writes with a capital where no particle stands
+        # before one in the family name, nor, where it opens the family
+        # name, written right before it in any role, rules/R12
+        CAPITAL_OPENING_PARTICLES=frozenset(capital_opening),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)

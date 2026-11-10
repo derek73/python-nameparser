@@ -79,7 +79,7 @@ note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks
 
 [[word]]
 text = "ter"
-preposition = { may_be_given = false, expands = "at the, te der contracted: \"ter Horst\"" }
+preposition = { may_be_given = false, capital_opening = true, expands = "at the, te der contracted: \"ter Horst\"" }
 
 [[word]]
 text = "tho"
@@ -153,7 +153,7 @@ article = { expands = "the: \"van den Berg\"" }
 
 [[word]]
 text = "der"
-article = { may_be_given = false, expands = "the: \"van der Berg\"" }
+article = { may_be_given = false, capital_opening = true, expands = "the: \"van der Berg\"" }
 
 [[word]]
 text = "het"

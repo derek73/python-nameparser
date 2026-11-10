@@ -965,6 +965,12 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                  "title_case_is_name"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
+    if "capital_opening" in p and p["capital_opening"] is not True:
+        # unwritten is false, so only true says anything; a key of the
+        # particle category alone (BEHAVIORAL), so only a particle
+        # reading takes one (rules/R12)
+        raise VocabError(f"{where}: capital_opening must be true, or left "
+                         f"unwritten")
     _check_default(where, p)
     if "completed_by" in p:
         # the words that complete a bound given name into one given
@@ -1393,7 +1399,8 @@ def _behavior(r: Reading, prop: str) -> object:
         att = r.props.get("attached")
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
-                "title_case_is_name", "shared", "after_particle"):
+                "title_case_is_name", "shared", "after_particle",
+                "capital_opening"):
         return r.flag(prop)
     if prop in ("attaches", "completed_by"):
         att = r.props.get(prop)
@@ -1438,6 +1445,7 @@ CONSTANTS = (
     "PARTICLE_GIVEN_NAMES",
     "SAINT_PARTICLES",
     "CAPITALIZED_PARTICLES",
+    "CAPITAL_OPENING_PARTICLES",
     "BOUND_PHRASES",
     "SAME_AS",
     "SAME_AS_NAMED",

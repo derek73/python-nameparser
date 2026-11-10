@@ -994,9 +994,10 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
     """rules/R4 (#1224): a particle that opens a hyphenated word is
     written as a name word, whichever particle it is, the particle arm
     being the only clause left out for it; one inside the word
-    keeps its lowercase, as does a spaced one, and a particle written
-    with its hyphen and nothing after it ('az-') is one word, asked
-    whole as before (#700)."""
+    keeps its lowercase, as does a spaced one (save one opening the
+    surname that its reading writes with a capital, the test below),
+    and a particle written with its hyphen and nothing after it ('az-')
+    is one word, asked whole as before (#700)."""
     for text, repaired in (
             ("LEVON TER-PETROSYAN", "Levon Ter-Petrosyan"),
             ("levon ter-petrosyan", "Levon Ter-Petrosyan"),
@@ -1012,13 +1013,120 @@ def test_a_particle_opening_a_hyphenated_word_is_name_text() -> None:
             ("MARIA VAN-", "Maria van-"),
             ("jose -de", "Jose -de"),
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
-            ("LEVON TER PETROSYAN", "Levon ter Petrosyan"),
-            ("ARMEN DER KIUREGHIAN", "Armen der Kiureghian"),
+            ("JAN VAN TER HORST", "Jan van ter Horst"),
             ("zaʿīm, ḥusnī az-", "Ḥusnī az- Zaʿīm")):
         for written in (text, _nfd(text)):
             assert _repairs(written, False) == repaired, written
     assert _repairs("Levon Ter-Petrosyan", True) == "Levon Ter-Petrosyan"
     assert _repairs("Ahmad al-ʿAbbas", True) == "Ahmad Al-ʿAbbas"
+
+
+def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
+    """rules/R12 (decisions/R12): a family word whose particle reading
+    is written `capital_opening` (`ter`, `der`) is repaired with the
+    particle arm left out where the word before it in the family name,
+    in the order the family view joins them, is no particle -- by its
+    tag, or as the last part of a hyphenated word; opening the family,
+    the word written right before it counts whatever its role, and a
+    last middle word ending in such a part counts too. A middle `ter`
+    keeps its lowercase. Every comma shape, a title before, a full stop
+    on the word and the repair of the repaired name."""
+    for text, repaired in (
+            ("LEVON TER PETROSYAN", "Levon Ter Petrosyan"),
+            ("ARMEN DER KIUREGHIAN", "Armen Der Kiureghian"),
+            ("levon ter petrosyan", "Levon Ter Petrosyan"),
+            ("TER PETROSYAN, LEVON", "Levon Ter Petrosyan"),
+            ("PETROSYAN, LEVON TER", "Levon Ter Petrosyan"),
+            ("DR LEVON TER PETROSYAN", "Dr Levon Ter Petrosyan"),
+            ("LEVON TER PETROSYAN, PHD", "Levon Ter Petrosyan, PhD"),
+            ("LEVON TER. PETROSYAN", "Levon Ter. Petrosyan"),
+            # the costs: a Dutch ter, the Taiwanese given-name syllable,
+            # a der behind an unlisted word, a German epithet
+            ("GERARD TER BORCH", "Gerard Ter Borch"),
+            ("JA DER LIANG", "Ja Der Liang"),
+            ("KAREN AUS DER FÜNTEN", "Karen Aus Der Fünten"),
+            ("ALEXANDRE DUMAS DER ÄLTERE", "Alexandre Dumas Der Ältere"),
+            ("JOHANN DER JÜNGERE", "Johann Der Jüngere"),
+            # a particle right before the family counts whatever its
+            # role: a Dutch surname written without a given name
+            ("VAN DER WALT", "Van der Walt"),
+            ("VAN TER HORST", "Van ter Horst"),
+            ("DR. VAN TER HORST", "Dr. Van ter Horst"),
+            # a hyphenated word ending in a particle right before it,
+            # read as the given name, counts by its last part
+            ("MAITLAND-VAN DER ZEE", "Maitland-Van der Zee"),
+            ("DR. MAITLAND-VAN DER ZEE", "Dr. Maitland-Van der Zee"),
+            # a title that is also a particle counts; one that is not,
+            # does not
+            ("FREIHERR TER HORST", "Freiherr ter Horst"),
+            ("ST. TER HORST", "St. ter Horst"),
+            ("SIR TER HORST", "Sir Ter Horst"),
+            # a nickname spelling a particle counts too
+            ('JAN "VAN" TER HORST', 'Jan "Van" ter Horst'),
+            # after a particle in the family, by its tag
+            ("JAN VAN DER BERG", "Jan van der Berg"),
+            ("JAN VAN TER HORST", "Jan van ter Horst"),
+            ("URSULA VON DER LEYEN", "Ursula von der Leyen"),
+            ("LEVON TER DER PETROSYAN", "Levon Ter der Petrosyan"),
+            # a particle written with its hyphen: the tag alone says so
+            ("ANNA AZ- DER BERG", "Anna az- der Berg"),
+            # the family's order, not the written one: a folded particle
+            # after the comma comes first
+            ("VAN DER BERG, JAN", "Jan van der Berg"),
+            ("BERG, JAN VAN DER", "Jan van der Berg"),
+            ("DER BERG, JAN VAN", "Jan van der Berg"),
+            ("TER HORST, JAN VAN", "Jan van ter Horst"),
+            ("TER HORST, ANNA VAN", "Anna van ter Horst"),
+            # after a particle closing a hyphenated word, untagged
+            ("ANNA SMITH-VAN DER BERG", "Anna Smith-van der Berg"),
+            ("MAITLAND-VAN DER ZEE, ANKE", "Anke Maitland-van der Zee"),
+            ("ANKE MAITLAND-VAN DER ZEE", "Anke Maitland-van der Zee"),
+            ("DER ZEE, ANKE MAITLAND-VAN", "Anke Maitland-van der Zee"),
+            # a middle ter is no family word
+            ("JAN TER HORST VAN DER BERG", "Jan ter Horst van der Berg"),
+            # an all-particle part was name text already
+            ("ANH DO", "Anh Do"),
+            ("TER DER", "Ter Der"),
+            # no capital_opening reading: the particle arm as before
+            ("JUAN DE LA VEGA", "Juan de la Vega")):
+        assert _repairs(text, False) == repaired, text
+        once = parse(text).capitalized()
+        assert once.capitalized(force=True) == once, text
+    assert _repairs("Levon ter Petrosyan", True) == "Levon Ter Petrosyan"
+    assert _repairs("Jan van der Berg", True) == "Jan van der Berg"
+    assert _repairs("Van der Walt", True) == "Van der Walt"
+    assert _repairs("Sr. van der Berg, PhD", True) == "Sr. Van der Berg, PhD"
+    # the middle role under a family-first order keeps its lowercase
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    middle = family_first.parse("PETROSYAN LEVON TER ARAM")
+    assert [t.role for t in middle.tokens if t.text == "TER"] == [Role.MIDDLE]
+    assert str(family_first.capitalized(middle)) == "Petrosyan Levon ter Aram"
+    # a caller's reading takes the property; without it, lowercase
+    lex = Lexicon.default().add("zu", kind="preposition",
+                                capital_opening=True)
+    zu = Parser(lexicon=lex)
+    assert str(zu.capitalized(zu.parse("HANS ZU SALM"))) == "Hans Zu Salm"
+    assert _repairs("HANS ZU SALM", False) == "Hans zu Salm"
+
+
+def test_a_spliced_ter_reads_as_a_revised_one() -> None:
+    """rules/R12 (#1224): a family spliced in as raw text carries no tags, so
+    the vocabulary answers whether it and the word before it are
+    particles, and replace() repairs as revise() and a fresh parse
+    do."""
+    parser = Parser()
+    base = parse("JAN VAN BERG")
+    for family, repaired in (("TER PETROSYAN", "Jan Ter Petrosyan"),
+                             ("VAN TER HORST", "Jan van ter Horst"),
+                             ("VAN DER BERG", "Jan van der Berg")):
+        spliced = str(base.replace(family=family).capitalized())
+        revised = str(parser.revise(base, family=family).capitalized())
+        fresh = str(parse(f"JAN {family}").capitalized())
+        assert spliced == revised == fresh == repaired, family
+    # a particle revised into the given name right before the family
+    # counts, whatever its role
+    revised_given = parser.revise(parse("JAN TER BERG"), given="JAN VAN")
+    assert str(revised_given.capitalized()) == "Jan Van ter Berg"
 
 
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:

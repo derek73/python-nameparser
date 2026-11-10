@@ -53,7 +53,7 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase.
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase, save one R12 gives a capital as it opens the family name (`Ter Petrosyan`).
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
@@ -61,7 +61,7 @@
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
   "maria da-silva"            →  capitalized="Maria Da-Silva"
   "LEVON TER-PETROSYAN"       →  capitalized="Levon Ter-Petrosyan"
-  "LEVON TER PETROSYAN"       →  capitalized="Levon ter Petrosyan"  · boundary
+  "JAN VAN TER HORST"         →  capitalized="Jan van ter Horst"  · boundary
   "JOHN ST CLAIR"             →  capitalized="John St Clair"
   "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
   "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
@@ -179,5 +179,5 @@
 - The boundary is drawn per question rather than per field: the conjunction carve-out reaches a word the parse read as a conjunction, and where the parse read nothing at all it reaches what the vocabulary says. A word of that vocabulary standing at either end of a longer written word is not a conjunction there, because the hyphen clause reaches only a worded part with a worded part on each side, and an edge part is outside that reach — but a field spliced in as raw text was read by nobody, so repair asks the vocabulary and a family set to "de y" keeps its "y" lowercase. Whether a word is the conjunction or an initial is a property of the word, which a vocabulary can answer; whether a particle is acting as a particle is a property of the whole part, which the parse settles and records; re-deriving it needs a reading on every word of the part, and a spliced field has none on any, so that half falls through to particle treatment and the spliced "de la" boundary of the bullet before stands. Initials are the contrast worth knowing, and R3 states it: that view is handed no vocabulary at all, so it falls back on neither question and a spliced field's every word initials. revise() classifies the value and crosses both questions, in both of the parsed name's views: a middle revised to "e-f" repairs to "E-F" as the parsed name does, where splicing the same text in gives "e-F".
 
 ---
-**Signal:** shape: a word's own spelling: its recorded casing, the Mc convention and its punctuation
+**Signal:** shape + script: a word's own spelling: its recorded casing, the Mc convention and its punctuation, and the script it is written in, which decides whether an apostrophe divides it and whether it takes an initial capital at all
 **history:** decisions/R4 · **implemented:** nameparser/_render.py, nameparser/_lexicon.py

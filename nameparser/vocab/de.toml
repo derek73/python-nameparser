@@ -198,7 +198,7 @@ article = { expands = "the: \"von den Steinen\"" }
 
 [[word]]
 text = "der"
-article = { may_be_given = false, expands = "the: \"von der Leyen\"" }
+article = { may_be_given = false, capital_opening = true, expands = "the: \"von der Leyen\"" }
 
 [[word]]
 text = "freiherrin"

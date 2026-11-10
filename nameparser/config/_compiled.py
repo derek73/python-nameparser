@@ -3256,6 +3256,11 @@ CAPITALIZED_PARTICLES: frozenset[str] = frozenset({
     'sto',
 })
 
+CAPITAL_OPENING_PARTICLES: frozenset[str] = frozenset({
+    'der',
+    'ter',
+})
+
 BOUND_PHRASES: frozenset[str] = frozenset({
     'عبد الآخر',
     'عبد الأحد',

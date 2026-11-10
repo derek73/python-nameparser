@@ -490,7 +490,8 @@ _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
                 "particle_given_names", "saint_particles",
-                "capitalized_particles", "bound_phrases")
+                "capitalized_particles", "capital_opening_particles",
+                "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -567,6 +568,12 @@ class _LexiconSets:
     #: `rank` (`st`, `san`, `freiherr`, `graf`): rules/R4's case repair
     #: writes one as a name word, not in lowercase (#1069)
     capitalized_particles: frozenset[str]
+    #: the particles written `capital_opening=True` (`ter`, `der`):
+    #: rules/R12's case repair writes one with a capital where no
+    #: particle stands before it in the family name, nor, where it opens
+    #: the family name, written right before it in any role (`Levon Ter
+    #: Petrosyan`, but `Van der Walt`)
+    capital_opening_particles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
@@ -607,6 +614,7 @@ _COMPILED_FIELDS = {
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
     "saint_particles": "SAINT_PARTICLES",
     "capitalized_particles": "CAPITALIZED_PARTICLES",
+    "capital_opening_particles": "CAPITAL_OPENING_PARTICLES",
     "bound_phrases": "BOUND_PHRASES",
 }
 
@@ -820,7 +828,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                          and value == _unwritten(kind, prop)):
         return None
     if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
-                "title_case_is_name", "shared", "after_particle"):
+                "title_case_is_name", "shared", "after_particle",
+                "capital_opening"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1455,7 +1464,7 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
             "may_be_initial", "title_case_is_name", "shared",
-            "after_particle"):
+            "after_particle", "capital_opening"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a reading's list may name every title word it
@@ -2064,7 +2073,8 @@ class Lexicon:
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
             ``may_be_initial=True``, ``completed_by=[...]`` on a
             ``bound_given`` reading, ``after_particle=True`` on a
-            ``given`` reading, ``shared=True`` on a name reading, and
+            ``given`` reading, ``shared=True`` on a name reading,
+            ``capital_opening=True`` on a particle reading, and
             ``same_as=...`` on a reading of any kind: the word this one
             is a spelling of, which name matching reads as a
             ``listed-spelling`` and keys alike in the roles that read

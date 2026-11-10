@@ -138,6 +138,7 @@ Entry conventions:
 - [R9 — the patronymic view](R9-patronymic-view.md)
 - [R10 — the second-surname view](R10-second-surname-view.md)
 - [R11 — the first-surname views](R11-first-surname-views.md)
+- [R12 — a particle opening the family name with a capital](R12-particle-opening-the-family-name-with-a-capital.md)
 
 ## Construction & configuration diagnostics (D)
 

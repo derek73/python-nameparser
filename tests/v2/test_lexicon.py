@@ -1718,7 +1718,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
-        "CAPITALIZED_PARTICLES",
+        "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES",
         "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
