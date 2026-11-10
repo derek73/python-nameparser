@@ -15,20 +15,44 @@ never counts as capitals, a one-letter word is never looked up in the
 name tables, and a script the tables do not hold (Hangul, Han) simply
 matches nothing. No signal raises on any string. The patronymic shapes
 are the pipeline's own predicates, never a copy of them.
+
+``suggest`` tallies the group's votes and decides two settings
+together, ``patronymic_rules`` first and ``name_order`` second: a
+decided East Slavic rule reorders each name itself, so it suppresses
+the order decision (the spec's "Patronymics and order"). A setting is
+decided only on the evidence the thresholds below admit; any other
+setting keeps the base's value, so an empty group, or one with no
+votes, gives back a parser that reads exactly as the base does. The
+result is a ``Suggestion``: the ``PolicyPatch`` holding only the
+settings the group changed, a ``SettingEvidence`` per setting
+considered, and a ``NameEvidence`` per input name, in input order.
 """
 from __future__ import annotations
 
+import dataclasses
 import unicodedata
+from collections import Counter
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from dataclasses import dataclass
 from enum import StrEnum
+from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from ._lexicon import Lexicon, _normalize
 from ._pipeline._state import COMMA_CHARS
 from ._pipeline._vocab import (
     has_patronymic_ending, is_initial, is_patronymic_marker,
 )
-from ._policy import PatronymicRule
-from ._types import FAMILY_FIRST, GIVEN_FIRST, Role
+from ._policy import (
+    UNSET, PatronymicRule, PolicyPatch, _order_repr, apply_patch,
+)
+from ._types import (
+    FAMILY_FIRST, GIVEN_FIRST, Role, _guarded_getstate, _guarded_setstate,
+)
 from .config._order_names import COMMON_GIVEN_NAMES, ROMANIZED_SURNAMES
+
+if TYPE_CHECKING:
+    from ._parser import Parser
 
 # a letter u with a diaeresis, the pinyin spelling of the vowel written v
 # on a keyboard (lü -> lv)
@@ -153,3 +177,374 @@ def name_votes(text: str, lexicon: Lexicon
     elif any(has_patronymic_ending(w) for w in words):
         votes[Signal.PATRONYMIC] = PatronymicRule.EAST_SLAVIC
     return votes
+
+
+# -- the group ----------------------------------------------------------
+
+#: A vote one signal casts: an order, or the patronymic rule a shape
+#: matches.
+Vote = tuple[Role, Role, Role] | PatronymicRule
+
+#: The fewest votes on a setting that can decide it. Provisional: the
+#: thresholds are measured and tuned in a later step of the feature.
+_MIN_VOTES = 1
+#: The share of the votes cast on a setting that one value must hold
+#: STRICTLY MORE THAN to decide it, so a tie decides nothing.
+#: Provisional, like _MIN_VOTES.
+_MIN_SHARE = 0.5
+
+_NAME_ORDER = "name_order"
+_PATRONYMIC_RULES = "patronymic_rules"
+_SIGNAL_RANK = {signal: rank for rank, signal in enumerate(Signal)}
+
+
+def _end(order: tuple[Role, ...]) -> tuple[Role, Role, Role]:
+    """The end an order writes the family name at, spelled as a vote:
+    ``FAMILY_FIRST`` for either family-first order."""
+    return FAMILY_FIRST if order[0] is Role.FAMILY else GIVEN_FIRST
+
+
+def _label(value: object) -> str:
+    """A vote or a setting's value, as the report and reprs write it."""
+    if isinstance(value, PatronymicRule):
+        return value.value
+    if isinstance(value, frozenset):
+        return ", ".join(sorted(_label(v) for v in value)) or "none"
+    if isinstance(value, tuple):
+        return _order_repr(value)
+    return repr(value)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class NameEvidence:
+    """One input name and the votes it cast, read with the base
+    parser's lexicon. A name with a comma, no words or one word casts
+    none, and a name that casts none never disagrees with the group."""
+
+    #: The name exactly as the caller passed it.
+    text: str
+    # the votes as (Signal, vote) pairs in Signal's order: a tuple, so
+    # the type stays frozen, hashable and picklable; read it through
+    # the `votes` property
+    _votes: tuple[tuple[Signal, Vote], ...]
+
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __init__(self, text: str, votes: Mapping[Signal, Vote]) -> None:
+        if not isinstance(text, str):
+            raise TypeError(
+                f"NameEvidence text must be a str, got {text!r}")
+        if not isinstance(votes, Mapping):
+            raise TypeError(
+                f"NameEvidence votes must be a mapping of Signal to vote, "
+                f"got {votes!r}")
+        pairs = tuple(sorted(
+            ((Signal(signal), vote) for signal, vote in votes.items()),
+            key=lambda pair: _SIGNAL_RANK[pair[0]]))
+        object.__setattr__(self, "text", text)
+        object.__setattr__(self, "_votes", pairs)
+
+    def __repr__(self) -> str:
+        votes = "".join(f", {signal.value}={_label(vote)}"
+                        for signal, vote in self._votes)
+        return f"NameEvidence({self.text!r}{votes})"
+
+    @property
+    def votes(self) -> Mapping[Signal, Vote]:
+        """The votes this name cast, keyed by signal; read-only."""
+        return MappingProxyType(dict(self._votes))
+
+
+@dataclass(frozen=True, slots=True)
+class SettingEvidence:
+    """What the group said about one ``Policy`` setting.
+
+    ``value`` is the setting's value under the suggested parser: the
+    decided value where ``decided`` is true, else the base's. A decided
+    value equal to the base's is not in the patch, which holds only
+    changes, but is still ``decided``. ``votes_for`` counts the votes
+    cast for ``value`` and ``votes_against`` the votes cast for any
+    other value, one vote per signal per name, so a name two signals
+    read casts two; ``no_evidence`` counts the NAMES that cast no vote
+    on this setting. ``by_signal`` breaks the votes down as
+    ``(signal, vote, count)`` rows. ``note``, where it is not empty,
+    says why a setting with votes was left undecided."""
+
+    #: The ``Policy`` field this evidence is about.
+    setting: str
+    #: The field's value under the suggested parser.
+    value: object
+    #: Whether the group's votes decided the value.
+    decided: bool
+    votes_for: int
+    votes_against: int
+    no_evidence: int
+    by_signal: tuple[tuple[Signal, object, int], ...]
+    note: str = ""
+
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __repr__(self) -> str:
+        state = "decided" if self.decided else "undecided"
+        return (f"SettingEvidence({self.setting}={_label(self.value)}, "
+                f"{state}, {self.votes_for} for, {self.votes_against} "
+                f"against, {self.no_evidence} no evidence)")
+
+
+@dataclass(frozen=True, slots=True)
+class Suggestion:
+    """The settings a group of names suggests: build it with
+    :meth:`Parser.suggest`. ``patch`` holds only the settings the group
+    decided and that differ from the base's; ``parser`` is the base
+    with the patch applied; ``evidence`` holds one
+    :class:`SettingEvidence` per setting considered, and ``names`` one
+    :class:`NameEvidence` per input name, in input order, blanks and
+    duplicates included. ``str()`` is a readable report."""
+
+    #: The parser ``suggest`` was called on.
+    base: Parser
+    #: The settings the group decided that differ from the base's.
+    patch: PolicyPatch
+    evidence: tuple[SettingEvidence, ...]
+    names: tuple[NameEvidence, ...]
+
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.patch, PolicyPatch):
+            raise TypeError(
+                f"Suggestion patch must be a PolicyPatch, got {self.patch!r}")
+        for name, cls in (("evidence", SettingEvidence),
+                          ("names", NameEvidence)):
+            items = tuple(getattr(self, name))
+            for item in items:
+                if not isinstance(item, cls):
+                    raise TypeError(
+                        f"Suggestion {name} must hold {cls.__name__} "
+                        f"items, got {item!r}")
+            object.__setattr__(self, name, items)
+
+    def __repr__(self) -> str:
+        # bounded: the patch and counts, never a name
+        return (f"Suggestion({self.patch!r}, names={len(self.names)}, "
+                f"disagreeing={len(self.disagreeing())})")
+
+    def __str__(self) -> str:
+        noun = "name" if len(self.names) == 1 else "names"
+        lines = [f"Suggested for {len(self.names)} {noun} "
+                 f"(base: {self.base!r}):"]
+        for e in self.evidence:
+            if e.decided:
+                changed = getattr(self.patch, e.setting) is not UNSET
+                state = _label(e.value) + ("" if changed else " (as the base)")
+            else:
+                state = f"unchanged ({_label(e.value)})"
+            if e.votes_for or e.votes_against:
+                counts = (f"{e.votes_for} for, {e.votes_against} against, "
+                          f"{e.no_evidence} no evidence")
+            else:
+                counts = "no evidence"
+            lines.append(f"  {e.setting}  {state}  {counts}")
+            for signal, vote, count in e.by_signal:
+                lines.append(f"      {signal.value} {_label(vote)}  {count}")
+            if e.note:
+                lines.append(f"      {e.note}")
+        against = self.disagreeing()
+        if against:
+            shown = ", ".join(n.text for n in against[:5])
+            more = f", and {len(against) - 5} more" if len(against) > 5 else ""
+            lines.append(f"  disagreeing ({len(against)}): {shown}{more}")
+        return "\n".join(lines)
+
+    @property
+    def parser(self) -> Parser:
+        """The base parser with :attr:`patch` applied: the same lexicon
+        and segmenter, and the base's policy for every setting the
+        group did not change."""
+        return dataclasses.replace(
+            self.base, policy=apply_patch(self.base.policy, self.patch))
+
+    def disagreeing(self) -> tuple[NameEvidence, ...]:
+        """The names that cast a vote against a decided setting's
+        value, in input order. A setting left undecided has no answer
+        to disagree with, and a name that cast no vote never
+        disagrees."""
+        decided = {e.setting: e.value for e in self.evidence if e.decided}
+        if not decided:
+            return ()
+        return tuple(n for n in self.names
+                     if any(_against(signal, vote, decided)
+                            for signal, vote in n._votes))
+
+
+def _setting_of(signal: Signal) -> str:
+    return _PATRONYMIC_RULES if signal is Signal.PATRONYMIC else _NAME_ORDER
+
+
+def _against(signal: Signal, vote: Vote, decided: dict[str, object]) -> bool:
+    """Whether one vote contradicts a decided setting's value."""
+    setting = _setting_of(signal)
+    if setting not in decided:
+        return False
+    value = decided[setting]
+    if setting == _NAME_ORDER:
+        return vote != _end(value)  # type: ignore[arg-type]
+    return vote not in value  # type: ignore[operator]
+
+
+class _Tally:
+    """The group's votes on one setting, gathered in one pass. A plain
+    class rather than a dataclass: it is never pickled or returned."""
+
+    __slots__ = ("names", "voters", "by_signal")
+
+    def __init__(self) -> None:
+        self.names = 0
+        self.voters = 0
+        self.by_signal: Counter[tuple[Signal, Vote]] = Counter()
+
+    def counts(self) -> Counter[Vote]:
+        totals: Counter[Vote] = Counter()
+        for (_, vote), count in self.by_signal.items():
+            totals[vote] += count
+        return totals
+
+    def winner(self) -> Vote | None:
+        """The value holding strictly more than _MIN_SHARE of at least
+        _MIN_VOTES votes, if one does."""
+        counts = self.counts()
+        total = sum(counts.values())
+        if total < _MIN_VOTES:
+            return None
+        vote, count = max(counts.items(), key=lambda item: item[1])
+        return vote if count > _MIN_SHARE * total else None
+
+    def evidence(self, setting: str, value: object, decided: bool,
+                 is_for: Callable[[Vote], bool], note: str = ""
+                 ) -> SettingEvidence:
+        """Evidence for ``value``; ``is_for`` says which votes are for
+        it."""
+        counts = self.counts()
+        votes_for = sum(c for v, c in counts.items() if is_for(v))
+        rows = tuple(sorted(
+            ((signal, vote, count)
+             for (signal, vote), count in self.by_signal.items()),
+            key=lambda row: (_SIGNAL_RANK[row[0]], _label(row[1]))))
+        return SettingEvidence(
+            setting, value, decided, votes_for,
+            sum(counts.values()) - votes_for, self.names - self.voters,
+            rows, note)
+
+
+def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule]
+                       ) -> tuple[SettingEvidence, dict[str, object], bool]:
+    """Decide ``patronymic_rules``: the evidence, the patch fields, and
+    whether the decision takes the place of an order decision."""
+    rule = tally.winner()
+    if rule is PatronymicRule.EAST_SLAVIC:
+        # the rule reorders a family-first East Slavic name itself, and
+        # stands down under a declared family-first order, so the group
+        # gets the rule and no order
+        value = base_rules | {rule}
+        fields: dict[str, object] = (
+            {} if rule in base_rules else {_PATRONYMIC_RULES: frozenset({rule})})
+        return (tally.evidence(_PATRONYMIC_RULES, value, True,
+                               lambda v: v in value), fields, True)
+    if rule is PatronymicRule.TURKIC:
+        return _decide_turkic(tally, base_rules)
+    return (tally.evidence(_PATRONYMIC_RULES, base_rules, False,
+                           lambda v: v in base_rules), {}, False)
+
+
+def _decide_turkic(tally: _Tally, base_rules: frozenset[PatronymicRule]
+                   ) -> tuple[SettingEvidence, dict[str, object], bool]:
+    """A group whose patronymics are Turkic. Which combination of the
+    rule and an order reads such names right is still to be measured,
+    so for now it suggests neither, and reports the votes."""
+    return (tally.evidence(
+        _PATRONYMIC_RULES, base_rules, False, lambda v: v in base_rules,
+        note="Turkic patronymics found; no Turkic setting is suggested yet"),
+        {}, False)
+
+
+def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
+                  settled_by_rule: bool
+                  ) -> tuple[SettingEvidence, dict[str, object]]:
+    """Decide ``name_order`` in either direction. A family-first answer
+    keeps the base's family-first spelling where the base has one."""
+    if settled_by_rule:
+        note = ("not decided: the East Slavic rule reorders each name"
+                if tally.by_signal else "")
+        return (tally.evidence(_NAME_ORDER, base_order, False,
+                               lambda v: v == _end(base_order), note), {})
+    end = tally.winner()
+    if end is None:
+        return (tally.evidence(_NAME_ORDER, base_order, False,
+                               lambda v: v == _end(base_order)), {})
+    order = (base_order if _end(base_order) == end else end)
+    fields: dict[str, object] = (
+        {} if order == base_order else {_NAME_ORDER: order})
+    return (tally.evidence(_NAME_ORDER, order, True,
+                           lambda v: v == end), fields)
+
+
+def _texts(names: Iterable[str]) -> Iterator[str]:
+    """The names, checked as they are consumed: one pass, so a
+    generator is read once."""
+    example = 'parser.suggest(["Priem Jason", "Kim Minjun"])'
+    if isinstance(names, str):
+        raise TypeError(
+            f"suggest() takes an iterable of names, not a bare string: "
+            f"{names!r}. Wrap one name in a list: "
+            f"parser.suggest([{names!r}])")
+    if isinstance(names, (bytes, bytearray, memoryview)):
+        raise TypeError(
+            f"suggest() takes an iterable of str, not "
+            f"{type(names).__name__} -- decode first, e.g. "
+            f"raw.decode('utf-8')")
+    if isinstance(names, Mapping):
+        raise TypeError(
+            f"suggest() takes an iterable of names, not a mapping: "
+            f"{names!r}. A mapping yields only its keys; pass the names "
+            f"themselves: {example}")
+    try:
+        iterator = iter(names)
+    except TypeError:
+        raise TypeError(
+            f"suggest() takes an iterable of names, got {names!r}: "
+            f"{example}") from None
+    for index, text in enumerate(iterator):
+        if not isinstance(text, str):
+            raise TypeError(
+                f"suggest() takes an iterable of str; item {index} is "
+                f"{text!r} ({type(text).__name__}). Pass each name as a "
+                f"string: {example}")
+        yield text
+
+
+def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
+    """The settings a group of names suggests, with ``parser`` as the
+    base: see :meth:`Parser.suggest`."""
+    tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
+    evidence: list[NameEvidence] = []
+    for text in _texts(names):
+        votes = name_votes(text, parser.lexicon)
+        evidence.append(NameEvidence(text, votes))
+        cast = set()
+        for signal, vote in votes.items():
+            setting = _setting_of(signal)
+            tallies[setting].by_signal[(signal, vote)] += 1
+            cast.add(setting)
+        for setting, tally in tallies.items():
+            tally.names += 1
+            tally.voters += setting in cast
+    policy = parser.policy
+    patronymic, patronymic_fields, settled = _decide_patronymic(
+        tallies[_PATRONYMIC_RULES], policy.patronymic_rules)
+    order, order_fields = _decide_order(
+        tallies[_NAME_ORDER], policy.name_order, settled)
+    patch = PolicyPatch(**order_fields, **patronymic_fields)  # type: ignore[arg-type]
+    return Suggestion(parser, patch, (order, patronymic), tuple(evidence))

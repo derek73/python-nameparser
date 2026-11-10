@@ -599,6 +599,25 @@ def test_types_pickle_round_trip() -> None:
     assert pickle.loads(pickle.dumps(reading)).languages == ("en",)
 
 
+def test_suggestion_types_pickle_round_trip() -> None:
+    # Suggestion holds its base Parser, which pickles iff its segmenter
+    # does; a default parser has none
+    import pickle
+
+    from nameparser import Parser
+    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith",
+                          "Сидоров Иван Петрович"])
+    loaded = pickle.loads(pickle.dumps(s))
+    assert loaded == s
+    assert loaded.patch == s.patch
+    assert loaded.parser.policy == s.parser.policy
+    assert [n.text for n in loaded.disagreeing()] == \
+        [n.text for n in s.disagreeing()]
+    for evidence in (*s.evidence, *s.names):
+        assert pickle.loads(pickle.dumps(evidence)) == evidence
+    assert pickle.loads(pickle.dumps(s.names[0])).votes == s.names[0].votes
+
+
 def test_span_add_is_blocked() -> None:
     # NamedTuple + would concatenate into a 4-tuple, the natural but
     # wrong spelling of "covering span" (a real cover() arrives with the

@@ -141,11 +141,12 @@ ALLOWED = {
         "nameparser._reading_index",),
     # Parser sits on everything except _render; the reading index at
     # call time only, where a choice of languages is applied (3b); _match
-    # at call time only, in Parser.matching()
+    # at call time only, in Parser.matching(); _suggest at call time
+    # only, in Parser.suggest()
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
                    "nameparser._pipeline", "nameparser._reading_index",
-                   "nameparser._match"),
+                   "nameparser._match", "nameparser._suggest"),
     # PEP 562 lazy loader: the only static import is _locale (for the
     # Locale return type); pack modules load via importlib.import_module
     # (a runtime string, invisible to the AST walker) -- the
@@ -382,6 +383,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     import nameparser._match
     import nameparser._parser
     import nameparser._policy
+    import nameparser._suggest
     import nameparser._types
     from nameparser._types import _guarded_getstate, _guarded_setstate
 
@@ -389,7 +391,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     # are never pickled and are not public API.
     modules = (nameparser._types, nameparser._lexicon,
                nameparser._policy, nameparser._locale, nameparser._parser,
-               nameparser._match)
+               nameparser._match, nameparser._suggest)
     for module in modules:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__:

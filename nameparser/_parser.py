@@ -31,6 +31,7 @@ from nameparser._types import (
 
 if TYPE_CHECKING:
     from nameparser._match import Matching, Outcome
+    from nameparser._suggest import Suggestion
 
 
 @dataclass(frozen=True, slots=True)
@@ -301,6 +302,24 @@ class Parser:
         return Matching(
             self, DEFAULT_ACCEPT if accept is None else accept,  # type: ignore[arg-type]
             other_readings)
+
+    def suggest(self, names: Iterable[str]) -> Suggestion:
+        """The settings a group of names suggests, with THIS parser as
+        the base: a :class:`~nameparser.Suggestion` whose ``parser``
+        reads the group. ``names`` is any iterable of str the caller
+        declares to be one group (one source, one convention), read
+        once. Each name casts votes on its name order and its
+        patronymic shape, read with this parser's lexicon; a name with
+        a comma, no words or one word casts none. ``name_order`` is
+        decided in either direction, keeping this parser's family-first
+        spelling where it has one, and a group of East Slavic
+        patronymics gets the East Slavic rule instead of an order. A
+        setting the votes do not decide keeps this parser's value, so
+        an empty group, or one with no votes, suggests no change. A
+        bare str, bytes, a mapping or a non-str item raises TypeError.
+        """
+        from nameparser._suggest import suggest
+        return suggest(self, names)
 
     # -- rendering delegates ----------------------------------------------
 
