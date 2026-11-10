@@ -1797,6 +1797,10 @@ _JOINED_NAMES: tuple[str, ...] = (
     # no given name beside a nickname: the empty given letter stays
     # beside the nickname's under across-roles
     "Pastor Saycon", 'Pastor "Boy" Saycon',
+    # a first word of a hyphen or a full stop alone, which joined reads
+    # past: the letter comes from the first word that joins to something
+    '"- Boy" Dupont', '". Boy" Dupont', "Pierre (- Boy) Dupont",
+    "Boy Dupont",
 )
 
 
@@ -1856,3 +1860,12 @@ def test_initials_against_their_letters_joined_read_joined(
     base = parse("John Smith")
     r = m.check(base.replace(given=a), base.replace(given=b))
     assert r["given"].outcome is Outcome.JOINED and r.consistent
+
+
+@pytest.mark.parametrize("stray", ["- ", ". "])
+def test_a_given_name_opening_with_a_stray_mark_keys_its_first_letter(
+        stray: str) -> None:
+    base = parse("Ann Dupont")
+    a, b = base.replace(given=stray + "Pierre"), base.replace(given="Pierre")
+    assert m.check(a, b).consistent
+    assert m.keys(a) == m.keys(b) == {"dupont;p"}

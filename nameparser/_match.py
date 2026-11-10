@@ -544,7 +544,7 @@ class Matching:
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
                 family[0], family_rule.group, lexicon)} - {""}
-        given = parsed.given.split()
+        given = _lettered_words(parsed.given)
         # a given letter is the first letter once joined, as the check
         # compares by `joined` too (`-Pierre` keys `p`, not `-`)
         initials = {_letter(g) for g in _spelling_keys(
@@ -568,7 +568,8 @@ class Matching:
                 for text in _cross_texts(parsed, other):
                     if not _initials_only(_fold(text)):
                         initials |= {_letter(g) for g in _spelling_keys(
-                            text.split()[0], given_rule.group, lexicon)} - {""}
+                            _lettered_words(text)[0], given_rule.group,
+                            lexicon)} - {""}
         keys = {f"{w};{g}" for w in words for g in initials}
         if Outcome.GIVEN_ONE_SIDE in self.accept:
             keys |= words
@@ -756,6 +757,18 @@ def _familiar_outcome(wa: list[str], wb: list[str],
             return None
         found = True
     return Outcome.FAMILIAR_FORM if found else None
+
+
+def _lettered_words(text: str) -> list[str]:
+    """A text's words from the first that is not hyphens or full stops
+    alone: the word a given letter is cut from, since `joined` reads
+    `- Pierre` as `Pierre`; all of them where none is (decisions/
+    name-matching, 2026-11-09 #1261)."""
+    words = text.split()
+    for i, word in enumerate(words):
+        if _joined(_fold(word)):
+            return words[i:]
+    return words
 
 
 def _letter(folded: str) -> str:
