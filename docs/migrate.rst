@@ -671,13 +671,16 @@ landing in the given or family name:
 
 .. doctest::
 
-    >>> parse("Andrews, M.D.").family, parse("Andrews, M.D.").suffix
-    ('Andrews', 'M.D.')
+    >>> parse("Andrews, MD").family, parse("Andrews, MD").suffix
+    ('Andrews', 'MD')
     >>> parse("Johnson PhD").given, parse("Johnson PhD").suffix
     ('Johnson', 'PhD')
 
-Under 1.4 those read ``first="M.D."``/``last="Andrews"`` and
-``first="Johnson"``/``last="PhD"`` respectively. Two more to check for:
+Under 1.4 those read ``title="MD"``/``first="Andrews"`` and
+``first="Johnson"``/``last="PhD"`` respectively. The dotted
+``"Andrews, M.D."`` read suffix ``M.D.`` from 2.0 through 3.0 and,
+since 3.1, reads given ``M.``, middle ``D.``, as the initials it may be
+(1.4 read ``first="M.D."``), reporting the credential. Two more to check for:
 a maiden marker now fills the ``maiden`` field rather than being folded
 into the middle or family name (``"Jane Smith née Jones"``), and with a
 custom suffix delimiter configured, a no-space delimiter group renders
