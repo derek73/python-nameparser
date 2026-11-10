@@ -42,10 +42,12 @@
 
 **Except:**
 
-- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, and a word whose every chunk is a title.
+- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial.
   ```
   "John Smith M.Sc"           →  suffix="M.Sc"
   "Lt.Gov. John Smith"        →  title="Lt.Gov."
+  "Dr.C. Andrés Saavedra"     →  title="Dr.C."
+  "Mgr.A. Marek Rejent"       →  given="Marek"
   ```
 - **A word after a comma** keeps its one word, the slot after a comma being where degrees stand.
   ```
@@ -75,9 +77,13 @@
 - A listed title before the initials is no word to spare, though rarely a given name, so the report is not made there ('Vice A.Smith').
 - `Parser.revise` reads a value on its own, so a glued word in it divides, and the revised field renders the pieces apart ('M.Hassan' revising to 'M. Hassan'), as a CJK value's own parse divides it.
 - After a family comma a glued word stays whole though it is the given name the comma names ('SMITH, J.MICHAEL' → given 'J.MICHAEL').
-- An unlisted credential glued at its stop and ending the name divides as a name would, reported ('John Smith B.Eng' → family 'Eng'); a degree spelled as a title and its field before any comma divides too ('Dr.Med Hans Meier' → given 'Med'), as does a degree spelled as a title and one letter ('Mgr.A.', 'Dr.C'), which a vocabulary entry for the spelling would keep whole.
+- An unlisted credential glued at its stop and ending the name divides as a name would, reported ('John Smith B.Eng' → family 'Eng'); a degree spelled as a title and its field before any comma divides too ('Dr.Med Hans Meier' → given 'Med'), as does a degree spelled as a title and one letter that no entry lists with its stops.
   ```
   "Sabiha Arshad M.Phill"     →  family="Phill"
+  ```
+- A degree listed with its stops is read whole where its letter is an initial behind the title ('Dr.C Kamaraj' → title 'Dr.C', and so 'Mgr.A Novák'), the Cuban and Czech degrees so spelled being the commoner writing.
+  ```
+  "Dr.C Kamaraj"              →  title="Dr.C"
   ```
 
 ---

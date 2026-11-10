@@ -972,6 +972,8 @@
 {"name": "Dr. 王李小明", "title": "Dr.", "family": "王李小明"}
 {"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA", "honorifics": "씨"}
 {"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
+{"name": "Dr.C Kamaraj", "title": "Dr.C", "family": "Kamaraj", "initials": "K."}
+{"name": "Dr.C. Andrés Saavedra", "title": "Dr.C.", "given": "Andrés", "family": "Saavedra", "initials": "A. S."}
 {"name": "Dr.J. Smith", "title": "Dr.", "given": "J.", "family": "Smith", "initials": "J. S."}
 {"name": "Dr.J.R. Smith", "title": "Dr.", "given": "J.", "middle": "R.", "family": "Smith", "initials": "J. R. S."}
 {"name": "Dr.John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -3002,6 +3004,7 @@
 {"name": "Mgr. Dòmhnall Iain Bàn Mac a’ Ghobhainn Chorùna am post", "title": "Mgr.", "given": "Dòmhnall", "middle": "Iain Bàn", "family": "Mac a’ Ghobhainn Chorùna", "suffix": "am post", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "D. I. B. a. G. C.", "capitalized_force": "Mgr. Dòmhnall Iain Bàn mac A’ Ghobhainn Chorùna AM Post"}
 {"name": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc.", "title": "Mgr. Ing.", "given": "Anna", "middle": "Karolína Eva Kristína", "family": "von Kant Nováková Predná", "suffix": "CSc.", "initials": "A. K. E. K. K. N. P.", "capitalized_force": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSC."}
 {"name": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc.", "order": "FAMILY_FIRST", "title": "Mgr. Ing.", "given": "Nováková", "middle": "Predná Anna Karolína Eva Kristína", "family": "von Kant", "suffix": "CSc.", "initials": "N. P. A. K. E. K. K.", "capitalized_force": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSC."}
+{"name": "Mgr.A. Marek Rejent", "title": "Mgr.A.", "given": "Marek", "family": "Rejent", "initials": "M. R."}
 {"name": "Michael Wong Kar Ming", "given": "Michael", "middle": "Wong Kar", "family": "Ming", "initials": "M. W. K. M."}
 {"name": "Miguel García Martínez", "given": "Miguel", "middle": "García", "family": "Martínez", "initials": "M. G. M."}
 {"name": "Miguel Lanz Duret", "given": "Miguel", "middle": "Lanz", "family": "Duret", "initials": "M. L. D."}
