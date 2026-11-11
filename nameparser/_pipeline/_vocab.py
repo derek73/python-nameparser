@@ -371,6 +371,19 @@ def is_patronymic_marker(text: str) -> bool:
     return bool(_TURKIC.match(text) or _TURKIC_CYR.match(text))
 
 
+# rules/O1: "whose last name word carries a patronymic ending and whose
+# middle name word does not reads as family-first" -- the word test of
+# the rotation, shared with the group suggester (nameparser/_suggest.py),
+# which counts a patronymic vote where this rule can read one
+# (decisions/group-suggestion)
+def east_slavic_rotates(middle: str, last: str) -> bool:
+    """Whether the middle and last of three name words have rules/O1's
+    family-first shape: the ending on the last word and not on the
+    middle one. The word count and the initials beside it are the
+    caller's."""
+    return has_patronymic_ending(last) and not has_patronymic_ending(middle)
+
+
 # rules/S10: "the numeral reads as the generation: the numerals the
 # vocabulary lists, and those up to X it does not, by their shape
 # alone" -- its Then clause, the `_ROMAN` test; and rules/S10's Except

@@ -74,7 +74,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
-    has_patronymic_ending, is_initial, is_listed_given_name,
+    east_slavic_rotates, has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, joined_member, member_word, period_member,
     reads_as_initials,
     set_apart, set_apart_kind, settles_a_member, suffix_reading,
@@ -1096,7 +1096,7 @@ def post_rules(state: ParseState) -> ParseState:
         # (so a one-case name's two spellings read alike, a letter P8
         # reads as a connective rotating in either; decisions/O1,
         # #1185, #1217)
-        if (has_patronymic_ending(tail) and not has_patronymic_ending(mid)
+        if (east_slavic_rotates(mid, tail)
                 and "initial" not in tokens[givens[0]].tags
                 and "initial" not in tokens[middles[0]].tags):
             g, m, f = givens[0], middles[0], families[0]

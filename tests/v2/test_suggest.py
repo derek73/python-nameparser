@@ -708,3 +708,148 @@ def test_suggestion_refuses_fields_of_the_wrong_type(
 
 def _decline(token: str) -> None:
     return None
+
+
+# -- the review's fix wave: where a signal reads (A1-A4, A8) ----------------
+
+_OVICH_SURNAMES = ["Abramovich Roman", "Rabinovich Pavel",
+                   "Shostakovich Dmitri", "Lukashevich Anton",
+                   "Karpovich Igor", "Yurkevich Oleg"]
+
+
+@pytest.mark.parametrize("text", [
+    *_OVICH_SURNAMES, "Roman Abramovich",
+    # rules/O1 reads three name words, the ending never on the first
+    "Petrovich Ivan Sidorov", "Ivan Sidorov Petrovich Ivanovich",
+    # rules/O2 reads four name words, the marker never first or second
+    "Ali Huseyn oglu", "oglu Ali Huseyn Mamedov", "Ali oglu Huseyn Mamedov",
+])
+def test_a_patronymic_ending_the_pipeline_cannot_read_casts_no_vote(
+        text: str) -> None:
+    assert Signal.PATRONYMIC not in name_votes(text, L)
+
+
+@pytest.mark.parametrize("text, rule", [
+    ("Sidorov Ivan Petrovich", PatronymicRule.EAST_SLAVIC),
+    ("Ivan Petrovich Sidorov", PatronymicRule.EAST_SLAVIC),
+    ("Иванов Иван Петрович", PatronymicRule.EAST_SLAVIC),
+    ("Dr. Ivan Petrovich Sidorov", PatronymicRule.EAST_SLAVIC),
+    ("Sidorov Ivan Petrovich Jr.", PatronymicRule.EAST_SLAVIC),
+    ("Mamedov Ali Huseyn oglu", PatronymicRule.TURKIC),
+    ("Ali Huseyn oglu Mamedov", PatronymicRule.TURKIC),
+])
+def test_a_patronymic_the_pipeline_reads_still_votes(
+        text: str, rule: PatronymicRule) -> None:
+    assert name_votes(text, L)[Signal.PATRONYMIC] is rule
+
+
+def test_ovich_surnames_keep_a_family_first_base() -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(_OVICH_SURNAMES)
+    assert s.patch.patronymic_rules is UNSET
+    assert s.parser.policy.name_order == FAMILY_FIRST
+    assert s.parser.parse("Abramovich Roman").family == "Abramovich"
+
+
+_CAPITALS_EAST_SLAVIC = [
+    "SIDOROV Ivan Petrovich", "IVANOV Petr Sergeevich",
+    "PETROV Oleg Ivanovich", "SMIRNOV Pavel Andreevich", "POPOV Ilya Ilyich"]
+
+
+@pytest.mark.parametrize("base_order", [GIVEN_FIRST, FAMILY_FIRST])
+def test_a_decided_rule_never_overrides_an_order_decided_against_it(
+        base_order: tuple[Role, Role, Role]) -> None:
+    # five East Slavic names whose capitals all write the family first:
+    # the rule is decided, and so is the family-first order, which the
+    # rule's given-first order does not override
+    s = Parser(policy=Policy(name_order=base_order)).suggest(
+        _CAPITALS_EAST_SLAVIC)
+    assert _patronymic_evidence(s).decided
+    assert s.parser.policy.patronymic_rules == frozenset(
+        {PatronymicRule.EAST_SLAVIC})
+    order = _order_evidence(s)
+    assert order.decided and order.value == FAMILY_FIRST
+    assert (order.votes_for, order.votes_against) == (5, 0)
+    assert "East Slavic" in order.note and "stands down" in order.note
+    assert s.parser.policy.name_order == FAMILY_FIRST
+    assert s.parser.parse("SIDOROV Ivan Petrovich").family == "SIDOROV"
+    assert s.disagreeing() == ()
+
+
+@pytest.mark.parametrize("text, signal, value", [
+    ("Dr. Zhang Xiaoming", Signal.SURNAME, FAMILY_FIRST),
+    ("Prof. Pham Minh Duc", Signal.SURNAME, FAMILY_FIRST),
+    ("Mr Kim Minjun", Signal.SURNAME, FAMILY_FIRST),
+    ("Zhang Xiaoming PhD", Signal.SURNAME, FAMILY_FIRST),
+    ("Kim Minjun Jr.", Signal.SURNAME, FAMILY_FIRST),
+    ("Kim Minjun III", Signal.SURNAME, FAMILY_FIRST),
+])
+def test_titles_and_post_nominals_are_read_past(
+        text: str, signal: Signal, value: object) -> None:
+    assert name_votes(text, L)[signal] == value
+
+
+@pytest.mark.parametrize("text, signal", [
+    ("Tanaka Hiroshi FACS", Signal.CAPITALS),
+    ("Tanaka Hiroshi MBBS", Signal.CAPITALS),
+    ("John Smith V", Signal.TRAILING_INITIAL),
+    ("John Smith II", Signal.TRAILING_INITIAL),
+])
+def test_a_post_nominal_casts_no_vote(text: str, signal: Signal) -> None:
+    assert signal not in name_votes(text, L)
+
+
+@pytest.mark.parametrize("text", ["Armitage V", "Smith J. V"])
+def test_a_one_letter_numeral_without_words_to_spare_is_an_initial(
+        text: str) -> None:
+    # the trailing fork reads a one-letter numeral as the generation
+    # only bare, with a word to spare and no initial in front
+    assert name_votes(text, L)[Signal.TRAILING_INITIAL] == FAMILY_FIRST
+
+
+def test_titled_chinese_names_keep_a_family_first_base() -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(["Dr. Zhang Wei", "Dr. Wang Fang", "Prof. Li Jing",
+                      "Dr. Liu Lei", "Prof. Chen Yang", "Dr. Huang Hong"])
+    assert s.patch.name_order is UNSET
+    assert s.parser.policy.name_order == FAMILY_FIRST
+
+
+@pytest.mark.parametrize("text, signal, value", [
+    ("Zhang Xiaoming, PhD", Signal.SURNAME, FAMILY_FIRST),
+    ("Kim Minjun, Jr., MD", Signal.SURNAME, FAMILY_FIRST),
+    ("Sidorov Ivan Petrovich, PhD", Signal.PATRONYMIC,
+     PatronymicRule.EAST_SLAVIC),
+])
+def test_a_comma_before_post_nominals_alone_reads_the_name_before_it(
+        text: str, signal: Signal, value: object) -> None:
+    assert name_votes(text, L)[signal] == value
+
+
+@pytest.mark.parametrize("text", ["Priem, Jason", "Kim, Minjun Jr.",
+                                  "Zhang Xiaoming, Beijing"])
+def test_any_other_comma_name_casts_nothing(text: str) -> None:
+    assert name_votes(text, L) == {}
+
+
+def test_the_order_note_counts_the_comma_names_left_out() -> None:
+    s = Parser().suggest(["Priem, Jason", "Smith, John", "Kim Minjun",
+                          "Zhang Xiaoming, PhD", "Wang Xiaoming"])
+    order = _order_evidence(s)
+    assert "2 names with a comma" in order.note
+    # Kim Minjun, Wang Xiaoming and the name before `, PhD`
+    assert order.votes_for == 3
+    s = Parser().suggest(["Kim Minjun", "Wang Xiaoming"])
+    assert "comma" not in _order_evidence(s).note
+
+
+@pytest.mark.parametrize("text, signal, value", [
+    ("Petrov Ivan Ivanovich.", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
+    ('"Kim" Minjun', Signal.SURNAME, FAMILY_FIRST),
+    ("(Kim) Minjun", Signal.SURNAME, FAMILY_FIRST),
+    ("Minjun 'Kim'", Signal.SURNAME, GIVEN_FIRST),
+    ("Mamedov Ali Huseyn (oglu)", Signal.PATRONYMIC, PatronymicRule.TURKIC),
+])
+def test_edge_punctuation_is_read_past(
+        text: str, signal: Signal, value: object) -> None:
+    assert name_votes(text, L)[signal] == value

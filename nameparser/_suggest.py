@@ -48,7 +48,9 @@ from typing import TYPE_CHECKING
 from ._lexicon import Lexicon, _normalize
 from ._pipeline._state import COMMA_CHARS
 from ._pipeline._vocab import (
-    has_patronymic_ending, is_initial, is_patronymic_marker,
+    ROMAN, east_slavic_rotates, has_patronymic_ending, is_initial,
+    is_one_case, is_patronymic_marker, is_suffix_lenient, is_title_shaped,
+    reads_as_generation, suffix_as_written,
 )
 from ._policy import (
     UNSET, PatronymicRule, PolicyPatch, _order_repr, apply_patch,
@@ -163,22 +165,122 @@ def _particle(words: list[str], lexicon: Lexicon) -> tuple[Role, Role, Role] | N
     return FAMILY_FIRST if first else GIVEN_FIRST
 
 
+def _listed(word: str, table: frozenset[str]) -> bool:
+    spelling = fold(word.strip("."))
+    return len(spelling) >= 2 and spelling in table
+
+
 def _at_one_end(words: list[str], table: frozenset[str],
                 skip_last: bool = False) -> tuple[bool, bool]:
-    def listed(word: str) -> bool:
-        spelling = fold(word.strip("."))
-        return len(spelling) >= 2 and spelling in table
-
-    return listed(words[0]), not skip_last and listed(words[-1])
+    return _listed(words[0], table), not skip_last and _listed(words[-1], table)
 
 
-def name_votes(text: str, lexicon: Lexicon
-               ) -> dict[Signal, tuple[Role, Role, Role] | PatronymicRule]:
-    """The votes one name casts; empty for a name with a comma, no words
-    or one word."""
-    words = text.split()
-    if len(words) < 2 or any(c in COMMA_CHARS for c in text):
-        return {}
+def _a_listed_name(word: str) -> bool:
+    """A word the name tables list: name evidence, which is never read
+    past as a title or a post-nominal (`Law`, a Cantonese surname and a
+    listed title; `Cem`, a Turkish given name and a listed credential)."""
+    return (_listed(word, ROMANIZED_SURNAMES)
+            or _listed(word, COMMON_GIVEN_NAMES))
+
+
+def _is_leading_title(word: str, lexicon: Lexicon) -> bool:
+    """A word the lexicon lists as a title, or one rules/H2's shape
+    reads as a title at the head of a name (`Prof.`, `Insp.`)."""
+    return not _a_listed_name(word) and (
+        _normalize(word) in lexicon._sets.titles
+        or is_title_shaped(word, lexicon))
+
+
+def _is_post_nominal(word: str, lexicon: Lexicon) -> bool:
+    """A word after a comma that is a suffix the lexicon lists, or a
+    numeral of two letters or more: is_suffix_lenient, the reading
+    after a comma, which takes a listed one-letter numeral too."""
+    stem = word.rstrip(".")
+    return not _a_listed_name(word) and (
+        is_suffix_lenient(word, lexicon)
+        or (len(stem) > 1 and ROMAN.match(stem) is not None))
+
+
+def _ends_in_post_nominal(words: list[str], lexicon: Lexicon,
+                          one_case: bool) -> bool:
+    """Whether the last of `words` is a suffix the lexicon lists or a
+    numeral the trailing fork reads as the generation. A one-letter
+    numeral, and a listed acronym written as initials (`J.P.`), need two
+    name words in front of them, as the trailing fork's words-to-spare
+    count asks (rules/S10, rules/S3): `Armitage V` and `Smith J.P.` end
+    in initials."""
+    word = words[-1]
+    if len(words) < 2 or _a_listed_name(word):
+        return False
+    stem = word.rstrip(".")
+    if len(words) < 3 and (len(stem) == 1 or _is_initialed(word)):
+        return False
+    listed = suffix_as_written(_normalize(word), word, lexicon)
+    if stem and ROMAN.match(stem) is not None:
+        return reads_as_generation(
+            word, frozenset({"vocab:suffix"}) if listed else frozenset(),
+            words[-2], one_case)
+    return listed
+
+
+#: The marks a word is written inside (quotes, brackets), stripped from
+#: its ends before any test.
+_EDGES = "\"'\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u00ab\u00bb\u2039\u203a()[]{}"
+_COMMAS = re.compile("[" + re.escape("".join(sorted(COMMA_CHARS))) + r"\s]+")
+
+
+def _name_words(text: str, lexicon: Lexicon) -> tuple[list[str], bool]:
+    """The words the signals read, and whether a comma left the name
+    out. A comma followed by post-nominals alone (`Zhang Wei, PhD`)
+    leaves the part before it; any other comma name is left out, its
+    comma stating its order. Quotes and brackets are stripped from each
+    word, then the titles at the head and the post-nominals at the end
+    (a listed suffix, a numeral read as the generation)."""
+    cut = next((i for i, c in enumerate(text) if c in COMMA_CHARS), None)
+    if cut is not None:
+        tail = [w.strip(_EDGES) for w in _COMMAS.split(text[cut + 1:])]
+        if not all(_is_post_nominal(w, lexicon) for w in tail if w):
+            return [], True
+        text = text[:cut]
+    words = [w for w in (w.strip(_EDGES) for w in text.split()) if w]
+    if not words:
+        return words, False
+    one_case = is_one_case(words)
+    while words and _is_leading_title(words[0], lexicon):
+        del words[0]
+    while _ends_in_post_nominal(words, lexicon, one_case):
+        del words[-1]
+    return words, False
+
+
+def _patronymic(words: list[str]) -> PatronymicRule | None:
+    """The rule a name's patronymic votes for, where the pipeline's rule
+    can read it there. rules/O2's four name words, the marker last
+    (family-first) or third (given-first, which the Turkic rule reads
+    too), never first or second; rules/O1's three name words, the
+    ending on the middle word (given-first) or on the last
+    (`east_slavic_rotates`, the family-first shape the rule restores),
+    never on the first, and no initial first or in the middle (O1's
+    precedence). A final full stop is read past."""
+    bare = [w.rstrip(".") or w for w in words]
+    if (len(bare) == 4 and not any(map(is_patronymic_marker, bare[:2]))
+            and (is_patronymic_marker(bare[2])
+                 or is_patronymic_marker(bare[3]))):
+        return PatronymicRule.TURKIC
+    if (len(bare) == 3 and not has_patronymic_ending(bare[0])
+            and not (_is_initialed(words[0]) or _is_initialed(words[1]))
+            and (has_patronymic_ending(bare[1])
+                 or east_slavic_rotates(bare[1], bare[2]))):
+        return PatronymicRule.EAST_SLAVIC
+    return None
+
+
+def _read(text: str, lexicon: Lexicon
+          ) -> tuple[dict[Signal, tuple[Role, Role, Role] | PatronymicRule], bool]:
+    """The votes one name casts, and whether a comma left it out."""
+    words, comma = _name_words(text, lexicon)
+    if len(words) < 2:
+        return {}, comma
     votes: dict[Signal, tuple[Role, Role, Role] | PatronymicRule] = {}
 
     capitals = _capitals(words)
@@ -202,11 +304,19 @@ def name_votes(text: str, lexicon: Lexicon
         if at_first != at_last:
             votes[signal] = first_order if at_first else last_order
 
-    if any(is_patronymic_marker(w) for w in words):
-        votes[Signal.PATRONYMIC] = PatronymicRule.TURKIC
-    elif any(has_patronymic_ending(w) for w in words):
-        votes[Signal.PATRONYMIC] = PatronymicRule.EAST_SLAVIC
-    return votes
+    patronymic = _patronymic(words)
+    if patronymic is not None:
+        votes[Signal.PATRONYMIC] = patronymic
+    return votes, False
+
+
+def name_votes(text: str, lexicon: Lexicon
+               ) -> dict[Signal, tuple[Role, Role, Role] | PatronymicRule]:
+    """The votes one name casts; empty for a name of fewer than two
+    words once its titles and post-nominals are read past, and for a
+    comma name, save one whose comma is followed by post-nominals
+    alone."""
+    return _read(text, lexicon)[0]
 
 
 # -- the group ----------------------------------------------------------
@@ -599,7 +709,8 @@ def _disagrees(name: NameEvidence, decided: dict[str, object]) -> bool:
     if order is None:
         return False
     if (rules is not None and patronymic is PatronymicRule.EAST_SLAVIC
-            and patronymic in rules):  # type: ignore[operator]
+            and patronymic in rules  # type: ignore[operator]
+            and _end(order) == GIVEN_FIRST):  # type: ignore[arg-type]
         return False
     ends = _order_ends(name._votes)
     return len(ends) == 1 and next(iter(ends)) != _end(order)  # type: ignore[arg-type]
@@ -721,30 +832,46 @@ def _decide_turkic(tally: _Tally, base_rules: frozenset[PatronymicRule]
                            lambda v: v in value), fields, False)
 
 
+def _comma_note(left_out: int) -> str:
+    if not left_out:
+        return ""
+    noun = "name with a comma was" if left_out == 1 else "names with a comma were"
+    return (f"{left_out} {noun} left out: a comma states its own order, "
+            f"so only a comma followed by post-nominals alone is read past")
+
+
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
-                  rule_needs_given_first: bool
+                  rule_needs_given_first: bool, comma_left_out: int
                   ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``name_order`` in either direction. A family-first answer
     keeps the base's family-first spelling where the base has one. A
-    decided East Slavic rule decides the order instead: given-first,
-    whatever the names' own order votes say, since the rule reorders
-    each name and stands down under a family-first order."""
-    if rule_needs_given_first:
+    decided East Slavic rule decides the order as given-first, since
+    the rule reorders each name and stands down under a family-first
+    order, unless the names' own votes decide family-first: a decided
+    order is never overridden, and the rule then stands down."""
+    notes = [_comma_note(comma_left_out)]
+    end = tally.winner()
+    if rule_needs_given_first and end != FAMILY_FIRST:
         fields: dict[str, object] = (
             {} if base_order == GIVEN_FIRST else {_NAME_ORDER: GIVEN_FIRST})
+        notes.insert(0, "the East Slavic rule reorders each name; it needs "
+                        "a given-first order")
         return (tally.evidence(
             _NAME_ORDER, GIVEN_FIRST, True, lambda v: v == GIVEN_FIRST,
-            note="the East Slavic rule reorders each name; it needs a "
-                 "given-first order"), fields)
-    end = tally.winner()
+            note="; ".join(n for n in notes if n)), fields)
+    if rule_needs_given_first:
+        notes.insert(0, "the East Slavic rule is decided too, but the names' "
+                        "order votes decide a family-first order, under "
+                        "which the rule stands down")
+    note = "; ".join(n for n in notes if n)
     if end is None:
         return (tally.evidence(_NAME_ORDER, base_order, False,
-                               lambda v: v == _end(base_order)), {})
+                               lambda v: v == _end(base_order), note), {})
     order = (base_order if _end(base_order) == end else end)
     fields = (
         {} if order == base_order else {_NAME_ORDER: order})
     return (tally.evidence(_NAME_ORDER, order, True,
-                           lambda v: v == end), fields)
+                           lambda v: v == end, note), fields)
 
 
 def _texts(names: Iterable[str]) -> Iterator[str]:
@@ -787,11 +914,12 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     base: see :meth:`Parser.suggest`."""
     tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
     evidence: list[NameEvidence] = []
-    any_voters = 0
+    any_voters = comma_left_out = 0
     for text in _texts(names):
-        votes = name_votes(text, parser.lexicon)
+        votes, comma = _read(text, parser.lexicon)
         evidence.append(NameEvidence(text, votes))
         any_voters += bool(votes)
+        comma_left_out += comma
         per_setting: dict[str, list[tuple[Signal, Vote]]] = {
             setting: [] for setting in tallies}
         for signal, vote in votes.items():
@@ -802,6 +930,6 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     patronymic, patronymic_fields, settled = _decide_patronymic(
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
     order, order_fields = _decide_order(
-        tallies[_NAME_ORDER], policy.name_order, settled)
+        tallies[_NAME_ORDER], policy.name_order, settled, comma_left_out)
     patch = PolicyPatch(**order_fields, **patronymic_fields)  # type: ignore[arg-type]
     return Suggestion(parser, patch, (order, patronymic), tuple(evidence))
