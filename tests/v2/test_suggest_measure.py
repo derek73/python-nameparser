@@ -44,7 +44,8 @@ _PARLIAMENTS = [
               "QULİYEV Elman Rasim oğlu", "BÜLBÜLOĞLU Polad")] + [
     {"dataset": "ua_rada", "form": "name", "script": "Cyrillic", "name": n}
     for n in ("Гунько Анатолій Григорович", "Аксьонов Андрій Анатолійович",
-              "Бакулін Євген Миколайович", "Швачко Антон Олексійович")] + [
+              "Бакулін Євген Миколайович", "Швачко Антон Олексійович",
+              "Шевченко Тарас Григорович")] + [
     {"dataset": "ua_rada", "form": "alias", "script": "Latin",
      "name": "Hunko Anatolii"}]
 
@@ -98,8 +99,10 @@ def test_a_family_first_population_reads_right_under_both_bases(
 @needs_checkout
 def test_deciding_nothing_reads_every_group_against_its_base_wrong(
         capsys: pytest.CaptureFixture[str]) -> None:
-    out = _run(capsys, "--set", "_MIN_VOTES=1000000")
-    assert "thresholds overridden: _MIN_VOTES=1000000" in out
+    out = _run(capsys, "--set", "_MIN_VOTES=1000000",
+               "--set", "_MIN_PATRONYMIC_VOTES=1000000")
+    assert "_MIN_VOTES=1000000" in out
+    assert "_MIN_PATRONYMIC_VOTES=1000000" in out
     rows = _rows(out)
     for (_, written, base), cells in rows.items():
         expected = "100%" if written == base else "0%"
@@ -123,10 +126,22 @@ def test_the_parliament_tables_are_printed(
                   and "base" not in line)
     # six names, five with a Turkic marker; {T}+FF reads all six right
     assert turkic.split()[3] == "6/6"
-    assert re.search(r"^ua_rada\s+Cyrillic base FF n=4 .*rules east-slavic\s+rule$",
+    assert re.search(r"^ua_rada\s+Cyrillic base FF n=5 .*rules east-slavic\s+rule$",
                      out, re.M)
     # an alias row is not a name row
     assert "ua_rada                  Latin" not in out
+
+
+@needs_checkout
+def test_the_default_sizes_start_at_two_names(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # groups of 2 to 4 are where a patronymic rule forced given-first
+    # on a family-first base, so the default table measures them
+    assert tool.main(["--trials", "5", "--jobs", "1"]) == 0
+    out = capsys.readouterr().out
+    header = next(line for line in out.splitlines()
+                  if line.startswith("population"))
+    assert header.split()[3:6] == ["2", "3", "4"]
 
 
 def test_set_refuses_a_name_it_does_not_know() -> None:
@@ -139,10 +154,12 @@ def test_an_override_is_undone_after_a_run_in_this_process(
         capsys: pytest.CaptureFixture[str]) -> None:
     from nameparser import _suggest
     before = (_suggest._MIN_VOTES, _suggest._MIN_SHARE,
-              _suggest._MIN_PATRONYMIC_SHARE)
-    _run(capsys, "--set", "_MIN_VOTES=1000000", "--set", "_MIN_SHARE=0.9")
+              _suggest._MIN_PATRONYMIC_SHARE, _suggest._MIN_PATRONYMIC_VOTES)
+    _run(capsys, "--set", "_MIN_VOTES=1000000", "--set", "_MIN_SHARE=0.9",
+         "--set", "_MIN_PATRONYMIC_VOTES=7")
     assert (_suggest._MIN_VOTES, _suggest._MIN_SHARE,
-            _suggest._MIN_PATRONYMIC_SHARE) == before
+            _suggest._MIN_PATRONYMIC_SHARE,
+            _suggest._MIN_PATRONYMIC_VOTES) == before
 
 
 def test_the_groups_are_drawn_apart_from_the_reservoir() -> None:

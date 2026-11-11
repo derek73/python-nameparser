@@ -240,6 +240,11 @@ _MIN_SHARE = 2 / 3
 #: moved to given-first under a family-first base; at four in five, 4%
 #: of the groups of five and none from 20.
 _MIN_PATRONYMIC_SHARE = 0.8
+#: The fewest names carrying one patronymic rule that can decide it,
+#: besides the share: groups of two to four of those Russian inventors
+#: are often all patronymic names, and with _MIN_VOTES enough 19%, 12%
+#: and 6% of them were moved to given-first under a family-first base.
+_MIN_PATRONYMIC_VOTES = 5
 
 _NAME_ORDER = "name_order"
 _PATRONYMIC_RULES = "patronymic_rules"
@@ -652,7 +657,8 @@ class _Tally:
 def _patronymic_winner(tally: _Tally, any_voters: int
                        ) -> PatronymicRule | None:
     """The rule whose names are strictly more than _MIN_PATRONYMIC_SHARE
-    of the names that cast any vote, and at least _MIN_VOTES of them. A
+    of the names that cast any vote, and at least _MIN_PATRONYMIC_VOTES
+    of them. A
     name whose order signals are contested still counts among the names
     that cast a vote: it carries evidence, and leaving it out moved no
     measured group by more than a point. A name casts at most one
@@ -663,7 +669,8 @@ def _patronymic_winner(tally: _Tally, any_voters: int
     if not counts:
         return None
     rule, count = max(counts.items(), key=lambda item: item[1])
-    if count < _MIN_VOTES or count <= _MIN_PATRONYMIC_SHARE * any_voters:
+    if (count < _MIN_PATRONYMIC_VOTES
+            or count <= _MIN_PATRONYMIC_SHARE * any_voters):
         return None
     return rule  # type: ignore[return-value]
 

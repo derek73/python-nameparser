@@ -134,6 +134,14 @@ def test_no_signal_raises(text: str) -> None:
 # -- the group: Parser.suggest ------------------------------------------
 
 
+_EAST_SLAVIC = ["Сидоров Иван Петрович", "Иванов Пётр Сергеевич",
+                "Петров Олег Иванович", "Смирнов Павел Андреевич",
+                "Попов Илья Ильич"]
+_TURKIC = ["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu",
+           "Quliyev Elman Rasim oglu", "Hasanova Afet Abil qizi",
+           "Mikayilova Sevil Alirza qizi"]
+
+
 def _order_evidence(s: Suggestion) -> SettingEvidence:
     return next(e for e in s.evidence if e.setting == "name_order")
 
@@ -225,7 +233,7 @@ def test_a_tie_decides_nothing() -> None:
 
 def test_an_east_slavic_group_gets_the_rule_and_a_given_first_order(
         ) -> None:
-    s = Parser().suggest(["Сидоров Иван Петрович", "Иванов Пётр Сергеевич"])
+    s = Parser().suggest(_EAST_SLAVIC)
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
     # the base is given-first already, so the patch leaves the order out
     assert s.patch.name_order is UNSET
@@ -255,6 +263,24 @@ def test_an_east_slavic_group_moves_a_family_first_base_to_given_first(
     assert s.parser.parse("Sidorov Ivan Petrovich").family == "Sidorov"
 
 
+@pytest.mark.parametrize("names, rule", [
+    (_EAST_SLAVIC, PatronymicRule.EAST_SLAVIC),
+    (_TURKIC, PatronymicRule.TURKIC)])
+def test_a_patronymic_rule_needs_five_names_carrying_it(
+        names: list[str], rule: PatronymicRule) -> None:
+    # _MIN_PATRONYMIC_VOTES = 5: two to four Russian names written
+    # family-first moved a family-first base to given-first in 8-20% of
+    # groups, so a rule needs five names however large their share
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    for size in (2, 3, 4):
+        s = base.suggest(names[:size])
+        assert s.patch.patronymic_rules is UNSET, size
+        assert not _patronymic_evidence(s).decided, size
+        assert s.patch.name_order is UNSET, size
+    s = base.suggest(names)
+    assert s.patch.patronymic_rules == frozenset({rule})
+
+
 def test_one_patronymic_among_given_first_names_decides_nothing() -> None:
     s = Parser().suggest(["Jason Priem", "Mary Smith", "Anna Jones",
                           "Jason Smith", "Mary Priem",
@@ -263,11 +289,6 @@ def test_one_patronymic_among_given_first_names_decides_nothing() -> None:
     assert not _patronymic_evidence(s).decided
     assert _order_evidence(s).decided
     assert _order_evidence(s).value == GIVEN_FIRST
-
-
-_EAST_SLAVIC = ["Сидоров Иван Петрович", "Иванов Пётр Сергеевич",
-                "Петров Олег Иванович", "Смирнов Павел Андреевич",
-                "Попов Илья Ильич"]
 
 
 def test_patronymics_need_more_than_four_in_five_of_the_voting_names(
@@ -284,11 +305,6 @@ def test_patronymics_need_more_than_four_in_five_of_the_voting_names(
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
 
 
-_TURKIC = ["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu",
-           "Quliyev Elman Rasim oglu", "Hasanova Afet Abil qizi",
-           "Mikayilova Sevil Alirza qizi"]
-
-
 def test_a_turkic_rule_needs_more_than_four_in_five_of_the_voting_names(
         ) -> None:
     # the same share as the East Slavic rule's: four of five voting
@@ -302,13 +318,13 @@ def test_a_turkic_rule_needs_more_than_four_in_five_of_the_voting_names(
 
 
 def test_a_turkic_group_gets_the_rule_alone() -> None:
-    s = Parser().suggest(["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu"])
+    s = Parser().suggest(_TURKIC)
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
     # the rule reads either order, so it forces no order of its own
     assert s.patch.name_order is UNSET
     patronymic = _patronymic_evidence(s)
     assert patronymic.decided
-    assert (Signal.PATRONYMIC, PatronymicRule.TURKIC, 2) in patronymic.by_signal
+    assert (Signal.PATRONYMIC, PatronymicRule.TURKIC, 5) in patronymic.by_signal
 
 
 @pytest.mark.parametrize("text", [
@@ -316,7 +332,7 @@ def test_a_turkic_group_gets_the_rule_alone() -> None:
 def test_a_turkic_group_reads_the_family_whichever_end_it_is_at(
         text: str) -> None:
     s = Parser().suggest([text, "Aliyev Rauf Ilham oglu",
-                          "Rauf Ilham oglu Aliyev"])
+                          "Rauf Ilham oglu Aliyev", *_TURKIC[2:]])
     name = s.parser.parse(text)
     assert name.family == "Mamedov"
     assert name.given == "Ali"
@@ -336,7 +352,8 @@ def test_a_turkic_group_keeps_the_order_its_own_votes_decide() -> None:
 def test_a_turkic_group_on_a_family_first_base_follows_its_names() -> None:
     base = Parser(policy=Policy(name_order=FAMILY_FIRST))
     s = base.suggest(["Ali Huseyn oglu Mamedov", "Leyla Rasim qizi Aliyeva",
-                      "Tural Ilham oglu Aliyev", "Aysel Rauf qizi Quliyeva"])
+                      "Tural Ilham oglu Aliyev", "Aysel Rauf qizi Quliyeva",
+                      "Elman Rasim oglu Quliyev"])
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
     # the rule forces no order, and the names' own votes decide it
     assert s.patch.name_order == GIVEN_FIRST
@@ -346,7 +363,7 @@ def test_a_turkic_group_on_a_family_first_base_follows_its_names() -> None:
 def test_a_base_holding_the_turkic_rule_leaves_the_patch_empty() -> None:
     base = Parser(policy=Policy(
         patronymic_rules=frozenset({PatronymicRule.TURKIC})))
-    s = base.suggest(["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu"])
+    s = base.suggest(_TURKIC)
     assert s.patch.patronymic_rules is UNSET
     assert _patronymic_evidence(s).decided
 
@@ -354,7 +371,7 @@ def test_a_base_holding_the_turkic_rule_leaves_the_patch_empty() -> None:
 def test_a_base_holding_the_rule_already_leaves_the_patch_empty() -> None:
     base = Parser(policy=Policy(
         patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})))
-    s = base.suggest(["Сидоров Иван Петрович", "Иванов Пётр Сергеевич"])
+    s = base.suggest(_EAST_SLAVIC)
     assert s.patch == PolicyPatch()
     assert _patronymic_evidence(s).decided
 

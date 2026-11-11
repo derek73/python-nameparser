@@ -2,14 +2,15 @@
 
 `Parser.suggest(names)` reads a group of names a caller declares to share
 one convention and suggests a `name_order` (and `patronymic_rules`). Its
-decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`) and its word tables
+decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
+`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
 chosen with this tool, and the figures quoted for them in `suggest`'s
 docstring and docs/design/decisions/group-suggestion.md are its output.
 
     uv run python tools/differential/suggest_measure.py
     uv run python tools/differential/suggest_measure.py --sizes 5,10 --trials 100
-    uv run python tools/differential/suggest_measure.py --set _MIN_VOTES=1000000
+    uv run python tools/differential/suggest_measure.py --set _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000
     uv run python tools/differential/suggest_measure.py --base <base checkout>
 
 THE POPULATIONS, from the local corpora in $NAMEPARSER_TOOLS_CACHE
@@ -60,9 +61,11 @@ denominator.
 `--set NAME=VALUE` overrides one of `_suggest`'s thresholds in every
 worker, so a rule can be tried without editing the module; it is also the
 harness's proof that it can report a difference: `--set
-_MIN_VOTES=1000000` decides nothing, so every family-first group under
-the given-first base must read 0% (and every given-first group under the
-family-first base). `--base` runs the same measurement against another
+_MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
+(the first holds the order, the second the patronymic rule, which forces
+an order of its own), so every family-first group under the given-first
+base must read 0% (and every given-first group under the family-first
+base). `--base` runs the same measurement against another
 checkout in a child process and lists every cell that moved.
 
 Runtime, measured 2026-11-10 on a 12-CPU machine with every source
@@ -97,7 +100,7 @@ import corpus_build  # noqa: E402
 import snapshot  # noqa: E402
 
 REPO_ROOT = HERE.parents[1]
-SIZES = (5, 10, 20, 50, 200)
+SIZES = (2, 3, 4, 5, 10, 20, 50, 200)
 TRIALS = 300
 SEED = 20261110
 #: The most names a population keeps, drawn by a seeded reservoir.
@@ -110,7 +113,10 @@ PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
                      "Nigerian", "Turkish", "Spanish")
 GF, FF = "GF", "FF"
 #: The thresholds --set may override.
-SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE")
+SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
+            "_MIN_PATRONYMIC_VOTES")
+#: The thresholds that count names, read as int.
+_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES")
 
 #: decisions/group-suggestion's TURKIC lists, and the end each writes the
 #: family at: "caps" where the one capitals word is the family, else the
@@ -704,7 +710,7 @@ def _overrides(items: list[str]) -> dict[str, float]:
         if name not in SETTABLE or not value:
             raise SystemExit(f"--set takes NAME=VALUE with NAME one of "
                              f"{', '.join(SETTABLE)}, got {item!r}")
-        out[name] = int(value) if name == "_MIN_VOTES" else float(value)
+        out[name] = int(value) if name in _COUNTS else float(value)
     return out
 
 
