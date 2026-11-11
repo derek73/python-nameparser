@@ -15,10 +15,10 @@ nameparser/config/_order_names.py).
     uv run python tools/vocab/order_names.py --refresh # fetch Unihan again
 
 The second generated block, ``COMMON_GIVEN``, is the given names the
-suggester counts at a name's last word: per nam_dict country column the
-``TOP`` names of highest band, less any borne as a family name in
-ORCID's own two boxes (a population the suggester is not tested on) and
-any romanized surname. It needs nam_dict and the ORCID local corpus
+suggester looks up at both ends of a name: per nam_dict country column
+the ``TOP`` highest-band names that pass the filter, which drops any
+borne as a family name in ORCID's own two boxes (a population the
+suggester is not tested on) and any romanized surname. It needs nam_dict and the ORCID local corpus
 cached (tools/name_usage.py and tools/differential/local_corpora.py).
 
 Unihan is cached outside the repository with ``tools/zh_surnames.py``'s

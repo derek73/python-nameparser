@@ -1643,9 +1643,10 @@ order and does not vote, and neither does a name of one word. The
 group decides ``name_order`` when at least two names vote for one end
 and they are more than two thirds of the names that cast a vote. A
 patronymic rule (East Slavic or Turkic, :class:`~nameparser.PatronymicRule`) is
-decided only where more than four in five of the voting names carry
-its patronymic; a group decided East Slavic also gets a given-first
-order, since that rule reorders each name itself. Every setting the
+decided only where at least five names carry its patronymic and they
+are more than four in five of the voting names; a group decided East
+Slavic reads given-first, since that rule reorders each name itself
+and stands down under a family-first order. Every setting the
 votes do not decide keeps the base parser's value.
 
 .. doctest::
@@ -1678,10 +1679,11 @@ in at least 96% of groups from 5 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 200 for Indian ones. A plain list of names with no
 common surname or given name in it (``Zxqv Brtk``) carries no evidence,
-and a group too small to decide keeps the base rather than guess. The
-suggester never reads the language of a name; it counts what a group
-the caller declared shows, and its answer is configuration the caller
-applies. The measurements, the thresholds and the evidence declined
+and a group whose votes fall short of those thresholds keeps the base
+rather than guess. The
+parser never detects the language of a name; the suggester may, over a
+group you declare, says what it saw, and its answer is configuration
+you apply. The measurements, the thresholds and the evidence declined
 are in ``docs/design/decisions/group-suggestion.md``, and
 ``tools/differential/suggest_measure.py`` re-takes them.
 

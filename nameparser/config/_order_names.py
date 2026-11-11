@@ -20,13 +20,14 @@ Provenance and licences:
   for this feature on 2026-11-10 and not checked against any published
   ranking or register.
 
-- ``_COMMON_GIVEN`` (generated below, ``COMMON_GIVEN_NAMES``): the 500
-  highest-band given names of each of nam_dict's country columns
-  (Jörg Michael, 2008; GNU FDL 1.2, a derived table the maintainer
-  approved on 2026-11-10), less any word ORCID's public data file
-  (CC0) holds mostly in its family-name box and any romanized surname.
-  The suggester counts them at a name's last word as given-name
-  evidence. See tools/vocab/order_names.py.
+- ``_COMMON_GIVEN`` (generated below, ``COMMON_GIVEN_NAMES``): of each
+  of nam_dict's country columns (Jörg Michael, 2008; GNU FDL 1.2, a
+  derived table approved on 2026-11-10), the 500 highest-band given
+  names that pass the filter: not held mostly in the family-name box
+  of ORCID's public data file (CC0), and not a romanized surname. The
+  suggester looks them up at both ends of a name: a listed word at one
+  end and not the other is given-name evidence for that end. See
+  tools/vocab/order_names.py.
 
 The hand lists are curated, so a word that is also a given name in
 another culture may appear in two tables; the table lists spellings,

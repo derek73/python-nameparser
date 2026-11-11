@@ -9,7 +9,7 @@
 - Proposed, for review: an East Slavic group gets the patronymic rule with a given-first order, since the rule reads either written order one name at a time and stands down under a declared family-first order — 2026-11-10 SIGNALS.
 - Proposed, for review: an order is decided by at least two names and more than two thirds of the names casting an order vote; a patronymic rule by at least two names and more than four in five of the names casting any vote; otherwise the base stands — 2026-11-10 THRESHOLDS.
 
-Open: a group mixing Turkic and East Slavic patronymics (uz_senate, kz_senate's `-uly` names), where one rule wins the single patronymic decision; the given-first order a decided East Slavic rule forces, which reads a family-first group's names without a patronymic wrong (2026-11-10 THRESHOLDS); whether the given-name table's family-share filter should admit the given names it drops (`John`, `David`, `James`), measured as not needed for the anti-goal and not tuned; folding `ø` and `ł` (2026-11-10 THRESHOLDS); the family-in-capitals setting, waiting on #659.
+Open: #1308 (the tracking issue), whose open items are: Turkic and East Slavic patronymics mixed in one group (uz_senate, kz_senate); the given-first order a decided East Slavic rule forces on a family-first group; the given names the given-name table's family-share filter drops (`John`, `David`, `James`); folding `ø` and `ł`; the family-in-capitals setting, waiting on #659.
 
 ## Log
 
