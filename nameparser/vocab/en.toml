@@ -4060,8 +4060,104 @@ text = "fpc"
 credential = {}
 
 [[word]]
+text = "fracgp"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "fraco"
+credential = { note = "3 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "fracp"
+credential = { note = "NPPES 22 US healthcare providers (August 2026 file); 378 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "fracs"
+credential = { note = "NPPES 24 US healthcare providers (August 2026 file); 65 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
 text = "fraes"
 credential = { cased = "FRAeS", expands = "Fellow of the Royal Aeronautical Society", note = "govuk-people 5 names, written FRAeS 4, FRAes 1 (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "frca"
+credential = { note = "NPPES 24 US healthcare providers (August 2026 file); 215 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcem"
+credential = { note = "12 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcgp"
+credential = { note = "20 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcog"
+credential = { note = "NPPES 2 US healthcare providers (August 2026 file); 106 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcophth"
+credential = { cased = "FRCOphth", note = "NPPES 6 US healthcare providers (August 2026 file); 80 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcp"
+credential = { note = "NPPES 25 US healthcare providers (August 2026 file) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpa"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 21 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpath"
+credential = { cased = "FRCPath", note = "NPPES 3 US healthcare providers (August 2026 file); 104 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpc"
+credential = { note = "NPPES 217 US healthcare providers (August 2026 file) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpch"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 100 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpe"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 21 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpi"
+credential = { note = "36 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpsc"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 4 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcpsych"
+credential = { cased = "FRCPsych", note = "24 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcr"
+credential = { note = "NPPES 18 US healthcare providers (August 2026 file); 155 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcs"
+credential = { note = "NPPES 87 US healthcare providers (August 2026 file); 717 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcsc"
+credential = { note = "NPPES 309 US healthcare providers (August 2026 file); 622 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcse"
+credential = { note = "no corpus holds it, listed with its Royal College's other post-nominals; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcsed"
+credential = { cased = "FRCSEd", note = "NPPES 6 US healthcare providers (August 2026 file); 69 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "frcsi"
+credential = { note = "NPPES 8 US healthcare providers (August 2026 file); 27 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
 
 [[word]]
 text = "freng"
@@ -4818,6 +4914,46 @@ credential = { expands = "Master of Physical Therapy", note = "NPPES 9,278 US he
 [[word]]
 text = "mra"
 credential = {}
+
+[[word]]
+text = "mrcgp"
+credential = { note = "NPPES 5 US healthcare providers (August 2026 file); 32 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcog"
+credential = { note = "NPPES 1 US healthcare providers (August 2026 file); 95 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcp"
+credential = { note = "NPPES 72 US healthcare providers (August 2026 file); 793 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcpch"
+credential = { note = "NPPES 9 US healthcare providers (August 2026 file); 52 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcpi"
+credential = { note = "NPPES 16 US healthcare providers (August 2026 file); 26 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcpsych"
+credential = { cased = "MRCPsych", note = "NPPES 7 US healthcare providers (August 2026 file); 50 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcs"
+credential = { note = "NPPES 32 US healthcare providers (August 2026 file); 169 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcsed"
+credential = { cased = "MRCSEd", note = "NPPES 3 US healthcare providers (August 2026 file); 13 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcsi"
+credential = { note = "NPPES 2 US healthcare providers (August 2026 file); 7 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
+
+[[word]]
+text = "mrcvs"
+credential = { note = "NPPES 4 US healthcare providers (August 2026 file) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1315 }
 
 [[word]]
 text = "mrpharms"

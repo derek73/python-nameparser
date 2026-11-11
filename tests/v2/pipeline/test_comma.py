@@ -608,7 +608,7 @@ def test_a_decomposed_run_reads_as_its_composed_twin() -> None:
     # one case: a dual is company whatever its case, and the caps shape
     # has no contrast to ask
     ("smith, m.d. ms", "", "m.d. ms"),
-    ("SMITH, M.D. FRCS", "M.", ""),
+    ("SMITH, M.D. XYZW", "M.", ""),
     # a title word that is the whole head is a surname ('Knight'); the
     # run needs no closing stop
     ("Knight, J.P.", "J.", ""),
@@ -620,7 +620,9 @@ def test_a_decomposed_run_reads_as_its_composed_twin() -> None:
     # unlisted capitals credential C6 admits are company: C8's run
     ("Smith, M.D. MS", "", "M.D. MS"),
     ("Smith, M.D. / PhD", "", "M.D. / PhD"),
-    ("Smith, M.D. FRCS", "", "M.D. FRCS"),
+    # XYZW is made up, so that no later listing makes it a listed credential
+    # (FRCS stood here until #1315 listed it)
+    ("Smith, M.D. XYZW", "", "M.D. XYZW"),
 ])
 def test_a_listed_run_behind_one_word_in_the_default_vocabulary(
         text: str, given: str, suffix: str) -> None:
@@ -630,7 +632,7 @@ def test_a_listed_run_behind_one_word_in_the_default_vocabulary(
 
 @pytest.mark.parametrize(("text", "caps", "suffix"), [
     # the caps shape decides whether an unlisted capitals word is company
-    ("Smith, M.D. FRCS", CapsSuffixes.OFF, ""),
+    ("Smith, M.D. XYZW", CapsSuffixes.OFF, ""),
     ("McDONALD, J.P. ANNE", CapsSuffixes.EVERYWHERE, "J.P. ANNE"),
 ])
 def test_the_caps_switch_reaches_the_runs_company(

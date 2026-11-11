@@ -189,7 +189,7 @@
 {"name": "Albrecht von Alvensleben", "given": "Albrecht", "family": "von Alvensleben", "initials": "A. A."}
 {"name": "Aldephonse Alexandre Félix du Jardin", "given": "Aldephonse", "middle": "Alexandre Félix", "family": "du Jardin", "initials": "A. A. F. J."}
 {"name": "Alex Ben Johnson", "given": "Alex", "middle": "Ben", "family": "Johnson", "initials": "A. B. J."}
-{"name": "Alex Green, FRCS (SN)", "given": "Alex", "family": "Green", "suffix": "FRCS", "nickname": "SN", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "A. G.", "capitalized_force": "Alex \"Sn\" Green, FRCS"}
+{"name": "Alex Green, FRCS (SN)", "given": "Alex", "family": "Green", "suffix": "FRCS", "nickname": "SN", "initials": "A. G.", "capitalized_force": "Alex \"Sn\" Green, FRCS"}
 {"name": "Alex van Johnson", "given": "Alex", "family": "van Johnson", "initials": "A. J."}
 {"name": "Alexander Parra Uribe", "given": "Alexander", "middle": "Parra", "family": "Uribe", "initials": "A. P. U."}
 {"name": "Alexandre Dumas fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "A. D.", "generation": "fils"}
@@ -296,7 +296,7 @@
 {"name": "Andrew Perkins (XYZ)", "given": "Andrew", "family": "Perkins", "nickname": "XYZ", "initials": "A. P.", "capitalized_force": "Andrew \"Xyz\" Perkins"}
 {"name": "Andrew Perkins «PhD»", "given": "Andrew", "family": "Perkins", "suffix": "PhD", "initials": "A. P."}
 {"name": "Andrew Perkins, Jr., Col. (Ret)", "title": "Col.", "given": "Andrew", "family": "Perkins", "suffix": "Jr., Ret", "initials": "A. P.", "generation": "Jr.", "credentials": "Ret"}
-{"name": "Andrew Wilson, MRCP (UK)", "given": "Andrew", "family": "Wilson", "suffix": "MRCP", "nickname": "UK", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "A. W.", "capitalized_force": "Andrew \"Uk\" Wilson, MRCP"}
+{"name": "Andrew Wilson, MRCP (UK)", "given": "Andrew", "family": "Wilson", "suffix": "MRCP", "nickname": "UK", "initials": "A. W.", "capitalized_force": "Andrew \"Uk\" Wilson, MRCP"}
 {"name": "Andrews, M.D.", "given": "M.", "middle": "D.", "family": "Andrews", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. D. A."}
 {"name": "Andrés David Padilla Mejía", "given": "Andrés", "middle": "David Padilla", "family": "Mejía", "initials": "A. D. P. M."}
 {"name": "Andrés Sánchez-Cid Torres", "given": "Andrés", "middle": "Sánchez-Cid", "family": "Torres", "initials": "A. S. T."}
