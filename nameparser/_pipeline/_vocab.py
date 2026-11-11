@@ -978,6 +978,11 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             or bare in sets.titles and len(unicodedata.normalize(
                 "NFC", n.rsplit(".", 1)[-1])) > 1):
         return ()
+    low = text.lower()
+    dotted = _dotted_titles(sets.titles)
+    if len(low) != len(text):
+        # offsets in `low` would not be the text's
+        dotted = ()
     cuts: list[int] = []
     at = 0
     titled = False
@@ -990,8 +995,29 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     while True:
         if _LETTER_RUN.fullmatch(text, at):
             return tuple(cuts) if titled else ()
-        run = _GLUED_RUN.match(text, at)
-        if run is not None:
+        d = (dotted_title_end(low, at, dotted)
+             if dotted and low.startswith(dotted, at) else None)
+        if d is not None and (
+                (run := _GLUED_RUN.match(text, at)) is not None
+                and run.end() > d):
+            # a run of single letters running past the title is T7's
+            # run of initials ('พ.ต.ส.สมชาย')
+            d = None
+        if d is not None:
+            # a title listed with its stops is one chunk, read alone
+            # (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา')
+            titled = titled or not cuts
+            if d == len(text):
+                return tuple(cuts)
+            nxt = _GLUED_CHUNK.match(text, d)
+            if (low.startswith(dotted, d)
+                    and dotted_title_end(low, d, dotted) is not None) or (
+                    nxt is not None and is_title_chunk(nxt.group(1), lexicon)):
+                cuts.append(d)
+                at = d
+                continue
+            end, letter = d, False
+        elif (run := _GLUED_RUN.match(text, at)) is not None:
             # a run of initials before the name stays one word (T7)
             end, letter = run.end(), True
         else:
@@ -1041,6 +1067,52 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
         at = end
         if word.end() == len(text) or tail == ".":
             return tuple(cuts) if titled or not initial else ()
+
+
+@functools.lru_cache(maxsize=16)
+def _dotted_titles(titles: frozenset[str]) -> tuple[str, ...]:
+    """The titles of a script without case listed with a full stop
+    inside ('พ.ต.อ', 'พ.อ.หญิง'), longest first: one tuple per
+    vocabulary, so a word opening with none of them is told by a C-level
+    `startswith` alone. A cased title written with its stops ('dr.c',
+    'mgr.a') is left out: glued, it keeps the reading decisions/T8's
+    #1305 entry decided, a title and the initial behind it
+    ('Dr.C.Meera'), where a caseless script writes no initials."""
+    return tuple(sorted((t for t in titles if "." in t and t == t.upper()),
+                        key=len, reverse=True))
+
+
+@functools.lru_cache(maxsize=16)
+def title_prefixes(titles: frozenset[str]) -> tuple[str, ...]:
+    """Every listed title, a tuple for a C-level `startswith`: what may
+    stand behind a title only in a phrase glued in front (rules/W6)."""
+    return tuple(titles)
+
+
+def dotted_title_end(low: str, at: int,
+                     dotted: tuple[str, ...]) -> int | None:
+    """Where a title listed with its stops, opening `low` at `at`, ends
+    as a word of its own: past its own full stop, or, where its last
+    chunk is more than one letter ('พ.อ.หญิง'), right before a letter
+    of a script without case. A last chunk of one letter needs its
+    stop, being the initial it spells otherwise ('น.สมชาย' is no
+    'น.ส' + 'มชาย', 'พ.ต.อนุชา' no 'พ.ต.อ' + 'นุชา'), and a letter with
+    case after a longer chunk goes on the word ('Lt.Colin', not 'Lt.Col'
+    + 'in'); None where none does (#1319)."""
+    for t in dotted:
+        if not low.startswith(t, at):
+            continue
+        end = at + len(t)
+        if end == len(low):
+            return end
+        if low[end] == ".":
+            return end + 1
+        c = low[end]
+        last = t.rsplit(".", 1)[-1]
+        if len(unicodedata.normalize("NFC", last)) > 1 and c.isalpha() and (
+                c.upper() == c.lower()):
+            return end
+    return None
 
 
 def glued_saint_cut(text: str, lexicon: Lexicon) -> int | None:

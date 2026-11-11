@@ -23,8 +23,28 @@ text = "นางสาว"
 salutation = { addresses = "given", gender = "f", issue = 317, attached = { side = "before", issue = 317 }, expands = "Miss, an unmarried woman", note = "no Thai given name opens with it among 12,880 (2026-11-10); 1,676 of the 14,098 2019 candidates; glued to the given name by 8 ORCID filers, written apart by 2" }
 
 [[word]]
+text = "น.ส"
+salutation = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นางสาว", expands = "Miss, written short" }
+
+[[word]]
 text = "นาย"
 salutation = { addresses = "given", gender = "m", issue = 317, attached = { side = "before", issue = 317 }, expands = "Mr.", note = "one Thai given name of 12,880 opens with it, นายณัฐ in PyThaiNLP's female list, the salutation typed in; the Thai Wikipedia names opening with it glued are the honorific or a noble rank (นายขนมต้ม, นายจำนงราชกิจ) (2026-11-10); 10,059 of the 14,098 2019 candidates; glued to the given name by 23 ORCID filers, written apart by 2" }
+
+[[word]]
+text = "เด็กชาย"
+salutation = { addresses = "given", gender = "m", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "boy, a male child" }
+
+[[word]]
+text = "ด.ช"
+salutation = { addresses = "given", gender = "m", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เด็กชาย", expands = "boy, written short" }
+
+[[word]]
+text = "เด็กหญิง"
+salutation = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "girl, a female child" }
+
+[[word]]
+text = "ด.ญ"
+salutation = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เด็กหญิง", expands = "girl, written short" }
 
 [[word]]
 text = "ดร"
@@ -115,12 +135,756 @@ text = "พญ"
 academic = { addresses = "given", gender = "f", issue = 1166, same_as = "แพทย์หญิง", expands = "physician, a woman, written short" }
 
 [[word]]
+text = "คุณหญิง"
+nobility = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "Khunying, a lady of the royal decoration" }
+
+[[word]]
+text = "หม่อมราชวงศ์"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "Mom Rajawongse, a king's great-grandchild" }
+
+[[word]]
+text = "ม.ร.ว"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "หม่อมราชวงศ์", expands = "Mom Rajawongse, written short" }
+
+[[word]]
+text = "หม่อมหลวง"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "Mom Luang, a king's great-great-grandchild" }
+
+[[word]]
+text = "ม.ล"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "หม่อมหลวง", expands = "Mom Luang, written short" }
+
+[[word]]
+text = "หม่อมเจ้า"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "Mom Chao, a king's grandchild" }
+
+[[word]]
+text = "ม.จ"
+nobility = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "หม่อมเจ้า", expands = "Mom Chao, written short" }
+
+[[word]]
+text = "จ่าสิบตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "sergeant major third class" }
+
+[[word]]
+text = "จ่าสิบตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าสิบตำรวจ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police sergeant major" }
+
+[[word]]
+text = "จ.ส.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบตำรวจ", expands = "จ่าสิบตำรวจ, written short" }
+
+[[word]]
+text = "จ่าสิบตำรวจหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบตำรวจ", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ.ส.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบตำรวจหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าสิบเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "sergeant major first class" }
+
+[[word]]
+text = "จ.ส.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบเอก", expands = "จ่าสิบเอก, written short" }
+
+[[word]]
+text = "จ่าสิบเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ.ส.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าสิบโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "sergeant major second class" }
+
+[[word]]
+text = "จ่าสิบโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าสิบโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าอากาศตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air force lance corporal" }
+
+[[word]]
+text = "จ่าอากาศตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าอากาศตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าอากาศเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air force sergeant" }
+
+[[word]]
+text = "จ่าอากาศเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าอากาศเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy petty officer first class" }
+
+[[word]]
+text = "จ่าเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "จ่าโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy petty officer second class" }
+
+[[word]]
+text = "จ่าโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "จ่าโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "ดาบตำรวจ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police senior sergeant major" }
+
+[[word]]
+text = "ด.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ดาบตำรวจ", expands = "ดาบตำรวจ, written short" }
+
+[[word]]
+text = "ดาบตำรวจหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ดาบตำรวจ", expands = "a woman of the rank" }
+
+[[word]]
+text = "ด.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ดาบตำรวจหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "น.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy or air force lieutenant commander (นาวาตรี, นาวาอากาศตรี), written short" }
+
+[[word]]
+text = "น.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "น.ต", expands = "a woman of the rank" }
+
+[[word]]
+text = "น.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy or air force commander (นาวาโท, นาวาอากาศโท), written short" }
+
+[[word]]
+text = "น.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "น.ท", expands = "a woman of the rank" }
+
+[[word]]
+text = "น.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy or air force captain (นาวาเอก, นาวาอากาศเอก), written short" }
+
+[[word]]
+text = "น.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "น.อ", expands = "a woman of the rank" }
+
+[[word]]
+text = "นายหมวดตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "volunteer defence corps sub-lieutenant" }
+
+[[word]]
+text = "นายหมวดตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นายหมวดตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy lieutenant commander" }
+
+[[word]]
+text = "นาวาตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาอากาศตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "squadron leader" }
+
+[[word]]
+text = "นาวาอากาศตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาอากาศตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาอากาศเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "group captain" }
+
+[[word]]
+text = "นาวาอากาศเอกพิเศษ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาอากาศเอก", expands = "group captain, special grade" }
+
+[[word]]
+text = "นาวาอากาศเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาอากาศเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาอากาศโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "wing commander" }
+
+[[word]]
+text = "นาวาอากาศโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาอากาศโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy captain" }
+
+[[word]]
+text = "นาวาเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "นาวาโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy commander" }
+
+[[word]]
+text = "นาวาโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "นาวาโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.จ.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "พันจ่าเอก, written short" }
+
+[[word]]
+text = "พ.จ.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พ.จ.อ", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "พันเอก, a woman, written short" }
+
+[[word]]
+text = "พลตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "major general" }
+
+[[word]]
+text = "พล.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตรี", expands = "พลตรี, written short" }
+
+[[word]]
+text = "พลตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตรีหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลตำรวจตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police major general" }
+
+[[word]]
+text = "พล.ต.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจตรี", expands = "พลตำรวจตรี, written short" }
+
+[[word]]
+text = "พลตำรวจตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ต.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจตรีหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลตำรวจเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police general" }
+
+[[word]]
+text = "พล.ต.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจเอก", expands = "พลตำรวจเอก, written short" }
+
+[[word]]
+text = "พลตำรวจเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ต.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลตำรวจโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police lieutenant general" }
+
+[[word]]
+text = "พล.ต.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจโท", expands = "พลตำรวจโท, written short" }
+
+[[word]]
+text = "พลตำรวจโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ต.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลตำรวจโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลอากาศตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air vice marshal" }
+
+[[word]]
+text = "พลอากาศตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลอากาศตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลอากาศเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air chief marshal" }
+
+[[word]]
+text = "พล.อ.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลอากาศเอก", expands = "พลอากาศเอก, written short" }
+
+[[word]]
+text = "พลอากาศเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลอากาศเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.อ.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลอากาศเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลอากาศโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air marshal" }
+
+[[word]]
+text = "พลอากาศโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลอากาศโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลเรือตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "rear admiral" }
+
+[[word]]
+text = "พลเรือตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเรือตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลเรือเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "admiral" }
+
+[[word]]
+text = "พล.ร.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเรือเอก", expands = "พลเรือเอก, written short" }
+
+[[word]]
+text = "พลเรือเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเรือเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ร.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเรือเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลเรือโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "vice admiral" }
+
+[[word]]
+text = "พลเรือโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเรือโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "general" }
+
+[[word]]
+text = "พล.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเอก", expands = "พลเอก, written short" }
+
+[[word]]
+text = "พลเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พลโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "lieutenant general" }
+
+[[word]]
+text = "พล.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลโท", expands = "พลโท, written short" }
+
+[[word]]
+text = "พลโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พล.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พลโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันจ่าตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy chief petty officer third class" }
+
+[[word]]
+text = "พันจ่าตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันจ่าตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันจ่าอากาศเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air force flight sergeant first class" }
+
+[[word]]
+text = "พ.อ.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันจ่าอากาศเอก", expands = "พันจ่าอากาศเอก, written short" }
+
+[[word]]
+text = "พันจ่าอากาศเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันจ่าอากาศเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.อ.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันจ่าอากาศเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันจ่าอากาศโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "air force flight sergeant second class" }
+
+[[word]]
+text = "พันจ่าอากาศโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันจ่าอากาศโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "major" }
+
+[[word]]
+text = "พ.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตรี", expands = "พันตรี, written short" }
+
+[[word]]
+text = "พันตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตรีหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันตำรวจตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police major" }
+
+[[word]]
+text = "พ.ต.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจตรี", expands = "พันตำรวจตรี, written short" }
+
+[[word]]
+text = "พันตำรวจตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.ต.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจตรีหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันตำรวจเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police colonel" }
+
+[[word]]
+text = "พ.ต.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจเอก", expands = "พันตำรวจเอก, written short" }
+
+[[word]]
+text = "พันตำรวจเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.ต.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันตำรวจโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police lieutenant colonel" }
+
+[[word]]
+text = "พ.ต.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจโท", expands = "พันตำรวจโท, written short" }
+
+[[word]]
+text = "พันตำรวจโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.ต.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันตำรวจโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "colonel" }
+
+[[word]]
+text = "พ.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันเอก", expands = "พันเอก, written short" }
+
+[[word]]
+text = "พันเอกพิเศษ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันเอก", expands = "colonel, special grade" }
+
+[[word]]
+text = "พันเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "พันโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "lieutenant colonel" }
+
+[[word]]
+text = "พ.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันโท", expands = "พันโท, written short" }
+
+[[word]]
+text = "พันโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "พ.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "พันโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "ร้อยตรี, a woman, written short" }
+
+[[word]]
+text = "ร.ต.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "ร้อยตำรวจเอก, a woman, written short" }
+
+[[word]]
+text = "ร.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "captain or navy lieutenant (ร้อยเอก, เรือเอก), written short" }
+
+[[word]]
+text = "ร.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร.อ", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "second lieutenant" }
+
+[[word]]
+text = "ร.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตรี", expands = "ร้อยตรี, written short" }
+
+[[word]]
+text = "ร้อยตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยตำรวจตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police sub-lieutenant" }
+
+[[word]]
+text = "ร.ต.ต"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจตรี", expands = "ร้อยตำรวจตรี, written short" }
+
+[[word]]
+text = "ร้อยตำรวจตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร.ต.ต.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจตรีหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยตำรวจเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police captain" }
+
+[[word]]
+text = "ร.ต.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจเอก", expands = "ร้อยตำรวจเอก, written short" }
+
+[[word]]
+text = "ร้อยตำรวจเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยตำรวจโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police lieutenant" }
+
+[[word]]
+text = "ร.ต.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจโท", expands = "ร้อยตำรวจโท, written short" }
+
+[[word]]
+text = "ร้อยตำรวจโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร.ต.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยตำรวจโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "captain" }
+
+[[word]]
+text = "ร้อยเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร้อยโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "lieutenant" }
+
+[[word]]
+text = "ร.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยโท", expands = "ร้อยโท, written short" }
+
+[[word]]
+text = "ร้อยโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "ร.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ร้อยโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "ว่าที่พันตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "acting major" }
+
+[[word]]
+text = "ว่าที่พันตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ว่าที่พันตรี", expands = "a woman of the rank" }
+
+[[word]]
 text = "ว่าที่ร้อยตรี"
 military = { addresses = "given", issue = 1166, attached = { side = "before", issue = 317 }, expands = "acting second lieutenant, the reserve rank a graduate of officer training carries", note = "one word as written, so it needs a listing and nothing else" }
 
 [[word]]
 text = "ว่าที่ร้อยตรีหญิง"
 military = { addresses = "given", gender = "f", issue = 317, attached = { side = "before", issue = 317 }, same_as = "ว่าที่ร้อยตรี", expands = "acting second lieutenant, a woman", note = "one ORCID filer glues it to her given name (ว่าที่ร้อยตรีหญิงพิราภรณ์), which the peel of ว่าที่ร้อยตรี alone would leave หญิงพิราภรณ์ (2026-11-10)" }
+
+[[word]]
+text = "ว่าที่ร้อยตำรวจตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "acting police sub-lieutenant" }
+
+[[word]]
+text = "ว่าที่ร้อยตำรวจตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ว่าที่ร้อยตำรวจตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "ว่าที่ร้อยเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "acting captain" }
+
+[[word]]
+text = "ว่าที่ร้อยเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ว่าที่ร้อยเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "ว่าที่ร้อยโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "acting lieutenant" }
+
+[[word]]
+text = "ว่าที่ร้อยโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "ว่าที่ร้อยโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "lance corporal" }
+
+[[word]]
+text = "สิบตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบตำรวจตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police lance corporal" }
+
+[[word]]
+text = "สิบตำรวจตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตำรวจตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบตำรวจเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police sergeant" }
+
+[[word]]
+text = "สิบตำรวจเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตำรวจเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบตำรวจโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "police corporal" }
+
+[[word]]
+text = "ส.ต.ท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตำรวจโท", expands = "สิบตำรวจโท, written short" }
+
+[[word]]
+text = "สิบตำรวจโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตำรวจโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "ส.ต.ท.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบตำรวจโทหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "sergeant" }
+
+[[word]]
+text = "ส.อ"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบเอก", expands = "สิบเอก, written short" }
+
+[[word]]
+text = "สิบเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "ส.อ.หญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบเอกหญิง", expands = "a woman of the rank" }
+
+[[word]]
+text = "สิบโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "corporal" }
+
+[[word]]
+text = "สิบโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "สิบโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "เรือตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy sub-lieutenant" }
+
+[[word]]
+text = "เรือตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เรือตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "เรืออากาศตรี"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "pilot officer" }
+
+[[word]]
+text = "เรืออากาศตรีหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เรืออากาศตรี", expands = "a woman of the rank" }
+
+[[word]]
+text = "เรืออากาศโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "flying officer" }
+
+[[word]]
+text = "เรืออากาศโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เรืออากาศโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "เรือเอก"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy lieutenant" }
+
+[[word]]
+text = "เรือเอกหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เรือเอก", expands = "a woman of the rank" }
+
+[[word]]
+text = "เรือโท"
+military = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "navy lieutenant junior grade" }
+
+[[word]]
+text = "เรือโทหญิง"
+military = { addresses = "given", gender = "f", issue = 1319, attached = { side = "before", issue = 1319 }, same_as = "เรือโท", expands = "a woman of the rank" }
+
+[[word]]
+text = "ว่าที่"
+modifier = { addresses = "given", issue = 1319, attached = { side = "before", issue = 1319 }, expands = "acting, before a rank (ว่าที่ ร.ต.)" }
 
 [[word]]
 text = "จูเนียร์"
