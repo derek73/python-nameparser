@@ -19291,6 +19291,21 @@ CASES: tuple[Case, ...] = (
          notes="read as '(PhD, Sr) John Smith' is; 1.4.0 read "
                "nickname 'PhD، Sr', as did 3.0.1, whose clause sites "
                "stripped only the ASCII comma"),
+    Case("a_comma_glued_between_credentials_keeps_the_clause_a_nickname",
+         "John Smith (MD,PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MD,PhD"},
+         classification="parity",
+         notes="rules/S1's Accepted: a glued comma is word text, so the "
+               "clause is one word no vocabulary reads (#1268, both "
+               "designs for dividing it declined, decisions/S1). 1.4.0 "
+               "and 2.5.0 through 3.0.1 read the same; 2.0.0 through "
+               "2.4.0 read nickname 'MD PhD'"),
+    Case("a_comma_spaced_between_credentials_sets_the_clause_apart",
+         "John Smith (MD, PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(#792)",
+         notes="the spaced twin of the row above, read as credentials "
+               "since 3.0.0; 1.4.0 through 2.8.0 read nickname"),
     Case("ethiopic_comma_inside_a_set_apart_clause",
          "John Smith (Dr.፣ PhD)",
          {"title": "Dr.", "given": "John", "family": "Smith",

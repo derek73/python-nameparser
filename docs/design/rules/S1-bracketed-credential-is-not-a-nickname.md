@@ -121,6 +121,11 @@
 
 **Accepted:**
 
+- A comma glued between two words inside a clause is word text, as in a nickname (N1), so the clause is one word no vocabulary reads and keeps its pair's reading, where the same comma written with a space beside it parts the credentials.
+  ```
+  "John Smith (MD,PhD)"       →  nickname="MD,PhD"
+  "John Smith (MD, PhD)"      →  suffix="MD, PhD"
+  ```
 - A lone title of address written short with its period stays in the name as written bare, its clause no nickname for the period ending it, and where the bare word ending the name reads as a name word, so does it ('สุดา ใจดี ศ.' reads family 'ศ.').
   ```
   "สุดา ใจดี (ศ.)"             →  family="ศ."

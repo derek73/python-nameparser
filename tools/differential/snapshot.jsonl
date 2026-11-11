@@ -1987,7 +1987,9 @@
 {"name": "John Smith (MA/PhD)", "given": "John", "family": "Smith", "suffix": "MA/PhD", "initials": "J. S."}
 {"name": "John Smith (MBA, PhD)", "given": "John", "family": "Smith", "suffix": "MBA, PhD", "initials": "J. S."}
 {"name": "John Smith (MD ,PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
+{"name": "John Smith (MD, PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith (MD,) (PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
+{"name": "John Smith (MD,PhD)", "given": "John", "family": "Smith", "nickname": "MD,PhD", "initials": "J. S.", "capitalized_force": "John \"Md,PhD\" Smith"}
 {"name": "John Smith (MD-PhD)", "given": "John", "family": "Smith", "suffix": "MD-PhD", "initials": "J. S."}
 {"name": "John Smith (MD/Bob)", "given": "John", "family": "Smith", "nickname": "MD/Bob", "initials": "J. S.", "capitalized_force": "John \"Md/Bob\" Smith"}
 {"name": "John Smith (MD/PhD)", "given": "John", "family": "Smith", "suffix": "MD/PhD", "initials": "J. S."}
