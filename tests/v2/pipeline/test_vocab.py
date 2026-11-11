@@ -1473,9 +1473,10 @@ def test_trailing_title_shape(text: str, admitted: bool) -> None:
 # 'lt', 'gov' and 'dra' titles, 'royal' a modifier and 'majesty' a
 # style, 'st' a saint particle and a title, 'ma' a given name written
 # short, 'msc' and 'md' credentials, 'filho', 'jr' and 'esq' suffix
-# words
+# words; Thai 'ดร', 'รศ' and 'ศ' titles (#1166)
 _GLUED_LEX = (Lexicon()
               .add("dr", "lt", "gov", "dra", kind="title")
+              .add("ดร", "รศ", "ศ", kind="academic")
               .add("st", kind="saint")
               .add("st", kind="title")
               .add("ma", kind="given", same_as="maria")
@@ -1515,6 +1516,14 @@ def _pieces_of(text: str) -> list[str]:
     # a title spelled without its stops is no bar where an initial ends
     # the word, 'dra' being listed (the review's 'Dr.A. Supriya')
     ("Dr.A.", ["Dr.", "A."]),
+    # a Thai name carries vowel and tone marks after its letters, a
+    # script without case divides, and a one-letter title there is
+    # read alone as a title, no initial (#1166)
+    ("ดร.สุดา", ["ดร.", "สุดา"]),
+    ("ดร.สมชาย", ["ดร.", "สมชาย"]),
+    ("รศ.ดร.สุดา", ["รศ.", "ดร.", "สุดา"]),
+    ("ศ.ดร.สุดา", ["ศ.", "ดร.", "สุดา"]),
+    ("ศ.สุดา", ["ศ.", "สุดา"]),
 ])
 def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
         text: str, pieces: list[str]) -> None:
@@ -1545,6 +1554,8 @@ def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
     "St.John",          # a saint particle's chunk (#1071)
     "Gen.Ademola",      # a chunk nothing lists
     "Mr2.Smith",        # a digit
+    "ส.สุดา",           # a letter without case, no title: no initial
+    "ดร.สุดา.",          # closed by its own stop, in a script without case
 ])
 def test_a_glued_word_the_shape_refuses_stays_whole(text: str) -> None:
     assert _pieces_of(text) == [text]

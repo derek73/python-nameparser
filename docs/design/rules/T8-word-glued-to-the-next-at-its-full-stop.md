@@ -4,7 +4,7 @@
 
 **Then:** the word reads as it does with a space there: the chunk keeps its full stop and is read as it is read written apart, and the name after it is a word of its own.
 
-- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short. A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
+- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short; a single letter in a script without case is read on its own only where it is listed, as a title (Thai `ศ.`, professor) or a given name written short, though a run of two or more single letters is a chunk in any script. A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
   ```
   "Dr.John Smith"             →  title="Dr."
   "Dr.John Smith"             →  given="John"
@@ -17,14 +17,16 @@
   "Ma.Refugio Torres Vitela"  →  given="Ma."
   "Dr.Smith"                  →  family="Smith"
   "Dr.J. Smith"               →  given="J."
+  "ศ.ดร.สุดา ใจดี"              →  title="ศ.ดร."
   ```
-- **The name after the stop** is a word of letters, apostrophes and hyphens whose first letter with case is not lower case, is not closed by a full stop of its own, and is no unambiguous title or credential; a name that is also a credential divides as its spaced writing reads. A name has to close the word: initials alone behind a letter or a digraph stay one word, as initials ('Kim Yu.A.'), though behind a title they divide ('Dr.J. Smith').
+- **The name after the stop** is a word of letters, apostrophes and hyphens, a Thai letter's vowel and tone marks counted with it, whose first letter with case is not lower case, is not closed by a full stop of its own, and is no unambiguous title or credential; a name that is also a credential divides as its spaced writing reads. A name has to close the word: initials alone behind a letter or a digraph stay one word, as initials ('Kim Yu.A.'), though behind a title they divide ('Dr.J. Smith').
   ```
   "Dr.McDonald Jones"         →  title="Dr."
   "Mr.Ed Smith"               →  given="Ed"
   "Kim Yu.A."                 →  family="Yu.A."
   "Gülcan B.TURAN"            →  family="TURAN"
   "Dr.J.R. Smith"             →  title="Dr."
+  "รศ.ดร.สุดา ใจดี"             →  given="สุดา"
   ```
 - **The rendering keeps the word as it was written**, the pieces joining with nothing between them where they stand side by side (R1).
   ```

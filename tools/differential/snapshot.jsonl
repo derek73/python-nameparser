@@ -6484,8 +6484,10 @@
 {"name": "มานี ชัยยศ พิชิตชัย", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย", "initials": "ม. ช. พ."}
 {"name": "มึลเลอร์ เคเทอ", "order": "FAMILY_FIRST", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
+{"name": "รศ.ดร.สุดา ใจดี", "title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "SUFFIX_OR_NAME: name as middle (position)"], "initials": "บ. ก. โ. ศ. เ. ค. เ. ม. ว."}
-{"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "given": "ศ.ดร.", "middle": "เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "ศ. เ. ค. เ. ม. ว. บ."}
+{"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "title": "ศ.ดร.", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "เ. ค. เ. ม. ว. บ."}
+{"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "ส. ใ."}
 {"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}

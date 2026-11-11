@@ -5170,6 +5170,71 @@ CASES: tuple[Case, ...] = (
                "abbreviations as dotted letters, degrees among them "
                "(the MD here), and has no capitals to write initials "
                "in"),
+    Case("thai_academic_titles_spelled_out",
+         "รองศาสตราจารย์ ดร. สุดา ใจดี",
+         {"title": "รองศาสตราจารย์ ดร.", "given": "สุดา", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="associate professor, Dr.: listed in th.toml; 1.4.0 "
+               "through 3.0.1 read given 'รองศาสตราจารย์', the H2 shape "
+               "reading 'ดร.' only at the head"),
+    Case("thai_lecturer_title",
+         "อาจารย์ สุดา ใจดี",
+         {"title": "อาจารย์", "given": "สุดา", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="lecturer, the commonest title of a Thai faculty list"),
+    Case("thai_titles_glued_at_their_stops",
+         "รศ.ดร.สุดา ใจดี",
+         {"title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="rules/T8 divides at each stop, the Thai vowel sign in "
+               "the name after it counted as part of the word; 1.4.0 "
+               "through 3.0.1 read given 'รศ.ดร.สุดา'"),
+    Case("thai_one_letter_title_glued_at_its_stop",
+         "ศ.ดร.สุดา ใจดี",
+         {"title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="professor written short: a letter in a script without "
+               "case is read alone only as a listed title"),
+    Case("thai_professional_title_written_short",
+         "นพ. สมชาย ใจดี",
+         {"title": "นพ.", "given": "สมชาย", "family": "ใจดี"},
+         notes="physician written short: the H2 shape read it before "
+               "it was listed (#1166)"),
+    Case("thai_acting_rank_written_as_one_word",
+         "ว่าที่ร้อยตรี สมชาย ใจดี",
+         {"title": "ว่าที่ร้อยตรี", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="acting second lieutenant, two words in meaning written "
+               "as one"),
+    Case("bengali_one_letter_title_glued_at_its_stop",
+         "ড.করম খান",
+         {"title": "ড.", "given": "করম", "family": "খান"},
+         classification="fix(#1166)",
+         notes="the listed one-letter Dr. in a script without case is "
+               "read alone, as written apart; 3.0.1 read title 'ড.করম'"),
+    Case("bengali_name_with_a_vowel_sign_after_the_stop_stays_whole",
+         "ড.রহিম খান",
+         {"title": "ড.রহিম", "family": "খান"},
+         classification="fix(#343)",
+         notes="the boundary: the name's vowel sign U+09BF is no letter "
+               "of the shape, only Thai's marks being counted (#1166; "
+               "decisions/T8's Open line on vowel signs), so the word "
+               "stays whole and its listed title chunk takes it; 1.4.0 "
+               "through 2.2.0 read given 'ড.রহিম', before ড was listed"),
+    Case("thai_glued_title_after_a_family_comma_stays_whole",
+         "ใจดี, รศ.ดร.สุดา",
+         {"title": "รศ.ดร.สุดา", "family": "ใจดี"},
+         classification="fix(#1166)",
+         notes="accepted: T8 divides nothing after a comma, so the "
+               "listed title chunk takes the word, as 'Smith, Dr.John' "
+               "reads; 3.0.1 read given 'รศ.ดร.สุดา' (#1311)"),
+    Case("thai_salutation_written_as_dotted_letters_reads_as_initials",
+         "น.ส.ศศินันท์ กัณหารินทร์",
+         {"given": "น.ส.", "middle": "ศศินันท์", "family": "กัณหารินทร์"},
+         classification="fix(#1166)",
+         notes="accepted: Miss written short is no listed title, so its "
+               "run divides as initials, as 'น.ส. ศศินันท์' reads; 3.0.1 "
+               "read given 'น.ส.ศศินันท์' (#317)"),
     Case("gc_is_a_family_name_with_nothing_to_spare",
          "Hari G.C.",
          {"given": "Hari", "family": "G.C."},
