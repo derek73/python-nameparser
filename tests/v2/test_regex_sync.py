@@ -150,6 +150,8 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # trailing shape reads the same set
     ("_vocab", "_HYPHENS"): None,
     ("_post_rules", "_HYPHENS"): ("_vocab", "_HYPHENS"),
+    # a single comma glued inside a clause's word (rules/S1, #1268)
+    ("_post_rules", "_COMMA_SPLIT"): None,
     # render's own patterns, v1's "spaces", "space_before_comma",
     # "mac" and "word"; the v1 table they were pinned to until #1008
     # was their only other copy
