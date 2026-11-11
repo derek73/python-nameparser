@@ -6476,10 +6476,13 @@
 {"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
 {"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
 {"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
+{"name": "นพ.สมชาย ใจดี", "title": "นพ.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นพพร ใจดี", "given": "นพพร", "family": "ใจดี", "initials": "น. ใ."}
 {"name": "นางสาวสุดา ใจดี", "title": "นางสาว", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "นางสาวิตรี ใจดี", "title": "นาง", "given": "สาวิตรี", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}
 {"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ", "initials": "น. ย."}
+{"name": "นาย-สมชาย ใจดี", "given": "นาย-สมชาย", "family": "ใจดี", "initials": "น. ใ."}
 {"name": "นายสมชาย", "title": "นาย", "family": "สมชาย", "initials": "ส."}
 {"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D.", "initials": "ส. ใ."}
@@ -6496,6 +6499,7 @@
 {"name": "มานี ชัยยศ พิชิตชัย", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย", "initials": "ม. ช. พ."}
 {"name": "มึลเลอร์ เคเทอ", "order": "FAMILY_FIRST", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
+{"name": "รศ.ดร. นายแพทย์สมชาย ใจดี", "title": "รศ.ดร. นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "รศ.ดร.สุดา ใจดี", "title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์ นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "รองศาสตราจารย์นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์", "given": "นายแพทย์สมชาย", "family": "ใจดี", "initials": "น. ใ."}
