@@ -2656,6 +2656,28 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     ("محمد آل سعود", "family", "آل سعود"),
     ("آل سعود", "family", "آل سعود"),
     ("آل سعود", "given", ""),
+    # Persian writes yeh and kaf with letters of their own (U+06CC,
+    # U+06A9), so ar.toml's titles are listed again in them as
+    # same_as spellings (#1151).
+    ("الدکتور محمد علی", "title", "الدکتور"),
+    ("الشیخ محمد علی", "given", "محمد"),
+    ("دکتور محمد رضایی", "title", "دکتور"),
+    # Persian's own titles (fa.toml) are plain titles, addressing the
+    # family name as "Dr. Smith" does: ar.toml's, the given name.
+    ("دکتر محمد رضایی", "title", "دکتر"),
+    ("دکتر رضایی", "family", "رضایی"),
+    ("آقای دکتر علی رضایی", "title", "آقای دکتر"),
+    ("آیت‌الله جناب آقای حسن رضایی", "title", "آیت‌الله جناب آقای"),
+    ("حجت‌الاسلام حسن رضایی", "title", "حجت‌الاسلام"),
+    ("حجةالاسلام حسن رضایی", "title", "حجةالاسلام"),
+    ("سرلشکر علی رضایی", "title", "سرلشکر"),
+    ("خانم زهرا احمدی", "title", "خانم"),
+    # خانم after the name is Khanum, a name word: only the front claims.
+    ("زهرا خانم", "family", "خانم"),
+    # The words that open real Persian family names stay out (#1151).
+    ("شیخ احمدی، حسن", "family", "شیخ احمدی"),
+    # The Arabic tatweel only stretches a word: it is the same title.
+    ("الدكتــور خالد سالم", "title", "الدكتــور"),
     # The hamza-less spelling "ال" standing alone is the same clan
     # prefix (#1150): 15 of JRC-Names' 28 standalone ones, none the
     # article split from its word.
@@ -2858,6 +2880,18 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:
     assert getattr(parse(name), field) == expected
+
+
+def test_a_choice_of_fa_reads_a_persian_engineer_as_a_title_for_the_family() -> None:
+    """#1151: مهندس is one word in Arabic and Persian. ar.toml's reading
+    addresses the given name (Egyptian usage) and the default keeps it;
+    fa.toml's, written default = false, addresses the family name, and
+    a choice of fa takes it over ar.toml's."""
+    fa = parser_for(Locale(code="fa", lexicon=Lexicon.empty(),
+                           languages=frozenset({"fa"})))
+    assert parse("مهندس رضایی").given == "رضایی"
+    assert fa.parse("مهندس رضایی").family == "رضایی"
+    assert fa.parse("مهندس رضایی").title == "مهندس"
 
 
 def test_269_vocabulary_one_row_per_script_and_category() -> None:

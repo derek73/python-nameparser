@@ -2075,7 +2075,7 @@
   },
   "given_names": {
    "expected": "امیر هوشنگ",
-   "got": "آقای امیر هوشنگ رستگار"
+   "got": "امیر هوشنگ رستگار"
   },
   "suffix": {
    "expected": "دکتر",
@@ -2085,26 +2085,18 @@
    "expected": "رستگار",
    "got": "دکتر"
   },
-  "text": "آقای امیر هوشنگ رستگار دکتر",
-  "title": {
-   "expected": "آقای",
-   "got": ""
-  }
+  "text": "آقای امیر هوشنگ رستگار دکتر"
  },
  "fa/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "امیر هوشنگ",
-   "got": "آقای امیر هوشنگ دکتر"
+   "got": "امیر هوشنگ دکتر"
   },
   "suffix": {
    "expected": "دکتر",
    "got": ""
   },
-  "text": "رستگار، آقای امیر هوشنگ دکتر",
-  "title": {
-   "expected": "آقای",
-   "got": ""
-  }
+  "text": "رستگار، آقای امیر هوشنگ دکتر"
  },
  "fi/foreignFull/givenFirst": {
   "given_names": {
