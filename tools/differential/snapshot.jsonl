@@ -1252,8 +1252,9 @@
 {"name": "García Márquez, G.J.R.", "given": "García", "family": "Márquez", "suffix": "G.J.R.", "initials": "G. M."}
 {"name": "García Márquez, MJ", "given": "MJ", "family": "García Márquez", "initials": "M. G. M.", "capitalized_force": "Mj García Márquez"}
 {"name": "García Márquez, MJ JK", "given": "García", "family": "Márquez", "suffix": "MJ JK", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "G. M."}
-{"name": "García Márquez, MJ PhD", "given": "MJ", "family": "García Márquez", "suffix": "PhD", "initials": "M. G. M.", "capitalized_force": "Mj García Márquez PhD"}
+{"name": "García Márquez, MJ PhD", "given": "García", "family": "Márquez", "suffix": "MJ PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "G. M."}
 {"name": "García Márquez, Ms G.J.", "title": "Ms", "given": "G.", "middle": "J.", "family": "García Márquez", "initials": "G. J. G. M."}
+{"name": "García Márquez, Ms MJ PhD", "title": "Ms", "given": "MJ", "family": "García Márquez", "suffix": "PhD", "initials": "M. G. M.", "capitalized_force": "Ms Mj García Márquez PhD"}
 {"name": "García Márquez, PhD G.J.", "given": "García", "family": "Márquez", "suffix": "PhD G.J.", "initials": "G. M."}
 {"name": "García Márquez, U.S. Grant", "given": "U.", "middle": "S. Grant", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "U. S. G. G. M."}
 {"name": "García Márquez, U.S. Senator John", "title": "U.S. Senator", "given": "John", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. G. M."}
@@ -1689,7 +1690,9 @@
 {"name": "Jane Doe Dr. Ph. D.", "title": "Dr.", "given": "Jane", "family": "Doe", "suffix": "Ph. D.", "initials": "J. D."}
 {"name": "Jane Doe Jr. nee Smith", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith", "generation": "Jr.", "credentials": "nee Smith"}
 {"name": "Jane Doe Jr. nee Smith Ma", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith MA", "generation": "Jr.", "credentials": "nee Smith Ma"}
+{"name": "Jane Doe Jr., MJ M.D.", "given": "Jane", "family": "Doe", "suffix": "Jr., MJ M.D.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "generation": "Jr.", "credentials": "MJ M.D."}
 {"name": "Jane Doe MA R.T.", "given": "Jane", "family": "Doe", "suffix": "MA R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. D."}
+{"name": "Jane Doe MD, MJ PhD", "given": "Jane", "family": "Doe", "suffix": "MD, MJ PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe Ma R.T.", "given": "Jane", "middle": "Doe Ma", "family": "R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. D. M. R. T."}
 {"name": "Jane Doe Mrs", "given": "Jane", "middle": "Doe", "family": "Mrs", "initials": "J. D. M."}
 {"name": "Jane Doe PhD nee Smith", "given": "Jane", "family": "Doe", "suffix": "PhD nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe PhD Nee Smith"}
@@ -1733,8 +1736,16 @@
 {"name": "Jane Doe nee Smith ma jd", "given": "Jane", "family": "Doe", "suffix": "ma jd", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)", "SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized_force": "Jane Doe (Smith) MA JD"}
 {"name": "Jane Doe nee Yo-Yo Ma", "given": "Jane", "family": "Doe", "maiden": "Yo-Yo Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. D."}
 {"name": "Jane Doe née Jones Smith V", "given": "Jane", "family": "Doe", "suffix": "V", "maiden": "Jones Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as maiden (shape)"], "initials": "J. D.", "generation": "V"}
+{"name": "Jane Doe, BM Jr.", "given": "BM", "family": "Jane Doe", "suffix": "Jr.", "initials": "B. J. D.", "capitalized_force": "Bm Jane Doe Jr.", "generation": "Jr."}
+{"name": "Jane Doe, BM PhD", "given": "Jane", "family": "Doe", "suffix": "BM PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, DL", "given": "Jane", "family": "Doe", "suffix": "DL", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
 {"name": "Jane Doe, KC", "given": "Jane", "family": "Doe", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
+{"name": "Jane Doe, MA BM FRCP", "given": "Jane", "family": "Doe", "suffix": "MA BM FRCP", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
+{"name": "Jane Doe, MJ Ed", "given": "MJ", "middle": "Ed", "family": "Jane Doe", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. E. J. D.", "capitalized_force": "Mj Ed Jane Doe"}
+{"name": "Jane Doe, MJ Junior", "given": "MJ", "family": "Jane Doe", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "M. J. D.", "capitalized_force": "Mj Jane Doe Junior", "generation": "Junior"}
+{"name": "Jane Doe, MJ MD/Jr.", "given": "MJ", "family": "Jane Doe", "suffix": "MD/Jr.", "initials": "M. J. D.", "capitalized_force": "Mj Jane Doe MD/Jr."}
+{"name": "Jane Doe, MJ MS", "given": "Jane", "family": "Doe", "suffix": "MJ MS", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
+{"name": "Jane Doe, MS BM PhD", "title": "MS", "given": "BM", "family": "Jane Doe", "suffix": "PhD", "initials": "B. J. D.", "capitalized_force": "Ms Bm Jane Doe PhD"}
 {"name": "Jane Doe, MS LAc", "given": "Jane", "family": "Doe", "suffix": "MS LAc", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe, MS LAC"}
 {"name": "Jane Mac Beth", "given": "Jane", "family": "Mac Beth", "initials": "J. B.", "capitalized_force": "Jane mac Beth"}
 {"name": "Jane Roe, MD.MS", "title": "MD.MS", "given": "Jane", "family": "Roe", "initials": "J. R.", "capitalized_force": "Md.Ms Jane Roe"}
@@ -2240,6 +2251,7 @@
 {"name": "John Smith, Prof. - of Surgery", "title": "Prof. of Surgery", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Pu-Ph", "given": "Pu-Ph", "family": "John Smith", "initials": "P. J. S."}
 {"name": "John Smith, RA Jones", "title": "RA", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Ra Jones John Smith"}
+{"name": "John Smith, RA MJ", "title": "RA", "given": "MJ", "family": "John Smith", "initials": "M. J. S.", "capitalized_force": "Ra Mj John Smith"}
 {"name": "John Smith, RAI", "given": "John", "family": "Smith", "suffix": "RAI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S."}
 {"name": "John Smith, V Jr.", "given": "John", "family": "Smith", "suffix": "V Jr.", "initials": "J. S.", "generation": "V Jr."}
 {"name": "John Smith, V MD", "given": "John", "family": "Smith", "suffix": "V MD", "initials": "J. S.", "generation": "V", "credentials": "MD"}

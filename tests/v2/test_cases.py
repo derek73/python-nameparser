@@ -451,9 +451,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # nickname and a lone title word ('(Bob) Sir Jr.', "'Smitty' Sir
     # Pope Jr.") reporting title-or-name under three orders; 1777 ->
     # 1795 the same day, its review's six rows reporting title-or-name
-    # under three orders.
-    assert claims == 1795, (
-        f"the field sweep checks {claims} claims, recorded as 1795 on "
+    # under three orders; 1795 -> 1860 the same day, #1323's rows of two
+    # capitals before credentials ('Jane Doe, BM PhD') and its reviews'
+    # boundaries, 65 claims (three fixes, four, three and nine
+    # boundaries reporting suffix-or-name under three orders, and three
+    # fixes under their own policy or three orders).
+    assert claims == 1860, (
+        f"the field sweep checks {claims} claims, recorded as 1860 on "
         f"2026-11-11")
 
 
@@ -866,8 +870,13 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # three orders; 545 -> 551 the same day, its review's 'Jane Doe, MSi'
     # and 'ANDISWA ZANELE MSI' under the three orders; 551 -> 560 the
     # same day, #490's 'P.D. Grant, Ed', 'P.D. Grant PhD, Ed' and 'Jones
-    # U.S. Senator PhD, Ed' under the three orders
-    assert (checked, skipped) == (560, 354), (checked, skipped)
+    # U.S. Senator PhD, Ed' under the three orders; 560 -> 566 and
+    # 354 -> 357 on 2026-11-11, #1323's three rows of two capitals
+    # before credentials ('Jane Doe, BM PhD') under the three orders;
+    # 566 -> 576 and 357 -> 360 the same day, its review's rows; 576 ->
+    # 582 and 360 -> 363, its second review's three head rows; 582 ->
+    # 594 and 363 -> 366, its third review's rows
+    assert (checked, skipped) == (594, 366), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
