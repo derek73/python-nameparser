@@ -33,6 +33,12 @@ text = "vardapet"
 religious = { expands = "an Armenian celibate priest and doctor of the church" }
 
 [[word]]
+text = "տեր"
+religious = { issue = 1225, expands = "Father, a married priest; also a bishop's", note = "leads 5 of the 10 names that write it in Armenian Wikipedia's people (2026-11-10), each a cleric (Տեր Հուսիկ Լազարյան)" }
+rank = { issue = 1225, expands = "the Տեր- prefix, a priest's descendants, written spaced", note = "stands inside the other 5, the spaced Տեր- surname (Զավեն Տեր Եղիյան) or a transcribed Dutch ter; read as freiherr is, a title at the head and part of the surname inside the name" }
+given = { note = "carries the particle's may-be-given reading, the C-i default, as freiherr's does: a title-particle never reaches the opening fold (rules/P1), its title read first; no source counts it as a given name (2026-11-10)" }
+
+[[word]]
 text = "ավագ"
 [word.excluded.generation]
 reason = "an Armenian given name, in lists that write the surname first"

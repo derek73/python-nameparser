@@ -363,6 +363,31 @@ def test_particles_are_set_aside() -> None:
     assert role(m.check("Juan de la Vega", "Juan Vega"), Role.FAMILY).outcome is Outcome.PARTICLES_ASIDE
 
 
+def test_the_armenian_ter_prefix_is_a_particle_set_aside() -> None:
+    # տեր is a rank particle (#1225): the spaced Տեր- surname sets it
+    # aside against the bare surname, and a hyphen half that is a listed
+    # particle is no key of its own, so every Տեր- surname does not share
+    # one keyed on the prefix and the initial alone
+    r = m.check("Զավեն Տեր Եղիյան", "Զավեն Եղիյան")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.PARTICLES_ASIDE
+    assert m.keys("Լևոն Տեր-Պետրոսյան") == {
+        "պետրոսյան;լ", "տերպետրոսյան;լ", "տեր-պետրոսյան;լ"}
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Juan de la Vega", "Juan Marcos Vega"),
+    ("Զավեն Տեր Եղիյան", "Զավեն Մարկոս Եղիյան"),
+])
+def test_a_set_aside_particle_leaves_another_middle_name_one_side(
+        a: str, b: str) -> None:
+    # the spaced Տեր reads as de la Vega does (#1225): with the particle
+    # set aside the middle the other side holds is one side's, where on
+    # 3.0.1 the middle Տեր conflicted with it
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent and r["family"].outcome is Outcome.PARTICLES_ASIDE, (x, y)
+
+
 def test_a_cut_short_surname_list_is_part_of_the_other() -> None:
     r = m.check("SELENNA AGNES DE MELO SCHMITT", "SELENNA AGNES DE MELO SCHMITT E BRAGA")
     assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.PART_OF_OTHER
@@ -1750,6 +1775,7 @@ def test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry(
     ("Ann SmithJones", "Ann Smith-Jones", "family"),
     ("Ann Vanderberg", "Ann Van der Berg", "family"),
     ("Charles DeGaulle", "Charles de Gaulle", "family"),
+    ("Լևոն Տեր-Պետրոսյան", "Լևոն Տեր Պետրոսյան", "family"),
     ("ALCIDES DINIZ DASILVA", "ALCIDES DINIZ DA SILVA", "family"),
     ("Jeanpierre Martin", "Jean-Pierre Martin", "given"),
     ("Jane Doe (née LaRussa)", "Jane Doe (née La Russa)", "maiden"),

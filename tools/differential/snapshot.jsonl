@@ -4508,6 +4508,7 @@
 {"name": "émile zola", "given": "émile", "family": "zola", "initials": "é. z.", "capitalized": "Émile Zola"}
 {"name": "fan ƉAM Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "given": "ƉAM", "middle": "Fostɛɛŋ Samʊwɛl", "family": "fan", "initials": "Ɖ. F. S. f.", "capitalized_force": "Fan Ɖam Fostɛɛŋ Samʊwɛl"}
 {"name": "fon Brül Ada Kornelia Sezar Martin, hirurg-stomatolog lukman", "order": "FAMILY_FIRST", "given": "hirurg-stomatolog", "middle": "lukman", "family": "fon Brül Ada Kornelia Sezar Martin", "initials": "h. l. f. B. A. K. S. M.", "capitalized_force": "Hirurg-Stomatolog Lukman Fon Brül Ada Kornelia Sezar Martin"}
+{"name": "freiherr von Berg Hans", "title": "freiherr", "family": "von Berg Hans", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)"], "initials": "B. H.", "capitalized_force": "Freiherr von Berg Hans"}
 {"name": "g. Adnan Mirza Hodžić zastupnik u parlamentu", "given": "g.", "middle": "Adnan Mirza Hodžić zastupnik u", "family": "parlamentu", "initials": "g. A. M. H. z. u. p.", "capitalized_force": "G. Adnan Mirza Hodžić Zastupnik U Parlamentu"}
 {"name": "g. Hodžić Adnan Mirza, zastupnik u parlamentu", "given": "zastupnik", "middle": "u parlamentu", "family": "g. Hodžić Adnan Mirza", "initials": "z. u. p. g. H. A. M.", "capitalized_force": "Zastupnik U Parlamentu G. Hodžić Adnan Mirza"}
 {"name": "g. Hodžić Adnan Mirza, zastupnik u parlamentu", "order": "FAMILY_FIRST", "given": "zastupnik", "middle": "u parlamentu", "family": "g. Hodžić Adnan Mirza", "initials": "z. u. p. g. H. A. M.", "capitalized_force": "Zastupnik U Parlamentu G. Hodžić Adnan Mirza"}
@@ -5603,6 +5604,7 @@
 {"name": "բ․գ․դ․ դ-ր Ադա Կոռնելիա Սեզար Մարտին վան դեն Վոլֆ", "given": "բ․գ․դ․", "middle": "դ-ր Ադա Կոռնելիա Սեզար Մարտին վան դեն", "family": "Վոլֆ", "initials": "բ. դ. Ա. Կ. Ս. Մ. վ. դ. Վ.", "capitalized_force": "Բ․Գ․Դ․ Դ-Ր Ադա Կոռնելիա Սեզար Մարտին Վան Դեն Վոլֆ"}
 {"name": "բ․գ․դ․ պրն Հայկ Պարգևի Տեր-Պողոսյան", "given": "բ․գ․դ․", "middle": "պրն Հայկ Պարգևի", "family": "Տեր-Պողոսյան", "initials": "բ. պ. Հ. Պ. Տ.", "capitalized_force": "Բ․Գ․Դ․ Պրն Հայկ Պարգևի Տեր-Պողոսյան"}
 {"name": "բ․գ․դ․ վան դեն Վոլֆ Ադա Կոռնելիա Սեզար Մարտին", "order": "FAMILY_FIRST", "given": "վան", "middle": "դեն Վոլֆ Ադա Կոռնելիա Սեզար Մարտին", "family": "բ․գ․դ․", "initials": "վ. դ. Վ. Ա. Կ. Ս. Մ. բ.", "capitalized_force": "Բ․Գ․Դ․ Վան Դեն Վոլֆ Ադա Կոռնելիա Սեզար Մարտին"}
+{"name": "տեր Բրաաք Մենո", "title": "տեր", "given": "Բրաաք", "family": "Մենո", "initials": "Բ. Մ.", "capitalized_force": "Տեր Բրաաք Մենո"}
 {"name": "אבן אבן-גבירול מר בנימין משה ח״כ", "order": "FAMILY_FIRST", "given": "אבן-גבירול", "middle": "מר בנימין משה ח״כ", "family": "אבן", "initials": "א. מ. ב. מ. ח. א."}
 {"name": "אבנר ברזני", "given": "אבנר", "family": "ברזני", "initials": "א. ב."}
 {"name": "אברהם אדן", "given": "אברהם", "family": "אדן", "initials": "א. א."}

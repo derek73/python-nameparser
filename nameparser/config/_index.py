@@ -3430,6 +3430,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('կրտսեր', (('hy', 'generation', ()),)),
     ('պարոն', (('hy', 'salutation', (('after_given', True),)),)),
     ('պրոֆեսոր', (('hy', 'academic', ()),)),
+    ('տեր', (('hy', 'religious', ()), ('hy', 'rank', ()), ('hy', 'given', ()))),
     ('տիկին', (('hy', 'salutation', (('after_given', True),)),)),
     ('בן', (('he', 'patronymic', ()),)),
     ('בת', (('he', 'patronymic', ()),)),

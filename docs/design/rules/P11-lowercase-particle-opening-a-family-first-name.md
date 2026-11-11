@@ -29,6 +29,11 @@
   "Sir van Berg"  family-first  →  family="van Berg"
   "Sir abu Bakar"  family-first  →  given="abu Bakar"
   ```
+- **Against P4's title-particle**: a particle that is also a title opens the name as the title, its title reading taken before any particle rule asks about it, so the writing does not reach it.
+  ```
+  "freiherr von Berg Hans"  family-first  →  title="freiherr"
+  "տեր Բրաաք Մենո"  family-first  →  title="տեր"
+  ```
 
 **Accepted:**
 
