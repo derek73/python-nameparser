@@ -2562,6 +2562,7 @@
 {"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
 {"name": "Khun Sa", "given": "Khun", "family": "Sa", "initials": "K. S."}
 {"name": "Ki, Tomonori", "given": "Tomonori", "family": "Ki", "initials": "T. K."}
+{"name": "Kilang．Ｍanah", "given": "Kilang．Ｍanah", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Kim Min Ho", "order": "FAMILY_FIRST", "given": "Min", "middle": "Ho", "family": "Kim", "initials": "M. H. K."}
 {"name": "Kim Yu.A.", "given": "Kim", "family": "Yu.A.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "K. Y."}
 {"name": "Kim, AE-RA", "family": "Kim", "suffix": "AE-RA", "initials": "K."}
@@ -6807,6 +6808,8 @@
 {"name": "北野誠", "family": "北野誠"}
 {"name": "华楠", "family": "华楠"}
 {"name": "卫惠林", "family": "卫惠林"}
+{"name": "台邦。撒沙勒", "given": "台邦。撒沙勒", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "台邦．撒沙勒", "given": "台邦", "family": "撒沙勒"}
 {"name": "司马相如", "family": "司马相如"}
 {"name": "吉尾弘", "family": "吉尾弘"}
 {"name": "吉川亨", "family": "吉川亨"}
@@ -7182,6 +7185,7 @@
 {"name": "로버트 다우니 주니어", "given": "다우니", "family": "로버트", "suffix": "주니어", "generation": "주니어"}
 {"name": "류효영", "given": "효영", "family": "류"}
 {"name": "마이클·잭슨", "given": "마이클", "family": "잭슨"}
+{"name": "마이클．잭슨", "given": "마이클", "family": "잭슨"}
 {"name": "마틴 킹, MA", "given": "틴", "middle": "킹", "family": "마", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"]}
 {"name": "뮐러 케테", "order": "FAMILY_FIRST", "given": "케테", "family": "뮐러"}
 {"name": "민규헨리김", "given": "규헨리김", "family": "민"}

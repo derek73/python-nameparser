@@ -63,6 +63,13 @@ _MONGOLIAN_BLOCK = (0x1800, 0x18AF)
 _INVISIBLE_SEPARATORS = frozenset({"\u200B", "\u2063", "\uFEFF"})
 
 _INTERPUNCT = "\u00B7"
+# The fullwidth full stop is the same transcription dot where Taiwan's
+# writers type it between two Han names (`台邦．撒沙勒`, #1312), and the
+# same plain full stop everywhere else, so it takes the interpunct's
+# flank guard whole: it divides, and records, only between two characters
+# of a classified script. The ideographic full stop U+3002 is not one:
+# it is the sentence stop (decisions/T3, #1312).
+_TRANSCRIPTION_DOTS = frozenset({_INTERPUNCT, "\uFF0E"})
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
 # part of the word" (history: decisions/T3). The flank guard asks
@@ -156,7 +163,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
                 and _mongolian_letter(text[i - 1])
                 and _mongolian_letter(text[i + 1])):
             is_separator = False
-        if ch == _INTERPUNCT:
+        if ch in _TRANSCRIPTION_DOTS:
             # Region-local flanks: a B7 at a region edge stays token
             # text, and the bound also stops a custom delimiter's
             # classified edge character from acting as a flank across
@@ -179,7 +186,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             if record_offsets:
                 if ch in COMMA_CHARS:
                     commas.append(i)
-                elif ch == _INTERPUNCT:
+                elif ch in _TRANSCRIPTION_DOTS:
                     interpuncts.append(i)
             continue
         if tok_start is None:

@@ -442,9 +442,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # rows, C4's count of a dotted run); 1747 -> 1762 on 2026-11-10,
     # #1238's five rows of initials spelling a credential behind one
     # name word ('Andrews, M.D.') reporting suffix-or-name under three
-    # orders.
-    assert claims == 1762, (
-        f"the field sweep checks {claims} claims, recorded as 1762 on "
+    # orders; 1762 -> 1768 on 2026-11-10, #1312's two rows reporting
+    # given-or-family under three orders (the fullwidth and the ideographic
+    # full stop, each between Han or Latin neighbors that do not divide).
+    assert claims == 1768, (
+        f"the field sweep checks {claims} claims, recorded as 1768 on "
         f"2026-11-10")
 
 
