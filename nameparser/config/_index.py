@@ -3656,6 +3656,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('จ่าโท', (('th', 'military', (('addresses', 'given'), ('attached', 'before'))),)),
     ('จ่าโทหญิง', (('th', 'military', (('addresses', 'given'), ('attached', 'before'), ('same_as', 'จ่าโท'))),)),
     ('ซีเนียร์', (('th', 'generation', ()),)),
+    ('ณ', (('th', 'preposition', ()),)),
     ('ด.ช', (('th', 'salutation', (('addresses', 'given'), ('attached', 'before'), ('same_as', 'เด็กชาย'))),)),
     ('ด.ญ', (('th', 'salutation', (('addresses', 'given'), ('attached', 'before'), ('same_as', 'เด็กหญิง'))),)),
     ('ด.ต', (('th', 'military', (('addresses', 'given'), ('attached', 'before'), ('same_as', 'ดาบตำรวจ'))),)),

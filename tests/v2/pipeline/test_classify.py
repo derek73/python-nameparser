@@ -860,7 +860,8 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
     # The same guard over the other half of the mirror: with
     # `surname_unit_tags`' one-letter-initial veto switched off, the
     # period-written particle reads as a particle there and not in
-    # classify (#604, rules/P7).
+    # classify (#604, rules/P7); the Thai ณ joined the one-letter
+    # particles with #1167.
     monkeypatch.setattr(_vocab, "_spells_an_initial",
                         lambda n, text: False)
-    assert _surname_unit_disagreements() == ["Ó.", "ó."]
+    assert _surname_unit_disagreements() == ["Ó.", "ó.", "ณ."]

@@ -893,3 +893,15 @@ generation = { issue = 679 }
 [[word]]
 text = "ซีเนียร์"
 generation = { issue = 679 }
+
+[[word]]
+text = "na"
+excluded = { preposition = { reason = "a transliteration of Thai ณ that collides with real names: the Korean family name Na (나) and a Chinese and Korean given name (US SSA 257 births, nam_dict band 6 in China and in Korea, 2026-11-10), which as a never-given particle would fold Na Young Kim into the family (rules/P1); the Thai ณ ships", issue = 1167, decided = 2026-11-10 } }
+
+[[word]]
+text = "ณ"
+[word.preposition]
+may_be_given = false
+issue = 1167
+expands = "of, before the place in a family name granted to royal descendants and old noble houses (ณ อยุธยา, ณ สงขลา, ณ นคร)"
+note = "Thai script writes only Thai and ณ is never a given name, so it is a never-given particle; the Latin na is refused (its entry above)"
