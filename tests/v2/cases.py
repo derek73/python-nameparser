@@ -5279,11 +5279,11 @@ CASES: tuple[Case, ...] = (
          notes="the given part's first word is a site too (rules/W6)"),
     Case("thai_salutation_glued_with_nothing_before_the_comma",
          ", นายสมชาย",
-         {"title": "นาย", "family": "สมชาย"},
+         {"title": "นาย", "given": "สมชาย"},
          classification="fix(#317)",
          notes="the peel reaches the given part behind an empty head, "
-               "which then reads as ', นาย สมชาย' and ', Mr. John' do: "
-               "a title and one word, H1's exception to C15"),
+               "which then reads as ', นาย สมชาย' does: a Thai title "
+               "addresses the given name (rules/H1, decisions/W6)"),
     Case("thai_title_listed_whole_is_not_peeled",
          "นายแพทย์สมชาย ใจดี",
          {"title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี"},
@@ -5318,11 +5318,34 @@ CASES: tuple[Case, ...] = (
                "no writing a corpus shows"),
     Case("thai_glued_title_and_one_name_word",
          "นายสมชาย",
-         {"title": "นาย", "family": "สมชาย"},
+         {"title": "นาย", "given": "สมชาย"},
          classification="fix(#317)",
-         notes="accepted: a title and one word read as written apart "
-               "(rules/H1); decisions/W6 holds the Open on Thai "
-               "addressing the given name"),
+         notes="a Thai title addresses the given name, so the one word "
+               "after it is given (rules/H1, decisions/W6); 1.4.0 "
+               "through 3.0.1 read given 'นายสมชาย'"),
+    Case("thai_title_alone_in_brackets_is_the_lone_title_of_address",
+         "สุดา ใจดี (นาย)",
+         {"given": "สุดา", "family": "ใจดี", "nickname": "นาย"},
+         notes="rules/S1's lone title of address: a given-name title in "
+               "brackets keeps its pair's reading, as (Sir) does; master "
+               "read title 'นาย' before the Thai titles addressed the "
+               "given name (decisions/S1)"),
+    Case("thai_short_title_in_brackets_reads_as_written_bare",
+         "สุดา ใจดี (ศ.)",
+         {"given": "สุดา", "middle": "ใจดี", "family": "ศ."},
+         notes="accepted (rules/S1): the period escape puts it in the "
+               "name as 'สุดา ใจดี ศ.' reads; master read title 'ศ.'"),
+    Case("thai_title_licenses_the_bound_given_name_join",
+         "นาย abdul rahman",
+         {"title": "นาย", "given": "abdul rahman"},
+         notes="the bound given-name join a given-name title licenses: "
+               "the pair joins and the name has no family (decisions/W6)"),
+    Case("thai_academic_title_and_one_name_word",
+         "ดร. สุดา",
+         {"title": "ดร.", "given": "สุดา"},
+         classification="fix(#317)",
+         notes="a Thai title addresses the given name; 1.4.0 through "
+               "master read family 'สุดา' (decisions/W6)"),
     Case("thai_shorter_title_where_the_longer_leaves_no_word",
          "นางสาวิตรี ใจดี",
          {"title": "นาง", "given": "สาวิตรี", "family": "ใจดี"},

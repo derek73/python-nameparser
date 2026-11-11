@@ -6485,7 +6485,7 @@
 {"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}
 {"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ", "initials": "น. ย."}
 {"name": "นาย-สมชาย ใจดี", "given": "นาย-สมชาย", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "นายสมชาย", "title": "นาย", "family": "สมชาย", "initials": "ส."}
+{"name": "นายสมชาย", "title": "นาย", "given": "สมชาย", "initials": "ส."}
 {"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D.", "initials": "ส. ใ."}
 {"name": "นายแพทย์ สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
@@ -6510,6 +6510,9 @@
 {"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี", "initials": "ส. น."}
 {"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "ส. ใ."}
+{"name": "สุดา ใจดี (ดร.)", "title": "ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "สุดา ใจดี (นาย)", "given": "สุดา", "family": "ใจดี", "nickname": "นาย", "initials": "ส. ใ."}
+{"name": "สุดา ใจดี (ศ.)", "given": "สุดา", "middle": "ใจดี", "family": "ศ.", "initials": "ส. ใ. ศ."}
 {"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "อาจารย์ดร.สมชาย ใจดี", "title": "อาจารย์ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
