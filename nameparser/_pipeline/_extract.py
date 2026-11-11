@@ -45,7 +45,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._tokenize import _ignorable
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, maiden_marker_run, set_apart, set_apart_kind,
+    clause_words, comma_follows_marker, maiden_marker_run, set_apart,
+    set_apart_kind,
 )
 from nameparser._types import AmbiguityKind, Role, Span
 
@@ -71,7 +72,7 @@ def _set_apart(text: str, inner: Span,
     post_rules may still decline a clause this sets apart (titles
     alone behind a credential, initials before a name word), which then
     keeps its pair's reading and not the period escape."""
-    words = text[inner.start:inner.end].split()
+    words = clause_words(text[inner.start:inner.end])
     kinds = []
     for word in words:
         kind = set_apart_kind(word, lexicon)

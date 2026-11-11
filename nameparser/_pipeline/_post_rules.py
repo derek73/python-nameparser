@@ -73,7 +73,7 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
+    _HYPHENS, SetApartKind, clause_words, delimiter_cores, dotted_member,
     east_slavic_rotates, has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, joined_member, member_word, period_member,
     reads_as_initials,
@@ -755,7 +755,7 @@ def _set_apart_clauses(state: ParseState,
     for _, clause in state.extracted:
         lo = bisect.bisect_left(starts, clause.start)
         hi = bisect.bisect_left(starts, clause.end)
-        words = state.original[clause.start:clause.end].split()
+        words = clause_words(state.original[clause.start:clause.end])
         # every word one token of the clause, as extract read them
         if not words or hi - lo != len(words) or any(
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)

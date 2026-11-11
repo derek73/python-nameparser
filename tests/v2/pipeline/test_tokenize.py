@@ -457,3 +457,16 @@ def test_full_name_before_an_ethiopic_suffix_comma(
         order: tuple[Role, Role, Role], expect: dict[str, str]) -> None:
     name = Parser(policy=Policy(name_order=order)).parse("አበበ ከበደ፣ Jr.")
     assert {k: v for k, v in name.as_dict().items() if v} == expect
+
+
+# #1268, S1's comma bullet: tokenize divides a clause and `_vocab.clause_words` reads extract's
+# and post_rules' words; the two spellings must agree (#1268)
+@pytest.mark.parametrize("content", [
+    "MD,PhD", "MD, PhD", "MD ,PhD", "MD,,PhD", ",JP", "Jr.,", "Jr.,MD",
+    "Dr.，PhD", "PhD،Sr", "Janey,Jo", "a,b,c", "MD;PhD", ", ,", "PhD, ",
+])
+def test_clause_words_divide_a_clause_as_tokenize_does(content: str) -> None:
+    from nameparser._pipeline._vocab import clause_words
+    out = _tokenized(f"John Smith ({content})")
+    clause = [t.text for t in out.tokens if t.role is Role.NICKNAME]
+    assert clause == clause_words(content)

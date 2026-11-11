@@ -499,6 +499,23 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
             in lexicon._sets.suffix_acronyms_ambiguous)
 
 
+def clause_words(content: str) -> list[str]:
+    """The words of a clause as tokenize divides them: at whitespace,
+    and after a comma glued to the word in front of it, the comma kept
+    on that word ('MD,PhD' is 'MD,', 'PhD'; ',JP' is one word), so S1
+    asks here of the words post_rules will read (rules/S1, #1268)."""
+    words: list[str] = []
+    for word in content.split():
+        start = 0
+        for k, ch in enumerate(word):
+            if ch in COMMA_CHARS and k > start:
+                words.append(word[start:k + 1])
+                start = k + 1
+        if start < len(word):
+            words.append(word[start:])
+    return words
+
+
 # rules/S1: "a clause wholly of words the vocabulary reads as no name
 # is set apart from the name" -- the word's half; `set_apart` is the
 # clause's. Its suffix half is `suffix_as_written`'s, so a credential

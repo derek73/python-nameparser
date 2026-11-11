@@ -4,9 +4,10 @@
 
 **Then:** a clause enclosed by a configured nickname delimiter pair reads as the nickname and is lifted out of the name.
 
-- **A comma inside the clause is kept as written:** the comma divides nothing there, though the dots T2 and T3 name still divide a clause as they divide a name.
+- **A comma inside the clause is kept as written:** the nickname is the clause as written, its commas and their spacing included, though the dots T2 and T3 name still divide a clause as they divide a name.
   ```
   "Jane (Janey, Jo) Smith"    →  nickname="Janey, Jo"
+  "Jane (Janey,Jo) Smith"     →  nickname="Janey,Jo"
   ```
 - **An empty enclosure is simply dropped**, there being no clause to read.
 

@@ -153,11 +153,12 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        # rules/N1: "a comma inside the clause is kept as written: the
-        # comma divides nothing there" -- the Then bullet on a comma: a
-        # comma separates only where it records a segmentation offset,
-        # the main stream; inside an extracted region it is the clause's
-        # text, like ';' (decisions/N1, #653)
+        # rules/N1: "the nickname is the clause as written, its commas
+        # and their spacing included" -- a comma separates only where
+        # it records a segmentation offset, the main stream; inside an
+        # extracted region it stays on a word as the clause's text, like
+        # ';', ending the word it is glued behind (below) (decisions/N1,
+        # #653; decisions/S1, #1268)
         is_separator = ((record_offsets and ch in COMMA_CHARS)
                         or _ignorable(ch, state))
         if (ch == _NARROW_NBSP and start < i < end - 1
@@ -192,6 +193,15 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             continue
         if tok_start is None:
             tok_start = i
+        elif not record_offsets and ch in COMMA_CHARS:
+            # rules/S1: "the comma is no part of the word it is written
+            # against" -- a comma glued between two words of a clause
+            # ends the first, kept on it as a spaced one is ('MD,PhD'
+            # as 'MD, PhD'); the clause's text is unchanged, so a
+            # nickname keeps it as written (decisions/S1, #1268)
+            tokens.append(WorkToken(text[tok_start:i + 1],
+                                    Span(tok_start, i + 1), role=role))
+            tok_start = None
     if tok_start is not None:
         tokens.append(WorkToken(text[tok_start:end],
                                 Span(tok_start, end), role=role))
