@@ -11,9 +11,10 @@
 Elsewhere: which words divide at all, and what a divided word reads as, decisions/period-joined-words' 2026-11-09 #1255 entries; a run of single letters, which stays one word, decisions/T7.
 
 Open: [#1306](https://github.com/derek73/python-nameparser/issues/1306), which field a Mongolian glued initial takes under the default order or a Mongolian choice (moved from #1235, which this division closed): the pack question the spaced `Ц. Сандаг-Очир` already raises.
-Open: a chunk in a script whose letters carry spacing vowel signs (`डा.राम शर्मा` keeps title 'डा.राम', where `डा. राम शर्मा` reads title 'डा.', given 'राम'): the shape's letter class counts no spacing mark (decisions/nfd-shapes), so no chunk is found there, moved here from decisions/period-joined-words' Open line.
-Open: a word glued at a full stop other than the ASCII one (`Dr．John Smith`, the fullwidth stop decisions/cjk-full-stops reads as a full stop elsewhere), which the division does not read.
-Open: a glued word after a family comma, the given part the comma names (`SMITH, J.MICHAEL`), which the division would reach only once the comma's decision is asked first.
+Open: a chunk in a script whose letters carry spacing vowel signs (`डा.राम शर्मा` keeps title 'डा.राम', where `डा. राम शर्मा` reads title 'डा.', given 'राम'): the shape's letter class counts no spacing mark (decisions/nfd-shapes), so no chunk is found there, moved here from decisions/period-joined-words' Open line. The local corpora hold almost no such title (nepal-candidates' glued Devanagari words are runs of initials, `के.सी.`, which stay whole anyway, and `मो.`, #1178's), so no issue is filed.
+Open: [#1312](https://github.com/derek73/python-nameparser/issues/1312), a word glued at a full stop other than the ASCII one: in Latin names it occurs once in the local corpora (`Wenzhao Zhong, Ph。D`), while Taiwan writes the fullwidth stop as the transcription dot between Han names (`台邦．撒沙勒`, 16 in tw-donors), which the issue asks rules/T3 to read.
+Open: [#1311](https://github.com/derek73/python-nameparser/issues/1311), a glued word after a family comma, the given part the comma names (`ARTHUR, L.MICHAEL`, 111 in fec-individuals), which the division would reach only once the comma's decision is asked first.
+Open: [#1313](https://github.com/derek73/python-nameparser/issues/1313), a particle glued to its surname at its full stop (`Alaa A. El.Baz` reads suffix 'El.Baz'), which the division does not read as a chunk.
 
 ## Log
 
