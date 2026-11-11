@@ -96,7 +96,7 @@ class Parser:
         # forgotten. The parser then behaves identically to a working
         # one minus the feature, which reads as "not working" with no
         # signal why. Statically decidable here, so say it here; a
-        # warning rather than an error because the inert pack is a
+        # warning rather than an error because the segmentation-inert pack is a
         # pinned, deliberate property (a JA registration must be safe
         # without the extra), and warnings are filterable by the rare
         # caller who wants exactly that.

@@ -18,8 +18,9 @@ Unlike zh, this pack ships NO vocabulary of its own and NO order:
   and given names draw on the same kanji, both sides run one to four
   characters, and the reading -- not the spelling -- is what settles
   most splits. That is what the pluggable segmenter is for, and it is
-  why this pack alone is inert: it activates a stage that then has
-  nothing to segment with.
+  why this pack alone divides nothing: it activates a stage that then
+  has nothing to segment with (its one vocabulary effect, 君, is the
+  choice of the language above).
 * No order, because a kana-bearing Japanese name already reads
   family-first by default (decisions/W4, the kana license:
   hiragana identifies
@@ -56,6 +57,8 @@ is NOT used (katakana division is out of scope; decisions/W1's
 kana-gating bullet).
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the
+choice of ``ja`` is derived (the one word it changes is 君, in the
+Han repertoire the declaration below covers anyway), and the
 pack sets
 one union policy field, self-selecting by script, so it can only change
 names containing characters of the Japanese repertoire -- DEVIATES

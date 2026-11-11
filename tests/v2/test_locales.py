@@ -710,8 +710,9 @@ def test_honorific_spellings_agree_where_the_vocabulary_divides() -> None:
 
 def test_ja_pack_contents() -> None:
     assert locales.JA.code == "ja"
-    # segmentation activation ONLY: no vocabulary (no list settles a
-    # kanji name) and no order (the kana license already reads
+    assert locales.JA.languages == frozenset({"ja"})
+    # segmentation activation plus the choice of ja (君): no vocabulary
+    # of its own (no list settles a kanji name) and no order (the kana license already reads
     # Japanese family-first by default, decisions/W4)
     assert locales.JA.policy.segment_scripts == frozenset(
         {Script.HAN, Script.HIRAGANA})
@@ -739,6 +740,20 @@ def test_ja_choice_reads_kun_as_an_honorific_and_the_default_does_not() -> None:
         assert parse(text).suffix == "", text
     assert parse("王君").family == "王君"
     assert parse("山田　太郎くん").suffix == "くん"
+    # the accepted cost: a Chinese name ending in it loses it under JA
+    assert (ja.parse("陳怡君").family, ja.parse("陳怡君").suffix) == ("陳怡", "君")
+    # a 君 that is not final stays in the name
+    assert ja.parse("山田　君子").given == "君子"
+
+
+def test_ja_strict_choice_keeps_only_japanese_and_shared_vocabulary() -> None:
+    # #1194: JA chooses a language, so strict=True builds where it used
+    # to raise "chooses none", and drops the Latin vocabulary
+    with pytest.warns(UserWarning, match="ja_segmenter"):
+        strict = parser_for(locales.JA, strict=True)
+    assert strict.parse("逢沢　一郎君").suffix == "君"
+    assert parse("Sir John Smith").title == "Sir"
+    assert strict.parse("Sir John Smith").title == ""
 
 
 def test_ja_segmenter_without_extra_raises_helpfully() -> None:
@@ -899,9 +914,9 @@ def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
 def test_ja_pack_alone_is_inert() -> None:
     # The pack's own claim, and the reason it is safe to register
     # without the extra: activating segmentation while shipping nothing
-    # to segment WITH changes no parse at all. Pure pack data, so this
-    # runs whether or not nameparser[ja] is installed -- and it is the
-    # unsegmented pack's entire observable behavior.
+    # to segment WITH changes no parse of a segmentation shape. Pure pack data, so this
+    # runs whether or not nameparser[ja] is installed -- and the choice
+    # rows (君) are the pack's one other observable behavior.
     # construction now SAYS the pack alone cannot divide anything --
     # the segmenterless-activation warning is the loud half of this
     # test's claim, and the inert parses below are the quiet half
@@ -1534,11 +1549,11 @@ _ROTATORS["ja"] = [
 # ja's choice of the language (#1194) turns on 君, the Diet's honorific:
 # glued, spaced and behind an ideographic comma, where the default reads it
 # into the given name or as a middle name. Segmentation-free on purpose,
-# so the segmenterless pack's inert test below reads only the rows above.
+# so the segmenterless pack's inert test reads only the rows above.
 _JA_CHOICE_ROTATORS = [
     "逢沢　一郎君",    # glued, the Diet's own writing
     "逢沢　一郎　君",  # spaced
-    "逢沢、一郎君",    # behind the ideographic comma
+    "逢沢，一郎君",    # behind the fullwidth comma
 ]
 _JA_SEGMENTATION_ROTATORS = list(_ROTATORS["ja"])
 _ROTATORS["ja"] = _JA_SEGMENTATION_ROTATORS + _JA_CHOICE_ROTATORS
