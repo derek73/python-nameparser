@@ -19061,17 +19061,20 @@ CASES: tuple[Case, ...] = (
     Case("a_comma_before_a_nakaguro_ends_no_word",
          "John Smith (MD,・PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD, PhD"},
+         classification="fix(#653)",
          notes="#1268 boundary: a comma divides only between two word "
                "characters, so before a separator tokenize drops the "
                "clause reads as before #1268"),
     Case("a_nakaguro_alone_in_a_clause_keeps_the_nickname",
          "John Smith (MD・PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD PhD"},
+         classification="fix(#272)",
          notes="#1268 boundary: with no comma the clause reads as before "
                "#1268, its one word against two tokens"),
     Case("a_nakaguro_beside_a_space_reads_as_before",
          "John Smith (MD・ PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD PhD"},
+         classification="fix(#792)",
          notes="#1268 boundary: a clause with no comma reads as before "
                "#1268, its two words against two tokens; a draft that "
                "compared the words' text with the tokens' read it as the "
@@ -19079,31 +19082,37 @@ CASES: tuple[Case, ...] = (
     Case("a_comma_behind_a_zero_width_space_ends_no_word",
          "John Smith (MD\u200b,PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD ,PhD"},
+         classification="fix(#851)",
          notes="#1268 boundary: a comma divides only behind a word "
                "character tokenize keeps, so the clause reads as before "
                "#1268"),
     Case("a_zero_width_space_before_a_comma_keeps_initials_a_nickname",
          "Justin (JP\u200b,PhD) Stearns",
          {"given": "Justin", "family": "Stearns", "nickname": "JP ,PhD"},
+         classification="fix(#851)",
          notes="#1268 boundary: as the row above; a draft read suffix "
                "'JP PhD', pairing words with tokens out of step"),
     Case("a_doubled_comma_in_a_clause_divides_as_before",
          "John Smith (MD,, PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(#792)",
          notes="#1268 boundary: a comma before a comma ends no word, so "
                "'MD,,' is one word as before #1268"),
     Case("a_doubled_comma_before_a_name_word_keeps_the_nickname",
          "John (MD,, Jr.) Smith",
          {"given": "John", "family": "Smith", "nickname": "MD,, Jr."},
+         classification="fix(#792)",
          notes="#1268 boundary: as the row above"),
     Case("a_comma_before_a_bidi_mark_ends_no_word",
          "John Smith (MD,\u200f PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(#792)",
          notes="#1268 boundary: a comma before a character tokenize drops "
                "ends no word"),
     Case("a_title_before_a_comma_and_a_bidi_mark_stays_a_title",
          "John Smith (Dr.,\u200f)",
          {"title": "Dr.", "given": "John", "family": "Smith"},
+         classification="fix(#792)",
          notes="#1268 boundary: as the row above"),
     Case("a_configured_maiden_pair_sets_apart_glued_credentials",
          "John Smith (MD,PhD)",
