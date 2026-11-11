@@ -66,6 +66,42 @@ def test_a_name_casts_no_such_vote(text: str, signal: Signal) -> None:
     assert signal not in name_votes(text, L)
 
 
+# a final all-capitals word of two or three letters in a mixed-case name
+# is joined initials (`Armitage JO`) or a short surname (`Jason NG`):
+# it casts no capitals vote and is not looked up as a surname; a
+# leading one still votes
+@pytest.mark.parametrize("text", [
+    "Armitage JO", "Smith JP", "Jones AB", "Jason NG", "Lee SH",
+    "DUPONT Jean AB"])
+def test_a_final_short_capitals_word_casts_no_capitals_vote(text: str) -> None:
+    assert Signal.CAPITALS not in name_votes(text, L)
+
+
+@pytest.mark.parametrize("text", ["Armitage JO", "Smith JP", "Jason NG"])
+def test_a_final_short_capitals_word_is_not_looked_up_as_a_surname(
+        text: str) -> None:
+    assert Signal.SURNAME not in name_votes(text, L)
+
+
+@pytest.mark.parametrize(("text", "signal"), [
+    ("NG Jason", Signal.CAPITALS), ("KIM Jason", Signal.CAPITALS),
+    ("NG Jason", Signal.SURNAME), ("Lee SH", Signal.SURNAME),
+    ("Mehmet DEMİR", Signal.CAPITALS)])
+def test_a_leading_or_longer_capitals_word_still_votes(
+        text: str, signal: Signal) -> None:
+    votes = name_votes(text, L)
+    expected = GIVEN_FIRST if text == "Mehmet DEMİR" else FAMILY_FIRST
+    assert votes[signal] == expected
+
+
+def test_joined_initials_keep_a_family_first_base() -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(["Armitage JO", "Smith JP", "Jones AB", "Brown KL",
+                      "Garcia M", "Lee SH"])
+    assert s.patch.name_order is UNSET
+    assert s.parser.policy.name_order == FAMILY_FIRST
+
+
 def test_a_patronymic_casts_no_order_vote_of_its_own() -> None:
     votes = name_votes("Ivan Petrovich Sidorov", L)
     assert votes[Signal.PATRONYMIC] == PatronymicRule.EAST_SLAVIC

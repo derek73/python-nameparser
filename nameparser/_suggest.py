@@ -12,7 +12,10 @@ its shape matches. A signal that does not apply casts no vote, so the
 dict is empty for a name with a comma, no words or one word. Every
 signal reads cased Latin evidence only: a word with no cased letter
 never counts as capitals, a one-letter word is never looked up in the
-name tables, and a script the tables do not hold (Hangul, Han) simply
+name tables, a capitals word of two or three letters ending a name that
+holds a lowercase letter (joined initials, `Armitage JO`, or a short
+surname, `Jason NG`) casts no capitals vote and is not looked up as a
+surname, and a script the tables do not hold (Hangul, Han) simply
 matches nothing. No signal raises on any string. The patronymic shapes
 are the pipeline's own predicates, never a copy of them.
 
@@ -106,11 +109,27 @@ def _is_caps_word(word: str) -> bool:
             and not paired_initials and not _is_initialed(word))
 
 
+def _has_lower(words: list[str]) -> bool:
+    return any(c.islower() for w in words for c in w)
+
+
+def _ends_in_short_capitals(words: list[str]) -> bool:
+    """Whether a name holding a lowercase letter ends in a capitals word
+    of two or three letters: joined initials (`Armitage JO`, `Smith JP`)
+    or a short surname (`Jason NG`), which the word alone cannot tell
+    apart. Such a word casts no capitals vote and is not looked up as a
+    surname; a leading one (`NG Jason`) still votes."""
+    last = words[-1]
+    letters = sum(c.isalpha() for c in last)
+    return (2 <= letters <= 3 and _is_caps_word(last)
+            and _has_lower(words))
+
+
 def _capitals(words: list[str]) -> tuple[Role, Role, Role] | None:
     """A run of capitals words at one end of a name that also holds a
     lowercase letter reads as the family name, which writers set in
     capitals."""
-    if not any(c.islower() for w in words for c in w):
+    if not _has_lower(words) or _ends_in_short_capitals(words):
         return None
     caps = [_is_caps_word(w) for w in words]
     if all(caps):
@@ -137,13 +156,13 @@ def _particle(words: list[str], lexicon: Lexicon) -> tuple[Role, Role, Role] | N
     return FAMILY_FIRST if first else GIVEN_FIRST
 
 
-def _at_one_end(words: list[str], table: frozenset[str]
-                ) -> tuple[bool, bool]:
+def _at_one_end(words: list[str], table: frozenset[str],
+                skip_last: bool = False) -> tuple[bool, bool]:
     def listed(word: str) -> bool:
         spelling = fold(word.strip("."))
         return len(spelling) >= 2 and spelling in table
 
-    return listed(words[0]), listed(words[-1])
+    return listed(words[0]), not skip_last and listed(words[-1])
 
 
 def name_votes(text: str, lexicon: Lexicon
@@ -166,10 +185,13 @@ def name_votes(text: str, lexicon: Lexicon
     if particle is not None:
         votes[Signal.PARTICLE] = particle
 
-    for signal, table, first_order, last_order in (
-            (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST),
-            (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST)):
-        at_first, at_last = _at_one_end(words, table)
+    short_capitals = _ends_in_short_capitals(words)
+    for signal, table, first_order, last_order, skip_last in (
+            (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST,
+             short_capitals),
+            (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST,
+             False)):
+        at_first, at_last = _at_one_end(words, table, skip_last)
         if at_first != at_last:
             votes[signal] = first_order if at_first else last_order
 
