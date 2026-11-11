@@ -4,7 +4,7 @@
 
 **Then:** the word reads as it does with a space there: the chunk keeps its full stop and is read as it is read written apart, and the name after it is a word of its own.
 
-- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short; a letter in a script without case is no initial, so it is read on its own only where it is a listed title (Thai `ศ.`, professor). A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
+- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short; a single letter in a script without case is read on its own only where it is a listed title (Thai `ศ.`, professor), though a run of two or more single letters is a chunk in any script. A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
   ```
   "Dr.John Smith"             →  title="Dr."
   "Dr.John Smith"             →  given="John"
