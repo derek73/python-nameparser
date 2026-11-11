@@ -993,8 +993,16 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     # opening a chunk that stays whole ('Q.R.ST.'), nor a word holding a
     # delimiter or a digit, which no chunk or name matches ('M.D./Ph.D.')
     while True:
+        if _LETTER_RUN.fullmatch(text, at):
+            return tuple(cuts) if titled else ()
         d = (dotted_title_end(low, at, dotted)
              if dotted and low.startswith(dotted, at) else None)
+        if d is not None and (
+                (run := _GLUED_RUN.match(text, at)) is not None
+                and run.end() > d):
+            # a run of single letters running past the title is T7's
+            # run of initials ('พ.ต.ส.สมชาย')
+            d = None
         if d is not None:
             # a title listed with its stops is one chunk, read alone
             # (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา')
@@ -1009,8 +1017,6 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
                 at = d
                 continue
             end, letter = d, False
-        elif _LETTER_RUN.fullmatch(text, at):
-            return tuple(cuts) if titled else ()
         elif (run := _GLUED_RUN.match(text, at)) is not None:
             # a run of initials before the name stays one word (T7)
             end, letter = run.end(), True
@@ -1065,11 +1071,22 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
 
 @functools.lru_cache(maxsize=16)
 def _dotted_titles(titles: frozenset[str]) -> tuple[str, ...]:
-    """The titles listed with a full stop inside ('พ.ต.อ', 'พ.อ.หญิง',
-    'dr.c'), longest first: one tuple per vocabulary, so a word opening
-    with none of them is told by a C-level `startswith` alone."""
-    return tuple(sorted((t for t in titles if "." in t), key=len,
-                        reverse=True))
+    """The titles of a script without case listed with a full stop
+    inside ('พ.ต.อ', 'พ.อ.หญิง'), longest first: one tuple per
+    vocabulary, so a word opening with none of them is told by a C-level
+    `startswith` alone. A cased title written with its stops ('dr.c',
+    'mgr.a') is left out: glued, it keeps the reading decisions/T8's
+    #1305 entry decided, a title and the initial behind it
+    ('Dr.C.Meera'), where a caseless script writes no initials."""
+    return tuple(sorted((t for t in titles if "." in t and t == t.upper()),
+                        key=len, reverse=True))
+
+
+@functools.lru_cache(maxsize=16)
+def title_prefixes(titles: frozenset[str]) -> tuple[str, ...]:
+    """Every listed title, a tuple for a C-level `startswith`: what may
+    stand behind a title only in a phrase glued in front (rules/W6)."""
+    return tuple(titles)
 
 
 def dotted_title_end(low: str, at: int,

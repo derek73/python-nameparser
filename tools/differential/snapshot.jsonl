@@ -974,6 +974,7 @@
 {"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
 {"name": "Dr.C Kamaraj", "title": "Dr.C", "family": "Kamaraj", "initials": "K."}
 {"name": "Dr.C. Andrés Saavedra", "title": "Dr.C.", "given": "Andrés", "family": "Saavedra", "initials": "A. S."}
+{"name": "Dr.C.Meera Nair", "title": "Dr.", "given": "C.", "middle": "Meera", "family": "Nair", "initials": "C. M. N."}
 {"name": "Dr.J. Smith", "title": "Dr.", "given": "J.", "family": "Smith", "initials": "J. S."}
 {"name": "Dr.J.R. Smith", "title": "Dr.", "given": "J.", "middle": "R.", "family": "Smith", "initials": "J. R. S."}
 {"name": "Dr.John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -6511,11 +6512,13 @@
 {"name": "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์ นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "รองศาสตราจารย์นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์", "given": "นายแพทย์สมชาย", "family": "ใจดี", "initials": "น. ใ."}
 {"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "SUFFIX_OR_NAME: name as middle (position)"], "initials": "บ. ก. โ. ศ. เ. ค. เ. ม. ว."}
+{"name": "ว่าที่จ่าสิบตรีสมชาย ใจดี", "title": "ว่าที่จ่าสิบตรี", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "ว่าที่ร.ท.วินัย พืชพิสุทธิ์", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "พืชพิสุทธิ์", "initials": "ว. พ."}
 {"name": "ว่าที่สมชาย ใจดี", "given": "ว่าที่สมชาย", "family": "ใจดี", "initials": "ว. ใ."}
 {"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "title": "ศ.ดร.", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "เ. ค. เ. ม. ว. บ."}
 {"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี", "initials": "ส. น."}
+{"name": "สมชาย พ.ต.ส.", "given": "สมชาย", "family": "พ.ต.ส.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "ส. พ."}
 {"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "ส. ใ."}
 {"name": "สุดา ใจดี (ดร.)", "title": "ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "สุดา ใจดี (นาย)", "given": "สุดา", "family": "ใจดี", "nickname": "นาย", "initials": "ส. ใ."}
@@ -6532,6 +6535,7 @@
 {"name": "ใจดี, นายสมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "ใจดี, พ.อ.หญิงวาสนา", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "ใจดี", "initials": "ว. ใ."}
 {"name": "ใจดี, พล.ต.ต.สุรศักดิ์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "ใจดี, ว่าที่ร.ท.วินัย", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "ใจดี", "initials": "ว. ใ."}
 {"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
 {"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}

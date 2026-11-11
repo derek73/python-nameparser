@@ -444,9 +444,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # name word ('Andrews, M.D.') reporting suffix-or-name under three
     # orders; 1762 -> 1768 on 2026-11-10, #1312's two rows reporting
     # given-or-family under three orders (the fullwidth and the ideographic
-    # full stop, each between Han or Latin neighbors that do not divide).
-    assert claims == 1768, (
-        f"the field sweep checks {claims} claims, recorded as 1768 on "
+    # full stop, each between Han or Latin neighbors that do not divide);
+    # 1768 -> 1771 on 2026-11-10, #1319's trailing run of initials
+    # opening like a rank ('สมชาย พ.ต.ส.') reporting suffix-or-name under
+    # three orders.
+    assert claims == 1771, (
+        f"the field sweep checks {claims} claims, recorded as 1771 on "
         f"2026-11-10")
 
 

@@ -50,10 +50,12 @@
 
 **Except:**
 
-- **A title listed whole keeps its reading**, though it opens with a title marked to peel; a title that may be a given name never peels, and a title only in a phrase (H9) peels only with a listed title behind it.
+- **A title listed whole keeps its reading**, though it opens with a title marked to peel; a title that may be a given name never peels, and a title only in a phrase (H9) peels only with a listed title behind it, which then peels with it where it is marked.
   ```
   "นายแพทย์ สมชาย ใจดี"                →  title="นายแพทย์"
   "ว่าที่สมชาย ใจดี"                    →  given="ว่าที่สมชาย"
+  "ว่าที่จ่าสิบตรีสมชาย ใจดี"              →  title="ว่าที่จ่าสิบตรี"
+  "ใจดี, ว่าที่ร.ท.วินัย"                →  title="ว่าที่ร.ท."
   ```
 
 **Accepted:**

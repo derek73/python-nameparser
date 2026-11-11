@@ -1477,7 +1477,8 @@ def test_trailing_title_shape(text: str, admitted: bool) -> None:
 _GLUED_LEX = (Lexicon()
               .add("dr", "lt", "gov", "dra", kind="title")
               .add("ดร", "รศ", "ศ", kind="academic")
-              .add("พ.ต.อ", "พ.ต", "พ.อ.หญิง", kind="military")
+              .add("พ.ต.อ", "พ.ต", "พ.อ.หญิง", kind="military",
+                   attached="before")
               .add("st", kind="saint")
               .add("st", kind="title")
               .add("ma", kind="given", same_as="maria")
@@ -1533,6 +1534,8 @@ def _pieces_of(text: str) -> list[str]:
     # a last chunk of one letter needs its stop, so the longer rank does
     # not take the name's first letter ('พ.ต.อ' in 'พ.ต.อนุชา')
     ("พ.ต.อนุชา", ["พ.ต.", "อนุชา"]),
+    # titles glued to each other divide at each stop, a dotted one too
+    ("ดร.พ.ต.อ.", ["ดร.", "พ.ต.อ."]),
 ])
 def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
         text: str, pieces: list[str]) -> None:
@@ -1566,9 +1569,25 @@ def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
     "ส.สุดา",           # a letter without case, no title: no initial
     "ดร.สุดา.",          # closed by its own stop, in a script without case
     "พ.ตสมชาย",          # a one-letter last chunk with no stop: an initial
+    "พ.ต.ส.",            # a run of initials past the rank stays T7's run
 ])
 def test_a_glued_word_the_shape_refuses_stays_whole(text: str) -> None:
     assert _pieces_of(text) == [text]
+
+
+def test_a_dotted_title_ends_past_its_stop_or_the_word() -> None:
+    from nameparser._pipeline._vocab import dotted_title_end
+    # its own stop after it, the word's end, or nothing (#1319)
+    assert dotted_title_end("พ.ต.อ.สมชาย", 0, ("พ.ต.อ",)) == 6
+    assert dotted_title_end("พ.ต.อ", 0, ("พ.ต.อ",)) == 5
+    assert dotted_title_end("พ.ต.อนุชา", 0, ("พ.ต.อ",)) is None
+
+
+def test_a_word_lowered_to_another_length_reads_no_dotted_title() -> None:
+    # offsets in the lowered text would not be the word's, so the
+    # dotted titles are not asked; the word divides as before #1319
+    from nameparser._pipeline._vocab import glued_cuts
+    assert glued_cuts("Dr.İsmail", _GLUED_LEX) == (3,)
 
 
 def test_a_title_listed_whole_keeps_its_word() -> None:

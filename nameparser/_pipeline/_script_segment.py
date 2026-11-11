@@ -94,8 +94,8 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    GLUED_SHAPE, _dotted_titles, dotted_title_end, effective_script,
-    glued_cuts, glued_saint_cut,
+    GLUED_SHAPE, dotted_title_end, effective_script,
+    glued_cuts, glued_saint_cut, title_prefixes,
     is_initial_chunk, is_one_case,
     period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
@@ -599,9 +599,6 @@ def _peel_title_head(state: ParseState) -> ParseState:
     word written apart; behind a family comma it stays whole, as T8
     leaves every word after a comma."""
     sets = state.lexicon._sets
-    heads = sets.glued_titles
-    dotted = _dotted_titles(sets.titles)
-    leading = (*dotted, *heads)
     divide = False
     for i in reversed(_head_sites(state)):
         text = state.tokens[i].text
@@ -610,42 +607,63 @@ def _peel_title_head(state: ParseState) -> ParseState:
             # a letter lowered into two: the offsets of `low` would not
             # be the text's
             continue
-        cut = 0
-        # longest first; a title that would leave a Thai vowel or a
-        # mark at the opening falls back to the next shorter one
-        # ('นางสาวิตรี' is นาง + สาวิตรี), while one followed by anything
-        # else that opens no word peels nothing: a hyphen, a digit, the
-        # repetition mark ('นางสาว-สุดา', 'นางสาวๆ')
-        for w in sorted(heads, key=len, reverse=True):
-            if len(w) >= len(low) or not low.startswith(w):
-                continue
-            end = len(w)
-            if "." in w:
-                # a title written short ends where T8 reads it end: past
-                # its own stop, or behind a last chunk of two or more
-                # letters (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา',
-                # never 'พ.ต.อ' in 'พ.ต.อนุชา')
-                e = dotted_title_end(low, 0, (w,))
-                if e is None or e >= len(low):
-                    continue
-                end = e
-            elif low[end] == "." and end + 1 < len(low):
-                end += 1
-            if w in sets.title_modifiers and not low.startswith(
-                    leading, end):
-                # a title only in a phrase (rules/H9) peels only with the
-                # title it qualifies behind it ('ว่าที่ร.ท.วินัย')
-                continue
-            nxt = low[end]
-            if nxt in _AFTER_A_CONSONANT or unicodedata.category(nxt) == "Mn":
-                continue
-            cut = end if nxt.isalpha() and nxt != "\u0e46" else 0
-            break
-        if cut:
-            divide = divide or bool(state.segments and i in state.segments[0]
-                                    and GLUED_SHAPE.search(text, cut))
-            state = _split(state, i, (cut,), None)
+        cut, w = _peel_cut(low, state)
+        if not cut:
+            continue
+        divide = divide or bool(state.segments and i in state.segments[0]
+                                and GLUED_SHAPE.search(text, cut))
+        state = _split(state, i, (cut,), None)
+        if w in sets.title_modifiers:
+            # a title only in a phrase peeled with its head behind it:
+            # the head peels too, as written apart ('ว่าที่จ่าสิบตรีสมชาย',
+            # 'ใจดี, ว่าที่ร.ท.วินัย')
+            second, _ = _peel_cut(low[cut:], state)
+            if second:
+                state = _split(state, i + 1, (second,), None)
     return _divide_glued(state) if divide else state
+
+
+def _peel_cut(low: str, state: ParseState) -> tuple[int, str]:
+    """Where rules/W6's peel cuts the lower-cased word `low`, and the
+    title it takes, or (0, '').
+
+    Longest first; a title that would leave a Thai vowel or a mark at
+    the opening falls back to the next shorter one ('นางสาวิตรี' is นาง +
+    สาวิตรี), while one followed by anything else that opens no word peels
+    nothing: a hyphen, a digit, the repetition mark ('นางสาว-สุดา',
+    'นางสาวๆ')."""
+    sets = state.lexicon._sets
+    for w in _longest_first(sets.glued_titles):
+        if len(w) >= len(low) or not low.startswith(w):
+            continue
+        end = len(w)
+        if "." in w:
+            # a title written short ends where T8 reads it end: past its
+            # own stop, or behind a last chunk of two or more letters
+            # (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา', never 'พ.ต.อ'
+            # in 'พ.ต.อนุชา')
+            e = dotted_title_end(low, 0, (w,))
+            if e is None or e >= len(low):
+                continue
+            end = e
+        elif low[end] == "." and end + 1 < len(low):
+            end += 1
+        if w in sets.title_modifiers and not low.startswith(
+                title_prefixes(sets.titles), end):
+            # a title only in a phrase (rules/H9) peels only with a
+            # listed title behind it ('ว่าที่ร.ท.วินัย', 'ว่าที่ดร.สมชาย')
+            continue
+        nxt = low[end]
+        if nxt in _AFTER_A_CONSONANT or unicodedata.category(nxt) == "Mn":
+            continue
+        return (end, w) if nxt.isalpha() and nxt != "\u0e46" else (0, "")
+    return 0, ""
+
+
+@functools.lru_cache(maxsize=16)
+def _longest_first(heads: frozenset[str]) -> tuple[str, ...]:
+    """The glued titles longest first, sorted once per vocabulary."""
+    return tuple(sorted(heads, key=len, reverse=True))
 
 
 def _split_candidate(state: ParseState) -> int | None:
