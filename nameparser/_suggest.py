@@ -555,14 +555,21 @@ class Suggestion:
         group did not change."""
         # A new construction site for Parser (AGENTS.md's validation
         # bullet): Parser.__post_init__'s warnings read the lexicon,
-        # the segmenter and segment_scripts, none of which a patch
-        # moves, so any warning here is one the base already gave its
-        # caller when it was built. Re-emitted, it would come on every
-        # access, attributed to dataclasses.replace.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            return dataclasses.replace(
+        # the segmenter and segment_scripts. A patch that leaves
+        # segment_scripts unset (every patch suggest() writes) moves
+        # none of them, so a warning here is one the base already gave
+        # its caller when it was built, and is dropped rather than
+        # repeated on every access. A hand-built patch that sets
+        # segment_scripts can cause a new one, which is passed on from
+        # the caller's frame, not dataclasses.replace's.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            parser = dataclasses.replace(
                 self.base, policy=apply_patch(self.base.policy, self.patch))
+        if self.patch.segment_scripts is not UNSET:
+            for w in caught:
+                warnings.warn(w.message, w.category, stacklevel=2)
+        return parser
 
     def disagreeing(self) -> tuple[NameEvidence, ...]:
         """The names whose vote is against a decided setting's value,

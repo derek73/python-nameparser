@@ -485,6 +485,19 @@ def test_the_parser_does_not_warn_again_for_its_base() -> None:
     assert parser.lexicon is base.lexicon
 
 
+def test_a_patch_that_moves_segment_scripts_still_warns_its_caller() -> None:
+    # suggest() never patches segment_scripts, but a hand-built
+    # Suggestion may, and a warning that patch itself causes (Han
+    # segmentation with no Chinese surnames listed) is new to the
+    # caller, so .parser must pass it on, attributed to the caller
+    from nameparser import PolicyPatch, Script, Suggestion
+    s = Suggestion(Parser(), PolicyPatch(
+        segment_scripts=frozenset({Script.HAN})), (), ())
+    with pytest.warns(UserWarning) as caught:
+        s.parser
+    assert caught[0].filename == __file__
+
+
 def test_name_evidence_votes_are_read_only() -> None:
     evidence = NameEvidence("Priem Jason", {Signal.GIVEN_NAME: FAMILY_FIRST})
     with pytest.raises(TypeError):
