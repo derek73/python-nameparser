@@ -9,6 +9,26 @@ text = "tikin"
 excluded = { salutation = { reason = "Armenian Mrs. in Latin script: unverified, so not shipped", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
+text = "պարոն"
+salutation = { issue = 1225, gender = "m", expands = "paron, Mr.", after_given = true, note = "no bearer: Wikidata and Armenian Wikipedia's people 0, 2026-11-10" }
+
+[[word]]
+text = "տիկին"
+salutation = { issue = 1225, gender = "f", expands = "tikin, Mrs.", after_given = true, note = "no bearer: Wikidata 0; Armenian Wikipedia's people 5, each the title (Տիկին Ճեն, Madame Chen; Տիկին Սի Ջեյ Ուոքեր, Madam C. J. Walker), 4 first and 1 last, 2026-11-10" }
+
+[[word]]
+text = "ակադեմիկոս"
+academic = { issue = 1225, expands = "academician", note = "Wikidata 1 given-name statement, no citizenship stated; Armenian Wikipedia's people 0, 2026-11-10" }
+
+[[word]]
+text = "դոկտոր"
+academic = { issue = 1225, expands = "doctor", note = "no bearer: Wikidata 0; Armenian Wikipedia's people 1, the title (Դոկտոր Լալայան), 2026-11-10" }
+
+[[word]]
+text = "պրոֆեսոր"
+academic = { issue = 1225, expands = "professor", note = "Wikidata 3 given-name statements (Russia 1, Soviet Union 1), the label of a given-name item rather than an Armenian bearer; Armenian Wikipedia's people 0, 2026-11-10" }
+
+[[word]]
 text = "vardapet"
 religious = { expands = "an Armenian celibate priest and doctor of the church" }
 
