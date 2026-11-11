@@ -34,6 +34,7 @@ considered, and a ``NameEvidence`` per input name, in input order.
 from __future__ import annotations
 
 import dataclasses
+import re
 import unicodedata
 from collections import Counter
 from collections.abc import Callable, Iterable, Iterator, Mapping
@@ -88,13 +89,17 @@ class Signal(StrEnum):
     PATRONYMIC = "patronymic"
 
 
+_INITIAL_JOINS = re.compile(r"[.-]+")
+
+
 def _is_initialed(word: str) -> bool:
-    """An initial: one letter with an optional period, or dotted letters."""
+    """An initial: one letter with an optional period, or single letters
+    joined by periods or hyphens (`J.P.`, `J.-P.`, `J-P`)."""
     if is_initial(word):
         return True
-    if "." not in word:
+    if "." not in word and "-" not in word:
         return False
-    chunks = word.rstrip(".").split(".")
+    chunks = _INITIAL_JOINS.split(word.rstrip("."))
     return all(chunk and is_initial(chunk + ".") for chunk in chunks)
 
 
