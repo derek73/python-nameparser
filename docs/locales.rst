@@ -465,7 +465,7 @@ Shipped packs
        salutations ``Smt`` and ``Shrimati`` (Mrs.) and the academic
        title ``Adhyapak`` (professor), read as titles where the default
        reads a name word (``Smt Mamata Banerjee`` → title ``Smt``). See
-       `Romanized Indic titles`_.
+       :ref:`Romanized Indic titles <romanized-indic-titles>`.
    * - ``cs``, ``sk``
      - Czech and Slovak — a choice of that one language, which turns on
        the generations ``ml.`` and ``st.``, the academic titles the
@@ -489,14 +489,14 @@ Shipped packs
        given name out of the family (``Gabriel García Márquez`` →
        family ``García Márquez``, ``surname2`` ``Márquez``;
        ``José Luis Pérez`` → family
-       ``Pérez``). See `Spanish and Portuguese titles`_.
+       ``Pérez``). See :ref:`Spanish and Portuguese titles <spanish-portuguese-titles>`.
    * - ``es_ar``
      - Argentine Spanish — ``es`` with a longer given-name list, one
        holding given names that Spain bears often enough as surnames
        to leave off ``es``'s list, which Argentine names write before a
        single surname (``Pablo Sebastián
        Rosales`` → family ``Rosales``, where ``es`` gives ``Sebastián
-       Rosales``). See `Spanish and Portuguese titles`_.
+       Rosales``). See :ref:`Spanish and Portuguese titles <spanish-portuguese-titles>`.
    * - ``ga``
      - Irish — chooses ``ga``, which turns on the clan particles the
        default leaves off: ``Nic`` (daughter of), the married forms
@@ -513,7 +513,7 @@ Shipped packs
        ``Smt`` and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.), read as
        titles where the default reads a name word (``Shrimati Indira
        Gandhi`` → title ``Shrimati``). ``Shri`` is not among them. See
-       `Romanized Indic titles`_.
+       :ref:`Romanized Indic titles <romanized-indic-titles>`.
    * - ``ja``
      - Japanese segmentation — activates division for unspaced
        Japanese names, which needs a segmenter to act: install
@@ -537,7 +537,7 @@ Shipped packs
    * - ``pt``
      - Portuguese — chooses ``pt``, which settles Portuguese's clashes
        its way (``do`` a particle, not the DO credential; see
-       `Spanish and Portuguese titles`_).
+       :ref:`Spanish and Portuguese titles <spanish-portuguese-titles>`).
    * - ``pt_br``
      - Brazilian Portuguese — chooses ``pt-BR``, and with it ``pt``,
        which settles ``pt``'s clashes and turns on ``SB``, the agnomen Sobrinho
@@ -572,7 +572,7 @@ Shipped packs
        and chooses ``vi``, which turns on the academic titles written
        before a name that are written as initials too (``TS``, ``GS``,
        ``PGS``) and their stacked forms (``PGS.TS.``). See
-       `Vietnamese names`_.
+       :ref:`Vietnamese names <vietnamese-names>`.
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
        surname and given name (``毛泽东`` → family ``毛``, given

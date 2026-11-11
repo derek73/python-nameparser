@@ -37,6 +37,7 @@ given-then-family:
 
 .. doctest::
 
+    >>> from nameparser import parse
     >>> parse("de la Vega, Juan Q. Xavier III").family   # form 2
     'de la Vega'
     >>> parse("Doe Jr., John").suffix                    # form 2, suffix before the comma
@@ -124,7 +125,7 @@ Latin honorific or credential set beside it — is tolerated input:
 parsed best-effort, its handling changeable without notice.
 
 Forms 6 and 7, and how a Latin wrapper around either is handled, are
-covered in full under `East Asian names`_ below.
+covered in full under :ref:`East Asian names <east-asian-names>` below.
 
 Words that attach to their neighbors
 --------------------------------------
@@ -216,7 +217,7 @@ Korean surnames (``Lexicon.default().surnames``) divide an unspaced
 hangul name, and the glued honorifics, the ``honorific`` readings
 carrying ``attached`` (``Lexicon.default().words(kind="honorific",
 attached="after")`` lists them), split off the end of a Chinese,
-Japanese or Korean name. Both are covered under `East Asian names`_.
+Japanese or Korean name. Both are covered under :ref:`East Asian names <east-asian-names>`.
 :doc:`customize` covers how to add and remove the readings behind each
 of these rows.
 

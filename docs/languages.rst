@@ -56,6 +56,7 @@ title by its shape without one.
 
 .. doctest::
 
+    >>> from nameparser import Lexicon, Locale, Parser, locales, parse, parser_for
     >>> czech = parser_for(locales.CS)
     >>> parse("Jiří Dienstbier ml.").family
     'ml.'
@@ -295,6 +296,8 @@ filed through a form, as the UK company register's Portuguese filers
 are (61.1% → 56.1%). Where it helps your data, turn it on beside the
 pack: ``parser_for(locales.PT,
 base=Parser(policy=Policy(two_family_names=True)))``.
+
+.. _romanized-indic-titles:
 
 Romanized Indic titles
 ----------------------

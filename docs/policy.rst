@@ -116,6 +116,7 @@ without going through a locale pack -- call :meth:`Policy.patched()
 
 .. doctest::
 
+    >>> from nameparser import Lexicon
     >>> from nameparser import Policy, PolicyPatch
     >>> Policy().patched(PolicyPatch(middle_as_family=True))
     Policy(middle_as_family=True)
@@ -336,7 +337,7 @@ consulted at all:
   under both family-first orders, as it does by default, while
   ``"Dr John"`` still reads family ``John`` there.
 
-`Words that are also ordinary names`_ covers dropping a word from a
+:ref:`Words that are also ordinary names <ambiguous-words>` covers dropping a word from a
 vocabulary, or moving one between those two sets.
 
 .. _lone-name-word:
@@ -600,7 +601,7 @@ alike:
     'Jones'
 
 A multi-word entry such as the shipped ``z domu`` is matched as a
-phrase, not word by word; see `Vocabulary: Lexicon`_ above.
+phrase, not word by word; see :ref:`Vocabulary: Lexicon <vocabulary-lexicon>` above.
 
 How a bracketed clause is read
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

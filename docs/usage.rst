@@ -28,6 +28,12 @@ they exist). A name with no fields set is falsy, which is how you tell
     >>> bool(parse("")), bool(parse("   ")), bool(parse("John"))
     (False, False, True)
 
+.. raw:: html
+
+   <span id="east-asian-names"></span>
+
+East Asian names have a page of their own: :ref:`east-asian-names`.
+
 .. _aggregate-views:
 
 Aggregate views

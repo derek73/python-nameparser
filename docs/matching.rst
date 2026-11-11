@@ -36,6 +36,7 @@ checked:
 
 .. doctest::
 
+    >>> from nameparser import Lexicon
     >>> from collections import defaultdict
     >>> from nameparser import Parser
     >>> matcher = Parser().matching()

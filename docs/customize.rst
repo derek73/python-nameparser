@@ -8,6 +8,8 @@ application** (:class:`~nameparser.Policy`), and presentation varies by
 **output destination** (a rendering argument). See :doc:`concepts` for
 why the split is drawn there.
 
+.. _vocabulary-lexicon:
+
 Vocabulary: Lexicon
 --------------------
 

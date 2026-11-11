@@ -243,7 +243,7 @@ def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:
     # release log is a record of what shipped, so it is not held.
     assert len(_es_given_names._RANKED) == tool.TOP
     docs = _PATH.parents[1] / "docs"
-    for name in ("locales.rst", "customize.rst"):
+    for name in ("languages.rst", "policy.rst"):
         text = " ".join(docs.joinpath(name).read_text(encoding="utf-8").split())
         assert f"{tool.TOP:,} Spanish given names" in text, name
 

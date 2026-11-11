@@ -24,6 +24,7 @@ knowledge of which language the name is in:
 
 .. doctest::
 
+    >>> from nameparser import Lexicon, parse
     >>> parse("毛 泽东").family
     '毛'
     >>> parse("山田 太郎").family
@@ -413,8 +414,8 @@ When a division was a judgment call
 A division the parser had to choose is reported rather than hidden.
 When an unspaced name has more than one vocabulary-supported split,
 the longest surname wins and the parse records the decision as an
-``AmbiguityKind.SEGMENTATION``, described under `When the parser had
-to guess`_. ``남궁민수`` is 남궁 + 민수 by the two-syllable surname but
+``AmbiguityKind.SEGMENTATION``, described under :ref:`When the parser had
+to guess <parser-guesses>`. ``남궁민수`` is 남궁 + 민수 by the two-syllable surname but
 남 + 궁민수 by the single-syllable one:
 
 .. doctest::
