@@ -62,11 +62,12 @@ def _is_vocabulary_pack(pack: Locale) -> bool:
 # segmentation and supplies nothing to segment WITH, so every parse
 # through it needs the optional nameparser[ja] segmenter. Probed once
 # here; without the extra the ja code has no _PACKED entry, so every
-# test that PARSES through the pack skips -- its rotator rows and its
-# non-interference run included. What still runs either way is what
-# needs no parse: the registry contract (DEVIATES and a rotator list
-# exist), the range pin, the pack's contents, and the inertness test
-# below, which is the unsegmented pack's whole observable behavior.
+# test that PARSES through the pack with a segmenter skips -- its
+# segmentation rotator rows and its non-interference run included. What
+# still runs either way is what needs no segmenter: the registry
+# contract (DEVIATES and a rotator list exist), the range pin, the
+# pack's contents, the inertness test below (the unsegmented pack's
+# behavior on segmentation shapes) and the tests of its choice of 君.
 _JA_AVAILABLE = importlib.util.find_spec("namedivider") is not None
 _needs_ja = pytest.mark.skipif(not _JA_AVAILABLE, reason="needs nameparser[ja]")
 
@@ -1531,9 +1532,9 @@ _ROTATORS["ne"] = [
     "Mr. Guru Sharma",      # guru behind a listed title
     "Sharma, Guru Prasad",  # guru after a family comma
 ]
-# ja has no marker regexes and no vocabulary either: its rotators cover
-# the shapes only the pack PLUS its segmenter changes. Every row is
-# UNSPACED on purpose -- a spaced kana-licensed name (高橋 みなみ) now
+# ja has no marker regexes and no vocabulary of its own: its
+# segmentation rotators cover the shapes only the pack PLUS its
+# segmenter changes. Every one of THESE rows is UNSPACED on purpose -- a spaced kana-licensed name (高橋 みなみ) now
 # reads family-first by DEFAULT (decisions/W4), so it would
 # not deviate and would fail the must-deviate assertion below.
 _ROTATORS["ja"] = [
@@ -1547,7 +1548,7 @@ _ROTATORS["ja"] = [
     "佐々木健",      # the iteration mark 々 inside a top-20 surname
 ]
 # ja's choice of the language (#1194) turns on 君, the Diet's honorific:
-# glued, spaced and behind an ideographic comma, where the default reads it
+# glued, spaced and behind the fullwidth comma, where the default reads it
 # into the given name or as a middle name. Segmentation-free on purpose,
 # so the segmenterless pack's inert test reads only the rows above.
 _JA_CHOICE_ROTATORS = [

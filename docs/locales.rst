@@ -1105,7 +1105,7 @@ stay suffixes (``Nguyen Van Anh, PhD``).
 Segmenters
 -----------
 
-``ja``'s policy field is policy-only in a second sense: it turns division on for
+``ja``'s policy half is inert in a second sense: it turns division on for
 Japanese text without supplying anything to divide with. That job goes
 to a **segmenter**, which is passed to
 :func:`~nameparser.parser_for` rather than carried by the pack — a
@@ -1275,7 +1275,7 @@ by ``tests/v2/test_locales.py``:
    language its script does not* — a Chinese surname list, which
    silently mangles the Japanese names written in the same characters
    — belongs in the pack, where asking for it is the declaration.
-   ``ja``, ``ru`` and ``tr_az`` need no vocabulary at all and ship an
+   ``ja``, ``ru`` and ``tr_az`` need no vocabulary list of their own and ship an
    empty :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is
    the template for one that does.
 #. Curate vocabulary conservatively, the same rule as
