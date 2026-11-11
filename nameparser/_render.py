@@ -221,10 +221,11 @@ _V2_DEFAULT_SPEC = ('{title} {given} "{nickname}" {middle} {family} '
                     "({maiden}) {suffix}")
 
 #: rules/T2 and T3's dividers: a nakaguro or the Ethiopic wordspace,
-#: or an interpunct the parse divided at (one written with a space
-#: beside it is a name word, rules/T3, so it is a token and never
-#: stands in a gap).
-_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65", "\u1361"})
+#: or an interpunct or fullwidth full stop the parse divided at (one
+#: written with a space beside it is a name word, rules/T3, so it is a
+#: token and never stands in a gap).
+_DOT_SEPARATORS = frozenset({"\u00B7", "\uFF0E", "\u30FB", "\uFF65",
+                             "\u1361"})
 _NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.

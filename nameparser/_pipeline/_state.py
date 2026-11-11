@@ -402,7 +402,7 @@ class ParseState:
     """Carried through the stage fold. Frozen; stages return copies via
     copy_with. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
-    sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
+    sorted)/comma_offsets/interpunct_offsets (the 间隔号 and fullwidth-stop offsets the
     order and segmentation decisions consult, #298; the nakaguro
     separators record NOTHING); segment -> segments/structure/one_case
     (lazily, only where C2's flag asks for it -- #289/#516, #613);

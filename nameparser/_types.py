@@ -1802,8 +1802,8 @@ class ParsedName:
         one directly after the other both in the name as written and
         in that layout keep the separator written between them,
         normalized: nothing stays nothing, any whitespace becomes one
-        space, an interpunct, nakaguro or Ethiopic wordspace the parse
-        divided at stands alone, and one comma is written ', '
+        space, an interpunct, fullwidth full stop, nakaguro or Ethiopic
+        wordspace the parse divided at stands alone, and one comma is written ', '
         (ASCII), '، ' (Arabic), '፣ ' (Ethiopic), '၊ ' (Burmese), with
         a space after it in any other script whose comma the parse
         reads, or '，' (full-width). Every other pair takes a space, or the

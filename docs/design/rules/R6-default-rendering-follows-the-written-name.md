@@ -10,7 +10,7 @@
   "Nguyen Van Anh"  family-first-given-last  →  str="Nguyen Van Anh"
   "Wang Xiaoming, Jr."  family-first  →  str="Wang Xiaoming, Jr."
   ```
-- **The separator is normalized by its kind.** Nothing stays nothing; whitespace of any kind and length, the ideographic space included, becomes one space; an interpunct, a nakaguro or the Ethiopic wordspace the name is divided at stands alone, with no space around it; and one comma is written with no space before it and one after if ASCII or of any other script that counts it (C), and alone if full-width, a full-width comma carrying its own width.
+- **The separator is normalized by its kind.** Nothing stays nothing; whitespace of any kind and length, the ideographic space included, becomes one space; an interpunct, a fullwidth full stop, a nakaguro or the Ethiopic wordspace the name is divided at stands alone, with no space around it; and one comma is written with no space before it and one after if ASCII or of any other script that counts it (C), and alone if full-width, a full-width comma carrying its own width.
   ```
   "王小明先生"                 →  str="王小明先生"
   "山田　太郎"                 →  str="山田 太郎"
@@ -33,6 +33,7 @@
 ```
 "김민준"                      →  str="김민준"
 "威廉·莎士比亚"                 →  str="威廉·莎士比亚"
+"台邦．撒沙勒"                 →  str="台邦．撒沙勒"
 "威廉 · 莎士比亚"               →  str="威廉 · 莎士比亚"
 "John Smith, Jr."           →  str="John Smith, Jr."
 "Smith, John"               →  str="John Smith"  · boundary

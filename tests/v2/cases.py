@@ -296,7 +296,7 @@ class Case:
         # from being wholly katakana, not from the nakaguro -- so
         # _wholly_katakana already covers the katakana case and U+30FB
         # is not tested as a divider here at all.
-        has_divider = "·" in self.text
+        has_divider = "·" in self.text or "．" in self.text
         stripped = "".join(self.text.split())
         is_transcription = has_divider or _wholly_katakana(stripped)
         if self.shape == 6:
@@ -17195,6 +17195,32 @@ CASES: tuple[Case, ...] = (
                "characters. Shape 7's Given·Family with the 间隔号 "
                "itself written, the divider half of the notation",
          shape=7),
+    Case("zh_fullwidth_stop_transcription_source_order", "台邦．撒沙勒",
+         {"given": "台邦", "family": "撒沙勒"},
+         classification="fix(#1312)",
+         notes="Taiwan writes Indigenous names with the fullwidth full "
+               "stop where the mainland writes the 间隔号: the same "
+               "transcription, so it divides between two Han characters "
+               "and keeps the declared order (T3's flank guard, "
+               "decisions/T3)",
+         shape=7),
+    Case("ko_fullwidth_stop_transcription_source_order", "마이클．잭슨",
+         {"given": "마이클", "family": "잭슨"},
+         classification="fix(#1312)",
+         notes="the fullwidth stop between two hangul names reads as "
+               "the 间隔号 does, suppressing the family-first entry and "
+               "the census-surname split",
+         shape=7),
+    Case("latin_fullwidth_stop_is_name_interior", "Kilang．Ｍanah",
+         {"given": "Kilang．Ｍanah"}, ambiguities=("given-or-family",),
+         notes="a fullwidth stop with Latin neighbors is no "
+               "transcription: the flank guard leaves it in the word "
+               "(#1312)"),
+    Case("zh_ideographic_stop_is_no_divider", "台邦。撒沙勒",
+         {"given": "台邦。撒沙勒"}, ambiguities=("given-or-family",),
+         notes="the ideographic full stop is the sentence stop, not a "
+               "transcription dot, so it divides nothing (decisions/T3, "
+               "#1312)"),
     Case("zh_interpunct_nakaguro_typed_stays_roster", "威廉・莎士比亚",
          {"given": "莎士比亚", "family": "威廉"},
          classification="fix(#272)",

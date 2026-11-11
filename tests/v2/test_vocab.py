@@ -280,6 +280,7 @@ MUTATIONS = [
     ("text-with-a-control-character", {"en.toml": _w('[[word]]\ntext = "dr\\u0007"\ntitle = {}')}, "invisible character U\\+0007"),
     ("text-with-an-emoji", {"en.toml": _w('[[word]]\ntext = "dr★"\ntitle = {}')}, "strips by default"),
     ("text-with-an-east-asian-interpunct", {"zh.toml": _w('[[word]]\ntext = "先·生"\nhonorific = {}')}, "rules/T3"),
+    ("text-with-an-east-asian-fullwidth-stop", {"zh.toml": _w('[[word]]\ntext = "先．生"\nhonorific = {}')}, "rules/T3"),
     ("phrase-word-with-an-edge-period", {"de.toml": _w('[[word]]\ntext = "dr. med"\ntitle = { addresses = "given" }')}, "write 'dr med'"),
     ("text-twice-in-a-file", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jr"\nstatus = {}')}, "listed twice"),
     # 3: kinds, properties and values
@@ -780,7 +781,7 @@ def test_every_character_the_tokenizer_ignores_is_refused() -> None:
     assert build.EMOJI_RANGES == _tokenize._EMOJI_RANGES
     assert build.EAST_ASIAN_RANGES == tuple(
         span for spans in _SCRIPT_RANGES.values() for span in spans)
-    assert build.INTERPUNCT == _tokenize._INTERPUNCT
+    assert build.TRANSCRIPTION_DOTS == _tokenize._TRANSCRIPTION_DOTS
     state = ParseState(original="", lexicon=Lexicon.default(), policy=Policy(),
                        segmenter=None)
     ignored = [chr(c) for c in range(0x110000)
