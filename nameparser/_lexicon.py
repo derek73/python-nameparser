@@ -72,6 +72,12 @@ _ADDED_IN = "nameparser.added_in"
 FULL_STOPS = ".．。｡"
 
 
+# The Arabic tatweel (kashida) stretches a word for looks and carries no
+# letter, so deleting it changes no word's identity (#1151: `الدكتــور`
+# is the title `الدكتور`). Token text is never rewritten.
+_TATWEEL = "\u0640"
+
+
 def _normalize(word: str) -> str:
     """Lowercase, NFC-compose, strip whitespace and EDGE full stops
     (FULL_STOPS, not the ASCII period alone -- #322). Interior periods
@@ -88,6 +94,8 @@ def _normalize(word: str) -> str:
     both as authored. This function is the single fold for storage AND
     match-time lookups, so matching stays symmetric either way; lower()
     is what v1's lc() used, preserving which cross-spellings match.
+
+    Tatweel (U+0640) is deleted, in a non-ASCII word only (#1151).
 
     NFC, since #322, and only for a non-ASCII word (ASCII is already
     NFC, and this runs per token on the parse path --
@@ -107,6 +115,8 @@ def _normalize(word: str) -> str:
     word = word.lower()
     if not word.isascii():
         word = unicodedata.normalize("NFC", word)
+        if _TATWEEL in word:
+            word = word.replace(_TATWEEL, "")
     while True:
         stripped = word.strip().strip(FULL_STOPS)
         if stripped == word:
@@ -674,8 +684,10 @@ SameAsNamed = Mapping[str, frozenset[str]]
 #: the modifier letter U+02BC, and Uzbek Latin's other spellings of
 #: the `ʻ` in `oʻ` and `gʻ` (U+02BB, U+2018, the backtick), so
 #: `O’Brien` folds to `obrien` and `Gʻofurov` to `gofurov`
-#: (decisions/name-matching, 2026-11-09).
-_DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018")
+#: (decisions/name-matching, 2026-11-09). And the Arabic tatweel U+0640,
+#: which `_normalize` deletes too (#1151), so a name's two spellings that
+#: differ by one fold alike where the vocabulary and the match meet.
+_DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 

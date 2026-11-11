@@ -166,6 +166,15 @@ def test_a_decomposed_value_is_compared_and_stored_nfc_composed() -> None:
     assert lex.capitalization_exceptions_map["café"] == composed
 
 
+def test_tatweel_is_deleted_when_a_word_is_normalized() -> None:
+    """#1151: the tatweel stretches an Arabic word without adding a
+    letter, so the stretched and plain spellings are one word; an ASCII
+    word and a word without one are untouched."""
+    assert _normalize("الدكتــور") == _normalize("الدكتور")
+    assert _normalize("ـ") == ""
+    assert _normalize("Müller") == "müller"
+
+
 @pytest.mark.parametrize("key, value", [
     ("phd", "Ph.D."), ("md", "M.D."), ("hc", "h.c"), ("ph.d", "PhD"),
     ("phd", "P.H.D."), ("md", "M. D."), ("dphil", "DPhil"),

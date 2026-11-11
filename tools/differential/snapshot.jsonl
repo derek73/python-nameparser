@@ -5684,7 +5684,7 @@
 {"name": "תמיר כהן", "given": "תמיר", "family": "כהן", "initials": "ת. כ."}
 {"name": "תמרה כהן", "given": "תמרה", "family": "כהן", "initials": "ת. כ."}
 {"name": "آئرين ائڊلر", "given": "آئرين", "family": "ائڊلر", "initials": "آ. ا."}
-{"name": "آقای امیر هوشنگ رستگار دکتر", "given": "آقای", "middle": "امیر هوشنگ رستگار", "family": "دکتر", "initials": "آ. ا. ه. ر. د."}
+{"name": "آقای امیر هوشنگ رستگار دکتر", "title": "آقای", "given": "امیر", "middle": "هوشنگ رستگار", "family": "دکتر", "initials": "ا. ه. ر. د."}
 {"name": "آمال فهمي", "given": "آمال", "family": "فهمي", "initials": "آ. ف."}
 {"name": "آیتین عدلو", "given": "آیتین", "family": "عدلو", "initials": "آ. ع."}
 {"name": "أبو الأغا، أحمد رامي نجيب محفوظ", "order": "FAMILY_FIRST", "given": "أحمد", "middle": "رامي نجيب محفوظ", "family": "أبو الأغا", "initials": "أ. ر. ن. م. ا."}
@@ -5778,7 +5778,7 @@
 {"name": "رائد المتني", "given": "رائد", "family": "المتني", "initials": "ر. ا."}
 {"name": "رامي مخلوف", "given": "رامي", "family": "مخلوف", "initials": "ر. م."}
 {"name": "رجاء يوسف", "given": "رجاء", "family": "يوسف", "initials": "ر. ي."}
-{"name": "رستگار، آقای امیر هوشنگ دکتر", "order": "FAMILY_FIRST", "given": "آقای", "middle": "امیر هوشنگ دکتر", "family": "رستگار", "initials": "آ. ا. ه. د. ر."}
+{"name": "رستگار، آقای امیر هوشنگ دکتر", "order": "FAMILY_FIRST", "title": "آقای", "given": "امیر", "middle": "هوشنگ دکتر", "family": "رستگار", "initials": "ا. ه. د. ر."}
 {"name": "رستگار، امیر هوشنگ", "order": "FAMILY_FIRST", "given": "امیر", "middle": "هوشنگ", "family": "رستگار", "initials": "ا. ه. ر."}
 {"name": "رشاد رشدي", "given": "رشاد", "family": "رشدي", "initials": "ر. ر."}
 {"name": "رمضان ديب", "given": "رمضان", "family": "ديب", "initials": "ر. د."}

@@ -50,8 +50,16 @@ text = "الشيخ"
 style = { addresses = "given", gender = "m", issue = 269, expands = "the sheikh", note = "the native spelling of the Latin sheikh cluster, the same convention ('Sheikh Mohammed')" }
 
 [[word]]
+text = "الشیخ"
+style = { addresses = "given", gender = "m", same_as = "الشيخ", issue = 1151, expands = "the sheikh, Persian letters ی and ک" }
+
+[[word]]
 text = "الشيخة"
 style = { addresses = "given", gender = "f", issue = 269, expands = "the sheikha" }
+
+[[word]]
+text = "الشیخة"
+style = { addresses = "given", gender = "f", same_as = "الشيخة", issue = 1151, expands = "the sheikha, Persian letters ی and ک" }
 
 [[word]]
 text = "سيد"
@@ -82,8 +90,16 @@ text = "الدكتور"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "the doctor", note = "#269, for the group: Arabic honorifics precede the GIVEN name; the article forms are never given names, nor are the bare doctor, professor and engineer forms" }
 
 [[word]]
+text = "الدکتور"
+academic = { addresses = "given", gender = "m", same_as = "الدكتور", issue = 1151, expands = "the doctor, Persian letters ی and ک" }
+
+[[word]]
 text = "الدكتورة"
 academic = { addresses = "given", gender = "f", issue = 269, expands = "the doctor" }
+
+[[word]]
+text = "الدکتورة"
+academic = { addresses = "given", gender = "f", same_as = "الدكتورة", issue = 1151, expands = "the doctor, Persian letters ی and ک" }
 
 [[word]]
 text = "د"
@@ -94,8 +110,16 @@ text = "دكتور"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "doctor" }
 
 [[word]]
+text = "دکتور"
+academic = { addresses = "given", gender = "m", same_as = "دكتور", issue = 1151, expands = "doctor, Persian letters ی and ک" }
+
+[[word]]
 text = "دكتورة"
 academic = { addresses = "given", gender = "f", issue = 269, expands = "doctor" }
+
+[[word]]
+text = "دکتورة"
+academic = { addresses = "given", gender = "f", same_as = "دكتورة", issue = 1151, expands = "doctor, Persian letters ی and ک" }
 
 [[word]]
 text = "مهندس"
