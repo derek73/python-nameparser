@@ -48,6 +48,15 @@ TURKIC_LISTS, scored by TURKIC_CONVENTION under each fixed policy and
 end to end through `suggest`), then every list's suggestion as a whole,
 beside the order the list was read by eye to write (LIST_ORDER).
 
+THE CHECKS (`--checks`, in place of the tables): over every population's
+whole pool written both ways, the surname table's right and wrong votes
+(East Asian populations apart), the wrong votes the short romanized
+surnames (SHORT_SURNAMES) cast, the names ending in a bare letter, ASCII
+or not, the given-name votes folding `ø` and `ł` would move; and over a
+draw of groups of its own, how many decide another patronymic rule when
+the names whose only evidence is a contested order leave the share's
+denominator.
+
 `--set NAME=VALUE` overrides one of `_suggest`'s thresholds in every
 worker, so a rule can be tried without editing the module; it is also the
 harness's proof that it can report a difference: `--set
@@ -152,6 +161,21 @@ def _rows(path: Path) -> Iterator[dict[str, Any]]:
                 yield json.loads(line)
 
 
+def pool_rng(seed: int, label: str) -> random.Random:
+    """The generator a population's reservoir draws its names with."""
+    return random.Random(f"{seed}-{label}-pool")
+
+
+def group_rng(seed: int, label: str) -> random.Random:
+    """The generator a population's groups are drawn with: a stream of
+    its own, never the reservoir's. Seeded alike, the two drew the same
+    indices, so a group's names were the slots the reservoir had just
+    filled, consecutive records of a sorted file (five Đ-family names
+    in a row in vi), and the against-base cells moved by up to 25
+    points with the reservoir's seed alone."""
+    return random.Random(f"{seed}-{label}-groups")
+
+
 class _Reservoir:
     """At most POOL_CAP names per label, a seeded uniform draw."""
 
@@ -166,7 +190,7 @@ class _Reservoir:
         passes it over: asked before the name is decoded."""
         pool = self.pools.setdefault(label, [])
         if (rng := self.rngs.get(label)) is None:
-            rng = self.rngs[label] = random.Random(f"{self.seed}-{label}")
+            rng = self.rngs[label] = pool_rng(self.seed, label)
         self.seen[label] += 1
         if len(pool) < POOL_CAP:
             return len(pool)
@@ -324,7 +348,7 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
     from nameparser._suggest import name_votes
     bases = _bases()
     lexicon = bases[GF].lexicon
-    rng = random.Random(f"{seed}-{label}")
+    rng = group_rng(seed, label)
     cells: dict[str, list[float | None]] = {}
     east_slavic = 0
     for order in (GF, FF):
@@ -380,6 +404,132 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
         words[order] = {s: c.most_common(wrong_words) for s, c in wrong.items()}
     return {"label": label, "size": len(pool), "cells": cells,
             "signals": signals, "words": words, "east_slavic": east_slavic}
+
+
+#: The populations whose names the romanized surname table is for.
+EAST_ASIAN = frozenset({"pv-CN", "pv-TW", "pv-KR", "pv-JP", "psc-Chinese", "vi"})
+#: The short romanized surnames that are common words or given names
+#: elsewhere, which --checks counts.
+SHORT_SURNAMES = frozenset({"do", "to", "la", "le", "ha", "ho", "an"})
+#: What --checks tries as a wider fold: the two letters NFKD leaves.
+_STROKES = str.maketrans({"ø": "o", "ł": "l"})
+
+
+def check_population(job: tuple[str, Pool, tuple[int, ...], int, int,
+                                dict[str, float]]) -> dict[str, Any]:
+    """--checks: the deferred per-name checks over one population's
+    whole pool, written both ways, and the patronymic share's two
+    denominators over a draw of groups of its own."""
+    label, pool, sizes, trials, seed, overrides = job
+    with _thresholds(overrides):
+        return _check_population(label, pool, sizes, trials, seed)
+
+
+def _check_population(label: str, pool: Pool, sizes: tuple[int, ...],
+                      trials: int, seed: int) -> dict[str, Any]:
+    from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon
+    from nameparser._suggest import (
+        Signal, _patronymic_winner, _Tally, fold, name_votes,
+    )
+    from nameparser.config._order_names import COMMON_GIVEN_NAMES
+    lexicon = Lexicon.default()
+    wider = frozenset(w.translate(_STROKES) for w in COMMON_GIVEN_NAMES)
+    c: Counter[str] = Counter()
+    words: Counter[str] = Counter()
+    cache: dict[tuple[str, str], dict[Signal, Any]] = {}
+
+    def listed(word: str, table: frozenset[str], widen: bool) -> bool:
+        spelling = fold(word.strip("."))
+        if widen:
+            spelling = spelling.translate(_STROKES)
+        return len(spelling) >= 2 and spelling in table
+
+    for order, truth in ((GF, GIVEN_FIRST), (FF, FAMILY_FIRST)):
+        for t in pool:
+            text = written(t, order)
+            w = text.split()
+            votes = cache[t, order] = name_votes(text, lexicon)
+            c["names"] += 1
+            if (vote := votes.get(Signal.SURNAME)) is not None:
+                word = fold((w[0] if vote == FAMILY_FIRST else w[-1]).strip("."))
+                region = "east-asian" if label in EAST_ASIAN else "other"
+                ok = "right" if vote == truth else "wrong"
+                c[f"surname:{region}:{ok}"] += 1
+                if ok == "wrong":
+                    c["surname:short:wrong"] += word in SHORT_SURNAMES
+                    if region == "other":
+                        words[word] += 1
+            if len(w) >= 2 and len(w[-1]) == 1 and w[-1].isalpha():
+                c["bare-letter:" + ("ascii" if w[-1].isascii() else "other")] += 1
+            if len(w) >= 2:
+                # the given-name signal's test, both ways round; a comma
+                # name reads alike under both, casting no vote at all
+                first, last = (listed(x, wider, True) for x in (w[0], w[-1]))
+                new = None if first == last else (GIVEN_FIRST if first else FAMILY_FIRST)
+                first, last = (listed(x, COMMON_GIVEN_NAMES, False)
+                               for x in (w[0], w[-1]))
+                old = None if first == last else (GIVEN_FIRST if first else FAMILY_FIRST)
+                if new != old:
+                    c["fold:" + ("right" if new == truth else "away")] += 1
+    # the patronymic share's denominator: every name casting a vote, or
+    # those less the names whose only evidence is a contested order
+    rng = random.Random(f"{seed}-{label}-checks")
+    for order in (GF, FF):
+        for size in sizes:
+            if size > len(pool):
+                continue
+            moved = 0
+            for _ in range(trials):
+                tally, voters, contested_only = _Tally(), 0, 0
+                for t in rng.sample(pool, size):
+                    votes = cache[t, order]
+                    voters += bool(votes)
+                    ends = {v for k, v in votes.items() if k is not Signal.PATRONYMIC}
+                    contested_only += len(ends) > 1 and Signal.PATRONYMIC not in votes
+                    tally.add([(k, v) for k, v in votes.items()
+                               if k is Signal.PATRONYMIC])
+                moved += (_patronymic_winner(tally, voters)
+                          != _patronymic_winner(tally, voters - contested_only))
+            c["denominator:groups"] += trials
+            c["denominator:moved"] += moved
+            c["denominator:worst-cell"] = max(c["denominator:worst-cell"],
+                                              round(1000 * moved / trials))
+    return {"label": label, "counts": dict(c), "words": words.most_common(8)}
+
+
+def report_checks(results: list[dict[str, Any]]) -> None:
+    total: Counter[str] = Counter()
+    words: Counter[str] = Counter()
+    for r in results:
+        worst = r["counts"].pop("denominator:worst-cell", 0)
+        total["denominator:worst-cell"] = max(total["denominator:worst-cell"], worst)
+        total.update(r["counts"])
+        words.update(dict(r["words"]))
+    t = total
+    print(f"\n-- deferred checks, every population's whole pool written both "
+          f"ways: {t['names']} names")
+    print(f"surname votes, East Asian populations ({', '.join(sorted(EAST_ASIAN))}): "
+          f"{t['surname:east-asian:right']} right, {t['surname:east-asian:wrong']} wrong; "
+          f"other populations: {t['surname:other:right']} right, "
+          f"{t['surname:other:wrong']} wrong")
+    surname_votes = sum(v for k, v in t.items() if k.startswith("surname:")
+                        and not k.startswith("surname:short"))
+    print(f"wrong surname votes from {', '.join(sorted(SHORT_SURNAMES))}: "
+          f"{t['surname:short:wrong']} of {surname_votes} surname votes")
+    print("wrong surname votes outside East Asian populations, by word: "
+          + ", ".join(f"{w} {n}" for w, n in words.most_common(8)))
+    print(f"a name ending in a bare letter: {t['bare-letter:other']} non-ASCII "
+          f"(no trailing-initial vote), {t['bare-letter:ascii']} ASCII")
+    print(f"folding ø and ł as o and l on both sides moves {t['fold:right']} "
+          f"given-name votes to right and {t['fold:away']} away from it ("
+          + ", ".join(f"{r['label']} {r['counts']['fold:right']}/"
+                      f"{r['counts'].get('fold:away', 0)}"
+                      for r in sorted(results, key=lambda r: -r["counts"].get(
+                          "fold:right", 0))[:3] if r["counts"].get("fold:right"))
+          + ")")
+    print(f"patronymic share without the contested-only names: "
+          f"{t['denominator:moved']} of {t['denominator:groups']} groups decide "
+          f"another rule; worst cell {t['denominator:worst-cell'] / 10:.1f}%")
 
 
 def _policy(rules: tuple[str, ...], order: str | None) -> Policy:
@@ -569,6 +719,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--wrong-words", type=int, default=0, metavar="N",
                     help="each signal's N commonest words in a wrong vote")
     ap.add_argument("--jobs", type=int, default=os.cpu_count() or 1)
+    ap.add_argument("--checks", action="store_true",
+                    help="print the per-name checks instead of the tables")
     ap.add_argument("--base", metavar="PATH",
                     help="list the cells that moved against this checkout")
     ap.add_argument("--tree", metavar="PATH", help=argparse.SUPPRESS)
@@ -588,6 +740,15 @@ def main(argv: list[str] | None = None) -> int:
     if lists is None:
         print("opensanctions-parliaments: not fetched; uv run python "
               "tools/differential/local_corpora.py fetch opensanctions-parliaments")
+    if args.checks:
+        work = [(label, pool, sizes, args.trials, args.seed, overrides)
+                for label, pool in pools.items()]
+        if args.jobs <= 1:
+            report_checks([check_population(job) for job in work])
+        else:
+            with ProcessPoolExecutor(args.jobs) as ex:
+                report_checks(list(ex.map(check_population, work)))
+        return 0
     if overrides:
         print("thresholds overridden: " + ", ".join(
             f"{k}={v}" for k, v in overrides.items()))

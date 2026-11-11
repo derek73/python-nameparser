@@ -194,20 +194,22 @@ Vote = tuple[Role, Role, Role] | PatronymicRule
 # draws at every size), are in decisions/group-suggestion, 2026-11-10
 # THRESHOLDS.
 
-#: The fewest names voting for a value that can decide it: one name
-#: alone moved 7-8% of Indian inventors' given-first groups of five to
-#: family-first.
+#: The fewest names voting for a value that can decide it: with one,
+#: a single name moved 9% of Indian inventors' given-first groups of
+#: five, and 8% of ten, to family-first.
 _MIN_VOTES = 2
 #: The share of the names casting an order vote that one end must hold
 #: STRICTLY MORE THAN to decide the order: more than two thirds, so a
 #: tie, or two names against one, decides nothing.
 _MIN_SHARE = 2 / 3
 #: The share of the names casting any vote that one patronymic rule
-#: must hold strictly more than to decide it. Higher than _MIN_SHARE
-#: because a decided East Slavic rule forces a given-first order: in
-#: PatentsView's Russian inventors, written family-first, 44% of the
-#: names carry a patronymic, and under a share of a half a third of
-#: their groups were moved to given-first.
+#: (East Slavic or Turkic) must hold strictly more than to decide it.
+#: Higher than _MIN_SHARE because a decided East Slavic rule forces a
+#: given-first order: in PatentsView's Russian inventors, written
+#: family-first, 43% of the names carry a patronymic, and under a share
+#: of a half 18-46% of their groups (by size, 200 to 5 names) were
+#: moved to given-first under a family-first base; at four in five, 4%
+#: of the groups of five and none from 20.
 _MIN_PATRONYMIC_SHARE = 0.8
 
 _NAME_ORDER = "name_order"

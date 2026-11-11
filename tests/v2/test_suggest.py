@@ -240,6 +240,23 @@ def test_patronymics_need_more_than_four_in_five_of_the_voting_names(
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
 
 
+_TURKIC = ["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu",
+           "Quliyev Elman Rasim oglu", "Hasanova Afet Abil qizi",
+           "Mikayilova Sevil Alirza qizi"]
+
+
+def test_a_turkic_rule_needs_more_than_four_in_five_of_the_voting_names(
+        ) -> None:
+    # the same share as the East Slavic rule's: four of five voting
+    # names is four in five, not more
+    s = Parser().suggest(["Jason Priem", *_TURKIC[:4]])
+    assert s.patch.patronymic_rules is UNSET
+    assert not _patronymic_evidence(s).decided
+    # five of six: more than four in five
+    s = Parser().suggest(["Jason Priem", *_TURKIC])
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
+
+
 def test_a_turkic_group_gets_the_rule_alone() -> None:
     s = Parser().suggest(["Mamedov Ali Huseyn oglu", "Aliyev Rauf Ilham oglu"])
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
@@ -311,8 +328,10 @@ def test_disagreeing_lists_the_names_against_the_answer() -> None:
 
 
 def test_a_name_with_no_votes_never_disagrees() -> None:
-    s = Parser().suggest(["Priem Jason", "Xyzzy Plugh", "Smith, Jason"])
-    assert s.disagreeing() == ()
+    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+                          "Jason Smith", "Xyzzy Plugh", "Smith, Jason"])
+    assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+    assert [n.text for n in s.disagreeing()] == ["Jason Smith"]
 
 
 def test_names_keeps_every_input_in_order_including_blanks_and_duplicates(
@@ -421,10 +440,14 @@ def test_one_heavily_marked_name_does_not_outvote_two() -> None:
     assert (Signal.TRAILING_INITIAL, FAMILY_FIRST, 1) in order.by_signal
 
 
-def test_a_two_signal_name_against_a_one_signal_name_is_a_tie() -> None:
-    s = Parser().suggest(["Jason Smith", "van Berg Mary"])
+def test_two_signal_names_count_once_each() -> None:
+    # per name 2 of 3 for family-first, which is not more than two
+    # thirds; counted per signal it would be 4 of 5, and decide
+    s = Parser().suggest(["Jason Smith", "van Berg Mary", "van Berg Anna"])
     assert s.patch == PolicyPatch()
-    assert not _order_evidence(s).decided
+    order = _order_evidence(s)
+    assert not order.decided
+    assert (order.votes_for, order.votes_against) == (1, 2)
     assert s.disagreeing() == ()
 
 

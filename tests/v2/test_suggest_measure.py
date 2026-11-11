@@ -143,3 +143,27 @@ def test_an_override_is_undone_after_a_run_in_this_process(
     _run(capsys, "--set", "_MIN_VOTES=1000000", "--set", "_MIN_SHARE=0.9")
     assert (_suggest._MIN_VOTES, _suggest._MIN_SHARE,
             _suggest._MIN_PATRONYMIC_SHARE) == before
+
+
+def test_the_groups_are_drawn_apart_from_the_reservoir() -> None:
+    # seeded alike, the groups were runs of the slots the reservoir had
+    # just filled, consecutive records of a sorted file
+    pool, groups = tool.pool_rng(1, "vi"), tool.group_rng(1, "vi")
+    assert [pool.random() for _ in range(5)] != [
+        groups.random() for _ in range(5)]
+    keep = tool._Reservoir(1)
+    for i in range(40):
+        keep.add("vi", f"Given{i}", f"Family{i}")
+    drawn = tool.group_rng(1, "vi").sample(range(40), 5)
+    assert drawn != tool.pool_rng(1, "vi").sample(range(40), 5)
+
+
+@needs_checkout
+def test_checks_prints_every_deferred_count(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    out = _run(capsys, "--checks")
+    for start in ("-- deferred checks", "surname votes, East Asian",
+                  "wrong surname votes from", "a name ending in a bare letter",
+                  "folding ø and ł", "patronymic share without"):
+        assert any(line.startswith(start) for line in out.splitlines()), start
+    assert "groups suggested right" not in out
