@@ -1011,6 +1011,22 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             # too far ('sergeant' attaching to 'major', not to every
             # military title); each is checked against the pool in
             # check_pool, which knows the title words
+        if "attached" in p:
+            # a title glued to the start of the name's first word, which
+            # the glued-title peel splits off (#317)
+            att = p["attached"]
+            if not isinstance(att, dict):
+                raise VocabError(f"{where}: attached must be a table")
+            for k in att:
+                if k not in ATTACHED_KEYS:
+                    raise _reserved_or_unknown(f"{where} attached", k, ATTACHED_KEYS)
+            if att.get("side") != "before":
+                raise VocabError(f"{where}: attached on a title reading is "
+                                 f"side = 'before' (rules/W6, the front peel)")
+            if " " in r.text:
+                raise VocabError(f"{where}: attached needs a one-word title; "
+                                 f"the peel splits one word")
+            _check_descriptive(f"{where} attached", att)
         if r.flag("after_given") and r.kind != "salutation":
             # a salutation is a form of address, where an office or a
             # rank is borne as a middle name: the reason the given
@@ -1052,8 +1068,9 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 if k not in ATTACHED_KEYS:
                     raise _reserved_or_unknown(f"{where} attached", k, ATTACHED_KEYS)
             if att.get("side") != "after":
-                raise VocabError(f"{where}: attached supports only side = 'after' "
-                                 f"in phase 1 (the #308 peel)")
+                raise VocabError(f"{where}: attached on a suffix reading is "
+                                 f"side = 'after' (rules/W2, the #308 peel); "
+                                 f"a title glued in front is side = 'before'")
             if acronym:
                 raise VocabError(f"{where}: attached needs a word reading "
                                  f"(acronym = false); the peel splits word tails")
@@ -1454,6 +1471,7 @@ CONSTANTS = (
     "CAPITALIZED_PARTICLES",
     "CAPITAL_OPENING_PARTICLES",
     "DOTTED_TITLES",
+    "GLUED_TITLES",
     "BOUND_PHRASES",
     "SAME_AS",
     "SAME_AS_NAMED",

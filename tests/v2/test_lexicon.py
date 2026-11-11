@@ -766,14 +766,15 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().remove("x", kind="titel"), ValueError, "or a category, on remove"),
     (lambda: Lexicon.empty().add("x", kind="title", default=False), ValueError, "a caller's reading is on"),
     (lambda: Lexicon.empty().add("x", kind="title", cased="X"), ValueError, "capitalization_exceptions"),
-    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
+    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attached, attaches"),
     (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "after_particle names a given name"),
     (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "only a given reading takes it"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", abbreviation="yes"), TypeError, "abbreviation must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
-    (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "attached must be 'after'"),
+    (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "reading must be 'after'"),
+    (lambda: Lexicon.empty().add("x y", kind="salutation", addresses="given", attached="before"), ValueError, "marks a one-word title"),
     (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the word this one is a spelling of"),
     # the build's check 8: a phrase matches only as a marker or a run of
     # titles addressing the given name
@@ -853,6 +854,65 @@ def test_removing_a_honorific_tails_attachment_is_the_peels_off_switch() -> None
     assert (spaced.family, spaced.suffix) == ("田中", "さん")
     on = Parser().parse("田中さん")
     assert (on.family, on.suffix) == ("田中", "さん")
+
+
+def test_removing_a_glued_titles_attachment_is_the_front_peels_off_switch(
+        ) -> None:
+    # dropping `attached` leaves the glued name whole while the SPACED
+    # spelling still reads the title (rules/W6, #317)
+    lex = Lexicon.default().add("นาย", kind="salutation", attached=None)
+    assert "นาย" not in lex._sets.glued_titles
+    p = Parser(lexicon=lex)
+    assert (p.parse("นายสมชาย ใจดี").title,
+            p.parse("นาย สมชาย ใจดี").title) == ("", "นาย")
+    assert Parser().parse("นายสมชาย ใจดี").title == "นาย"
+
+
+def test_a_callers_glued_title_reaches_the_front_peel() -> None:
+    # attached="before" on a caller's title peels as a file's does
+    p = Parser(lexicon=Lexicon.default().add(
+        "คุณ", kind="salutation", attached="before"))
+    name = p.parse("คุณสมชาย ใจดี")
+    assert (name.title, name.given) == ("คุณ", "สมชาย")
+    assert Parser().parse("คุณสมชาย ใจดี").given == "คุณสมชาย"
+
+
+def test_a_glued_title_that_may_be_a_given_name_never_peels() -> None:
+    # a title only in a phrase (rules/H9) is left out of the peel set,
+    # so its given name is not cut with no title read (#317's review)
+    lex = (Lexicon.default().add("คุณ", kind="salutation", attached="before")
+           .add("คุณ", kind="given"))
+    assert "คุณ" not in lex._sets.glued_titles
+    name = Parser(lexicon=lex).parse("คุณสมชาย ใจดี")
+    assert (name.title, name.given) == ("", "คุณสมชาย")
+
+
+def test_a_peeled_title_keeps_the_writing_and_names_its_file() -> None:
+    # the pieces join as written (rules/R1) and the title's reading is
+    # the vocabulary's, in th
+    name = Parser().parse("นายสมชาย ใจดี")
+    reading = name.tokens[0].reading
+    assert str(name) == "นายสมชาย ใจดี"
+    assert reading is not None
+    assert (reading.source, reading.languages) == ("vocabulary", ("th",))
+
+
+def test_a_word_lowered_to_another_length_is_no_peel_site() -> None:
+    # a letter that lowercases into two moves every offset after it, so
+    # the peel declines the word rather than cut it at the wrong place
+    p = Parser(lexicon=Lexicon.default().add(
+        "mr", kind="salutation", attached="before"))
+    assert p.parse("Mrİsmith ใจดี").title == ""
+    assert p.parse("Mrsmith ใจดี").title == "Mr"
+
+
+def test_every_shipped_glued_title_is_reachable() -> None:
+    # each marked title glued to a given name splits off it (rules/W6),
+    # so a word another reading claims first shows up as silently inert
+    p = Parser()
+    unreached = [w for w in sorted(p.lexicon._sets.glued_titles)
+                 if p.parse(f"{w}สมชาย ใจดี").title != w]
+    assert p.lexicon._sets.glued_titles and not unreached, unreached
 
 
 def test_removing_after_given_is_rule_h8s_off_switch() -> None:
@@ -1754,6 +1814,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES", "DOTTED_TITLES",
+        "GLUED_TITLES",
         "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code

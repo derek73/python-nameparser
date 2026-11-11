@@ -491,7 +491,7 @@ _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "title_case_name_words", "shared_names",
                 "particle_given_names", "saint_particles",
                 "capitalized_particles", "capital_opening_particles",
-                "dotted_titles", "bound_phrases")
+                "dotted_titles", "glued_titles", "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -580,6 +580,10 @@ class _LexiconSets:
     #: before a family comma), as that title where a title the run keeps
     #: stands behind it (`U.S. District Judge`, #490)
     dotted_titles: frozenset[str]
+    #: the titles written `attached="before"` (Thai `นาย`, `นางสาว`,
+    #: `อาจารย์`): rules/W6 splits one off the start of the name's first
+    #: word it is glued to, the mirror of `honorific_tails` (#317)
+    glued_titles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
@@ -622,6 +626,7 @@ _COMPILED_FIELDS = {
     "capitalized_particles": "CAPITALIZED_PARTICLES",
     "capital_opening_particles": "CAPITAL_OPENING_PARTICLES",
     "dotted_titles": "DOTTED_TITLES",
+    "glued_titles": "GLUED_TITLES",
     "bound_phrases": "BOUND_PHRASES",
 }
 
@@ -846,10 +851,14 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"got {value!r}")
         return value
     if prop == "attached":
-        if value != "after":
-            raise ValueError(f"attached must be 'after' (a tail peeled "
-                             f"off the end of a name token) or None, "
-                             f"got {value!r}")
+        # a suffix glued after the name (rules/W2) or a title glued in
+        # front of it (rules/W6), the side its category reads
+        side = ("before" if _index_module().CATEGORY.get(kind) == "title"
+                else "after")
+        if value != side:
+            raise ValueError(f"attached on a {kind!r} reading must be "
+                             f"{side!r} (a {'title peeled off the start' if side == 'before' else 'tail peeled off the end'} "
+                             f"of a name token) or None, got {value!r}")
         return value
     if prop in _LIST_PROPS:
         what = _LIST_PROPS[prop]
@@ -1024,6 +1033,12 @@ def _make_edit(op: object, words: object, kind: object,
                 f"{w!r} is a phrase, which can never match as a {k}: only "
                 f"a birth_marker and a title with addresses='given' are "
                 f"matched as a whole run; add its words one by one")
+        # the build refuses attached on a title phrase: the glued-title
+        # peel splits one word (rules/W6)
+        if " " in w and category == "title" and ("attached", "before") in p:
+            raise ValueError(
+                f"{w!r} is a phrase; attached='before' marks a one-word "
+                f"title that the glued-title peel splits off a word")
         # the build refuses may_be_initial on anything but a cased single
         # letter: no other word reads as an initial (rules/P8)
         if ("may_be_initial", True) in p and not (
@@ -2077,7 +2092,9 @@ class Lexicon:
             ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
-            ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
+            ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"`` on a suffix word reading
+            and ``attached="before"`` on a one-word title reading (rules/W2
+            and W6),
             ``may_be_initial=True``, ``completed_by=[...]`` on a
             ``bound_given`` reading, ``after_particle=True`` on a
             ``given`` reading, ``shared=True`` on a name reading,

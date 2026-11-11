@@ -310,6 +310,11 @@ MUTATIONS = [
     ("addresses-reserved-value-on-a-title-kind", {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "full" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
+    # the glued-title peel's word (#317) takes side "before", one word
+    ("attached-after-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = { side = "after" } }')}, "side = 'before'"),
+    ("attached-not-a-table-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = "before" }')}, "attached must be a table"),
+    ("attached-unknown-key-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = { side = "before", zzq = 1 } }')}, "zzq"),
+    ("attached-on-a-title-phrase", {"th.toml": _w('[[word]]\ntext = "zz qq"\nsalutation = { addresses = "given", attached = { side = "before" } }')}, "one-word title"),
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("after-given-on-an-office", {"en.toml": _w('[[word]]\ntext = "king"\nnobility = { after_given = true }')}, "after_given is allowed on a salutation reading only"),
@@ -1208,13 +1213,24 @@ def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
             assert ("but `name`" in applies) == (name not in build.NAME_KEYS), name
 
 
+#: A property read in a second category feeds a second set there: each
+#: such probe, beside the property's own (`attached` before a title,
+#: rules/W6, #317).
+_OTHER_CATEGORY_PROBES = {
+    "attached": (("salutation", '{ attached = { side = "before" } }', "zzq"),),
+}
+
+
 def test_the_readme_states_each_behavioral_propertys_effect() -> None:
     rows = {_code(r[0])[0]: r[4] for r in _readme_table("## Properties") if r[1] == "behavioral"}
     assert set(_PROPERTY_PROBES) == set(rows)
-    for prop, (kind, props, text, *extra) in _PROPERTY_PROBES.items():
-        moved = (_sets_fed(kind, props, text, *extra)
-                 ^ _sets_fed(kind, "{}", text, *extra))
-        assert moved, prop  # a probe that moves nothing tests nothing
+    for prop, probe in _PROPERTY_PROBES.items():
+        moved: set[str] = set()
+        for kind, props, text, *extra in (probe, *_OTHER_CATEGORY_PROBES.get(prop, ())):
+            fed = (_sets_fed(kind, props, text, *extra)
+                   ^ _sets_fed(kind, "{}", text, *extra))
+            assert fed, prop  # a probe that moves nothing tests nothing
+            moved |= fed
         assert set(_code(rows[prop])) & set(build.CONSTANTS) == moved, prop
 
 

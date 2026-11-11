@@ -100,7 +100,8 @@ UNPREFERRED = frozenset({"name", "familiar"})
 #: it opens the family name, the Armenian `Ter` and `Der`.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
-                        "attaches", "cased", "default", "dotted"}),
+                        "attached", "attaches", "cased", "default",
+                        "dotted"}),
     "suffix": frozenset({"acronym", "attached", "cased", "default",
                          "title_case_is_name"}),
     "particle": frozenset({"capital_opening", "cased", "default"}),
@@ -607,6 +608,7 @@ class Compiled(TypedDict):
     CAPITALIZED_PARTICLES: frozenset[str]
     CAPITAL_OPENING_PARTICLES: frozenset[str]
     DOTTED_TITLES: frozenset[str]
+    GLUED_TITLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
@@ -656,6 +658,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     capitalized: set[str] = set()
     capital_opening: set[str] = set()
     dotted: set[str] = set()
+    glued_titles: set[str] = set()
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
@@ -693,6 +696,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 after_given.add(t)
             if r.flag("dotted"):
                 dotted.add(t)
+            if "attached" in p:
+                # a title reading's side is "before", the build's check
+                glued_titles.add(t)
             if r.flag("abbreviation"):
                 written_short.add(t)
             title_kinds.setdefault(t, set()).add(r.kind)
@@ -830,6 +836,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # single letters joined by full stops spells at the head of a
         # name where a title the run keeps stands behind it, rules/H10
         DOTTED_TITLES=frozenset(dotted),
+        # the titles written `attached` (side "before"), which
+        # rules/W6's front peel splits off the start of the name's first
+        # word they are glued to (`นายสมชาย`, #317)
+        # a title that may be a given name is a title only in a phrase
+        # (rules/H9), so none is split off a glued word: the given name
+        # it opens would be cut and no title read (#317)
+        GLUED_TITLES=frozenset(glued_titles - contested),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)
