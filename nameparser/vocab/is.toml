@@ -23,3 +23,7 @@ generation = { issue = 679 }
 [[word]]
 text = "yngri"
 generation = { issue = 679 }
+
+[[word]]
+text = "frá"
+preposition = { may_be_given = false, issue = 1176, expands = "from: \"Jónas Jónsson frá Hriflu\", the place a bearer came from, written in the dative" }

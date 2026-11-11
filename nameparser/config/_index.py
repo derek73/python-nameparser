@@ -1305,6 +1305,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('frs', (('en', 'credential', ()),)),
     ('frsa', (('en', 'credential', ()),)),
     ('fru', (('da', 'salutation', ()), ('nb', 'salutation', ()), ('sv', 'salutation', ()), ('sv', 'family', ()))),
+    ('frá', (('is', 'preposition', ()),)),
     ('fräulein', (('de', 'salutation', (('after_given', True),)),)),
     ('fröken', (('sv', 'salutation', (('after_given', True),)),)),
     ('frøken', (('da', 'salutation', (('after_given', True),)), ('nb', 'salutation', (('after_given', True),)))),
