@@ -39,6 +39,9 @@ _VOTES = [
     ("Иванов Иван Петрович", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ivan Petrovich Sidorov", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ziyo Azamat Hamid o‘g‘li", Signal.PATRONYMIC, PatronymicRule.TURKIC),
+    # cased evidence in any script: Cyrillic capitals vote
+    ("ИВАНОВ Иван", Signal.CAPITALS, FAMILY_FIRST),
+    ("Иван ИВАНОВ", Signal.CAPITALS, GIVEN_FIRST),
 ]
 
 

@@ -309,8 +309,12 @@ class Parser:
         reads the group. ``names`` is any iterable of str the caller
         declares to be one group (one source, one convention), read
         once. Each name casts votes on its name order and its
-        patronymic shape, read with this parser's lexicon; a name with
-        a comma, no words or one word casts none. ``name_order`` is
+        patronymic shape, read with this parser's lexicon past the
+        titles it lists at the head and the post-nominals at the end; a
+        name of fewer than two words once those are read past casts
+        none, and so does a name with a comma, unless only
+        post-nominals follow the comma. A patronymic votes only where
+        the patronymic rule reads one. ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end and they are more than two thirds of the names casting
@@ -319,15 +323,17 @@ class Parser:
         at least five do), for the East Slavic and the Turkic rule alike.
         A group decided East Slavic gets the rule and reads given-first,
         since the rule reorders each name and stands down under a
-        family-first order; a Turkic group gets the rule alone, its
-        order decided by its names' own votes.
+        family-first order, unless its names' own votes decide
+        family-first, which the rule never overrides; a Turkic group
+        gets the rule alone, its order decided by its names' own votes.
         A setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
         Measured 2026-11-10 with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size: a group written in this parser's own order kept
+        groups a size (decisions/group-suggestion's THRESHOLDS entry
+        holds the table): a group written in this parser's own order kept
         it in at least 98% of groups at every size from 2 to 200 names,
         under either base order. Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,

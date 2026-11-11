@@ -1,9 +1,11 @@
-"""Write the romanized surname table the group suggester reads.
+"""Write the name tables the group suggester reads.
 
-WHY THIS IS IN THE TREE. ``Parser.suggest`` reads a group of Latin-script
-names and suggests a name order; a first word that is a known East Asian
-surname is its evidence. The table, ``nameparser/config/_order_names.py``,
-holds folded spellings: the generated block is the Hanyu Pinyin of every
+WHY THIS IS IN THE TREE. ``Parser.suggest`` reads a group of names and
+suggests a name order from each name's own evidence: a known East Asian
+surname at one end of the name and not at the other says the family name
+is written at that end, and a common given name at one end and not the
+other says the given name is. The tables, in
+``nameparser/config/_order_names.py``, hold folded spellings: the generated block is the Hanyu Pinyin of every
 single-character surname ``locales.ZH`` lists, from Unihan's first
 ``kMandarin`` reading (Unicode License v3), and the Wade-Giles, Korean and
 Vietnamese lists are kept by hand above the generated block, hand-curated

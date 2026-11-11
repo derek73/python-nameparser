@@ -2,9 +2,11 @@
 names, for the group
 suggester only (``Parser.suggest``); no parse reads this module.
 
-A group of Latin-script names whose first word is a listed surname more
-often than its last is evidence the group is written family name first.
-Every entry is FOLDED (``nameparser._suggest.fold``: lower case, no
+Each name is read on its own: a listed surname at one end of the name
+and not at the other is evidence that the name writes the family name
+at that end, and a listed given name at one end and not at the other
+that it writes the given name there; the group decides from the names'
+votes. Every entry is FOLDED (``nameparser._suggest.fold``: lower case, no
 diacritics, the letters NFKD leaves whole as a keyboard writes them,
 ``ł`` as ``l``, ``ø`` as ``o``, ``ı`` as ``i``, ``æ`` as ``ae``, ``œ``
 as ``oe``, ``ß`` as ``ss``, ``đ`` as ``d``, and ``ü`` as ``v``) and has
@@ -26,15 +28,18 @@ Provenance and licences:
 - ``_COMMON_GIVEN`` (generated below, ``COMMON_GIVEN_NAMES``): of each
   of nam_dict's country columns (Jörg Michael, 2008; GNU FDL 1.2, a
   derived table approved on 2026-11-10), the 500 highest-band given
-  names that pass the filter: not held mostly in the family-name box
-  of ORCID's public data file (CC0), and not a romanized surname. The
-  suggester looks them up at both ends of a name: a listed word at one
-  end and not the other is given-name evidence for that end. See
+  names that pass the filter: written in the family-name box of ORCID's
+  public data file (CC0) at most 5% of the 20 or more times its holders
+  wrote it, and not a surname this table lists. See
   tools/vocab/order_names.py.
 
-The hand lists are curated, so a word that is also a given name in
-another culture may appear in two tables; the table lists spellings,
-not languages.
+The given-name table excludes every surname listed here, so the two
+tables never share a spelling (the tool refuses a run where they do).
+Only the surname lists share spellings, with each other: ``lee`` and
+``lim`` are written in Chinese and in Korean, ``ho`` and ``tang`` in
+Chinese and in Vietnamese, ``ha`` in Korean and in Vietnamese, and many
+hand-listed spellings are pinyin too. The tables list spellings, not
+languages.
 """
 from __future__ import annotations
 

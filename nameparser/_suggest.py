@@ -2,28 +2,35 @@
 it suggests ``Policy`` settings, chiefly the name order (``Parser.suggest``).
 
 Contracts are stated in prose here, with no doctest blocks. This module
-holds the shared spelling fold so the romanized surname table
+holds the shared spelling fold so the name tables
 (``config/_order_names.py``, written by ``tools/vocab/order_names.py``)
-and the reader that looks words up in it fold alike, and the per-name
+and the reader that looks words up in them fold alike, and the per-name
 signals: ``name_votes`` reads one name and returns the votes it casts,
 a dict from ``Signal`` to either an order (``GIVEN_FIRST`` or
 ``FAMILY_FIRST``) or, for ``Signal.PATRONYMIC``, the ``PatronymicRule``
-its shape matches. A signal that does not apply casts no vote, so the
-dict is empty for a name with a comma, no words or one word. Every
-signal reads cased Latin evidence only: a word with no cased letter
-never counts as capitals, a one-letter word is never looked up in the
-name tables, a capitals word of two or three letters ending a name that
-holds a lowercase letter (joined initials, `Armitage JO`, or a short
-surname, `Jason NG`) casts no capitals vote and is not looked up as a
-surname, and a script the tables do not hold (Hangul, Han) simply
-matches nothing. No signal raises on any string. The patronymic shapes
-are the pipeline's own predicates, never a copy of them.
+its shape matches. A name is read past its titles at the head and its
+post-nominals at the end, by the base lexicon, with quotes and brackets
+around a word read past too; a name with a comma is read before the
+comma where only post-nominals follow it, and casts nothing otherwise.
+A signal that does not apply casts no vote, so the dict is empty for a
+name of fewer than two words once those are read past. The signals read
+cased evidence in any script: a word with no cased letter never counts
+as capitals (Cyrillic capitals vote, as Latin ones do), a one-letter
+word is never looked up in the name tables, a capitals word of two or
+three letters ending a name that holds a lowercase letter (joined
+initials, `Armitage JO`, or a short surname, `Jason NG`) casts no
+capitals vote and is not looked up as a surname, and a script the
+tables do not hold (Hangul, Han) simply matches nothing. A patronymic
+votes, Latin or Cyrillic, only where the pipeline's rule reads one
+(rules/O1's three name words, rules/O2's four), through the pipeline's
+own predicates, never a copy of them. No signal raises on any string.
 
 ``suggest`` tallies the group's votes and decides two settings
 together, ``patronymic_rules`` first and ``name_order`` second: a
 decided East Slavic rule reorders each name itself and stands down
-under a family-first order, so it decides the order as given-first
-(the spec's "Patronymics and order"). A setting is
+under a family-first order, so it decides the order as given-first,
+unless the names' own votes decide family-first, which it never
+overrides (decisions/group-suggestion). A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
 votes, gives back a parser that reads exactly as the base does. The
@@ -341,37 +348,24 @@ Vote = tuple[Role, Role, Role] | PatronymicRule
 #: patronymic rules.
 SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule]
 
-# The four thresholds were chosen with
-# tools/differential/suggest_measure.py, which draws groups of 2 to 200
-# names written in a known order and counts the groups suggested right
-# under both base orders; the table behind them, and the rule they meet
-# (a group read right under its own base stays right in at least 95% of
-# draws at every size), are in decisions/group-suggestion, 2026-11-10
-# THRESHOLDS.
+# The four thresholds, chosen with tools/differential/suggest_measure.py
+# so that a group written in its base's own order stays right in at
+# least 95% of draws at every size; the measurements behind each are in
+# decisions/group-suggestion, 2026-11-10 THRESHOLDS.
 
-#: The fewest names voting for a value that can decide it: with one,
-#: a single name moved 9% of Indian inventors' given-first groups of
-#: five, and 8% of ten, to family-first.
+#: The fewest names voting for a value that can decide it.
 _MIN_VOTES = 2
 #: The share of the names casting an order vote that one end must hold
 #: STRICTLY MORE THAN to decide the order: more than two thirds, so a
 #: tie, or two names against one, decides nothing.
 _MIN_SHARE = 2 / 3
 #: The share of the names casting any vote that one patronymic rule
-#: (East Slavic or Turkic) must hold strictly more than to decide it.
-#: Higher than _MIN_SHARE because a decided East Slavic rule forces a
-#: given-first order: in PatentsView's Russian inventors, written
-#: family-first, 43% of the names carry a patronymic, and under a share
-#: of a half 18-46% of their groups (by size, 200 to 5 names) were
-#: moved to given-first under a family-first base; at four in five, 4%
-#: of the groups of five and none from 20 (measured before
-#: _MIN_PATRONYMIC_VOTES, below).
+#: (East Slavic or Turkic) must hold strictly more than to decide it,
+#: higher than _MIN_SHARE because a decided East Slavic rule brings a
+#: given-first order with it.
 _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
-#: besides the share: groups of two to four of those Russian inventors
-#: are often all patronymic names, and with _MIN_VOTES enough 19%, 12%
-#: and 6% of them were moved to given-first under a family-first base;
-#: with five, none of them, and 2% of the groups of five and ten.
+#: besides the share, for the same reason.
 _MIN_PATRONYMIC_VOTES = 5
 
 _NAME_ORDER = "name_order"

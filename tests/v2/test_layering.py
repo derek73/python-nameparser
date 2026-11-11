@@ -69,8 +69,9 @@ ALLOWED = {
     # TYPE_CHECKING
     "_match.py": ("nameparser._types", "nameparser._lexicon",
                   "nameparser._policy"),
-    # the group suggester: types, policy, the lexicon's particles, the
-    # pipeline's patronymic predicates and its private word tables;
+    # the group suggester: types, policy, the lexicon's particles and
+    # titles, the pipeline's patronymic, title, suffix and numeral
+    # predicates and its private word tables;
     # _parser at call time only, in Suggestion.__post_init__, to check
     # that the base is a Parser (Parser imports this module at call
     # time, in Parser.suggest)
