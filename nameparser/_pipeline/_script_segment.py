@@ -574,9 +574,16 @@ def _peel_title_head(state: ParseState) -> ParseState:
     Longest first, ONE peel, and never off a word the vocabulary lists
     whole (`นายแพทย์`, which opens with `นาย`), nor where what is left
     opens with a letter no word opens with (`_NO_OPENING`). The head
-    piece needs no tag: classify reads it as the listed title it is."""
+    piece needs no tag: classify reads it as the listed title it is.
+
+    T8's division ran on the word whole, before this peel, and found no
+    chunk at its head (`อาจารย์ดร.สมชาย`), so a remainder still glued at
+    a full stop (`ดร.สมชาย`) is divided here, as T8 divides the same
+    word written apart; behind a family comma it stays whole, as T8
+    leaves every word after a comma."""
     heads = state.lexicon._sets.glued_titles
     sets = state.lexicon._sets
+    divide = False
     for i in reversed(_head_sites(state)):
         text = state.tokens[i].text
         low = text.lower()
@@ -585,8 +592,10 @@ def _peel_title_head(state: ParseState) -> ParseState:
         cut = max((len(w) for w in heads
                    if low.startswith(w) and len(w) < len(low)), default=0)
         if cut and low[cut] not in _NO_OPENING and low[cut].isalpha():
+            divide = divide or bool(state.segments and i in state.segments[0]
+                                    and GLUED_SHAPE.search(text, cut))
             state = _split(state, i, (cut,), None)
-    return state
+    return _divide_glued(state) if divide else state
 
 
 def _split_candidate(state: ParseState) -> int | None:
@@ -1059,16 +1068,8 @@ def script_segment(state: ParseState) -> ParseState:
         return state
     if not state.segments:
         return state
-    # #312: the peel runs in front of both gates below, because both
-    # answer where a name divides into surname and given, and the peel
-    # does not ask that. It asks whether a token ends in a word that
-    # can never end a name, and a comma or a dot elsewhere in the
-    # string does not change the answer. Placing it above the block
-    # also keeps a future segmentation gate from silently capturing
-    # it: a new gate lands with its siblings, below.
-    # The comma's decision, asked lazily: the peel asks it only once it
-    # has a site, the division below only once there is a token to
-    # divide (#613's /simplify), each on the state it acts on.
+    # The glued-title peel, the tail peel's mirror, runs in front of it
+    # and of the gates below for the tail peel's reason, which follows.
     heads = state.lexicon._sets.glued_titles
     if heads:
         # the C-level test first, over the words a site can be, written
@@ -1084,6 +1085,16 @@ def script_segment(state: ParseState) -> ParseState:
             else:
                 continue
             break
+    # #312: the peel runs in front of both gates below, because both
+    # answer where a name divides into surname and given, and the peel
+    # does not ask that. It asks whether a token ends in a word that
+    # can never end a name, and a comma or a dot elsewhere in the
+    # string does not change the answer. Placing it above the block
+    # also keeps a future segmentation gate from silently capturing
+    # it: a new gate lands with its siblings, below.
+    # The comma's decision, asked lazily: the peel asks it only once it
+    # has a site, the division below only once there is a token to
+    # divide (#613's /simplify), each on the state it acts on.
     state = _peel_honorific_tail(
         state, lambda: _postnominal_behind_a_whole_name(state))
     if (state.structure is Structure.FAMILY_COMMA

@@ -839,7 +839,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # the titles written `attached` (side "before"), which
         # rules/W6's front peel splits off the start of the name's first
         # word they are glued to (`นายสมชาย`, #317)
-        GLUED_TITLES=frozenset(glued_titles),
+        # a title that may be a given name is a title only in a phrase
+        # (rules/H9), so none is split off a glued word: the given name
+        # it opens would be cut and no title read (#317)
+        GLUED_TITLES=frozenset(glued_titles - contested),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)

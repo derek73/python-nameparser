@@ -1033,6 +1033,12 @@ def _make_edit(op: object, words: object, kind: object,
                 f"{w!r} is a phrase, which can never match as a {k}: only "
                 f"a birth_marker and a title with addresses='given' are "
                 f"matched as a whole run; add its words one by one")
+        # the build refuses attached on a title phrase: the glued-title
+        # peel splits one word (rules/W6)
+        if " " in w and category == "title" and ("attached", "before") in p:
+            raise ValueError(
+                f"{w!r} is a phrase; attached='before' marks a one-word "
+                f"title that the glued-title peel splits off a word")
         # the build refuses may_be_initial on anything but a cased single
         # letter: no other word reads as an initial (rules/P8)
         if ("may_be_initial", True) in p and not (

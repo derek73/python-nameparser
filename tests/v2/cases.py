@@ -5290,6 +5290,39 @@ CASES: tuple[Case, ...] = (
          classification="fix(#317)",
          notes="physician opens with Mr.: the longest marked title peels, "
                "and the word นายแพทย์ alone is never cut"),
+    Case("thai_glued_title_with_a_stop_join_behind_it",
+         "อาจารย์ดร.สมชาย ใจดี",
+         {"title": "อาจารย์ดร.", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="the remainder ดร.สมชาย divides as rules/T8 divides it "
+               "written apart; the first build read title "
+               "'อาจารย์ดร.สมชาย' and no given name (review)"),
+    Case("thai_glued_title_on_the_family_before_a_comma",
+         "นายใจดี, สมชาย",
+         {"title": "นาย", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="the first word before a family comma is a site too, "
+               "surnames vetted as given names were (decisions/W6)"),
+    Case("thai_glued_title_on_the_family_under_family_first",
+         "นายใจดี สมชาย",
+         {"title": "นาย", "given": "สมชาย", "family": "ใจดี"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#317)",
+         notes="the first word is the family under this order"),
+    Case("thai_second_glued_title_stays_with_the_name",
+         "รองศาสตราจารย์นายแพทย์สมชาย ใจดี",
+         {"title": "รองศาสตราจารย์", "given": "นายแพทย์สมชาย",
+          "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="accepted: one peel (rules/W6), a glued title run being "
+               "no writing a corpus shows"),
+    Case("thai_glued_title_and_one_name_word",
+         "นายสมชาย",
+         {"title": "นาย", "family": "สมชาย"},
+         classification="fix(#317)",
+         notes="accepted: a title and one word read as written apart "
+               "(rules/H1); decisions/W6 holds the Open on Thai "
+               "addressing the given name"),
     Case("thai_short_form_glued_is_a_given_name",
          "นพพร ใจดี",
          {"given": "นพพร", "family": "ใจดี"},

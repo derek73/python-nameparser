@@ -774,6 +774,7 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "reading must be 'after'"),
+    (lambda: Lexicon.empty().add("x y", kind="salutation", addresses="given", attached="before"), ValueError, "marks a one-word title"),
     (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the word this one is a spelling of"),
     # the build's check 8: a phrase matches only as a marker or a run of
     # titles addressing the given name
@@ -874,6 +875,26 @@ def test_a_callers_glued_title_reaches_the_front_peel() -> None:
     name = p.parse("คุณสมชาย ใจดี")
     assert (name.title, name.given) == ("คุณ", "สมชาย")
     assert Parser().parse("คุณสมชาย ใจดี").given == "คุณสมชาย"
+
+
+def test_a_glued_title_that_may_be_a_given_name_never_peels() -> None:
+    # a title only in a phrase (rules/H9) is left out of the peel set,
+    # so its given name is not cut with no title read (#317's review)
+    lex = (Lexicon.default().add("คุณ", kind="salutation", attached="before")
+           .add("คุณ", kind="given"))
+    assert "คุณ" not in lex._sets.glued_titles
+    name = Parser(lexicon=lex).parse("คุณสมชาย ใจดี")
+    assert (name.title, name.given) == ("", "คุณสมชาย")
+
+
+def test_a_peeled_title_keeps_the_writing_and_names_its_file() -> None:
+    # the pieces join as written (rules/R1) and the title's reading is
+    # the vocabulary's, in th
+    name = Parser().parse("นายสมชาย ใจดี")
+    reading = name.tokens[0].reading
+    assert str(name) == "นายสมชาย ใจดี"
+    assert reading is not None
+    assert (reading.source, reading.languages) == ("vocabulary", ("th",))
 
 
 def test_every_shipped_glued_title_is_reachable() -> None:
