@@ -404,7 +404,7 @@ def test_a_generator_is_consumed_once() -> None:
 
 @pytest.mark.parametrize("bad, fragment", [
     ("Priem Jason", "bare string: 'Priem Jason'"),
-    ({"Priem Jason": 1}, "mapping: {'Priem Jason': 1}"),
+    ({"Priem Jason": 1}, "not a mapping (dict)"),
     (b"Priem Jason", "decode"),
     (5, "got 5"),
     ([1], "item 0 is 1"),
@@ -418,6 +418,14 @@ def test_a_wrong_shape_raises_type_error_with_the_fix(
     assert fragment in message
     if not isinstance(bad, bytes):
         assert "parser.suggest([" in message
+
+
+def test_a_mapping_error_does_not_embed_the_mapping() -> None:
+    names = {f"Name{i} Surname{i}": i for i in range(10_000)}
+    with pytest.raises(TypeError) as info:
+        Parser().suggest(names)  # type: ignore[arg-type]
+    assert "Name9999" not in str(info.value)
+    assert len(str(info.value)) < 300
 
 
 def test_the_offered_fix_runs() -> None:

@@ -682,9 +682,10 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
             f"raw.decode('utf-8')")
     if isinstance(names, Mapping):
         raise TypeError(
-            f"suggest() takes an iterable of names, not a mapping: "
-            f"{names!r}. A mapping yields only its keys; pass the names "
-            f"themselves: {example}")
+            f"suggest() takes an iterable of names, not a mapping "
+            f"({type(names).__name__}). A mapping yields only its keys; "
+            f"pass the names themselves, e.g. list(mapping) or "
+            f"list(mapping.values()): {example}")
     try:
         iterator = iter(names)
     except TypeError:
