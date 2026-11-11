@@ -35,6 +35,10 @@
 
 **Precedence:**
 
+- **A nickname beside the lone title word** ("'Smitty' Pope Jr."): N3 places the word, in the family, and this rule keeps its report.
+  ```
+  "'Smitty' Pope Jr."         →  family="Pope"
+  ```
 - **A dotted lone credential** ("Jr."): `Jr.` is post-nominal vocabulary and still reads as a title, H2's opening-abbreviation shape outranking the vocabulary where it fires — so the suffix half never sees a dotted lone credential. A credential that is also a given name written short is that given name instead, by H2's own precedence ("Ma.").
   ```
   "Jr."                       →  title="Jr."
