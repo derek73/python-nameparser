@@ -823,6 +823,7 @@ TITLES: frozenset[str] = frozenset({
     'դոկտոր',
     'պարոն',
     'պրոֆեսոր',
+    'տեր',
     'տիկին',
     "גב'",
     'גברת',
@@ -1720,6 +1721,7 @@ PARTICLES: frozenset[str] = frozenset({
     'von',
     'zu',
     'ó',
+    'տեր',
     'בן',
     'בת',
     'آل',
@@ -3361,6 +3363,7 @@ CAPITALIZED_PARTICLES: frozenset[str] = frozenset({
     'sta',
     'ste',
     'sto',
+    'տեր',
 })
 
 CAPITAL_OPENING_PARTICLES: frozenset[str] = frozenset({

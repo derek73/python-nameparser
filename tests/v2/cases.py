@@ -18693,6 +18693,33 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1225)",
          notes="after_given, as on the other languages' salutations "
                "(rules/H8)"),
+    Case("armenian_ter_at_the_head_is_the_clergy_title",
+         "Տեր Հուսիկ Լազարյան",
+         {"title": "Տեր", "given": "Հուսիկ", "family": "Լազարյան"},
+         classification="fix(#1225)",
+         notes="a married priest's title; 1.4.0 through 3.0.1 read given "
+               "'Տեր', middle 'Հուսիկ'"),
+    Case("armenian_ter_inside_the_name_opens_the_surname",
+         "Զավեն Տեր Եղիյան",
+         {"given": "Զավեն", "family": "Տեր Եղիյան"},
+         classification="fix(#1225)",
+         notes="the spaced Տեր- surname: a rank particle, as Freiherr "
+               "is; 1.4.0 through 3.0.1 read middle 'Տեր'"),
+    Case("armenian_ter_surname_before_a_family_comma",
+         "Տեր Եղիյան, Զավեն",
+         {"given": "Զավեն", "family": "Տեր Եղիյան"},
+         notes="the comma keeps the surname whole, as before the title "
+               "reading; without it the shape is the clergy one"),
+    Case("armenian_ter_surname_first_without_a_comma_reads_the_title",
+         "Տեր Եղիյան Զավեն",
+         {"title": "Տեր", "given": "Եղիյան", "family": "Զավեն"},
+         classification="fix(#1225)",
+         notes="the accepted cost: word for word the clergy shape "
+               "(decisions/salutation-titles); 1.4.0 through 3.0.1 read "
+               "given 'Տեր', wrong too"),
+    Case("armenian_ter_hyphenated_surname_is_one_word",
+         "Լևոն Տեր-Պետրոսյան",
+         {"given": "Լևոն", "family": "Տեր-Պետրոսյան"}),
     Case("armenian_academic_title_in_its_script_is_the_title",
          "Դոկտոր Աննա Հակոբյան",
          {"title": "Դոկտոր", "given": "Աննա", "family": "Հակոբյան"},
