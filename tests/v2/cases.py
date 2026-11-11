@@ -1192,6 +1192,26 @@ CASES: tuple[Case, ...] = (
                "refused (en.toml's cota): marked ambiguous, a name in "
                "capitals with a word to spare read it as the suffix, as "
                "it would have in 49 tse-donors names"),
+    # -- #1315: the Royal Colleges' fellowships and memberships (FRCS,
+    # FRCP, MRCP, FRACS, ...), which only FACS and FACP of the family were
+    # listed beside. Unlisted, a trailing one of four or more capitals fell
+    # to the family name where no comma stood.
+    Case("trailing_royal_college_fellowship", "John Smith FRCS",
+         {"given": "John", "family": "Smith", "suffix": "FRCS"},
+         classification="fix(#1315)",
+         notes="no comma: before #1315 middle 'Smith', family 'FRCS', "
+               "which `Tanaka Hiroshi FRCS` read as a family name too"),
+    Case("family_comma_given_part_ends_in_a_fellowship",
+         "Smith, John MRCP",
+         {"given": "John", "family": "Smith", "suffix": "MRCP"},
+         classification="fix(#1315)",
+         notes="rules/S5's given part: before #1315 middle 'MRCP'"),
+    Case("lower_case_fellowship_before_a_suffix_comma",
+         "john smith frcs, jr.",
+         {"given": "john", "family": "smith", "suffix": "frcs, jr."},
+         classification="fix(#1315)",
+         notes="a name in one case gives no case signal, so the listing "
+               "reads it: before #1315 middle 'smith', family 'frcs'"),
     # -- #998: credentials written in two chunks joined at a full stop
     # (B.Pharm, M.Kes), listed so the vocabulary reads them whole, where
     # rules/S3 read them by shape alone.
