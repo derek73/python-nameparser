@@ -1574,3 +1574,16 @@ def test_a_modifier_and_a_style_are_title_chunks(chunk: str) -> None:
 ])
 def test_a_caseless_script_after_the_stop(text: str, pieces: list[str]) -> None:
     assert _pieces_of(text) == pieces
+
+
+@pytest.mark.parametrize(("text", "cut"), [
+    ("Sta.Ana", 4), ("St.John", 3), ("STE.MARIE", 4), ("Sto.Tomas", 4),
+    ("Sta.ana", None),     # lower case after the stop
+    ("Sta.Ana.", None),    # closed by its own stop
+    ("Sta.Ana.Cruz", None),
+    ("Dr.John", None),     # no saint particle
+])
+def test_a_saint_particle_glued_to_a_name(text: str, cut: int | None) -> None:
+    from nameparser._pipeline._vocab import glued_saint_cut
+    assert glued_saint_cut(text, _GLUED_LEX.add("sta", "sto", "ste",
+                                                kind="saint")) == cut

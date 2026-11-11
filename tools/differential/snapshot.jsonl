@@ -972,6 +972,8 @@
 {"name": "Dr. 王李小明", "title": "Dr.", "family": "王李小明"}
 {"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA", "honorifics": "씨"}
 {"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
+{"name": "Dr.C Kamaraj", "title": "Dr.C", "family": "Kamaraj", "initials": "K."}
+{"name": "Dr.C. Andrés Saavedra", "title": "Dr.C.", "given": "Andrés", "family": "Saavedra", "initials": "A. S."}
 {"name": "Dr.J. Smith", "title": "Dr.", "given": "J.", "family": "Smith", "initials": "J. S."}
 {"name": "Dr.J.R. Smith", "title": "Dr.", "given": "J.", "middle": "R.", "family": "Smith", "initials": "J. R. S."}
 {"name": "Dr.John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -1810,6 +1812,7 @@
 {"name": "Jenny (Johnson) Baker", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
 {"name": "Jenny Baker", "given": "Jenny", "family": "Baker", "initials": "J. B."}
 {"name": "Jenny Baker (Johnson)", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
+{"name": "Jeremy St.John Middleton", "given": "Jeremy", "middle": "St.John", "family": "Middleton", "initials": "J. S. M."}
 {"name": "Jesús Alcolea Fernández", "given": "Jesús", "middle": "Alcolea", "family": "Fernández", "initials": "J. A. F."}
 {"name": "Jesús Alcántara Miranda", "given": "Jesús", "middle": "Alcántara", "family": "Miranda", "initials": "J. A. M."}
 {"name": "Jesús Gallego Marquina", "given": "Jesús", "middle": "Gallego", "family": "Marquina", "initials": "J. G. M."}
@@ -2447,6 +2450,7 @@
 {"name": "Juan de la de la de la Vega", "given": "Juan", "family": "de la de la de la Vega", "initials": "J. V."}
 {"name": "Juan de y", "given": "Juan", "family": "de y", "initials": "J. y."}
 {"name": "Juan del Sur", "given": "Juan", "family": "del Sur", "initials": "J. S."}
+{"name": "Juan dela Cruz Sta.Maria", "given": "Juan", "middle": "dela Cruz", "family": "Sta.Maria", "initials": "J. C. M.", "capitalized_force": "Juan Dela Cruz Sta.Maria"}
 {"name": "Juan garcia III", "given": "Juan", "family": "garcia", "suffix": "III", "initials": "J. g.", "capitalized_force": "Juan Garcia III", "generation": "III"}
 {"name": "Juan van der", "given": "Juan", "family": "van der", "initials": "J. v. d.", "capitalized_force": "Juan Van Der"}
 {"name": "Juan y Eva Garcia", "given": "Juan y Eva", "family": "Garcia", "initials": "J. E. G."}
@@ -2896,6 +2900,7 @@
 {"name": "Marja-Liisa Katariina Lehtola-Aalto kansanedustaja", "given": "Marja-Liisa", "middle": "Katariina Lehtola-Aalto", "family": "kansanedustaja", "initials": "M. K. L. k.", "capitalized_force": "Marja-Liisa Katariina Lehtola-Aalto Kansanedustaja"}
 {"name": "Mark", "given": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Mark", "order": "FAMILY_FIRST", "given": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
+{"name": "Mark Jhon Sta.Ana", "given": "Mark", "middle": "Jhon", "family": "Sta.Ana", "initials": "M. J. A."}
 {"name": "Marković Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Marković, Irena", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Markus von Wickenburg", "given": "Markus", "family": "von Wickenburg", "initials": "M. W."}
@@ -3002,6 +3007,7 @@
 {"name": "Mgr. Dòmhnall Iain Bàn Mac a’ Ghobhainn Chorùna am post", "title": "Mgr.", "given": "Dòmhnall", "middle": "Iain Bàn", "family": "Mac a’ Ghobhainn Chorùna", "suffix": "am post", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "D. I. B. a. G. C.", "capitalized_force": "Mgr. Dòmhnall Iain Bàn mac A’ Ghobhainn Chorùna AM Post"}
 {"name": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc.", "title": "Mgr. Ing.", "given": "Anna", "middle": "Karolína Eva Kristína", "family": "von Kant Nováková Predná", "suffix": "CSc.", "initials": "A. K. E. K. K. N. P.", "capitalized_force": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSC."}
 {"name": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc.", "order": "FAMILY_FIRST", "title": "Mgr. Ing.", "given": "Nováková", "middle": "Predná Anna Karolína Eva Kristína", "family": "von Kant", "suffix": "CSc.", "initials": "N. P. A. K. E. K. K.", "capitalized_force": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSC."}
+{"name": "Mgr.A. Marek Rejent", "title": "Mgr.A.", "given": "Marek", "family": "Rejent", "initials": "M. R."}
 {"name": "Michael Wong Kar Ming", "given": "Michael", "middle": "Wong Kar", "family": "Ming", "initials": "M. W. K. M."}
 {"name": "Miguel García Martínez", "given": "Miguel", "middle": "García", "family": "Martínez", "initials": "M. G. M."}
 {"name": "Miguel Lanz Duret", "given": "Miguel", "middle": "Lanz", "family": "Duret", "initials": "M. L. D."}
@@ -3076,6 +3082,7 @@
 {"name": "Mr Smith", "title": "Mr", "family": "Smith", "initials": "S."}
 {"name": "Mr Wing Lau", "title": "Mr", "given": "Wing", "family": "Lau", "initials": "W. L."}
 {"name": "Mr XXX", "title": "Mr", "family": "XXX", "initials": "X.", "capitalized_force": "Mr Xxx"}
+{"name": "Mr and Mrs St.Clair", "title": "Mr and Mrs", "family": "St.Clair", "initials": "S."}
 {"name": "Mr. & Mrs. John Smith", "title": "Mr. & Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Mr. Bertram Wilberforce Henry Robert Wooster Jr, MP", "title": "Mr.", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "Jr, MP", "initials": "B. W. H. R. W.", "generation": "Jr", "credentials": "MP"}
 {"name": "Mr. Bertram Wilberforce Henry Robert Wooster MP", "title": "Mr.", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "B. W. H. R. W."}
@@ -3083,6 +3090,7 @@
 {"name": "Mr. Jack Jill", "title": "Mr.", "given": "Jack", "family": "Jill", "initials": "J. J."}
 {"name": "Mr. Jack and Jill", "title": "Mr.", "family": "Jack and Jill", "initials": "J. J."}
 {"name": "Mr. Johnson", "title": "Mr.", "family": "Johnson", "initials": "J."}
+{"name": "Mr. St.Clair", "title": "Mr.", "family": "St.Clair", "initials": "S."}
 {"name": "Mr. Van Nguyen", "title": "Mr.", "given": "Van", "family": "Nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. N."}
 {"name": "Mr. and Mrs. John Smith", "title": "Mr. and Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Mr. and Mrs. John and Jane Smith", "title": "Mr. and Mrs.", "given": "John and Jane", "family": "Smith", "initials": "J. J. S."}
@@ -3947,7 +3955,7 @@
 {"name": "St de Mesnil Jean", "title": "St", "family": "de Mesnil Jean", "initials": "M. J."}
 {"name": "St de Mesnil Jean V", "title": "St", "family": "de Mesnil Jean V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. J. V."}
 {"name": "St van Bishop", "title": "St", "family": "van Bishop", "ambiguities": ["PARTICLE_OR_GIVEN", "TITLE_OR_NAME"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)", "TITLE_OR_NAME: title as title (vocabulary)"], "initials": "B."}
-{"name": "St.John Smith", "title": "St.John", "family": "Smith", "initials": "S."}
+{"name": "St.John Price", "given": "St.John", "family": "Price", "initials": "S. P."}
 {"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}

@@ -42,22 +42,32 @@
 
 **Except:**
 
-- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, and a word whose every chunk is a title.
+- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial.
   ```
   "John Smith M.Sc"           →  suffix="M.Sc"
   "Lt.Gov. John Smith"        →  title="Lt.Gov."
+  "Dr.C. Andrés Saavedra"     →  title="Dr.C."
+  "Mgr.A. Marek Rejent"       →  given="Marek"
   ```
 - **A word after a comma** keeps its one word, the slot after a comma being where degrees stand.
   ```
   "Ole Simonsen, Dr.Med"      →  title="Dr.Med"
   "Smith, Dr.John"            →  title="Dr.John"  · boundary
   ```
-- **A word the shape refuses** keeps its one word: a name in lower case after the stop, one closed by its own stop or followed by another chunk, an unambiguous title or credential, a word holding a delimiter or a digit, and a saint particle's chunk, which P10 reads with its name.
+- **A word the shape refuses** keeps its one word: a name in lower case after the stop, one closed by its own stop or followed by another chunk, an unambiguous title or credential, and a word holding a delimiter or a digit.
   ```
   "Dr.med. Lukas Mayer"       →  title="Dr.med."
   "J.Smith. Jones"            →  given="J.Smith."
   "Dr.MD Smith"               →  title="Dr.MD"
-  "St.John Smith"             →  title="St.John"
+  ```
+- **A saint particle glued to a name is one name word**, read neither as a title nor as a credential by its dotted shape, since `St John` is also a given name and a middle name, which written apart it would not stay; only as the last name word of the part, right behind a name (no title of any kind, and no connective earlier in the part, which joins a title phrase), where the family ends the part (before a family comma, or under an order that ends the name with the family), does it divide, so P10's saint run opens the surname as written apart.
+  ```
+  "St.John Price"             →  given="St.John"
+  "Jeremy St.John Middleton"  →  middle="St.John"
+  "Mark Jhon Sta.Ana"         →  family="Sta.Ana"
+  "Juan dela Cruz Sta.Maria"  →  middle="dela Cruz"
+  "Mr. St.Clair"              →  family="St.Clair"
+  "Mr and Mrs St.Clair"       →  family="St.Clair"
   ```
 
 **Precedence:**
@@ -71,13 +81,18 @@
 **Accepted:**
 
 - A name glued to its chunk and closed by a stop of its own stays one word ('J.Smith.', 'Mrs.Smith.'), the stop being how a field is closed too ('Dr.Med.').
-- In a name written wholly in lower case nothing after the stop has the capital the test reads, so it stays one word ('dr.john smith'), where its capitals divide ('DR.JOHN SMITH').
+- In a name written wholly in lower case nothing after the stop has the capital the test reads, so it stays one word ('dr.john smith'), where its capitals divide ('DR.JOHN SMITH'), and a saint particle glued to a name keeps the reading its chunks give it there ('st.john price' title 'st.john').
+- A saint word followed by another name word stays one word where its spaced writing reads a saint run opening the surname: `Juan Sta.Maria Reyes` reads middle 'Sta.Maria', family 'Reyes', where `Juan Sta. Maria Reyes` reads family 'Sta. Maria Reyes' (P10), the price of keeping the British middle name whole ('Jeremy St.John Middleton').
 - A listed title before the initials is no word to spare, though rarely a given name, so the report is not made there ('Vice A.Smith').
 - `Parser.revise` reads a value on its own, so a glued word in it divides, and the revised field renders the pieces apart ('M.Hassan' revising to 'M. Hassan'), as a CJK value's own parse divides it.
 - After a family comma a glued word stays whole though it is the given name the comma names ('SMITH, J.MICHAEL' → given 'J.MICHAEL').
-- An unlisted credential glued at its stop and ending the name divides as a name would, reported ('John Smith B.Eng' → family 'Eng'); a degree spelled as a title and its field before any comma divides too ('Dr.Med Hans Meier' → given 'Med'), as does a degree spelled as a title and one letter ('Mgr.A.', 'Dr.C'), which a vocabulary entry for the spelling would keep whole.
+- An unlisted credential glued at its stop and ending the name divides as a name would, reported ('John Smith B.Eng' → family 'Eng'); a degree spelled as a title and its field before any comma divides too ('Dr.Med Hans Meier' → given 'Med'), as does a degree spelled as a title and one letter that no entry lists with its stops.
   ```
   "Sabiha Arshad M.Phill"     →  family="Phill"
+  ```
+- A degree listed with its stops is read whole where its letter is an initial behind the title ('Dr.C Kamaraj' → title 'Dr.C', and so 'Mgr.A Novák'), the Cuban and Czech degrees so spelled being the commoner writing.
+  ```
+  "Dr.C Kamaraj"              →  title="Dr.C"
   ```
 
 ---

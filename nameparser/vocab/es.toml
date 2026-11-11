@@ -82,8 +82,16 @@ text = "doctora"
 academic = { gender = "f", issue = 753, expands = "Doctora, the feminine of doctor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 4 records, the title typed in, and 2 names open with it (Doctora Yenny Nereida Montilla Polo) (2026-10-30); its family box holds it once, written last (Ma. Theresa Mae Doctora, Philippines), so a name written family first that opens with it reads it as the title, read by default since #1115 (2026-11-06)" }
 
 [[word]]
+text = "dr.c"
+academic = { gender = "m", issue = 1305, expands = "Doctor en Ciencias", note = "Doctor en Ciencias, the Cuban doctorate, written with its field's initial; glued at the stop it reads whole rather than as Dr. and an initial (rules/T8). ORCID writes it, spaced from the name, before 11 names (10 Cuban, DR.C YONI TEJEDA DILOU, and 1 Venezuelan, Dr.C. Victor Colina Ollarves, by the record's country), against 1 Indian name whose C is an initial (Dr.C Kamaraj), the accepted cost; no other local corpus writes it, and no source tools/name_usage.py reads has a bearer of drc (2026-11-10)" }
+
+[[word]]
 text = "dra"
 academic = { gender = "f", expands = "Doctora, Doutora" }
+
+[[word]]
+text = "dra.c"
+academic = { gender = "f", issue = 1305, expands = "Doctora en Ciencias", note = "the feminine of dr.c; ORCID opens 1 Cuban name with it (Dra.C. María Eugenia García Céspedes), no other local corpus any (2026-11-10)" }
 
 [[word]]
 text = "ingeniero"

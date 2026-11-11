@@ -700,8 +700,13 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: roster `getattr` through it, 145 -> 147; #1230/#1235's glued word,
 #: the chunks read alone, the titles a chunk chains, the word after
 #: the stop and the end-of-name report's suffix and title tests,
-#: 147 -> 169; `_suggest`'s particle read, 169 -> 170; its leading
-#: title read, which reads a name's evidence past its titles, 170 -> 171);
+#: 147 -> 169; #1071's glued saint particle, the saint particles,
+#: 169 -> 170, and the maiden marker ending a part's own words, 170 ->
+#: 171; its review's suffix-word refusal after the stop, 171 -> 179;
+#: its fix-diff review's own name test for the saint division (titles
+#: of every kind, connectives), 179 -> 185; `_suggest`'s particle
+#: read, 185 -> 186; its leading title read, which reads a name's
+#: evidence past its titles, 186 -> 187);
 #: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -714,7 +719,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 171, "tools": 20}
+_UNGUARDED_READS = {"library": 187, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
