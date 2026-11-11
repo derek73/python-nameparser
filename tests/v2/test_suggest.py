@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import unicodedata
+import warnings
 
 import pytest
 
@@ -442,6 +443,21 @@ def test_the_parser_keeps_the_base_segmenter() -> None:
     s = base.suggest(["Priem Jason", "Kim Minjun"])
     assert s.parser.segmenter is _decline
     assert s.parser.policy.name_order == FAMILY_FIRST
+
+
+def test_the_parser_does_not_warn_again_for_its_base() -> None:
+    # a JA base without a segmenter warns its caller once, when it is
+    # built; the suggested parser is built from it and must not warn
+    # again, on every access
+    from nameparser import locales, parser_for
+    with pytest.warns(UserWarning):
+        base = parser_for(locales.JA)
+    s = base.suggest(["Priem Jason", "Kim Minjun"])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        parser = s.parser
+        assert s.parser.policy.name_order == FAMILY_FIRST
+    assert parser.lexicon is base.lexicon
 
 
 def test_name_evidence_votes_are_read_only() -> None:

@@ -36,6 +36,7 @@ from __future__ import annotations
 import dataclasses
 import re
 import unicodedata
+import warnings
 from collections import Counter
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
@@ -480,8 +481,16 @@ class Suggestion:
         """The base parser with :attr:`patch` applied: the same lexicon
         and segmenter, and the base's policy for every setting the
         group did not change."""
-        return dataclasses.replace(
-            self.base, policy=apply_patch(self.base.policy, self.patch))
+        # A new construction site for Parser (AGENTS.md's validation
+        # bullet): Parser.__post_init__'s warnings read the lexicon,
+        # the segmenter and segment_scripts, none of which a patch
+        # moves, so any warning here is one the base already gave its
+        # caller when it was built. Re-emitted, it would come on every
+        # access, attributed to dataclasses.replace.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return dataclasses.replace(
+                self.base, policy=apply_patch(self.base.policy, self.patch))
 
     def disagreeing(self) -> tuple[NameEvidence, ...]:
         """The names whose vote is against a decided setting's value,
