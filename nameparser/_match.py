@@ -623,12 +623,14 @@ def _parser_repr(parser: Parser) -> str:
     """The parser's part of `Matching`'s repr: nothing for a `Parser`
     reading as `Parser()` does (the default lexicon and policy, no
     segmenter), the `Parser`'s own bounded repr for any other, and for
-    anything else, a subclass of `Parser` included, its class name
-    alone, since its repr and its fields may be anything, as `Parser`
+    anything else, a subclass of `Parser` included, or a `Parser`
+    holding a subclass of `Lexicon` or `Policy`, its class name alone,
+    since a subclass's repr and equality may be anything, as `Parser`
     names a segmenter by its class."""
     # Parser at call time: _parser imports this module at call time
     from nameparser._parser import Parser
-    if type(parser) is not Parser:
+    if (type(parser) is not Parser or type(parser.policy) is not Policy
+            or type(parser.lexicon) is not Lexicon):
         return f", parser={type(parser).__name__}"
     if (parser.segmenter is None and parser.policy == Policy()
             and parser.lexicon == Lexicon.default()):

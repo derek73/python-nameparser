@@ -271,6 +271,16 @@ def test_matching_repr_names_anything_but_a_parser_by_its_class() -> None:
     assert repr(Matching(Sub(policy=Policy(two_family_names=True)))) == (
         "Matching(default, parser=Sub)")
 
+    class Raising(Policy):
+        def __eq__(self, other: object) -> bool:
+            raise RuntimeError("never compared")
+
+        __hash__ = Policy.__hash__
+
+    # a Parser holding a subclass of Policy is not compared either
+    assert repr(Matching(Parser(policy=Raising()))) == (
+        "Matching(default, parser=Parser)")
+
 
 def test_matching_repr_shows_a_parser_with_a_segmenter() -> None:
     def cut(text: str) -> None:
