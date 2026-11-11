@@ -2,7 +2,7 @@
 
 ## Standing
 
-Elsewhere: this rule's decision, that an unlisted all-caps word after the comma joins the ambiguous credential class by default behind two name words, where the name carries a case contrast (`John Smith, XYZ` → suffix 'XYZ'; `Smith, XYZ` → given 'XYZ'; `MÜLLER WEIß, HANS` → given 'HANS'), with its two-letter rule and the mixed-run membership — decisions/S9's 2026-10-01 (Derek), #564 entry, where the caps shape's switch is decided; the contrast test reused for a suffix word ending the name before the comma — decisions/C12's 2026-10-18 (Derek), #656 entry.
+Elsewhere: this rule's decision, that an unlisted all-caps word after the comma joins the ambiguous credential class by default behind two name words, where the name carries a case contrast (`John Smith, XYZ` → suffix 'XYZ'; `Smith, XYZ` → given 'XYZ'; `MÜLLER WEIß, HANS` → given 'HANS'), with its two-letter rule (narrowed for two capitals followed by credentials by decisions/C5's 2026-11-11 #1323 entry) and the mixed-run membership — decisions/S9's 2026-10-01 (Derek), #564 entry, where the caps shape's switch is decided; the contrast test reused for a suffix word ending the name before the comma — decisions/C12's 2026-10-18 (Derek), #656 entry.
 
 Open: none in this file.
 

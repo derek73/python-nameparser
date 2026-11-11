@@ -1787,8 +1787,11 @@ spelling reports the bare reading as a fork; the capitals do not.
 The exception gives way to evidence that the letters are a credential:
 an unambiguous post-nominal in front of them that is not also a title,
 or another unlisted dotted or all-caps word beside them that its own
-field reads as a credential. A title in front of them says the
-opposite:
+field reads as a credential. The capitals give way to one more: written
+undotted, the letters are a credential when credentials follow them and
+nothing else stands beside them (``"Jane Doe, BM PhD"``), where the
+dotted spelling keeps its given name (``"John Smith, A.B. Ph.D."``). A
+title in front of them says the opposite:
 
 .. doctest::
 
@@ -1798,6 +1801,10 @@ opposite:
     'PhD MJ'
     >>> parse("García Márquez, MJ XYZ").suffix
     'MJ XYZ'
+    >>> parse("Jane Doe, BM PhD").suffix
+    'BM PhD'
+    >>> parse("John Smith, A.B. Ph.D.").given_names
+    'A.B.'
     >>> cred = parse("García Márquez, Ms G.J.")
     >>> cred.title, cred.given_names
     ('Ms', 'G.J.')

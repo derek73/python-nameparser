@@ -47,7 +47,7 @@ from nameparser._pipeline._vocab import (
     composed_len, delimiter_cores, ends_in_a_generation, glued_cores,
     glued_stem, glues, is_caps_word,
     is_letter_run, is_paired_initials, is_single_letter_numeral,
-    is_wholly_suffix,
+    is_wholly_suffix, _joined_chunks, _listed_whole,
     name_reading, name_word_count, reads_as_generation, suffix_reading,
     surname_unit_facts, unit_ends, written_as_a_name,
 )
@@ -418,6 +418,58 @@ def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
     return contrast[0]
 
 
+def _credentials_beside(state: ParseState, seg0: Sequence[int],
+                        p1: Sequence[Sequence[int]],
+                        pt1: Sequence[Set[str]], k: int,
+                        texts: dict[int, str],
+                        contrast: list[bool]) -> bool:
+    """Whether every piece of the part but the undotted pair at `k` is
+    a credential the pair's own writing would not doubt (rules/C5,
+    #1323), at least one of them behind it: a word of C16's company
+    that is no title in front of the pair, no word gated by the count
+    (S11: 'Junior', 'Filho', 'KC') and, where it is a member of the
+    ambiguous class, one its capitals settle ('MA', not 'Ed'); and the
+    name carries C6's contrast, asked here too, so a record in capitals
+    stays the listing form under every caps setting. A particle is no
+    credential ('Mc'), and a word S3 joins with a slash or a hyphen is
+    asked chunk by chunk, as its words written apart would be ('MD/Jr.',
+    'Ma/PhD'), a word the vocabulary lists whole being one word."""
+    tokens = state.tokens
+    lexicon = state.lexicon
+    for j, (q, qt) in enumerate(zip(p1, pt1)):
+        if j == k:
+            continue
+        if j < k and is_title_piece(q, qt, tokens):
+            return False
+        if len(q) == 1 and "split" not in qt:
+            token = tokens[q[0]]
+            if "particle" in token.tags:
+                return False
+            # a word the count gates (S11: 'Junior', 'Filho', 'KC') is
+            # refused here too: classify tags it a member of the class,
+            # and `settled_by_case` never settles a gated word
+            if (AMBIGUOUS_ACRONYM_TAG in token.tags
+                    and not settled_by_case(token, state.one_case)):
+                return False
+            text = texts[q[0]]
+            if ("/" in text or "-" in text) and not _listed_whole(
+                    text, lexicon):
+                for chunk in _joined_chunks(text, lexicon) or ():
+                    folded = _normalize(chunk)
+                    if (folded in lexicon._sets.generation_words
+                            or folded in lexicon._sets.suffix_words_ambiguous
+                            or ROMAN.match(chunk.rstrip(".")) is not None
+                            or folded.replace(".", "")
+                            in lexicon._sets.suffix_acronyms_ambiguous
+                            and (state.one_case or not chunk.isupper())):
+                        return False
+        if not _company(state, seg0, q, qt, texts, contrast):
+            return False
+    if not contrast:
+        contrast.append(_name_contrast(state, seg0))
+    return contrast[0]
+
+
 def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
     """The listing form, with the run of initials at `i` that made the
     part the given part (rules/C16, #1238) tagged an initial, as a run
@@ -733,7 +785,15 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 # another shape word than this one: no set built per
                 # pair (a copy of `shape` each time was quadratic in C)
                 if not (speaker < k or len(shape) > 1
-                        or (shape and i not in shape)):
+                        or (shape and i not in shape)
+                        # rules/C5: "undotted, two capitals followed by
+                        # credentials and standing beside nothing else
+                        # are the credential run" ('Jane Doe, BM PhD');
+                        # asked of the one shape word alone, so once
+                        # per part (decisions/C5 (#1323))
+                        or "." not in text and k + 1 < len(p1)
+                        and _credentials_beside(state, seg0, p1, pt1, k,
+                                                texts, contrast_box)):
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:
