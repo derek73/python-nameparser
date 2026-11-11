@@ -109,6 +109,23 @@ Comparing names from several sources: see :ref:`matching-names`.
 .. autoclass:: nameparser.Side
    :members:
 
+Group settings
+~~~~~~~~~~~~~~
+
+Settings suggested for a list of names: see :ref:`suggest-settings`.
+
+.. autoclass:: nameparser.Suggestion
+   :members:
+
+.. autoclass:: nameparser.SettingEvidence
+   :members:
+
+.. autoclass:: nameparser.NameEvidence
+   :members:
+
+.. autoclass:: nameparser.Signal
+   :members:
+
 Configuration
 ~~~~~~~~~~~~~
 
