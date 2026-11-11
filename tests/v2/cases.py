@@ -19295,8 +19295,9 @@ CASES: tuple[Case, ...] = (
          "John Smith (MD,PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD,PhD"},
          classification="parity",
-         notes="rules/S1's Accepted: a glued comma is word text, so the "
-               "clause is one word no vocabulary reads (#1268, both "
+         notes="rules/S1's Accepted: a glued comma in a clause with no "
+               "full stop is word text, so the clause is one word no "
+               "vocabulary reads (#1268, both "
                "designs for dividing it declined, decisions/S1). 1.4.0 "
                "and 2.5.0 through 3.0.1 read the same; 2.0.0 through "
                "2.4.0 read nickname 'MD PhD'"),

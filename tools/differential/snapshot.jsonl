@@ -1968,6 +1968,7 @@
 {"name": "John Smith (Hon)", "given": "John", "family": "Smith", "nickname": "Hon", "initials": "J. S."}
 {"name": "John Smith (Hon, Vice)", "given": "John", "family": "Smith", "nickname": "Hon, Vice", "initials": "J. S."}
 {"name": "John Smith (Jr.,) III", "given": "John", "family": "Smith", "suffix": "Jr., III", "initials": "J. S.", "generation": "Jr., III"}
+{"name": "John Smith (Jr.,MD)", "given": "John", "family": "Smith", "suffix": "Jr.,MD", "initials": "J. S."}
 {"name": "John Smith (King)", "given": "John", "family": "Smith", "nickname": "King", "initials": "J. S."}
 {"name": "John Smith (Lady)", "title": "Lady", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith (M.A)", "given": "John", "family": "Smith", "suffix": "M.A", "initials": "J. S."}
@@ -1986,6 +1987,7 @@
 {"name": "John Smith (MA/MBA)", "given": "John", "family": "Smith", "nickname": "MA/MBA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S.", "capitalized_force": "John \"Ma/Mba\" Smith"}
 {"name": "John Smith (MA/PhD)", "given": "John", "family": "Smith", "suffix": "MA/PhD", "initials": "J. S."}
 {"name": "John Smith (MBA, PhD)", "given": "John", "family": "Smith", "suffix": "MBA, PhD", "initials": "J. S."}
+{"name": "John Smith (MD , PhD)", "given": "John", "family": "Smith", "nickname": "MD , PhD", "initials": "J. S.", "capitalized_force": "John \"Md, PhD\" Smith"}
 {"name": "John Smith (MD ,PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith (MD, PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith (MD,) (PhD)", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
@@ -2010,6 +2012,7 @@
 {"name": "John Smith (PhD, MBA)", "given": "John", "family": "Smith", "suffix": "PhD, MBA", "initials": "J. S."}
 {"name": "John Smith (Sir)", "given": "John", "family": "Smith", "nickname": "Sir", "initials": "J. S."}
 {"name": "John Smith (USN, Ret.)", "given": "John", "family": "Smith", "suffix": "USN, Ret.", "initials": "J. S."}
+{"name": "John Smith (USN,Ret.)", "given": "John", "family": "Smith", "suffix": "USN, Ret.", "initials": "J. S."}
 {"name": "John Smith (Xyz.)", "given": "John", "middle": "Smith", "family": "Xyz.", "initials": "J. S. X."}
 {"name": "John Smith ,Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith - Jones", "given": "John", "middle": "Smith -", "family": "Jones", "initials": "J. S. -. J."}
