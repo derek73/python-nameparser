@@ -121,6 +121,14 @@
 
 **Accepted:**
 
+- A comma glued between two words inside a clause with no full stop in it is word text, as in a nickname (N1), so the clause is one word no vocabulary reads and keeps its pair's reading, where the same comma with a space on one side of it parts the credentials; a comma with a space on both sides is a word of its own, as above. A full stop brings other rules in: a clause ending in one takes the period escape and is read bare, where the comma divides, and a word with one inside it may be read whole through its chunks (S3).
+  ```
+  "John Smith (MD,PhD)"       →  nickname="MD,PhD"
+  "John Smith (MD, PhD)"      →  suffix="MD, PhD"
+  "John Smith (MD ,PhD)"      →  suffix="MD, PhD"
+  "John Smith (MD , PhD)"     →  nickname="MD , PhD"
+  "John Smith (USN,Ret.)"     →  suffix="USN, Ret."
+  ```
 - A lone title of address written short with its period stays in the name as written bare, its clause no nickname for the period ending it, and where the bare word ending the name reads as a name word, so does it ('สุดา ใจดี ศ.' reads family 'ศ.').
   ```
   "สุดา ใจดี (ศ.)"             →  family="ศ."
