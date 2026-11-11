@@ -18651,4 +18651,50 @@ CASES: tuple[Case, ...] = (
          notes="the reading is 1.4.0's; a listed particle hyphened to "
                "its surname opens no quote, so the unbalanced-delimiter "
                "report 2.0.0 through 3.0.1 gave goes"),
+    Case("georgian_salutation_in_its_script_is_the_title",
+         "ბატონი დავით ყიფიანი",
+         {"title": "ბატონი", "given": "დავით", "family": "ყიფიანი"},
+         classification="fix(#1225)",
+         notes="ka.toml listed only the romanized batoni; 1.4.0 "
+               "through 3.0.1 read given 'ბატონი', middle 'დავით'"),
+    Case("georgian_salutation_abbreviated_with_a_hyphen",
+         "ქ-ნი ნინო ბურჯანაძე",
+         {"title": "ქ-ნი", "given": "ნინო", "family": "ბურჯანაძე"},
+         classification="fix(#1225)",
+         notes="listed whole, as Russian г-н is; a hyphen keeps it one "
+               "word, so no shape rule could read it"),
+    Case("georgian_abbreviated_salutation_ending_the_given_part",
+         "ყიფიანი, დავით ბ-ნი",
+         {"title": "ბ-ნი", "given": "დავით", "family": "ყიფიანი"},
+         classification="fix(#1225)",
+         notes="after_given, as on its full form ბატონი and on г-н "
+               "(rules/H8)"),
+    Case("georgian_academic_title_in_mtavruli",
+         "ᲐᲙᲐᲓᲔᲛᲘᲙᲝᲡᲘ ᲓᲐᲕᲘᲗ ᲧᲘᲤᲘᲐᲜᲘ",
+         {"title": "ᲐᲙᲐᲓᲔᲛᲘᲙᲝᲡᲘ", "given": "ᲓᲐᲕᲘᲗ",
+          "family": "ᲧᲘᲤᲘᲐᲜᲘ"},
+         classification="fix(#1225)",
+         notes="the capitals fold to the listed Mkhedruli spelling"),
+    Case("georgian_salutation_ending_a_name_stays_the_surname",
+         "ჯენსონ ბატონი",
+         {"given": "ჯენსონ", "family": "ბატონი"},
+         notes="Jenson Button transcribed: a bare title word ending a "
+               "name is a name word (rules/H5), the one way Georgian "
+               "Wikipedia writes the word in a name"),
+    Case("armenian_salutation_in_its_script_is_the_title",
+         "Պարոն Դավիթ Հարությունյան",
+         {"title": "Պարոն", "given": "Դավիթ", "family": "Հարությունյան"},
+         classification="fix(#1225)",
+         notes="hy.toml listed no Armenian-script title; 1.4.0 through "
+               "3.0.1 read given 'Պարոն', middle 'Դավիթ'"),
+    Case("armenian_salutation_ending_the_given_part_after_a_comma",
+         "Հակոբյան, Աննա Տիկին",
+         {"title": "Տիկին", "given": "Աննա", "family": "Հակոբյան"},
+         classification="fix(#1225)",
+         notes="after_given, as on the other languages' salutations "
+               "(rules/H8)"),
+    Case("armenian_academic_title_in_its_script_is_the_title",
+         "Դոկտոր Աննա Հակոբյան",
+         {"title": "Դոկտոր", "given": "Աննա", "family": "Հակոբյան"},
+         classification="fix(#1225)"),
 )
