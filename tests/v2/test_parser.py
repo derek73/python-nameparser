@@ -3680,10 +3680,25 @@ def test_matching_accept_none_is_the_default_and_bad_values_raise() -> None:
     ("nickname", '"Janey,Jo"', "Janey,Jo"),
     ("maiden", "(Jones,Brown)", "Jones,Brown"),
     ("nickname", "(Janey ,Jo)", "Janey ,Jo"),
-    ("nickname", "(MD,PhD)", "MD PhD"),
+    ("nickname", "(MD,PhD)", "MD,PhD"),
     ("nickname", "(MD, PhD)", "MD PhD"),
+    ("maiden", "(MD,PhD)", "MD,PhD"),
+    ("title", "(Dr.,PhD)", "Dr.,PhD"),
+    ("family", "(Jr.,MD)", "Jr.,MD"),
+    ("given", "(Dr,Prof)", "Dr,Prof"),
+    ("suffix", "MD,PhD", "MD, PhD"),
 ])
 def test_revise_keeps_a_delimited_values_glued_comma(
         field: str, value: str, expected: str) -> None:
     revised = Parser().revise(parse("John Smith"), **{field: value})
     assert getattr(revised, field) == expected
+
+
+def test_revise_gives_a_rejoined_word_no_tags() -> None:
+    # #1268: a word a glued comma ended, joined back by revise, reads as
+    # the one unknown word it was before the split, not with its halves'
+    # particle tags
+    revised = Parser().revise(parse("john smith"), family="(de,la vega)")
+    assert revised.initials() == "j. d. v."
+    capped = Parser().revise(parse("john smith"), family="(mc,donald)")
+    assert capped.capitalized().family == "mc,Donald"

@@ -27,7 +27,7 @@
   "W. Russell (Jr.) Withers"  →  suffix="Jr."
   "Jack (PhD)"                →  family="Jack"
   ```
-- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against, with a space beside it or none. A comma is any character C's Background counts as one, each reading here as the ASCII one does.
+- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against, with a space beside it or none, where it stands between two words: a comma standing alone is a word of its own, and one written before another comma or a character tokenize drops (T1) ends no word. A comma is any character C's Background counts as one, each reading here as the ASCII one does.
   ```
   "John Smith (USN, Ret.)"    →  suffix="USN, Ret."
   "John Smith (Dr., PhD)"     →  title="Dr."
@@ -162,10 +162,11 @@
   "(PhD/Sr) John Smith"       →  suffix="PhD/Sr"
   "(PhD, Sr) John Smith"      →  title="Sr"
   ```
-- A comma standing alone in a clause, or opening it, is a word of its own that no vocabulary reads, so the clause keeps its pair's reading, where the same comma written against a word parts the words.
+- A comma standing alone in a clause, as its own word, is a word that no vocabulary reads, so the clause keeps its pair's reading, where the same comma written against a word parts the words; glued to the word behind it, it opens that word and reads as it.
   ```
   "John Smith (MD , PhD)"     →  nickname="MD , PhD"
   "John Smith (, PhD)"        →  nickname=", PhD"
+  "John Smith (,PhD)"         →  suffix="PhD"
   ```
 - A qualifier written after a title in front of the name is the suffix it is in the vocabulary.
   ```

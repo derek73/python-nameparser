@@ -43,7 +43,9 @@ it re-exports. They sit here because every stage that reports a fork
 builds one, and the tags they read are this module's vocabulary.
 
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket, PendingReading -- read-only, never a whole ParseState).
+comma_bucket, PendingReading -- read-only, never a whole ParseState),
+and _pipeline._tokenize's `_ignorable`, so `clause_words` ends a word
+where tokenize does (#1268).
 """
 from __future__ import annotations
 
@@ -66,6 +68,7 @@ from nameparser._pipeline._state import (
     TITLE_AMBIGUOUS_TAG, PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
     comma_bucket,
 )
+from nameparser._pipeline._tokenize import _ignorable
 
 # Ported verbatim from v1's "initial" pattern (the 1.x and 2.x
 # nameparser.config.regexes, removed in 3.0, #1008) minus its
@@ -499,21 +502,28 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
             in lexicon._sets.suffix_acronyms_ambiguous)
 
 
-def clause_words(content: str) -> list[str]:
+def clause_words(content: str, policy: Policy) -> list[str]:
     """The words of a clause as extract and post_rules read them for
-    rules/S1 (#1268): split at whitespace, and after a comma glued to
-    the word in front of it, the comma kept on that word ('MD,PhD' is
-    'MD,', 'PhD'; ',JP' is one word), as tokenize divides at both. A
-    separator tokenize also divides at that whitespace is not (rules/T1's
-    invisible separators, T2's dots, a stripped emoji) is not divided
-    here, as the whitespace split before #1268 did not; post_rules
-    compares the count of these words with the clause's tokens, as it
-    compared that split's."""
+    rules/S1 (#1268): split at whitespace, and after a comma glued
+    between two word characters, the comma kept on the first word
+    ('MD,PhD' is 'MD,', 'PhD'), where tokenize ends a word too: a
+    character in front of the comma that tokenize keeps, and one behind
+    it that is no comma and no character tokenize drops (`_ignorable`).
+    So ',JP', 'MD,,' and 'MD,' before an invisible separator are one
+    word, as tokenize leaves them. A separator tokenize divides at and
+    whitespace does not (rules/T1's invisible separators, T2's dots, a
+    stripped emoji) is not divided here, as the base's whitespace split
+    did not divide it; post_rules compares the count of these words with
+    the clause's tokens, as it compared that split's."""
     words: list[str] = []
     for word in content.split():
         start = 0
+        last = len(word) - 1
         for k, ch in enumerate(word):
-            if ch in COMMA_CHARS and k > start:
+            if (ch in COMMA_CHARS and k > start and k < last
+                    and not _ignorable(word[k - 1], policy)
+                    and word[k + 1] not in COMMA_CHARS
+                    and not _ignorable(word[k + 1], policy)):
                 words.append(word[start:k + 1])
                 start = k + 1
         if start < len(word):

@@ -757,7 +757,7 @@ def _set_apart_clauses(state: ParseState,
         hi = bisect.bisect_left(starts, clause.end)
         content = state.original[clause.start:clause.end]
         words = (content.split() if COMMA_CHARS.isdisjoint(content)
-                 else clause_words(content))
+                 else clause_words(content, state.policy))
         # every word one token of the clause, as extract read them,
         # counted as the base counted them: the splitter's words are the
         # base's split with a glued comma ending a word, as tokenize

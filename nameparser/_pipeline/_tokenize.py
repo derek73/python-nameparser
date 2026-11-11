@@ -124,7 +124,7 @@ def _flank(text: str, indices: range, policy: Policy) -> str | None:
     return None
 
 
-def _ignorable(ch: str, state: ParseState) -> bool:
+def _ignorable(ch: str, policy: Policy) -> bool:
     if ch.isspace():
         return True
     if ch.isascii():
@@ -142,7 +142,7 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     # non-ASCII).
     if ch in _NAME_DOT_SEPARATORS or ch in _INVISIBLE_SEPARATORS:
         return True
-    return _stripped(ch, state.policy)
+    return _stripped(ch, policy)
 
 
 def _tokenize_region(state: ParseState, start: int, end: int,
@@ -160,7 +160,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
         # ';', ending the word it is glued behind (below) (decisions/N1,
         # #653; decisions/S1, #1268)
         is_separator = ((record_offsets and ch in COMMA_CHARS)
-                        or _ignorable(ch, state))
+                        or _ignorable(ch, state.policy))
         if (ch == _NARROW_NBSP and start < i < end - 1
                 and _mongolian_letter(text[i - 1])
                 and _mongolian_letter(text[i + 1])):
@@ -193,12 +193,17 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             continue
         if tok_start is None:
             tok_start = i
-        elif not record_offsets and ch in COMMA_CHARS:
+        elif (not record_offsets and ch in COMMA_CHARS and i + 1 < end
+              and text[i + 1] not in COMMA_CHARS
+              and not _ignorable(text[i + 1], state.policy)):
             # rules/S1: "the comma is no part of the word it is written
             # against" -- a comma glued between two words of a clause
             # ends the first, kept on it as a spaced one is ('MD,PhD'
             # as 'MD, PhD'); the clause's text is unchanged, so a
-            # nickname keeps it as written (decisions/S1, #1268)
+            # nickname keeps it as written. Only between two word
+            # characters: a doubled comma, or one before a separator
+            # tokenize drops, leaves the word as before #1268
+            # (decisions/S1, #1268); `_vocab.clause_words` asks the same
             tokens.append(WorkToken(text[tok_start:i + 1],
                                     Span(tok_start, i + 1), role=role))
             tok_start = None

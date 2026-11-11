@@ -75,7 +75,7 @@ def _set_apart(inner: Span, state: ParseState) -> bool:
     # pays no frame for `clause_words`
     content = state.original[inner.start:inner.end]
     words = (content.split() if COMMA_CHARS.isdisjoint(content)
-             else clause_words(content))
+             else clause_words(content, state.policy))
     lexicon = state.lexicon
     kinds = []
     for word in words:
@@ -159,7 +159,7 @@ def _opens_a_listed_particle(text: str, i: int, state: ParseState) -> bool:
                             and ch != ","):
             k += 1
             continue
-        if ch in COMMA_CHARS or _ignorable(ch, state):
+        if ch in COMMA_CHARS or _ignorable(ch, state.policy):
             break
         k += 1
     word = text[i:k]
