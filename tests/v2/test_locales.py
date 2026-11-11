@@ -2656,6 +2656,14 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     ("محمد آل سعود", "family", "آل سعود"),
     ("آل سعود", "family", "آل سعود"),
     ("آل سعود", "given", ""),
+    # The hamza-less spelling "ال" standing alone is the same clan
+    # prefix (#1150): 15 of JRC-Names' 28 standalone ones, none the
+    # article split from its word.
+    ("سارة علي ال ناصر", "family", "ال ناصر"),
+    ("سارة علي ال ناصر", "middle", "علي"),
+    ("حسن علي محمد ال يحيى", "family", "ال يحيى"),
+    ("ال الشيخ", "family", "ال الشيخ"),
+    ("ال الشيخ", "given", ""),
     # The kunya "أبو"/"ابو" is AMBIGUOUS (it can begin a standalone
     # byname): leading it reads as the given name -- the "Van Johnson"
     # rule -- while non-leading it chains onto the family like any
