@@ -447,10 +447,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # full stop, each between Han or Latin neighbors that do not divide);
     # 1768 -> 1771 on 2026-11-10, #1319's trailing run of initials
     # opening like a rank ('สมชาย พ.ต.ส.') reporting suffix-or-name under
-    # three orders.
-    assert claims == 1771, (
-        f"the field sweep checks {claims} claims, recorded as 1771 on "
-        f"2026-11-10")
+    # three orders; 1771 -> 1777 on 2026-11-11, #1169's two rows of a
+    # nickname and a lone title word ('(Bob) Sir Jr.', "'Smitty' Sir
+    # Pope Jr.") reporting title-or-name under three orders.
+    assert claims == 1777, (
+        f"the field sweep checks {claims} claims, recorded as 1777 on "
+        f"2026-11-11")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

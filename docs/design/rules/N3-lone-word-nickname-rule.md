@@ -29,10 +29,11 @@
 
 **Precedence:**
 
-- **A title word left as the one name word is H4's**, whose doubt is whether the word is a title at all, so it keeps H4's reading by convention and its report.
+- **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, and H4 keeps its doubt, whether the word is a title at all, and its report.
   ```
-  "'Smitty' Pope Jr."         →  given="Pope"
+  "'Smitty' Pope Jr."         →  family="Pope"
   "'Smitty' Pope Jr."         →  ambiguities=("title-or-name",)
+  "'Smitty' Sir Pope Jr."     →  given="Pope"  · boundary
   ```
 
 **Accepted:**

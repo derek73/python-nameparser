@@ -13039,12 +13039,26 @@ CASES: tuple[Case, ...] = (
          notes="boundary: a credential written as a word is gated by "
                "rules/S11's count too, so N3 does not apply"),
     Case("nickname_title_word_and_a_suffix", "'Smitty' Pope Jr.",
-         {"given": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
-         ambiguities=("title-or-name",), classification="fix(#489)",
-         notes="boundary: a title word left as the one name word is "
-               "rules/H4's doubt (is it a title), which reads it as a "
-               "name by convention; N3 decides only a word nothing "
-               "else has a question about (N3's Precedence)"),
+         {"family": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("title-or-name",), classification="fix(#1169)",
+         notes="rules/N3 reads a title word left as the one name word "
+               "as the family name, as any other; H4 keeps its doubt "
+               "(is it a title) and its report. 1.4.0 read title "
+               "'Pope', given 'Jr.'; 2.3.0 through 3.0.1 given 'Pope'"),
+    Case("nickname_lone_title_word_and_a_suffix", "(Bob) Sir Jr.",
+         {"family": "Sir", "suffix": "Jr.", "nickname": "Bob"},
+         ambiguities=("title-or-name",), classification="fix(#1169)",
+         notes="rules/N3 (#1169): the title word left alone is the one "
+               "name word, so the family, the report H4's; 3.0.1 read "
+               "given 'Sir'"),
+    Case("nickname_given_name_title_and_a_title_word_keep_the_given_name",
+         "'Smitty' Sir Pope Jr.",
+         {"title": "Sir", "given": "Pope", "suffix": "Jr.",
+          "nickname": "Smitty"},
+         ambiguities=("title-or-name",),
+         notes="#1169 boundary: a given-name title in front keeps the "
+               "word given, as N3's Accepted has it for 'Smitty' Sir "
+               "John"),
     Case("nickname_period_shape_word_and_a_suffix", "'Smitty' Xyz. Jr.",
          {"family": "Xyz.", "suffix": "Jr.", "nickname": "Smitty"},
          classification="fix(#815)",

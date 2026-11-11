@@ -662,6 +662,15 @@ def _assign_main(seg_idx: int, state: ParseState,
             if any("vocab:title" in tokens[i].tags for i in head):
                 text = " ".join(tokens[i].text for i in head)
                 lone = len(head) == 1
+                # rules/N3: "a name that is only a nickname and one name
+                # word reads that word as the family name, whatever
+                # suffix stands beside them" -- a title word left as
+                # that word too, its doubt (is it a title) still H4's
+                # report; the scan behind `state.extracted`, as at N3's
+                # other sites (decisions/N3, #1169)
+                if (lone and field_undecided and state.extracted
+                        and any(t.role is Role.NICKNAME for t in tokens)):
+                    _set_roles(tokens, head, Role.FAMILY)
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.TITLE_OR_NAME,
                     f"{text!r} is title vocabulary and the only name word "
