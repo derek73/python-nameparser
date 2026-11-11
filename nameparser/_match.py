@@ -19,8 +19,9 @@ outcomes the caller accepts. The module imports `_types`, `_policy`
 repr compares a parser's policy with) and `_lexicon` (for
 `_normalize`, which folds a hyphen half before it is looked up among
 the particles, and `Lexicon.default()`, which the repr compares a
-parser's lexicon with), `_parser` at call time, in the repr, to tell
-a `Parser` from anything else, and `Parser` for typing too.
+parser's lexicon with), `_parser` at call time, in the constructor and
+the repr, to tell a `Parser` from anything else, and `Parser` for
+typing too.
 """
 from __future__ import annotations
 
@@ -280,7 +281,10 @@ class Matching:
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
-        if not callable(getattr(self.parser, "parse", None)):
+        # Parser at call time: _parser imports this module at call time
+        # too, in Parser.matching
+        from nameparser._parser import Parser
+        if not isinstance(self.parser, Parser):
             raise TypeError(
                 f"parser must be a Parser, got {type(self.parser).__name__}; "
                 f"pass Parser() or use Parser.matching()")
@@ -626,16 +630,26 @@ def _parser_repr(parser: Parser) -> str:
     anything else, a subclass of `Parser` included, or a `Parser`
     holding a subclass of `Lexicon` or `Policy`, its class name alone,
     since a subclass's repr and equality may be anything, as `Parser`
-    names a segmenter by its class."""
+    names a segmenter by its class. A `Parser` missing a field (built
+    past its constructor) is named by its class too, the fields read
+    with `getattr`, so the repr never raises."""
     # Parser at call time: _parser imports this module at call time
     from nameparser._parser import Parser
-    if (type(parser) is not Parser or type(parser.policy) is not Policy
-            or type(parser.lexicon) is not Lexicon):
+    missing = object()
+    lexicon, policy, segmenter = (
+        getattr(parser, f, missing) for f in _PARSER_FIELDS)
+    if (type(parser) is not Parser or type(policy) is not Policy
+            or type(lexicon) is not Lexicon or segmenter is missing):
         return f", parser={type(parser).__name__}"
-    if (parser.segmenter is None and parser.policy == Policy()
-            and parser.lexicon == Lexicon.default()):
+    if segmenter is None and policy == Policy() and lexicon == Lexicon.default():
         return ""
     return f", parser={parser!r}"
+
+
+#: The fields of `Parser` the repr compares with `Parser()`'s, every
+#: field it has (test_match.py holds the two equal, so a field added to
+#: `Parser` is compared or the test fails).
+_PARSER_FIELDS = ("lexicon", "policy", "segmenter")
 
 
 # -- the check -------------------------------------------------------------

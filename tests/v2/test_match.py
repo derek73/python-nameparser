@@ -3,6 +3,7 @@ and the grouping keys, with the symmetry and key-guarantee properties
 held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
+import dataclasses
 import functools
 import itertools
 import pickle
@@ -30,6 +31,7 @@ from nameparser._match import (
     Outcome,
     RoleMatch,
     Side,
+    _PARSER_FIELDS,
     _RULES,
     _fold,
     _spelling_keys,
@@ -249,23 +251,24 @@ def test_matching_repr_shows_a_parser_that_is_not_the_default() -> None:
         "Matching(default)")
 
 
-def test_matching_repr_names_anything_but_a_parser_by_its_class() -> None:
-    # the constructor asks only for a callable `parse`; an object that
-    # is not a Parser, a subclass included, is shown by its class name,
-    # its own repr and fields being unbounded and unchecked
+def test_a_parse_only_object_is_refused_at_construction() -> None:
+    # eager: an object with a `parse` but no lexicon would fail only at
+    # its first check() or keys()
     class Bare:
         def parse(self, text: str) -> ParsedName:
             return parse(text)
 
-        def __repr__(self) -> str:
-            return "x" * 50_000
+    with pytest.raises(TypeError, match="parser must be a Parser, got Bare"):
+        Matching(Bare())  # type: ignore[arg-type]
 
+
+def test_matching_repr_names_a_parser_subclass_by_its_class() -> None:
+    # a subclass's repr and equality are unbounded and unchecked, so it
+    # is shown by its class name, never compared
     class Sub(Parser):
         def __repr__(self) -> str:
             return "x" * 50_000
 
-    assert repr(Matching(Bare())) == (  # type: ignore[arg-type]
-        "Matching(default, parser=Bare)")
     # a default subclass too: its fields are not compared
     assert repr(Matching(Sub())) == "Matching(default, parser=Sub)"
     assert repr(Matching(Sub(policy=Policy(two_family_names=True)))) == (
@@ -280,6 +283,15 @@ def test_matching_repr_names_anything_but_a_parser_by_its_class() -> None:
     # a Parser holding a subclass of Policy is not compared either
     assert repr(Matching(Parser(policy=Raising()))) == (
         "Matching(default, parser=Parser)")
+    # nor is a Parser missing a field, built past its constructor
+    assert repr(Matching(object.__new__(Parser))) == (
+        "Matching(default, parser=Parser)")
+
+
+def test_the_repr_compares_every_field_of_parser() -> None:
+    # a field added to Parser must join _PARSER_FIELDS, or a parser
+    # differing only in it would read as the default
+    assert _PARSER_FIELDS == tuple(f.name for f in dataclasses.fields(Parser))
 
 
 def test_matching_repr_shows_a_parser_with_a_segmenter() -> None:

@@ -166,6 +166,18 @@ def test_parser_repr_names_the_segmenter_without_its_contents() -> None:
     assert "segmenter=Div" in instance and "0x" not in instance
 
 
+def test_matching_repr_is_its_deviation_and_its_parsers_bounded_repr() -> None:
+    # Matching names a non-default Parser by the Parser's own repr, so it
+    # is bounded as that is: a pack's lexicon by counts, a segmenter by
+    # its name, never its bound arguments
+    es = parser_for(locales.ES)
+    assert repr(Matching(es)) == f"Matching(default, parser={es!r})"
+    blob = Parser(segmenter=functools.partial(_decline, blob="x" * 500))
+    shown = repr(Matching(blob))
+    assert shown == f"Matching(default, parser={blob!r})"
+    assert "xxx" not in shown
+
+
 def test_policy_patch_repr_survives_unvalidated_name_order() -> None:
     # PolicyPatch defers name_order validation to apply time, so a
     # patch can hold a non-canonical or even garbage tuple -- its repr
