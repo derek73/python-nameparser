@@ -645,7 +645,9 @@ def _assign_main(seg_idx: int, state: ParseState,
         # above out of these branches. Title vocabulary in the unit makes
         # the doubt H4's or H7's (is the WORD a title), anything else
         # O5's (which FIELD it took, or N3's where a nickname decides
-        # it), so only the second reads `field_undecided`.
+        # it), so only the second reads `field_undecided`: a title, a
+        # maiden name or a script order beside a lone title word is
+        # placed by H1, M4 or W4 whatever N3 does here (#1169).
         if peeled.names == 1 and not resolved.by_script:
             # rules/H4: "an input whose only remaining name word
             # after the title peel is itself title vocabulary reads
@@ -668,7 +670,12 @@ def _assign_main(seg_idx: int, state: ParseState,
                 # that word too, its doubt (is it a title) still H4's
                 # report; the scan behind `state.extracted`, as at N3's
                 # other sites (decisions/N3, #1169)
-                if (lone and field_undecided and state.extracted
+                # The word's own reading, as O5's clause below asks it:
+                # a title-particle ('St', 'Graf') or an initial keeps
+                # the reading it has, as N3's Except has it
+                if (lone and state.extracted
+                        and tokens[head[0]].tags.isdisjoint(
+                            _WORD_ALREADY_CLAIMED)
                         and any(t.role is Role.NICKNAME for t in tokens)):
                     _set_roles(tokens, head, Role.FAMILY)
                 ambiguities.append(PendingAmbiguity(

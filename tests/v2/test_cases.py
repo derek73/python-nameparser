@@ -449,9 +449,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # opening like a rank ('สมชาย พ.ต.ส.') reporting suffix-or-name under
     # three orders; 1771 -> 1777 on 2026-11-11, #1169's two rows of a
     # nickname and a lone title word ('(Bob) Sir Jr.', "'Smitty' Sir
-    # Pope Jr.") reporting title-or-name under three orders.
-    assert claims == 1777, (
-        f"the field sweep checks {claims} claims, recorded as 1777 on "
+    # Pope Jr.") reporting title-or-name under three orders; 1777 ->
+    # 1795 the same day, its review's six rows reporting title-or-name
+    # under three orders.
+    assert claims == 1795, (
+        f"the field sweep checks {claims} claims, recorded as 1795 on "
         f"2026-11-11")
 
 

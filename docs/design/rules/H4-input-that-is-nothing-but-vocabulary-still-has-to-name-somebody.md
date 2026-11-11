@@ -35,7 +35,7 @@
 
 **Precedence:**
 
-- **A nickname beside the lone title word** ("'Smitty' Pope Jr."): N3 places the word, in the family, and this rule keeps its report.
+- **A nickname beside the lone title word** ("'Smitty' Pope Jr."): N3 places the word, in the family, and where the suffix is written without a comma this rule keeps its report.
   ```
   "'Smitty' Pope Jr."         →  family="Pope"
   ```

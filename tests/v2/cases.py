@@ -13043,8 +13043,51 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",), classification="fix(#1169)",
          notes="rules/N3 reads a title word left as the one name word "
                "as the family name, as any other; H4 keeps its doubt "
-               "(is it a title) and its report. 1.4.0 read title "
-               "'Pope', given 'Jr.'; 2.3.0 through 3.0.1 given 'Pope'"),
+               "(is it a title) and its report. 1.4.0 through 2.2.0 read "
+               "title 'Pope', given 'Jr.'; 2.3.0 through 3.0.1 given "
+               "'Pope'"),
+    Case("nickname_title_particle_and_a_suffix_keep_the_given_name",
+         "'Smitty' St Jr.",
+         {"given": "St", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("title-or-name",),
+         notes="#1169 boundary: a title-particle keeps the reading it "
+               "has, as a particle does (rules/N3's Except)"),
+    Case("nickname_rank_particle_and_a_suffix_keep_the_given_name",
+         "'Smitty' Graf Jr.",
+         {"given": "Graf", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("title-or-name",),
+         notes="#1169 boundary: as 'St'"),
+    Case("nickname_brahmic_initial_and_a_suffix_keep_the_given_name",
+         "'Smitty' \u09a1. Jr.",
+         {"given": "\u09a1.", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("title-or-name",),
+         notes="#1169 boundary: an initial keeps the reading it has "
+               "(rules/N3's Except)"),
+    Case("nickname_title_unit_and_a_suffix_keep_the_given_name",
+         "'Smitty' John of Bishop Jr.",
+         {"given": "John of Bishop", "suffix": "Jr.",
+          "nickname": "Smitty"},
+         ambiguities=("title-or-name",),
+         notes="#1169 boundary: a unit of three words is no lone word, "
+               "H7's doubt"),
+    Case("nickname_title_of_address_and_a_suffix_read_the_family",
+         "'Smitty' Dr. Jr.",
+         {"family": "Dr.", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("title-or-name",), classification="fix(#1169)",
+         notes="rules/N3 places the one word whatever it is; H4's report "
+               "says it may be no name. 3.0.1 read given 'Dr.'"),
+    Case("bracketed_credential_title_word_and_a_suffix_read_the_family",
+         "Pope (PhD) Jr.",
+         {"family": "Pope", "suffix": "PhD Jr."},
+         ambiguities=("title-or-name",), classification="fix(#1169)",
+         notes="rules/N3's Accepted: the clause still carries the "
+               "nickname role at assign, as for 'Jones (PhD) Jr.'; "
+               "3.0.1 read given 'Pope'"),
+    Case("nickname_title_word_and_a_comma_suffix_report_nothing",
+         "'Smitty' Pope, Jr.",
+         {"family": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
+         notes="#1169 boundary: behind a comma the part is a suffix "
+               "comma's, and H4 is never asked, at the base too"),
     Case("nickname_lone_title_word_and_a_suffix", "(Bob) Sir Jr.",
          {"family": "Sir", "suffix": "Jr.", "nickname": "Bob"},
          ambiguities=("title-or-name",), classification="fix(#1169)",

@@ -29,10 +29,13 @@
 
 **Precedence:**
 
-- **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, and H4 keeps its doubt, whether the word is a title at all, and its report.
+- **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, a title of address that is no surname too, and where the suffix is written without a comma H4 keeps its doubt, whether the word is a title at all, and its report; a title-particle keeps the reading it has, as a particle does.
   ```
   "'Smitty' Pope Jr."         →  family="Pope"
   "'Smitty' Pope Jr."         →  ambiguities=("title-or-name",)
+  "'Smitty' Dr. Jr."          →  family="Dr."
+  "'Smitty' Pope, Jr."        →  ambiguities=()
+  "'Smitty' St Jr."           →  given="St"  · boundary
   "'Smitty' Sir Pope Jr."     →  given="Pope"  · boundary
   ```
 
@@ -47,6 +50,7 @@
   ```
   "Jones Jr., 'Smitty'"       →  family="Jones"
   "Jones (PhD) Jr."           →  family="Jones"
+  "Pope (PhD) Jr."            →  family="Pope"
   "'Smitty', Jones Jr."       →  given="Jones"
   ```
 - Without a suffix the claimed word reads as the family name all the same, since the count fires before anything asks what the word is, so a suffix moves an initial from the family to the given name.
@@ -57,6 +61,12 @@
   ```
   "'Smitty' Dr. Jones"        →  family="Jones"
   "'Smitty' Sir John"         →  given="John"
+  ```
+- A title word is read three ways by three rules: alone beside a nickname it is the title (H4's single title word, the peel taking the whole string), with a suffix and no nickname the given name (H4's convention), and with both the family name, by this rule.
+  ```
+  "'Smitty' Pope"             →  title="Pope"
+  "Pope Jr."                  →  given="Pope"
+  "'Smitty' Pope Jr."         →  family="Pope"
   ```
 - A marker-led clause is a maiden clause and not a nickname one (M3), so this rule does not reach a name written that way, and the one name word keeps the reading the bare spelling gives it. That reading is the family name all the same, M4 reaching both spellings from the other side, and both rules set a suffix beside the word aside.
   ```
