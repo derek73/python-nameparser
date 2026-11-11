@@ -44,12 +44,13 @@
 
 **Except:**
 
-- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial.
+- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial; and a word a title marked to peel and written with its stops opens, past the chunk this division would cut, is left whole for W6's peel.
   ```
   "John Smith M.Sc"           →  suffix="M.Sc"
   "Lt.Gov. John Smith"        →  title="Lt.Gov."
   "Dr.C. Andrés Saavedra"     →  title="Dr.C."
   "Mgr.A. Marek Rejent"       →  given="Marek"
+  "พ.อ.หญิงวาสนา แสงสวย"        →  title="พ.อ.หญิง"
   ```
 - **A word after a comma** keeps its one word, the slot after a comma being where degrees stand.
   ```

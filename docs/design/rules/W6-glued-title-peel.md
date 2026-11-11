@@ -16,6 +16,13 @@
   "อาจารย์ดร.สมชาย ใจดี"               →  given="สมชาย"
   "นางรศ.ดร.สมชาย ใจดี"                →  given="สมชาย"
   ```
+- **A marked title written with its stops** peels as written, its own full stop glued to the name going with it, and a title of single letters and its feminine form are each one word that the site walk passes over written apart.
+  ```
+  "พล.ต.ต.สุรศักดิ์ รมยานนท์"            →  title="พล.ต.ต."
+  "พ.ต.อ.ดร.สมชาย ใจดี"                →  given="สมชาย"
+  "พ.อ.หญิง วาสนา แสงสวย"              →  title="พ.อ.หญิง"
+  "ว่าที่ร.ท.วินัย พืชพิสุทธิ์"             →  title="ว่าที่ร.ท."
+  ```
 - **The longest marked title is the one split off**, once, so a title that opens with a shorter one keeps its letters; where it would leave a Thai vowel written after its consonant or a mark, the next shorter is tried, and where it is followed by any other character that is no letter, a hyphen, a digit or the repetition mark, nothing is split.
   ```
   "นางสาวสุดา ใจดี"                    →  title="นางสาว"

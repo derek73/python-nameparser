@@ -978,6 +978,14 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             or bare in sets.titles and len(unicodedata.normalize(
                 "NFC", n.rsplit(".", 1)[-1])) > 1):
         return ()
+    # a title marked to peel glued in front (rules/W6) and written with
+    # its stops runs past the chunk this division would cut ('พ.อ.หญิง'
+    # in 'พ.อ.หญิงวาสนา'): the peel reads it whole, so the word is left
+    # to it (#1319)
+    for g in sets.glued_titles:
+        if "." in g and n.startswith(g) and n[len(g):len(g) + 1] not in (
+                ".", ""):
+            return ()
     cuts: list[int] = []
     at = 0
     titled = False

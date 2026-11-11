@@ -909,9 +909,13 @@ def test_a_word_lowered_to_another_length_is_no_peel_site() -> None:
 def test_every_shipped_glued_title_is_reachable() -> None:
     # each marked title glued to a given name splits off it (rules/W6),
     # so a word another reading claims first shows up as silently inert
+    # a modifier is a title only before a head title (rules/H9), so it
+    # is probed before one ('ว่าที่ร.ท.สมชาย', #1319)
     p = Parser()
+    mods = p.lexicon._sets.title_modifiers
     unreached = [w for w in sorted(p.lexicon._sets.glued_titles)
-                 if p.parse(f"{w}สมชาย ใจดี").title != w]
+                 if not p.parse(f"{w}ร.ท.สมชาย ใจดี" if w in mods
+                                else f"{w}สมชาย ใจดี").title.startswith(w)]
     assert p.lexicon._sets.glued_titles and not unreached, unreached
 
 

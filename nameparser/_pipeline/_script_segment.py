@@ -567,11 +567,14 @@ def _head_sites(state: ParseState) -> list[int]:
 
 
 def _all_titles(text: str, titles: frozenset[str]) -> bool:
-    """Whether every chunk of `text` between its full stops is a listed
-    title ('รองศาสตราจารย์', 'รศ.ดร.'): a title written apart, which
-    the site walk passes over; a word holding a name ('ดร.สมชาย') is a
-    site, never passed over."""
-    chunks = [c for c in _normalize(text).split(".") if c]
+    """Whether `text` is a listed title, whole or chunk by chunk between
+    its full stops ('รองศาสตราจารย์', 'พ.อ.หญิง', 'รศ.ดร.'): a title
+    written apart, which the site walk passes over; a word holding a
+    name ('ดร.สมชาย') is a site, never passed over."""
+    n = _normalize(text)
+    if n in titles:
+        return True
+    chunks = [c for c in n.split(".") if c]
     return bool(chunks) and all(c in titles for c in chunks)
 
 
@@ -612,10 +615,15 @@ def _peel_title_head(state: ParseState) -> ParseState:
         for w in sorted(heads, key=len, reverse=True):
             if len(w) >= len(low) or not low.startswith(w):
                 continue
-            nxt = low[len(w)]
+            end = len(w)
+            if low[end] == "." and end + 1 < len(low):
+                # a title written short, its own full stop glued to the
+                # name ('พล.ต.ต.สุรศักดิ์', #1319): the cut follows it
+                end += 1
+            nxt = low[end]
             if nxt in _AFTER_A_CONSONANT or unicodedata.category(nxt) == "Mn":
                 continue
-            cut = len(w) if nxt.isalpha() and nxt != "\u0e46" else 0
+            cut = end if nxt.isalpha() and nxt != "\u0e46" else 0
             break
         if cut:
             divide = divide or bool(state.segments and i in state.segments[0]
