@@ -1239,6 +1239,18 @@ def test_tr_az_deviates_scans_per_token() -> None:
     assert not _tr_az.DEVIATES("Ogluev Ivan")
 
 
+def test_tr_az_deviates_reads_a_decomposed_marker() -> None:
+    """#1316: DEVIATES declares the surface the pack's rule rewrites,
+    and the rule reads a marker NFC-composed, so a ğ or ў written as base
+    plus combining mark must declare too, or the non-interference gate
+    misses an undeclared deviation."""
+    for name in ("Aliyev Rashad Vali oğlu", "Aliyev Rashad Vali OĞLU",
+                 "Каримов Алишер Вали ўғли"):
+        decomposed = unicodedata.normalize("NFD", name)
+        assert decomposed != name
+        assert _tr_az.DEVIATES(decomposed), name
+
+
 def test_locales_unknown_attribute() -> None:
     with pytest.raises(AttributeError, match="XX"):
         locales.XX
