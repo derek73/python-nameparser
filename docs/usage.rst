@@ -1675,7 +1675,7 @@ setting, the ones to check by hand.
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10), a list written in the base's own order keeps it
-in at least 96% of groups from 5 to 200 names, but moving the base
+in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 200 for Indian ones. A plain list of names with no
 common surname or given name in it (``Zxqv Brtk``) carries no evidence,

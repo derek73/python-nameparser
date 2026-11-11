@@ -69,7 +69,7 @@ base). `--base` runs the same measurement against another
 checkout in a child process and lists every cell that moved.
 
 Runtime, measured 2026-11-10 on a 12-CPU machine with every source
-fetched and the defaults (sizes 5-200, 300 trials, --jobs 12): 18s
+fetched and the defaults (sizes 2-200, 300 trials, --jobs 12): 20s
 wall clock, 6s of it reading the corpora in one process; with --base,
 twice that.
 """

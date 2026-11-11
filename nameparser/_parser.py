@@ -316,10 +316,10 @@ class Parser:
         one end and they are more than two thirds of the names casting
         an order vote. A patronymic rule is decided where more than four
         in five of the names that cast a vote carry its patronymic (and
-        at least two do), for the East Slavic and the Turkic rule alike.
-        A group decided East Slavic gets the rule with a given-first
-        order, since the rule reorders each name and stands down under
-        a family-first order; a Turkic group gets the rule alone, its
+        at least five do), for the East Slavic and the Turkic rule alike.
+        A group decided East Slavic gets the rule and reads given-first,
+        since the rule reorders each name and stands down under a
+        family-first order; a Turkic group gets the rule alone, its
         order decided by its names' own votes.
         A setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
@@ -328,7 +328,7 @@ class Parser:
         Measured 2026-11-10 with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
         groups a size: a group written in this parser's own order kept
-        it in at least 96% of groups at every size from 5 to 200 names,
+        it in at least 98% of groups at every size from 2 to 200 names,
         under either base order. Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
@@ -336,7 +336,9 @@ class Parser:
         from 5 names; German, Dutch, Italian, Spanish, British, Russian
         and Vietnamese from 10; French, US, Japanese, Brazilian and
         Turkish from 20; Nigerian and Romanian from 50; and Indian only
-        at 200. A smaller group keeps the base rather than guess.
+        at 200. A group whose votes fall short of the thresholds keeps
+        the base rather than guess, so a smaller group moves it in fewer
+        of the draws.
         """
         from nameparser._suggest import suggest
         return suggest(self, names)

@@ -215,8 +215,8 @@ def name_votes(text: str, lexicon: Lexicon
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
 
-# The three thresholds were chosen with
-# tools/differential/suggest_measure.py, which draws groups of 5 to 200
+# The four thresholds were chosen with
+# tools/differential/suggest_measure.py, which draws groups of 2 to 200
 # names written in a known order and counts the groups suggested right
 # under both base orders; the table behind them, and the rule they meet
 # (a group read right under its own base stays right in at least 95% of
@@ -238,12 +238,14 @@ _MIN_SHARE = 2 / 3
 #: family-first, 43% of the names carry a patronymic, and under a share
 #: of a half 18-46% of their groups (by size, 200 to 5 names) were
 #: moved to given-first under a family-first base; at four in five, 4%
-#: of the groups of five and none from 20.
+#: of the groups of five and none from 20 (measured before
+#: _MIN_PATRONYMIC_VOTES, below).
 _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
 #: besides the share: groups of two to four of those Russian inventors
 #: are often all patronymic names, and with _MIN_VOTES enough 19%, 12%
-#: and 6% of them were moved to given-first under a family-first base.
+#: and 6% of them were moved to given-first under a family-first base;
+#: with five, none of them, and 2% of the groups of five and ten.
 _MIN_PATRONYMIC_VOTES = 5
 
 _NAME_ORDER = "name_order"
