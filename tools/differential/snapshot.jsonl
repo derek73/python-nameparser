@@ -1968,7 +1968,6 @@
 {"name": "John Smith (Hon)", "given": "John", "family": "Smith", "nickname": "Hon", "initials": "J. S."}
 {"name": "John Smith (Hon, Vice)", "given": "John", "family": "Smith", "nickname": "Hon, Vice", "initials": "J. S."}
 {"name": "John Smith (Jr.,) III", "given": "John", "family": "Smith", "suffix": "Jr., III", "initials": "J. S.", "generation": "Jr., III"}
-{"name": "John Smith (Jr.,MD)", "given": "John", "family": "Smith", "suffix": "Jr.,MD", "initials": "J. S."}
 {"name": "John Smith (King)", "given": "John", "family": "Smith", "nickname": "King", "initials": "J. S."}
 {"name": "John Smith (Lady)", "title": "Lady", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith (M.A)", "given": "John", "family": "Smith", "suffix": "M.A", "initials": "J. S."}

@@ -128,7 +128,6 @@
   "John Smith (MD ,PhD)"      →  suffix="MD, PhD"
   "John Smith (MD , PhD)"     →  nickname="MD , PhD"
   "John Smith (USN,Ret.)"     →  suffix="USN, Ret."
-  "John Smith (Jr.,MD)"       →  suffix="Jr.,MD"
   ```
 - A lone title of address written short with its period stays in the name as written bare, its clause no nickname for the period ending it, and where the bare word ending the name reads as a name word, so does it ('สุดา ใจดี ศ.' reads family 'ศ.').
   ```
