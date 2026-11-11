@@ -5255,6 +5255,51 @@ CASES: tuple[Case, ...] = (
          notes="accepted: Miss written short is no listed title, so its "
                "run divides as initials, as 'น.ส. ศศินันท์' reads; 3.0.1 "
                "read given 'น.ส.ศศินันท์' (#317)"),
+    Case("thai_salutation_glued_to_the_given_name",
+         "นายสมชาย ใจดี",
+         {"title": "นาย", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="rules/W6, the glued-title peel; 1.4.0 through 3.0.1 read "
+               "given 'นายสมชาย'"),
+    Case("thai_salutation_written_apart",
+         "นาย สมชาย ใจดี",
+         {"title": "นาย", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="listed by #317; 1.4.0 through 3.0.1 read given 'นาย', "
+               "middle 'สมชาย'"),
+    Case("thai_miss_peels_whole_not_mrs",
+         "นางสาวสุดา ใจดี",
+         {"title": "นางสาว", "given": "สุดา", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="longest first: นางสาว, not นาง + สาวสุดา"),
+    Case("thai_salutation_glued_after_a_family_comma",
+         "ใจดี, นายสมชาย",
+         {"title": "นาย", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="the given part's first word is a site too (rules/W6)"),
+    Case("thai_salutation_glued_with_nothing_before_the_comma",
+         ", นายสมชาย",
+         {"title": "นาย", "family": "สมชาย"},
+         classification="fix(#317)",
+         notes="the peel reaches the given part behind an empty head, "
+               "which then reads as ', นาย สมชาย' and ', Mr. John' do: "
+               "a title and one word, H1's exception to C15"),
+    Case("thai_title_listed_whole_is_not_peeled",
+         "นายแพทย์สมชาย ใจดี",
+         {"title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="physician opens with Mr.: the longest marked title peels, "
+               "and the word นายแพทย์ alone is never cut"),
+    Case("thai_short_form_glued_is_a_given_name",
+         "นพพร ใจดี",
+         {"given": "นพพร", "family": "ใจดี"},
+         notes="the boundary: นพ (physician, short) is not marked, a "
+               "given name opening with it (#317)"),
+    Case("japanese_name_in_thai_letters_keeps_its_opening",
+         "นางาเซะ โทโมยะ",
+         {"given": "นางาเซะ", "family": "โทโมยะ"},
+         notes="the boundary: what is left opens with a vowel written "
+               "after its consonant, so นาง is no title here (#317)"),
     Case("gc_is_a_family_name_with_nothing_to_spare",
          "Hari G.C.",
          {"given": "Hari", "family": "G.C."},

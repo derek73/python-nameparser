@@ -5,10 +5,11 @@ one_case where segment recorded it, and comma_offsets, for the
 own-words span `_one_case` asks the fact over where segment did not
 (#613; the answer is not recorded, classify recording its own), and
 original, for the peel's ASCII bail.
-Produces: tokens, by three independent splits into sub-slices -- a
+Produces: tokens, by four independent splits into sub-slices -- a
 word of the part before any comma glued to the next at its full stop
 divided there (rules/T8), with a SUFFIX_OR_NAME report where an
-initial is cut from the word ending the name, a
+initial is cut from the word ending the name, a listed title peeled
+off the START of the name's first word or the given part's (rules/W6), a
 listed honorific peeled off the END of the name's last
 non-post-nominal token, in whichever of the name's runs that falls
 (the tail token also carries this module's _PEELED_TAG), and the
@@ -26,7 +27,9 @@ suffix_words and its ambiguous set, credential_words, and
 period_joined_vocab's), and Lexicon.suffix_words, suffix_acronyms and
 titles DIRECTLY (the end-of-name report's tests), Policy.segment_scripts, Lexicon.surnames, Policy.script_orders
 and Policy.name_order (the order W5's pair needs, rules/W4),
-Lexicon.honorific_tails, ParseState.segmenter, Lexicon.maiden_markers
+Lexicon.honorific_tails, Lexicon.glued_titles and Lexicon.titles (the
+front peel's words and the titles a site steps past and never cuts),
+ParseState.segmenter, Lexicon.maiden_markers
 DIRECTLY (the own-words span `_one_case` takes, _pieces.own_words),
 everything classify and `_comma.decide` read, through
 `_postnominal_behind_a_whole_name` (the comma's own decision, asked of
@@ -56,7 +59,8 @@ split being the half that flips "田中さん, Jr./V." under {"/"} and the
 bare core the half that flips "田中さん, /").
 
 Implements rules T8 (a word glued at its full stop), W1 (the
-vocabulary/segmenter division), W2 (the glued-honorific peel), W3 (the
+vocabulary/segmenter division), W2 (the glued-honorific peel), W6 (the
+glued-title peel), W3 (the
 writer's divisions are respected) and W5's division (a Han surname
 pair) of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
@@ -534,6 +538,55 @@ def _peel_honorific_tail(state: ParseState,
     # put the same word in the same place, and only the provenance
     # differs.
     return _split(state, i, (offset,), None, tail_tag=_PEELED_TAG)
+
+
+#: The characters a word cannot open with however the peel cut it: the
+#: Thai vowels written after their consonant (U+0E30 to U+0E3A, U+0E45)
+#: and the repetition mark (U+0E46); a mark is no letter at all. So a
+#: title's letters that open a transcribed name keep it whole ('นางิ',
+#: Nagi; 'นางาเซะ', Nagase), what is left there being no Thai word.
+_NO_OPENING = frozenset(map(chr, (*range(0x0E30, 0x0E3B), 0x0E45, 0x0E46)))
+
+
+def _head_sites(state: ParseState) -> list[int]:
+    """The tokens a glued title may open: the first word of the name and,
+    after a family comma, the first word of the given part, each past
+    any title written apart in front of it ('รองศาสตราจารย์ นายแพทย์สมชาย')."""
+    titles = state.lexicon._sets.titles
+    runs = (state.segments[:2] if state.structure is Structure.FAMILY_COMMA
+            else state.segments[:1])
+    sites = []
+    for run in runs:
+        j = next((j for j in run
+                  if _normalize(state.tokens[j].text) not in titles), None)
+        if j is not None:
+            sites.append(j)
+    return sites
+
+
+# rules/W6: "a listed title glued to the start of the name's first word
+# splits off once and reads as a title" (history: decisions/W6 (#317))
+def _peel_title_head(state: ParseState) -> ParseState:
+    """#317: split a listed title off the START of the name's first word
+    -- นายสมชาย -> นาย + สมชาย -- the mirror of `_peel_honorific_tail`,
+    licensed the same way: only a title written `attached` peels
+    (`Lexicon.glued_titles`), the vocabulary carrying its own license.
+    Longest first, ONE peel, and never off a word the vocabulary lists
+    whole (`นายแพทย์`, which opens with `นาย`), nor where what is left
+    opens with a letter no word opens with (`_NO_OPENING`). The head
+    piece needs no tag: classify reads it as the listed title it is."""
+    heads = state.lexicon._sets.glued_titles
+    sets = state.lexicon._sets
+    for i in reversed(_head_sites(state)):
+        text = state.tokens[i].text
+        low = text.lower()
+        if len(low) != len(text) or _normalize(text) in sets.titles:
+            continue
+        cut = max((len(w) for w in heads
+                   if low.startswith(w) and len(w) < len(low)), default=0)
+        if cut and low[cut] not in _NO_OPENING and low[cut].isalpha():
+            state = _split(state, i, (cut,), None)
+    return state
 
 
 def _split_candidate(state: ParseState) -> int | None:
@@ -1016,6 +1069,21 @@ def script_segment(state: ParseState) -> ParseState:
     # The comma's decision, asked lazily: the peel asks it only once it
     # has a site, the division below only once there is a token to
     # divide (#613's /simplify), each on the state it acts on.
+    heads = state.lexicon._sets.glued_titles
+    if heads:
+        # the C-level test first, over the words a site can be, written
+        # as a loop rather than any() over a generator, whose frames a
+        # name holding no word that opens with a glued title would pay
+        # (rules/W6)
+        prefixes = tuple(heads)
+        for run in state.segments[:2]:
+            for j in run:
+                if state.tokens[j].text.lower().startswith(prefixes):
+                    state = _peel_title_head(state)
+                    break
+            else:
+                continue
+            break
     state = _peel_honorific_tail(
         state, lambda: _postnominal_behind_a_whole_name(state))
     if (state.structure is Structure.FAMILY_COMMA

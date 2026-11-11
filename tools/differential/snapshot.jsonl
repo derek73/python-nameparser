@@ -6476,6 +6476,15 @@
 {"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
 {"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
 {"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
+{"name": "นพพร ใจดี", "given": "นพพร", "family": "ใจดี", "initials": "น. ใ."}
+{"name": "นางสาวสุดา ใจดี", "title": "นางสาว", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}
+{"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ", "initials": "น. ย."}
+{"name": "นายสมชาย", "title": "นาย", "family": "สมชาย", "initials": "ส."}
+{"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D.", "initials": "ส. ใ."}
+{"name": "นายแพทย์ สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "นายแพทย์สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "บรืล, เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "initials": "เ. ค. เ. ม. ว. บ."}
 {"name": "บุญศักดิ์ พลสนะ", "given": "บุญศักดิ์", "family": "พลสนะ", "initials": "บ. พ."}
 {"name": "บุศนันทน์ อึ๊งบำรุงพันธุ์", "given": "บุศนันทน์", "family": "อึ๊งบำรุงพันธุ์", "initials": "บ. อ."}
@@ -6487,17 +6496,21 @@
 {"name": "มึลเลอร์ เคเทอ", "order": "FAMILY_FIRST", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "รศ.ดร.สุดา ใจดี", "title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์ นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "SUFFIX_OR_NAME: name as middle (position)"], "initials": "บ. ก. โ. ศ. เ. ค. เ. ม. ว."}
 {"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "title": "ศ.ดร.", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "เ. ค. เ. ม. ว. บ."}
 {"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี", "initials": "ส. น."}
 {"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "ส. ใ."}
 {"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
+{"name": "อาจารย์สรศักดิ์ ใจดี", "title": "อาจารย์", "given": "สรศักดิ์", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "เกรียงศักดิ์ โกวิทวาณิช", "given": "เกรียงศักดิ์", "family": "โกวิทวาณิช", "initials": "เ. โ."}
 {"name": "เคเทอ มึลเลอร์", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "เดชาพล พัววรานุเคราะห์", "given": "เดชาพล", "family": "พัววรานุเคราะห์", "initials": "เ. พ."}
 {"name": "แสงระวี คุณ ปรีชา กล้าหาญ", "order": "FAMILY_FIRST", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี", "initials": "ค. ป. ก. แ."}
 {"name": "แสงระวี, ปรีชา กล้าหาญ", "given": "ปรีชา", "middle": "กล้าหาญ", "family": "แสงระวี", "initials": "ป. ก. แ."}
+{"name": "ใจดี, นายสมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
 {"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}

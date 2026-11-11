@@ -6,6 +6,22 @@ schema = 1
 # nam_dict cannot spell Thai, Wikidata's few given-name statements are the
 # title typed in, and the Thai Wikipedia people index (39,858 people) holds
 # none in a name but the two articles titled with ดร. in front.
+# The salutations นาย, นาง and นางสาว (#317) and the spelled-out titles
+# are written `attached` in front: rules/W6 splits one glued to the start
+# of the name. The short forms are not, each opening real given names
+# (นพพร, ศิรินภา).
+
+[[word]]
+text = "นาง"
+salutation = { gender = "f", issue = 317, attached = { side = "before", issue = 317 }, expands = "Mrs., a married woman", note = "no Thai given name opens with it among 12,880 (PyThaiNLP's lists and 2019's election candidates, 2026-11-10); the Thai Wikipedia names opening with it glued are the honorific (นางวิสาขา), the Japanese ones (นางิ, นางาเซะ) kept whole by the syllable guard; 1,428 of the 14,098 2019 candidates" }
+
+[[word]]
+text = "นางสาว"
+salutation = { gender = "f", issue = 317, attached = { side = "before", issue = 317 }, expands = "Miss, an unmarried woman", note = "no Thai given name opens with it among 12,880 (2026-11-10); 1,676 of the 14,098 2019 candidates; glued to the given name by 8 ORCID filers, written apart by 2" }
+
+[[word]]
+text = "นาย"
+salutation = { gender = "m", issue = 317, attached = { side = "before", issue = 317 }, expands = "Mr.", note = "one Thai given name of 12,880 opens with it, นายณัฐ in PyThaiNLP's female list, the salutation typed in; the Thai Wikipedia names opening with it glued are the honorific or a noble rank (นายขนมต้ม, นายจำนงราชกิจ) (2026-11-10); 10,059 of the 14,098 2019 candidates; glued to the given name by 23 ORCID filers, written apart by 2" }
 
 [[word]]
 text = "ดร"
@@ -13,7 +29,7 @@ academic = { issue = 1166, expands = "Dr., ดอกเตอร์ written shor
 
 [[word]]
 text = "ทันตแพทย์"
-academic = { issue = 1166, expands = "dentist" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "dentist" }
 
 [[word]]
 text = "ทพ"
@@ -21,7 +37,7 @@ academic = { issue = 1166, same_as = "ทันตแพทย์", expands = "d
 
 [[word]]
 text = "ทันตแพทย์หญิง"
-academic = { gender = "f", issue = 1166, expands = "dentist, a woman" }
+academic = { gender = "f", issue = 1166, attached = { side = "before", issue = 317 }, expands = "dentist, a woman" }
 
 [[word]]
 text = "ทพญ"
@@ -29,7 +45,7 @@ academic = { gender = "f", issue = 1166, same_as = "ทันตแพทย์�
 
 [[word]]
 text = "นายแพทย์"
-academic = { gender = "m", issue = 1166, expands = "physician, a man" }
+academic = { gender = "m", issue = 1166, attached = { side = "before", issue = 317 }, expands = "physician, a man" }
 
 [[word]]
 text = "นพ"
@@ -37,7 +53,7 @@ academic = { gender = "m", issue = 1166, same_as = "นายแพทย์", e
 
 [[word]]
 text = "ผู้ช่วยศาสตราจารย์"
-academic = { issue = 1166, expands = "assistant professor" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "assistant professor" }
 
 [[word]]
 text = "ผศ"
@@ -45,7 +61,7 @@ academic = { issue = 1166, same_as = "ผู้ช่วยศาสตราจ
 
 [[word]]
 text = "รองศาสตราจารย์"
-academic = { issue = 1166, expands = "associate professor" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "associate professor" }
 
 [[word]]
 text = "รศ"
@@ -53,7 +69,7 @@ academic = { issue = 1166, same_as = "รองศาสตราจารย์
 
 [[word]]
 text = "ศาสตราจารย์"
-academic = { issue = 1166, expands = "professor", note = "Wikidata given 3, the title typed in as a given name; no Thai Wikipedia article holds it in a name (2026-11-10)" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "professor", note = "Wikidata given 3, the title typed in as a given name; no Thai Wikipedia article holds it in a name (2026-11-10)" }
 
 [[word]]
 text = "ศ"
@@ -61,19 +77,19 @@ academic = { issue = 1166, same_as = "ศาสตราจารย์", expand
 
 [[word]]
 text = "สัตวแพทย์"
-academic = { issue = 1166, expands = "veterinarian" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "veterinarian" }
 
 [[word]]
 text = "สัตวแพทย์หญิง"
-academic = { gender = "f", issue = 1166, expands = "veterinarian, a woman" }
+academic = { gender = "f", issue = 1166, attached = { side = "before", issue = 317 }, expands = "veterinarian, a woman" }
 
 [[word]]
 text = "อาจารย์"
-academic = { issue = 1166, expands = "lecturer, teacher (ajarn)", note = "Wikidata given 1, the title typed in as a given name; no Thai Wikipedia article holds it in a name (2026-11-10)" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "lecturer, teacher (ajarn)", note = "Wikidata given 1, the title typed in as a given name; no Thai Wikipedia article holds it in a name (2026-11-10)" }
 
 [[word]]
 text = "เภสัชกร"
-academic = { issue = 1166, expands = "pharmacist" }
+academic = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "pharmacist" }
 
 [[word]]
 text = "ภก"
@@ -81,7 +97,7 @@ academic = { issue = 1166, same_as = "เภสัชกร", expands = "pharmac
 
 [[word]]
 text = "เภสัชกรหญิง"
-academic = { gender = "f", issue = 1166, expands = "pharmacist, a woman" }
+academic = { gender = "f", issue = 1166, attached = { side = "before", issue = 317 }, expands = "pharmacist, a woman" }
 
 [[word]]
 text = "ภญ"
@@ -89,7 +105,7 @@ academic = { gender = "f", issue = 1166, same_as = "เภสัชกรหญ�
 
 [[word]]
 text = "แพทย์หญิง"
-academic = { gender = "f", issue = 1166, expands = "physician, a woman" }
+academic = { gender = "f", issue = 1166, attached = { side = "before", issue = 317 }, expands = "physician, a woman" }
 
 [[word]]
 text = "พญ"
@@ -97,7 +113,11 @@ academic = { gender = "f", issue = 1166, same_as = "แพทย์หญิง"
 
 [[word]]
 text = "ว่าที่ร้อยตรี"
-military = { issue = 1166, expands = "acting second lieutenant, the reserve rank a graduate of officer training carries", note = "one word as written, so it needs a listing and nothing else" }
+military = { issue = 1166, attached = { side = "before", issue = 317 }, expands = "acting second lieutenant, the reserve rank a graduate of officer training carries", note = "one word as written, so it needs a listing and nothing else" }
+
+[[word]]
+text = "ว่าที่ร้อยตรีหญิง"
+military = { gender = "f", issue = 317, attached = { side = "before", issue = 317 }, same_as = "ว่าที่ร้อยตรี", expands = "acting second lieutenant, a woman", note = "one ORCID filer glues it to her given name (ว่าที่ร้อยตรีหญิงพิราภรณ์), which the peel of ว่าที่ร้อยตรี alone would leave หญิงพิราภรณ์ (2026-11-10)" }
 
 [[word]]
 text = "จูเนียร์"
