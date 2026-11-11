@@ -3497,6 +3497,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('أم', (('ar', 'bound_given', ()),)),
     ('ابن', (('ar', 'patronymic', ()),)),
     ('ابو', (('ar', 'teknonymic', (('same_as', 'أبو'),)), ('ar', 'bound_given', (('same_as', 'أبو'),)), ('ar', 'given', ()))),
+    ('ال', (('ar', 'clan', (('same_as', 'آل'),)),)),
     ('الأب', (('ar', 'generation', ()),)),
     ('الأستاذ', (('ar', 'academic', (('addresses', 'given'),)),)),
     ('الأستاذة', (('ar', 'academic', (('addresses', 'given'),)),)),

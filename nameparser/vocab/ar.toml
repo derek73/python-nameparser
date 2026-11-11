@@ -399,12 +399,6 @@ expands = "the, after a case ending: \"Zia ul-Haq\""
 same_as = "al-"
 
 [[word]]
-text = "ال"
-[word.excluded.article]
-reason = "normally attached to the word it determines, and too ambiguous standing alone (#269)"
-issue = 269
-
-[[word]]
 text = "ben"
 [word.excluded.patronymic]
 reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage); a caller who needs the patronymic reading adds it to their own Lexicon. The pressure to re-add is real and recurring: 'Ahmad ben Husain' wants family 'ben Husain', the v1 suite carried that as an xfail for years, and a sweep of Arabic and Hebrew patronymic particles is exactly how it comes back"
@@ -492,7 +486,16 @@ text = "آل"
 may_be_given = false
 issue = 269
 expands = "family of: \"Al Saud\""
-note = "Distinct from the article ال, excluded in this file; a clan prefix, never a bare given name."
+note = "A clan prefix, never a bare given name; ال is its hamza-less spelling (#1150)."
+
+[[word]]
+text = "ال"
+[word.clan]
+may_be_given = false
+issue = 1150
+same_as = "آل"
+expands = "family of: \"Al Saud\", hamza-less spelling"
+note = "Standing alone it is the clan prefix, not the article (excluded as one in #269): of JRC-Names' 28 standalone spellings 17 are the clan prefix, 9 are cut off at the end of the text, 2 are the English given name Al (ال باتشينو) and none is the article split from its word, measured 2026-11-07; never given, so ال باتشينو reads family, the accepted cost (#1150). Attached to its word (الشيخ) it is no standalone token and is unaffected."
 
 [[word]]
 text = "و"
