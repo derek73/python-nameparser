@@ -208,7 +208,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **How it works.** GLUED_HONORIFICS is the exemplar (rule W2): 씨 peels because it can never end a name; 양 stays out because 김지양 is a given name. The set, not a regex, draws the line.
 
-**Lives in.** nameparser/vocab/*.toml, where each word the peel may take carries `attached`. A word refused only the glued position carries `excluded = { attached = … }` on the reading it keeps (`uv run python tools/vocab/query.py --excluded attached`), and a word refused the honorific reading in both positions, such as 君 or bare 선생, carries a word-level `excluded` (`--excluded honorific`), each with its reason.
+**Lives in.** nameparser/vocab/*.toml, where each word the peel may take carries `attached`. A word refused only the glued position carries `excluded = { attached = … }` on the reading it keeps (`uv run python tools/vocab/query.py --excluded attached`), and a word refused the honorific reading in both positions, such as bare 선생 (and 君 in zh.toml, which a Japanese choice reads through ja.toml's `default = false` honorific, #1194), carries a word-level `excluded` (`--excluded honorific`), each with its reason.
 
 **Reach for it when.** Arguing that "no regex can separate X from Y" — check whether a config set already splits them by listing one side. The second half of the pattern: to USE the set in a regex, hand-copy the alternation and pin the copy against the set (tests/v2/test_regex_sync.py holds the pipeline's copies).
 
