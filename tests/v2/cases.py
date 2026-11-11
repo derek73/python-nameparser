@@ -5323,6 +5323,18 @@ CASES: tuple[Case, ...] = (
          notes="accepted: a title and one word read as written apart "
                "(rules/H1); decisions/W6 holds the Open on Thai "
                "addressing the given name"),
+    Case("thai_shorter_title_where_the_longer_leaves_no_word",
+         "นางสาวิตรี ใจดี",
+         {"title": "นาง", "given": "สาวิตรี", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="นางสาว would leave a vowel mark, so นาง peels, as "
+               "'นาง สาวิตรี' reads (the docs review of #317)"),
+    Case("thai_glued_title_behind_a_dotted_title_pair",
+         "รศ.ดร. นายแพทย์สมชาย ใจดี",
+         {"title": "รศ.ดร. นายแพทย์", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="the site walk passes a title joined at its full stops "
+               "(the docs review of #317)"),
     Case("thai_short_form_glued_is_a_given_name",
          "นพพร ใจดี",
          {"given": "นพพร", "family": "ใจดี"},

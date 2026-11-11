@@ -551,21 +551,26 @@ _NO_OPENING = frozenset(map(chr, (*range(0x0E30, 0x0E3B), 0x0E45, 0x0E46)))
 def _head_sites(state: ParseState) -> list[int]:
     """The tokens a glued title may open: the first word of the name and,
     after a family comma, the first word of the given part, each past
-    any title written apart in front of it ('รองศาสตราจารย์ นายแพทย์สมชาย')."""
+    any listed title written apart in front of it, alone or joined at its
+    full stops ('รองศาสตราจารย์ นายแพทย์สมชาย', 'รศ.ดร. นายสมชาย')."""
     titles = state.lexicon._sets.titles
     runs = (state.segments[:2] if state.structure is Structure.FAMILY_COMMA
             else state.segments[:1])
     sites = []
     for run in runs:
         j = next((j for j in run
-                  if _normalize(state.tokens[j].text) not in titles), None)
+                  if _normalize(state.tokens[j].text) not in titles
+                  and period_joined_vocab(state.tokens[j].text,
+                                          state.lexicon) != "title"),
+                 None)
         if j is not None:
             sites.append(j)
     return sites
 
 
-# rules/W6: "a listed title glued to the start of the name's first word
-# splits off once and reads as a title" (history: decisions/W6 (#317))
+# rules/W6: "a title the vocabulary marks to peel, glued to the start of
+# the name's first word, splits off once and reads as a title" (history:
+# decisions/W6 (#317))
 def _peel_title_head(state: ParseState) -> ParseState:
     """#317: split a listed title off the START of the name's first word
     -- นายสมชาย -> นาย + สมชาย -- the mirror of `_peel_honorific_tail`,
@@ -589,9 +594,13 @@ def _peel_title_head(state: ParseState) -> ParseState:
         low = text.lower()
         if len(low) != len(text) or _normalize(text) in sets.titles:
             continue
-        cut = max((len(w) for w in heads
-                   if low.startswith(w) and len(w) < len(low)), default=0)
-        if cut and low[cut] not in _NO_OPENING and low[cut].isalpha():
+        # longest first, falling back to a shorter title where what the
+        # longer leaves cannot open a word ('นางสาวิตรี' is นาง + สาวิตรี)
+        cut = next((len(w) for w in sorted(heads, key=len, reverse=True)
+                    if len(w) < len(low) and low.startswith(w)
+                    and low[len(w)] not in _NO_OPENING
+                    and low[len(w)].isalpha()), 0)
+        if cut:
             divide = divide or bool(state.segments and i in state.segments[0]
                                     and GLUED_SHAPE.search(text, cut))
             state = _split(state, i, (cut,), None)
