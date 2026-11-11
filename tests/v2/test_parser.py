@@ -2488,17 +2488,19 @@ def test_a_decomposed_turkic_marker_reads_as_its_composed_twin(
     oğlu` read given 'Mamedov', family 'oğlu' under the Turkic rule (the
     group suggester already folded it). The Cyrillic `ўғли` decomposes
     too. Compared composed, with the patronymic view and the
-    ambiguity kinds beside the roles: under a family-first order the
-    roles never moved, and only the view and the tokens' reading did
-    (`_assemble`'s site), which `_composed_reading` cannot see.
+    ambiguity kinds beside the roles: under a family-first order with
+    `two_given_names` off only the view and the tokens' reading moved
+    (`_assemble`'s site), which `_composed_reading` cannot see; with it
+    on, O7's guard moved the roles too (these policies set it).
     The rows reach all four call sites of the predicate (O2's rotation,
     O7's and P10's guards, the patronymic view); the ASCII row and
     `Oğlu` at the head are parity controls that pass without the fix.
     Recorded control, measured 2026-11-10 against 213f90f7's
-    nameparser/: of this module's and test_locales.py's 77 new cases
-    36 fail, among them the O7 and P10 rows, the patronymic-view row
-    under both family-first orders, the predicate test and the
-    pack's DEVIATES test."""
+    nameparser/: of the 42 new cases in this module and test_locales.py
+    36 fail, including the O7 and P10 rows, the patronymic-view row
+    under both family-first orders, the predicate test and the pack's
+    DEVIATES test; the six that pass are the two parity rows under
+    each policy."""
     composed = unicodedata.normalize("NFC", text)
     decomposed = unicodedata.normalize("NFD", text)
     parser = Parser(policy=policy)
