@@ -18717,6 +18717,13 @@ CASES: tuple[Case, ...] = (
          notes="the accepted cost: word for word the clergy shape "
                "(decisions/salutation-titles); 1.4.0 through 3.0.1 read "
                "given 'Տեր', wrong too"),
+    Case("armenian_ter_surname_behind_a_title_joins_the_title_run",
+         "Պարոն Տեր Պետրոսյան",
+         {"title": "Պարոն Տեր", "family": "Պետրոսյան"},
+         classification="fix(#1225)",
+         notes="the accepted cost, rules/P4's title-particle as in "
+               "'Mr. Freiherr von Berg'; 1.4.0 through 3.0.1 read given "
+               "'Պարոն', middle 'Տեր', wrong too"),
     Case("armenian_ter_hyphenated_surname_is_one_word",
          "Լևոն Տեր-Պետրոսյան",
          {"given": "Լևոն", "family": "Տեր-Պետրոսյան"}),
