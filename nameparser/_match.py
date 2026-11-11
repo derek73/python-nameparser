@@ -19,7 +19,9 @@ outcomes the caller accepts. The module imports `_types`, `_policy`
 repr compares a parser's policy with) and `_lexicon` (for
 `_normalize`, which folds a hyphen half before it is looked up among
 the particles, and `Lexicon.default()`, which the repr compares a
-parser's lexicon with), `_parser` at call time, in the constructor and
+parser's lexicon with), `_pipeline._vocab` (for `_HYPHEN_CHARS`, the
+hyphens the pipeline joins two names with, every one of which the
+match reads as the hyphen-minus), `_parser` at call time, in the constructor and
 the repr, to tell a `Parser` from anything else, and `Parser` for
 typing too.
 """
@@ -32,7 +34,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from nameparser._lexicon import FULL_STOPS, Lexicon, _fold, _normalize
+from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
+from nameparser._lexicon import _fold as _lexicon_fold
+from nameparser._pipeline._vocab import _HYPHEN_CHARS, _HYPHENS
 from nameparser._policy import _NO_INITIALS, Policy, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
@@ -370,8 +374,9 @@ class Matching:
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
         """Grouping keys: for each word of the folded family base, and
-        each half of a hyphenated one beside its joined and its whole
-        form, a half that is a listed particle left out (`Al-Saud` keys
+        each half of a hyphenated one (cut at any of the pipeline's
+        hyphens, each folded to the hyphen-minus) beside its joined and
+        its whole form, a half that is a listed particle left out (`Al-Saud` keys
         `saud`, `alsaud` and `al-saud`, never `al`), and for the family's
         whole text, particles kept, folded and joined (`de la Vega` keys
         `delavega` beside `vega`), one key `word;g` where `g` is the
@@ -565,8 +570,8 @@ class Matching:
             forms += _family_words(base, lexicon)
             # a hyphenated word joined and whole too: either may itself
             # be the full form another word is listed as a spelling of
-            forms += [form for raw in base.split() if "-" in raw
-                      for form in (raw.replace("-", ""), raw)]
+            forms += [form for raw in base.split() if _HYPHENS.search(raw)
+                      for form in (_HYPHENS.sub("", raw), raw)]
         words = set().union(*(_spelling_keys(form, family_rule.group, lexicon)
                               for form in forms if form))
         # the whole text the check compares a family name by, particles
@@ -654,6 +659,15 @@ _PARSER_FIELDS = ("lexicon", "policy", "segmenter")
 
 # -- the check -------------------------------------------------------------
 
+#: Every hyphen the pipeline joins two names with in one written word
+#: (rules/O6's set, `_pipeline/_vocab._HYPHEN_CHARS`), each read as the
+#: hyphen-minus: `_fold` maps them, and a raw text is cut at any of them
+#: (`_HYPHENS`), so `Smith‐Jones` (U+2010) and `Thomas–Symonds` (the en
+#: dash) split as `Smith-Jones` does, on both sides and in the keys
+#: (decisions/name-matching, 2026-11-11 #1264).
+_TO_HYPHEN_MINUS = str.maketrans(dict.fromkeys(_HYPHEN_CHARS, "-"))
+#: Spaces and hyphens in a FOLDED text, where every hyphen of
+#: `_HYPHEN_CHARS` is the hyphen-minus already.
 _WORDS = re.compile(r"[\s-]+")
 #: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
 #: single character in one of them is a whole word, never an initial.
@@ -663,6 +677,14 @@ _RANK_ROLE = {r: i for i, r in enumerate(Role)}
 #: period `_spellings` reads off a word as written.
 _FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
+
+
+def _fold(text: str) -> str:
+    """The lexicon's fold (`_lexicon._fold`: case, accents, full stops
+    and apostrophes), then every hyphen of `_HYPHEN_CHARS` written as
+    the hyphen-minus, so two texts differing by their hyphen character
+    alone are `folded`, as two differing by their apostrophe are."""
+    return _lexicon_fold(text).translate(_TO_HYPHEN_MINUS)
 
 
 def _base_of(name: ParsedName, role: Role) -> str:
@@ -798,13 +820,14 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     folded or listed as one spelling in `group`, `initial` where one is
     an initial of the other's first letter, else `None`. A hyphenated
     word is compared part by part against the other's hyphen-split
-    parts (`J.-P.` / `Jean-Pierre`)."""
+    parts (`J.-P.` / `Jean-Pierre`), cut at any of the pipeline's
+    hyphens."""
     fa, fb = _fold(a), _fold(b)
     if fa == fb or _listed(a, b, group, lexicon):
         return Outcome.SAME
     if (_is_initial(fa) and fb[:1] == fa) or (_is_initial(fb) and fa[:1] == fb):
         return Outcome.INITIAL
-    pa, pb = a.split("-"), b.split("-")
+    pa, pb = _HYPHENS.split(a), _HYPHENS.split(b)
     if len(pa) > 1 and len(pa) == len(pb):
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(pa, pb)]
         if None not in parts:
@@ -874,7 +897,8 @@ def _letter(folded: str) -> str:
 
 
 def _joined(folded: str) -> str:
-    """A folded text without its spaces and hyphens, the form `joined`
+    """A folded text without its spaces and hyphens (the fold writes
+    each as the hyphen-minus), the form `joined`
     compares and the keys cut a family's whole key from (decisions/
     name-matching, 2026-11-09 #1261)."""
     return _WORDS.sub("", folded)
@@ -908,7 +932,8 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
 
 
 def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
-                   bases: tuple[str, str] | None = None) -> Iterator[Outcome]:
+                   bases: tuple[str, str] | None = None,
+                   chain: bool = True) -> Iterator[Outcome]:
     """The outcomes that hold for two non-empty texts of one role,
     strongest first, lazily, and last conflict, which always holds. An
     outcome holds only where the leniency it names was needed: none is
@@ -938,18 +963,35 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
       form (in the `given` group) and a hyphenated part are each
       orthogonal to it and to each other, so each is yielded where it
       holds (`Jean` / `Jean-Paul`, a caller's familiar pair and a
-      hyphenated part both)."""
+      hyphenated part both).
+    - Given `bases` and not `chain`, the maiden name's
+      (`_compare_maiden`), the two leniencies that read the bases,
+      particles set aside then part of the other, the first that holds,
+      are yielded ahead of any other role's, save between two texts of
+      initials alone, which stay `initials-agree`'s to read as they are
+      `joined`'s exception (`J.-P.` / `J. P.`), so the maiden name sets its
+      particles aside as the family name does while an initial against
+      it still reads `initial`, never the opt-in `family-initial`, and
+      a hyphenated part is still yielded beside part of the other: a
+      caller keeps every maiden outcome they accepted before
+      (decisions/name-matching, 2026-11-11 #1264)."""
     fa, fb = _fold(a), _fold(b)
     full = _full_outcome(a, b, fa, fb, lexicon, group)
     wa, wb = a.split(), b.split()
     if full is not None:
         yield full
     if full is None or full is Outcome.JOINED:
-        if bases is not None:
-            chain = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
-            if chain is not None:
-                yield chain
+        if bases is not None and chain:
+            first = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
+            if first is not None:
+                yield first
         else:
+            # two texts of initials alone are `initials-agree`'s to read,
+            # as they are `joined`'s exception
+            if bases is not None and not (
+                    _initials_only(fa) and _initials_only(fb)) and (
+                    aside := _aside_outcome(bases, lexicon, group)) is not None:
+                yield aside
             initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
             if initials is not None:
                 yield initials
@@ -992,16 +1034,28 @@ def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
     counts inside a compound surname as it does whole, in `group`
     (`Smyth-Jones` / `Smith` with `smyth` listed as `smith`;
     decisions/name-matching, 2026-11-09 #1262)."""
-    spellings = _SpellingSets(lexicon, group)
-    if bases[0] and _bases_agree(bases[0], bases[1], spellings):
-        return Outcome.PARTICLES_ASIDE
-    wa_, wb_ = _base_forms(bases[0], lexicon), _base_forms(bases[1], lexicon)
-    if wa_ and wb_ and (_covered(wa_, wb_, spellings)
-                        or _covered(wb_, wa_, spellings)):
-        return Outcome.PART_OF_OTHER
+    aside = _aside_outcome(bases, lexicon, group)
+    if aside is not None:
+        return aside
     initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
     return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
             else initials)
+
+
+def _aside_outcome(bases: tuple[str, str], lexicon: Lexicon,
+                   group: str) -> Outcome | None:
+    """The two leniencies that read two bases (the texts without their
+    particles), the first that holds: the bases equal once folded or
+    listed as spellings word for word (particles set aside), or one
+    base's words each among the other's or listed as a spelling of one
+    of them (part of the other), else `None`."""
+    spellings = _SpellingSets(lexicon, group)
+    if bases[0] and _bases_agree(bases[0], bases[1], spellings):
+        return Outcome.PARTICLES_ASIDE
+    wa, wb = _base_forms(bases[0], lexicon), _base_forms(bases[1], lexicon)
+    if wa and wb and (_covered(wa, wb, spellings) or _covered(wb, wa, spellings)):
+        return Outcome.PART_OF_OTHER
+    return None
 
 
 def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
@@ -1021,10 +1075,11 @@ def _pick(outcomes: Iterable[Outcome], accept: frozenset[Outcome]) -> Outcome:
 
 def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
                   accept: frozenset[Outcome],
-                  bases: tuple[str, str] | None = None) -> Outcome:
+                  bases: tuple[str, str] | None = None,
+                  chain: bool = True) -> Outcome:
     """Two non-empty texts of one role, by `_pick` over the outcomes
     that hold (`_text_outcomes`)."""
-    return _pick(_text_outcomes(a, b, lexicon, group, bases), accept)
+    return _pick(_text_outcomes(a, b, lexicon, group, bases, chain), accept)
 
 
 def _particle_half(folded: str, lexicon: Lexicon) -> bool:
@@ -1039,15 +1094,17 @@ def _particle_half(folded: str, lexicon: Lexicon) -> bool:
 def _family_words(base: str, lexicon: Lexicon) -> list[str]:
     """A family base's comparable words, as written: each word, and a
     hyphenated one as its halves less any listed particle, an empty half
-    dropped. Read by `part-of-other` (`_base_forms`) and by `keys`, so
+    dropped, a word cut at any of the pipeline's hyphens (`_HYPHENS`).
+    Read by `part-of-other` (`_base_forms`) and by `keys`, so
     the two set aside the same halves. Raw and folded agree half for
-    half: `_fold` never adds or removes a hyphen or a space (test_match.py
-    holds it over every assigned code point in context), so a word's
+    half: `_fold` never adds or removes a hyphen or a space, writing each
+    hyphen as the hyphen-minus (test_match.py holds it over every
+    assigned code point in context), so a word's
     halves fold to its folded halves, save that a word or half of full
     stops folds to empty."""
     words: list[str] = []
     for word in base.split():
-        halves = word.split("-")
+        halves = _HYPHENS.split(word)
         if len(halves) > 1:
             words += [h for h in halves
                       if h and not _particle_half(_fold(h), lexicon)]
@@ -1287,6 +1344,18 @@ def _compare_family(a: str, b: str, left: ParsedName, right: ParsedName,
                          (left.family_base, right.family_base))
 
 
+def _compare_maiden(a: str, b: str, left: ParsedName, right: ParsedName,
+                    lexicon: Lexicon, accept: frozenset[Outcome],
+                    rule: _RoleRule) -> Outcome:
+    """Two non-empty maiden names by `_text_outcome`, with the two maiden
+    bases, particles set aside as `family_base` sets the family's, which
+    the leniencies that read bases compare (`particles-aside`,
+    `part-of-other`), outside the family chain (`chain=False`)."""
+    return _text_outcome(a, b, lexicon, rule.group, accept,
+                         (_base_of(left, Role.MAIDEN),
+                          _base_of(right, Role.MAIDEN)), chain=False)
+
+
 def _compare_middle(a: str, b: str, left: ParsedName, right: ParsedName,
                     lexicon: Lexicon, accept: frozenset[Outcome],
                     rule: _RoleRule) -> Outcome:
@@ -1320,7 +1389,7 @@ _RULES: Mapping[Role, _RoleRule] = {
                            across=(Role.MAIDEN,)),
     Role.SUFFIX: _RoleRule("suffix", _compare_suffix, None, tried_into=False),
     Role.NICKNAME: _RoleRule("given", _compare_text, _EMPTY),
-    Role.MAIDEN: _RoleRule("family", _compare_text, _EMPTY),
+    Role.MAIDEN: _RoleRule("family", _compare_maiden, _EMPTY),
 }
 
 
