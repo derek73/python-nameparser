@@ -924,7 +924,8 @@ _GLUED_WORD = re.compile(
 
 def _is_cased_letter(chunk: str) -> bool:
     """One letter in a script with case: the initial T8 reads alone
-    (rules/T8), where a letter in a script without case is no initial."""
+    (rules/T8); a single letter in a script without case is read alone
+    only where it is listed, as a title or a given name written short."""
     return len(chunk) == 1 and chunk.upper() != chunk.lower()
 
 
@@ -932,9 +933,9 @@ def _reads_alone(chunk: str, lexicon: Lexicon) -> bool:
     """A chunk the parser reads on its own before a full stop: one
     letter in a script with case, a transliteration digraph rules/H2
     names, a listed title that is no saint particle, or a listed given
-    name written short (decisions/period-joined-words, #1255). A letter
-    in a script without case is read alone only as a listed title (Thai
-    'ศ.', #1166)."""
+    name written short (decisions/period-joined-words, #1255). A single
+    letter in a script without case is read alone only where it is
+    listed (Thai 'ศ.', #1166); a run of them is T7's run in any script."""
     chunk = unicodedata.normalize("NFC", chunk)
     if _is_cased_letter(chunk):
         return True
