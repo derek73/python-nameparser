@@ -14,7 +14,7 @@ salutation = { issue = 1225, gender = "m", expands = "batoni, Mr.", after_given 
 
 [[word]]
 text = "ბ-ნი"
-salutation = { issue = 1225, gender = "m", same_as = "ბატონი", note = "no bearer: Wikidata and Georgian Wikipedia's people 0, 2026-11-10" }
+salutation = { issue = 1225, gender = "m", same_as = "ბატონი", after_given = true, note = "no bearer: Wikidata and Georgian Wikipedia's people 0, 2026-11-10" }
 
 [[word]]
 text = "ქალბატონი"
@@ -22,7 +22,7 @@ salutation = { issue = 1225, gender = "f", expands = "kalbatoni, Ms.", after_giv
 
 [[word]]
 text = "ქ-ნი"
-salutation = { issue = 1225, gender = "f", same_as = "ქალბატონი", note = "no bearer: Wikidata and Georgian Wikipedia's people 0, 2026-11-10" }
+salutation = { issue = 1225, gender = "f", same_as = "ქალბატონი", after_given = true, note = "no bearer: Wikidata and Georgian Wikipedia's people 0, 2026-11-10" }
 
 [[word]]
 text = "აკადემიკოსი"

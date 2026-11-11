@@ -18663,6 +18663,12 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1225)",
          notes="listed whole, as Russian г-н is; a hyphen keeps it one "
                "word, so no shape rule could read it"),
+    Case("georgian_abbreviated_salutation_ending_the_given_part",
+         "ყიფიანი, დავით ბ-ნი",
+         {"title": "ბ-ნი", "given": "დავით", "family": "ყიფიანი"},
+         classification="fix(#1225)",
+         notes="after_given, as on its full form ბატონი and on г-н "
+               "(rules/H8)"),
     Case("georgian_academic_title_in_mtavruli",
          "ᲐᲙᲐᲓᲔᲛᲘᲙᲝᲡᲘ ᲓᲐᲕᲘᲗ ᲧᲘᲤᲘᲐᲜᲘ",
          {"title": "ᲐᲙᲐᲓᲔᲛᲘᲙᲝᲡᲘ", "given": "ᲓᲐᲕᲘᲗ",
