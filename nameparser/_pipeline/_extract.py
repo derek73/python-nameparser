@@ -43,10 +43,9 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
-from nameparser._pipeline._tokenize import _ignorable
+from nameparser._pipeline._tokenize import _clause_words, _ignorable
 from nameparser._pipeline._vocab import (
-    clause_words, comma_follows_marker, maiden_marker_run, set_apart,
-    set_apart_kind,
+    comma_follows_marker, maiden_marker_run, set_apart, set_apart_kind,
 )
 from nameparser._types import AmbiguityKind, Role, Span
 
@@ -72,10 +71,10 @@ def _set_apart(inner: Span, state: ParseState) -> bool:
     alone behind a credential, initials before a name word), which then
     keeps its pair's reading and not the period escape."""
     # the common clause, with no comma ('Jack'), split inline so it
-    # pays no frame for `clause_words`
+    # pays no frame for `_tokenize._clause_words`
     content = state.original[inner.start:inner.end]
     words = (content.split() if COMMA_CHARS.isdisjoint(content)
-             else clause_words(content, state.policy))
+             else _clause_words(content, state.policy))
     lexicon = state.lexicon
     kinds = []
     for word in words:

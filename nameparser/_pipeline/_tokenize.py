@@ -16,7 +16,10 @@ original exactly as given (v1 contrast: decisions/T1).
 
 Beside the stage function, `_ignorable` is shared: extract asks it
 where a listed particle's word ends (rules/N2, #1241), so the two
-stages cannot disagree about which characters separate a word.
+stages cannot disagree about which characters separate a word; and
+`_clause_words` is shared with extract and post_rules, which read a
+delimited clause's words for rules/S1 before tokens exist and beside
+them, ending a word at a comma where this stage does (#1268).
 """
 from __future__ import annotations
 
@@ -145,6 +148,35 @@ def _ignorable(ch: str, policy: Policy) -> bool:
     return _stripped(ch, policy)
 
 
+def _clause_words(content: str, policy: Policy) -> list[str]:
+    """The words of a clause as extract and post_rules read them for
+    rules/S1 (#1268): split at whitespace, and after a comma glued
+    between two word characters, the comma kept on the first word
+    ('MD,PhD' is 'MD,', 'PhD'), where tokenize ends a word too: a
+    character in front of the comma that tokenize keeps, and one behind
+    it that is no comma and no character tokenize drops (`_ignorable`).
+    So ',JP', 'MD,,' and 'MD,' before an invisible separator are one
+    word, as tokenize leaves them. A separator tokenize divides at and
+    whitespace does not (rules/T1's invisible separators, T2's dots, a
+    stripped emoji) is not divided here, as the base's whitespace split
+    did not divide it; post_rules compares the count of these words with
+    the clause's tokens, as it compared that split's."""
+    words: list[str] = []
+    for word in content.split():
+        start = 0
+        last = len(word) - 1
+        for k, ch in enumerate(word):
+            if (ch in COMMA_CHARS and k > start and k < last
+                    and not _ignorable(word[k - 1], policy)
+                    and word[k + 1] not in COMMA_CHARS
+                    and not _ignorable(word[k + 1], policy)):
+                words.append(word[start:k + 1])
+                start = k + 1
+        if start < len(word):
+            words.append(word[start:])
+    return words
+
+
 def _tokenize_region(state: ParseState, start: int, end: int,
                      role: Role | None, record_offsets: bool,
                      tokens: list[WorkToken], commas: list[int],
@@ -203,7 +235,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             # nickname keeps it as written. Only between two word
             # characters: a doubled comma, or one before a separator
             # tokenize drops, leaves the word as before #1268
-            # (decisions/S1, #1268); `_vocab.clause_words` asks the same
+            # (decisions/S1, #1268); `_clause_words` asks the same
             tokens.append(WorkToken(text[tok_start:i + 1],
                                     Span(tok_start, i + 1), role=role))
             tok_start = None

@@ -72,8 +72,9 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
+from nameparser._pipeline._tokenize import _clause_words
 from nameparser._pipeline._vocab import (
-    _HYPHENS, SetApartKind, clause_words, delimiter_cores, dotted_member,
+    _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     east_slavic_rotates, has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, joined_member, member_word, period_member,
     reads_as_initials,
@@ -757,11 +758,11 @@ def _set_apart_clauses(state: ParseState,
         hi = bisect.bisect_left(starts, clause.end)
         content = state.original[clause.start:clause.end]
         words = (content.split() if COMMA_CHARS.isdisjoint(content)
-                 else clause_words(content, state.policy))
+                 else _clause_words(content, state.policy))
         # every word one token of the clause, as extract read them,
         # counted as the base counted them: the splitter's words are the
         # base's split with a glued comma ending a word, as tokenize
-        # ends it (`_vocab.clause_words`, decisions/S1, #1268)
+        # ends it (`_tokenize._clause_words`, decisions/S1, #1268)
         if not words or hi - lo != len(words) or any(
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
                 for i in range(lo, hi)):

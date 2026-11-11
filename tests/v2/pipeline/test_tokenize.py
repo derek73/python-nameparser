@@ -460,7 +460,7 @@ def test_full_name_before_an_ethiopic_suffix_comma(
 
 
 # #1268, S1's comma bullet: extract and post_rules read a clause through
-# `_vocab.clause_words`, whose words are tokenize's where the clause holds
+# `_tokenize._clause_words`, whose words are tokenize's where the clause holds
 # no separator but whitespace and the comma; where it holds one tokenize
 # divides at and whitespace does not, the two may differ, as the base's
 # whitespace split differed, and post_rules compares only their count
@@ -476,7 +476,7 @@ def test_full_name_before_an_ethiopic_suffix_comma(
 ])
 def test_clause_words_divide_a_clause_as_tokenize_does(
         content: str, agree: bool) -> None:
-    from nameparser._pipeline._vocab import clause_words
     out = _tokenized(f"John Smith ({content})", Policy(strip_emoji=True))
     clause = [t.text for t in out.tokens if t.role is Role.NICKNAME]
-    assert (clause == clause_words(content, Policy(strip_emoji=True))) is agree
+    assert (clause == _tokenize._clause_words(
+        content, Policy(strip_emoji=True))) is agree
