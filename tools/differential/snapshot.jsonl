@@ -6476,8 +6476,9 @@
 {"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
 {"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
 {"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
-{"name": "นพ.สมชาย ใจดี", "title": "นพ.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นพพร ใจดี", "given": "นพพร", "family": "ใจดี", "initials": "น. ใ."}
+{"name": "นางรศ.ดร.สมชาย ใจดี", "title": "นางรศ.ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
+{"name": "นางสาว-สุดา ใจดี", "given": "นางสาว-สุดา", "family": "ใจดี", "initials": "น. ใ."}
 {"name": "นางสาวสุดา ใจดี", "title": "นางสาว", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นางสาวิตรี ใจดี", "title": "นาง", "given": "สาวิตรี", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}

@@ -83,6 +83,7 @@ the bail's own comment, and honorific_tails' field note).
 from __future__ import annotations
 
 import functools
+import unicodedata
 from collections.abc import Callable, Sequence
 
 from nameparser._lexicon import FULL_STOPS, _normalize
@@ -540,12 +541,12 @@ def _peel_honorific_tail(state: ParseState,
     return _split(state, i, (offset,), None, tail_tag=_PEELED_TAG)
 
 
-#: The characters a word cannot open with however the peel cut it: the
-#: Thai vowels written after their consonant (U+0E30 to U+0E3A, U+0E45)
-#: and the repetition mark (U+0E46); a mark is no letter at all. So a
-#: title's letters that open a transcribed name keep it whole ('นางิ',
-#: Nagi; 'นางาเซะ', Nagase), what is left there being no Thai word.
-_NO_OPENING = frozenset(map(chr, (*range(0x0E30, 0x0E3B), 0x0E45, 0x0E46)))
+#: The Thai vowels written after their consonant (U+0E30 to U+0E3A,
+#: U+0E45), which no word opens with: where one follows a title, the
+#: title's last letters belong to the word, so the peel falls back to a
+#: shorter title ('นางสาวิตรี' is นาง + สาวิตรี) or keeps the word whole
+#: ('นางิ', Nagi; 'นางาเซะ', Nagase), as it does behind a combining mark.
+_AFTER_A_CONSONANT = frozenset(map(chr, (*range(0x0E30, 0x0E3B), 0x0E45)))
 
 
 def _head_sites(state: ParseState) -> list[int]:
@@ -559,13 +560,19 @@ def _head_sites(state: ParseState) -> list[int]:
     sites = []
     for run in runs:
         j = next((j for j in run
-                  if _normalize(state.tokens[j].text) not in titles
-                  and period_joined_vocab(state.tokens[j].text,
-                                          state.lexicon) != "title"),
-                 None)
+                  if not _all_titles(state.tokens[j].text, titles)), None)
         if j is not None:
             sites.append(j)
     return sites
+
+
+def _all_titles(text: str, titles: frozenset[str]) -> bool:
+    """Whether every chunk of `text` between its full stops is a listed
+    title ('รองศาสตราจารย์', 'รศ.ดร.'): a title written apart, which
+    the site walk passes over; a word holding a name ('ดร.สมชาย') is a
+    site, never passed over."""
+    chunks = [c for c in _normalize(text).split(".") if c]
+    return bool(chunks) and all(c in titles for c in chunks)
 
 
 # rules/W6: "a title the vocabulary marks to peel, glued to the start of
@@ -578,7 +585,8 @@ def _peel_title_head(state: ParseState) -> ParseState:
     (`Lexicon.glued_titles`), the vocabulary carrying its own license.
     Longest first, ONE peel, and never off a word the vocabulary lists
     whole (`นายแพทย์`, which opens with `นาย`), nor where what is left
-    opens with a letter no word opens with (`_NO_OPENING`). The head
+    opens with no letter, a Thai vowel written after its consonant
+    (`_AFTER_A_CONSONANT`) taking the next shorter title instead. The head
     piece needs no tag: classify reads it as the listed title it is.
 
     T8's division ran on the word whole, before this peel, and found no
@@ -587,19 +595,28 @@ def _peel_title_head(state: ParseState) -> ParseState:
     word written apart; behind a family comma it stays whole, as T8
     leaves every word after a comma."""
     heads = state.lexicon._sets.glued_titles
-    sets = state.lexicon._sets
     divide = False
     for i in reversed(_head_sites(state)):
         text = state.tokens[i].text
         low = text.lower()
-        if len(low) != len(text) or _normalize(text) in sets.titles:
+        if len(low) != len(text):
+            # a letter lowered into two: the offsets of `low` would not
+            # be the text's
             continue
-        # longest first, falling back to a shorter title where what the
-        # longer leaves cannot open a word ('นางสาวิตรี' is นาง + สาวิตรี)
-        cut = next((len(w) for w in sorted(heads, key=len, reverse=True)
-                    if len(w) < len(low) and low.startswith(w)
-                    and low[len(w)] not in _NO_OPENING
-                    and low[len(w)].isalpha()), 0)
+        cut = 0
+        # longest first; a title that would leave a Thai vowel or a
+        # mark at the opening falls back to the next shorter one
+        # ('นางสาวิตรี' is นาง + สาวิตรี), while one followed by anything
+        # else that opens no word peels nothing: a hyphen, a digit, the
+        # repetition mark ('นางสาว-สุดา', 'นางสาวๆ')
+        for w in sorted(heads, key=len, reverse=True):
+            if len(w) >= len(low) or not low.startswith(w):
+                continue
+            nxt = low[len(w)]
+            if nxt in _AFTER_A_CONSONANT or unicodedata.category(nxt) == "Mn":
+                continue
+            cut = len(w) if nxt.isalpha() and nxt != "\u0e46" else 0
+            break
         if cut:
             divide = divide or bool(state.segments and i in state.segments[0]
                                     and GLUED_SHAPE.search(text, cut))

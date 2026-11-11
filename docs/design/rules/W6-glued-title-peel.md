@@ -4,7 +4,7 @@
 
 **Then:** a title the vocabulary marks to peel, glued to the start of the name's first word, splits off once and reads as a title.
 
-- **The first word after a family comma is the name's first word too**, the given part opening there, and a listed title written apart in front of the word, alone or joined at its full stops, is passed over; the first word before the comma is one, whatever the order makes it, the family name included.
+- **The first word after a family comma is the name's first word too**, the given part opening there, and a word of listed titles written apart in front of it, alone or joined at their full stops, is passed over, a word holding a name never; the first word before the comma is one, whatever the order makes it, the family name included.
   ```
   "ใจดี, นายสมชาย"                     →  given="สมชาย"
   "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี"  →  given="สมชาย"
@@ -14,8 +14,9 @@
 - **What is left reads as written apart**: a word still glued at a full stop divides as T8 divides it, before any comma.
   ```
   "อาจารย์ดร.สมชาย ใจดี"               →  given="สมชาย"
+  "นางรศ.ดร.สมชาย ใจดี"                →  given="สมชาย"
   ```
-- **The longest marked title that leaves a word is the one split off**, once, so a title that opens with a shorter one keeps its letters, and the shorter is split off where the longer would leave no word; what is left must open as a word can, with a letter that is no Thai vowel written after its consonant nor the repetition mark.
+- **The longest marked title is the one split off**, once, so a title that opens with a shorter one keeps its letters; where it would leave a Thai vowel written after its consonant or a mark, the next shorter is tried, and where it is followed by any other character that is no letter, a hyphen, a digit or the repetition mark, nothing is split.
   ```
   "นางสาวสุดา ใจดี"                    →  title="นางสาว"
   "นายแพทย์สมชาย ใจดี"                 →  title="นายแพทย์"
@@ -23,6 +24,7 @@
   "นางิ ยานางิ"                        →  given="นางิ"  · boundary
   "นางาเซะ โทโมยะ"                     →  given="นางาเซะ"  · boundary
   "นาย-สมชาย ใจดี"                     →  given="นาย-สมชาย"  · boundary
+  "นางสาว-สุดา ใจดี"                   →  given="นางสาว-สุดา"  · boundary
   ```
 
 **Because:** a glued word peels off only if it was vetted as opening no name, which the vocabulary marks on the word (attached in front), so the listed vocabulary carries its own license, as W2's does. Thai writes its salutations glued to the given name more often than apart: 35 of the 39 ORCID filers who typed one into the given-name box glued it (2026-11-10).
@@ -33,7 +35,6 @@
 "อาจารย์สรศักดิ์ ใจดี"                →  title="อาจารย์"
 "นายสมชาย ใจดี, Ph.D."               →  given="สมชาย"
 "นพพร ใจดี"                          →  given="นพพร"  · boundary
-"นพ.สมชาย ใจดี"                      →  title="นพ."
 "สมชาย นายใจดี"                      →  family="นายใจดี"  · boundary
 "รองศาสตราจารย์นายแพทย์สมชาย ใจดี"   →  given="นายแพทย์สมชาย"  · boundary
 ```

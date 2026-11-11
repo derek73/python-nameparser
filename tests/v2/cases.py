@@ -5335,6 +5335,27 @@ CASES: tuple[Case, ...] = (
          classification="fix(#317)",
          notes="the site walk passes a title joined at its full stops "
                "(the docs review of #317)"),
+    Case("thai_glued_title_before_a_dotted_title_pair",
+         "นางรศ.ดร.สมชาย ใจดี",
+         {"title": "นางรศ.ดร.", "given": "สมชาย", "family": "ใจดี"},
+         classification="fix(#317)",
+         notes="a word holding a name is a site, never passed over as a "
+               "title (the fix-commit review of #317)"),
+    Case("thai_glued_title_peels_only_the_first_word",
+         "ใจดี, ดร.สมชาย นายสมศักดิ์",
+         {"title": "ดร.สมชาย", "given": "นายสมศักดิ์", "family": "ใจดี"},
+         notes="the boundary: the given part's first word holds a name, "
+               "so the walk stops there and the next word keeps its "
+               "salutation; T8 leaves the word whole after a comma"),
+    Case("thai_title_followed_by_a_hyphen_is_not_cut",
+         "นางสาว-สุดา ใจดี",
+         {"given": "นางสาว-สุดา", "family": "ใจดี"},
+         notes="the boundary: no letter after the longest title, so no "
+               "shorter one cuts it (the fix-commit review of #317)"),
+    Case("thai_title_followed_by_the_repetition_mark_is_not_cut",
+         "นางสาวๆ ใจดี",
+         {"given": "นางสาวๆ", "family": "ใจดี"},
+         notes="the boundary: the repetition mark blocks the peel"),
     Case("thai_short_form_glued_is_a_given_name",
          "นพพร ใจดี",
          {"given": "นพพร", "family": "ใจดี"},

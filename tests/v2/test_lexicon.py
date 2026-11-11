@@ -897,6 +897,15 @@ def test_a_peeled_title_keeps_the_writing_and_names_its_file() -> None:
     assert (reading.source, reading.languages) == ("vocabulary", ("th",))
 
 
+def test_a_word_lowered_to_another_length_is_no_peel_site() -> None:
+    # a letter that lowercases into two moves every offset after it, so
+    # the peel declines the word rather than cut it at the wrong place
+    p = Parser(lexicon=Lexicon.default().add(
+        "mr", kind="salutation", attached="before"))
+    assert p.parse("Mrİsmith ใจดี").title == ""
+    assert p.parse("Mrsmith ใจดี").title == "Mr"
+
+
 def test_every_shipped_glued_title_is_reachable() -> None:
     # each marked title glued to a given name splits off it (rules/W6),
     # so a word another reading claims first shows up as silently inert

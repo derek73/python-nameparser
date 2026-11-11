@@ -311,6 +311,8 @@ MUTATIONS = [
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
     # the glued-title peel's word (#317) takes side "before", one word
     ("attached-after-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = { side = "after" } }')}, "side = 'before'"),
+    ("attached-not-a-table-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = "before" }')}, "attached must be a table"),
+    ("attached-unknown-key-on-a-title", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { attached = { side = "before", zzq = 1 } }')}, "zzq"),
     ("attached-on-a-title-phrase", {"th.toml": _w('[[word]]\ntext = "zz qq"\nsalutation = { addresses = "given", attached = { side = "before" } }')}, "one-word title"),
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
