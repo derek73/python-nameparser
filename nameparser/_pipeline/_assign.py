@@ -645,9 +645,10 @@ def _assign_main(seg_idx: int, state: ParseState,
         # above out of these branches. Title vocabulary in the unit makes
         # the doubt H4's or H7's (is the WORD a title), anything else
         # O5's (which FIELD it took, or N3's where a nickname decides
-        # it), so only the second reads `field_undecided`: a title, a
-        # maiden name or a script order beside a lone title word is
-        # placed by H1, M4 or W4 whatever N3 does here (#1169).
+        # it), so only the second reads `field_undecided`: a title or a
+        # maiden name beside a lone title word is placed by H1 or M4
+        # whatever N3 does here, and a script order never reaches this
+        # branch (#1169).
         if peeled.names == 1 and not resolved.by_script:
             # rules/H4: "an input whose only remaining name word
             # after the title peel is itself title vocabulary reads
