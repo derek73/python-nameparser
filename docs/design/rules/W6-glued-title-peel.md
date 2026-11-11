@@ -15,13 +15,14 @@
   ```
   "อาจารย์ดร.สมชาย ใจดี"               →  given="สมชาย"
   "นางรศ.ดร.สมชาย ใจดี"                →  given="สมชาย"
-  ```
-- **A marked title written with its stops** peels as written, its own full stop glued to the name going with it, and a title of single letters and its feminine form are each one word that the site walk passes over written apart.
-  ```
-  "พล.ต.ต.สุรศักดิ์ รมยานนท์"            →  title="พล.ต.ต."
-  "พ.ต.อ.ดร.สมชาย ใจดี"                →  given="สมชาย"
-  "พ.อ.หญิง วาสนา แสงสวย"              →  title="พ.อ.หญิง"
   "ว่าที่ร.ท.วินัย พืชพิสุทธิ์"             →  title="ว่าที่ร.ท."
+  "นางพ.อ.หญิงวาสนา แสงสวย"            →  title="นางพ.อ.หญิง"
+  ```
+- **A marked title written with its stops** ends where T8 reads its chunk end, past its own full stop or behind a last chunk of two letters or more, and a word that is a listed title whole, stops and all, is passed over written apart.
+  ```
+  "ใจดี, พล.ต.ต.สุรศักดิ์"              →  given="สุรศักดิ์"
+  "ใจดี, พ.อ.หญิงวาสนา"                →  given="วาสนา"
+  "พ.อ.หญิง วาสนา แสงสวย"              →  title="พ.อ.หญิง"
   ```
 - **The longest marked title is the one split off**, once, so a title that opens with a shorter one keeps its letters; where it would leave a Thai vowel written after its consonant or a mark, the next shorter is tried, and where it is followed by any other character that is no letter, a hyphen, a digit or the repetition mark, nothing is split.
   ```
@@ -49,9 +50,10 @@
 
 **Except:**
 
-- **A title listed whole keeps its reading**, though it opens with a title marked to peel, and a title that may be a given name, a title only in a phrase (H9), never peels.
+- **A title listed whole keeps its reading**, though it opens with a title marked to peel; a title that may be a given name never peels, and a title only in a phrase (H9) peels only with a listed title behind it.
   ```
   "นายแพทย์ สมชาย ใจดี"                →  title="นายแพทย์"
+  "ว่าที่สมชาย ใจดี"                    →  given="ว่าที่สมชาย"
   ```
 
 **Accepted:**

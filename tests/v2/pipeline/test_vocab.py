@@ -1477,6 +1477,7 @@ def test_trailing_title_shape(text: str, admitted: bool) -> None:
 _GLUED_LEX = (Lexicon()
               .add("dr", "lt", "gov", "dra", kind="title")
               .add("ดร", "รศ", "ศ", kind="academic")
+              .add("พ.ต.อ", "พ.ต", "พ.อ.หญิง", kind="military")
               .add("st", kind="saint")
               .add("st", kind="title")
               .add("ma", kind="given", same_as="maria")
@@ -1524,6 +1525,14 @@ def _pieces_of(text: str) -> list[str]:
     ("รศ.ดร.สุดา", ["รศ.", "ดร.", "สุดา"]),
     ("ศ.ดร.สุดา", ["ศ.", "ดร.", "สุดา"]),
     ("ศ.สุดา", ["ศ.", "สุดา"]),
+    # a title listed with its stops is one chunk: past its own stop, or
+    # behind a last chunk of two letters or more (#1319)
+    ("พ.ต.อ.สมชาย", ["พ.ต.อ.", "สมชาย"]),
+    ("พ.อ.หญิงวาสนา", ["พ.อ.หญิง", "วาสนา"]),
+    ("พ.ต.อ.ดร.สมชาย", ["พ.ต.อ.", "ดร.", "สมชาย"]),
+    # a last chunk of one letter needs its stop, so the longer rank does
+    # not take the name's first letter ('พ.ต.อ' in 'พ.ต.อนุชา')
+    ("พ.ต.อนุชา", ["พ.ต.", "อนุชา"]),
 ])
 def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
         text: str, pieces: list[str]) -> None:
@@ -1556,6 +1565,7 @@ def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
     "Mr2.Smith",        # a digit
     "ส.สุดา",           # a letter without case, no title: no initial
     "ดร.สุดา.",          # closed by its own stop, in a script without case
+    "พ.ตสมชาย",          # a one-letter last chunk with no stop: an initial
 ])
 def test_a_glued_word_the_shape_refuses_stays_whole(text: str) -> None:
     assert _pieces_of(text) == [text]

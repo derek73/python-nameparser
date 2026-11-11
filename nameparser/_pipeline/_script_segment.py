@@ -94,7 +94,8 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    GLUED_SHAPE, effective_script, glued_cuts, glued_saint_cut,
+    GLUED_SHAPE, _dotted_titles, dotted_title_end, effective_script,
+    glued_cuts, glued_saint_cut,
     is_initial_chunk, is_one_case,
     period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
@@ -597,7 +598,10 @@ def _peel_title_head(state: ParseState) -> ParseState:
     a full stop (`ดร.สมชาย`) is divided here, as T8 divides the same
     word written apart; behind a family comma it stays whole, as T8
     leaves every word after a comma."""
-    heads = state.lexicon._sets.glued_titles
+    sets = state.lexicon._sets
+    heads = sets.glued_titles
+    dotted = _dotted_titles(sets.titles)
+    leading = (*dotted, *heads)
     divide = False
     for i in reversed(_head_sites(state)):
         text = state.tokens[i].text
@@ -616,10 +620,22 @@ def _peel_title_head(state: ParseState) -> ParseState:
             if len(w) >= len(low) or not low.startswith(w):
                 continue
             end = len(w)
-            if low[end] == "." and end + 1 < len(low):
-                # a title written short, its own full stop glued to the
-                # name ('พล.ต.ต.สุรศักดิ์', #1319): the cut follows it
+            if "." in w:
+                # a title written short ends where T8 reads it end: past
+                # its own stop, or behind a last chunk of two or more
+                # letters (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา',
+                # never 'พ.ต.อ' in 'พ.ต.อนุชา')
+                e = dotted_title_end(low, 0, (w,))
+                if e is None or e >= len(low):
+                    continue
+                end = e
+            elif low[end] == "." and end + 1 < len(low):
                 end += 1
+            if w in sets.title_modifiers and not low.startswith(
+                    leading, end):
+                # a title only in a phrase (rules/H9) peels only with the
+                # title it qualifies behind it ('ว่าที่ร.ท.วินัย')
+                continue
             nxt = low[end]
             if nxt in _AFTER_A_CONSONANT or unicodedata.category(nxt) == "Mn":
                 continue

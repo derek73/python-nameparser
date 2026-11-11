@@ -897,6 +897,20 @@ def test_a_peeled_title_keeps_the_writing_and_names_its_file() -> None:
     assert (reading.source, reading.languages) == ("vocabulary", ("th",))
 
 
+def test_a_callers_dotted_latin_title_divides_as_before() -> None:
+    # a title listed with its stops whose last chunk is one letter reads
+    # as a chunk only behind its own stop, and a longer last chunk only
+    # before a letter of a caseless script, so a Latin name glued to a
+    # shorter title divides as it did before #1319
+    for w in ("dr.c", "lt.col"):
+        p = Parser(lexicon=Lexicon.default().add(
+            w, kind="title", attached="before"))
+        for text, title, given in (("Dr.Charles Smíth", "Dr.", "Charles"),
+                                   ("Lt.Colin Smith", "Lt.", "Colin")):
+            name = p.parse(text)
+            assert (name.title, name.given) == (title, given), (w, text)
+
+
 def test_a_word_lowered_to_another_length_is_no_peel_site() -> None:
     # a letter that lowercases into two moves every offset after it, so
     # the peel declines the word rather than cut it at the wrong place
@@ -913,9 +927,17 @@ def test_every_shipped_glued_title_is_reachable() -> None:
     # is probed before one ('ว่าที่ร.ท.สมชาย', #1319)
     p = Parser()
     mods = p.lexicon._sets.title_modifiers
+
+    def reached(w: str) -> bool:
+        if w in mods:
+            return p.parse(f"{w}ร.ท.สมชาย ใจดี").title == f"{w}ร.ท."
+        if "." in w:
+            # written short, its own stop glued to the name (#1319)
+            return p.parse(f"{w}.สมชาย ใจดี").title == f"{w}."
+        return p.parse(f"{w}สมชาย ใจดี").title == w
+
     unreached = [w for w in sorted(p.lexicon._sets.glued_titles)
-                 if not p.parse(f"{w}ร.ท.สมชาย ใจดี" if w in mods
-                                else f"{w}สมชาย ใจดี").title.startswith(w)]
+                 if not reached(w)]
     assert p.lexicon._sets.glued_titles and not unreached, unreached
 
 

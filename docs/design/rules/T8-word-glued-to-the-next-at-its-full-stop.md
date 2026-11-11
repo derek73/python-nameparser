@@ -4,7 +4,7 @@
 
 **Then:** the word reads as it does with a space there: the chunk keeps its full stop and is read as it is read written apart, and the name after it is a word of its own.
 
-- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short; a single letter in a script without case is read on its own only where it is listed, as a title (Thai `ศ.`, professor) or a given name written short, though a run of two or more single letters is a chunk in any script. A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
+- **A chunk the parser reads on its own** is one letter in a script with case, a transliteration digraph H2 names, a listed title that is no saint particle, or a listed given name written short; a single letter in a script without case is read on its own only where it is listed, as a title (Thai `ศ.`, professor) or a given name written short, though a run of two or more single letters is a chunk in any script; and a title listed with its stops is one chunk, ending past its own stop, or, where its last chunk is two letters or more, before a letter of a script without case ('พ.อ.หญิงวาสนา'), a last chunk of one letter being the initial it spells without its stop. A run of single letters before the name stays one chunk, as T7 keeps it; titles glued to each other divide at each stop, as they read written apart, and so do a digraph and the initials behind it.
   ```
   "Dr.John Smith"             →  title="Dr."
   "Dr.John Smith"             →  given="John"
@@ -18,6 +18,9 @@
   "Dr.Smith"                  →  family="Smith"
   "Dr.J. Smith"               →  given="J."
   "ศ.ดร.สุดา ใจดี"              →  title="ศ.ดร."
+  "พล.ต.ต.สุรศักดิ์ รมยานนท์"    →  title="พล.ต.ต."
+  "พ.อ.หญิงวาสนา แสงสวย"        →  title="พ.อ.หญิง"
+  "พ.ต.อนุชา ใจดี"              →  given="อนุชา"
   ```
 - **The name after the stop** is a word of letters, apostrophes and hyphens, a Thai letter's vowel and tone marks counted with it, whose first letter with case is not lower case, is not closed by a full stop of its own, and is no unambiguous title or credential; a name that is also a credential divides as its spaced writing reads. A name has to close the word: initials alone behind a letter or a digraph stay one word, as initials ('Kim Yu.A.'), though behind a title they divide ('Dr.J. Smith').
   ```
@@ -44,13 +47,12 @@
 
 **Except:**
 
-- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial; and a word a title marked to peel and written with its stops opens, past the chunk this division would cut, is left whole for W6's peel.
+- **A word the vocabulary reads whole** keeps its reading: a suffix spelled without its stops, a credential every chunk of which counts, a word whose every chunk is a title, and a title listed with its stops, such as a degree written with its field's initial.
   ```
   "John Smith M.Sc"           →  suffix="M.Sc"
   "Lt.Gov. John Smith"        →  title="Lt.Gov."
   "Dr.C. Andrés Saavedra"     →  title="Dr.C."
   "Mgr.A. Marek Rejent"       →  given="Marek"
-  "พ.อ.หญิงวาสนา แสงสวย"        →  title="พ.อ.หญิง"
   ```
 - **A word after a comma** keeps its one word, the slot after a comma being where degrees stand.
   ```

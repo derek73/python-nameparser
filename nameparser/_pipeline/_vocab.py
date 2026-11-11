@@ -978,14 +978,11 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             or bare in sets.titles and len(unicodedata.normalize(
                 "NFC", n.rsplit(".", 1)[-1])) > 1):
         return ()
-    # a title marked to peel glued in front (rules/W6) and written with
-    # its stops runs past the chunk this division would cut ('พ.อ.หญิง'
-    # in 'พ.อ.หญิงวาสนา'): the peel reads it whole, so the word is left
-    # to it (#1319)
-    for g in sets.glued_titles:
-        if "." in g and n.startswith(g) and n[len(g):len(g) + 1] not in (
-                ".", ""):
-            return ()
+    low = text.lower()
+    dotted = _dotted_titles(sets.titles)
+    if len(low) != len(text):
+        # offsets in `low` would not be the text's
+        dotted = ()
     cuts: list[int] = []
     at = 0
     titled = False
@@ -996,10 +993,25 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     # opening a chunk that stays whole ('Q.R.ST.'), nor a word holding a
     # delimiter or a digit, which no chunk or name matches ('M.D./Ph.D.')
     while True:
-        if _LETTER_RUN.fullmatch(text, at):
+        d = (dotted_title_end(low, at, dotted)
+             if dotted and low.startswith(dotted, at) else None)
+        if d is not None:
+            # a title listed with its stops is one chunk, read alone
+            # (#1319: 'พล.ต.ต.สุรศักดิ์', 'พ.อ.หญิงวาสนา')
+            titled = titled or not cuts
+            if d == len(text):
+                return tuple(cuts)
+            nxt = _GLUED_CHUNK.match(text, d)
+            if (low.startswith(dotted, d)
+                    and dotted_title_end(low, d, dotted) is not None) or (
+                    nxt is not None and is_title_chunk(nxt.group(1), lexicon)):
+                cuts.append(d)
+                at = d
+                continue
+            end, letter = d, False
+        elif _LETTER_RUN.fullmatch(text, at):
             return tuple(cuts) if titled else ()
-        run = _GLUED_RUN.match(text, at)
-        if run is not None:
+        elif (run := _GLUED_RUN.match(text, at)) is not None:
             # a run of initials before the name stays one word (T7)
             end, letter = run.end(), True
         else:
@@ -1049,6 +1061,41 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
         at = end
         if word.end() == len(text) or tail == ".":
             return tuple(cuts) if titled or not initial else ()
+
+
+@functools.lru_cache(maxsize=16)
+def _dotted_titles(titles: frozenset[str]) -> tuple[str, ...]:
+    """The titles listed with a full stop inside ('พ.ต.อ', 'พ.อ.หญิง',
+    'dr.c'), longest first: one tuple per vocabulary, so a word opening
+    with none of them is told by a C-level `startswith` alone."""
+    return tuple(sorted((t for t in titles if "." in t), key=len,
+                        reverse=True))
+
+
+def dotted_title_end(low: str, at: int,
+                     dotted: tuple[str, ...]) -> int | None:
+    """Where a title listed with its stops, opening `low` at `at`, ends
+    as a word of its own: past its own full stop, or, where its last
+    chunk is more than one letter ('พ.อ.หญิง'), right before a letter
+    of a script without case. A last chunk of one letter needs its
+    stop, being the initial it spells otherwise ('น.สมชาย' is no
+    'น.ส' + 'มชาย', 'พ.ต.อนุชา' no 'พ.ต.อ' + 'นุชา'), and a letter with
+    case after a longer chunk goes on the word ('Lt.Colin', not 'Lt.Col'
+    + 'in'); None where none does (#1319)."""
+    for t in dotted:
+        if not low.startswith(t, at):
+            continue
+        end = at + len(t)
+        if end == len(low):
+            return end
+        if low[end] == ".":
+            return end + 1
+        c = low[end]
+        last = t.rsplit(".", 1)[-1]
+        if len(unicodedata.normalize("NFC", last)) > 1 and c.isalpha() and (
+                c.upper() == c.lower()):
+            return end
+    return None
 
 
 def glued_saint_cut(text: str, lexicon: Lexicon) -> int | None:
