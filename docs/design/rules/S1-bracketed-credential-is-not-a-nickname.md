@@ -27,7 +27,7 @@
   "W. Russell (Jr.) Withers"  →  suffix="Jr."
   "Jack (PhD)"                →  family="Jack"
   ```
-- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against. A comma is any character C's Background counts as one, each reading here as the ASCII one does.
+- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against. A comma is any character C's Background counts as one, each reading here as the ASCII one does. A single comma glued between two words of the clause parts them for these tests too, and the word they make is set apart whole, its comma kept as written, where its words take one role.
   ```
   "John Smith (USN, Ret.)"    →  suffix="USN, Ret."
   "John Smith (Dr., PhD)"     →  title="Dr."
@@ -36,6 +36,7 @@
   "John Smith (MD ,PhD)"      →  suffix="MD, PhD"
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"
+  "John Smith (MD,PhD)"       →  suffix="MD,PhD"
   ```
 - **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its periods settle, says which. A joined word settles one where a chunk of it would. A generation, a numeral, an honorific, a word that is a title too and a member its capitals settle say nothing of the kind: `Ed Jr` is a name a person goes by, and a joined chunk is never settled by its case (S3).
   ```
@@ -158,6 +159,12 @@
   "(M.A., PhD)"               →  nickname="M.A., PhD"
   "(PhD/Sr) John Smith"       →  suffix="PhD/Sr"
   "(PhD, Sr) John Smith"      →  title="Sr"
+  ```
+- A word made of words glued at a comma is set apart only whole, so one whose words would take two roles, a title and a credential, keeps its pair's reading, as does one holding a member of the ambiguous class, which nothing in the word settles; a doubled comma glued between two words parts nothing.
+  ```
+  "John Smith (Dr.，PhD)"     →  nickname="Dr.，PhD"
+  "John Smith (Ma,PhD)"       →  nickname="Ma,PhD"
+  "John Smith (MD,,PhD)"      →  nickname="MD,,PhD"
   ```
 - A qualifier written after a title in front of the name is the suffix it is in the vocabulary.
   ```

@@ -1465,6 +1465,11 @@ _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
 #: (rules/T8) -- 'M.Filho' revising to 'M. Filho', as a CJK value's
 #: sub-parse divides it (`revise(family="김민준")`).
 _GLUED_IN_SUFFIX = frozenset({"Smith, Pedro M.Filho"})
+#: The fourth (2026-11-11, #1268): a clause's word of credentials glued at
+#: a comma, which the whole name sets apart whole and keeps as written
+#: (rules/S1), and the value's own sub-parse, holding no clause, divides at
+#: the comma as any comma outside one: 'MD,PhD' revising to 'MD, PhD'.
+_GLUED_COMMA_IN_SUFFIX = frozenset({"John Smith (MD,PhD)"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:
@@ -1472,7 +1477,8 @@ def _suffix_bearing_corpus_names() -> list[str]:
     p = Parser()
     return [n for n in _CORPUS_NAMES
             if p.parse(n).suffix and n not in _HONORIFIC_PEEL
-            and n not in _MARKER_IN_SUFFIX and n not in _GLUED_IN_SUFFIX]
+            and n not in _MARKER_IN_SUFFIX and n not in _GLUED_IN_SUFFIX
+            and n not in _GLUED_COMMA_IN_SUFFIX]
 
 
 def test_the_known_round_trip_exceptions_are_one_limit() -> None:
@@ -1523,6 +1529,16 @@ def test_the_known_round_trip_exceptions_are_one_limit() -> None:
     assert all(divides_on_its_own(n) for n in _GLUED_IN_SUFFIX)
     assert not [n for n in _suffix_bearing_corpus_names()
                 if divides_on_its_own(n)]
+
+    # the glued-comma limit, characterized the same way: a word of the
+    # parsed suffix holding a comma between two of its characters
+    def holds_a_glued_comma(name: str) -> bool:
+        return any(re.search(r"[^,],[^,]", word)
+                   for word in p.parse(name).suffix.split())
+
+    assert all(holds_a_glued_comma(n) for n in _GLUED_COMMA_IN_SUFFIX)
+    assert not [n for n in _suffix_bearing_corpus_names()
+                if holds_a_glued_comma(n)]
 
 
 def test_the_suffix_bearing_corpus_is_not_empty() -> None:
