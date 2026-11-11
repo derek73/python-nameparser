@@ -6485,7 +6485,7 @@
 {"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}
 {"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ", "initials": "น. ย."}
 {"name": "นาย-สมชาย ใจดี", "given": "นาย-สมชาย", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "นายสมชาย", "title": "นาย", "family": "สมชาย", "initials": "ส."}
+{"name": "นายสมชาย", "title": "นาย", "given": "สมชาย", "initials": "ส."}
 {"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
 {"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D.", "initials": "ส. ใ."}
 {"name": "นายแพทย์ สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}

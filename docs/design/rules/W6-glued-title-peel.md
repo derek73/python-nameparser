@@ -32,6 +32,7 @@
 ```
 "นายสมชาย ใจดี"                      →  title="นาย"
 "นายสมชาย ใจดี"                      →  given="สมชาย"
+"นายสมชาย"                           →  given="สมชาย"
 "อาจารย์สรศักดิ์ ใจดี"                →  title="อาจารย์"
 "นายสมชาย ใจดี, Ph.D."               →  given="สมชาย"
 "นพพร ใจดี"                          →  given="นพพร"  · boundary
@@ -49,10 +50,6 @@
 **Accepted:**
 
 - One title peels, so a second glued behind it stays with the name ('รองศาสตราจารย์นายแพทย์สมชาย'), Thai writing a title run apart.
-- A title and one name word read as written apart (H1), so the name word is the family name, where Thai writes the given name there.
-  ```
-  "นายสมชาย"                           →  family="สมชาย"
-  ```
 
 ---
 **Signal:** neighbor: a listed title glued to the start of the name's first word

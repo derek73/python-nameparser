@@ -5279,11 +5279,11 @@ CASES: tuple[Case, ...] = (
          notes="the given part's first word is a site too (rules/W6)"),
     Case("thai_salutation_glued_with_nothing_before_the_comma",
          ", นายสมชาย",
-         {"title": "นาย", "family": "สมชาย"},
+         {"title": "นาย", "given": "สมชาย"},
          classification="fix(#317)",
          notes="the peel reaches the given part behind an empty head, "
-               "which then reads as ', นาย สมชาย' and ', Mr. John' do: "
-               "a title and one word, H1's exception to C15"),
+               "which then reads as ', นาย สมชาย' does: a Thai title "
+               "addresses the given name (rules/H1, decisions/W6)"),
     Case("thai_title_listed_whole_is_not_peeled",
          "นายแพทย์สมชาย ใจดี",
          {"title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี"},
@@ -5318,11 +5318,17 @@ CASES: tuple[Case, ...] = (
                "no writing a corpus shows"),
     Case("thai_glued_title_and_one_name_word",
          "นายสมชาย",
-         {"title": "นาย", "family": "สมชาย"},
+         {"title": "นาย", "given": "สมชาย"},
          classification="fix(#317)",
-         notes="accepted: a title and one word read as written apart "
-               "(rules/H1); decisions/W6 holds the Open on Thai "
-               "addressing the given name"),
+         notes="a Thai title addresses the given name, so the one word "
+               "after it is given (rules/H1, decisions/W6); 1.4.0 "
+               "through 3.0.1 read given 'นายสมชาย'"),
+    Case("thai_academic_title_and_one_name_word",
+         "ดร. สุดา",
+         {"title": "ดร.", "given": "สุดา"},
+         classification="fix(#317)",
+         notes="a Thai title addresses the given name; 1.4.0 through "
+               "master read family 'สุดา' (decisions/W6)"),
     Case("thai_shorter_title_where_the_longer_leaves_no_word",
          "นางสาวิตรี ใจดี",
          {"title": "นาง", "given": "สาวิตรี", "family": "ใจดี"},
