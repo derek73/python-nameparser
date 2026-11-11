@@ -2448,6 +2448,89 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
             == _composed_reading(parser, composed))
 
 
+_TURKIC_NFD_ROWS = [
+    "Mamedov Ali Huseyn oğlu",
+    "Mamedov Ali Huseyn OĞLU",
+    "Мамедов Али Гусейн ўғли",
+    "Mamedov, Ali Huseyn oğlu",
+    "Mamedov Ali née Huseyn oğlu",
+    "Mamedov Ali Huseyn oğlu Jr.",
+    # the marker behind a unit of a two-word given name (O7's guard)
+    "Ali Veli oğlu Mamedov",
+    "Ali Veli oğlu",
+    "Али Вели ўғли Мамедов",
+    "Mamedov, Ali Veli oğlu",
+    # the marker ending a particle-opened given part (P10's guard)
+    "María del Carmen oğlu García",
+    # parity controls: nothing in the word decomposes, or it is no marker
+    "Mamedov Ali Huseyn ğ",
+    "Oğlu Ali Huseyn Mamedov",
+]
+
+_TURKIC_NFD_POLICIES = [
+    Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}),
+           two_given_names=True),
+    Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}),
+           two_given_names=True, name_order=FAMILY_FIRST),
+    Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}),
+           two_given_names=True, name_order=FAMILY_FIRST_GIVEN_LAST),
+]
+
+
+@pytest.mark.parametrize("policy", _TURKIC_NFD_POLICIES,
+                         ids=["default", "family-first",
+                              "family-first-given-last"])
+@pytest.mark.parametrize("text", _TURKIC_NFD_ROWS)
+def test_a_decomposed_turkic_marker_reads_as_its_composed_twin(
+        text: str, policy: Policy) -> None:
+    """#1316: `_vocab.is_patronymic_marker` matched `oğlu` as written,
+    so a ğ typed as g + U+0306 was no marker and `Mamedov Ali Huseyn
+    oğlu` read given 'Mamedov', family 'oğlu' under the Turkic rule (the
+    group suggester already folded it). The Cyrillic `ўғли` decomposes
+    too. Compared composed, with the patronymic view and the
+    ambiguity kinds beside the roles: under a family-first order with
+    `two_given_names` off only the view and the tokens' reading moved
+    (`_assemble`'s site), which `_composed_reading` cannot see; with it
+    on, O7's guard moved the roles too (these policies set it).
+    The rows reach all four call sites of the predicate (O2's rotation,
+    O7's and P10's guards, the patronymic view); the ASCII row and
+    `Oğlu` at the head are parity controls that pass without the fix.
+    Recorded control, measured 2026-11-10 against 213f90f7's
+    nameparser/: of the 42 new cases in this module and test_locales.py
+    36 fail, including the O7 and P10 rows, the patronymic-view row
+    under both family-first orders, the predicate test and the pack's
+    DEVIATES test; the six that pass are the two parity rows under
+    each policy."""
+    composed = unicodedata.normalize("NFC", text)
+    decomposed = unicodedata.normalize("NFD", text)
+    parser = Parser(policy=policy)
+
+    def reading(t: str) -> tuple[object, ...]:
+        name = parser.parse(t)
+        return (*_composed_reading(parser, t),
+                unicodedata.normalize("NFC", name.patronymic))
+
+    assert reading(decomposed) == reading(composed)
+
+
+def test_a_decomposed_turkic_marker_is_still_a_patronymic() -> None:
+    """The twin comparison passes if both encodings break alike; this
+    pins the reading (#1316)."""
+    name = Parser(policy=Policy(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
+        unicodedata.normalize("NFD", "Mamedov Ali Huseyn oğlu"))
+    assert name.given == "Ali"
+    assert name.family == "Mamedov"
+    assert unicodedata.normalize("NFC", name.patronymic) == "Huseyn oğlu"
+
+
+def test_the_marker_predicate_reads_a_decomposed_marker() -> None:
+    from nameparser._pipeline._vocab import is_patronymic_marker
+    for word in ("oğlu", "OĞLU", "ўғли"):
+        assert is_patronymic_marker(unicodedata.normalize("NFD", word)), word
+    assert not is_patronymic_marker(unicodedata.normalize("NFD", "ğ"))
+
+
 def test_a_decomposed_conjunction_reports_as_its_composed_twin() -> None:
     """#665: the one-case report on a letter that is both a connective
     and an initial (rules/P8) counted code points, so it is reached
