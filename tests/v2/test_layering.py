@@ -69,6 +69,15 @@ ALLOWED = {
     # TYPE_CHECKING
     "_match.py": ("nameparser._types", "nameparser._lexicon",
                   "nameparser._policy"),
+    # the group suggester: types, policy, the lexicon's particles and
+    # titles, the pipeline's patronymic, title, suffix and numeral
+    # predicates and its private word tables;
+    # _parser at call time only, in Suggestion.__post_init__, to check
+    # that the base is a Parser (Parser imports this module at call
+    # time, in Parser.suggest)
+    "_suggest.py": ("nameparser._types", "nameparser._policy",
+                    "nameparser._lexicon", "nameparser._pipeline",
+                    "nameparser.config.", "nameparser._parser"),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since
@@ -135,11 +144,12 @@ ALLOWED = {
         "nameparser._reading_index",),
     # Parser sits on everything except _render; the reading index at
     # call time only, where a choice of languages is applied (3b); _match
-    # at call time only, in Parser.matching()
+    # at call time only, in Parser.matching(); _suggest at call time
+    # only, in Parser.suggest()
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
                    "nameparser._pipeline", "nameparser._reading_index",
-                   "nameparser._match"),
+                   "nameparser._match", "nameparser._suggest"),
     # PEP 562 lazy loader: the only static import is _locale (for the
     # Locale return type); pack modules load via importlib.import_module
     # (a runtime string, invisible to the AST walker) -- the
@@ -376,6 +386,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     import nameparser._match
     import nameparser._parser
     import nameparser._policy
+    import nameparser._suggest
     import nameparser._types
     from nameparser._types import _guarded_getstate, _guarded_setstate
 
@@ -383,7 +394,7 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
     # are never pickled and are not public API.
     modules = (nameparser._types, nameparser._lexicon,
                nameparser._policy, nameparser._locale, nameparser._parser,
-               nameparser._match)
+               nameparser._match, nameparser._suggest)
     for module in modules:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__:
@@ -693,18 +704,22 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: 169 -> 170, and the maiden marker ending a part's own words, 170 ->
 #: 171; its review's suffix-word refusal after the stop, 171 -> 179;
 #: its fix-diff review's own name test for the saint division (titles
-#: of every kind, connectives), 179 -> 185);
-#: the tools' 19 are 17
+#: of every kind, connectives), 179 -> 185; `_suggest`'s particle
+#: read, 185 -> 186; its leading title read, which reads a name's
+#: evidence past its titles, 186 -> 187);
+#: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
-#: with one of the loads moved the count from 16. 4i-a's own count was 114 (on
+#: with one of the loads moved the count from 16; the 18th load is
+#: tools/vocab/order_names.py reading `locales.ZH.lexicon._sets.surnames`
+#: (group suggestions). 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 185, "tools": 19}
+_UNGUARDED_READS = {"library": 187, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

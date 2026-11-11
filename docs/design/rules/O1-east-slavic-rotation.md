@@ -43,4 +43,4 @@
 
 ---
 **Signal:** shape: a patronymic ending on the last of exactly three name words, and not on the middle one
-**history:** decisions/O1 · **implemented:** nameparser/_pipeline/_post_rules.py
+**history:** decisions/O1 · **implemented:** nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_vocab.py

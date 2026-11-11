@@ -29,6 +29,12 @@ from nameparser._policy import (
     PolicyPatch,
     Script,
 )
+from nameparser._suggest import (
+    NameEvidence,
+    SettingEvidence,
+    Signal,
+    Suggestion,
+)
 from nameparser._types import (
     STABLE_TAGS,
     Ambiguity,
@@ -55,4 +61,5 @@ __all__ = [
     "Parser", "parse", "parser_for",
     "Matching", "MatchResult", "RoleMatch", "CrossRoleMatch", "Outcome",
     "Side",
+    "Suggestion", "NameEvidence", "SettingEvidence", "Signal",
 ]

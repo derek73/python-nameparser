@@ -31,6 +31,7 @@ from nameparser._types import (
 
 if TYPE_CHECKING:
     from nameparser._match import Matching, Outcome
+    from nameparser._suggest import Suggestion
 
 
 @dataclass(frozen=True, slots=True)
@@ -301,6 +302,52 @@ class Parser:
         return Matching(
             self, DEFAULT_ACCEPT if accept is None else accept,  # type: ignore[arg-type]
             other_readings)
+
+    def suggest(self, names: Iterable[str]) -> Suggestion:
+        """The settings a group of names suggests, with THIS parser as
+        the base: a :class:`~nameparser.Suggestion` whose ``parser``
+        reads the group. ``names`` is any iterable of str the caller
+        declares to be one group (one source, one convention), read
+        once. Each name casts votes on its name order and its
+        patronymic shape, read with this parser's lexicon past the
+        titles it lists at the head and the post-nominals at the end; a
+        name of fewer than two words once those are read past casts
+        none, and so does a name with a comma, unless only
+        post-nominals follow the comma. A patronymic votes only where
+        the patronymic rule reads one. ``name_order`` is
+        decided in either direction, keeping this parser's family-first
+        spelling where it has one, where at least two names vote for
+        one end and they are more than two thirds of the names casting
+        an order vote. A patronymic rule is decided where more than four
+        in five of the names that cast a vote carry its patronymic (and
+        at least five do), for the East Slavic and the Turkic rule alike.
+        A group decided East Slavic gets the rule and reads given-first,
+        since the rule reorders each name and stands down under a
+        family-first order, unless its names' own votes decide
+        family-first, which the rule never overrides; a Turkic group
+        gets the rule alone, its order decided by its names' own votes.
+        A setting the votes do not decide keeps this parser's value, so
+        an empty group, or one with no votes, suggests no change. A
+        bare str, bytes, a mapping or a non-str item raises TypeError.
+
+        Measured 2026-11-10 with tools/differential/suggest_measure.py
+        on groups drawn from real names written in a known order, 300
+        groups a size (decisions/group-suggestion's THRESHOLDS entry
+        holds the table): a group written in this parser's own order kept
+        it in at least 98% of groups at every size from 2 to 200 names,
+        under either base order. Moving the base takes more names, and
+        how many depends on what the names carry: groups of Chinese,
+        Taiwanese, Korean, Czech or Polish names (the romanized surnames
+        and the common given names) were read right in 95% of groups
+        from 5 names; German, Dutch, Italian, Spanish, British, Russian
+        and Vietnamese from 10; French, US, Japanese, Brazilian and
+        Turkish from 20; Nigerian and Romanian from 50; and Indian only
+        at 200. A group whose votes fall short of the thresholds keeps
+        the base rather than guess, so a smaller group moves it in fewer
+        of the draws.
+        """
+        from nameparser._suggest import suggest
+        return suggest(self, names)
 
     # -- rendering delegates ----------------------------------------------
 
