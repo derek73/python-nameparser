@@ -7,7 +7,8 @@ import pytest
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
 from nameparser._match import Matching
-from nameparser._parser import Parser, parse
+from nameparser import locales
+from nameparser._parser import Parser, parse, parser_for
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
 from nameparser._types import (
     Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Segmentation, Span,
@@ -133,6 +134,8 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     Parser(),
     Parser(segmenter=functools.partial(_decline, blob="x" * 500)),
     Matching(Parser()),
+    Matching(parser_for(locales.ES)),
+    Matching(Parser(segmenter=functools.partial(_decline, blob="x" * 500))),
     Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith"]),
     Parser().suggest([]),
 ])

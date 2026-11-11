@@ -249,18 +249,37 @@ def test_matching_repr_shows_a_parser_that_is_not_the_default() -> None:
         "Matching(default)")
 
 
-def test_matching_repr_never_raises_on_a_parser_missing_a_field() -> None:
-    # the constructor asks only for a callable `parse`; such an object
-    # is shown by its class name, its own repr being unbounded
+def test_matching_repr_names_anything_but_a_parser_by_its_class() -> None:
+    # the constructor asks only for a callable `parse`; an object that
+    # is not a Parser, a subclass included, is shown by its class name,
+    # its own repr and fields being unbounded and unchecked
     class Bare:
         def parse(self, text: str) -> ParsedName:
             return parse(text)
 
         def __repr__(self) -> str:
-            return "Bare()"
+            return "x" * 50_000
+
+    class Sub(Parser):
+        def __repr__(self) -> str:
+            return "x" * 50_000
 
     assert repr(Matching(Bare())) == (  # type: ignore[arg-type]
         "Matching(default, parser=Bare)")
+    # a default subclass too: its fields are not compared
+    assert repr(Matching(Sub())) == "Matching(default, parser=Sub)"
+    assert repr(Matching(Sub(policy=Policy(two_family_names=True)))) == (
+        "Matching(default, parser=Sub)")
+
+
+def test_matching_repr_shows_a_parser_with_a_segmenter() -> None:
+    def cut(text: str) -> None:
+        return None
+
+    assert repr(Parser(segmenter=cut).matching()) == (
+        "Matching(default, parser=Parser(Lexicon(default), Policy(), "
+        "segmenter=test_matching_repr_shows_a_parser_with_a_segmenter."
+        "<locals>.cut))")
 
 
 def test_other_readings_is_off_by_default_and_passed_through() -> None:
@@ -569,17 +588,25 @@ def test_consistent_names_always_share_a_key(
 
 def _assert_the_key_guarantee(matching: Matching,
                               parsed: tuple[ParsedName, ...],
-                              default: Matching | None = None) -> None:
+                              default: Matching | None = None,
+                              symmetric: bool = False) -> None:
     """Every consistent ordered pair of `parsed` shares a key, at least
     one such pair is of two different names, and, given the `default`
-    matcher, at least one is a pair it refuses, so a setting that adds
-    to the default reaches the grid at all."""
+    matcher, at least one such pair of two different names is one it
+    refuses, so a setting that adds to the default reaches the grid at
+    all. With `symmetric`, each pair's check is also held to the mirror
+    of the swapped pair's, from the one result."""
     found = beyond = False
     for a, b in itertools.product(parsed, repeat=2):
-        if matching.check(a, b).consistent:
+        result = matching.check(a, b)
+        if symmetric:
+            assert matching.check(b, a) == result.mirrored(), (
+                a.original, b.original)
+        if result.consistent:
             assert matching.keys(a) & matching.keys(b), (a.original, b.original)
             found = found or a.original != b.original
             beyond = beyond or (default is not None
+                                and a.original != b.original
                                 and not default.check(a, b).consistent)
     assert found, f"no consistent pair of two names under {matching!r}"
     assert default is None or beyond, (
@@ -677,10 +704,15 @@ def test_every_recorded_control_names_a_setting_of_the_sweep() -> None:
         assert row and set(row) <= set(_SETTING_IDS), row
 
 
-#: Names the main grid does not hold: comma shapes (a full name, a one-
-#: word name and nothing before the comma, a particle surname before
-#: it) and the names a family-first order, a Spanish or a Chinese pack
-#: reads differently.
+#: Names the main grid does not hold, read under every parser of
+#: `_SHAPE_PARSERS`: comma shapes (a full name, a one-word name and
+#: nothing before the comma, a particle surname before it); names the
+#: family-first order and the Spanish pack read differently from
+#: `Parser()`, with a name each pairs them with
+#: (test_each_shape_parser_reads_names_of_the_grid_its_own_way); and a
+#: pair for each opt-in and the other-reading switch to find under
+#: every parser beyond what its default matcher accepts (familiar form,
+#: one-sided given name, hyphenated part, the lone `Smith`).
 _SHAPE_NAMES: tuple[str, ...] = (
     "Smith, John", ", John", "de la Vega, Juan", "Juan de la Vega",
     "Vega, Juan", "Smith, J.", "John Smith", "J. Smith", "Smith John",
@@ -690,10 +722,22 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "de la Vega, J.", "Jane Doe (née Smith)", "Smith, Jane",
     "García López, María", "María García López", "María García",
     "María López", "José Luis Pérez", "José Pérez", "Pérez, José Luis",
-    "王小明", "王李小明", "王小", "李小明", "Wang Xiaoming",
-    "Xiaoming Wang", "김민준", "Kim Min-jun", "Min-jun Kim",
-    "Nguyễn Văn An", "Nguyen An",
+    "Wang Xiaoming", "Xiaoming Wang", "김민준", "Kim Min-jun",
+    "Min-jun Kim", "Nguyễn Văn An", "Nguyen An", "Bill Smith",
+    "William Smith", "Smith Bill", "Smith William", "Mr. Smith",
+    "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
+    "Guo Hong-Yi",
 )
+
+#: Names only one parser of `_SHAPE_PARSERS` reads differently from
+#: the others, read under that parser alone, as a grid pairs a text
+#: only with configurations that can read it differently: a Spanish
+#: double surname the Spanish pack's given names leave whole, and Han
+#: names the Chinese pack segments, written run together and spaced.
+_PACK_NAMES: dict[str, tuple[str, ...]] = {
+    "es": ("Juan Carlos Pérez Gómez", "Juan Carlos Pérez"),
+    "zh": ("王小明", "王李小明", "王小", "李小明", "王 小明", "王李 小明"),
+}
 
 #: The parsers the shape grid is read under, beside the default.
 _SHAPE_PARSERS: dict[str, Parser] = {
@@ -706,28 +750,51 @@ _SHAPE_PARSERS: dict[str, Parser] = {
 
 #: The shape grid's negative controls, taken 2026-11-11 (#1264) with
 #: the mutations of `_RECORDED_CONTROLS` applied to `_match.py` one at
-#: a time and reverted: for each mutation that fails a run, the first
-#: failing ordered pair of `_SHAPE_NAMES` under each parser of
-#: `_SHAPE_PARSERS`, and the settings that fail there, every run not
-#: named passing. The other five mutations fail no run of this grid.
-#: Not re-run here, as `_RECORDED_CONTROLS` is not.
-_SHAPE_CONTROLS: dict[str, dict[str, tuple[tuple[str, str], tuple[str, ...]]]] = {
+#: a time and reverted: for each mutation that fails a run, under each
+#: parser of `_SHAPE_PARSERS`, the first failing ordered pair of
+#: `_SHAPE_NAMES` under each setting that fails, every run not named
+#: passing. The part-of-other mutation and the nickname's fail no run
+#: of this grid. Not re-run here, as `_RECORDED_CONTROLS` is not.
+_FOUR = ("default", "family-first", "es", "zh")
+_SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     "only the joined form of a hyphenated word keyed": {
-        parser_id: (("Smith-Jones, Ann",
-                     "Smith Ann" if parser_id == "family-first" else "Ann Smith"),
-                    ("default", "familiar-form", "given-one-side",
-                     "hyphenated-part", "across-roles", "other-readings"))
-        for parser_id in ("default", "family-first", "es", "zh")
+        parser_id: dict.fromkeys(
+            ("default", "familiar-form", "given-one-side", "hyphenated-part",
+             "across-roles", "other-readings"),
+            ("Smith-Jones, Ann",
+             "Smith Ann" if parser_id == "family-first" else "Ann Smith"))
+        for parser_id in _FOUR
+    },
+    "the familiar forms' paired names left out of the given letters": {
+        # all passes it through given-one-side's bare family keys
+        parser_id: {"familiar-form": (
+            ("Smith Bill", "Smith William") if parser_id == "family-first"
+            else ("Bill Smith", "William Smith"))}
+        for parser_id in _FOUR
     },
     "the family-initial key removed": {
-        parser_id: ((("John Smith", "J. Smith") if parser_id == "family-first"
-                     else ("Smith John", "Smith J.")),
-                    ("family-initial", "all"))
-        for parser_id in ("default", "family-first", "es", "zh")
+        parser_id: dict.fromkeys(
+            ("family-initial", "all"),
+            ("John Smith", "J. Smith") if parser_id == "family-first"
+            else ("Smith John", "Smith J."))
+        for parser_id in _FOUR
+    },
+    "the bare family keys removed": {
+        parser_id: dict.fromkeys(("given-one-side", "all"),
+                                 ("Smith, John", "Mr. Smith"))
+        for parser_id in _FOUR
+    },
+    "the other readings' keys removed": {
+        parser_id: {
+            "other-readings": (("Mr. Smith", "Smith")
+                               if parser_id == "family-first"
+                               else ("Mr. Smith", "Della Smith")),
+            "all": ("Smith, John", "Smith"),
+        }
+        for parser_id in _FOUR
     },
     "the middle words' given letters removed": {
-        "family-first": (("María García López", "María López"),
-                         ("across-roles",)),
+        "family-first": {"across-roles": ("María García López", "María López")},
     },
 }
 
@@ -735,35 +802,87 @@ _SHAPE_CONTROLS: dict[str, dict[str, tuple[tuple[str, str], tuple[str, ...]]]] =
 def test_every_shape_control_names_a_mutation_parser_and_setting() -> None:
     assert _SHAPE_CONTROLS and set(_SHAPE_CONTROLS) <= set(_RECORDED_CONTROLS)
     for row in _SHAPE_CONTROLS.values():
-        for parser_id, (pair, settings) in row.items():
+        for parser_id, runs in row.items():
             assert parser_id in _SHAPE_PARSERS
-            assert set(pair) <= set(_SHAPE_NAMES)
-            assert settings and set(settings) <= set(_SETTING_IDS)
+            assert runs and set(runs) <= set(_SETTING_IDS)
+            for pair in runs.values():
+                assert set(pair) <= set(_shape_names(parser_id))
 
 
 @functools.cache
 def _shape_grid(parser_id: str) -> tuple[ParsedName, ...]:
-    """`_SHAPE_NAMES` parsed once per parser, for both shape-grid tests."""
+    """A parser's shape names (`_shape_names`) parsed once, for the
+    shape-grid tests."""
     parser = _SHAPE_PARSERS[parser_id]
-    return tuple(parser.parse(n) for n in _SHAPE_NAMES)
+    return tuple(parser.parse(n) for n in _shape_names(parser_id))
+
+
+def _shape_names(parser_id: str) -> tuple[str, ...]:
+    """The names the shape grid reads under one parser: `_SHAPE_NAMES`
+    and that parser's `_PACK_NAMES`."""
+    return _SHAPE_NAMES + _PACK_NAMES.get(parser_id, ())
+
+
+@pytest.mark.parametrize(
+    "parser_id", [p for p in _SHAPE_PARSERS if p != "default"])
+def test_each_shape_parser_reads_names_of_the_grid_its_own_way(
+        parser_id: str) -> None:
+    """A configured parser earns its place in the shape grid only by
+    reading some of its names differently from `Parser()`, and by
+    calling a pair holding one of those consistent that the default
+    parser's matcher refuses, so the grid's guarantee and symmetry are
+    held over that parser's own readings: put `Parser()` in its place
+    and this fails."""
+    grid = _shape_grid(parser_id)
+    default = tuple(Parser().parse(n) for n in _shape_names(parser_id))
+    moved = {a.original for a, b in zip(grid, default)
+             if a.as_dict() != b.as_dict()}
+    assert moved
+    mine, theirs = _SHAPE_PARSERS[parser_id].matching(), Parser().matching()
+    assert any(
+        a.original != b.original and {a.original, b.original} & moved
+        and mine.check(a, b).consistent and not theirs.check(da, db).consistent
+        for (a, da), (b, db) in itertools.product(zip(grid, default), repeat=2))
+
+
+@pytest.mark.parametrize(
+    "mutation, parser_id, runs",
+    [(m_, p_, runs) for m_, row in _SHAPE_CONTROLS.items()
+     for p_, runs in row.items()],
+    ids=lambda v: v if isinstance(v, str) else None)
+def test_a_shape_control_still_reaches_the_keys_it_removed(
+        mutation: str, parser_id: str,
+        runs: dict[str, tuple[str, str]]) -> None:
+    """Each shape control's pair is still consistent and shares a key
+    under the setting it was recorded failing, as the code stands (every
+    shape control removes keys), so a control that no longer reaches
+    them shows here."""
+    grid = dict(zip(_shape_names(parser_id), _shape_grid(parser_id)))
+    for setting_id, (first, second) in runs.items():
+        a, b = grid[first], grid[second]
+        matching = Matching(_SHAPE_PARSERS[parser_id],
+                            *SETTINGS[_SETTING_IDS.index(setting_id)])
+        assert matching.check(a, b).consistent, setting_id
+        assert matching.keys(a) & matching.keys(b), setting_id
 
 
 @pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
 @pytest.mark.parametrize("parser_id", list(_SHAPE_PARSERS))
 def test_the_key_guarantee_and_symmetry_hold_over_comma_shapes_and_packs(
         parser_id: str, setting: tuple[frozenset[Outcome], bool]) -> None:
-    """The guarantee and the symmetry over `_SHAPE_NAMES`, read under a
-    family-first order and the Spanish and Chinese packs as well as the
-    default (#1264): a configured parser fills the roles differently and
-    reads its own spellings, so each holds only if it holds there too.
-    32 runs, about 6 seconds serial (measured 2026-11-11). Its negative
-    controls are `_SHAPE_CONTROLS`."""
-    matching = Matching(_SHAPE_PARSERS[parser_id], *setting)
-    parsed = _shape_grid(parser_id)
-    _assert_the_key_guarantee(matching, parsed)
-    for a, b in itertools.product(parsed, repeat=2):
-        assert matching.check(b, a) == matching.check(a, b).mirrored(), (
-            a.original, b.original)
+    """The guarantee and the symmetry over each parser's shape names
+    (`_shape_names`), read under a family-first order and the Spanish
+    and Chinese packs as well as the default (#1264): a configured
+    parser fills the roles differently and reads its own spellings, so
+    each holds only if it holds there too. Each setting beyond the
+    default must find a pair of two names its parser's default matcher
+    refuses. 32 runs, about 12 seconds serial (measured 2026-11-11 under a load average near 4 from other work, so an upper bound). Its negative controls are
+    `_SHAPE_CONTROLS`."""
+    parser = _SHAPE_PARSERS[parser_id]
+    _assert_the_key_guarantee(
+        Matching(parser, *setting), _shape_grid(parser_id),
+        None if setting == SETTINGS[0] else Matching(parser),
+        symmetric=True)
 
 
 @pytest.mark.parametrize("a, b", [

@@ -19,7 +19,8 @@ outcomes the caller accepts. The module imports `_types`, `_policy`
 repr compares a parser's policy with) and `_lexicon` (for
 `_normalize`, which folds a hyphen half before it is looked up among
 the particles, and `Lexicon.default()`, which the repr compares a
-parser's lexicon with), and `Parser` for typing alone.
+parser's lexicon with), `_parser` at call time, in the repr, to tell
+a `Parser` from anything else, and `Parser` for typing too.
 """
 from __future__ import annotations
 
@@ -313,16 +314,7 @@ class Matching:
             parts.append("+ " + ", ".join(added))
         if removed:
             parts.append("- " + ", ".join(removed))
-        # the parser too where it is not the default one, by its own
-        # bounded repr, as Parser shows a segmenter only where one is
-        # set; an object that is no Parser by its class name, as Parser
-        # names a segmenter, since its repr may be anything
-        parser = ""
-        if not _is_default_parser(self.parser):
-            parser = (f", parser={self.parser!r}"
-                      if all(hasattr(self.parser, f) for f in _PARSER_FIELDS)
-                      else f", parser={type(self.parser).__name__}")
-        return f"Matching({' '.join(parts)}{parser})"
+        return f"Matching({' '.join(parts)}{_parser_repr(self.parser)})"
 
     def check(self, a: str | ParsedName, b: str | ParsedName) -> MatchResult:
         """Compare two names role by role. A string is parsed with this
@@ -627,18 +619,21 @@ class Matching:
             f"parser.parse(text)")
 
 
-#: The fields of a `Parser` the repr compares with the default's.
-_PARSER_FIELDS = ("lexicon", "policy", "segmenter")
-
-
-def _is_default_parser(parser: Parser) -> bool:
-    """`parser` reads names as `Parser()` does: the default lexicon and
-    policy and no segmenter. Read with `getattr`, so a parser missing
-    one of them is shown rather than making the repr raise."""
-    missing = object()
-    return (getattr(parser, "segmenter", missing) is None
-            and getattr(parser, "policy", missing) == Policy()
-            and getattr(parser, "lexicon", missing) == Lexicon.default())
+def _parser_repr(parser: Parser) -> str:
+    """The parser's part of `Matching`'s repr: nothing for a `Parser`
+    reading as `Parser()` does (the default lexicon and policy, no
+    segmenter), the `Parser`'s own bounded repr for any other, and for
+    anything else, a subclass of `Parser` included, its class name
+    alone, since its repr and its fields may be anything, as `Parser`
+    names a segmenter by its class."""
+    # Parser at call time: _parser imports this module at call time
+    from nameparser._parser import Parser
+    if type(parser) is not Parser:
+        return f", parser={type(parser).__name__}"
+    if (parser.segmenter is None and parser.policy == Policy()
+            and parser.lexicon == Lexicon.default()):
+        return ""
+    return f", parser={parser!r}"
 
 
 # -- the check -------------------------------------------------------------
