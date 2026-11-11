@@ -672,6 +672,11 @@ Shipped packs
        (``山田太郎`` → family ``山田``, given ``太郎``). The pack ships
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
+       The pack also chooses the language ``ja``, which turns on the
+       honorific ``君`` (``逢沢　一郎君`` → suffix ``君``), as the Diet
+       writes its members. The default leaves it in the name, since
+       ``王君`` is a complete Chinese name, so a Chinese name read under
+       this pack loses its ``君`` the same way.
    * - ``ne``
      - Nepali given names — chooses the language ``ne``, which reads
        ``श्री``, ``गुरु`` and ``Guru`` as name words, placed by position,

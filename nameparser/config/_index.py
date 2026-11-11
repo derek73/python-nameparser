@@ -3664,6 +3664,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('先生', (('ja', 'professional_honorific', (('attached', 'after'),)), ('zh', 'professional_honorific', (('attached', 'after'),)))),
     ('医学博士', (('ja', 'credential', (('acronym', False), ('attached', 'after'))), ('zh', 'credential', (('acronym', False), ('attached', 'after'), ('same_as', '醫學博士'))))),
     ('博士', (('ja', 'credential', (('acronym', False),)), ('zh', 'credential', (('acronym', False),)))),
+    ('君', (('ja', 'honorific', (('attached', 'after'), ('default', False))),)),
     ('国会議員', (('ja', 'credential', (('acronym', False), ('attached', 'after'))),)),
     ('國會議員', (('zh', 'credential', (('acronym', False), ('attached', 'after'))),)),
     ('太平紳士', (('zh', 'credential', (('acronym', False), ('attached', 'after'))),)),

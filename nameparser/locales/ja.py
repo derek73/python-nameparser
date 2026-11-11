@@ -6,7 +6,13 @@ same role locales.ZH plays for Chinese: a pure-Han string cannot say
 which language it is written in (林 is Lin or Hayashi), so neither
 activation may be a default.
 
-Unlike zh, this pack ships NO vocabulary and NO order:
+Choosing it also chooses the language ``ja`` (#1194), which turns on
+nameparser/vocab/ja.toml's readings written ``default = false``: the
+honorific 君, the Diet's, which zh.toml keeps out of the default because
+王君 is a complete Chinese name. Glued (逢沢　一郎君) or spaced it then
+reads as the suffix's honorific.
+
+Unlike zh, this pack ships NO vocabulary of its own and NO order:
 
 * No vocabulary, because no surname list divides Japanese names. Family
   and given names draw on the same kanji, both sides run one to four
@@ -76,6 +82,7 @@ JA = Locale(
     lexicon=Lexicon.empty(),
     policy=PolicyPatch(
         segment_scripts=frozenset({Script.HAN, Script.HIRAGANA})),
+    languages=frozenset({"ja"}),
 )
 
 # Both compiled by _policy's factory from the shared codepoint table

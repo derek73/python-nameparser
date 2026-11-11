@@ -693,8 +693,9 @@ because 김지양 is a given name, 田中博士 is Tanaka Hiroshi as readily
 as Doctor Tanaka, and some ninety Japanese surnames end in 殿 (鵜殿,
 真殿). Those stay recognized in their spaced form, where position
 settles what the glued form leaves ambiguous. 君 is recognized in
-neither form, since 王君 is a complete Chinese name, though its kana
-spelling くん peels.
+neither form by default, since 王君 is a complete Chinese name, though
+its kana spelling くん peels. ``parser_for(locales.JA)`` turns 君 on, glued
+and spaced, as the Diet writes it (``逢沢　一郎君`` gives suffix ``君``).
 
 Exactly one honorific peels off a token, and the entries are whole
 honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,

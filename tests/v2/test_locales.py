@@ -8,6 +8,7 @@ import re
 import sys
 import types
 import unicodedata
+import warnings
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from types import ModuleType
@@ -726,6 +727,20 @@ def test_ja_pack_contents() -> None:
     assert not _ja.DEVIATES("김민준")   # the three JA scripts, not a wider union
 
 
+def test_ja_choice_reads_kun_as_an_honorific_and_the_default_does_not() -> None:
+    # #1194: 君 is the Diet's honorific, but 王君 is a complete Chinese
+    # name, so only a Japanese choice reads it; くん ships everywhere
+    with pytest.warns(UserWarning, match="ja_segmenter"):
+        ja = parser_for(locales.JA)
+    for text in ("逢沢　一郎君", "逢沢　一郎　君"):
+        n = ja.parse(text)
+        assert (n.family, n.given, n.middle, n.suffix) == (
+            "逢沢", "一郎", "", "君"), text
+        assert parse(text).suffix == "", text
+    assert parse("王君").family == "王君"
+    assert parse("山田　太郎くん").suffix == "くん"
+
+
 def test_ja_segmenter_without_extra_raises_helpfully() -> None:
     if _JA_AVAILABLE:
         pytest.skip("namedivider installed; the error path is untestable")
@@ -892,7 +907,7 @@ def test_ja_pack_alone_is_inert() -> None:
     # test's claim, and the inert parses below are the quiet half
     with pytest.warns(UserWarning, match="ja_segmenter"):
         p = parser_for(locales.JA)
-    for name in _ROTATORS["ja"]:
+    for name in _JA_SEGMENTATION_ROTATORS:
         assert p.parse(name).as_dict() == _default_parse(name), name
 
 
@@ -1516,6 +1531,17 @@ _ROTATORS["ja"] = [
                      # pure katakana (マイケル) is deliberately not
     "佐々木健",      # the iteration mark 々 inside a top-20 surname
 ]
+# ja's choice of the language (#1194) turns on 君, the Diet's honorific:
+# glued, spaced and behind an ideographic comma, where the default reads it
+# into the given name or as a middle name. Segmentation-free on purpose,
+# so the segmenterless pack's inert test below reads only the rows above.
+_JA_CHOICE_ROTATORS = [
+    "逢沢　一郎君",    # glued, the Diet's own writing
+    "逢沢　一郎　君",  # spaced
+    "逢沢、一郎君",    # behind the ideographic comma
+]
+_JA_SEGMENTATION_ROTATORS = list(_ROTATORS["ja"])
+_ROTATORS["ja"] = _JA_SEGMENTATION_ROTATORS + _JA_CHOICE_ROTATORS
 
 # The choice packs (3f): one name per word of the derived surface, each
 # in a shape the default reads differently, so the gate's positive side
@@ -1656,8 +1682,11 @@ def test_a_choice_word_rotator_is_moved_by_the_choice_alone(code: str) -> None:
     holds = _surface_deviates(surface)
     choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
                                languages=pack.languages))
-    rest = parser_for(Locale(code="rest", lexicon=pack.lexicon,
-                             policy=pack.policy))
+    with warnings.catch_warnings():
+        # ja's patch alone activates segmentation with nothing to divide by
+        warnings.filterwarnings("ignore", message=".*ja_segmenter")
+        rest = parser_for(Locale(code="rest", lexicon=pack.lexicon,
+                                 policy=pack.policy))
     witnesses = [n for n in _ROTATORS[code] if holds(n)]
     assert witnesses
     for name in witnesses:
