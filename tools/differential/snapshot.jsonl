@@ -5,13 +5,20 @@
 {"name": "'S-JACOB SMIT", "given": "'S-JACOB", "family": "SMIT", "initials": "'. S.", "capitalized": "'S-Jacob Smit"}
 {"name": "'Smitty' Abdul Jr.", "given": "Abdul", "suffix": "Jr.", "nickname": "Smitty", "initials": "A.", "generation": "Jr."}
 {"name": "'Smitty' Dr. Jones", "title": "Dr.", "family": "Jones", "nickname": "Smitty", "initials": "J."}
+{"name": "'Smitty' Dr. Jr.", "family": "Dr.", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D.", "generation": "Jr."}
 {"name": "'Smitty' J.", "family": "J.", "nickname": "Smitty", "initials": "J."}
 {"name": "'Smitty' J. Jr.", "given": "J.", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
 {"name": "'Smitty' John Jones", "given": "John", "family": "Jones", "nickname": "Smitty", "initials": "J. J."}
 {"name": "'Smitty' Jones", "family": "Jones", "nickname": "Smitty", "initials": "J."}
 {"name": "'Smitty' Jones Jr.", "family": "Jones", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
-{"name": "'Smitty' Pope Jr.", "given": "Pope", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}
+{"name": "'Smitty' Pope", "title": "Pope", "nickname": "Smitty"}
+{"name": "'Smitty' Pope Jr.", "family": "Pope", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}
+{"name": "'Smitty' Pope Jr. PhD", "title": "Pope Jr.", "family": "PhD", "nickname": "Smitty", "initials": "P."}
+{"name": "'Smitty' Pope V", "title": "Pope", "given": "V", "nickname": "Smitty", "initials": "V."}
+{"name": "'Smitty' Pope, Jr.", "family": "Pope", "suffix": "Jr.", "nickname": "Smitty", "initials": "P.", "generation": "Jr."}
 {"name": "'Smitty' Sir John", "title": "Sir", "given": "John", "nickname": "Smitty", "initials": "J."}
+{"name": "'Smitty' Sir Pope Jr.", "title": "Sir", "given": "Pope", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}
+{"name": "'Smitty' St Jr.", "given": "St", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S.", "generation": "Jr."}
 {"name": "'Smitty' de Jr.", "given": "de", "suffix": "Jr.", "nickname": "Smitty", "initials": "d.", "capitalized_force": "De \"Smitty\" Jr.", "generation": "Jr."}
 {"name": "'Smitty', Jones Jr.", "given": "Jones", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
 {"name": "(", "ambiguities": ["UNBALANCED_DELIMITER"]}
@@ -3373,7 +3380,9 @@
 {"name": "Pontchartrain, Paul Phélypeaux de", "given": "Paul", "middle": "Phélypeaux", "family": "de Pontchartrain", "initials": "P. P. P."}
 {"name": "Popa Alexandru Ioan", "order": "FAMILY_FIRST", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Popa, Alexandru Ioan", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
+{"name": "Pope (PhD) Jr.", "family": "Pope", "suffix": "PhD Jr.", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "Pope Francis", "title": "Pope", "given": "Francis", "initials": "F."}
+{"name": "Pope Jr.", "given": "Pope", "suffix": "Jr.", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}
 {"name": "Pope Saint John Paul II", "title": "Pope Saint", "given": "John", "family": "Paul", "suffix": "II", "initials": "J. P.", "generation": "II"}
 {"name": "Pope Smith, John", "title": "Pope", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Popert, Hermann Martin", "given": "Hermann", "middle": "Martin", "family": "Popert", "initials": "H. M. P."}

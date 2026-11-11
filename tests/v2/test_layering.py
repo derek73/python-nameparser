@@ -65,10 +65,12 @@ ALLOWED = {
     "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
     # name matching: the types, the lexicon's listed spellings, and the
-    # scripts that write no initials (as _render reads them); Parser is
-    # TYPE_CHECKING
+    # scripts that write no initials (as _render reads them); _parser at
+    # call time only, in Matching's constructor, which requires a
+    # Parser, and its repr, which tells a Parser from a subclass (Parser
+    # imports this module at call time, in Parser.matching)
     "_match.py": ("nameparser._types", "nameparser._lexicon",
-                  "nameparser._policy"),
+                  "nameparser._policy", "nameparser._parser"),
     # the group suggester: types, policy, the lexicon's particles and
     # titles, the pipeline's patronymic, title, suffix and numeral
     # predicates and its private word tables;
