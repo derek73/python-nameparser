@@ -457,26 +457,3 @@ def test_full_name_before_an_ethiopic_suffix_comma(
         order: tuple[Role, Role, Role], expect: dict[str, str]) -> None:
     name = Parser(policy=Policy(name_order=order)).parse("አበበ ከበደ፣ Jr.")
     assert {k: v for k, v in name.as_dict().items() if v} == expect
-
-
-# #1268, S1's comma bullet: extract and post_rules read a clause through
-# `_tokenize._clause_words`, whose words are tokenize's where the clause holds
-# no separator but whitespace and the comma; where it holds one tokenize
-# divides at and whitespace does not, the two may differ, as the base's
-# whitespace split differed, and post_rules compares only their count
-@pytest.mark.parametrize(("content", "agree"), [
-    ("MD,PhD", True), ("MD, PhD", True), ("MD ,PhD", True),
-    ("MD,,PhD", True), (",JP", True), ("Jr.,", True), ("Jr.,MD", True),
-    ("Dr.\uff0cPhD", True), ("PhD\u060cSr", True), ("Janey,Jo", True),
-    ("a,b,c", True), ("MD;PhD", True), (", ,", True), ("PhD, ", True),
-    ("Janey  Jo", True), ("Jack", True), ("Jos\u00e9 Mar\u00eda", True),
-    ("MD\u30fbPhD", False), ("MD,\u30fbPhD", False),
-    ("MD\u200b,PhD", False), ("MD\u200bPhD", False),
-    ("MA \N{GRINNING FACE}", False),
-])
-def test_clause_words_divide_a_clause_as_tokenize_does(
-        content: str, agree: bool) -> None:
-    out = _tokenized(f"John Smith ({content})", Policy(strip_emoji=True))
-    clause = [t.text for t in out.tokens if t.role is Role.NICKNAME]
-    assert (clause == _tokenize._clause_words(
-        content, Policy(strip_emoji=True))) is agree

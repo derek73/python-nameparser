@@ -793,7 +793,7 @@ def test_every_character_the_tokenizer_ignores_is_refused() -> None:
                # a space is the one ignored character a text holds: the
                # separator between a phrase's words
                if not 0xD800 <= c <= 0xDFFF and c != 0x20
-               and (_tokenize._ignorable(chr(c), state.policy) or chr(c) in COMMA_CHARS)]
+               and (_tokenize._ignorable(chr(c), state) or chr(c) in COMMA_CHARS)]
     assert len(ignored) > 100, len(ignored)  # whitespace, bidi, emoji, dots, commas
     for ch in ignored:
         escaped = f"\\U{ord(ch):08X}"  # a TOML escape: no raw control in the file

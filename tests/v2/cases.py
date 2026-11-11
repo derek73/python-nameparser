@@ -19071,35 +19071,45 @@ CASES: tuple[Case, ...] = (
                "'Jr， PhD'"),
     Case("a_comma_glued_between_credentials_parts_a_set_apart_clause",
          "John Smith (MD,PhD)",
-         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         {"given": "John", "family": "Smith", "suffix": "MD,PhD"},
          classification="fix(#1268)",
-         notes="read as 'John Smith (MD, PhD)' is: a comma with no space "
-               "beside it divides the clause's words as a spaced one "
-               "does (rules/S1). Every release from 1.4.0 through 3.0.1 "
-               "read a nickname, 'MD PhD' in 2.0.0 through 2.4.0 and "
-               "'MD,PhD' otherwise"),
-    Case("a_fullwidth_comma_glued_between_a_title_and_a_credential",
+         notes="#1268, S1's comma bullet: a comma glued between two credentials parts "
+               "them for the clause's tests, and the word, set apart "
+               "whole, keeps its comma as written. Every release from "
+               "1.4.0 through 3.0.1 read a nickname, 'MD PhD' in 2.0.0 "
+               "through 2.4.0 and 'MD,PhD' otherwise"),
+    Case("a_title_glued_to_a_credential_keeps_the_nickname",
          "John Smith (Dr.，PhD)",
-         {"title": "Dr.", "given": "John", "family": "Smith",
-          "suffix": "PhD"},
-         classification="fix(#1268)",
-         notes="CJK text writes the fullwidth comma with no space after "
-               "it; read as 'John Smith (Dr.， PhD)' is. Every release "
-               "from 1.4.0 through 3.0.1 read a nickname"),
-    Case("a_glued_comma_parts_a_generation_from_a_credential",
+         {"given": "John", "family": "Smith", "nickname": "Dr.，PhD"},
+         notes="#1268 boundary: a title and a credential in one word "
+               "take two roles the word cannot part, so the clause keeps "
+               "its pair's reading (rules/S1's Accepted)"),
+    Case("a_glued_generation_and_credential_read_as_one_suffix_word",
          "John Smith (Jr.,MD)",
-         {"given": "John", "family": "Smith", "suffix": "Jr., MD"},
-         classification="fix(#1268)",
-         notes="two entries, as 'John Smith (Jr., MD)' reads; 3.0.0 and "
-               "3.0.1 read suffix 'Jr.,MD' as one unsplit word, 1.4.0 "
-               "through 2.8.0 a nickname"),
-    Case("a_glued_comma_settles_a_member_beside_a_credential",
+         {"given": "John", "family": "Smith", "suffix": "Jr.,MD"},
+         classification="fix(#792)",
+         notes="#1268: one word of two suffix words, as written; 3.0.0 "
+               "read it so already, 1.4.0 through 2.8.0 a nickname"),
+    Case("a_member_glued_to_a_credential_keeps_the_nickname",
          "John Smith (Ma,PhD)",
-         {"given": "John", "family": "Smith", "suffix": "Ma, PhD"},
-         classification="fix(#1268)",
-         notes="rules/S1's member settled by a credential of its clause, "
-               "as 'John Smith (Ma, PhD)' reads; 2.5.0 through 3.0.1 read "
-               "nickname 'Ma,PhD' and reported nothing"),
+         {"given": "John", "family": "Smith", "nickname": "Ma,PhD"},
+         notes="#1268 boundary: a member of the ambiguous class inside a "
+               "glued word is settled by nothing (rules/S1's Accepted)"),
+    Case("a_doubled_comma_inside_a_word_parts_nothing",
+         "John Smith (MD,,PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MD,,PhD"},
+         notes="#1268 boundary: only a single comma glued between two "
+               "words parts them"),
+    Case("a_joined_credential_glued_to_a_member_keeps_the_nickname",
+         "John Smith (MD/PhD,MBA)",
+         {"given": "John", "family": "Smith", "nickname": "MD/PhD,MBA"},
+         notes="#1268 boundary: as '(Ma,PhD)', 'MBA' being a member"),
+    Case("commas_opening_a_clause_between_name_words_read_as_before",
+         "John (,,Jr.) Smith",
+         {"given": "John", "family": "Smith", "suffix": "Jr."},
+         classification="fix(#792)",
+         notes="#1268 boundary: commas at a word's edge are no part of "
+               "it, as before #1268"),
     Case("a_glued_comma_in_a_nickname_is_kept_as_written",
          "Jane (Janey,Jo) Smith",
          {"given": "Jane", "family": "Smith", "nickname": "Janey,Jo"},
@@ -19117,63 +19127,41 @@ CASES: tuple[Case, ...] = (
     Case("a_glued_comma_parts_a_period_final_set_apart_clause",
          "John Smith (USN,Ret.)",
          {"given": "John", "family": "Smith", "suffix": "USN, Ret."},
-         notes="#1268: set apart by extract, which reads the clause's "
-               "words with the glued comma dividing them, so it takes no period "
-               "escape; as 'John Smith (USN, Ret.)' reads"),
-    Case("a_glued_comma_parts_dotted_credentials_before_a_family_comma",
-         "Smith (M.D.,Ph.D.), John",
-         {"given": "John", "family": "Smith", "suffix": "M.D., Ph.D."},
-         classification="fix(#1268)",
-         notes="as 'Smith (M.D., Ph.D.), John' reads; 3.0.1 took the "
-               "period escape and read suffix 'M.D., Ph.D., John', "
-               "reporting comma-structure"),
-    Case("a_glued_comma_before_a_name_word_keeps_a_period_final_nickname",
-         "John (MD,PhD.) Smith",
-         {"given": "John", "family": "Smith", "nickname": "MD,PhD."},
-         classification="fix(#1268)",
-         notes="rules/S1's initials before a name word, as 'John (MD, "
-               "PhD.) Smith' reads; 3.0.1 took the period escape and "
-               "read family 'John', suffix 'MD, PhD. Smith'"),
+         notes="#1268 boundary: as at the base, the period escape reading "
+               "the clause bare, where the comma divides"),
     Case("a_comma_before_a_nakaguro_ends_no_word",
          "John Smith (MD,・PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD, PhD"},
          classification="fix(#653)",
-         notes="#1268 boundary: a comma divides only between two word "
-               "characters, so before a separator tokenize drops the "
-               "clause reads as before #1268"),
+         notes="#1268 boundary: as at the base, the clause's one "
+               "whitespace word standing against two tokens"),
     Case("a_nakaguro_alone_in_a_clause_keeps_the_nickname",
          "John Smith (MD・PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD PhD"},
          classification="fix(#272)",
-         notes="#1268 boundary: with no comma the clause reads as before "
-               "#1268, its one word against two tokens"),
+         notes="#1268 boundary: a clause with no comma reads as at the base"),
     Case("a_nakaguro_beside_a_space_reads_as_before",
          "John Smith (MD・ PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD PhD"},
          classification="fix(#792)",
-         notes="#1268 boundary: a clause with no comma reads as before "
-               "#1268, its two words against two tokens; a draft that "
-               "compared the words' text with the tokens' read it as the "
-               "nickname"),
+         notes="#1268 boundary: a clause with no comma reads as at the base"),
     Case("a_comma_behind_a_zero_width_space_ends_no_word",
          "John Smith (MD\u200b,PhD)",
          {"given": "John", "family": "Smith", "nickname": "MD ,PhD"},
          classification="fix(#851)",
-         notes="#1268 boundary: a comma divides only behind a word "
-               "character tokenize keeps, so the clause reads as before "
-               "#1268"),
+         notes="#1268 boundary: as at the base; the comma opens the word "
+               "tokenize makes after the zero-width space"),
     Case("a_zero_width_space_before_a_comma_keeps_initials_a_nickname",
          "Justin (JP\u200b,PhD) Stearns",
          {"given": "Justin", "family": "Stearns", "nickname": "JP ,PhD"},
          classification="fix(#851)",
-         notes="#1268 boundary: as the row above; a draft read suffix "
-               "'JP PhD', pairing words with tokens out of step"),
+         notes="#1268 boundary: as the row above"),
     Case("a_doubled_comma_in_a_clause_divides_as_before",
          "John Smith (MD,, PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
          classification="fix(#792)",
-         notes="#1268 boundary: a comma before a comma ends no word, so "
-               "'MD,,' is one word as before #1268"),
+         notes="#1268 boundary: a doubled comma parts nothing, as at the "
+               "base"),
     Case("a_doubled_comma_before_a_name_word_keeps_the_nickname",
          "John (MD,, Jr.) Smith",
          {"given": "John", "family": "Smith", "nickname": "MD,, Jr."},
@@ -19183,8 +19171,8 @@ CASES: tuple[Case, ...] = (
          "John Smith (MD,\u200f PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
          classification="fix(#792)",
-         notes="#1268 boundary: a comma before a character tokenize drops "
-               "ends no word"),
+         notes="#1268 boundary: a comma at a word's edge parts nothing, as "
+               "at the base"),
     Case("a_title_before_a_comma_and_a_bidi_mark_stays_a_title",
          "John Smith (Dr.,\u200f)",
          {"title": "Dr.", "given": "John", "family": "Smith"},
@@ -19192,7 +19180,7 @@ CASES: tuple[Case, ...] = (
          notes="#1268 boundary: as the row above"),
     Case("a_configured_maiden_pair_sets_apart_glued_credentials",
          "John Smith (MD,PhD)",
-         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         {"given": "John", "family": "Smith", "suffix": "MD,PhD"},
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
          classification="fix(#1268)",
          notes="rules/S1 takes a configured maiden pair's clause first "
@@ -19201,7 +19189,7 @@ CASES: tuple[Case, ...] = (
     Case("a_comma_opening_a_clause_divides_nothing",
          "John (,JP) Smith",
          {"given": "John", "family": "Smith", "nickname": ",JP"},
-         notes="#1268 boundary: only a comma behind a word ends it"),
+         notes="#1268 boundary: a comma opening a word parts nothing"),
     Case("period_joined_member_before_an_arabic_comma_reports",
          "John Smith (Msc.Ed، Bob)",
          {"given": "John", "family": "Smith", "nickname": "Msc.Ed، Bob"},

@@ -27,7 +27,7 @@
   "W. Russell (Jr.) Withers"  →  suffix="Jr."
   "Jack (PhD)"                →  family="Jack"
   ```
-- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against, with a space beside it or none, where it stands between two words: a comma standing alone is a word of its own, and one written before another comma or a character tokenize drops (T1) ends no word. A comma is any character C's Background counts as one, each reading here as the ASCII one does.
+- **A comma inside the clause parts its words as a comma between them would**, though in a nickname it is kept as written (N1), and the comma is no part of the word it is written against. A comma is any character C's Background counts as one, each reading here as the ASCII one does. A single comma glued between two words of the clause parts them for these tests too, and the word they make is set apart whole, its comma kept as written, where its words take one role.
   ```
   "John Smith (USN, Ret.)"    →  suffix="USN, Ret."
   "John Smith (Dr., PhD)"     →  title="Dr."
@@ -36,9 +36,7 @@
   "John Smith (MD ,PhD)"      →  suffix="MD, PhD"
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"
-  "John Smith (MD,PhD)"       →  suffix="MD, PhD"
-  "John Smith (Dr.，PhD)"     →  title="Dr."
-  "Jane (Janey,Jo) Smith"     →  nickname="Janey,Jo"  · boundary
+  "John Smith (MD,PhD)"       →  suffix="MD,PhD"
   ```
 - **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its periods settle, says which. A joined word settles one where a chunk of it would. A generation, a numeral, an honorific, a word that is a title too and a member its capitals settle say nothing of the kind: `Ed Jr` is a name a person goes by, and a joined chunk is never settled by its case (S3).
   ```
@@ -162,11 +160,11 @@
   "(PhD/Sr) John Smith"       →  suffix="PhD/Sr"
   "(PhD, Sr) John Smith"      →  title="Sr"
   ```
-- A comma standing alone in a clause, as its own word, is a word that no vocabulary reads, so the clause keeps its pair's reading, where the same comma written against a word parts the words; glued to the word behind it, it opens that word and reads as it.
+- A word made of words glued at a comma is set apart only whole, so one whose words would take two roles, a title and a credential, keeps its pair's reading, as does one holding a member of the ambiguous class, which nothing in the word settles; a doubled comma glued between two words parts nothing.
   ```
-  "John Smith (MD , PhD)"     →  nickname="MD , PhD"
-  "John Smith (, PhD)"        →  nickname=", PhD"
-  "John Smith (,PhD)"         →  suffix="PhD"
+  "John Smith (Dr.，PhD)"     →  nickname="Dr.，PhD"
+  "John Smith (Ma,PhD)"       →  nickname="Ma,PhD"
+  "John Smith (MD,,PhD)"      →  nickname="MD,,PhD"
   ```
 - A qualifier written after a title in front of the name is the suffix it is in the vocabulary.
   ```
@@ -175,4 +173,4 @@
 
 ---
 **Signal:** shape: a bracketed or quoted clause every word of which the vocabulary reads as no name + neighbor: a credential in front, a name word behind, a credential in the clause settling a member + edge full stop: the period escape
-**history:** decisions/S1 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_tokenize.py, nameparser/_pipeline/_vocab.py
+**history:** decisions/S1 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_vocab.py

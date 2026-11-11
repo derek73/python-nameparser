@@ -16,10 +16,7 @@ original exactly as given (v1 contrast: decisions/T1).
 
 Beside the stage function, `_ignorable` is shared: extract asks it
 where a listed particle's word ends (rules/N2, #1241), so the two
-stages cannot disagree about which characters separate a word; and
-`_clause_words` is shared with extract and post_rules, which read a
-delimited clause's words for rules/S1 before tokens exist and beside
-them, ending a word at a comma where this stage does (#1268).
+stages cannot disagree about which characters separate a word.
 """
 from __future__ import annotations
 
@@ -127,7 +124,7 @@ def _flank(text: str, indices: range, policy: Policy) -> str | None:
     return None
 
 
-def _ignorable(ch: str, policy: Policy) -> bool:
+def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isspace():
         return True
     if ch.isascii():
@@ -145,36 +142,7 @@ def _ignorable(ch: str, policy: Policy) -> bool:
     # non-ASCII).
     if ch in _NAME_DOT_SEPARATORS or ch in _INVISIBLE_SEPARATORS:
         return True
-    return _stripped(ch, policy)
-
-
-def _clause_words(content: str, policy: Policy) -> list[str]:
-    """The words of a clause as extract and post_rules read them for
-    rules/S1 (#1268): split at whitespace, and after a comma glued
-    between two word characters, the comma kept on the first word
-    ('MD,PhD' is 'MD,', 'PhD'), where tokenize ends a word too: a
-    character in front of the comma that tokenize keeps, and one behind
-    it that is no comma and no character tokenize drops (`_ignorable`).
-    So ',JP', 'MD,,' and 'MD,' before an invisible separator are one
-    word, as tokenize leaves them. A separator tokenize divides at and
-    whitespace does not (rules/T1's invisible separators, T2's dots, a
-    stripped emoji) is not divided here, as the base's whitespace split
-    did not divide it; post_rules compares the count of these words with
-    the clause's tokens, as it compared that split's."""
-    words: list[str] = []
-    for word in content.split():
-        start = 0
-        last = len(word) - 1
-        for k, ch in enumerate(word):
-            if (ch in COMMA_CHARS and k > start and k < last
-                    and not _ignorable(word[k - 1], policy)
-                    and word[k + 1] not in COMMA_CHARS
-                    and not _ignorable(word[k + 1], policy)):
-                words.append(word[start:k + 1])
-                start = k + 1
-        if start < len(word):
-            words.append(word[start:])
-    return words
+    return _stripped(ch, state.policy)
 
 
 def _tokenize_region(state: ParseState, start: int, end: int,
@@ -185,14 +153,13 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        # rules/N1: "the nickname is the clause as written, its commas
-        # included" -- a comma separates only where
-        # it records a segmentation offset, the main stream; inside an
-        # extracted region it stays on a word as the clause's text, like
-        # ';', ending the word it is glued behind (below) (decisions/N1,
-        # #653; decisions/S1, #1268)
+        # rules/N1: "a comma inside the clause is kept as written: the
+        # comma divides nothing there" -- the Then bullet on a comma: a
+        # comma separates only where it records a segmentation offset,
+        # the main stream; inside an extracted region it is the clause's
+        # text, like ';' (decisions/N1, #653)
         is_separator = ((record_offsets and ch in COMMA_CHARS)
-                        or _ignorable(ch, state.policy))
+                        or _ignorable(ch, state))
         if (ch == _NARROW_NBSP and start < i < end - 1
                 and _mongolian_letter(text[i - 1])
                 and _mongolian_letter(text[i + 1])):
@@ -225,20 +192,6 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             continue
         if tok_start is None:
             tok_start = i
-        elif (not record_offsets and ch in COMMA_CHARS and i + 1 < end
-              and text[i + 1] not in COMMA_CHARS
-              and not _ignorable(text[i + 1], state.policy)):
-            # rules/S1: "the comma is no part of the word it is written
-            # against" -- a comma glued between two words of a clause
-            # ends the first, kept on it as a spaced one is ('MD,PhD'
-            # as 'MD, PhD'); the clause's text is unchanged, so a
-            # nickname keeps it as written. Only between two word
-            # characters: a doubled comma, or one before a separator
-            # tokenize drops, leaves the word as before #1268
-            # (decisions/S1, #1268); `_clause_words` asks the same
-            tokens.append(WorkToken(text[tok_start:i + 1],
-                                    Span(tok_start, i + 1), role=role))
-            tok_start = None
     if tok_start is not None:
         tokens.append(WorkToken(text[tok_start:end],
                                 Span(tok_start, end), role=role))

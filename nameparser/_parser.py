@@ -21,11 +21,11 @@ from nameparser._locale import Locale
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._post_rules import suffix_entries
-from nameparser._pipeline._state import COMMA_CHARS, ParseState
+from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
 from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
 from nameparser._types import (
-    FOLDED_TAG, ParsedName, Role, Segmenter, Span, Token, _guarded_getstate,
+    FOLDED_TAG, ParsedName, Role, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
 )
 
@@ -261,37 +261,9 @@ class Parser:
             # the call-count band.
             entried = suffix_entries(
                 dataclasses.replace(state, tokens=forced))
-            # rules/N1: "the nickname is the clause as written" -- the
-            # words of one delimited clause that tokenize ended at a
-            # glued comma (#1268) are joined back here, where the harvest
-            # drops the spans a parse's views join them by: across an
-            # empty gap, or across the commas rules/S1 took off a word it
-            # set apart, so the value reads as one word as before #1268
-            # ('(Janey,Jo)', '(MD,PhD)'), with no word's tags, as that
-            # word had none (decisions/S1, #1268)
-            clauses = [span for _, span in state.extracted]
-            toks: list[Token] = []
-            end = -1
-            inside: Span | None = None
-            for t in assemble(entried).tokens:
-                here = None
-                if t.span is not None:
-                    for c in clauses:
-                        if c.start <= t.span.start and t.span.end <= c.end:
-                            here = c
-                            break
-                if (toks and here is not None and here == inside
-                        and t.span is not None and t.span.start >= end
-                        and COMMA_CHARS.issuperset(
-                            gap := value[end:t.span.start])):
-                    toks[-1] = Token(toks[-1].text + gap + t.text, None,
-                                     role, frozenset())
-                else:
-                    toks.append(Token(t.text, None, role,
-                                      t.tags - {FOLDED_TAG}))
-                end = -1 if t.span is None else t.span.end
-                inside = here
-            harvested[role] = tuple(toks)
+            harvested[role] = tuple(
+                Token(t.text, None, role, t.tags - {FOLDED_TAG})
+                for t in assemble(entried).tokens)
         return name._with_field_tokens(harvested)
 
     # -- comparison -------------------------------------------------------

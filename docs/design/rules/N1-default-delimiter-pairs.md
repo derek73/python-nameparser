@@ -4,11 +4,9 @@
 
 **Then:** a clause enclosed by a configured nickname delimiter pair reads as the nickname and is lifted out of the name.
 
-- **A comma inside the clause is kept as written:** the nickname is the clause as written, its commas included and a run of whitespace in it read as one space, though the dots T2 and T3 name still divide a clause as they divide a name.
+- **A comma inside the clause is kept as written:** the comma divides nothing there, though the dots T2 and T3 name still divide a clause as they divide a name.
   ```
   "Jane (Janey, Jo) Smith"    →  nickname="Janey, Jo"
-  "Jane (Janey,Jo) Smith"     →  nickname="Janey,Jo"
-  "Jane (Janey,  Jo) Smith"   →  nickname="Janey, Jo"
   ```
 - **An empty enclosure is simply dropped**, there being no clause to read.
 
@@ -23,4 +21,4 @@
 
 ---
 **Signal:** neighbor
-**history:** decisions/N1 · **implemented:** nameparser/_parser.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
+**history:** decisions/N1 · **implemented:** nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py

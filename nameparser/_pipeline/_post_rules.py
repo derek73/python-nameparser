@@ -54,6 +54,7 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
+import re
 from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
@@ -72,7 +73,6 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
-from nameparser._pipeline._tokenize import _clause_words
 from nameparser._pipeline._vocab import (
     _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     east_slavic_rotates, has_patronymic_ending, is_initial, is_listed_given_name,
@@ -756,13 +756,8 @@ def _set_apart_clauses(state: ParseState,
     for _, clause in state.extracted:
         lo = bisect.bisect_left(starts, clause.start)
         hi = bisect.bisect_left(starts, clause.end)
-        content = state.original[clause.start:clause.end]
-        words = (content.split() if COMMA_CHARS.isdisjoint(content)
-                 else _clause_words(content, state.policy))
-        # every word one token of the clause, as extract read them,
-        # counted as the base counted them: the splitter's words are the
-        # base's split with a glued comma ending a word, as tokenize
-        # ends it (`_tokenize._clause_words`, decisions/S1, #1268)
+        words = state.original[clause.start:clause.end].split()
+        # every word one token of the clause, as extract read them
         if not words or hi - lo != len(words) or any(
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
                 for i in range(lo, hi)):
@@ -773,8 +768,29 @@ def _set_apart_clauses(state: ParseState,
         # the clause's credential words, asked `settles_a_member` only
         # where an unsettled member needs one
         others: list[str] = []
+        # the words and kinds the clause tests read: a token's own, or
+        # the words a comma glued inside it parts (`_glued_words`)
+        test_words: list[str] = []
+        test_kinds: list[SetApartKind] = []
         for i in range(lo, hi):
             token = tokens[i]
+            # rules/S1: "the comma is no part of the word it is written
+            # against" -- a comma glued between two words of the clause
+            # parts them for these tests, though the token stays whole
+            # (rules/N1's clause as written); asked in C first, so a
+            # clause with no such comma pays no frame (decisions/S1,
+            # #1268)
+            bare = token.text.strip(COMMA_STRIP)
+            if not COMMA_CHARS.isdisjoint(bare):
+                glued = _glued_kind(bare, lex)
+                if glued is None:
+                    break
+                whole, parts, part_kinds = glued
+                test_words.extend(parts)
+                test_kinds.extend(part_kinds)
+                others.extend(parts)
+                kinds.append(whole)
+                continue
             kind = set_apart_kind(token.text, lex)
             # a member its periods settle, or a joined word whose own
             # chunks settle its member, settles the others, as does a
@@ -794,6 +810,8 @@ def _set_apart_clauses(state: ParseState,
             else:
                 others.append(token.text)
             kinds.append(kind)
+            test_words.append(token.text)
+            test_kinds.append(kind)
         else:
             # rules/S1: "a member its writing leaves unsettled is one
             # too where a credential of the same clause settles it" --
@@ -817,13 +835,13 @@ def _set_apart_clauses(state: ParseState,
             if last_name >= hi and any(
                     kind != "title"
                     and reads_as_initials(w, kind, state.one_case, lex)
-                    for w, kind in zip(words, kinds)):
+                    for w, kind in zip(test_words, test_kinds)):
                 if ahead is None:
                     ahead = _name_ahead(state, tokens)
                 if ahead[hi - 1]:
                     continue
             # the token in front of the clause
-            if not set_apart(words, kinds, lo > 0
+            if not set_apart(test_words, test_kinds, lo > 0
                              and tokens[lo - 1].role is Role.SUFFIX, lex):
                 continue
             for i, kind in zip(range(lo, hi), kinds):
@@ -840,6 +858,36 @@ def _set_apart_clauses(state: ParseState,
                 tokens[i] = copy_with(
                     token, role=Role.TITLE if title else Role.SUFFIX,
                     text=text, span=Span(start, start + len(text)))
+
+
+#: A single comma glued between two words of a clause's token ('MD,PhD');
+#: a doubled one parts nothing, as a comma beside a comma ends no word
+#: (rules/S1, #1268).
+_COMMA_SPLIT = re.compile(
+    "(?<![{0}])[{0}](?![{0}])".format(re.escape(COMMA_STRIP)))
+
+
+def _glued_kind(bare: str, lex: Lexicon) -> tuple[
+        SetApartKind, list[str], list[SetApartKind]] | None:
+    """rules/S1's reading of a clause's word that holds a comma glued
+    between two words ('MD,PhD', #1268): its words, each of a kind
+    `set_apart_kind` gives (a member none, as no word of such a token is
+    settled), and the one kind the whole word takes, which every word
+    must share, a word of both the title and the suffix vocabulary
+    taking its neighbours' (a title and a credential in one word, which
+    the token cannot part, keep the clause its pair's reading); None
+    where a word is no such word."""
+    parts = [w for w in re.split(_COMMA_SPLIT, bare) if w]
+    kinds: list[SetApartKind] = []
+    for part in parts:
+        kind = set_apart_kind(part, lex)
+        if kind is None or kind == "member":
+            return None
+        kinds.append(kind)
+    plain = set(kinds) - {"dual"}
+    if len(plain) > 1:
+        return None
+    return (plain.pop() if plain else "dual"), parts, kinds
 
 
 def _name_ahead(state: ParseState, tokens: list[WorkToken]) -> list[bool]:
