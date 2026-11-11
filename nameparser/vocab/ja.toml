@@ -74,6 +74,14 @@ note = "familiar/diminutive"
 attached = { side = "after", issue = 308 }
 
 [[word]]
+text = "君"
+[word.honorific]
+default = false
+issue = [1194, 308]
+note = "the Diet's honorific: all 457 members of the House of Representatives are written with it glued (逢沢　一郎君, 2026-11-08), off by default because 王君 is a complete Chinese name, 君 being a common given-name final (zh.toml); a Japanese choice turns it on, spaced and glued. Longer words ending in it (主君, 諸君, 姫君, 若君) are titles of address rather than names, and read split under the choice, accepted. No Japanese given name ending in it is known: the kimi reading sits at the start or middle (君子, 君彦)"
+attached = { side = "after", issue = 1194 }
+
+[[word]]
 text = "様"
 [word.honorific]
 issue = [307, 308]

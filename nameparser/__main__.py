@@ -161,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
                               languages=frozenset({args.locale}))
             except (TypeError, ValueError):
                 ap.error(unknown)  # exits 2, message to stderr
-        # a strict call needs a language: a pack choosing none (zh, ja,
+        # a strict call needs a language: a pack choosing none (zh,
         # ru) chooses its own code, which parser_for checks below
         if args.strict and not pack.languages:
             try:

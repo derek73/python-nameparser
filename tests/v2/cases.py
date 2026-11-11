@@ -18139,9 +18139,10 @@ CASES: tuple[Case, ...] = (
          classification="fix(#271)",
          notes="likewise unpeeled: 君 is a common Chinese given-name "
                "final, so 王君 is a complete name, not Mr. Wang. "
-               "Unlike its neighbours here, 君 is in NEITHER set -- "
+               "Unlike its neighbours here, 君 is in NEITHER default set -- "
                "there is no spaced entry to fall back on either, and "
-               "only its kana spelling くん peels"),
+               "only its kana spelling くん peels; a Japanese choice "
+               "turns 君 on (tests/v2/test_locales.py, #1194)"),
     Case("zh_glued_shi_stays", "王氏",
          {"family": "王氏"},
          classification="fix(#271)",

@@ -672,6 +672,11 @@ Shipped packs
        (``山田太郎`` → family ``山田``, given ``太郎``). The pack ships
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
+       The pack also chooses the language ``ja``, which turns on the
+       honorific ``君`` (``逢沢　一郎君`` → suffix ``君``), as the Diet
+       writes its members. The default leaves it in the name, since
+       ``王君`` is a complete Chinese name, so a Chinese name read under
+       this pack loses its ``君`` the same way.
    * - ``ne``
      - Nepali given names — chooses the language ``ne``, which reads
        ``श्री``, ``गुरु`` and ``Guru`` as name words, placed by position,
@@ -734,8 +739,10 @@ Shipped packs
 ``bn``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt``, ``pt_br`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
-Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
+Nepali) and off until a caller chooses the language. ``ru`` and
 ``tr_az`` are policy-only — they carry no vocabulary of their own.
+``ja`` is a choice of the language ``ja`` (which turns on ``君``) beside one
+policy field, the segmentation it needs a segmenter to use.
 ``es`` and ``es_ar`` are each a choice with a list and one policy field
 beside it: each turns ``two_family_names`` on and carries the given
 names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
@@ -1098,7 +1105,7 @@ stay suffixes (``Nguyen Van Anh, PhD``).
 Segmenters
 -----------
 
-``ja`` is policy-only in a second sense: it turns division on for
+``ja``'s policy half is inert in a second sense: it turns division on for
 Japanese text without supplying anything to divide with. That job goes
 to a **segmenter**, which is passed to
 :func:`~nameparser.parser_for` rather than carried by the pack — a
@@ -1243,7 +1250,7 @@ by ``tests/v2/test_locales.py``:
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
    - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
-     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``es_ar``, ``pt``, ``pt_br``, ``vi``): a name for each word the choice changes, in each script it
+     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``es_ar``, ``pt``, ``pt_br``, ``vi``, and ``ja``'s 君): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.
@@ -1268,7 +1275,7 @@ by ``tests/v2/test_locales.py``:
    language its script does not* — a Chinese surname list, which
    silently mangles the Japanese names written in the same characters
    — belongs in the pack, where asking for it is the declaration.
-   ``ja``, ``ru`` and ``tr_az`` need no vocabulary at all and ship an
+   ``ja``, ``ru`` and ``tr_az`` need no vocabulary list of their own and ship an
    empty :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is
    the template for one that does.
 #. Curate vocabulary conservatively, the same rule as
@@ -1277,5 +1284,5 @@ by ``tests/v2/test_locales.py``:
 
 ``nameparser/locales/ru.py`` is the reference implementation for a
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
-vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
+vocabulary, and ``nameparser/locales/ja.py`` for one whose main
 contribution is turning a stage on.

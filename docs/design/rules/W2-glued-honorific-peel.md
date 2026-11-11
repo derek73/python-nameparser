@@ -25,6 +25,8 @@
 
 **Accepted:**
 
+- 君 is no default honorific, glued or spaced, because 王君 is a complete Chinese name, 君 being a common given-name final (怡君). `locales.JA`, which chooses the language `ja`, turns it on, so the Diet's `逢沢　一郎君` reads suffix 君 under it and a Chinese name read under that pack (陳怡君) loses its final 君 to the suffix, the cost of choosing Japanese for Chinese data. No Japanese given name ending in it is known: the traditional kimi reading sits at the start or middle (君子, 君彦), but the committed corpora hold no real Japanese name with 君 in it, so that is argued rather than measured (#1194).
+
 - 部長 and its simplified spelling 部长 are vocabulary in the spaced and after-comma positions only, and no peel splits them off a glued name: 田中部長 keeps the word in the name, because 長 alone is a borne given name and 阿部長 can be 阿部 + 長. The other credential, office and generational words of #671 (議員, 国会議員, 太平紳士, 医学博士, 二世, 社長, 課長 and their variant spellings) met the glued bar when measured against real names (#707) and peel. The Han segmenter's own division is not a peel and exposes 部長 regardless: under the Chinese pack a listed surname followed by it divides there and the word reads as a suffix, so 李部長 reads family 李, suffix 部長, as 王博士 already does.
   ```
   "田中部長"                  →  family="田中部長"  · boundary
