@@ -19058,17 +19058,32 @@ CASES: tuple[Case, ...] = (
          notes="rules/S1's initials before a name word, as 'John (MD, "
                "PhD.) Smith' reads; 3.0.1 took the period escape and "
                "read family 'John', suffix 'MD, PhD. Smith'"),
-    Case("a_glued_comma_beside_a_nakaguro_keeps_the_nickname",
+    Case("a_glued_comma_beside_a_nakaguro_reads_as_its_spaced_twin",
          "John Smith (MD,・PhD)",
-         {"given": "John", "family": "Smith", "nickname": "MD, PhD"},
-         notes="#1268 boundary: a separator tokenize divides at that "
-               "whitespace is not keeps the clause its pair's reading, "
-               "as decisions/S13 (#810) has it for '(MA 😀)'; S1 reads "
-               "a clause only where its words are its tokens"),
-    Case("a_zero_width_space_before_a_glued_comma_keeps_the_nickname",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(#1268)",
+         notes="post_rules counts the clause's words against its tokens "
+               "as before #1268, the glued comma now ending a word in "
+               "both, so this reads as 'John Smith (MD, ・PhD)' read at "
+               "3.0.1; 3.0.1 read nickname 'MD, PhD'"),
+    Case("a_nakaguro_alone_in_a_clause_keeps_the_nickname",
+         "John Smith (MD・PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MD PhD"},
+         notes="#1268 boundary: with no comma the clause reads as before "
+               "#1268, its one word against two tokens"),
+    Case("a_nakaguro_beside_a_space_reads_as_before",
+         "John Smith (MD・ PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MD PhD"},
+         notes="#1268 boundary: a clause with no comma reads as before "
+               "#1268, its two words against two tokens; a draft that "
+               "compared the words' text with the tokens' read it as the "
+               "nickname"),
+    Case("a_zero_width_space_before_a_glued_comma_divides_the_clause",
          "John Smith (MD\u200b,PhD)",
-         {"given": "John", "family": "Smith", "nickname": "MD ,PhD"},
-         notes="#1268 boundary: as the nakaguro row"),
+         {"given": "John", "family": "Smith", "suffix": "MD PhD"},
+         classification="fix(#1268)",
+         notes="two words, 'MD\u200b,' and 'PhD', against two tokens, "
+               "'MD' and ',PhD'; 3.0.1 read nickname 'MD ,PhD'"),
     Case("a_configured_maiden_pair_sets_apart_glued_credentials",
          "John Smith (MD,PhD)",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD"},

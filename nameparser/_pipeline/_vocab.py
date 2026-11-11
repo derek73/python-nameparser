@@ -506,9 +506,9 @@ def clause_words(content: str) -> list[str]:
     'MD,', 'PhD'; ',JP' is one word), as tokenize divides at both. A
     separator tokenize also divides at that whitespace is not (rules/T1's
     invisible separators, T2's dots, a stripped emoji) is not divided
-    here, so post_rules, reading a clause only where these words are its
-    tokens, leaves such a clause its pair's reading (decisions/S13,
-    #810)."""
+    here, as the whitespace split before #1268 did not; post_rules
+    compares the count of these words with the clause's tokens, as it
+    compared that split's."""
     words: list[str] = []
     for word in content.split():
         start = 0
