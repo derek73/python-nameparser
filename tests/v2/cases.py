@@ -5323,6 +5323,23 @@ CASES: tuple[Case, ...] = (
          notes="a Thai title addresses the given name, so the one word "
                "after it is given (rules/H1, decisions/W6); 1.4.0 "
                "through 3.0.1 read given 'นายสมชาย'"),
+    Case("thai_title_alone_in_brackets_is_the_lone_title_of_address",
+         "สุดา ใจดี (นาย)",
+         {"given": "สุดา", "family": "ใจดี", "nickname": "นาย"},
+         notes="rules/S1's lone title of address: a given-name title in "
+               "brackets keeps its pair's reading, as (Sir) does; master "
+               "read title 'นาย' before the Thai titles addressed the "
+               "given name (decisions/S1)"),
+    Case("thai_short_title_in_brackets_reads_as_written_bare",
+         "สุดา ใจดี (ศ.)",
+         {"given": "สุดา", "middle": "ใจดี", "family": "ศ."},
+         notes="accepted (rules/S1): the period escape puts it in the "
+               "name as 'สุดา ใจดี ศ.' reads; master read title 'ศ.'"),
+    Case("thai_title_licenses_the_bound_given_name_join",
+         "นาย abdul rahman",
+         {"title": "นาย", "given": "abdul rahman"},
+         notes="the bound given-name join a given-name title licenses: "
+               "the pair joins and the name has no family (decisions/W6)"),
     Case("thai_academic_title_and_one_name_word",
          "ดร. สุดา",
          {"title": "ดร.", "given": "สุดา"},

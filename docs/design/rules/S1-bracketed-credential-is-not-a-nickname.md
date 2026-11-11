@@ -76,6 +76,7 @@
   ```
   "John Smith (Sir)"          →  nickname="Sir"
   "John Smith (Mr)"           →  nickname="Mr"
+  "สุดา ใจดี (นาย)"            →  nickname="นาย"
   ```
 - **A clause of titles alone straight behind a credential** keeps its pair's reading: it qualifies that credential, a specialty or a college, more often than it titles the name.
   ```
@@ -120,6 +121,11 @@
 
 **Accepted:**
 
+- A lone title of address written short with its period stays in the name as written bare, its clause no nickname for the period ending it, and where the bare word ending the name reads as a name word, so does it ('สุดา ใจดี ศ.' reads family 'ศ.').
+  ```
+  "สุดา ใจดี (ศ.)"             →  family="ศ."
+  "สุดา ใจดี (ดร.)"            →  title="ดร."
+  ```
 - A clause a credential settles a member of, ending in an ASCII period, takes the period escape, as one holding a member its writing settles already did: the escape is decided before it is known where the name ends, which the member's reading needs, so the clause reads as if written bare, the member then read by position.
   ```
   "John Smith (Ma, Ph.D.)"    →  family="Ma"
