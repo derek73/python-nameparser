@@ -71,10 +71,12 @@ ALLOWED = {
                   "nameparser._policy"),
     # the group suggester: types, policy, the lexicon's particles, the
     # pipeline's patronymic predicates and its private word tables;
-    # Parser is TYPE_CHECKING
+    # _parser at call time only, in Suggestion.__post_init__, to check
+    # that the base is a Parser (Parser imports this module at call
+    # time, in Parser.suggest)
     "_suggest.py": ("nameparser._types", "nameparser._policy",
                     "nameparser._lexicon", "nameparser._pipeline",
-                    "nameparser.config."),
+                    "nameparser.config.", "nameparser._parser"),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since

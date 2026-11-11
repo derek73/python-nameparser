@@ -616,5 +616,65 @@ def test_setting_evidence_accepts_a_well_formed_value() -> None:
     assert _setting_evidence().votes_for == 1
 
 
+@pytest.mark.parametrize("changes, error, fragment", [
+    ({"setting": "no_such_field"}, ValueError,
+     "setting must name a Policy field, got 'no_such_field'"),
+    ({"setting": ""}, ValueError, "must name a Policy field"),
+    ({"by_signal": "capitals"}, TypeError, "by_signal must be an iterable"),
+    ({"by_signal": 5}, TypeError, "by_signal must be an iterable"),
+    ({"by_signal": [(Signal.SURNAME, FAMILY_FIRST)]}, TypeError,
+     r"\(signal, vote, count\)"),
+    ({"by_signal": ["abc"]}, TypeError, r"\(signal, vote, count\)"),
+    ({"by_signal": [("no-such", FAMILY_FIRST, 1)]}, ValueError, "no-such"),
+    ({"by_signal": [(Signal.SURNAME, "family-first", 1)]}, TypeError,
+     "must be an order"),
+    ({"by_signal": [(Signal.PATRONYMIC, FAMILY_FIRST, 1)]}, TypeError,
+     "PatronymicRule"),
+    ({"by_signal": [(Signal.SURNAME, FAMILY_FIRST, -1)]}, ValueError,
+     "count must not be negative, got -1"),
+    ({"by_signal": [(Signal.SURNAME, FAMILY_FIRST, True)]}, TypeError,
+     "count must be an int"),
+])
+def test_setting_evidence_refuses_a_bad_setting_or_row(
+        changes: dict[str, object], error: type[Exception],
+        fragment: str) -> None:
+    with pytest.raises(error, match=fragment):
+        _setting_evidence(**changes)
+
+
+def test_setting_evidence_keeps_well_formed_rows() -> None:
+    evidence = _setting_evidence(
+        by_signal=[["surname", list(FAMILY_FIRST), 2]])
+    assert evidence.by_signal == ((Signal.SURNAME, FAMILY_FIRST, 2),)
+
+
+def test_a_valid_setting_evidence_renders_in_a_report() -> None:
+    s = Suggestion(Parser(), PolicyPatch(), (_setting_evidence(
+        setting="patronymic_rules", value=frozenset(), decided=False),), ())
+    assert "patronymic_rules" in str(s)
+
+
+@pytest.mark.parametrize("changes, error, fragment", [
+    ({"base": Policy()}, TypeError, "base must be a Parser"),
+    ({"base": None}, TypeError, "base must be a Parser"),
+    ({"patch": {}}, TypeError, "patch must be a PolicyPatch"),
+    ({"evidence": "name_order"}, TypeError,
+     "evidence must be a tuple of SettingEvidence"),
+    ({"evidence": [object()]}, TypeError, "evidence must hold SettingEvidence"),
+    ({"names": "Priem Jason"}, TypeError,
+     "names must be a tuple of NameEvidence"),
+    ({"names": None}, TypeError, "names must be a tuple of NameEvidence"),
+    ({"names": ["Priem Jason"]}, TypeError, "names must hold NameEvidence"),
+])
+def test_suggestion_refuses_fields_of_the_wrong_type(
+        changes: dict[str, object], error: type[Exception],
+        fragment: str) -> None:
+    fields: dict[str, object] = dict(
+        base=Parser(), patch=PolicyPatch(), evidence=(), names=())
+    fields.update(changes)
+    with pytest.raises(error, match=fragment):
+        Suggestion(**fields)  # type: ignore[arg-type]
+
+
 def _decline(token: str) -> None:
     return None

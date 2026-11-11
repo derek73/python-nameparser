@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import reprlib
 import unicodedata
 import warnings
 from collections import Counter
@@ -260,29 +261,68 @@ def _order_ends(pairs: Iterable[tuple[Signal, Vote]]
                      if signal is not Signal.PATRONYMIC)
 
 
-def _checked_vote(signal: object, vote: object) -> tuple[Signal, Vote]:
+def _checked_vote(signal: object, vote: object,
+                  owner: str = "NameEvidence") -> tuple[Signal, Vote]:
     """One (signal, vote) pair, validated: an order signal votes
     ``GIVEN_FIRST`` or ``FAMILY_FIRST``, the patronymic signal a
-    ``PatronymicRule``."""
+    ``PatronymicRule``. ``owner`` names the type in the message."""
     signal = Signal(signal)  # type: ignore[arg-type]  # ValueError names it
     if signal is Signal.PATRONYMIC:
         if not isinstance(vote, PatronymicRule):
             raise TypeError(
-                f"NameEvidence vote for {signal.value!r} must be a "
+                f"{owner} vote for {signal.value!r} must be a "
                 f"PatronymicRule, got {vote!r}; pass e.g. "
                 f"{{Signal.PATRONYMIC: PatronymicRule.EAST_SLAVIC}}")
         return signal, vote
     if not isinstance(vote, (tuple, list)):
         raise TypeError(
-            f"NameEvidence vote for {signal.value!r} must be an order, "
+            f"{owner} vote for {signal.value!r} must be an order, "
             f"got {vote!r}; pass GIVEN_FIRST or FAMILY_FIRST")
     order = tuple(vote)
     if order not in (GIVEN_FIRST, FAMILY_FIRST):
         raise ValueError(
-            f"NameEvidence vote for {signal.value!r} must name an end, "
+            f"{owner} vote for {signal.value!r} must name an end, "
             f"GIVEN_FIRST or FAMILY_FIRST, got {vote!r}; a vote never "
             f"spells FAMILY_FIRST_GIVEN_LAST, which is FAMILY_FIRST's end")
     return signal, order  # type: ignore[return-value]
+
+
+def _iterable(value: object, owner: str, form: str, example: str
+              ) -> tuple[object, ...]:
+    """``value`` as a tuple, refusing a bare str, bytes, a mapping or a
+    non-iterable, each of which would iterate into the wrong items."""
+    if (isinstance(value, (str, bytes, bytearray, Mapping))
+            or not isinstance(value, Iterable)):
+        raise TypeError(
+            f"{owner} must be {form}, got {type(value).__name__} "
+            f"{reprlib.repr(value)}; pass e.g. {example}")
+    return tuple(value)
+
+
+def _checked_row(row: object) -> tuple[Signal, Vote, int]:
+    """One ``by_signal`` row, validated: ``(signal, vote, count)``."""
+    if isinstance(row, (str, bytes)) or not isinstance(row, (tuple, list)) \
+            or len(row) != 3:
+        raise TypeError(
+            f"SettingEvidence by_signal rows must be (signal, vote, count) "
+            f"triples, got {reprlib.repr(row)}; pass e.g. "
+            f"(Signal.SURNAME, FAMILY_FIRST, 2)")
+    signal, vote, count = row
+    pair = _checked_vote(signal, vote, "SettingEvidence by_signal")
+    if isinstance(count, bool) or not isinstance(count, int):
+        raise TypeError(
+            f"SettingEvidence by_signal count must be an int count of "
+            f"votes, got {count!r}; pass e.g. 2")
+    if count < 0:
+        raise ValueError(
+            f"SettingEvidence by_signal count must not be negative, got "
+            f"{count!r}; a count of votes is 0 or more")
+    return (*pair, count)
+
+
+#: The settings a SettingEvidence may be about: the PolicyPatch fields,
+#: which the report reads off the patch by name.
+_SETTINGS = frozenset(f.name for f in dataclasses.fields(PolicyPatch))
 
 
 def _label(value: object) -> str:
@@ -379,6 +419,11 @@ class SettingEvidence:
             raise TypeError(
                 f"SettingEvidence setting must be a Policy field name "
                 f"(str), got {self.setting!r}; pass e.g. 'name_order'")
+        if self.setting not in _SETTINGS:
+            raise ValueError(
+                f"SettingEvidence setting must name a Policy field, got "
+                f"{self.setting!r}; pass one of "
+                f"{', '.join(sorted(_SETTINGS))}")
         if not isinstance(self.decided, bool):
             raise TypeError(
                 f"SettingEvidence decided must be a bool, got "
@@ -398,7 +443,11 @@ class SettingEvidence:
             raise TypeError(
                 f"SettingEvidence note must be a str, got {self.note!r}; "
                 f"pass '' for no note")
-        object.__setattr__(self, "by_signal", tuple(self.by_signal))
+        rows = _iterable(self.by_signal, "SettingEvidence by_signal",
+                         "an iterable of (signal, vote, count) rows",
+                         "((Signal.SURNAME, FAMILY_FIRST, 2),) or ()")
+        object.__setattr__(
+            self, "by_signal", tuple(_checked_row(row) for row in rows))
 
     def __repr__(self) -> str:
         state = "decided" if self.decided else "undecided"
@@ -429,17 +478,33 @@ class Suggestion:
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
+        # Parser at call time: _parser imports this module at call time
+        # too, in Parser.suggest
+        from ._parser import Parser
+        if not isinstance(self.base, Parser):
+            raise TypeError(
+                f"Suggestion base must be a Parser, got "
+                f"{type(self.base).__name__} {reprlib.repr(self.base)}; "
+                f"build a Suggestion with parser.suggest(names)")
         if not isinstance(self.patch, PolicyPatch):
             raise TypeError(
-                f"Suggestion patch must be a PolicyPatch, got {self.patch!r}")
+                f"Suggestion patch must be a PolicyPatch, got "
+                f"{reprlib.repr(self.patch)}; pass e.g. PolicyPatch() or "
+                f"PolicyPatch(name_order=FAMILY_FIRST)")
         for name, cls in (("evidence", SettingEvidence),
                           ("names", NameEvidence)):
-            items = tuple(getattr(self, name))
+            items = _iterable(
+                getattr(self, name), f"Suggestion {name}",
+                f"a tuple of {cls.__name__}", f"() or a tuple of "
+                f"{cls.__name__} items")
             for item in items:
                 if not isinstance(item, cls):
                     raise TypeError(
                         f"Suggestion {name} must hold {cls.__name__} "
-                        f"items, got {item!r}")
+                        f"items, got {type(item).__name__} "
+                        f"{reprlib.repr(item)}; pass a tuple of "
+                        f"{cls.__name__}, or build a Suggestion with "
+                        f"parser.suggest(names)")
             object.__setattr__(self, name, items)
 
     def __repr__(self) -> str:
