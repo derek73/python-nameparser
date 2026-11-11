@@ -203,10 +203,9 @@
   "Whinnett, BM.BS"           →  given="BM.BS"
   "Whinnett, BM.BS"           →  ambiguities=("suffix-or-name",)
   ```
-- The title chunk is any title, so the readings it gives beyond the degrees are its too: a credential run whose one title chunk is a title that is also a credential (`ms`, `sr`, `lt`) reads as a title, and so does a given name glued to Saint, with no given name left.
+- The title chunk is any title, so the readings it gives beyond the degrees are its too: a credential run whose one title chunk is a title that is also a credential (`ms`, `sr`, `lt`) reads as a title. A saint particle glued to a name is no such run, being one name word (T8).
   ```
   "Jane Roe, MD.MS"           →  title="MD.MS"
-  "St.John Smith"             →  title="St.John"
   ```
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 

@@ -1413,3 +1413,90 @@ def test_a_glued_word_reads_as_its_spaced_twin_under_every_order(
             if g != s:
                 failures.append((head.format(w=word), g, s))
     assert not failures, failures[:3]
+
+
+@pytest.mark.parametrize(("text", "fields"), [
+    # #1071: a saint particle glued to the name ending the part divides
+    # there, and P10's saint run opens the surname as written apart
+    ("Mark Jhon Sta.Ana", {"middle": "Jhon", "family": "Sta.Ana"}),
+    ("Juan dela Cruz Sta.Maria", {"middle": "dela Cruz",
+                                  "family": "Sta.Maria"}),
+    ("Juan Sta.Ana Jr.", {"family": "Sta.Ana", "suffix": "Jr."}),
+    # a maiden clause holds no word of the name (rules/M2)
+    ("Juan dela Cruz Sta.Maria née Jones", {"middle": "dela Cruz",
+                                            "family": "Sta.Maria"}),
+    # elsewhere it is one name word, never a title or a dotted suffix
+    ("Jeremy St.John Middleton", {"middle": "St.John",
+                                  "family": "Middleton"}),
+    ("Mr St.John Heathorn", {"title": "Mr", "given": "St.John"}),
+    ("St.John Price", {"title": "", "given": "St.John"}),
+    ("Smith, St.Elmo", {"title": "", "given": "St.Elmo"}),
+    ("STE.MARIE, JOE", {"family": "STE.MARIE", "given": "JOE"}),
+    # in lower case after the stop it is no glued saint
+    ("Juan Sta.ana", {"family": "Sta.ana"}),
+    # a title before it is no word to spare (the review's 'Mr. St.Clair'),
+    # nor is a word of a title phrase: a connective, a gated title, a
+    # modifier, or a word behind 'of' (the fix-diff review's rows)
+    ("Mr. St.Clair", {"title": "Mr.", "family": "St.Clair"}),
+    ("Mr and Mrs St.Clair", {"title": "Mr and Mrs", "family": "St.Clair"}),
+    ("The Hon. St.Clair", {"title": "The Hon.", "family": "St.Clair"}),
+    ("Associate Dean St.Clair", {"title": "Associate Dean",
+                                 "family": "St.Clair"}),
+    ("Dean of Students St.Clair", {"title": "Dean of Students",
+                                   "family": "St.Clair"}),
+    # a maiden marker ending the text is a name word, not a clause
+    ("John Smith Sta.Ana née", {"family": "née"}),
+    # a two-word maiden marker ends the name's own words too
+    ("John Smith Sta.Ana z domu Jones", {"middle": "Smith",
+                                        "family": "Sta.Ana"}),
+    # a suffix word after the stop is no name
+    ("John Smith St.MD", {"family": "St.MD", "title": ""}),
+])
+def test_a_glued_saint_particle(text: str, fields: dict[str, str]) -> None:
+    from nameparser import parse
+    n = parse(text)
+    assert {k: getattr(n, k) for k in fields} == fields
+    if "," not in text and not n.maiden:  # these render in display order
+        assert str(n) == text
+
+
+@pytest.mark.parametrize("text", [
+    "Mark Jhon Sta.Ana", "Juan dela Cruz Sta.Maria", "Karen St.Hill",
+])
+def test_a_glued_saint_ending_the_name_reads_as_its_spaced_twin(
+        text: str) -> None:
+    from nameparser import parse
+    glued, apart = parse(text), parse(text.replace(".", ". "))
+    assert ([(t.text, t.role) for t in glued.tokens]
+            == [(t.text, t.role) for t in apart.tokens])
+
+
+def test_a_glued_saint_does_not_divide_under_a_family_first_order() -> None:
+    # the last word is the given name there, and P10's saint run opens a
+    # surname only given-first: the initials agree with the comma twin
+    from nameparser import FAMILY_FIRST, Parser, Policy, parse
+    p = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    assert (p.parse("Price Mark St.John").initials()
+            == parse("Price, Mark St.John").initials())
+
+
+@pytest.mark.parametrize("order", ["given-first", "family-first",
+                                   "family-first-given-last"])
+def test_a_glued_saint_before_a_family_comma_divides_under_every_order(
+        order: str) -> None:
+    # the comma names the surname whatever the order (the fix-diff
+    # review's 'Dela Cruz Sta.Maria, Juan')
+    from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+                            GIVEN_FIRST, Parser, Policy)
+    orders = {"given-first": GIVEN_FIRST, "family-first": FAMILY_FIRST,
+              "family-first-given-last": FAMILY_FIRST_GIVEN_LAST}
+    n = Parser(policy=Policy(name_order=orders[order])).parse(
+        "Dela Cruz Sta.Maria, Juan")
+    assert n.initials() == "J. C. M."
+
+
+@pytest.mark.parametrize("text", ["John A.Smith née", "John A.Smith z domu"])
+def test_a_maiden_marker_ending_the_text_leaves_no_report(text: str) -> None:
+    from nameparser import parse
+    assert not [a for a in parse(text).ambiguities
+                if "written short" in a.detail]
