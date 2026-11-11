@@ -5521,7 +5521,19 @@ CASES: tuple[Case, ...] = (
     Case("thai_noble_family_name_particle_after_a_title",
          "นางสาวธนพรรณ ณ นคร",
          {"title": "นางสาว", "given": "ธนพรรณ", "family": "ณ นคร"},
-         classification="fix(#1167)"),
+         classification="fix(#1167)",
+         notes="the family is #1167's; the salutation's split off the "
+               "given name is #317's (1.4.0 read first 'นางสาวธนพรรณ')"),
+    Case("thai_royal_clan_name_before_na_ayutthaya_is_a_middle_name",
+         "ปฐมพร อินทรางกูร ณ อยุธยา",
+         {"given": "ปฐมพร", "middle": "อินทรางกูร", "family": "ณ อยุธยา"},
+         classification="fix(#1167)",
+         notes="accepted for now: the royal clans write their clan name "
+               "before ณ อยุธยา, and the parser reads it positionally as "
+               "a middle name; the whole surname is the filer's family "
+               "(the review of #1167, every one of the 2019 candidates' "
+               "11 such surnames); 1.4.0 through 3.0.1 read middle "
+               "'อินทรางกูร ณ', family 'อยุธยา'"),
     Case("thai_noble_family_name_first_under_family_first",
          "ณ อยุธยา สุดา",
          {"given": "สุดา", "family": "ณ อยุธยา"},

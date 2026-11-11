@@ -903,5 +903,5 @@ text = "ณ"
 [word.preposition]
 may_be_given = false
 issue = 1167
-expands = "of, before the place in a family name granted to royal descendants and old noble houses (ณ อยุธยา, ณ สงขลา, ณ นคร)"
+expands = "of, before the place in a family name granted to royal descendants and old noble houses (ณ สงขลา, ณ นคร, and ณ อยุธยา, which the royal clans write after their clan name, อินทรางกูร ณ อยุธยา)"
 note = "Thai script writes only Thai and ณ is never a given name, so it is a never-given particle; the Latin na is refused (its entry above)"
