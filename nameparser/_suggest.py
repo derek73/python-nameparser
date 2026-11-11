@@ -280,14 +280,15 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     too), never first or second; rules/O1's three name words, the
     ending on the middle word (given-first) or on the last
     (`east_slavic_rotates`, the family-first shape the rule restores),
-    never on the first, and no initial first or in the middle (O1's
+    whatever the first word ends in (a surname may end like a
+    patronymic: `Abramovich Roman Arkadyevich`), and no initial first or in the middle (O1's
     precedence). A final full stop is read past."""
     bare = [w.rstrip(".") or w for w in words]
     if (len(bare) == 4 and not any(map(is_patronymic_marker, bare[:2]))
             and (is_patronymic_marker(bare[2])
                  or is_patronymic_marker(bare[3]))):
         return PatronymicRule.TURKIC
-    if (len(bare) == 3 and not has_patronymic_ending(bare[0])
+    if (len(bare) == 3
             and not (_is_initialed(words[0]) or _is_initialed(words[1]))
             and (has_patronymic_ending(bare[1])
                  or east_slavic_rotates(bare[1], bare[2]))):

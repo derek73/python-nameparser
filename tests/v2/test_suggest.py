@@ -746,6 +746,10 @@ def test_a_patronymic_ending_the_pipeline_cannot_read_casts_no_vote(
     ("Иванов Иван Петрович", PatronymicRule.EAST_SLAVIC),
     ("Dr. Ivan Petrovich Sidorov", PatronymicRule.EAST_SLAVIC),
     ("Sidorov Ivan Petrovich Jr.", PatronymicRule.EAST_SLAVIC),
+    # a surname that itself ends like a patronymic: rules/O1 asks only
+    # about the middle and last words, so the rule reads these too
+    ("Abramovich Roman Arkadyevich", PatronymicRule.EAST_SLAVIC),
+    ("Лукашевич Антон Сергеевич", PatronymicRule.EAST_SLAVIC),
     ("Mamedov Ali Huseyn oglu", PatronymicRule.TURKIC),
     ("Ali Huseyn oglu Mamedov", PatronymicRule.TURKIC),
 ])
