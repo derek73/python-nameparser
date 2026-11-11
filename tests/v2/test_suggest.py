@@ -848,6 +848,37 @@ def test_the_order_note_counts_the_comma_names_left_out() -> None:
     assert "comma" not in _order_evidence(s).note
 
 
+@pytest.mark.parametrize("word, folded", [
+    ("Łukasz", "lukasz"), ("łukasz", "lukasz"), ("Søren", "soren"),
+    ("ØYSTEIN", "oystein"), ("Barış", "baris"), ("Æsa", "aesa"),
+    ("Œuvre", "oeuvre"), ("Strauß", "strauss"), ("Đặng", "dang"),
+    ("Lǚ", "lv"), ("Nguyễn", "nguyen")])
+def test_fold_maps_the_letters_nfkd_leaves_whole(word: str, folded: str) -> None:
+    from nameparser._suggest import fold
+    assert fold(word) == folded
+
+
+@pytest.mark.parametrize("text", [
+    "Lukasz Kowalski", "Łukasz Kowalski", "Søren Hansen", "Soren Hansen",
+    "Anıl Kaya", "Anil Kaya"])
+def test_a_stroked_or_dotless_given_name_votes_either_way_written(
+        text: str) -> None:
+    assert name_votes(text, L)[Signal.GIVEN_NAME] == GIVEN_FIRST
+
+
+@pytest.mark.parametrize("pair", [
+    ("Barış Yilmaz", "Baris Yilmaz"), ("Yilmaz Barış", "Yilmaz Baris"),
+    ("Małgorzata Nowak", "Malgorzata Nowak"),
+    ("Strauß Øystein", "Strauss Oystein")])
+def test_a_name_reads_alike_written_with_or_without_its_letters(
+        pair: tuple[str, str]) -> None:
+    # `baris` is not in the table: ORCID's holders wrote it in the
+    # family box 8 times of 89, more than the filter's 5%, once Barış
+    # and Baris count as one spelling; both spellings still read alike
+    written, typed = pair
+    assert name_votes(written, L) == name_votes(typed, L)
+
+
 @pytest.mark.parametrize("text, signal, value", [
     ("Petrov Ivan Ivanovich.", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ('"Kim" Minjun', Signal.SURNAME, FAMILY_FIRST),

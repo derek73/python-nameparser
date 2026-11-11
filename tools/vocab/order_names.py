@@ -16,10 +16,15 @@ nameparser/config/_order_names.py).
 
 The second generated block, ``COMMON_GIVEN``, is the given names the
 suggester looks up at both ends of a name: per nam_dict country column
-the ``TOP`` highest-band names that pass the filter, which drops any
-borne as a family name in ORCID's own two boxes (a population the
-suggester is not tested on) and any romanized surname. It needs nam_dict and the ORCID local corpus
-cached (tools/name_usage.py and tools/differential/local_corpora.py).
+the ``TOP`` highest-band names that pass the filter, which keeps a name
+of two letters or more written in ORCID's own family box at most
+``MAX_FAMILY_SHARE`` of the ``MIN_USES`` or more times its holders wrote
+it (a population the suggester is not tested on), and no romanized
+surname this run writes. It needs nam_dict and the ORCID local corpus
+cached (tools/name_usage.py and tools/differential/local_corpora.py),
+each checked whole against its pinned or recorded sha256, and it writes
+nothing where a block falls below its floor (``MIN_PINYIN``,
+``MIN_GIVEN``) or a word lands in both tables.
 
 Unihan is cached outside the repository with ``tools/zh_surnames.py``'s
 copy ($NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools).
@@ -27,6 +32,7 @@ copy ($NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import zipfile
@@ -43,6 +49,11 @@ TOP = 500
 MAX_FAMILY_SHARE = 0.05
 MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
+#: The fewest entries a generated block may hold: a run that yields
+#: fewer read an input cut short or changed, and writes nothing
+#: (2026-11-10: 329 pinyin surnames, over 4,000 given names).
+MIN_PINYIN = 200
+MIN_GIVEN = 3_000
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
 UNIHAN_URL = "https://www.unicode.org/Public/16.0.0/ucd/Unihan.zip"
@@ -102,17 +113,38 @@ def load_mandarin(refresh: bool) -> dict[str, str]:
 
 def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
     """Folded word counts of ORCID's given-name and family-name boxes,
-    streamed (the file is about 1.8M lines)."""
+    streamed (the file is about 1.8M lines). The file is refused unless
+    it is whole: its sha256 and its record count are the ones the
+    corpus's meta.json, written by the fetch, gives it."""
+    meta_path = path.parent / "meta.json"
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        want_sha, want_records = meta["sha256"], meta["records"]
+    except (OSError, ValueError, KeyError) as exc:
+        raise ValueError(f"{meta_path} is missing or unreadable ({exc}); "
+                         "fetch the orcid-researchers corpus again") from exc
     given: Counter[str] = Counter()
     family: Counter[str] = Counter()
-    with open(path, encoding="utf-8", newline="\n") as fh:
-        for line in fh:
+    digest = hashlib.sha256()
+    records = 0
+    with open(path, "rb") as fh:
+        for raw in fh:
+            digest.update(raw)
+            # cut at "\n" only, as corpus_build.jsonl_lines cuts
+            line = raw.decode("utf-8")
             if not line.strip():
                 continue
+            records += 1
             record = json.loads(line)
             for box, counts in (("given", given), ("family", family)):
                 for word in (record.get(box) or "").split():
                     counts[fold(word.strip(".,"))] += 1
+    if records != want_records:
+        raise ValueError(f"{path} holds {records} records, not the "
+                         f"{want_records} its meta.json counts; fetch it again")
+    if digest.hexdigest() != want_sha:
+        raise ValueError(f"{path} does not match the sha256 in its "
+                         "meta.json; fetch it again")
     return given, family
 
 
@@ -146,15 +178,46 @@ def common_given(namdict: name_usage.NamDict, given: Counter[str],
     return chosen
 
 
-def load_common_given() -> set[str]:
+def load_namdict() -> name_usage.NamDict:
+    """nam_dict, read through name_usage, which checks the cached file
+    against its pinned sha256; refused where it is not cached."""
+    namdict = name_usage.load_namdict(download=False)
+    if namdict is None:
+        raise ValueError(
+            f"{name_usage.cache_dir() / name_usage.NAMDICT_FILE} is not "
+            "cached; uv run python tools/name_usage.py <word> fetches it")
+    return namdict
+
+
+def surname_exclusions(pinyin: set[str]) -> set[str]:
+    """The surnames this run writes: the pinyin it computed and the
+    hand lists, which the given names must not hold. Read from this
+    run, not from the module it rewrites, which may be stale."""
     from nameparser.config import _order_names
-    cache = name_usage.cache_dir()
-    namdict = name_usage.read_namdict(
-        (cache / "nam_dict.txt").read_text(encoding="utf-8"))
-    given, family = orcid_box_counts(cache.joinpath(*ORCID_RAW))
+    return pinyin | set(_order_names._ZH_OTHER_SPELLINGS
+                        + _order_names._KO_SPELLINGS
+                        + _order_names._VI_SURNAMES)
+
+
+def load_common_given(exclude: set[str]) -> set[str]:
+    given, family = orcid_box_counts(name_usage.cache_dir().joinpath(*ORCID_RAW))
     return common_given(
-        namdict, given, family, top=TOP, max_family_share=MAX_FAMILY_SHARE,
-        min_uses=MIN_USES, exclude=set(_order_names.ROMANIZED_SURNAMES))
+        load_namdict(), given, family, top=TOP,
+        max_family_share=MAX_FAMILY_SHARE, min_uses=MIN_USES,
+        exclude=exclude)
+
+
+def check_tables(pinyin: set[str], given: set[str]) -> None:
+    """Refuse a generated block below its floor, and a given name that
+    is a surname too."""
+    for words, floor, what in ((pinyin, MIN_PINYIN, "pinyin surnames"),
+                               (given, MIN_GIVEN, "given names")):
+        if len(words) < floor:
+            raise ValueError(f"the run found {len(words)} {what}, below the "
+                             f"floor of {floor}: an input is cut or changed")
+    if both := pinyin & given:
+        raise ValueError("a word is in both tables: "
+                         + ", ".join(sorted(both)))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -167,8 +230,10 @@ def main(argv: list[str] | None = None) -> int:
     from nameparser import locales
     singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
     words = pinyin_surnames(singles, load_mandarin(args.refresh))
+    given = load_common_given(surname_exclusions(words))
+    check_tables(words, given)
     block = render_block("PINYIN", words)
-    given_block = render_block("COMMON_GIVEN", load_common_given())
+    given_block = render_block("COMMON_GIVEN", given)
     print(block)
     print(given_block)
     if args.write:

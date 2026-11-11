@@ -146,14 +146,121 @@ def test_top_is_per_country_then_unioned(tool: ModuleType) -> None:
 @needs_checkout
 def test_the_shipped_given_block_is_what_the_tool_writes(
         tool: ModuleType) -> None:
+    from nameparser import locales
     cache = tool.name_usage.cache_dir()
     namdict = cache / "nam_dict.txt"
     orcid = cache / "local" / "orcid-researchers" / "raw.jsonl"
-    if not (namdict.exists() and orcid.exists()):
-        pytest.skip("nam_dict or the ORCID local corpus is not cached")
-    words = tool.load_common_given()
+    unihan = cache / tool.UNIHAN_FILE
+    if not (namdict.exists() and orcid.exists() and unihan.exists()):
+        pytest.skip("nam_dict, Unihan or the ORCID local corpus is not cached")
+    with zipfile.ZipFile(unihan) as zf:
+        mandarin = tool.read_mandarin(
+            zf.read(tool.UNIHAN_MEMBER).decode("utf-8"))
+    singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
+    pinyin = tool.pinyin_surnames(singles, mandarin)
+    words = tool.load_common_given(tool.surname_exclusions(pinyin))
+    tool.check_tables(pinyin, words)
     block = tool.render_block("COMMON_GIVEN", words)
     text = Path(_order_names.__file__).read_text(encoding="utf-8")
     assert tool.rewrite(text, "COMMON_GIVEN", block) == text
     assert not words & _order_names.ROMANIZED_SURNAMES
     assert _order_names.COMMON_GIVEN_NAMES == frozenset(words)
+
+
+# -- the inputs must be whole, and the tables must make sense ----------------
+
+
+def _plant_orcid(cache: Path, records: list[dict[str, str]], *,
+                 count: int | None = None, sha256: str | None = None) -> Path:
+    import hashlib
+    import json
+    folder = cache / "local" / "orcid-researchers"
+    folder.mkdir(parents=True)
+    body = "".join(json.dumps(r) + "\n" for r in records).encode("utf-8")
+    (folder / "raw.jsonl").write_bytes(body)
+    (folder / "meta.json").write_text(json.dumps({
+        "records": len(records) if count is None else count,
+        "sha256": sha256 or hashlib.sha256(body).hexdigest()}),
+        encoding="utf-8")
+    return folder / "raw.jsonl"
+
+
+@needs_checkout
+def test_whole_orcid_boxes_are_counted(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    path = _plant_orcid(cache, [{"given": "Anna", "family": "Kim"},
+                                {"given": "Łukasz", "family": "Nowak"}])
+    given, family = tool.orcid_box_counts(path)
+    assert given == {"anna": 1, "lukasz": 1}
+    assert family == {"kim": 1, "nowak": 1}
+
+
+@needs_checkout
+@pytest.mark.parametrize("damage, fragment", [
+    ({"count": 3}, "holds 2 records, not the 3"),
+    ({"sha256": "0" * 64}, "sha256"),
+])
+def test_a_cut_orcid_corpus_is_refused(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory,
+        damage: dict[str, object], fragment: str) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    path = _plant_orcid(cache, [{"given": "Anna", "family": "Kim"},
+                                {"given": "Jan", "family": "Nowak"}],
+                        **damage)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match=fragment):
+        tool.orcid_box_counts(path)
+
+
+@needs_checkout
+def test_an_orcid_corpus_without_its_meta_is_refused(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    path = _plant_orcid(cache, [{"given": "Anna", "family": "Kim"}])
+    (path.parent / "meta.json").unlink()
+    with pytest.raises(ValueError, match="meta.json"):
+        tool.orcid_box_counts(path)
+
+
+@needs_checkout
+def test_nam_dict_is_read_checked_and_refused_when_absent_or_cut(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    with pytest.raises(ValueError, match="nam_dict.txt is not cached"):
+        tool.load_namdict()
+    (cache / "nam_dict.txt").write_text("cut\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="sha256"):
+        tool.load_namdict()
+
+
+@needs_checkout
+def test_the_given_names_exclude_this_runs_surnames(tool: ModuleType) -> None:
+    hand = set(_order_names._ZH_OTHER_SPELLINGS + _order_names._KO_SPELLINGS
+               + _order_names._VI_SURNAMES)
+    assert tool.surname_exclusions({"zzpinyin"}) == hand | {"zzpinyin"}
+
+
+@needs_checkout
+@pytest.mark.parametrize("pinyin, given, fragment", [
+    ({f"p{i}" for i in range(199)}, {f"g{i}" for i in range(3000)},
+     "199 pinyin surnames, below the floor of 200"),
+    ({f"p{i}" for i in range(200)}, {f"g{i}" for i in range(2999)},
+     "2999 given names, below the floor of 3000"),
+    ({f"p{i}" for i in range(200)}, {"p1"} | {f"g{i}" for i in range(3000)},
+     "both tables: p1"),
+])
+def test_a_table_below_its_floor_or_overlapping_is_refused(
+        tool: ModuleType, pinyin: set[str], given: set[str],
+        fragment: str) -> None:
+    with pytest.raises(ValueError, match=fragment):
+        tool.check_tables(pinyin, given)
+    tool.check_tables({f"p{i}" for i in range(200)},
+                      {f"g{i}" for i in range(3000)})

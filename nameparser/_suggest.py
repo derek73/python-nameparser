@@ -63,20 +63,29 @@ from .config._order_names import COMMON_GIVEN_NAMES, ROMANIZED_SURNAMES
 if TYPE_CHECKING:
     from ._parser import Parser
 
-# a letter u with a diaeresis, the pinyin spelling of the vowel written v
-# on a keyboard (lü -> lv)
-_U_DIAERESIS = {"ü": "v", "Ü": "V"}
+# the letters NFKD leaves whole, spelled as an ASCII keyboard writes
+# them
+_KEYBOARD = str.maketrans({
+    "ł": "l", "Ł": "L", "ø": "o", "Ø": "O", "ı": "i", "æ": "ae", "Æ": "AE",
+    "œ": "oe", "Œ": "OE", "ß": "ss", "ẞ": "SS", "đ": "d", "Đ": "D"})
+# a letter u with a diaeresis, decomposed: the pinyin vowel written v on
+# a keyboard (lü -> lv)
+_U_DIAERESIS = {"u\u0308": "v", "U\u0308": "V"}
 
 
 def fold(word: str) -> str:
-    """The spelling a romanized surname is looked up under: lower case,
-    with every diacritic dropped, ``đ`` as ``d`` and ``ü`` as ``v``.
+    """The spelling a word is looked up under in the name tables: lower
+    case, every diacritic dropped, the letters NFKD leaves whole written
+    as an ASCII keyboard writes them (``ł`` as ``l``, ``ø`` as ``o``,
+    ``ı`` as ``i``, ``æ`` as ``ae``, ``œ`` as ``oe``, ``ß`` as ``ss``,
+    ``đ`` as ``d``) and ``ü`` as ``v``.
 
-    ``Nguyễn`` folds to ``nguyen``, ``Đặng`` to ``dang`` and ``Lǚ`` to
-    ``lv``. The table holds only folded spellings, so a reader folds the
-    word first.
+    ``Nguyễn`` folds to ``nguyen``, ``Đặng`` to ``dang``, ``Łukasz`` to
+    ``lukasz``, ``Barış`` to ``baris`` and ``Lǚ`` to ``lv``. The tables
+    hold only folded spellings, written with this function, so a reader
+    folds the word first.
     """
-    text = unicodedata.normalize("NFKD", word.replace("đ", "d").replace("Đ", "D"))
+    text = unicodedata.normalize("NFKD", word).translate(_KEYBOARD)
     for mark, letter in _U_DIAERESIS.items():
         text = text.replace(mark, letter)
     return "".join(c for c in text if not unicodedata.combining(c)).lower()
