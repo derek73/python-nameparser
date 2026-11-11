@@ -11,6 +11,10 @@ text = "آقای"
 salutation = { gender = "m", expands = "Mr.", issue = 1151, note = "written 20 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08); a plain title, addressing the family name as Dr. Smith does, where ar.toml's Arabic titles address the given name" }
 
 [[word]]
+text = "آقاي"
+salutation = { gender = "m", same_as = "آقای", expands = "Mr., Arabic letters ي and ك", issue = 1151 }
+
+[[word]]
 text = "خانم"
 salutation = { gender = "f", expands = "Mrs., Ms.", issue = 1151, note = "a title only in front: after the name it is Khanum, a suffix of Persian and Azerbaijani women's names, and it is no title there (rules/H1 accepted cost, #1151)" }
 
@@ -31,6 +35,10 @@ issue = 1151
 [[word]]
 text = "دکتر"
 academic = { expands = "doctor", issue = 1151, note = "written 27 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+
+[[word]]
+text = "دكتر"
+academic = { same_as = "دکتر", expands = "doctor, Arabic letters ي and ك", issue = 1151 }
 
 [[word]]
 text = "مهندس"
@@ -79,6 +87,10 @@ religious = { same_as = "حجت‌الاسلام", issue = 1151, note = "written
 [[word]]
 text = "سرلشکر"
 military = { expands = "Major General", issue = 1151, note = "written once in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+
+[[word]]
+text = "سرلشكر"
+military = { same_as = "سرلشکر", expands = "Major General, Arabic letters ي and ك", issue = 1151 }
 
 [[word]]
 text = "جونیور"

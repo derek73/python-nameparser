@@ -684,8 +684,10 @@ SameAsNamed = Mapping[str, frozenset[str]]
 #: the modifier letter U+02BC, and Uzbek Latin's other spellings of
 #: the `ʻ` in `oʻ` and `gʻ` (U+02BB, U+2018, the backtick), so
 #: `O’Brien` folds to `obrien` and `Gʻofurov` to `gofurov`
-#: (decisions/name-matching, 2026-11-09).
-_DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018")
+#: (decisions/name-matching, 2026-11-09). And the Arabic tatweel U+0640,
+#: which `_normalize` deletes too (#1151), so a name's two spellings that
+#: differ by one fold alike where the vocabulary and the match meet.
+_DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 

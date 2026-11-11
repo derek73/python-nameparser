@@ -2666,6 +2666,10 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     # family name as "Dr. Smith" does: ar.toml's, the given name.
     ("دکتر محمد رضایی", "title", "دکتر"),
     ("دکتر رضایی", "family", "رضایی"),
+    # Persian typed on an Arabic keyboard writes ي and ك: listed too.
+    ("دكتر محمد رضایی", "title", "دكتر"),
+    ("آقاي رضایی", "title", "آقاي"),
+    ("سرلشكر قاسم سلیمانی", "title", "سرلشكر"),
     ("آقای دکتر علی رضایی", "title", "آقای دکتر"),
     ("آیت‌الله جناب آقای حسن رضایی", "title", "آیت‌الله جناب آقای"),
     ("حجت‌الاسلام حسن رضایی", "title", "حجت‌الاسلام"),

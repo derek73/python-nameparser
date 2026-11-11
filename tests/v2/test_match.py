@@ -259,6 +259,16 @@ def test_other_reading_in_accept_offers_the_switch() -> None:
     assert parser.matching(other_readings=True) == offered
 
 
+def test_a_tatweel_stretching_a_name_is_no_difference() -> None:
+    """#1151: `_normalize` deletes the tatweel, so the match's fold does
+    too; otherwise the vocabulary links a stretched spelling to the plain
+    one as a listed spelling that no list holds."""
+    result = Parser().matching().check("محمـــد علي", "محمد علي")
+    assert result.consistent
+    given = next(r for r in result.roles if r.role is Role.GIVEN)
+    assert given.outcome is Outcome.FOLDED
+
+
 def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
     assert _fold("J.-P. O'Mári\u0301a") == "j-p omaria"
     assert _fold("María") == _fold("Mari\u0301a") == "maria"
