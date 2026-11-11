@@ -2258,6 +2258,7 @@ NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
     'ال',
     'بن',
     'بنت',
+    'ณ',
     '’s',
     '’t',
 })
@@ -2381,6 +2382,7 @@ PARTICLES: frozenset[str] = frozenset({
     'ال',
     'بن',
     'بنت',
+    'ณ',
     '’s',
     '’t',
 })
