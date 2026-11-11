@@ -43,7 +43,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from types import MappingProxyType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from ._lexicon import Lexicon, _normalize
 from ._pipeline._state import COMMA_CHARS
@@ -53,7 +53,7 @@ from ._pipeline._vocab import (
     reads_as_generation, suffix_as_written,
 )
 from ._policy import (
-    UNSET, PatronymicRule, PolicyPatch, _order_repr, apply_patch,
+    UNSET, PatronymicRule, Policy, PolicyPatch, _order_repr, apply_patch,
 )
 from ._types import (
     FAMILY_FIRST, GIVEN_FIRST, Role, _guarded_getstate, _guarded_setstate,
@@ -324,6 +324,9 @@ def name_votes(text: str, lexicon: Lexicon
 #: A vote one signal casts: an order, or the patronymic rule a shape
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
+#: A setting's value as SettingEvidence holds it: an order, or a set of
+#: patronymic rules.
+SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule]
 
 # The four thresholds were chosen with
 # tools/differential/suggest_measure.py, which draws groups of 2 to 200
@@ -396,12 +399,14 @@ def _checked_vote(signal: object, vote: object,
             f"{owner} vote for {signal.value!r} must be an order, "
             f"got {vote!r}; pass GIVEN_FIRST or FAMILY_FIRST")
     order = tuple(vote)
-    if order not in (GIVEN_FIRST, FAMILY_FIRST):
-        raise ValueError(
-            f"{owner} vote for {signal.value!r} must name an end, "
-            f"GIVEN_FIRST or FAMILY_FIRST, got {vote!r}; a vote never "
-            f"spells FAMILY_FIRST_GIVEN_LAST, which is FAMILY_FIRST's end")
-    return signal, order  # type: ignore[return-value]
+    for end in (GIVEN_FIRST, FAMILY_FIRST):
+        if order == end:
+            # the shared constant, so a vote compares by identity too
+            return signal, end
+    raise ValueError(
+        f"{owner} vote for {signal.value!r} must name an end, "
+        f"GIVEN_FIRST or FAMILY_FIRST, got {vote!r}; a vote never "
+        f"spells FAMILY_FIRST_GIVEN_LAST, which is FAMILY_FIRST's end")
 
 
 def _iterable(value: object, owner: str, form: str, example: str
@@ -416,8 +421,9 @@ def _iterable(value: object, owner: str, form: str, example: str
     return tuple(value)
 
 
-def _checked_row(row: object) -> tuple[Signal, Vote, int]:
-    """One ``by_signal`` row, validated: ``(signal, vote, count)``."""
+def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
+    """One ``by_signal`` row, validated: ``(signal, vote, count)``, its
+    signal one that votes on ``setting``."""
     if isinstance(row, (str, bytes)) or not isinstance(row, (tuple, list)) \
             or len(row) != 3:
         raise TypeError(
@@ -426,6 +432,11 @@ def _checked_row(row: object) -> tuple[Signal, Vote, int]:
             f"(Signal.SURNAME, FAMILY_FIRST, 2)")
     signal, vote, count = row
     pair = _checked_vote(signal, vote, "SettingEvidence by_signal")
+    if _setting_of(pair[0]) != setting:
+        raise ValueError(
+            f"SettingEvidence by_signal row {reprlib.repr(row)} is a "
+            f"{pair[0].value!r} vote, which votes on {_setting_of(pair[0])}, "
+            f"not on {setting}; put it in that setting's evidence")
     if isinstance(count, bool) or not isinstance(count, int):
         raise TypeError(
             f"SettingEvidence by_signal count must be an int count of "
@@ -453,6 +464,10 @@ def _label(value: object) -> str:
     return repr(value)
 
 
+_NAME_EVIDENCE_EXAMPLE = (
+    "NameEvidence('Kim Minjun', {Signal.SURNAME: FAMILY_FIRST})")
+
+
 @dataclass(frozen=True, slots=True, init=False)
 class NameEvidence:
     """One input name and the votes it cast, read with the base
@@ -461,7 +476,9 @@ class NameEvidence:
     Order votes are one per NAME: the end the name's order signals
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
-    ``votes`` keeps every signal's vote all the same."""
+    ``votes`` keeps every signal's vote all the same.
+    ``dataclasses.replace`` keeps the votes unless it is passed
+    ``votes=`` too."""
 
     #: The name exactly as the caller passed it.
     text: str
@@ -473,14 +490,25 @@ class NameEvidence:
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
-    def __init__(self, text: str, votes: Mapping[Signal, Vote]) -> None:
+    def __init__(self, text: str,
+                 votes: Mapping[Signal, Vote] | None = None, *,
+                 _votes: Iterable[tuple[Signal, Vote]] | None = None
+                 ) -> None:
+        # `_votes` is the stored field's name, which dataclasses.replace
+        # passes back; `votes`, where given, wins, so
+        # replace(evidence, votes=...) replaces them
+        if votes is None and _votes is not None:
+            votes = dict(_votes)
         if not isinstance(text, str):
             raise TypeError(
-                f"NameEvidence text must be a str, got {text!r}")
+                f"NameEvidence text must be a str, got "
+                f"{type(text).__name__} {reprlib.repr(text)}; pass e.g. "
+                f"{_NAME_EVIDENCE_EXAMPLE}")
         if not isinstance(votes, Mapping):
             raise TypeError(
                 f"NameEvidence votes must be a mapping of Signal to vote, "
-                f"got {votes!r}")
+                f"got {type(votes).__name__} {reprlib.repr(votes)}; pass "
+                f"e.g. {_NAME_EVIDENCE_EXAMPLE}")
         pairs = tuple(sorted(
             (_checked_vote(signal, vote) for signal, vote in votes.items()),
             key=lambda pair: _SIGNAL_RANK[pair[0]]))
@@ -518,14 +546,14 @@ class SettingEvidence:
     #: The ``Policy`` field this evidence is about.
     setting: str
     #: The field's value under the suggested parser.
-    value: object
+    value: SettingValue
     #: Whether the group's votes decided the value.
     decided: bool
     votes_for: int
     votes_against: int
     contested: int
     no_evidence: int
-    by_signal: tuple[tuple[Signal, object, int], ...]
+    by_signal: tuple[tuple[Signal, Vote, int], ...]
     note: str = ""
 
     __getstate__ = _guarded_getstate
@@ -564,7 +592,8 @@ class SettingEvidence:
                          "an iterable of (signal, vote, count) rows",
                          "((Signal.SURNAME, FAMILY_FIRST, 2),) or ()")
         object.__setattr__(
-            self, "by_signal", tuple(_checked_row(row) for row in rows))
+            self, "by_signal",
+            tuple(_checked_row(row, self.setting) for row in rows))
 
     def __repr__(self) -> str:
         state = "decided" if self.decided else "undecided"
@@ -623,6 +652,7 @@ class Suggestion:
                         f"{cls.__name__}, or build a Suggestion with "
                         f"parser.suggest(names)")
             object.__setattr__(self, name, items)
+        self._check_against_the_patch()
 
     def __repr__(self) -> str:
         # bounded: the patch and counts, never a name
@@ -662,22 +692,25 @@ class Suggestion:
     def parser(self) -> Parser:
         """The base parser with :attr:`patch` applied: the same lexicon
         and segmenter, and the base's policy for every setting the
-        group did not change."""
+        group did not change. It is built afresh on each access, so
+        bind it once (``p = s.parser``) before parsing in a loop."""
         # A new construction site for Parser (AGENTS.md's validation
-        # bullet): Parser.__post_init__'s warnings read the lexicon,
-        # the segmenter and segment_scripts. A patch that leaves
-        # segment_scripts unset (every patch suggest() writes) moves
-        # none of them, so a warning here is one the base already gave
-        # its caller when it was built, and is dropped rather than
-        # repeated on every access. A hand-built patch that sets
-        # segment_scripts can cause a new one, which is passed on from
-        # the caller's frame, not dataclasses.replace's.
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            parser = dataclasses.replace(
-                self.base, policy=apply_patch(self.base.policy, self.patch))
-        if self.patch.segment_scripts is not UNSET:
-            for w in caught:
+        # bullet): a warning Parser.__post_init__ gives here is passed
+        # on from the caller's frame only where the base, built the
+        # same way, does not give it too -- the base's own warnings
+        # reached its caller when it was built.
+        def built(policy: Policy
+                  ) -> tuple[Parser, list[warnings.WarningMessage]]:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                parser = dataclasses.replace(self.base, policy=policy)
+            return parser, caught
+
+        _, before = built(self.base.policy)
+        parser, after = built(apply_patch(self.base.policy, self.patch))
+        seen = {(w.category, str(w.message)) for w in before}
+        for w in after:
+            if (w.category, str(w.message)) not in seen:
                 warnings.warn(w.message, w.category, stacklevel=2)
         return parser
 
@@ -693,12 +726,67 @@ class Suggestion:
             return ()
         return tuple(n for n in self.names if _disagrees(n, decided))
 
+    def _check_against_the_patch(self) -> None:
+        """The evidence, the patch and the names agree: one evidence
+        per setting, a decided value the suggested parser's own, an
+        undecided setting out of the patch, every patch field a decided
+        change from the base, and every setting's counts adding up to
+        the names."""
+        settings = Counter(e.setting for e in self.evidence)
+        for setting, count in settings.items():
+            if count > 1:
+                raise ValueError(
+                    f"Suggestion evidence holds {setting!r} more than "
+                    f"once ({count} times); pass one SettingEvidence per "
+                    f"setting")
+        policy = apply_patch(self.base.policy, self.patch)
+        decided = set()
+        size = len(self.names)
+        for e in self.evidence:
+            total = (e.votes_for + e.votes_against + e.contested
+                     + e.no_evidence)
+            if total != size:
+                raise ValueError(
+                    f"Suggestion evidence for {e.setting} counts names "
+                    f"that add up to {total}, not the {size} names in "
+                    f"names; each name is for, against, contested or of "
+                    f"no evidence on every setting")
+            if e.decided:
+                decided.add(e.setting)
+                if e.value != getattr(policy, e.setting):
+                    raise ValueError(
+                        f"Suggestion's decided {e.setting} value "
+                        f"{_label(e.value)} is not the suggested parser's "
+                        f"{_label(getattr(policy, e.setting))}; set the "
+                        f"patch to the decided value, or leave it out "
+                        f"where the value is the base's")
+            elif getattr(self.patch, e.setting) is not UNSET:
+                raise ValueError(
+                    f"Suggestion patch sets {e.setting}, which its "
+                    f"evidence leaves undecided; mark the evidence "
+                    f"decided, or leave {e.setting} out of the patch")
+        for f in dataclasses.fields(PolicyPatch):
+            if getattr(self.patch, f.name) is UNSET:
+                continue
+            if f.name not in decided:
+                raise ValueError(
+                    f"Suggestion patch sets {f.name}, which no decided "
+                    f"SettingEvidence holds; add that evidence, or leave "
+                    f"{f.name} out of the patch")
+            if getattr(policy, f.name) == getattr(self.base.policy, f.name):
+                raise ValueError(
+                    f"Suggestion patch sets {f.name} to the base's own "
+                    f"value {_label(getattr(policy, f.name))}; a patch "
+                    f"holds only changes, so leave it out and keep the "
+                    f"evidence decided")
+
+
 
 def _setting_of(signal: Signal) -> str:
     return _PATRONYMIC_RULES if signal is Signal.PATRONYMIC else _NAME_ORDER
 
 
-def _disagrees(name: NameEvidence, decided: dict[str, object]) -> bool:
+def _disagrees(name: NameEvidence, decided: Mapping[str, object]) -> bool:
     """Whether one name's votes contradict a decided setting."""
     patronymic = dict(name._votes).get(Signal.PATRONYMIC)
     rules = decided.get(_PATRONYMIC_RULES)
@@ -756,7 +844,7 @@ class _Tally:
             return None
         return vote
 
-    def evidence(self, setting: str, value: object, decided: bool,
+    def evidence(self, setting: str, value: SettingValue, decided: bool,
                  is_for: Callable[[Vote], bool], note: str = ""
                  ) -> SettingEvidence:
         """Evidence for ``value``; ``is_for`` says which name votes are
@@ -867,7 +955,9 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     if end is None:
         return (tally.evidence(_NAME_ORDER, base_order, False,
                                lambda v: v == _end(base_order), note), {})
-    order = (base_order if _end(base_order) == end else end)
+    # the order tally holds orders alone
+    order = base_order if _end(base_order) == end else cast(
+        "tuple[Role, Role, Role]", end)
     fields = (
         {} if order == base_order else {_NAME_ORDER: order})
     return (tally.evidence(_NAME_ORDER, order, True,

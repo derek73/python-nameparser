@@ -491,8 +491,12 @@ def test_a_patch_that_moves_segment_scripts_still_warns_its_caller() -> None:
     # segmentation with no Chinese surnames listed) is new to the
     # caller, so .parser must pass it on, attributed to the caller
     from nameparser import PolicyPatch, Script, Suggestion
+    # a patch field needs a decided evidence holding the value it makes
+    # (the cross-check Suggestion runs since the review's fix wave)
+    value = Parser().policy.segment_scripts | {Script.HAN}
     s = Suggestion(Parser(), PolicyPatch(
-        segment_scripts=frozenset({Script.HAN})), (), ())
+        segment_scripts=frozenset({Script.HAN})), (SettingEvidence(
+            "segment_scripts", value, True, 0, 0, 0, 0, ()),), ())  # type: ignore[arg-type]
     with pytest.warns(UserWarning) as caught:
         s.parser
     assert caught[0].filename == __file__
@@ -680,7 +684,8 @@ def test_setting_evidence_keeps_well_formed_rows() -> None:
 
 def test_a_valid_setting_evidence_renders_in_a_report() -> None:
     s = Suggestion(Parser(), PolicyPatch(), (_setting_evidence(
-        setting="patronymic_rules", value=frozenset(), decided=False),), ())
+        setting="patronymic_rules", value=frozenset(), decided=False,
+        votes_for=0),), ())
     assert "patronymic_rules" in str(s)
 
 
@@ -853,3 +858,143 @@ def test_the_order_note_counts_the_comma_names_left_out() -> None:
 def test_edge_punctuation_is_read_past(
         text: str, signal: Signal, value: object) -> None:
     assert name_votes(text, L)[signal] == value
+
+
+# -- the review's fix wave: the result types (B1-B6) ------------------------
+
+
+def _order(**changes: object) -> SettingEvidence:
+    fields: dict[str, object] = dict(
+        setting="name_order", value=GIVEN_FIRST, decided=False,
+        votes_for=0, votes_against=0, contested=0, no_evidence=0,
+        by_signal=())
+    fields.update(changes)
+    return SettingEvidence(**fields)  # type: ignore[arg-type]
+
+
+def _rules(**changes: object) -> SettingEvidence:
+    fields: dict[str, object] = dict(
+        setting="patronymic_rules", value=frozenset(), decided=False,
+        votes_for=0, votes_against=0, contested=0, no_evidence=0,
+        by_signal=())
+    fields.update(changes)
+    return SettingEvidence(**fields)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("patch, evidence, fragment", [
+    # (a) one SettingEvidence per setting
+    (PolicyPatch(), (_order(), _order()), "more than once"),
+    # (b) a decided value is the suggested parser's
+    (PolicyPatch(), (_order(decided=True, value=FAMILY_FIRST),),
+     "decided name_order value"),
+    (PolicyPatch(name_order=FAMILY_FIRST),
+     (_order(decided=True, value=GIVEN_FIRST),), "decided name_order value"),
+    # (c) an undecided setting is not in the patch
+    (PolicyPatch(name_order=FAMILY_FIRST), (_order(value=FAMILY_FIRST),),
+     "undecided"),
+    # (d) a patch field is a decided setting that changes the base
+    (PolicyPatch(middle_as_family=True), (_order(),), "middle_as_family"),
+    (PolicyPatch(name_order=GIVEN_FIRST),
+     (_order(decided=True, value=GIVEN_FIRST),), "the base's own"),
+    (PolicyPatch(patronymic_rules=frozenset()),
+     (_rules(decided=True),), "the base's own"),
+])
+def test_suggestion_refuses_evidence_its_patch_contradicts(
+        patch: PolicyPatch, evidence: tuple[SettingEvidence, ...],
+        fragment: str) -> None:
+    with pytest.raises(ValueError, match=fragment):
+        Suggestion(Parser(), patch, evidence, ())
+
+
+def test_suggestion_refuses_counts_that_do_not_add_up_to_the_group() -> None:
+    # (e) every setting's four counts are of the group's names
+    names = (NameEvidence("Kim Minjun", {Signal.SURNAME: FAMILY_FIRST}),)
+    with pytest.raises(ValueError, match="add up to 2, not the 1 names"):
+        Suggestion(Parser(), PolicyPatch(),
+                   (_order(votes_for=1, no_evidence=1),), names)
+    s = Suggestion(Parser(), PolicyPatch(), (_order(votes_against=1),), names)
+    assert s.names == names
+
+
+def test_a_decided_change_is_accepted_with_its_patch() -> None:
+    names = tuple(NameEvidence(t, {Signal.SURNAME: FAMILY_FIRST})
+                  for t in ("Kim Minjun", "Wang Xiaoming"))
+    s = Suggestion(Parser(), PolicyPatch(name_order=FAMILY_FIRST),
+                   (_order(decided=True, value=FAMILY_FIRST, votes_for=2),),
+                   names)
+    assert s.parser.policy.name_order == FAMILY_FIRST
+
+
+def test_every_suggestion_suggest_returns_passes_its_own_checks() -> None:
+    import dataclasses
+    for group in (_EAST_SLAVIC, _TURKIC, _CAPITALS_EAST_SLAVIC,
+                  ["Priem Jason", "Kim Minjun", "Smith, John"]):
+        for base in (Parser(), Parser(policy=Policy(name_order=FAMILY_FIRST)),
+                     Parser(policy=Policy(patronymic_rules=frozenset(
+                         {PatronymicRule.TURKIC})))):
+            s = base.suggest(group)
+            assert dataclasses.replace(s) == s
+
+
+def test_a_vote_is_the_shared_order_constant() -> None:
+    evidence = NameEvidence("Priem Jason", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
+    assert evidence.votes[Signal.SURNAME] is FAMILY_FIRST
+    row = _order(by_signal=[(Signal.SURNAME, list(GIVEN_FIRST), 0)]).by_signal[0]
+    assert row[1] is GIVEN_FIRST
+
+
+@pytest.mark.parametrize("setting, row", [
+    ("name_order", (Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC, 1)),
+    ("patronymic_rules", (Signal.SURNAME, FAMILY_FIRST, 1)),
+    ("middle_as_family", (Signal.SURNAME, FAMILY_FIRST, 1)),
+])
+def test_setting_evidence_refuses_a_signal_of_another_setting(
+        setting: str, row: tuple[object, ...]) -> None:
+    with pytest.raises(ValueError, match="votes on"):
+        _setting_evidence(setting=setting, by_signal=[row])
+
+
+def test_name_evidence_survives_replace() -> None:
+    import dataclasses
+    evidence = NameEvidence("Priem Jason", {Signal.GIVEN_NAME: FAMILY_FIRST})
+    moved = dataclasses.replace(evidence, text="Priem J.")
+    assert moved.text == "Priem J."
+    assert moved.votes == evidence.votes
+    assert dataclasses.replace(  # type: ignore[call-arg]
+        evidence, votes={Signal.SURNAME: GIVEN_FIRST}).votes == {
+            Signal.SURNAME: GIVEN_FIRST}
+
+
+@pytest.mark.parametrize("args", [
+    (5, {Signal.SURNAME: FAMILY_FIRST}), ("Kim Minjun", [Signal.SURNAME])])
+def test_name_evidence_type_errors_offer_code_that_runs(
+        args: tuple[object, object]) -> None:
+    with pytest.raises(TypeError) as info:
+        NameEvidence(*args)  # type: ignore[arg-type]
+    offered = str(info.value).rsplit("pass e.g. ", 1)[1]
+    assert offered == "NameEvidence('Kim Minjun', {Signal.SURNAME: FAMILY_FIRST})"
+    built = eval(offered, {"NameEvidence": NameEvidence, "Signal": Signal,
+                           "FAMILY_FIRST": FAMILY_FIRST})
+    assert built.votes == {Signal.SURNAME: FAMILY_FIRST}
+
+
+def test_the_parser_passes_on_only_the_warnings_its_patch_causes() -> None:
+    # a base whose Han and hiragana segmentation has no segmenter warns
+    # once, when it is built; a hand-built patch adding Hangul, whose
+    # surnames ship, causes no warning of its own, so .parser repeats
+    # none, though the patched construction warns as the base's did
+    import dataclasses
+    from nameparser import Script, locales, parser_for
+    with pytest.warns(UserWarning):
+        ja = parser_for(locales.JA)
+        base = dataclasses.replace(ja, policy=dataclasses.replace(
+            ja.policy, segment_scripts=frozenset({Script.HAN,
+                                                  Script.HIRAGANA})))
+    value = base.policy.segment_scripts | {Script.HANGUL}
+    s = Suggestion(base, PolicyPatch(
+        segment_scripts=frozenset({Script.HANGUL})), (SettingEvidence(
+            "segment_scripts", value, True, 0, 0, 0, 0, ()),), ())  # type: ignore[arg-type]
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        parser = s.parser
+    assert parser.policy.segment_scripts == value
