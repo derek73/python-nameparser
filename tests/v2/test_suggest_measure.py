@@ -181,6 +181,94 @@ def test_checks_prints_every_deferred_count(
     out = _run(capsys, "--checks")
     for start in ("-- deferred checks", "surname votes, East Asian",
                   "wrong surname votes from", "a name ending in a bare letter",
-                  "folding ø and ł", "patronymic share without"):
+                  "patronymic share without"):
         assert any(line.startswith(start) for line in out.splitlines()), start
     assert "groups suggested right" not in out
+
+
+# -- the review's fix wave (A6, A7) ------------------------------------------
+
+
+def _plant_patentsview(cache: Path, lines: list[dict[str, object]]) -> None:
+    import gzip
+    import local_patentsview  # type: ignore[import-not-found]
+    path = local_patentsview.extract_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    body = json.dumps({"release": local_patentsview.PV_RELEASE}) + "\n" + "".join(
+        json.dumps(line, ensure_ascii=False) + "\n" for line in lines)
+    path.write_bytes(gzip.compress(body.encode("utf-8")))
+
+
+def test_patentsview_reads_the_country_whatever_the_key_order(
+        _cache: Path) -> None:
+    _plant_patentsview(_cache, [
+        {"country": "JP", "family": "Tanaka", "given": "Hiroshi"},
+        {"family": "Sato", "given": "Yuki", "country": "JP", "people": 2},
+        {"given": "Kenji", "people": 1, "family": "Ito", "country": "JP"},
+        {"country": "ZZ", "family": "Nobody", "given": "Anyone"}])
+    keep = tool._Reservoir(1)
+    tool._patentsview(keep)
+    assert sorted(keep.pools["pv-JP"]) == [
+        ("Hiroshi", "Tanaka"), ("Kenji", "Ito"), ("Yuki", "Sato")]
+
+
+@needs_checkout
+def test_a_wanted_population_that_yields_no_names_gets_a_note(
+        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _plant_patentsview(_cache, [
+        {"country": "JP", "family": "Tanaka", "given": "Hiroshi"}])
+    out = _run(capsys)
+    # patentsview is present but holds no US name, and the planted PSC
+    # rows hold no Polish one
+    assert "pv-US: no names" in out
+    assert "psc-Polish: no names" in out
+    assert "pv-JP: no names" not in out
+
+
+@needs_checkout
+def test_a_present_source_yielding_nothing_gets_a_note(
+        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    (_cache / "local" / "cz-candidates" / "raw.jsonl").write_text(
+        json.dumps({"jmeno": "", "prijmeni": ""}) + "\n", encoding="utf-8")
+    out = _run(capsys)
+    assert "cz-candidates: present, but no names" in out
+
+
+@needs_checkout
+def test_moved_compares_the_parliaments_and_the_east_slavic_counts() -> None:
+    base = {"populations": [{"label": "vi", "cells": {"GF/GF": [1.0]},
+                             "east_slavic": 0}],
+            "parliaments": {"turkic": {"az_parliament": {"{T}": 3}},
+                            "suggestions": [{"dataset": "ua_rada", "x": 1}]}}
+    head = json.loads(json.dumps(base))
+    assert tool.moved(base, head) == []
+    head["populations"][0]["east_slavic"] = 4
+    head["parliaments"]["turkic"]["az_parliament"]["{T}"] = 5
+    head["parliaments"]["suggestions"][0]["x"] = 2
+    out = "\n".join(tool.moved(base, head))
+    assert "east_slavic" in out and "0 -> 4" in out
+    assert "az_parliament" in out
+    assert "ua_rada" in out
+
+
+@needs_checkout
+def test_checks_report_the_groups_a_contested_name_moves(
+        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # a positive control: five patronymic names and two whose only
+    # evidence is a contested order. With the two in the denominator,
+    # 5 of 7 is not more than four in five; without them, 5 of 5 is
+    rows = [{"forename": "Ivan Petrovich", "surname": "Sidorov",
+             "nationality": "British"}] * 5 + [
+        {"forename": "Jason", "surname": "Kim J.",
+         "nationality": "British"}] * 2
+    (_cache / "local" / "psc-individuals" / "raw.jsonl").write_text(
+        "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    assert tool.main(["--sizes", "7", "--trials", "3", "--jobs", "1",
+                      "--checks"]) == 0
+    out = capsys.readouterr().out
+    line = next(x for x in out.splitlines()
+                if x.startswith("patronymic share without"))
+    # six groups hold five patronymic names, so could decide a rule;
+    # the three written given-first move, the family-first ones
+    # (`Kim J. Jason`) being uncontested
+    assert "3 of 6 groups that could decide a rule" in line, line

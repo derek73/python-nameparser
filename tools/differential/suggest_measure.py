@@ -23,7 +23,9 @@ before the surname), Czech candidates (cz-candidates, `jmeno` and
 `prijmeni`) and Vietnamese names (uit-vinames, the middle name before the
 given name, as Vietnamese writes them). A population keeps at most
 POOL_CAP names, drawn by a seeded reservoir. A source not fetched is
-left out with a note; one present but unreadable stops the run.
+left out with a note, as is one present that yields no names and each
+population a present source yields none of; one present but unreadable
+stops the run.
 
 THE GROUPS: for each population, written order (`Given Family` and
 `Family Given`, from the same boxes) and size, `--trials` groups drawn
@@ -52,11 +54,11 @@ beside the order the list was read by eye to write (LIST_ORDER).
 THE CHECKS (`--checks`, in place of the tables): over every population's
 whole pool written both ways, the surname table's right and wrong votes
 (East Asian populations apart), the wrong votes the short romanized
-surnames (SHORT_SURNAMES) cast, the names ending in a bare letter, ASCII
-or not, the given-name votes folding `ø` and `ł` would move; and over a
-draw of groups of its own, how many decide another patronymic rule when
-the names whose only evidence is a contested order leave the share's
-denominator.
+surnames (SHORT_SURNAMES) cast, and the names ending in a bare letter,
+ASCII or not; and over a draw of groups of its own, of the groups that
+hold enough names of one patronymic rule to decide it
+(`_MIN_PATRONYMIC_VOTES`), how many decide another rule when the names
+whose only evidence is a contested order leave the share's denominator.
 
 `--set NAME=VALUE` overrides one of `_suggest`'s thresholds in every
 worker, so a rule can be tried without editing the module; it is also the
@@ -66,7 +68,9 @@ _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
 an order of its own), so every family-first group under the given-first
 base must read 0% (and every given-first group under the family-first
 base). `--base` runs the same measurement against another
-checkout in a child process and lists every cell that moved.
+checkout in a child process and lists every cell that moved, every
+population whose count of groups deciding the East Slavic rule moved,
+and every TURKIC row and parliament suggestion that moved.
 
 Runtime, measured 2026-11-10 on a 12-CPU machine with every source
 fetched and the defaults (sizes 2-200, 300 trials, --jobs 12): 20s
@@ -81,6 +85,7 @@ import gzip
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import tempfile
@@ -220,24 +225,31 @@ class _Reservoir:
             self.put(label, at, given, family)
 
 
+#: A line's country field, wherever the line puts it: the extract's
+#: lines are JSON objects whose keys a writer may order any way.
+_PV_COUNTRY = re.compile(r'"country":\s*"([^"]*)"')
+
+
 def _patentsview(keep: _Reservoir) -> None:
     """The extract the patentsview-inventors fetch keeps, every name
     (local_patentsview.pv_boxes reads the same file, but decodes all of
     its 5.3 million lines; a line naming no wanted country is skipped
-    here undecoded, and a decoded one must name the country it seemed
-    to)."""
+    here undecoded, its country found by a search rather than by its
+    place in the line, and a decoded one must name the country it
+    seemed to)."""
     import local_patentsview
     path = local_patentsview.extract_path()
     if not path.exists():
         raise FileNotFoundError(2, "not fetched", str(path))
-    wanted = {f'"country": "{c}"': c for c in PV_COUNTRIES}
+    wanted = frozenset(PV_COUNTRIES)
     with gzip.open(path, "rt", encoding="utf-8", newline="\n") as lines:
         if json.loads(next(lines)).get("release") != local_patentsview.PV_RELEASE:
             raise ValueError(f"{path} is not an extract of the "
                              f"{local_patentsview.PV_RELEASE} release")
         for line in lines:
-            country = wanted.get(line[1:16])
-            if country is None:
+            found = _PV_COUNTRY.search(line)
+            country = found[1] if found else None
+            if country not in wanted:
                 continue
             label = f"pv-{country}"
             if (at := keep.slot(label)) is None:
@@ -273,10 +285,17 @@ SOURCES = (("patentsview-inventors", _patentsview),
            ("uit-vinames", _vi))
 
 
+#: The populations each source is read for.
+WANTED = {"patentsview-inventors": tuple(f"pv-{c}" for c in PV_COUNTRIES),
+          "psc-individuals": tuple(f"psc-{n}" for n in PSC_NATIONALITIES),
+          "cz-candidates": ("cz",), "uit-vinames": ("vi",)}
+
+
 def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
     """Every population fetched, and a note for each source that is
-    not. A source present but unreadable stops the run: a cut file is a
-    broken measurement, not a smaller one."""
+    not, each present source that yields no names and each population a
+    present source yields none of. A source present but unreadable stops
+    the run: a cut file is a broken measurement, not a smaller one."""
     keep = _Reservoir(seed)
     notes = []
     for source, read in SOURCES:
@@ -286,10 +305,19 @@ def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
             notes.append(f"{source}: not fetched ({e.filename}); "
                          f"uv run python tools/differential/local_corpora.py "
                          f"fetch {source}")
+            continue
         except (OSError, ValueError, KeyError, EOFError) as e:
             raise SystemExit(f"{source}: present but unreadable "
                              f"({type(e).__name__}: {e}); fetch it again") from e
-    return dict(sorted(keep.pools.items())), notes
+        empty = [label for label in WANTED[source]
+                 if not keep.pools.get(label)]
+        if len(empty) == len(WANTED[source]):
+            notes.append(f"{source}: present, but no names read; is it the "
+                         f"file this tool reads?")
+        else:
+            notes.extend(f"{label}: no names in {source}" for label in empty)
+    pools = {label: pool for label, pool in keep.pools.items() if pool}
+    return dict(sorted(pools.items())), notes
 
 
 def written(name: tuple[str, str], order: str) -> str:
@@ -297,18 +325,23 @@ def written(name: tuple[str, str], order: str) -> str:
     return f"{family} {given}" if order == FF else f"{given} {family}"
 
 
-def parliament_lists() -> dict[str, dict[str, list[str]]] | None:
+def parliament_lists() -> tuple[dict[str, dict[str, list[str]]] | None,
+                                list[str]]:
     """The opensanctions-parliaments names by dataset and script, Latin
-    and Cyrillic rows of form "name" only, or None where not fetched."""
+    and Cyrillic rows of form "name" only, or None where not fetched;
+    and a note for each list the tables read that holds no such row."""
     path = local("opensanctions-parliaments") / "raw.jsonl"
     if not path.exists():
-        return None
+        return None, []
     lists: dict[str, dict[str, list[str]]] = {}
     for r in _rows(path):
         if r.get("form") == "name" and r.get("script") in ("Latin", "Cyrillic"):
             lists.setdefault(r["dataset"], {}).setdefault(
                 r["script"], []).append(r["name"])
-    return dict(sorted(lists.items()))
+    notes = [f"{dataset}: no names in opensanctions-parliaments"
+             for dataset in sorted(set(TURKIC_LISTS) | set(LIST_ORDER))
+             if dataset not in lists]
+    return dict(sorted(lists.items())), notes
 
 
 # -- one population's measurement (a worker) ---------------------------------
@@ -417,8 +450,6 @@ EAST_ASIAN = frozenset({"pv-CN", "pv-TW", "pv-KR", "pv-JP", "psc-Chinese", "vi"}
 #: The short romanized surnames that are common words or given names
 #: elsewhere, which --checks counts.
 SHORT_SURNAMES = frozenset({"do", "to", "la", "le", "ha", "ho", "an"})
-#: What --checks tries as a wider fold: the two letters NFKD leaves.
-_STROKES = str.maketrans({"ø": "o", "ł": "l"})
 
 
 def check_population(job: tuple[str, Pool, tuple[int, ...], int, int,
@@ -434,21 +465,15 @@ def check_population(job: tuple[str, Pool, tuple[int, ...], int, int,
 def _check_population(label: str, pool: Pool, sizes: tuple[int, ...],
                       trials: int, seed: int) -> dict[str, Any]:
     from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon
+    from nameparser import _suggest
     from nameparser._suggest import (
         Signal, _patronymic_winner, _Tally, fold, name_votes,
     )
-    from nameparser.config._order_names import COMMON_GIVEN_NAMES
+    _MIN_PATRONYMIC_VOTES = _suggest._MIN_PATRONYMIC_VOTES
     lexicon = Lexicon.default()
-    wider = frozenset(w.translate(_STROKES) for w in COMMON_GIVEN_NAMES)
     c: Counter[str] = Counter()
     words: Counter[str] = Counter()
     cache: dict[tuple[str, str], dict[Signal, Any]] = {}
-
-    def listed(word: str, table: frozenset[str], widen: bool) -> bool:
-        spelling = fold(word.strip("."))
-        if widen:
-            spelling = spelling.translate(_STROKES)
-        return len(spelling) >= 2 and spelling in table
 
     for order, truth in ((GF, GIVEN_FIRST), (FF, FAMILY_FIRST)):
         for t in pool:
@@ -467,16 +492,6 @@ def _check_population(label: str, pool: Pool, sizes: tuple[int, ...],
                         words[word] += 1
             if len(w) >= 2 and len(w[-1]) == 1 and w[-1].isalpha():
                 c["bare-letter:" + ("ascii" if w[-1].isascii() else "other")] += 1
-            if len(w) >= 2:
-                # the given-name signal's test, both ways round; a comma
-                # name reads alike under both, casting no vote at all
-                first, last = (listed(x, wider, True) for x in (w[0], w[-1]))
-                new = None if first == last else (GIVEN_FIRST if first else FAMILY_FIRST)
-                first, last = (listed(x, COMMON_GIVEN_NAMES, False)
-                               for x in (w[0], w[-1]))
-                old = None if first == last else (GIVEN_FIRST if first else FAMILY_FIRST)
-                if new != old:
-                    c["fold:" + ("right" if new == truth else "away")] += 1
     # the patronymic share's denominator: every name casting a vote, or
     # those less the names whose only evidence is a contested order
     rng = random.Random(f"{seed}-{label}-checks")
@@ -484,7 +499,7 @@ def _check_population(label: str, pool: Pool, sizes: tuple[int, ...],
         for size in sizes:
             if size > len(pool):
                 continue
-            moved = 0
+            moved = could = 0
             for _ in range(trials):
                 tally, voters, contested_only = _Tally(), 0, 0
                 for t in rng.sample(pool, size):
@@ -494,16 +509,23 @@ def _check_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     contested_only += len(ends) > 1 and Signal.PATRONYMIC not in votes
                     tally.add([(k, v) for k, v in votes.items()
                                if k is Signal.PATRONYMIC])
+                # only a group holding enough names of one rule can
+                # decide it under either denominator
+                if max(tally.by_name.values(), default=0) < _MIN_PATRONYMIC_VOTES:
+                    continue
+                could += 1
                 moved += (_patronymic_winner(tally, voters)
                           != _patronymic_winner(tally, voters - contested_only))
             c["denominator:groups"] += trials
+            c["denominator:could"] += could
             c["denominator:moved"] += moved
-            c["denominator:worst-cell"] = max(c["denominator:worst-cell"],
-                                              round(1000 * moved / trials))
+            if could:
+                c["denominator:worst-cell"] = max(
+                    c["denominator:worst-cell"], round(1000 * moved / could))
     return {"label": label, "counts": dict(c), "words": words.most_common(8)}
 
 
-def report_checks(results: list[dict[str, Any]]) -> None:
+def report_checks(results: list[dict[str, Any]], min_votes: int) -> None:
     total: Counter[str] = Counter()
     words: Counter[str] = Counter()
     for r in results:
@@ -526,16 +548,11 @@ def report_checks(results: list[dict[str, Any]]) -> None:
           + ", ".join(f"{w} {n}" for w, n in words.most_common(8)))
     print(f"a name ending in a bare letter: {t['bare-letter:other']} non-ASCII "
           f"(no trailing-initial vote), {t['bare-letter:ascii']} ASCII")
-    print(f"folding ø and ł as o and l on both sides moves {t['fold:right']} "
-          f"given-name votes to right and {t['fold:away']} away from it ("
-          + ", ".join(f"{r['label']} {r['counts']['fold:right']}/"
-                      f"{r['counts'].get('fold:away', 0)}"
-                      for r in sorted(results, key=lambda r: -r["counts"].get(
-                          "fold:right", 0))[:3] if r["counts"].get("fold:right"))
-          + ")")
     print(f"patronymic share without the contested-only names: "
-          f"{t['denominator:moved']} of {t['denominator:groups']} groups decide "
-          f"another rule; worst cell {t['denominator:worst-cell'] / 10:.1f}%")
+          f"{t['denominator:moved']} of {t['denominator:could']} groups that "
+          f"could decide a rule (holding {min_votes} or more "
+          f"names of one; {t['denominator:groups']} drawn) decide another; "
+          f"worst cell {t['denominator:worst-cell'] / 10:.1f}%")
 
 
 def _policy(rules: tuple[str, ...], order: str | None) -> Policy:
@@ -690,16 +707,34 @@ def report(result: dict[str, Any], show_words: bool) -> None:
 
 
 def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
-    """The cells that differ between two runs of the same draw."""
-    old = {p["label"]: p["cells"] for p in base["populations"]}
+    """What differs between two runs of the same draw: the cells, the
+    groups that decided the East Slavic rule, the TURKIC table's rows
+    and every parliament list's suggestion."""
+    old = {p["label"]: p for p in base["populations"]}
     out = []
     for p in head["populations"]:
+        was = old.get(p["label"], {})
         for key, row in p["cells"].items():
-            before = old.get(p["label"], {}).get(key)
+            before = was.get("cells", {}).get(key)
             if before != row:
                 out.append(f"{p['label']:14} {key:6} "
                            + " ".join(_pct(x, 1) for x in before or [])
                            + "  ->  " + " ".join(_pct(x, 1) for x in row))
+        if was.get("east_slavic") != p["east_slavic"]:
+            out.append(f"{p['label']:14} east_slavic groups "
+                       f"{was.get('east_slavic')} -> {p['east_slavic']}")
+    parl_old, parl_new = base.get("parliaments") or {}, head.get("parliaments") or {}
+    turkic_old = parl_old.get("turkic", {})
+    for dataset, row in (parl_new.get("turkic") or {}).items():
+        if turkic_old.get(dataset) != row:
+            out.append(f"TURKIC {dataset}: {turkic_old.get(dataset)} -> {row}")
+    def key(s: dict[str, Any]) -> tuple[Any, ...]:
+        return (s.get("dataset"), s.get("script"), s.get("base"))
+    sugg_old = {key(s): s for s in parl_old.get("suggestions", [])}
+    for s in parl_new.get("suggestions", []):
+        if sugg_old.get(key(s)) != s:
+            out.append(f"suggestion {' '.join(map(str, key(s)))}: "
+                       f"{sugg_old.get(key(s))} -> {s}")
     return out
 
 
@@ -742,18 +777,23 @@ def main(argv: list[str] | None = None) -> int:
     pools, notes = load_pools(args.seed)
     for note in notes:
         print(note)
-    lists = parliament_lists()
+    lists, list_notes = parliament_lists()
+    for note in list_notes:
+        print(note)
     if lists is None:
         print("opensanctions-parliaments: not fetched; uv run python "
               "tools/differential/local_corpora.py fetch opensanctions-parliaments")
     if args.checks:
+        from nameparser import _suggest
         work = [(label, pool, sizes, args.trials, args.seed, overrides)
                 for label, pool in pools.items()]
+        min_votes = int(overrides.get("_MIN_PATRONYMIC_VOTES",
+                                      _suggest._MIN_PATRONYMIC_VOTES))
         if args.jobs <= 1:
-            report_checks([check_population(job) for job in work])
+            report_checks([check_population(job) for job in work], min_votes)
         else:
             with ProcessPoolExecutor(args.jobs) as ex:
-                report_checks(list(ex.map(check_population, work)))
+                report_checks(list(ex.map(check_population, work)), min_votes)
         return 0
     if overrides:
         print("thresholds overridden: " + ", ".join(
