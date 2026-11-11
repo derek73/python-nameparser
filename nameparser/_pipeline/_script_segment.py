@@ -846,9 +846,9 @@ def _divide_glued(state: ParseState) -> ParseState:
             # Sta.Maria'; decisions/T8 (#1071))
             saint = glued_saint_cut(text, lexicon)
             if (saint is not None
-                    and state.policy.name_order[-1] is Role.FAMILY
-                    and _a_word_to_spare(texts[:k], state)
-                    and _only_post_nominals(texts[k + 1:], state)):
+                    and _a_name_before(texts[:k], state)
+                    and _only_post_nominals(texts[k + 1:], state)
+                    and _ends_with_the_family(state)):
                 state = _split(state, i, (saint,), None)
             continue
         state = _split(state, i, cuts, None)
@@ -879,15 +879,51 @@ def _only_post_nominals(texts: Sequence[str], state: ParseState) -> bool:
     sets = state.lexicon._sets
     for j, later in enumerate(texts):
         n = _normalize(later)
-        # a marker of one word or two ('née', 'z domu')
-        if n in sets.maiden_markers or (
-                j + 1 < len(texts) and f"{n} {_normalize(texts[j + 1])}"
+        # a marker of one word or two ('née', 'z domu'), with a word after
+        # it: a marker ending the text is no clause ('John Smith Sta.Ana
+        # née' reads 'née' as a name word)
+        if (n in sets.maiden_markers and j + 1 < len(texts)) or (
+                j + 2 < len(texts) and f"{n} {_normalize(texts[j + 1])}"
                 in sets.maiden_markers):
             return True
         if (n not in sets.suffix_words
                 and n.replace(".", "") not in sets.suffix_acronyms):
             return False
     return True
+
+
+def _a_name_before(texts: Sequence[str], state: ParseState) -> bool:
+    """Whether the word right before a glued saint word is a name, the
+    surname the particle cannot then be part of a title with: no title
+    of any kind (listed, gated, a modifier or a style), no connective,
+    nor titles glued at their stops; and no connective earlier in the
+    part, which joins a title phrase or names ('Mr and Mrs St.Clair',
+    'Dean of Students St.Clair', 'Associate Dean St.Clair' keep their
+    word whole, rules/T8)."""
+    if not texts:
+        return False
+    sets = state.lexicon._sets
+    for before in texts:
+        if _normalize(before) in sets.conjunctions:
+            return False
+    last = _normalize(texts[-1])
+    if (last in sets.titles or last in sets.titles_ambiguous
+            or last in sets.title_modifiers or last in sets.title_styles):
+        return False
+    return (period_joined_vocab(texts[-1], state.lexicon) != "title"
+            or bool(glued_cuts(texts[-1], state.lexicon)))
+
+
+def _ends_with_the_family(state: ParseState) -> bool:
+    """Whether the part's last name word is the family's: before a
+    family comma under every order, the comma naming the surname, and
+    otherwise under an order that ends the name with the family (a
+    suffix comma reads as no comma, `_postnominal_behind_a_whole_name`
+    asking the comma as group will decide it)."""
+    if (state.structure is Structure.FAMILY_COMMA
+            and not _postnominal_behind_a_whole_name(state)):
+        return True
+    return state.policy.name_order[-1] is Role.FAMILY
 
 
 def _a_word_to_spare(texts: Sequence[str], state: ParseState) -> bool:

@@ -60,13 +60,14 @@
   "J.Smith. Jones"            →  given="J.Smith."
   "Dr.MD Smith"               →  title="Dr.MD"
   ```
-- **A saint particle glued to a name is one name word**, read neither as a title nor as a credential by its dotted shape, since `St John` is also a given name and a middle name, which written apart it would not stay; only as the last name word of the part, behind a word that is no title, and under an order that ends the name with the family, does it divide, so P10's saint run opens the surname as written apart.
+- **A saint particle glued to a name is one name word**, read neither as a title nor as a credential by its dotted shape, since `St John` is also a given name and a middle name, which written apart it would not stay; only as the last name word of the part, right behind a name (no title of any kind, and no connective earlier in the part, which joins a title phrase), where the family ends the part (before a family comma, or under an order that ends the name with the family), does it divide, so P10's saint run opens the surname as written apart.
   ```
   "St.John Price"             →  given="St.John"
   "Jeremy St.John Middleton"  →  middle="St.John"
   "Mark Jhon Sta.Ana"         →  family="Sta.Ana"
   "Juan dela Cruz Sta.Maria"  →  middle="dela Cruz"
   "Mr. St.Clair"              →  family="St.Clair"
+  "Mr and Mrs St.Clair"       →  family="St.Clair"
   ```
 
 **Precedence:**

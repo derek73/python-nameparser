@@ -3082,6 +3082,7 @@
 {"name": "Mr Smith", "title": "Mr", "family": "Smith", "initials": "S."}
 {"name": "Mr Wing Lau", "title": "Mr", "given": "Wing", "family": "Lau", "initials": "W. L."}
 {"name": "Mr XXX", "title": "Mr", "family": "XXX", "initials": "X.", "capitalized_force": "Mr Xxx"}
+{"name": "Mr and Mrs St.Clair", "title": "Mr and Mrs", "family": "St.Clair", "initials": "S."}
 {"name": "Mr. & Mrs. John Smith", "title": "Mr. & Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Mr. Bertram Wilberforce Henry Robert Wooster Jr, MP", "title": "Mr.", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "Jr, MP", "initials": "B. W. H. R. W.", "generation": "Jr", "credentials": "MP"}
 {"name": "Mr. Bertram Wilberforce Henry Robert Wooster MP", "title": "Mr.", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "B. W. H. R. W."}
