@@ -2657,7 +2657,7 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     ("آل سعود", "family", "آل سعود"),
     ("آل سعود", "given", ""),
     # The hamza-less spelling "ال" standing alone is the same clan
-    # prefix (#1150): 17 of JRC-Names' 28 standalone ones, none the
+    # prefix (#1150): 15 of JRC-Names' 28 standalone ones, none the
     # article split from its word.
     ("سارة علي ال ناصر", "family", "ال ناصر"),
     ("سارة علي ال ناصر", "middle", "علي"),

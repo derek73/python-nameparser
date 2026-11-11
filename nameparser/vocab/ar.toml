@@ -495,7 +495,7 @@ may_be_given = false
 issue = 1150
 same_as = "آل"
 expands = "family of: \"Al Saud\", hamza-less spelling"
-note = "Standing alone it is the clan prefix, not the article (excluded as one in #269): of JRC-Names' 28 standalone spellings 17 are the clan prefix, 9 are cut off at the end of the text, 2 are the English given name Al (ال باتشينو) and none is the article split from its word, measured 2026-11-07; never given, so ال باتشينو reads family, the accepted cost (#1150). Attached to its word (الشيخ) it is no standalone token and is unaffected."
+note = "Standing alone it is the clan prefix, not the article (excluded as one in #269): of JRC-Names' 28 standalone spellings 15 are the clan prefix, 11 end the name (cut off at the end of the news text, `X بن Y ال`), 2 are the English given name Al (ال باتشينو) and none is the article split from its word, recounted 2026-11-10 (the issue's first count read 17 and 9 by a judgment the corpus does not fix); never given, so ال باتشينو reads family, the accepted cost (#1150). Attached to its word (الشيخ) it is no standalone token and is unaffected."
 
 [[word]]
 text = "و"
