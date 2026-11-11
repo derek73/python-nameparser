@@ -149,9 +149,9 @@ def _capitals(words: list[str]) -> tuple[Role, Role, Role] | None:
     capitals."""
     if not _has_lower(words) or _ends_in_short_capitals(words):
         return None
+    # a name holding a lowercase letter holds a word that is not all
+    # capitals, so the two ends never both vote by being every word
     caps = [_is_caps_word(w) for w in words]
-    if all(caps):
-        return None
     if caps[0] and not caps[-1]:
         return FAMILY_FIRST
     if caps[-1] and not caps[0]:
@@ -243,15 +243,19 @@ def _name_words(text: str, lexicon: Lexicon) -> tuple[list[str], bool]:
     out. A comma followed by post-nominals alone (`Zhang Wei, PhD`)
     leaves the part before it; any other comma name is left out, its
     comma stating its order. Quotes and brackets are stripped from each
-    word, then the titles at the head and the post-nominals at the end
-    (a listed suffix, a numeral read as the generation)."""
+    word, which is composed (NFC), then the titles at the head and the
+    post-nominals at the end (a listed suffix, a numeral read as the
+    generation)."""
     cut = next((i for i, c in enumerate(text) if c in COMMA_CHARS), None)
     if cut is not None:
         tail = [w.strip(_EDGES) for w in _COMMAS.split(text[cut + 1:])]
         if not all(_is_post_nominal(w, lexicon) for w in tail if w):
             return [], True
         text = text[:cut]
-    words = [w for w in (w.strip(_EDGES) for w in text.split()) if w]
+    # composed, so a letter written as base and mark (`oğlu` decomposed)
+    # meets the patterns written composed
+    words = [unicodedata.normalize("NFC", w)
+             for w in (w.strip(_EDGES) for w in text.split()) if w]
     if not words:
         return words, False
     one_case = is_one_case(words)

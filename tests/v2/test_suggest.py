@@ -179,7 +179,10 @@ def test_two_names_voting_one_way_decide() -> None:
 
 
 def test_an_order_needs_more_than_two_thirds_of_the_voting_names() -> None:
-    # two for, one against: two thirds, not more
+    # two for, one against: two thirds, not more. The boundary is exact
+    # in floats too: _MIN_SHARE * 3 == (2/3) * 3 == 2.0, so the strict
+    # `count <= _MIN_SHARE * total` refuses two of three as written
+    assert (2 / 3) * 3 == 2.0
     s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith"])
     assert not _order_evidence(s).decided
     # three for, one against: more than two thirds
@@ -1029,3 +1032,251 @@ def test_the_parser_passes_on_only_the_warnings_its_patch_causes() -> None:
         warnings.simplefilter("error")
         parser = s.parser
     assert parser.policy.segment_scripts == value
+
+
+# -- the review's fix wave: the decision rule's tests (C1-C6) ----------------
+
+_ES_SURNAMES = ["Sidorov", "Ivanov", "Petrov", "Smirnov", "Popov", "Volkov",
+                "Kozlov", "Lebedev", "Novikov", "Morozov", "Sokolov"]
+_ES_GIVEN = ["Ivan", "Petr", "Oleg", "Pavel", "Ilya", "Sergei", "Anton",
+             "Boris", "Denis", "Egor", "Fedor"]
+
+
+def _east_slavic(n: int) -> list[str]:
+    return [f"{_ES_SURNAMES[i]} {_ES_GIVEN[i]} Andreevich" for i in range(n)]
+
+
+def _turkic(n: int) -> list[str]:
+    return [f"{_ES_SURNAMES[i]} {_ES_GIVEN[i]} Rasim oglu" for i in range(n)]
+
+
+_OTHERS = ["Jason Priem", "Mary Smith", "Anna Jones", "Peter Brown",
+           "Sarah Wilson"]
+
+
+@pytest.mark.parametrize("make, rule", [
+    (_east_slavic, PatronymicRule.EAST_SLAVIC), (_turkic, PatronymicRule.TURKIC)])
+@pytest.mark.parametrize("carrying, others, decided", [
+    (8, 2, False),  # 8 of 10 is four in five, not more
+    (9, 2, True),   # 9 of 11 is more
+    (5, 2, False),  # five names, but 5 of 7 is under the share
+])
+def test_the_patronymic_share_alone_decides(
+        make: object, rule: PatronymicRule, carrying: int, others: int,
+        decided: bool) -> None:
+    names = make(carrying) + _OTHERS[:others]  # type: ignore[operator]
+    assert len(set(names)) == len(names)
+    s = Parser().suggest(names)
+    assert _patronymic_evidence(s).decided is decided
+    assert (s.patch.patronymic_rules == frozenset({rule})) is decided
+
+
+@pytest.mark.parametrize("contested, decided", [(1, True), (2, False)])
+def test_a_contested_name_counts_in_the_patronymic_share(
+        contested: int, decided: bool) -> None:
+    # five East Slavic names and one contested name: 5 of 6; with two,
+    # 5 of 7, which is not more than four in five
+    names = _east_slavic(5) + ["Jason Kim J.", "Mary Lee J."][:contested]
+    s = Parser().suggest(names)
+    assert _order_evidence(s).contested == contested
+    assert _patronymic_evidence(s).decided is decided
+
+
+def test_a_family_first_given_last_base_moves_to_given_first() -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    s = base.suggest(["Jason Priem", "Minjun Kim", "Mary Smith"])
+    assert s.patch.name_order == GIVEN_FIRST
+
+
+def test_a_family_first_group_on_a_family_first_base_leaves_the_patch_empty(
+        ) -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming"])
+    assert s.patch == PolicyPatch()
+    assert _order_evidence(s).decided
+
+
+def test_the_ru_pack_and_an_east_slavic_group_leave_the_patch_empty() -> None:
+    from nameparser import locales, parser_for
+    s = parser_for(locales.RU).suggest(_EAST_SLAVIC)
+    assert s.patch == PolicyPatch()
+    assert _patronymic_evidence(s).decided
+    assert _order_evidence(s).decided
+
+
+def test_the_vi_pack_and_a_vietnamese_group_leave_the_patch_empty() -> None:
+    from nameparser import locales, parser_for
+    s = parser_for(locales.VI).suggest(
+        ["Nguyen Van Thanh", "Tran Thi Huong", "Pham Minh Tuan"])
+    assert s.patch == PolicyPatch()
+    order = _order_evidence(s)
+    assert order.decided and order.value == FAMILY_FIRST_GIVEN_LAST
+
+
+def test_the_base_lexicon_is_the_one_consulted() -> None:
+    lexicon = Lexicon.default().add("zzp", kind="article")
+    assert Signal.PARTICLE not in name_votes("zzp Berg Jan", L)
+    assert name_votes("zzp Berg Jan", lexicon)[Signal.PARTICLE] == FAMILY_FIRST
+    s = Parser(lexicon=lexicon).suggest(["zzp Berg Jan", "zzp Holt Anna"])
+    assert (Signal.PARTICLE, FAMILY_FIRST, 2) in _order_evidence(s).by_signal
+    s = Parser().suggest(["zzp Berg Jan", "zzp Holt Anna"])
+    assert all(row[0] is not Signal.PARTICLE
+               for row in _order_evidence(s).by_signal)
+
+
+@pytest.fixture
+def _invented_tables(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the decision rule, read with tables of invented words, so no
+    # shipped table's contents decides a test
+    from nameparser import _suggest
+    monkeypatch.setattr(_suggest, "ROMANIZED_SURNAMES",
+                        frozenset({"zzsur", "zzfam"}))
+    monkeypatch.setattr(_suggest, "COMMON_GIVEN_NAMES",
+                        frozenset({"zzgiv", "zzfirst"}))
+
+
+@pytest.mark.usefixtures("_invented_tables")
+@pytest.mark.parametrize("text, votes", [
+    ("Zzsur Plugh", {Signal.SURNAME: FAMILY_FIRST}),
+    ("Plugh Zzsur", {Signal.SURNAME: GIVEN_FIRST}),
+    ("Zzgiv Plugh", {Signal.GIVEN_NAME: GIVEN_FIRST}),
+    ("Plugh Zzgiv", {Signal.GIVEN_NAME: FAMILY_FIRST}),
+    ("Zzsur Zzfam", {}),
+    ("Zzgiv Zzfirst", {}),
+    ("Zzsur Zzgiv", {Signal.SURNAME: FAMILY_FIRST,
+                     Signal.GIVEN_NAME: FAMILY_FIRST}),
+    ("Zzgiv Zzsur", {Signal.SURNAME: GIVEN_FIRST,
+                     Signal.GIVEN_NAME: GIVEN_FIRST}),
+    ("Zzsur Z", {Signal.SURNAME: FAMILY_FIRST,
+                 Signal.TRAILING_INITIAL: FAMILY_FIRST}),
+    # a word the tables list is never read past as a title or suffix
+    ("Kim Minjun", {}),
+])
+def test_the_tables_decide_by_one_end_and_not_the_other(
+        text: str, votes: dict[Signal, object]) -> None:
+    assert name_votes(text, L) == votes
+
+
+@pytest.mark.usefixtures("_invented_tables")
+def test_the_group_rule_reads_invented_tables() -> None:
+    s = Parser().suggest(["Zzsur Plugh", "Zzfam Xyzzy", "Zzsur Frotz"])
+    assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+    s = Parser().suggest(["Zzsur Plugh", "Zzfam Xyzzy", "Frotz Zzgiv",
+                          "Plugh Zzgiv", "Xyzzy Zzfam"])
+    # four for family-first, one against: more than two thirds
+    assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+    assert [n.text for n in s.disagreeing()] == ["Xyzzy Zzfam"]
+
+
+@pytest.mark.parametrize("text, signal, value", [
+    ("René Dubois", Signal.GIVEN_NAME, GIVEN_FIRST),
+    ("Máire ní Bhriain", Signal.PARTICLE, GIVEN_FIRST),
+    ("Mehmet DEMİR", Signal.CAPITALS, GIVEN_FIRST),
+    ("Mamedov Ali Huseyn oğlu", Signal.PATRONYMIC, PatronymicRule.TURKIC),
+    ("Ali Huseyn oğlu Mamedov", Signal.PATRONYMIC, PatronymicRule.TURKIC),
+    ("Sa'dullayev Alisher Zafar o‘g‘li", Signal.PATRONYMIC,
+     PatronymicRule.TURKIC),
+    ("Hasanova Afət Əbil qızı", Signal.PATRONYMIC, PatronymicRule.TURKIC),
+    ("Иванов Иван Сергеевич", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
+    ("Nguyễn Minh", Signal.SURNAME, FAMILY_FIRST),
+])
+def test_a_decomposed_name_votes_as_its_composed_twin(
+        text: str, signal: Signal, value: object) -> None:
+    composed = unicodedata.normalize("NFC", text)
+    decomposed = unicodedata.normalize("NFD", text)
+    assert name_votes(composed, L)[signal] == value
+    assert name_votes(decomposed, L) == name_votes(composed, L)
+
+
+#: The recorded negative control: each threshold relaxed, the answer the
+#: same group gets, beside the answer it gets guarded. A guard whose
+#: relaxed answer equals its guarded one guards nothing here.
+#: (threshold, relaxed value, group, base order, guarded, relaxed), the
+#: answers as (name_order patch, patronymic_rules patch).
+_UNGUARDED_EFFECT: list[tuple[str, object, list[str],
+                              tuple[Role, Role, Role],
+                              tuple[object, object], tuple[object, object]]] = [
+    ("_MIN_VOTES", 1, ["Priem Jason", "Xyzzy Plugh"], GIVEN_FIRST,
+     (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
+    ("_MIN_SHARE", 0.5, ["Priem Jason", "Kim Minjun", "Jason Smith"],
+     GIVEN_FIRST, (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
+    ("_MIN_PATRONYMIC_SHARE", 0.5, _east_slavic(5) + _OTHERS[:2],
+     GIVEN_FIRST, (UNSET, UNSET),
+     (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}))),
+    ("_MIN_PATRONYMIC_VOTES", 2, _east_slavic(2), FAMILY_FIRST,
+     (UNSET, UNSET),
+     (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}))),
+]
+
+
+@pytest.mark.parametrize(
+    "threshold, relaxed, names, base_order, guarded, unguarded",
+    _UNGUARDED_EFFECT, ids=[row[0] for row in _UNGUARDED_EFFECT])
+def test_each_threshold_changes_its_recorded_answer(
+        monkeypatch: pytest.MonkeyPatch, threshold: str, relaxed: object,
+        names: list[str], base_order: tuple[Role, Role, Role],
+        guarded: tuple[object, object],
+        unguarded: tuple[object, object]) -> None:
+    from nameparser import _suggest
+    base = Parser(policy=Policy(name_order=base_order))
+
+    def answer() -> tuple[object, object]:
+        patch = base.suggest(names).patch
+        return patch.name_order, patch.patronymic_rules
+
+    assert answer() == guarded
+    monkeypatch.setattr(_suggest, threshold, relaxed)
+    assert answer() == unguarded
+
+
+def test_every_threshold_has_a_recorded_control() -> None:
+    from nameparser import _suggest
+    thresholds = {name for name in vars(_suggest)
+                  if name.startswith("_MIN_")}
+    assert {row[0] for row in _UNGUARDED_EFFECT} == thresholds
+
+
+# -- the reprs, the report's notes and disagreement (C8) ----------------------
+
+
+def test_the_reprs_are_bounded_and_name_the_votes() -> None:
+    evidence = NameEvidence("Kim Minjun", {Signal.SURNAME: FAMILY_FIRST,
+                                           Signal.PATRONYMIC: PatronymicRule.TURKIC})
+    assert repr(evidence) == (
+        "NameEvidence('Kim Minjun', surname=FAMILY_FIRST, patronymic=turkic)")
+    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith",
+                          "Wang Xiaoming"])
+    assert repr(s) == ("Suggestion(PolicyPatch(name_order=FAMILY_FIRST), "
+                       "names=4, disagreeing=1)")
+    assert repr(_order_evidence(s)) == (
+        "SettingEvidence(name_order=FAMILY_FIRST, decided, 3 for, "
+        "1 against, 0 contested, 0 no evidence)")
+
+
+def test_the_report_writes_a_setting_value_of_any_kind() -> None:
+    from nameparser import Script
+    value = Parser().policy.segment_scripts | {Script.HAN}
+    s = Suggestion(Parser(), PolicyPatch(
+        segment_scripts=frozenset({Script.HAN})), (SettingEvidence(
+            "segment_scripts", value, True, 0, 0, 0, 0, (),  # type: ignore[arg-type]
+            note="set by hand"),), ())
+    report = str(s)
+    assert "<Script.HAN: 'han'>" in report
+    assert "      set by hand" in report
+
+
+def test_the_report_writes_the_order_note() -> None:
+    report = str(Parser().suggest(_EAST_SLAVIC))
+    assert "it needs a given-first order" in report
+
+
+def test_a_name_carrying_another_rule_disagrees() -> None:
+    s = Parser().suggest([*_EAST_SLAVIC, "Mamedov Ali Huseyn oglu"])
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
+    assert [n.text for n in s.disagreeing()] == ["Mamedov Ali Huseyn oglu"]
+
+
+def test_with_only_a_rule_decided_a_name_of_that_rule_agrees() -> None:
+    s = Parser().suggest(_TURKIC)
+    assert not _order_evidence(s).decided
+    assert s.disagreeing() == ()
