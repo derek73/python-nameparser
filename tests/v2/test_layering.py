@@ -709,7 +709,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: evidence past its titles, 186 -> 187; #317's front peel, the glued
 #: titles its gate and the peel read and the titles a site steps past,
 #: 187 -> 190, and its review dropping the peel's own titles test,
-#: 190 -> 189);
+#: 190 -> 188, its `sets =` binding and the titles read through it);
 #: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -722,7 +722,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 189, "tools": 20}
+_UNGUARDED_READS = {"library": 188, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
