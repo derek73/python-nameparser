@@ -161,6 +161,7 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     ("山田\u3000太郎", None, "山田 太郎"),
     ("John\t \tSmith", None, "John Smith"),
     ("威廉·莎士比亚", None, "威廉·莎士比亚"),
+    ("台邦．撒沙勒", None, "台邦．撒沙勒"),
     ("ジョン ・ スミス", None, "ジョン・スミス"),
     ("ｼﾞｮﾝ･ｽﾐｽ", None, "ｼﾞｮﾝ･ｽﾐｽ"),
     ("አበበ፡ከበደ፡ተሰማ", None, "አበበ፡ከበደ፡ተሰማ"),

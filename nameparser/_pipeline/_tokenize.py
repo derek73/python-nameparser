@@ -5,7 +5,8 @@ tokenize with a pre-set role).
 Produces: tokens (span-sorted WorkTokens; text always == original
 slice), comma_offsets (segmentation points of the main stream; a comma
 there is never a token, one inside an extracted region is word text),
-interpunct_offsets (间隔号 transcription markers, #298; never tokens).
+interpunct_offsets (间隔号 and fullwidth-stop transcription markers, #298,
+#1312; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
 Implements rules T1, T2, T3 and T6 of docs/design/rules/, cited at
@@ -164,7 +165,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
                 and _mongolian_letter(text[i + 1])):
             is_separator = False
         if ch in _TRANSCRIPTION_DOTS:
-            # Region-local flanks: a B7 at a region edge stays token
+            # Region-local flanks: a dot at a region edge stays token
             # text, and the bound also stops a custom delimiter's
             # classified edge character from acting as a flank across
             # a mask seam. The scan reads raw characters, not the NFC

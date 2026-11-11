@@ -391,7 +391,9 @@ Chinese also has a transcription convention, and it is written in the
 punctuation: a foreign name transcribed into Han characters keeps its
 source order and divides its parts with the 间隔号, the interpunct
 ``·`` (U+00B7) — 威廉·莎士比亚 is William Shakespeare, given name
-first. The dot itself is the marker, so nameparser reads U+00B7 as a
+first; Taiwan's writers sometimes type the fullwidth full stop ``．``
+(U+FF0E) there, which reads the same. The dot itself is the marker, so
+nameparser reads U+00B7 as a
 token separator when it sits between classified-script characters
 (each side judged on its own — a hangul character beside a Han one
 qualifies), and a dot anywhere in the name reads the whole name as a

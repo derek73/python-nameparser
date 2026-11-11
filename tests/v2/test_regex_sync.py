@@ -270,7 +270,7 @@ def test_render_writes_back_every_comma_and_divider_tokenize_reads() -> None:
 
     assert set(_render._COMMA_WRITTEN) == set(COMMA_CHARS)
     assert _render._DOT_SEPARATORS == (
-        _tokenize._NAME_DOT_SEPARATORS | {_tokenize._INTERPUNCT})
+        _tokenize._NAME_DOT_SEPARATORS | _tokenize._TRANSCRIPTION_DOTS)
 
 
 def test_every_declared_pattern_still_exists() -> None:

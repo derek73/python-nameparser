@@ -781,7 +781,9 @@ EAST_ASIAN_RANGES = ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                      (0xF900, 0xFAFF), (0x20000, 0x323AF), (0x1100, 0x11FF),
                      (0xA960, 0xA97F), (0xAC00, 0xD7A3), (0xD7B0, 0xD7FF),
                      (0x3040, 0x309F), (0x30A0, 0x30FF), (0xFF65, 0xFF9F))
-INTERPUNCT = "\u00b7"
+#: The transcription dots: the interpunct and the fullwidth full stop
+#: (rules/T3, #1312), each dividing a name between two East Asian characters.
+TRANSCRIPTION_DOTS = frozenset({"\u00b7", "\uff0e"})
 #: The format characters a word may hold: the zero-width non-joiner and
 #: joiner are spelling in Persian and the Indic scripts, and a token
 #: keeps them.
@@ -809,11 +811,11 @@ def _check_tokenizable(name: str, text: str) -> None:
             raise VocabError(
                 f"{name}: {text!r} holds U+{ord(ch):04X}, which the tokenizer "
                 f"strips by default, so no token can equal it")
-        if (ch == INTERPUNCT and 0 < i < len(text) - 1
+        if (ch in TRANSCRIPTION_DOTS and 0 < i < len(text) - 1
                 and _in(text[i - 1], EAST_ASIAN_RANGES)
                 and _in(text[i + 1], EAST_ASIAN_RANGES)):
             raise VocabError(
-                f"{name}: {text!r} holds an interpunct between two East Asian "
+                f"{name}: {text!r} holds an interpunct or fullwidth full stop between two East Asian "
                 f"characters, where the tokenizer divides the name (rules/T3), "
                 f"so no token can equal it")
         category = unicodedata.category(ch)
