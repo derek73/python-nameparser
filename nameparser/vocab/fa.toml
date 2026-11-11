@@ -1,8 +1,14 @@
 schema = 1
 
 [[word]]
+text = "آقا"
+[word.excluded.salutation]
+reason = "opens real Persian family names: 9 of the 315 Assembly of Experts names begin with one of حاج, حاجی, شیخ and آقا, and rules/H6 peels it off before the family comma (`شیخ احمدی، حسن` would read title 'شیخ'); measured 2026-11-08, the same cost that keeps bare شيخ out of ar.toml (#269)"
+issue = 1151
+
+[[word]]
 text = "آقای"
-salutation = { gender = "m", expands = "Mr.", issue = 1151, note = "written 20 times in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08); a plain title, addressing the family name as Dr. Smith does, where ar.toml's Arabic titles address the given name" }
+salutation = { gender = "m", expands = "Mr.", issue = 1151, note = "written 20 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08); a plain title, addressing the family name as Dr. Smith does, where ar.toml's Arabic titles address the given name" }
 
 [[word]]
 text = "خانم"
@@ -10,15 +16,21 @@ salutation = { gender = "f", expands = "Mrs., Ms.", issue = 1151, note = "a titl
 
 [[word]]
 text = "جناب"
-style = { expands = "a style of address, 'Sir'", issue = 1151, note = "written 3 times in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+style = { expands = "a style of address, 'Sir'", issue = 1151, note = "written 3 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
 
 [[word]]
 text = "حضرت"
-style = { expands = "a style of address, 'His Holiness'", issue = 1151, note = "written 2 times in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+style = { expands = "a style of address, 'His Holiness'", issue = 1151, note = "written 2 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+
+[[word]]
+text = "شیخ"
+[word.excluded.style]
+reason = "opens real Persian family names: 9 of the 315 Assembly of Experts names begin with one of حاج, حاجی, شیخ and آقا, and rules/H6 peels it off before the family comma (`شیخ احمدی، حسن` would read title 'شیخ'); measured 2026-11-08, the same cost that keeps bare شيخ out of ar.toml (#269)"
+issue = 1151
 
 [[word]]
 text = "دکتر"
-academic = { expands = "doctor", issue = 1151, note = "written 27 times in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+academic = { expands = "doctor", issue = 1151, note = "written 27 times in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
 
 [[word]]
 text = "مهندس"
@@ -42,19 +54,31 @@ religious = { expands = "a Sufi master" }
 
 [[word]]
 text = "آیت‌الله"
-religious = { expands = "Ayatollah", issue = 1151, note = "written 22 times with the ZWNJ in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08); the spaced spelling is a two-word phrase, left to H9 (#1151)" }
+religious = { expands = "Ayatollah", issue = 1151, note = "written 22 times with the ZWNJ in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08); the spaced spelling is a two-word phrase, left to H9 (#1151)" }
+
+[[word]]
+text = "حاج"
+[word.excluded.religious]
+reason = "opens real Persian family names: 9 of the 315 Assembly of Experts names begin with one of حاج, حاجی, شیخ and آقا, and rules/H6 peels it off before the family comma (`شیخ احمدی، حسن` would read title 'شیخ'); measured 2026-11-08, the same cost that keeps bare شيخ out of ar.toml (#269)"
+issue = 1151
+
+[[word]]
+text = "حاجی"
+[word.excluded.religious]
+reason = "opens real Persian family names: 9 of the 315 Assembly of Experts names begin with one of حاج, حاجی, شیخ and آقا, and rules/H6 peels it off before the family comma (`شیخ احمدی، حسن` would read title 'شیخ'); measured 2026-11-08, the same cost that keeps bare شيخ out of ar.toml (#269)"
+issue = 1151
 
 [[word]]
 text = "حجت‌الاسلام"
-religious = { expands = "Hojatoleslam", issue = 1151, note = "written once with the ZWNJ and 4 times spaced in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+religious = { expands = "Hojatoleslam", issue = 1151, note = "written once with the ZWNJ and 4 times spaced in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
 
 [[word]]
 text = "حجةالاسلام"
-religious = { same_as = "حجت‌الاسلام", issue = 1151, note = "written twice in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+religious = { same_as = "حجت‌الاسلام", issue = 1151, note = "written twice in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
 
 [[word]]
 text = "سرلشکر"
-military = { expands = "Major General", issue = 1151, note = "written once in the the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
+military = { expands = "Major General", issue = 1151, note = "written once in the Guardian Council's member pages and the Expediency Council's appointment decrees (82 titled names, 2026-11-08)" }
 
 [[word]]
 text = "جونیور"
