@@ -367,7 +367,12 @@ def has_patronymic_ending(text: str) -> bool:
 def is_patronymic_marker(text: str) -> bool:
     """Whether `text` is a standalone Turkic patronymic marker ("oglu",
     "кызы"): rules/O2's test and, under `PatronymicRule.TURKIC`,
-    rules/R9's."""
+    rules/R9's. Asked of the word NFC-composed (#1316): `oğlu` written
+    with a combining breve is the same marker, the vocabulary path's fold
+    applied to a shape test; the fold is inline behind `isascii()` so a
+    plain word costs no frame."""
+    if not text.isascii():
+        text = unicodedata.normalize("NFC", text)
     return bool(_TURKIC.match(text) or _TURKIC_CYR.match(text))
 
 

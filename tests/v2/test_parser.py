@@ -2448,6 +2448,44 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
             == _composed_reading(parser, composed))
 
 
+_TURKIC_NFD_ROWS = [
+    "Mamedov Ali Huseyn oğlu",
+    "Mamedov Ali Huseyn ğ",  # not a marker: parity control below
+    "Mamedov Ali Aygün qızı",
+    "Mamedov Ali Huseyn OĞLU",
+    "Мамедов Али Гусейн ўғли",
+    "Oğlu Ali Huseyn Mamedov",
+    "Mamedov, Ali Huseyn oğlu",
+]
+
+
+@pytest.mark.parametrize("text", _TURKIC_NFD_ROWS)
+def test_a_decomposed_turkic_marker_reads_as_its_composed_twin(
+        text: str) -> None:
+    """#1316: `_vocab.is_patronymic_marker` matched `oğlu` as written,
+    so a ğ typed as g + U+0306 was no marker and `Mamedov Ali Huseyn
+    oğlu` read given 'Mamedov', family 'oğlu' under the Turkic rule (the
+    group suggester already folded it). The Cyrillic `ўғли` decomposes
+    too. Compared composed, as the abbreviation twin test above."""
+    composed = unicodedata.normalize("NFC", text)
+    decomposed = unicodedata.normalize("NFD", text)
+    parser = Parser(policy=Policy(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    assert (_composed_reading(parser, decomposed)
+            == _composed_reading(parser, composed))
+
+
+def test_a_decomposed_turkic_marker_is_still_a_patronymic() -> None:
+    """The twin comparison passes if both encodings break alike; this
+    pins the reading (#1316)."""
+    name = Parser(policy=Policy(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
+        unicodedata.normalize("NFD", "Mamedov Ali Huseyn oğlu"))
+    assert name.given == "Ali"
+    assert name.family == "Mamedov"
+    assert unicodedata.normalize("NFC", name.patronymic) == "Huseyn oğlu"
+
+
 def test_a_decomposed_conjunction_reports_as_its_composed_twin() -> None:
     """#665: the one-case report on a letter that is both a connective
     and an initial (rules/P8) counted code points, so it is reached
