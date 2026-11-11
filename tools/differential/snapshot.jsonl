@@ -13,6 +13,8 @@
 {"name": "'Smitty' Jones Jr.", "family": "Jones", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
 {"name": "'Smitty' Pope", "title": "Pope", "nickname": "Smitty"}
 {"name": "'Smitty' Pope Jr.", "family": "Pope", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}
+{"name": "'Smitty' Pope Jr. PhD", "title": "Pope Jr.", "family": "PhD", "nickname": "Smitty", "initials": "P."}
+{"name": "'Smitty' Pope V", "title": "Pope", "given": "V", "nickname": "Smitty", "initials": "V."}
 {"name": "'Smitty' Pope, Jr.", "family": "Pope", "suffix": "Jr.", "nickname": "Smitty", "initials": "P.", "generation": "Jr."}
 {"name": "'Smitty' Sir John", "title": "Sir", "given": "John", "nickname": "Smitty", "initials": "J."}
 {"name": "'Smitty' Sir Pope Jr.", "title": "Sir", "given": "Pope", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr."}

@@ -13049,17 +13049,20 @@ CASES: tuple[Case, ...] = (
     Case("nickname_title_particle_and_a_suffix_keep_the_given_name",
          "'Smitty' St Jr.",
          {"given": "St", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(#489)",
          ambiguities=("title-or-name",),
          notes="#1169 boundary: a title-particle keeps the reading it "
                "has, as a particle does (rules/N3's Except)"),
     Case("nickname_rank_particle_and_a_suffix_keep_the_given_name",
          "'Smitty' Graf Jr.",
          {"given": "Graf", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(#489)",
          ambiguities=("title-or-name",),
          notes="#1169 boundary: as 'St'"),
     Case("nickname_brahmic_initial_and_a_suffix_keep_the_given_name",
          "'Smitty' \u09a1. Jr.",
          {"given": "\u09a1.", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(suffix-routing)",
          ambiguities=("title-or-name",),
          notes="#1169 boundary: an initial keeps the reading it has "
                "(rules/N3's Except)"),
@@ -13067,6 +13070,7 @@ CASES: tuple[Case, ...] = (
          "'Smitty' John of Bishop Jr.",
          {"given": "John of Bishop", "suffix": "Jr.",
           "nickname": "Smitty"},
+         classification="fix(suffix-routing)",
          ambiguities=("title-or-name",),
          notes="#1169 boundary: a unit of three words is no lone word, "
                "H7's doubt"),
@@ -13083,9 +13087,23 @@ CASES: tuple[Case, ...] = (
          notes="rules/N3's Accepted: the clause still carries the "
                "nickname role at assign, as for 'Jones (PhD) Jr.'; "
                "3.0.1 read given 'Pope'"),
+    Case("nickname_title_word_with_a_suffix_run_reads_the_title_run",
+         "'Smitty' Pope Jr. PhD",
+         {"title": "Pope Jr.", "family": "PhD", "nickname": "Smitty"},
+         classification="fix(#410)",
+         notes="#1169 boundary, rules/N3's Accepted: the title peel takes "
+               "'Pope Jr.' and leaves no name word for N3, H1 reading the "
+               "word left as the family; unchanged since 2.2.0, 1.4.0 and "
+               "2.0.0 reading given 'PhD'"),
+    Case("nickname_title_word_and_a_numeral_read_the_numeral_as_given",
+         "'Smitty' Pope V",
+         {"title": "Pope", "given": "V", "nickname": "Smitty"},
+         notes="#1169 boundary, rules/N3's Accepted: the title peel takes "
+               "'Pope' and the numeral is the name, read by position"),
     Case("nickname_title_word_and_a_comma_suffix_report_nothing",
          "'Smitty' Pope, Jr.",
          {"family": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(#296)",
          notes="#1169 boundary: behind a comma the part is a suffix "
                "comma's, and H4 is never asked, at the base too"),
     Case("nickname_lone_title_word_and_a_suffix", "(Bob) Sir Jr.",
@@ -13098,6 +13116,7 @@ CASES: tuple[Case, ...] = (
          "'Smitty' Sir Pope Jr.",
          {"title": "Sir", "given": "Pope", "suffix": "Jr.",
           "nickname": "Smitty"},
+         classification="fix(#489)",
          ambiguities=("title-or-name",),
          notes="#1169 boundary: a given-name title in front keeps the "
                "word given, as N3's Accepted has it for 'Smitty' Sir "

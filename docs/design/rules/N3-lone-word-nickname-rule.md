@@ -2,7 +2,7 @@
 
 **When:** a name is written as a nickname beside its name words, as in "'Smitty' Jones".
 
-**Then:** a name that is only a nickname and one name word reads that word as the family name, whatever suffix stands beside them.
+**Then:** a name that is only a nickname and one name word reads that word as the family name, whatever suffix stands beside them, where the title peel leaves the word standing as a name word.
 
 - **With two or more name words the ordinary positional reading applies.**
   ```
@@ -29,11 +29,10 @@
 
 **Precedence:**
 
-- **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, a title of address that is no surname too, and where the suffix is written without a comma H4 keeps its doubt, whether the word is a title at all, and its report; a title-particle keeps the reading it has, as a particle does.
+- **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, and where the suffix is written without a comma H4 keeps its doubt, whether the word is a title at all, and its report; a title-particle keeps the reading it has, as a particle does.
   ```
   "'Smitty' Pope Jr."         →  family="Pope"
   "'Smitty' Pope Jr."         →  ambiguities=("title-or-name",)
-  "'Smitty' Dr. Jr."          →  family="Dr."
   "'Smitty' Pope, Jr."        →  ambiguities=()
   "'Smitty' St Jr."           →  given="St"  · boundary
   "'Smitty' Sir Pope Jr."     →  given="Pope"  · boundary
@@ -61,6 +60,16 @@
   ```
   "'Smitty' Dr. Jones"        →  family="Jones"
   "'Smitty' Sir John"         →  given="John"
+  ```
+- A title of address that no one bears as a surname, left as the one name word beside a nickname and a suffix, is placed as the family name like any other word, and the `title-or-name` report says the word may be no name: nobody writes a nickname, a bare title of address and a suffix as a whole name, so no rule tells a title of address from a surname here.
+  ```
+  "'Smitty' Dr. Jr."          →  family="Dr."
+  "'Smitty' Dr. Jr."          →  ambiguities=("title-or-name",)
+  ```
+- A title word that the title peel takes with the word behind it leaves no name word for this rule to read: a suffix the trailing run joins to the title reads in the title ('Pope Jr.'), and a one-letter numeral behind the title word is the name, read by position.
+  ```
+  "'Smitty' Pope Jr. PhD"     →  title="Pope Jr."
+  "'Smitty' Pope V"           →  given="V"
   ```
 - A title word is read three ways by three rules: alone beside a nickname it is the title (H4's single title word, the peel taking the whole string), with a suffix and no nickname the given name (H4's convention), and with both the family name, by this rule.
   ```
