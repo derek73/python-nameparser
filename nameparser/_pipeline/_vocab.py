@@ -912,19 +912,32 @@ _GLUED_RUN = re.compile(r"(?:" + _LETTER + r"\.){2,}(?=[^\W\d_])")
 #: a letter (its marks with it, so NFD text passes), a full stop and a
 #: letter: the C-level test `_script_segment` asks before `glued_cuts`
 GLUED_SHAPE = re.compile(_LETTER + r"\.[^\W\d_]")
+# the Thai vowel and tone marks (Mn), which `_LETTER` does not count:
+# nearly every Thai name writes one ('สุดา', 'ใจดี'), so without them the
+# name after a Thai title's stop is never found (#1166)
+_THAI_MARKS = "[\u0e31\u0e34-\u0e3a\u0e47-\u0e4e]"
 # one word of letters, apostrophes and hyphens: what can follow a chunk
 # and be a name
-_GLUED_WORD = re.compile(r"(?:" + _LETTER + r")(?:" + _LETTER + r"|['’\-])*")
+_GLUED_WORD = re.compile(
+    r"(?:" + _LETTER + r")(?:" + _LETTER + "|" + _THAI_MARKS + r"|['’\-])*")
+
+
+def _is_cased_letter(chunk: str) -> bool:
+    """One letter in a script with case: the initial T8 reads alone
+    (rules/T8), where a letter in a script without case is no initial."""
+    return len(chunk) == 1 and chunk.upper() != chunk.lower()
 
 
 def _reads_alone(chunk: str, lexicon: Lexicon) -> bool:
     """A chunk the parser reads on its own before a full stop: one
     letter in a script with case, a transliteration digraph rules/H2
     names, a listed title that is no saint particle, or a listed given
-    name written short (decisions/period-joined-words, #1255)."""
+    name written short (decisions/period-joined-words, #1255). A letter
+    in a script without case is read alone only as a listed title (Thai
+    'ศ.', #1166)."""
     chunk = unicodedata.normalize("NFC", chunk)
-    if len(chunk) == 1:
-        return chunk.upper() != chunk.lower()
+    if _is_cased_letter(chunk):
+        return True
     n = _normalize(chunk)
     sets = lexicon._sets
     if n in _DIGRAPH_INITIALS or n in sets.given_name_abbreviations:
@@ -980,7 +993,8 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
             if m is None or not _reads_alone(m.group(1), lexicon):
                 return ()
             end = m.end()
-            letter = len(unicodedata.normalize("NFC", m.group(1))) == 1
+            letter = _is_cased_letter(
+                unicodedata.normalize("NFC", m.group(1)))
             if not letter and is_title_chunk(m.group(1), lexicon):
                 titled = titled or not cuts
                 nxt = _GLUED_CHUNK.match(text, end)

@@ -1378,7 +1378,7 @@ def test_revise_respaces_a_glued_value() -> None:
 _GLUED_WORDS = ("Dr.John", "J.Smith", "J.R.Smith", "Yu.A.Chibrikova",
                 "Ц.Сандаг-Очир", "Ma.Refugio", "Lt.Gov.John", "Mr.Smith",
                 "Dr.J.", "M.Hassan", "Dr.McDonald", "Gen.Ademola",
-                "B.TURAN")
+                "B.TURAN", "ดร.สุดา", "รศ.ดร.สุดา", "ศ.ดร.สุดา")
 _HEADS = ("{w}", "{w} Jones", "Ali {w}", "Ali {w} Jones", "Ali {w} Jr.",
           "{w}, Ali", "Ali {w}, PhD", "Ali {w}, Jr., MD", "{w} (Bo) Jones",
           "Dr. {w}", "Ali de {w}", "Ali {w} III")
