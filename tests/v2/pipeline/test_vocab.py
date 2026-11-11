@@ -1536,6 +1536,10 @@ def _pieces_of(text: str) -> list[str]:
     ("พ.ต.อนุชา", ["พ.ต.", "อนุชา"]),
     # titles glued to each other divide at each stop, a dotted one too
     ("ดร.พ.ต.อ.", ["ดร.", "พ.ต.อ."]),
+    ("ดร.พ.อ.หญิง", ["ดร.", "พ.อ.หญิง"]),
+    # a run of single letters running past a rank is T7's run before
+    # the name, not the rank and an initial
+    ("พ.ต.ส.สมชาย", ["พ.ต.ส.", "สมชาย"]),
 ])
 def test_a_glued_word_divides_where_a_chunk_read_alone_meets_a_name(
         text: str, pieces: list[str]) -> None:
