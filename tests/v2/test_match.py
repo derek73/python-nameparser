@@ -3,6 +3,7 @@ and the grouping keys, with the symmetry and key-guarantee properties
 held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
+import functools
 import itertools
 import pickle
 import unicodedata
@@ -10,7 +11,17 @@ import unicodedata
 import pytest
 
 import nameparser
-from nameparser import Lexicon, ParsedName, Parser, Role, parse
+from nameparser import (
+    Lexicon,
+    FAMILY_FIRST,
+    ParsedName,
+    Parser,
+    Policy,
+    Role,
+    locales,
+    parse,
+    parser_for,
+)
 from nameparser._match import (
     DEFAULT_ACCEPT,
     CrossRoleMatch,
@@ -223,6 +234,33 @@ def test_matching_repr_shows_only_the_deviation() -> None:
         Parser(), (DEFAULT_ACCEPT - {Outcome.NOTED}) | {Outcome.ACROSS_ROLES},
         other_readings=True,
     )) == "Matching(default + across-roles, other-readings - noted)"
+
+
+def test_matching_repr_shows_a_parser_that_is_not_the_default() -> None:
+    # by the parser's own bounded repr, and only where it deviates
+    # (#1264), so the default matcher's repr is unchanged
+    assert repr(parser_for(locales.ES).matching()) == (
+        f"Matching(default, parser={parser_for(locales.ES)!r})")
+    two = Parser(policy=Policy(two_family_names=True))
+    assert repr(two.matching(accept=two.matching().accept | {"across-roles"})) == (
+        "Matching(default + across-roles, "
+        "parser=Parser(Lexicon(default), Policy(two_family_names=True)))")
+    assert repr(Parser(lexicon=Lexicon.default()).matching()) == (
+        "Matching(default)")
+
+
+def test_matching_repr_never_raises_on_a_parser_missing_a_field() -> None:
+    # the constructor asks only for a callable `parse`; such an object
+    # is shown by its class name, its own repr being unbounded
+    class Bare:
+        def parse(self, text: str) -> ParsedName:
+            return parse(text)
+
+        def __repr__(self) -> str:
+            return "Bare()"
+
+    assert repr(Matching(Bare())) == (  # type: ignore[arg-type]
+        "Matching(default, parser=Bare)")
 
 
 def test_other_readings_is_off_by_default_and_passed_through() -> None:
@@ -507,46 +545,14 @@ def test_consistent_names_always_share_a_key(
     """The guarantee, over every ordered pair of NAMES, under the default,
     each opt-in added to it alone and all of them together: a consistent
     pair shares a key, so grouping by key never separates names `check`
-    accepts. Negative controls, each the first pair to fail, re-taken
-    2026-11-08 after the familiar forms' names ("Max Smith" through
-    "Maria Ivanova") joined NAMES, familiar-form joined the settings and
-    a familiar-form pair came to be read and keyed either way round,
-    each mutation applied in-process, every pair unmoved since the
-    period rule's names ("Jo. Garcia" through "Ana Mà. Cruz" written
-    decomposed) and before them "Ahmed Al", "Ahmed Al-Saud" and "Ahmed
-    Saud" joined it, and the symmetry test passing under every one:
-    with only the joined form of a hyphenated word keyed, the default,
-    familiar-form, given-one-side, hyphenated-part, other-reading and
-    across-roles fail on ("Ann Smith-Jones", "Ann Smith"), and
-    family-initial and all-opt-ins on ("Ahmed Al-Saud", "Ahmed Saud");
-    with part-of-other keeping a hyphen half that is a particle while
-    the keys drop it, the default, familiar-form, given-one-side,
-    hyphenated-part, other-reading and across-roles fail on ("Ahmed
-    Al", "Ahmed Al-Saud"), family-initial and all-opt-ins passing it
-    through the family-initial key; with the familiar forms' longer
-    names left out of the given letters, familiar-form fails on ("Wm.
-    Smith", "Bill Smith"), a listed spelling of the longer name, and
-    all-opt-ins passes it through given-one-side's bare family keys;
-    with the family-initial key
-    removed, family-initial fails on ("J. Smith", "Jane S") and
-    all-opt-ins on ("John A. Smith", "Mr. S"); with the bare family keys
-    removed, given-one-side and all-opt-ins fail on ("John A. Smith",
-    "Mr. Smith"); with the alternative readings' keys removed,
-    other-reading fails on ("Mr. Smith", "Della Smith") and all-opt-ins
-    on ("Cristiane S", "Suharto"); with the middle words' initials
-    removed, across-roles fails on ("Wm. Smith", "John Wm. Smith"), and
-    with the nickname's on ('William "Bill" Clinton', "Bill Clinton"),
-    the all-opt-ins setting passing both through given-one-side's bare
-    family keys; with the maiden name's words removed, across-roles and
-    all-opt-ins both failed on ("J. Smith", "Jane Doe (née Smith)")
-    until #1261 keyed the maiden name whole, joined, which covers that
-    pair: the words' keys are held since by
-    test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry's
-    ("Ann Smith", "Ann Doe (née Schmidt)"), a listed spelling the whole
-    text cannot give (re-taken 2026-11-09).
+    accepts. Each setting must find a consistent pair of two different
+    names, or the guarantee holds vacuously. The negative controls,
+    each mutation's first failing pair under each setting, are
+    `_RECORDED_CONTROLS`, which says when they were taken and holds each
+    pair to still being one the guarantee is about.
     hyphenated-part adds no key, its halves sharing the given initial.
     Two keys no pair of NAMES needs, each failing a named test when
-    removed (re-taken the same day): the whole hyphenated word's
+    removed (re-taken 2026-11-09): the whole hyphenated word's
     spellings (test_a_hyphenated_listed_spelling_shares_a_key, under a
     caller's hyphenated full form, and the two key-content tests of
     hyphenated family words) and the spellings read from the folded
@@ -556,13 +562,208 @@ def test_consistent_names_always_share_a_key(
     test and the symmetry test pass under every setting, since the
     check and the keys read the one spelling set, while
     test_a_name_of_its_own_written_bare_is_itself (four rows) and
-    test_a_bare_name_of_its_own_is_not_keyed_by_its_long_form fail.
-    Other-reading names the setting with `other_readings=True`, which
-    was the `other-reading` member of accept when these were taken."""
-    matching = Matching(Parser(), *setting)
-    for a, b in itertools.product(PARSED, repeat=2):
+    test_a_bare_name_of_its_own_is_not_keyed_by_its_long_form fail."""
+    default = None if setting == SETTINGS[0] else Matching(Parser())
+    _assert_the_key_guarantee(Matching(Parser(), *setting), PARSED, default)
+
+
+def _assert_the_key_guarantee(matching: Matching,
+                              parsed: tuple[ParsedName, ...],
+                              default: Matching | None = None) -> None:
+    """Every consistent ordered pair of `parsed` shares a key, at least
+    one such pair is of two different names, and, given the `default`
+    matcher, at least one is a pair it refuses, so a setting that adds
+    to the default reaches the grid at all."""
+    found = beyond = False
+    for a, b in itertools.product(parsed, repeat=2):
         if matching.check(a, b).consistent:
             assert matching.keys(a) & matching.keys(b), (a.original, b.original)
+            found = found or a.original != b.original
+            beyond = beyond or (default is not None
+                                and not default.check(a, b).consistent)
+    assert found, f"no consistent pair of two names under {matching!r}"
+    assert default is None or beyond, (
+        f"no pair consistent under {matching!r} that {default!r} refuses")
+
+
+#: The key guarantee's negative controls, for
+#: test_consistent_names_always_share_a_key: for each mutation, what it
+#: mutates (the keys, or the check, made to accept a pair the keys were
+#: not cut for) and the first ordered pair of NAMES that fails the
+#: guarantee under each setting of `_SETTING_IDS`, `None` where the
+#: setting still passes, every setting not named passing too. Recorded
+#: as prose from 2026-11-08, and re-taken 2026-11-11 (#1264) as data,
+#: each mutation applied to `_match.py` and reverted, every pair as the
+#: prose had it and the symmetry test passing under every one. Not
+#: re-run here: a mutation edits `_match` from inside, so a re-take is
+#: by hand, after any commit that moves NAMES, the keys or the check. The maiden name's words, removed, once failed
+#: across-roles and all-opt-ins on ("J. Smith", "Jane Doe (née
+#: Smith)"), until #1261 keyed the maiden name whole, joined; those
+#: keys are held since by
+#: test_listed_compound_surnames_keep_the_key_guarantee_and_symmetry's
+#: ("Ann Smith", "Ann Doe (née Schmidt)"), a listed spelling the whole
+#: text cannot give.
+_RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
+    "only the joined form of a hyphenated word keyed": ("keys", {
+        **dict.fromkeys(("default", "familiar-form", "given-one-side",
+                         "hyphenated-part", "other-readings", "across-roles"),
+                        ("Ann Smith-Jones", "Ann Smith")),
+        **dict.fromkeys(("family-initial", "all"),
+                        ("Ahmed Al-Saud", "Ahmed Saud")),
+    }),
+    "part-of-other keeping a hyphen half that is a particle the keys drop": ("check", {
+        **dict.fromkeys(("default", "familiar-form", "given-one-side",
+                         "hyphenated-part", "other-readings", "across-roles"),
+                        ("Ahmed Al", "Ahmed Al-Saud")),
+        # passed through the family-initial key
+        "family-initial": None, "all": None,
+    }),
+    "the familiar forms' paired names left out of the given letters": ("keys", {
+        # a listed spelling of the longer name; all passes it through
+        # given-one-side's bare family keys
+        "familiar-form": ("Wm. Smith", "Bill Smith"), "all": None,
+    }),
+    "the family-initial key removed": ("keys", {
+        "family-initial": ("J. Smith", "Jane S"),
+        "all": ("John A. Smith", "Mr. S"),
+    }),
+    "the bare family keys removed": ("keys", {
+        "given-one-side": ("John A. Smith", "Mr. Smith"),
+        "all": ("John A. Smith", "Mr. Smith"),
+    }),
+    "the other readings' keys removed": ("keys", {
+        "other-readings": ("Mr. Smith", "Della Smith"),
+        "all": ("Cristiane S", "Suharto"),
+    }),
+    "the middle words' given letters removed": ("keys", {
+        # all passes it through given-one-side's bare family keys
+        "across-roles": ("Wm. Smith", "John Wm. Smith"), "all": None,
+    }),
+    "the nickname's given letter removed": ("keys", {
+        "across-roles": ('William "Bill" Clinton', "Bill Clinton"),
+        "all": None,
+    }),
+}
+
+
+@pytest.mark.parametrize(
+    "mutation, mutated, setting_id, pair",
+    [(m_, side, s_, p_) for m_, (side, row) in _RECORDED_CONTROLS.items()
+     for s_, p_ in row.items() if p_ is not None],
+    ids=lambda v: v if isinstance(v, str) else None)
+def test_a_recorded_control_still_reaches_what_it_mutated(
+        mutation: str, mutated: str, setting_id: str,
+        pair: tuple[str, str]) -> None:
+    """Each recorded control's pair is still one the guarantee is about,
+    under its setting as the code stands: where the mutation removed
+    keys, a consistent pair sharing a key; where it made the check
+    accept more, a pair the check refuses. A control that has stopped
+    reaching what it was taken against shows here rather than going
+    stale in place."""
+    matching = Matching(Parser(), *SETTINGS[_SETTING_IDS.index(setting_id)])
+    a, b = (PARSED[NAMES.index(n)] for n in pair)
+    if mutated == "keys":
+        assert matching.check(a, b).consistent
+        assert matching.keys(a) & matching.keys(b)
+    else:
+        assert mutated == "check"
+        assert not matching.check(a, b).consistent
+
+
+def test_every_recorded_control_names_a_setting_of_the_sweep() -> None:
+    assert _RECORDED_CONTROLS
+    for side, row in _RECORDED_CONTROLS.values():
+        assert side in ("keys", "check")
+        assert row and set(row) <= set(_SETTING_IDS), row
+
+
+#: Names the main grid does not hold: comma shapes (a full name, a one-
+#: word name and nothing before the comma, a particle surname before
+#: it) and the names a family-first order, a Spanish or a Chinese pack
+#: reads differently.
+_SHAPE_NAMES: tuple[str, ...] = (
+    "Smith, John", ", John", "de la Vega, Juan", "Juan de la Vega",
+    "Vega, Juan", "Smith, J.", "John Smith", "J. Smith", "Smith John",
+    "Smith J.", ", Smith", "Dr. Smith, John", "Smith, John Jr.",
+    "Smith Jr., John", "Smith-Jones, Ann", "Ann Smith", "Smith-Jones Ann",
+    "Smith Ann", "Juan Vega",
+    "de la Vega, J.", "Jane Doe (née Smith)", "Smith, Jane",
+    "García López, María", "María García López", "María García",
+    "María López", "José Luis Pérez", "José Pérez", "Pérez, José Luis",
+    "王小明", "王李小明", "王小", "李小明", "Wang Xiaoming",
+    "Xiaoming Wang", "김민준", "Kim Min-jun", "Min-jun Kim",
+    "Nguyễn Văn An", "Nguyen An",
+)
+
+#: The parsers the shape grid is read under, beside the default.
+_SHAPE_PARSERS: dict[str, Parser] = {
+    "default": Parser(),
+    "family-first": Parser(policy=Policy(name_order=FAMILY_FIRST)),
+    "es": parser_for(locales.ES),
+    "zh": parser_for(locales.ZH),
+}
+
+
+#: The shape grid's negative controls, taken 2026-11-11 (#1264) with
+#: the mutations of `_RECORDED_CONTROLS` applied to `_match.py` one at
+#: a time and reverted: for each mutation that fails a run, the first
+#: failing ordered pair of `_SHAPE_NAMES` under each parser of
+#: `_SHAPE_PARSERS`, and the settings that fail there, every run not
+#: named passing. The other five mutations fail no run of this grid.
+#: Not re-run here, as `_RECORDED_CONTROLS` is not.
+_SHAPE_CONTROLS: dict[str, dict[str, tuple[tuple[str, str], tuple[str, ...]]]] = {
+    "only the joined form of a hyphenated word keyed": {
+        parser_id: (("Smith-Jones, Ann",
+                     "Smith Ann" if parser_id == "family-first" else "Ann Smith"),
+                    ("default", "familiar-form", "given-one-side",
+                     "hyphenated-part", "across-roles", "other-readings"))
+        for parser_id in ("default", "family-first", "es", "zh")
+    },
+    "the family-initial key removed": {
+        parser_id: ((("John Smith", "J. Smith") if parser_id == "family-first"
+                     else ("Smith John", "Smith J.")),
+                    ("family-initial", "all"))
+        for parser_id in ("default", "family-first", "es", "zh")
+    },
+    "the middle words' given letters removed": {
+        "family-first": (("María García López", "María López"),
+                         ("across-roles",)),
+    },
+}
+
+
+def test_every_shape_control_names_a_mutation_parser_and_setting() -> None:
+    assert _SHAPE_CONTROLS and set(_SHAPE_CONTROLS) <= set(_RECORDED_CONTROLS)
+    for row in _SHAPE_CONTROLS.values():
+        for parser_id, (pair, settings) in row.items():
+            assert parser_id in _SHAPE_PARSERS
+            assert set(pair) <= set(_SHAPE_NAMES)
+            assert settings and set(settings) <= set(_SETTING_IDS)
+
+
+@functools.cache
+def _shape_grid(parser_id: str) -> tuple[ParsedName, ...]:
+    """`_SHAPE_NAMES` parsed once per parser, for both shape-grid tests."""
+    parser = _SHAPE_PARSERS[parser_id]
+    return tuple(parser.parse(n) for n in _SHAPE_NAMES)
+
+
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+@pytest.mark.parametrize("parser_id", list(_SHAPE_PARSERS))
+def test_the_key_guarantee_and_symmetry_hold_over_comma_shapes_and_packs(
+        parser_id: str, setting: tuple[frozenset[Outcome], bool]) -> None:
+    """The guarantee and the symmetry over `_SHAPE_NAMES`, read under a
+    family-first order and the Spanish and Chinese packs as well as the
+    default (#1264): a configured parser fills the roles differently and
+    reads its own spellings, so each holds only if it holds there too.
+    32 runs, about 6 seconds serial (measured 2026-11-11). Its negative
+    controls are `_SHAPE_CONTROLS`."""
+    matching = Matching(_SHAPE_PARSERS[parser_id], *setting)
+    parsed = _shape_grid(parser_id)
+    _assert_the_key_guarantee(matching, parsed)
+    for a, b in itertools.product(parsed, repeat=2):
+        assert matching.check(b, a) == matching.check(a, b).mirrored(), (
+            a.original, b.original)
 
 
 @pytest.mark.parametrize("a, b", [
@@ -2084,6 +2285,7 @@ def test_aligned_middle_names_keep_the_key_guarantee_and_symmetry(
     ("E.T. Smith", "Edward Smith"),
     ("Smith, E.T.", "Edward Smith"),
     ("J.R.R. Tolkien", "John Ronald Reuel Tolkien"),
+    ("J.P. Smith", "John Paul Smith"),
     ("J.R.R. Tolkien", "J. R. R. Tolkien"),
     ("J.R.R. Tolkien", "J. R. Tolkien"),
     ("J.R. Smith", "j.r. smith"),

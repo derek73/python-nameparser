@@ -15,9 +15,11 @@ name's other readings (`Matching.other_readings`); no `Policy` field.
 
 Consistent means nothing in the two names contradicts it, under the
 outcomes the caller accepts. The module imports `_types`, `_policy`
-(for the scripts that write no initials) and `_lexicon` (for
+(for the scripts that write no initials, and `Policy()`, which the
+repr compares a parser's policy with) and `_lexicon` (for
 `_normalize`, which folds a hyphen half before it is looked up among
-the particles), and `Lexicon` and `Parser` for typing alone.
+the particles, and `Lexicon.default()`, which the repr compares a
+parser's lexicon with), and `Parser` for typing alone.
 """
 from __future__ import annotations
 
@@ -28,8 +30,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from nameparser._lexicon import FULL_STOPS, _fold, _normalize
-from nameparser._policy import _NO_INITIALS, _script_matcher
+from nameparser._lexicon import FULL_STOPS, Lexicon, _fold, _normalize
+from nameparser._policy import _NO_INITIALS, Policy, _script_matcher
 from nameparser._types import (
     UNJOINED_TAG,
     Ambiguity,
@@ -41,7 +43,6 @@ from nameparser._types import (
 )
 
 if TYPE_CHECKING:
-    from nameparser._lexicon import Lexicon
     from nameparser._parser import Parser
 
 
@@ -312,7 +313,16 @@ class Matching:
             parts.append("+ " + ", ".join(added))
         if removed:
             parts.append("- " + ", ".join(removed))
-        return f"Matching({' '.join(parts)})"
+        # the parser too where it is not the default one, by its own
+        # bounded repr, as Parser shows a segmenter only where one is
+        # set; an object that is no Parser by its class name, as Parser
+        # names a segmenter, since its repr may be anything
+        parser = ""
+        if not _is_default_parser(self.parser):
+            parser = (f", parser={self.parser!r}"
+                      if all(hasattr(self.parser, f) for f in _PARSER_FIELDS)
+                      else f", parser={type(self.parser).__name__}")
+        return f"Matching({' '.join(parts)}{parser})"
 
     def check(self, a: str | ParsedName, b: str | ParsedName) -> MatchResult:
         """Compare two names role by role. A string is parsed with this
@@ -615,6 +625,20 @@ class Matching:
             f"check takes a name string or a ParsedName, got "
             f"{type(name).__name__} {name!r}; pass the text, or "
             f"parser.parse(text)")
+
+
+#: The fields of a `Parser` the repr compares with the default's.
+_PARSER_FIELDS = ("lexicon", "policy", "segmenter")
+
+
+def _is_default_parser(parser: Parser) -> bool:
+    """`parser` reads names as `Parser()` does: the default lexicon and
+    policy and no segmenter. Read with `getattr`, so a parser missing
+    one of them is shown rather than making the repr raise."""
+    missing = object()
+    return (getattr(parser, "segmenter", missing) is None
+            and getattr(parser, "policy", missing) == Policy()
+            and getattr(parser, "lexicon", missing) == Lexicon.default())
 
 
 # -- the check -------------------------------------------------------------
