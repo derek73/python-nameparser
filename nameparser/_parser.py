@@ -21,7 +21,7 @@ from nameparser._locale import Locale
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._post_rules import suffix_entries
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import COMMA_CHARS, ParseState
 from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
 from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
 from nameparser._types import (
@@ -261,9 +261,25 @@ class Parser:
             # the call-count band.
             entried = suffix_entries(
                 dataclasses.replace(state, tokens=forced))
-            harvested[role] = tuple(
-                Token(t.text, None, role, t.tags - {FOLDED_TAG})
-                for t in assemble(entried).tokens)
+            # rules/N1: "the nickname is the clause as written" -- a
+            # clause's word tokenize ended at a glued comma (#1268) is
+            # joined back here, where the harvest drops the spans that
+            # let a parse's views join it ('(Janey,Jo)' stays
+            # 'Janey,Jo'); a word S1 set apart lost its comma and is
+            # read as its spaced twin is (decisions/S1, #1268)
+            toks: list[Token] = []
+            end = -1
+            for t in assemble(entried).tokens:
+                if (toks and t.span is not None and t.span.start == end
+                        and toks[-1].text[-1:] in COMMA_CHARS):
+                    last = toks[-1]
+                    toks[-1] = Token(last.text + t.text, None, role,
+                                     last.tags | (t.tags - {FOLDED_TAG}))
+                else:
+                    toks.append(Token(t.text, None, role,
+                                      t.tags - {FOLDED_TAG}))
+                end = -1 if t.span is None else t.span.end
+            harvested[role] = tuple(toks)
         return name._with_field_tokens(harvested)
 
     # -- comparison -------------------------------------------------------

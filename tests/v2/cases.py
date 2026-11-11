@@ -18999,29 +18999,31 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1268)",
          notes="read as 'John Smith (MD, PhD)' is: a comma with no space "
                "beside it divides the clause's words as a spaced one "
-               "does (rules/S1). 1.4.0 through 3.0.1 read nickname "
-               "'MD,PhD'"),
+               "does (rules/S1). Every release from 1.4.0 through 3.0.1 "
+               "read a nickname, 'MD PhD' in 2.0.0 through 2.4.0 and "
+               "'MD,PhD' otherwise"),
     Case("a_fullwidth_comma_glued_between_a_title_and_a_credential",
          "John Smith (Dr.，PhD)",
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "PhD"},
          classification="fix(#1268)",
          notes="CJK text writes the fullwidth comma with no space after "
-               "it; read as 'John Smith (Dr.， PhD)' is. 1.4.0 through "
-               "3.0.1 read nickname 'Dr.，PhD'"),
+               "it; read as 'John Smith (Dr.， PhD)' is. Every release "
+               "from 1.4.0 through 3.0.1 read a nickname"),
     Case("a_glued_comma_parts_a_generation_from_a_credential",
          "John Smith (Jr.,MD)",
          {"given": "John", "family": "Smith", "suffix": "Jr., MD"},
          classification="fix(#1268)",
-         notes="two entries, as 'John Smith (Jr., MD)' reads; 3.0.1 read "
-               "suffix 'Jr.,MD' as one unsplit word, 1.4.0 nickname"),
+         notes="two entries, as 'John Smith (Jr., MD)' reads; 3.0.0 and "
+               "3.0.1 read suffix 'Jr.,MD' as one unsplit word, 1.4.0 "
+               "through 2.8.0 a nickname"),
     Case("a_glued_comma_settles_a_member_beside_a_credential",
          "John Smith (Ma,PhD)",
          {"given": "John", "family": "Smith", "suffix": "Ma, PhD"},
          classification="fix(#1268)",
          notes="rules/S1's member settled by a credential of its clause, "
-               "as 'John Smith (Ma, PhD)' reads; 3.0.1 read nickname "
-               "'Ma,PhD' and reported suffix-or-nickname"),
+               "as 'John Smith (Ma, PhD)' reads; 2.5.0 through 3.0.1 read "
+               "nickname 'Ma,PhD' and reported nothing"),
     Case("a_glued_comma_in_a_nickname_is_kept_as_written",
          "Jane (Janey,Jo) Smith",
          {"given": "Jane", "family": "Smith", "nickname": "Janey,Jo"},
@@ -19036,6 +19038,45 @@ CASES: tuple[Case, ...] = (
          {"given": "Justin", "family": "Stearns", "nickname": "JP,PhD"},
          notes="#1268 boundary: rules/S1's initials before a name word, "
                "as 'Justin (JP, PhD) Stearns' reads"),
+    Case("a_glued_comma_parts_a_period_final_set_apart_clause",
+         "John Smith (USN,Ret.)",
+         {"given": "John", "family": "Smith", "suffix": "USN, Ret."},
+         notes="#1268: set apart by extract, which reads the clause's "
+               "words as tokenize divides them, so it takes no period "
+               "escape; as 'John Smith (USN, Ret.)' reads"),
+    Case("a_glued_comma_parts_dotted_credentials_before_a_family_comma",
+         "Smith (M.D.,Ph.D.), John",
+         {"given": "John", "family": "Smith", "suffix": "M.D., Ph.D."},
+         classification="fix(#1268)",
+         notes="as 'Smith (M.D., Ph.D.), John' reads; 3.0.1 took the "
+               "period escape and read suffix 'M.D., Ph.D., John', "
+               "reporting comma-structure"),
+    Case("a_glued_comma_before_a_name_word_keeps_a_period_final_nickname",
+         "John (MD,PhD.) Smith",
+         {"given": "John", "family": "Smith", "nickname": "MD,PhD."},
+         classification="fix(#1268)",
+         notes="rules/S1's initials before a name word, as 'John (MD, "
+               "PhD.) Smith' reads; 3.0.1 took the period escape and "
+               "read family 'John', suffix 'MD, PhD. Smith'"),
+    Case("a_glued_comma_beside_a_nakaguro_keeps_the_nickname",
+         "John Smith (MD,・PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MD, PhD"},
+         notes="#1268 boundary: a separator tokenize divides at that "
+               "whitespace is not keeps the clause its pair's reading, "
+               "as decisions/S13 (#810) has it for '(MA 😀)'; S1 reads "
+               "a clause only where its words are its tokens"),
+    Case("a_zero_width_space_before_a_glued_comma_keeps_the_nickname",
+         "John Smith (MD\u200b,PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MD ,PhD"},
+         notes="#1268 boundary: as the nakaguro row"),
+    Case("a_configured_maiden_pair_sets_apart_glued_credentials",
+         "John Smith (MD,PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#1268)",
+         notes="rules/S1 takes a configured maiden pair's clause first "
+               "(M1), as 'John Smith (MD, PhD)' reads under the same "
+               "policy; 3.0.1 read maiden 'MD,PhD'"),
     Case("a_comma_opening_a_clause_divides_nothing",
          "John (,JP) Smith",
          {"given": "John", "family": "Smith", "nickname": ",JP"},

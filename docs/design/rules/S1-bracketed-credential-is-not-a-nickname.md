@@ -162,6 +162,11 @@
   "(PhD/Sr) John Smith"       →  suffix="PhD/Sr"
   "(PhD, Sr) John Smith"      →  title="Sr"
   ```
+- A comma standing alone in a clause, or opening it, is a word of its own that no vocabulary reads, so the clause keeps its pair's reading, where the same comma written against a word parts the words.
+  ```
+  "John Smith (MD , PhD)"     →  nickname="MD , PhD"
+  "John Smith (, PhD)"        →  nickname=", PhD"
+  ```
 - A qualifier written after a title in front of the name is the suffix it is in the vocabulary.
   ```
   "Col. (Ret.) Smith"         →  suffix="Ret."

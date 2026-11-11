@@ -154,7 +154,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     for i in range(start, end):
         ch = text[i]
         # rules/N1: "the nickname is the clause as written, its commas
-        # and their spacing included" -- a comma separates only where
+        # included" -- a comma separates only where
         # it records a segmentation offset, the main stream; inside an
         # extracted region it stays on a word as the clause's text, like
         # ';', ending the word it is glued behind (below) (decisions/N1,

@@ -62,8 +62,7 @@ def _period_escape(content: str) -> bool:
     return content.endswith(".")
 
 
-def _set_apart(text: str, inner: Span,
-               lexicon: Lexicon) -> bool:
+def _set_apart(inner: Span, state: ParseState) -> bool:
     """Whether a delimited clause is wholly of words the vocabulary
     reads as no name, by `_vocab.set_apart_kind` and `set_apart`: the
     unambiguous half of S1's set-apart reading, which needs no role. A
@@ -72,7 +71,12 @@ def _set_apart(text: str, inner: Span,
     post_rules may still decline a clause this sets apart (titles
     alone behind a credential, initials before a name word), which then
     keeps its pair's reading and not the period escape."""
-    words = clause_words(text[inner.start:inner.end])
+    # the common clause, with no comma ('Jack'), split inline so it
+    # pays no frame for `clause_words`
+    content = state.original[inner.start:inner.end]
+    words = (content.split() if COMMA_CHARS.isdisjoint(content)
+             else clause_words(content))
+    lexicon = state.lexicon
     kinds = []
     for word in words:
         kind = set_apart_kind(word, lexicon)
@@ -303,7 +307,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             exhausted.add((role, open_, close))
             continue
         inner = Span(i + len(open_), j)
-        if inner.start < inner.end and _set_apart(text, inner, state.lexicon):
+        if inner.start < inner.end and _set_apart(inner, state):
             # rules/S1: "it is no nickname and no maiden name, and the
             # words around it read as they would beside a nickname"
             # -- extracted as its pair reads it, post_rules giving its

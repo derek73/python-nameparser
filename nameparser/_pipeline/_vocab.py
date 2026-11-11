@@ -500,15 +500,15 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
 
 
 def clause_words(content: str) -> list[str]:
-    """The words of a clause divided as tokenize divides them at
-    whitespace and at a comma: after a comma glued to the word in front
-    of it, the comma kept on that word ('MD,PhD' is 'MD,', 'PhD'; ',JP'
-    is one word), so extract's S1 test and post_rules' read the words
-    tokenize makes (rules/S1, #1268). The other separators tokenize
-    divides at (rules/T2's dots, rules/T1's invisible separators) are
-    not divided here; a clause holding one is skipped by post_rules'
-    word count, as it was before #1268 ('(MD・PhD)' stays the
-    nickname)."""
+    """The words of a clause as extract and post_rules read them for
+    rules/S1 (#1268): split at whitespace, and after a comma glued to
+    the word in front of it, the comma kept on that word ('MD,PhD' is
+    'MD,', 'PhD'; ',JP' is one word), as tokenize divides at both. A
+    separator tokenize also divides at that whitespace is not (rules/T1's
+    invisible separators, T2's dots, a stripped emoji) is not divided
+    here, so post_rules, reading a clause only where these words are its
+    tokens, leaves such a clause its pair's reading (decisions/S13,
+    #810)."""
     words: list[str] = []
     for word in content.split():
         start = 0

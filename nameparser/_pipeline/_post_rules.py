@@ -755,9 +755,21 @@ def _set_apart_clauses(state: ParseState,
     for _, clause in state.extracted:
         lo = bisect.bisect_left(starts, clause.start)
         hi = bisect.bisect_left(starts, clause.end)
-        words = clause_words(state.original[clause.start:clause.end])
-        # every word one token of the clause, as extract read them
-        if not words or hi - lo != len(words) or any(
+        content = state.original[clause.start:clause.end]
+        words = (content.split() if COMMA_CHARS.isdisjoint(content)
+                 else clause_words(content))
+        # every word one token of the clause, as extract read them: a
+        # separator tokenize divides at that whitespace is not leaves
+        # the clause its pair's reading (`_vocab.clause_words`,
+        # decisions/S13, #810; decisions/S1, #1268)
+        # a loop, not a generator: a genexpr is a frame a clause on 3.11
+        aligned = bool(words) and hi - lo == len(words)
+        if aligned:
+            for k, w in enumerate(words):
+                if tokens[lo + k].text != w:
+                    aligned = False
+                    break
+        if not aligned or any(
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
                 for i in range(lo, hi)):
             continue

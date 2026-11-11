@@ -459,14 +459,24 @@ def test_full_name_before_an_ethiopic_suffix_comma(
     assert {k: v for k, v in name.as_dict().items() if v} == expect
 
 
-# #1268, S1's comma bullet: tokenize divides a clause and `_vocab.clause_words` reads extract's
-# and post_rules' words; the two spellings must agree (#1268)
-@pytest.mark.parametrize("content", [
-    "MD,PhD", "MD, PhD", "MD ,PhD", "MD,,PhD", ",JP", "Jr.,", "Jr.,MD",
-    "Dr.，PhD", "PhD،Sr", "Janey,Jo", "a,b,c", "MD;PhD", ", ,", "PhD, ",
+# #1268, S1's comma bullet: extract and post_rules read a clause through
+# `_vocab.clause_words`, whose words are tokenize's where the clause holds
+# no separator but whitespace and the comma; where it holds one tokenize
+# divides at and whitespace is not, the two differ and post_rules leaves
+# the clause its pair's reading (decisions/S13, #810)
+@pytest.mark.parametrize(("content", "agree"), [
+    ("MD,PhD", True), ("MD, PhD", True), ("MD ,PhD", True),
+    ("MD,,PhD", True), (",JP", True), ("Jr.,", True), ("Jr.,MD", True),
+    ("Dr.\uff0cPhD", True), ("PhD\u060cSr", True), ("Janey,Jo", True),
+    ("a,b,c", True), ("MD;PhD", True), (", ,", True), ("PhD, ", True),
+    ("Janey  Jo", True), ("Jack", True), ("Jos\u00e9 Mar\u00eda", True),
+    ("MD\u30fbPhD", False), ("MD,\u30fbPhD", False),
+    ("MD\u200b,PhD", False), ("MD\u200bPhD", False),
+    ("MA \N{GRINNING FACE}", False),
 ])
-def test_clause_words_divide_a_clause_as_tokenize_does(content: str) -> None:
+def test_clause_words_divide_a_clause_as_tokenize_does(
+        content: str, agree: bool) -> None:
     from nameparser._pipeline._vocab import clause_words
-    out = _tokenized(f"John Smith ({content})")
+    out = _tokenized(f"John Smith ({content})", Policy(strip_emoji=True))
     clause = [t.text for t in out.tokens if t.role is Role.NICKNAME]
-    assert clause == clause_words(content)
+    assert (clause == clause_words(content)) is agree

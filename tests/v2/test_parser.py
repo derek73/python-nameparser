@@ -3670,3 +3670,20 @@ def test_matching_accept_none_is_the_default_and_bad_values_raise() -> None:
     assert Parser().matching({"initial"}).accept >= {"same", "initial"}
     with pytest.raises(TypeError):
         Parser().matching("initial")  # type: ignore[arg-type]
+
+
+# #1268, N1's comma bullet: revise keeps a
+# delimited value's glued comma as a parse does; a value rules/S1 sets
+# apart reads as its spaced twin does (#1268)
+@pytest.mark.parametrize(("field", "value", "expected"), [
+    ("nickname", "(Janey,Jo)", "Janey,Jo"),
+    ("nickname", '"Janey,Jo"', "Janey,Jo"),
+    ("maiden", "(Jones,Brown)", "Jones,Brown"),
+    ("nickname", "(Janey ,Jo)", "Janey ,Jo"),
+    ("nickname", "(MD,PhD)", "MD PhD"),
+    ("nickname", "(MD, PhD)", "MD PhD"),
+])
+def test_revise_keeps_a_delimited_values_glued_comma(
+        field: str, value: str, expected: str) -> None:
+    revised = Parser().revise(parse("John Smith"), **{field: value})
+    assert getattr(revised, field) == expected
