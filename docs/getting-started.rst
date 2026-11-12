@@ -139,8 +139,8 @@ the base parser's value otherwise. It needs at least two names voting
 for one order, and more than two thirds of the names that vote. A name
 of one word casts no vote, and neither does a name with a comma, which
 states its own order (unless only post-nominals follow the comma, as in
-``Zhang Wei, PhD``). A list whose names carry no evidence suggests
-nothing:
+``Zhang Wei, PhD``). In this list only ``Mary``, a common given name,
+votes, one vote short, so nothing is suggested:
 
 .. doctest::
 
