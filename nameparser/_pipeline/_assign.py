@@ -12,7 +12,8 @@ to the family after a family comma (#613; the attached tag, 3.0's 4c,
 tells rules/R9 the attachment from O3's fold); and order, the order
 the positional read used, None where none happened (ParseState.order).
 Reads: Policy.name_order (#270), Policy.lone_name_word (rules/O5,
-the field a lone name word takes, #1111), is_suffix_lenient on the trailing
+the field a lone name word takes, #1111), Policy.initials_as_family
+(rules/O4's order report stands down under it, #1254), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
@@ -99,12 +100,15 @@ joined unit carrying title vocabulary.
 """
 from __future__ import annotations
 
+import unicodedata
+
 from collections.abc import Sequence, Set
 from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon, _run_addresses_by_given
 from nameparser._pipeline._vocab import (
-    _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
+    _ROMAN, effective_script, in_a_title_phrase, in_initialless_script,
+    is_initial_shaped,
     TITLE_READING, is_listed_numeral, particle_reading,
     is_suffix_lenient, name_reading, suffix_reading,
     numeral_leans_to_the_name, numeral_settled_by_case,
@@ -573,6 +577,63 @@ def _assign_main(seg_idx: int, state: ParseState,
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
 
+    # rules/O4: "a name word followed by nothing but initials reports
+    # the order" -- the positional read takes the word as the given
+    # name, where a byline writes its family name first (`Armitage J
+    # O`); declared nowhere, so the default given-first order picked it
+    # (decisions/O4, #1254). Bare capitals (`Armitage JO`) are no
+    # initials here: they are written as a short surname is (`Zhi LI`).
+    # Inline and nested so a plain name exits at its second piece
+    # (the parse-cost band, decisions/parse-cost). No test of the comma
+    # or the segment is needed: assign calls this for segment 0 under
+    # no comma or a suffix comma alone. Nor of a script's order: one
+    # needs the name written wholly in Han, Hangul or kana, which hold
+    # no initial (rules/T5) for the walk below to find (#1348 review).
+    order_report: PendingAmbiguity | None = None
+    if (len(name_pieces) >= 2 and order[0] is Role.GIVEN
+            and not state.policy.initials_as_family):
+        first = pieces[name_pieces[0]]
+        # a particle in front is PARTICLE_OR_GIVEN's fork, reported
+        # there; an initial in front is refused below by its one letter
+        initialed = (len(first) == 1
+                     and "particle" not in tokens[first[0]].tags)
+        for k in name_pieces[1:]:
+            if not initialed:
+                break
+            piece = pieces[k]
+            letters = tokens[piece[0]]
+            # chunks of the composed spelling, as classify measures a
+            # letter (`composed_len`): a decomposed `É.S.` is one run;
+            # the shape tag is given only to letters (period_joined_vocab's
+            # alphabetic gate), so a chunk's length is the whole test
+            initialed = len(piece) == 1 and (
+                "initial" in letters.tags
+                or SHAPE_ACRONYM_TAG in letters.tags
+                and all(len(chunk) == 1
+                        for chunk in unicodedata.normalize(
+                            "NFC", letters.text).rstrip(".").split(".")))
+        text = unicodedata.normalize("NFC", tokens[first[0]].text)
+        # the word in front is a name word a byline could write first:
+        # no run of initials itself (rules/T7's `J.A.`), and in a script
+        # that writes initials, as no byline in Han or Hangul does
+        if (initialed and any(c.isalpha() for c in text)
+                and not all(len(chunk) == 1
+                            for chunk in text.rstrip(".").split("."))
+                and not in_initialless_script(text)):
+            order_report = PendingAmbiguity(
+                AmbiguityKind.ORDER,
+                f"{tokens[first[0]].text!r} is the only name word before "
+                f"initials, which a byline writes after the family name "
+                f"and a South Asian name writes as the family; read as ",
+                tuple(first),
+                # rules/A1: "the order (O4), whose other reading lays out
+                # the whole name rather than moving one word" -- so the
+                # report names none and says it in words (decisions/O4)
+                field_tail=(" by the given-first order; read family "
+                            "first (name_order=FAMILY_FIRST), the word in "
+                            "front is the family name and the letters "
+                            "the given and middle initials"))
+
     def as_a_name(i: int) -> PendingReading:
         # every other word read as the parse reads it -- the carve-out's
         # name word too -- the name word the reading declines would be
@@ -600,6 +661,10 @@ def _assign_main(seg_idx: int, state: ParseState,
         report = ambiguities[r]
         ambiguities[r] = copy_with(
             report, alternative=as_a_name(report.indices[0]))
+    # after the trailing reports are given their name reading, which
+    # the order report has none of
+    if order_report is not None:
+        ambiguities.append(order_report)
     # Both emitters below turn on the PEEL's count, so neither can
     # reach a name that kept two name pieces, and the two scans are
     # nested under the count rather than run beside it: they cost the

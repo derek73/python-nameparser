@@ -3,7 +3,9 @@
 `Parser.suggest(names)` reads a group of names a caller declares to share
 one convention and suggests a `name_order` (and `patronymic_rules`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
-`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`) and its word tables
+`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
+signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`, and for
+`initials_as_family`, `_MIN_RUN_NAMES` and `_MIN_RUN_SHARE`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
 chosen with this tool, and the figures quoted for them in `suggest`'s
 docstring and docs/design/decisions/group-suggestion.md are its output.
@@ -20,8 +22,11 @@ PatentsView inventors by country (PV_COUNTRIES, read from the
 patentsview-inventors extract, uncapped), UK company filers by
 nationality (psc-individuals, PSC_NATIONALITIES, forename and middle name
 before the surname), Czech candidates (cz-candidates, `jmeno` and
-`prijmeni`) and Vietnamese names (uit-vinames, the middle name before the
-given name, as Vietnamese writes them). A population keeps at most
+`prijmeni`), Vietnamese names (uit-vinames, the middle name before the
+given name, as Vietnamese writes them) and ORCID credit names written as
+a byline (orcid-researchers, `orcid-byline`: `Huntley R P`, the given
+name its initials, the family name the box it matches; written
+family-first it is the byline itself). A population keeps at most
 POOL_CAP names, drawn by a seeded reservoir. A source not fetched is
 left out with a note, as is one present that yields no names and each
 population a present source yields none of; one present but unreadable
@@ -37,7 +42,11 @@ was written with; a given-first group under the given-first base is right
 where the suggester kept or confirmed the base, and wrong only where it
 moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
-same-order rows, which must not fall below 95%.
+same-order rows, which must not fall below 95%. Under each population,
+the groups that decided the East Slavic rule and the groups that decided
+`initials_as_family` (rules/O8), each over every group of both written
+orders and both bases; `--base` lists a population whose counts moved.
+`--set _MIN_RUN_NAMES=1000000` decides the switch in no group.
 
 THE SIGNALS: per population and written order, over at most SIGNAL_NAMES
 names, the per-NAME order votes (`suggest`'s unit: right, wrong,
@@ -61,7 +70,9 @@ hold enough names of one patronymic rule to decide it
 whose only evidence is a contested order leave the share's denominator.
 
 `--set NAME=VALUE` overrides one of `_suggest`'s thresholds in every
-worker, so a rule can be tried without editing the module; it is also the
+worker, so a rule can be tried without editing the module (a `--base`
+checkout without that threshold runs its own rule, and the comparison
+says so); it is also the
 harness's proof that it can report a difference: `--set
 _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
 (the first holds the order, the second the patronymic rule, which forces
@@ -119,9 +130,11 @@ PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
 GF, FF = "GF", "FF"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
-            "_MIN_PATRONYMIC_VOTES")
+            "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
+            "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE")
 #: The thresholds that count names, read as int.
-_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES")
+_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
+           "_MIN_RUN_NAMES")
 
 #: decisions/group-suggestion's TURKIC lists, and the end each writes the
 #: family at: "caps" where the one capitals word is the family, else the
@@ -280,15 +293,44 @@ def _vi(keep: _Reservoir) -> None:
                  r.get("family", ""))
 
 
+#: An initial a byline writes after the family name: one letter, with
+#: or without its full stop, or letters joined by full stops or written
+#: as two or three capitals (`R`, `R.`, `R.S.`, `RS`).
+_BYLINE_INITIAL = re.compile(r"^(?:[^\W\d_]\.?|(?:[^\W\d_]\.)+[^\W\d_]?\.?|[A-Z]{2,3})$")
+
+
+def _orcid_bylines(keep: _Reservoir) -> None:
+    """ORCID credit names written as a byline, the family name first and
+    the given names as initials (`Huntley R P`, `Hoy AM`, `Smith J.`),
+    each confirmed by the holder's own boxes: the word in front is the
+    family box, and the first initial the given box's first letter. A
+    pair keeps the initials as the given name, so written family-first
+    it is the byline as the holder wrote it (#1254)."""
+    for r in _rows(local("orcid-researchers") / "raw.jsonl"):
+        credit, family, given = r.get("credit"), r.get("family"), r.get("given")
+        if not (credit and family and given):
+            continue
+        words = credit.split()
+        if len(words) < 2 or not all(_BYLINE_INITIAL.match(w) for w in words[1:]):
+            continue
+        if (words[0].casefold().replace("-", "")
+                != family.strip().casefold().replace("-", "").replace(" ", "")):
+            continue
+        if words[1][0].casefold() != given.strip()[:1].casefold():
+            continue
+        keep.add("orcid-byline", " ".join(words[1:]), words[0])
+
+
 SOURCES = (("patentsview-inventors", _patentsview),
            ("psc-individuals", _psc), ("cz-candidates", _cz),
-           ("uit-vinames", _vi))
+           ("uit-vinames", _vi), ("orcid-researchers", _orcid_bylines))
 
 
 #: The populations each source is read for.
 WANTED = {"patentsview-inventors": tuple(f"pv-{c}" for c in PV_COUNTRIES),
           "psc-individuals": tuple(f"psc-{n}" for n in PSC_NATIONALITIES),
-          "cz-candidates": ("cz",), "uit-vinames": ("vi",)}
+          "cz-candidates": ("cz",), "uit-vinames": ("vi",),
+          "orcid-researchers": ("orcid-byline",)}
 
 
 def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
@@ -351,7 +393,13 @@ def _thresholds(overrides: dict[str, float]) -> Iterator[None]:
     """`_suggest`'s thresholds overridden for the block, and restored
     after it: a run with --jobs 1 measures in the caller's process."""
     from nameparser import _suggest
-    before = {name: getattr(_suggest, name) for name in overrides}
+    # a threshold this tree does not have (a base checkout older than
+    # the threshold) is left alone here: the tree runs its own rule, and
+    # measure() records the name so the comparison says so
+    before = {name: getattr(_suggest, name) for name in overrides
+              if hasattr(_suggest, name)}
+    overrides = {name: value for name, value in overrides.items()
+                 if name in before}
     try:
         for name, value in overrides.items():
             setattr(_suggest, name, value)
@@ -389,7 +437,7 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
     lexicon = bases[GF].lexicon
     rng = group_rng(seed, label)
     cells: dict[str, list[float | None]] = {}
-    east_slavic = 0
+    east_slavic = letters = 0
     for order in (GF, FF):
         row = {base: [] for base in bases}
         for size in sizes:
@@ -405,6 +453,10 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     right[base] += _end(s.parser.policy.name_order) == order
                     east_slavic += PatronymicRule.EAST_SLAVIC in (
                         s.parser.policy.patronymic_rules)
+                    # rules/O8's switch (#1254); a tree without the
+                    # field reads False
+                    letters += getattr(s.parser.policy,
+                                       "initials_as_family", False)
             for base in bases:
                 row[base].append(right[base] / trials)
         for base in bases:
@@ -442,7 +494,8 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
         signals[order] = dict(stats)
         words[order] = {s: c.most_common(wrong_words) for s, c in wrong.items()}
     return {"label": label, "size": len(pool), "cells": cells,
-            "signals": signals, "words": words, "east_slavic": east_slavic}
+            "signals": signals, "words": words, "east_slavic": east_slavic,
+            "letters": letters}
 
 
 #: The populations whose names the romanized surname table is for.
@@ -604,8 +657,12 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
         for script, names in scripts.items():
             for base, parser in bases.items():
                 s = parser.suggest(names)
-                order, rules = s.evidence
-                suggestions.append({
+                # by setting, not position: a tree that suggests a
+                # setting more (initials_as_family, #1254) adds an entry
+                evidence = {e.setting: e for e in s.evidence}
+                order = evidence["name_order"]
+                rules = evidence["patronymic_rules"]
+                row = {
                     "dataset": dataset, "script": script, "base": base,
                     "names": len(names), "order": _end(order.value),  # type: ignore[arg-type]
                     "order_decided": order.decided,
@@ -613,7 +670,13 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
                                order.contested, order.no_evidence],
                     "rules": sorted(r.value for r in rules.value),  # type: ignore[attr-defined]
                     "rules_decided": rules.decided,
-                    "rule_counts": [rules.votes_for, rules.votes_against]})
+                    "rule_counts": [rules.votes_for, rules.votes_against]}
+                letters = evidence.get("initials_as_family")
+                # recorded only where decided, so a base that cannot
+                # suggest it compares equal on every other list
+                if letters is not None and letters.decided:
+                    row["letters"] = [letters.votes_for, letters.votes_against]
+                suggestions.append(row)
     return {"turkic": turkic, "suggestions": suggestions}
 
 
@@ -633,7 +696,11 @@ def measure(pools: dict[str, Pool], lists: dict[str, dict[str, list[str]]] | Non
                            if lists else None)
             results = [f.result() for f in futures]
             parl = parl_future.result() if parl_future else None
-    return {"sizes": list(sizes), "trials": trials, "seed": seed,
+    from nameparser import _suggest
+    unknown = sorted(name for name in overrides
+                     if not hasattr(_suggest, name))
+    return {"unknown_settings": unknown,
+            "sizes": list(sizes), "trials": trials, "seed": seed,
             "populations": results, "parliaments": parl}
 
 
@@ -660,6 +727,9 @@ def report(result: dict[str, Any], show_words: bool) -> None:
         if p["east_slavic"]:
             print(f"{'':14} (the East Slavic rule was decided in "
                   f"{p['east_slavic']} groups, and forced a given-first order)")
+        if p.get("letters"):
+            print(f"{'':14} (initials_as_family was decided in "
+                  f"{p['letters']} groups)")
     print(f"\n-- votes per name (right/wrong/contested/none) and per signal "
           f"(right/wrong), at most {SIGNAL_NAMES} names")
     for p in result["populations"]:
@@ -723,6 +793,9 @@ def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
         if was.get("east_slavic") != p["east_slavic"]:
             out.append(f"{p['label']:14} east_slavic groups "
                        f"{was.get('east_slavic')} -> {p['east_slavic']}")
+        if was.get("letters", 0) != p.get("letters", 0):
+            out.append(f"{p['label']:14} initials_as_family groups "
+                       f"{was.get('letters', 0)} -> {p.get('letters', 0)}")
     parl_old, parl_new = base.get("parliaments") or {}, head.get("parliaments") or {}
     turkic_old = parl_old.get("turkic", {})
     for dataset, row in (parl_new.get("turkic") or {}).items():
@@ -821,6 +894,9 @@ def main(argv: list[str] | None = None) -> int:
                                  f"{done.stdout}{done.stderr}")
             base = json.loads(out.read_text(encoding="utf-8"))
         cells = moved(base, result)
+        if base.get("unknown_settings"):
+            print(f"\nthe base has no {', '.join(base['unknown_settings'])}: "
+                  f"--set left it to its own rule")
         print(f"\n-- against the base {base_root}: {len(cells)} cells moved")
         for line in cells:
             print(line)

@@ -49,6 +49,8 @@ _SWITCHES = {
                         "family names): the last two, or the first two "
                         "under a family-first --order",
     "middle_as_family": "fold the middle names into the family",
+    "initials_as_family": "read two or more single letters ending the "
+                          "name as the family (Lakshmi R S)",
     "lenient_comma_suffixes": "read a lone V or I after a comma as a "
                               "numeral suffix (John Smith, V)",
     "unlisted_dotted_suffixes": "read an unlisted X.Y.Z. ending a name "

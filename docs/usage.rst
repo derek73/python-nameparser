@@ -360,7 +360,9 @@ by position alone:
 
 A report of a shape rather than a fork — ``comma-structure``,
 ``unbalanced-delimiter``, ``segmentation`` — carries no alternative,
-and neither does one whose other reading no field could hold: a
+nor does ``order``, whose other reading lays out the whole name rather
+than moving one word (its detail says it in words), and neither does
+one whose other reading no field could hold: a
 connective letter opening the name (``E SMITH JONES``) has no word
 before it to join. Check for ``None`` before reading one.
 The alternative is not compared: two names that differ only in it are
@@ -639,8 +641,9 @@ field a name of one name word reads as under every order
 
 The ``Policy`` switches that turn a reading on or off have a flag each,
 spelled as the field: ``--two-given-names``, ``--two-family-names``,
-``--middle-as-family``, ``--lenient-comma-suffixes`` and
-``--unlisted-dotted-suffixes``, each with a ``--no-`` form, and
+``--middle-as-family``, ``--initials-as-family``,
+``--lenient-comma-suffixes`` and ``--unlisted-dotted-suffixes``, each
+with a ``--no-`` form, and
 ``--unlisted-caps-suffixes`` taking ``off``, ``after-comma`` or
 ``everywhere``. Like ``--order``, each replaces the setting of a pack
 given with ``--locale``, keeping the pack's vocabulary, and one left

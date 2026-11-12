@@ -137,14 +137,40 @@ def test_tr_az_pack_contents() -> None:
 
 
 def test_ne_pack_contents() -> None:
-    # 3d: the first vocabulary pack, nothing but its choice; what the
-    # choice changes is exactly the three given readings ne.toml writes
-    # `default = false`, each also a title in another file
+    # 3d: the first vocabulary pack; what the choice changes is exactly
+    # the three given readings ne.toml writes `default = false`, each
+    # also a title in another file. Since #1254 its [rules] turn
+    # initials_as_family on (rules/O8)
     from nameparser._reading_index import changed_words, selected
     assert locales.NE == Locale(code="ne", lexicon=Lexicon.empty(),
+                                policy=PolicyPatch(initials_as_family=True),
                                 languages=frozenset({"ne"}))
     assert changed_words(selected(locales.NE.languages)) == {
         "guru", "गुरु", "श्री"}
+
+
+@pytest.mark.parametrize("text", [
+    "Ram Bahadur B K", "Ram Bahadur B. K.", "Anjana K C(Maharjan)",
+    "Kalpana K C(Sunuwar)", "Bimala Kumari Singh (B. K.)", "Ram B K,Jr",
+    "Ram B\u200bK", "Ram B\ufeffK", "Ram B\u2063K", "Ram B\u30fbK",
+    "Ram B\u1361K", "Ram B\uff65K", "Ram E\u0301. K."])
+def test_ne_declares_every_name_its_letters_rule_moves(text: str) -> None:
+    # the #1347 review: words read by str.split() missed a name whose
+    # letters the parse divides at a bracket, a glued comma, a
+    # zero-width character or a word separator of another script
+    from nameparser.locales import ne as _ne
+    assert parser_for(locales.NE).parse(text).as_dict() != parse(
+        text).as_dict()
+    assert _ne.DEVIATES(text)
+
+
+def test_ne_declares_no_name_without_two_single_letters_in_a_row() -> None:
+    from nameparser.locales import ne as _ne
+    assert not any(map(_ne.DEVIATES, (
+        "Ram Bahadur Thapa", "Ram Bahadur BK", "Durga Kumari", "",
+        # a vowel sign stays in its letter's run: read as a divider,
+        # र and म would be two runs of one letter each
+        "राम बहादुर थापा")))
 
 
 def test_ne_reads_the_word_as_given_at_the_head_and_title_in_a_phrase() -> None:
@@ -2094,7 +2120,9 @@ def test_a_pack_with_a_choice_and_a_patch_declares_only_the_patch() -> None:
     assert deviates("Sidorov Ivan Petrovich")    # the patch's, declared
     assert not deviates("John Smith")
     assert not _is_vocabulary_pack(mixed)
-    assert _is_vocabulary_pack(locales.NE)
+    assert _is_vocabulary_pack(locales.HI)
+    # NE was the example until #1254 gave it a patch (rules/O8)
+    assert not _is_vocabulary_pack(locales.NE)
 
 
 @pytest.mark.parametrize("tags", _CHOICES, ids="+".join)

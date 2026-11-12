@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
@@ -242,6 +243,39 @@ _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 #: once it earns a member.
 _NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
                 Script.KATAKANA)
+
+
+def _letter_units(text: str) -> list[int]:
+    """How many letters each run of letters in `text` holds, a combining
+    mark kept in the run of the letter it marks and every other
+    character dividing two runs."""
+    units, letters, in_run = [], 0, False
+    for ch in text:
+        if ch.isalpha():
+            letters += 1
+            in_run = True
+        elif in_run and unicodedata.category(ch) in ("Mn", "Mc", "Me"):
+            continue
+        elif in_run:
+            units.append(letters)
+            letters, in_run = 0, False
+    if in_run:
+        units.append(letters)
+    return units
+
+
+def initials_as_family_may_move(text: str) -> bool:
+    """Whether Policy.initials_as_family may move `text`: rules/O8 moves
+    only letters standing two or more in a row, so a name it moves holds
+    two runs in a row of one letter each, wherever they stand and
+    whatever divides them. Every character but a letter and a combining
+    mark divides a run here, wider than any separator the parse reads
+    (a zero-width character, `・`, a glued comma or bracket), so the
+    test over-declares, the safe direction, and never misses a name the
+    rule moves. locales.NE's DEVIATES and Parser.suggest's letter runs
+    both ask it."""
+    units = _letter_units(text)
+    return any(a == 1 == b for a, b in zip(units, units[1:]))
 
 
 def _script_matcher(*scripts: Script,
@@ -788,6 +822,25 @@ class Policy:
     #: the field followed name_order.
     lone_name_word: Role = field(
         default=Role.GIVEN, metadata={ADDED_IN: "3.0.0"})
+    #: Reads two or more single letters ending a name as its family
+    #: name, for data written in the South Asian convention where the
+    #: letters after the given name stand for the father's or the
+    #: family's name (rules/O8): "Lakshmi R S" gives given ``Lakshmi``,
+    #: family ``R S``, and "Ram Bahadur B K" gives given ``Ram``,
+    #: middle ``Bahadur``, family ``B K``. The letters are written as
+    #: initials are, a bare Latin capital or a letter and its period,
+    #: spaced and in a row, with a name word before them; one
+    #: letter, letters before the name or inside it, and the given part
+    #: after a family comma are left alone, and so is a name read in a
+    #: family-first order, which already places those letters. Off by
+    #: default: the same shape is a middle and a family initial in many
+    #: lists ("Melanie J D") and a byline written surname first in a
+    #: bibliography ("Huntley R P", for which name_order=FAMILY_FIRST
+    #: is the setting). locales.NE turns it on, and Parser.suggest
+    #: suggests it for a group whose names repeat one run of letters.
+    #: Added in 3.1.
+    initials_as_family: bool = field(
+        default=False, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -1019,6 +1072,10 @@ class PolicyPatch:
     #: Added in 3.0.
     lone_name_word: Role | _Unset = field(
         default=UNSET, metadata={ADDED_IN: "3.0.0"})
+    #: Patches :attr:`Policy.initials_as_family`, a scalar (later
+    #: wins). Added in 3.1.
+    initials_as_family: bool | _Unset = field(
+        default=UNSET, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate

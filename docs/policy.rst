@@ -61,6 +61,12 @@ listed below.
      - The field a name of one word reads as, under every
        ``name_order``. Defaults to ``Role.GIVEN``. See
        :ref:`lone-name-word`.
+   * - ``initials_as_family``
+     - ``bool``
+     - Reads two or more single letters ending a name as its family
+       name (``Lakshmi R S``), for South Asian data where the letters
+       stand for a family name. Defaults to ``False``. See
+       :ref:`initials-as-family`.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
@@ -564,6 +570,63 @@ with ``two_family_names`` on, 80.2% without this switch and 55.0%
 with it (measured 2026-10-30). ``middle`` keeps its meaning either way,
 the given part's words after the given name; the switch moves no word
 anywhere else and reports nothing.
+
+.. _initials-as-family:
+
+Names ending in initials that are the family name
+-------------------------------------------------
+
+In South India, Sri Lanka, Bangladesh and Nepal the letters written
+after a given name often stand for the family's name, the father's name
+or the place the family comes from, and the bearer treats them as the
+family name: ``Lakshmi R S``, or ``Ram Bahadur B K``, where ``B K`` is
+the surname Bishwakarma written short. The default reads those letters
+as a middle and a family initial, the English convention:
+
+.. doctest::
+
+    >>> lakshmi = parse("Lakshmi R S")
+    >>> lakshmi.middle, lakshmi.family
+    ('R', 'S')
+
+``initials_as_family=True`` reads the letters together as the family
+name, under the default given-first order. One letter is the family
+already, and letters before or inside a name, the given part after a
+family comma and a name read family-first are left as they are:
+
+.. doctest::
+
+    >>> letters = Parser(policy=Policy(initials_as_family=True))
+    >>> letters.parse("Lakshmi R S").family
+    'R S'
+    >>> letters.parse("Ram Bahadur B. K.").middle
+    'Bahadur'
+    >>> letters.parse("Lakshmi, R S").family
+    'Lakshmi'
+
+The Nepali pack, ``locales.NE``, turns it on, and ``Parser.suggest``
+suggests it for a list whose names repeat one run of letters (see
+:ref:`suggest-settings`). Turn it on by hand only for data written this
+way: the same string is a middle and a family initial in many lists
+(``Melanie J D``) and a byline written surname first in a bibliography
+(``Huntley R P``, for which ``name_order=FAMILY_FIRST`` is the setting).
+Measured on ORCID researchers' credit names checked against the names
+they filed, a spaced run of letters ending a name was the family 66
+times, a middle and a family initial 11 times and a byline 302 times
+(2026-11-11). The switch reports nothing. Without it, a name of one
+word followed by nothing but initials reports the fork as an ``order``
+ambiguity. It names no ``alternative``: the other reading lays out the
+whole name, the word in front as the family, which
+``name_order=FAMILY_FIRST`` reads:
+
+.. doctest::
+
+    >>> [a.kind.value for a in parse("Kavitha S").ambiguities]
+    ['order']
+    >>> parse("Kavitha S").ambiguities[0].alternative is None
+    True
+    >>> letters.parse("Kavitha S").ambiguities
+    ()
 
 .. _brackets:
 

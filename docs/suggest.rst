@@ -14,7 +14,15 @@ can: most of its names carry some evidence, and the evidence agrees.
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
 Each name votes on its order from the evidence it carries: a family
 name written in capitals at one end, a trailing initial
-(``Smith J.``), a lowercase particle first or before the last word, a
+(``Smith J.``) where at least three names, and 60% of the list's names
+that hold a name word (names with a comma, blanks and names of nothing
+but titles or marks leave the count), end in initials no other evidence
+in the same name contradicts, as a bibliography's do (in a South Asian
+list the letters ending a name are often the family name; a short list
+of bylines may therefore get no order suggestion, so where you know a
+list is bylines, set ``name_order=FAMILY_FIRST`` yourself), a lowercase
+particle first
+or before the last word, a
 first or last word that is a common romanized Chinese, Korean or
 Vietnamese surname, or a common given name, each read past the titles
 and post-nominals your parser's vocabulary lists (``Dr.``, ``PhD``,
@@ -25,7 +33,9 @@ group decides ``name_order`` when at least two names vote for one end
 and they are more than two thirds of the names that cast a vote. A
 patronymic rule (East Slavic or Turkic, :class:`~nameparser.PatronymicRule`) is
 decided only where at least five names carry its patronymic and they
-are more than four in five of the voting names, and a patronymic
+are more than four in five of the voting names, a name whose trailing
+initial alone was set aside counting among them (the patronymic
+evidence's note says how many), and a patronymic
 votes only where the rule can read it (three name words for East
 Slavic, four for Turkic); a group decided East Slavic reads
 given-first, since that rule reorders each name itself and stands down
@@ -57,12 +67,35 @@ setting's evidence and the names that disagree with it.
 ``disagreeing()`` lists the names whose vote is against a decided
 setting, the ones to check by hand.
 
+A list of South Asian names often ends each name in letters that are
+the family name, and repeats them: Nepal's ``B K`` and ``K C`` are
+surnames written short. Where one run of letters ends at least two of
+the list's names and at least half of the names ending in letters,
+``suggest()`` turns ``initials_as_family`` on (see
+:ref:`initials-as-family`); its evidence is the ``initials_as_family``
+entry of ``suggestion.evidence``, whose note names the letters. A list
+whose letters are its family casts no trailing-initial vote on the
+order. A base that reads names family first, or folds every middle name
+into the family (``middle_as_family``), is suggested no change here:
+the switch would change none of its names.
+
+.. doctest::
+
+    >>> nepal = Parser().suggest(["Durga B K", "Sita B.K.", "Hari Thapa"])
+    >>> nepal.patch
+    PolicyPatch(initials_as_family=True)
+    >>> nepal.parser.parse("Ram Bahadur B K").family
+    'B K'
+
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
-in a known order (2026-11-10), a list written in the base's own order keeps it
+in a known order (2026-11-10, re-taken 2026-11-11), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
-Polish names to 200 for Indian ones. A plain list of names with no
+Polish names to 200 for Indian ones. One list keeps its order less
+often: bylines written with the initials first (``GH Yoon``), whose
+joined initials are read as a family name, so a group of ten or more is
+usually suggested family-first. A plain list of names with no
 common surname or given name in it (``Zxqv Brtk``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The
