@@ -5,10 +5,10 @@ Settings for a list of names
 
 A list of names is usually written in one convention: a registry gives
 every family name first, a mailing list every family name last. A
-single name cannot show which, because ``Smith Mary`` and ``Mary
-Smith`` are the same shape and only a reader who knows ``Smith`` is a
-surname and ``Mary`` a given name can tell them apart. A whole list
-can: most of its names carry some evidence, and the evidence agrees.
+single name often cannot show which: in ``Taylor Morgan`` either word
+is a common given name and a common surname, so neither the parser nor
+a reader can place it. A whole list can: most of its names carry some
+evidence, and the evidence agrees.
 
 ``Parser.suggest()`` reads a list you declare to be one group (one
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
@@ -24,7 +24,8 @@ list is bylines, set ``name_order=FAMILY_FIRST`` yourself), a lowercase
 particle first
 or before the last word, a
 first or last word that is a common romanized Chinese, Korean or
-Vietnamese surname, or a common given name, each read past the titles
+Vietnamese surname, or a common given name that is rarely a surname
+(``Emily``, not ``Taylor``), each read past the titles
 and post-nominals your parser's vocabulary lists (``Dr.``, ``PhD``,
 ``Jr.``). A name with a comma states its own order and does not vote,
 unless only post-nominals follow the comma (``Zhang Wei, PhD``), and
@@ -46,17 +47,63 @@ votes do not decide keeps the base parser's value.
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Mary Smith"]
+    >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
+    ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> Parser().parse("Smith Mary").given
-    'Smith'
-    >>> suggestion.parser.parse("Smith Mary").given
-    'Mary'
-    >>> [entry.text for entry in suggestion.disagreeing()]
-    ['Mary Smith']
+    >>> Parser().parse("Taylor Morgan").given
+    'Taylor'
+    >>> suggestion.parser.parse("Taylor Morgan").given
+    'Morgan'
+
+Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+the romanized surname in front, ``Garcia Emily`` by the common given
+name at the end. ``Taylor Morgan`` gives no evidence: it is read family
+first because the list is, and nothing in the name can confirm that.
+
+.. _suggest-disagreeing:
+
+A list from one source can still hold a name written the other way
+round. Here ``Emily Clark`` puts its given name first, votes against
+the list, and is listed by ``disagreeing()``. Check such a name by
+hand: the suggested parser reads it the way the rest of the list is
+written, so it takes ``Clark`` for the given name:
+
+.. doctest::
+
+    >>> mixed = Parser().suggest(listing + ["Emily Clark"])
+    >>> print(mixed)
+    Suggested for 6 names (base: Parser(Lexicon(default), Policy())):
+      name_order  FAMILY_FIRST  4 for, 1 against, 1 no evidence
+          surname FAMILY_FIRST  3
+          given-name FAMILY_FIRST  1
+          given-name GIVEN_FIRST  1
+      patronymic_rules  unchanged (none)  no evidence
+      initials_as_family  unchanged (False)  no evidence
+      disagreeing (1): Emily Clark
+    >>> mixed.parser.parse("Emily Clark").given
+    'Clark'
+
+The evidence need not be a surname. Here the common given names at the
+end decide the order, and ``Ellis Jordan``, which carries none, follows
+them:
+
+.. doctest::
+
+    >>> by_given = Parser().suggest(["Parker Emma", "Reed Sophie", "Ellis Jordan"])
+    >>> by_given.patch
+    PolicyPatch(name_order=FAMILY_FIRST)
+    >>> by_given.parser.parse("Ellis Jordan").given
+    'Jordan'
+
+Where no name in the list carries evidence, ``suggest()`` leaves every
+setting as the base parser has it:
+
+.. doctest::
+
+    >>> Parser().suggest(["Taylor Morgan", "Jordan Casey", "Avery Quinn"]).patch
+    PolicyPatch()
 
 ``suggestion.parser`` is the base parser with ``suggestion.patch``
 applied, so the base is never changed. ``suggestion.evidence`` holds a
@@ -95,8 +142,8 @@ takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 200 for Indian ones. One list keeps its order less
 often: bylines written with the initials first (``GH Yoon``), whose
 joined initials are read as a family name, so a group of ten or more is
-usually suggested family-first. A plain list of names with no
-common surname or given name in it (``Zxqv Brtk``) carries no evidence,
+usually suggested family-first. A list whose names hold no such surname or
+given name (``Taylor Morgan``, ``Jordan Casey``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The
 parser never detects the language of a name; the suggester may, over a

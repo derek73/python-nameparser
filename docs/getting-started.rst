@@ -52,10 +52,11 @@ you, and :doc:`shapes` the forms of input it reads.
 A list of names: let ``suggest`` choose the settings
 -----------------------------------------------------
 
-One name cannot show its order: ``Smith Mary`` and ``Mary Smith``
-have the same shape. A list from one source can, because a source
-writes every name the same way and many of its names carry evidence of
-the order.
+One name often cannot show its order: in ``Taylor Morgan`` either word
+could be the family name, and a reader cannot tell which any more than
+the parser can. A list from one source can, because a source writes
+every name the same way and many of its names carry evidence of the
+order.
 
 :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads a list you
 declare to be one group and returns a :class:`~nameparser.Suggestion`.
@@ -66,32 +67,39 @@ afterwards:
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Mary Smith"]
+    >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
+    ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> parse("Smith Mary").given
-    'Smith'
-    >>> suggestion.parser.parse("Smith Mary").given
-    'Mary'
+    >>> parse("Taylor Morgan").given
+    'Taylor'
+    >>> suggestion.parser.parse("Taylor Morgan").given
+    'Morgan'
 
 ``patch`` holds the settings the list changed. Printing the suggestion
-shows the evidence for each setting and the names that voted against
-it. Check those by hand: the suggested parser may misread them, and
-``suggestion.base`` is the parser you started from:
+shows the evidence for each setting and any names that voted against
+it, and ``suggestion.base`` is the parser you started from:
 
 .. doctest::
 
     >>> print(suggestion)
     Suggested for 5 names (base: Parser(Lexicon(default), Policy())):
-      name_order  FAMILY_FIRST  4 for, 1 against, 0 no evidence
+      name_order  FAMILY_FIRST  4 for, 0 against, 1 no evidence
           surname FAMILY_FIRST  3
           given-name FAMILY_FIRST  1
-          given-name GIVEN_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
-      disagreeing (1): Mary Smith
+
+Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+the romanized surname in front, ``Garcia Emily`` by the common given
+name at the end (``Garcia`` is not one of the surnames ``suggest``
+reads). ``Taylor Morgan`` gives no evidence, so the suggested
+parser reads it family first only because the rest of the list is
+written that way; nothing in the name itself can confirm that reading.
+A name written the other way round that carries evidence (``Emily
+Clark``) votes against the list, and is the one to check by hand (see :ref:`a name that disagrees
+<suggest-disagreeing>`).
 
 The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely
@@ -194,16 +202,16 @@ compare:
 
 Parse each source with the parser that reads it: ``check()`` compares
 names as they were parsed, so two sources need not share an order. Read
-with the default parser, the registry's ``Smith`` is a given name and
+with the default parser, the registry's ``Taylor`` is a given name and
 the pair does not match:
 
 .. doctest::
 
-    >>> registry = Parser().suggest(["Smith Mary", "Kim Minjun",
+    >>> registry = Parser().suggest(["Taylor Morgan", "Kim Minjun",
     ...                              "Wang Xiaoming", "Nguyen Anh"]).parser
-    >>> matcher.check(registry.parse("Smith Mary"), parse("M. Smith")).consistent
+    >>> matcher.check(registry.parse("Taylor Morgan"), parse("M. Taylor")).consistent
     True
-    >>> matcher.check("Smith Mary", "M. Smith").consistent
+    >>> matcher.check("Taylor Morgan", "M. Taylor").consistent
     False
 
 A pair is consistent when every field compares in a way the matcher
