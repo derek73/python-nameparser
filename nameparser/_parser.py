@@ -342,7 +342,11 @@ class Parser:
         groups a size (decisions/group-suggestion's 2026-11-11 TRAILING
         INITIAL entry holds the table): a group written in this parser's own order kept
         it in at least 98% of groups at every size from 2 to 200 names,
-        under either base order. Moving the base takes more names, and
+        under either base order, save one population: ORCID's credit
+        names written as a byline with the initials first (``GH Yoon``),
+        whose joined initials the capitals signal reads as a family name,
+        kept their given-first order in 96% of groups of two and 0% of
+        groups of fifty, before this gate as after it. Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups

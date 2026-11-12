@@ -1093,7 +1093,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     policy = parser.policy
     patronymic, patronymic_fields, settled = _decide_patronymic(
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
-    if set_aside:
+    if set_aside and any(Signal.PATRONYMIC in n.votes for n in evidence):
         # the evidence says what its share was taken of: the names a
         # set-aside vote left with none still count among those casting
         # one, and show as no evidence

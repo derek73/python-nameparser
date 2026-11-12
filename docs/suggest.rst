@@ -70,7 +70,10 @@ names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10, re-taken 2026-11-11), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
-Polish names to 200 for Indian ones. A plain list of names with no
+Polish names to 200 for Indian ones. One list keeps its order less
+often: bylines written with the initials first (``GH Yoon``), whose
+joined initials are read as a family name, so a group of ten or more is
+usually suggested family-first. A plain list of names with no
 common surname or given name in it (``Zxqv Brtk``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The

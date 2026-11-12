@@ -244,8 +244,12 @@ def test_a_name_whose_given_name_contests_its_initial_is_not_counted(
     # three of six, under 60%, and the bylines lose their vote
     ["Priem, Jason", "Smith, Jane", "Doe, John"],     # comma names
     ["", "   ", "\t"],                                 # blanks
-    ["\u200b", "\u200f", ","],                        # no word at all
-    ["-", ".", "()"],                                  # marks alone
+    # each filler below is a word to _name_words, left out only by its
+    # having no letter or digit: every row fails with that test dropped
+    ["\u200b", "\u200f", "\u2063"],                   # zero-width alone
+    ["-", ".", "&"],                                   # marks alone
+    ["\u0301", "\u0300\u0301", "\u0308"],             # combining marks
+    ["?", "#", "- -"],                                 # punctuation
     ["Dr.", "Professor", "Jr."],                       # nothing but titles
 ])
 def test_names_with_no_name_word_are_not_in_the_trailing_share(
@@ -289,6 +293,14 @@ def test_the_patronymic_evidence_says_what_its_share_counted() -> None:
             "count among the names casting a vote") in note
     plain = Parser().suggest(_EAST_SLAVIC + ["Xyzzy Plugh", "Qwrt Zxcv"])
     assert "set-aside" not in _patronymic_evidence(plain).note
+    # a set-aside name with another vote left is no name of the count
+    capitals = Parser().suggest(
+        _EAST_SLAVIC + ["Popov Ivan I.", "SMITH John A."])
+    assert ("1 name whose only vote was a set-aside trailing initial "
+            "counts among") in _patronymic_evidence(capitals).note
+    # and with no patronymic vote in the group it explains nothing
+    bylines = Parser().suggest(["Huntley R P", "Xyzzy Plugh", "Qwrt Zxcv"])
+    assert "set-aside" not in _patronymic_evidence(bylines).note
 
 
 def test_a_set_aside_name_still_counts_in_the_patronymic_share() -> None:

@@ -227,6 +227,9 @@ def test_patentsview_reads_the_country_whatever_the_key_order(
 @needs_checkout
 def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
         _cache: Path) -> None:
+    """The orcid-byline population's filter, and nothing past it: what
+    the gate (decisions/group-suggestion, 2026-11-11 TRAILING INITIAL)
+    does with the population is the tool's table, read by hand."""
     rows = [
         # kept: spaced, joined, dotted and capitals; a hyphen or a space
         # in the family box
@@ -253,6 +256,19 @@ def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
     assert sorted(keep.pools["orcid-byline"]) == [
         ("AM", "Hoy"), ("J.", "Smith"), ("M.A.", "Lopez-Diaz"),
         ("R P", "Huntley")]
+
+
+@needs_checkout
+def test_an_orcid_file_holding_no_byline_gets_a_note(
+        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # an empty population is a note, never a silently empty row
+    folder = _cache / "local" / "orcid-researchers"
+    folder.mkdir(parents=True)
+    (folder / "raw.jsonl").write_text(json.dumps(
+        {"credit": "Rita Jones", "family": "Jones", "given": "Rita"}) + "\n",
+        encoding="utf-8")
+    out = _run(capsys)
+    assert "orcid-researchers: present, but no names read" in out
 
 
 @needs_checkout
