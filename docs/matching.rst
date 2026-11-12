@@ -154,19 +154,19 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``same``
      - ``Smith`` / ``Smith``
      - yes
-   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away
+   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away, and each hyphen the parser joins two names with (U+2010, the en dash and others) read as the hyphen-minus wherever the parser reads the name alike, which it does not for a credential joined by one (``MD‐PhD``)
      - ``María García`` / ``MARIA GARCIA``
      - yes
-   * - ``joined``: equal once folded and stripped of spaces and hyphen-minus signs, save where both are initials alone
+   * - ``joined``: equal once folded and stripped of spaces and hyphens, save where both are initials alone
      - ``Ignazio LaRussa`` / ``Ignazio La Russa``
      - yes
    * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
      - ``Wm. Smith`` / ``William Smith``
      - yes
-   * - ``particles-aside``: the family names agree without their particles
+   * - ``particles-aside``: the family names, or the maiden names, agree without their particles
      - ``Juan de la Vega`` / ``Juan Vega``
      - yes
-   * - ``part-of-other``: one family name's words are among the other's, or listed spellings of them
+   * - ``part-of-other``: one family or maiden name's words are among the other's, or listed spellings of them
      - ``Ana de Melo Schmitt`` / ``Ana de Melo Schmitt e Braga``
      - yes
    * - ``initial``: an initial against a name, outside the family name
