@@ -491,8 +491,10 @@ def _ratio(small_text: str, large_text: str,
     toward the true costs, so a ratio that a noisy stretch inflated
     comes back down, and one it deflated -- the small input's every
     round slowed -- comes back up. These are not retries of a verdict:
-    once taken, all `_MAX_ROUNDS` run and the last minimums are judged,
-    the estimate moving only toward the true ratio. A clean run on a
+    each round moves each minimum toward its input's true cost, so the
+    ratio converges on the true one, though not monotonically -- a
+    large input's minimum can come down before the small one's -- so
+    once taken, all `_MAX_ROUNDS` run and the last minimums are judged. A clean run on a
     quiet machine (about 4x against a bound of 6) pays for no extra
     rounds.
 
@@ -579,10 +581,11 @@ def test_ratio_takes_more_rounds_only_near_the_bound(
     warm = [1.0]
     ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.0], monkeypatch)
     assert (round(ratio, 2), rounds) == (4.0, _ROUNDS)
-    # just under the near line stops; on it, goes on
-    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.79], monkeypatch)
+    # under the near line (6.0 * 0.8) stops; over it, goes on -- clear
+    # of the line, which float sums of the fake clock blur
+    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.7], monkeypatch)
     assert rounds == _ROUNDS
-    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.8], monkeypatch)
+    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.9], monkeypatch)
     assert rounds == _MAX_ROUNDS
     # the optional-stopping case, a true 7x (10 and 70): small reads 16
     # for eight rounds, large 80 for seven, so the first rounds read
