@@ -13,6 +13,7 @@ pairs into the PolicyPatch its shipped pack carries (#754, 4f).
 RULES: tuple[tuple[str, tuple[tuple[str, object], ...]], ...] = (
     ('cs', (('two_family_names', True),)),
     ('es', (('two_family_names', True),)),
+    ('mn', (('name_order', 'family-first-given-last'),)),
     ('ne', (('initials_as_family', True),)),
     ('ru', (('patronymic_rules', ('east-slavic',)),)),
     ('sk', (('two_family_names', True),)),

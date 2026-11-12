@@ -1,5 +1,8 @@
 schema = 1
 
+[rules]
+name_order = "family-first-given-last"
+
 [[word]]
 text = "lama"
 religious = { addresses = "given", issue = 346 }

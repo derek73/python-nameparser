@@ -877,6 +877,25 @@ CASES: tuple[Case, ...] = (
          {"given": "Ram", "middle": "Bahadur", "family": "B K"},
          locale="ne", classification="feat(#1254)",
          notes="the default reads middle 'Bahadur B', family 'K'"),
+    Case("the_mongolian_pack_reads_the_fathers_name_as_the_family",
+         "Батын Сүхээ",
+         {"given": "Сүхээ", "family": "Батын"},
+         locale="mn", classification="feat(#1237)",
+         notes="the father's name in the genitive, written first; 1.4.0 "
+               "and 3.0.1 read first/given 'Батын', last/family 'Сүхээ' "
+               "(measured on both wheels 2026-11-12)"),
+    Case("the_mongolian_pack_reads_a_romanized_fathers_name_as_the_family",
+         "Bataagiin Suhee",
+         {"given": "Suhee", "family": "Bataagiin"},
+         locale="mn", classification="feat(#1237)",
+         notes="1.4.0 and 3.0.1 read given 'Bataagiin' (2026-11-12)"),
+    Case("the_mongolian_pack_reads_the_given_name_last",
+         "Боржигин Батын Сүхээ",
+         {"given": "Сүхээ", "middle": "Батын", "family": "Боржигин"},
+         locale="mn", classification="feat(#1237)",
+         notes="a word before the father's name (a clan name, not read "
+               "as one) leaves the given name last, the reason the pack "
+               "declares FAMILY_FIRST_GIVEN_LAST rather than FAMILY_FIRST"),
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- the reserve/count this row used to pin no

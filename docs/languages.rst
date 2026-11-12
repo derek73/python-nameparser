@@ -1,7 +1,7 @@
 Notes by language
 =================
 
-What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles and Vietnamese names.
+What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles, and Vietnamese and Mongolian names.
 
 
 .. _west-south-slavic-packs:
@@ -382,3 +382,44 @@ Anh``, given ``DO``), and ``CHI`` without a comma or in a name written
 wholly in capitals (``NGUYEN VAN ANH, CHI`` gives given ``CHI``); other
 credentials, and ``CHI`` after a comma in a name written in mixed case,
 stay suffixes (``Nguyen Van Anh, PhD``).
+
+
+.. _mongolian-names:
+
+Mongolian names
+---------------
+
+A Mongolian name has no inherited family name. It is the father's name
+(rarely the mother's), then the given name, the name a person goes by.
+Written in full the father's name is in the genitive (``Батын Сүхээ``,
+"Sükhee, Bat's"); passports write it in the nominative (``Бат Сүхээ``)
+and put it in the surname field. The default reads the father's name as
+the given name; ``mn`` reads it as the family, the field a caller sorts
+and matches by:
+
+.. doctest::
+
+    >>> parse("Батын Сүхээ").given
+    'Батын'
+    >>> mongolian = parser_for(locales.MN)
+    >>> sukhee = mongolian.parse("Батын Сүхээ")
+    >>> sukhee.family, sukhee.given
+    ('Батын', 'Сүхээ')
+    >>> mongolian.parse("Bataagiin Suhee").family
+    'Bataagiin'
+    >>> mongolian.parse("Б. Сүхээ").family
+    'Б.'
+
+The order holds for every name of two words or more the pack reads
+without a family comma, in any script whose order the script does not
+settle, so keep it for names written the Mongolian way. A romanized name
+written given name first, as many Mongolians write their names in
+English, reads backwards (``mongolian.parse("Suhee Bataagiin")`` gives
+family ``Suhee``), as does the given name followed by the father's
+initial (``Uyanga B.`` gives family ``Uyanga``), which the default reads
+right, and a name from any other tradition. A
+family comma fixes the family name whatever the order (``Бат, Сүхээ``),
+and a one-word name reads as the given name, as under every order. The
+genitive ending is not read, so ``patronymic`` stays empty, and a word
+written before the father's name, a clan name, reads as the family, the
+father's name as the middle.

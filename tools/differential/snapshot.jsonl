@@ -5064,6 +5064,7 @@
 {"name": "Балдырған Қожамқұлова", "given": "Балдырған", "family": "Қожамқұлова", "initials": "Б. Қ."}
 {"name": "Бат", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бат", "order": "FAMILY_FIRST", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
+{"name": "Батын Сүхээ", "given": "Батын", "family": "Сүхээ", "initials": "Б. С."}
 {"name": "Бақытжан Қанапиянов", "given": "Бақытжан", "family": "Қанапиянов", "initials": "Б. Қ."}
 {"name": "Бертрам Вилберфорс Ҳенру Роберт Вустер", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
 {"name": "Бисерка Цвејић", "given": "Бисерка", "family": "Цвејић", "initials": "Б. Ц."}

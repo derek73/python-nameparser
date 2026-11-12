@@ -14,9 +14,9 @@ words or more for the packs that read two family names — and a choice
 of languages declares the words whose reading it changes. Read that precisely — a shape is a pattern, not a
 language, so a pack can act on a name from a tradition it was not
 written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
-and ``sk`` may read any name of three words differently, and ``vi``,
-whose name order is its shape, any name: the order moves every name a
-family comma does not fix, and its titles and its removed readings
+and ``sk`` may read any name of three words differently, and ``vi`` and
+``mn``, whose name order is their shape, any name: the order moves every name a
+family comma does not fix, and ``vi``'s titles and removed readings
 reach the comma names too. The warning
 under `Using a pack`_ shows what that costs.
 
@@ -432,7 +432,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -521,6 +521,12 @@ Shipped packs
        writes its members. The default leaves it in the name, since
        ``王君`` is a complete Chinese name, so a Chinese name read under
        this pack loses its ``君`` the same way.
+   * - ``mn``
+     - Mongolian — reads every name family first, the given name last,
+       so the father's name, which a Mongolian name writes first and
+       official records file as the surname, is the family
+       (``Батын Сүхээ`` → family ``Батын``, given ``Сүхээ``). See
+       :ref:`Mongolian names <mongolian-names>`.
    * - ``ne``
      - Nepali given names — chooses the language ``ne``, which reads
        ``श्री``, ``गुरु`` and ``Guru`` as name words, placed by position,
@@ -596,7 +602,8 @@ policy field, the segmentation it needs a segmenter to use.
 ``es`` and ``es_ar`` are each a choice with a list and one policy field
 beside it: each turns ``two_family_names`` on and carries the given
 names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
-field beside it and no list. ``vi`` is a choice with one policy field,
+field beside it and no list. ``mn`` is a choice with one policy field,
+``name_order``, and its choice turns on nothing yet. ``vi`` is a choice with one policy field,
 ``name_order``, and the one fragment that takes readings out rather
 than adding them: a choice prefers its language's reading of a word
 only where that reading is a title, a particle or another vocabulary

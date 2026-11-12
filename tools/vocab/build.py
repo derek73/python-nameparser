@@ -348,7 +348,8 @@ RULE_DEFAULTS: dict[str, object] = {
 #: pack reading its language's table (decisions/O6, 2026-11-04); the
 #: roster names the one pack a file is listed for.
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
-                             "sk": "SK", "vi": "VI", "ne": "NE"}
+                             "sk": "SK", "vi": "VI", "ne": "NE",
+                             "mn": "MN"}
 
 #: The words check 13 lets hold a reading in another file beside their
 #: mul.toml one, each with why (#1005): `i` is mul.toml's numeral and

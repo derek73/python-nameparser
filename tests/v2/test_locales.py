@@ -24,7 +24,7 @@ from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
     PolicyPatch, Script, _SCRIPT_RANGES,
 )
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, Role
 from nameparser.locales import ja as _ja
 from nameparser.locales import ru as _ru
 from nameparser.locales import tr_az as _tr_az
@@ -117,11 +117,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
-        "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "mn", "ne", "pt",
+        "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -506,6 +506,106 @@ def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> No
     # a family comma fixes the family name, so it reads alike
     for text in ("Nguyen, Van Anh", "Smith, John"):
         assert vi.parse(text).as_dict() == _default_parse(text)
+
+
+def test_mn_pack_contents() -> None:
+    # a choice of mn and its file's [rules] order, nothing else
+    # (decisions/vocabulary-model, the 2026-11-12 #1237 entry)
+    from nameparser.locales import mn as _mn
+    assert locales.MN == Locale(
+        code="mn", lexicon=Lexicon.empty(),
+        policy=PolicyPatch(name_order=FAMILY_FIRST_GIVEN_LAST),
+        languages=frozenset({"mn"}))
+    assert _mn.DEVIATES("Сүхээ") and not _mn.DEVIATES(", ")
+
+
+#: The father's name is the family under the pack (#1253's first
+#: statement), in each form it is written in; the default reads each
+#: given-first. (text, family, middle, given)
+_MN_READINGS = [
+    ("Батын Сүхээ", "Батын", "", "Сүхээ"),
+    ("Бат Сүхээ", "Бат", "", "Сүхээ"),
+    ("Bataagiin Suhee", "Bataagiin", "", "Suhee"),
+    ("BATAAGIIN SUHEE", "BATAAGIIN", "", "SUHEE"),
+    ("Дорждэрэмийн Ганбаатар", "Дорждэрэмийн", "", "Ганбаатар"),
+    ("Dorjiin Khürelsükh", "Dorjiin", "", "Khürelsükh"),
+    ("Б. Сүхээ", "Б.", "", "Сүхээ"),
+    ("Цэрэн Оюун-Эрдэнэ", "Цэрэн", "", "Оюун-Эрдэнэ"),
+    # a word before the father's name (a clan name, not read as one,
+    # #1237) leaves the given name last
+    ("Боржигин Батын Сүхээ", "Боржигин", "Батын", "Сүхээ"),
+    ("Батын Дорж Сүхээ Болд", "Батын", "Дорж Сүхээ", "Болд"),
+    # titles and suffixes stand aside
+    ("Др. Батын Сүхээ", "Батын", "", "Сүхээ"),
+    ("Dr. Bataagiin Suhee", "Bataagiin", "", "Suhee"),
+    ("Батын Сүхээ Jr.", "Батын", "", "Сүхээ"),
+    ("Bataagiin Suhee, PhD", "Bataagiin", "", "Suhee"),
+    # traditional script: the declared order, as for any script W4
+    # does not settle; the genitive joined by U+202F is one word (T6)
+    ("ᠪᠠᠲᠤ\u202fᠶᠢᠨ ᠰᠦᠬᠡ", "ᠪᠠᠲᠤ\u202fᠶᠢᠨ", "", "ᠰᠦᠬᠡ"),
+]
+
+
+@pytest.mark.parametrize("text, family, middle, given", _MN_READINGS)
+def test_mn_reads_the_fathers_name_as_the_family(
+        text: str, family: str, middle: str, given: str) -> None:
+    got = _require_packed("mn").parse(text)
+    assert (got.family, got.middle, got.given) == (family, middle, given)
+    assert parse(text).family != family
+
+
+_MN_DECOMPOSED = [
+    (unicodedata.normalize("NFD", t), unicodedata.normalize("NFD", f),
+     m, unicodedata.normalize("NFD", g))
+    for t, f, m, g in _MN_READINGS if t != unicodedata.normalize("NFD", t)]
+
+
+def test_mn_decomposed_rows_exist() -> None:
+    # an empty parametrize skips rather than fails
+    assert len(_MN_DECOMPOSED) >= 2
+
+
+@pytest.mark.parametrize("text, family, middle, given", _MN_DECOMPOSED)
+def test_mn_reads_a_decomposed_name_alike(
+        text: str, family: str, middle: str, given: str) -> None:
+    # Cyrillic ү and ө have no decomposition, so the rows written with
+    # й and ё are the ones NFD reaches
+    got = _require_packed("mn").parse(text)
+    assert (got.family, got.middle, got.given) == (family, middle, given)
+
+
+@pytest.mark.parametrize("text", [
+    "Батын, Сүхээ",       # a family comma fixes the family name
+    "Сүхээ, Батын",       # whichever word stands before it
+    ", Сүхээ",            # nothing before the comma
+    "Сүхээ",              # one word: given, under every order (rules/O5)
+])
+def test_mn_reads_a_family_comma_and_a_lone_word_as_the_default(
+        text: str) -> None:
+    assert _require_packed("mn").parse(text).as_dict() == _default_parse(text)
+
+
+def test_mn_lone_word_follows_the_callers_switch() -> None:
+    family_lone = parser_for(locales.MN, base=Parser(
+        policy=Policy(lone_name_word=Role.FAMILY)))
+    assert family_lone.parse("Сүхээ").family == "Сүхээ"
+    assert family_lone.parse("Батын Сүхээ").family == "Батын"
+
+
+def test_mn_reads_a_trailing_initial_as_the_given_name() -> None:
+    # accepted (decisions/vocabulary-model, 2026-11-12 #1237): the given
+    # name and the father's initial written given first read backwards,
+    # where the default reads them right and reports the order (O4)
+    got = _require_packed("mn").parse("Uyanga B.")
+    assert (got.family, got.given, got.ambiguities) == ("Uyanga", "B.", ())
+    assert parse("Uyanga B.").family == "B."
+
+
+def test_mn_fills_no_patronymic() -> None:
+    # the genitive is not read (#1237): the father's name is the family,
+    # and the patronymic view stays rules/R9's
+    for text, *_ in _MN_READINGS:
+        assert _require_packed("mn").parse(text).patronymic == "", text
 
 
 def test_cs_and_sk_pack_contents() -> None:
@@ -1683,6 +1783,17 @@ _ROTATORS["vi"] = [
     "Nguyen, Pgs Van Anh",           # pgs
     "Nguyen, PGS.TS. An",            # the stacked form
 ]
+# mn: the order alone (its choice changes no word), in each script and
+# form the father's name is written in, and with a word before it
+_ROTATORS["mn"] = [
+    "Батын Сүхээ",                   # the genitive, Cyrillic
+    "Бат Сүхээ",                     # the nominative, as passports write it
+    "Bataagiin Suhee",               # the genitive, romanized
+    "Б. Сүхээ",                      # the father's name as its initial
+    "Цэрэн Оюун-Эрдэнэ",             # a hyphenated given name
+    "Боржигин Батын Сүхээ",          # a word before the father's name
+    "ᠪᠠᠲᠤ\u202fᠶᠢᠨ ᠰᠦᠬᠡ",           # traditional script, the genitive joined (rules/T6)
+]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
     "Banerjee, Mamata Shrimati",     # shrimati ending the given part
@@ -1698,8 +1809,19 @@ _ROTATORS["bn"] = [
 ]
 
 
+#: Packs whose choice of languages changes no compiled reading: the
+#: chosen file's readings are all on by default and clash with none
+#: other's, so the choice is recorded (a strict parser reads only that
+#: file) and its derived surface is empty. mn: mn.toml held `lama` and
+#: an exclusion when locales.MN shipped (#1237). A choice that comes to
+#: change a word fails test_an_inert_choice_changes_no_word until its
+#: pack leaves this set and its rotators name the word.
+_INERT_CHOICES = frozenset({"mn"})
+
+
 @pytest.mark.parametrize("code", sorted(c for c in _PACKS
-                                        if locales.get(c).languages))
+                                        if locales.get(c).languages
+                                        and c not in _INERT_CHOICES))
 def test_choice_rotators_cover_every_changed_word(code: str) -> None:
     # the choice packs' counterpart of the marker-branch sweep below:
     # a word joining a choice's surface fails here until a rotator
@@ -1710,9 +1832,15 @@ def test_choice_rotators_cover_every_changed_word(code: str) -> None:
     assert surface and missing == []
 
 
+@pytest.mark.parametrize("code", sorted(_INERT_CHOICES))
+def test_an_inert_choice_changes_no_word(code: str) -> None:
+    assert locales.get(code).languages
+    assert _ri.changed_words(_ri.selected(locales.get(code).languages)) == set()
+
+
 @pytest.mark.parametrize("code", sorted(
     c for c in _PACKS if locales.get(c).languages
-    and not _is_vocabulary_pack(locales.get(c))))
+    and not _is_vocabulary_pack(locales.get(c)) and c not in _INERT_CHOICES))
 def test_a_choice_word_rotator_is_moved_by_the_choice_alone(code: str) -> None:
     # a pack with a choice beside a fragment or a patch (es): a rotator
     # holding a word the choice changes is that word's witness only if

@@ -22,6 +22,7 @@
 "Mary Beth Smith"           →  middle="Beth"
 "Garcia Juan Carlos"  family-first  →  family="Garcia"
 "Nguyễn Thị Minh Khai"  family-first-given-last  →  given="Khai"
+"Батын Сүхээ"  [mn]         →  family="Батын"
 ```
 
 **Except:**
