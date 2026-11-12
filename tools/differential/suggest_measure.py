@@ -113,6 +113,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.append(str(HERE))
 import corpus_build  # noqa: E402
+import local_corpora  # noqa: E402
 import snapshot  # noqa: E402
 
 REPO_ROOT = HERE.parents[1]
@@ -183,6 +184,19 @@ def _rows(path: Path) -> Iterator[dict[str, Any]]:
         for line in lines:
             if line.strip():
                 yield json.loads(line)
+
+
+def _checked_rows(source: str) -> Iterator[dict[str, Any]]:
+    """`source`'s raw.jsonl records, streamed, once local_corpora.load
+    has checked the cache as every other reader of it does: its
+    meta.json, the files' sha256 and the source's own check (a
+    parliaments cache fetched from another dataset list is refused,
+    which reading raw.jsonl alone let pass); FileNotFoundError where the
+    source is not fetched, CorpusDamaged (a ValueError) where it is
+    stale or damaged, both raised here rather than on the first record."""
+    if local_corpora.load(source) is None:
+        raise FileNotFoundError(2, "not fetched", str(local(source) / "raw.jsonl"))
+    return _rows(local(source) / "raw.jsonl")
 
 
 def pool_rng(seed: int, label: str) -> random.Random:
@@ -276,19 +290,19 @@ def _patentsview(keep: _Reservoir) -> None:
 
 
 def _psc(keep: _Reservoir) -> None:
-    for r in _rows(local("psc-individuals") / "raw.jsonl"):
+    for r in _checked_rows("psc-individuals"):
         if (n := r.get("nationality")) in PSC_NATIONALITIES:
             given = f"{r.get('forename', '')} {r.get('middle_name', '')}"
             keep.add(f"psc-{n}", given, r.get("surname", ""))
 
 
 def _cz(keep: _Reservoir) -> None:
-    for r in _rows(local("cz-candidates") / "raw.jsonl"):
+    for r in _checked_rows("cz-candidates"):
         keep.add("cz", r.get("jmeno", ""), r.get("prijmeni", ""))
 
 
 def _vi(keep: _Reservoir) -> None:
-    for r in _rows(local("uit-vinames") / "raw.jsonl"):
+    for r in _checked_rows("uit-vinames"):
         keep.add("vi", f"{r.get('middle', '')} {r.get('given', '')}",
                  r.get("family", ""))
 
@@ -306,7 +320,7 @@ def _orcid_bylines(keep: _Reservoir) -> None:
     family box, and the first initial the given box's first letter. A
     pair keeps the initials as the given name, so written family-first
     it is the byline as the holder wrote it (#1254)."""
-    for r in _rows(local("orcid-researchers") / "raw.jsonl"):
+    for r in _checked_rows("orcid-researchers"):
         credit, family, given = r.get("credit"), r.get("family"), r.get("given")
         if not (credit and family and given):
             continue
@@ -372,11 +386,15 @@ def parliament_lists() -> tuple[dict[str, dict[str, list[str]]] | None,
     """The opensanctions-parliaments names by dataset and script, Latin
     and Cyrillic rows of form "name" only, or None where not fetched;
     and a note for each list the tables read that holds no such row."""
-    path = local("opensanctions-parliaments") / "raw.jsonl"
-    if not path.exists():
+    try:
+        rows = _checked_rows("opensanctions-parliaments")
+    except FileNotFoundError:
         return None, []
+    except ValueError as e:
+        raise SystemExit(f"opensanctions-parliaments: present but unreadable "
+                         f"({e})") from e
     lists: dict[str, dict[str, list[str]]] = {}
-    for r in _rows(path):
+    for r in rows:
         if r.get("form") == "name" and r.get("script") in ("Latin", "Cyrillic"):
             lists.setdefault(r["dataset"], {}).setdefault(
                 r["script"], []).append(r["name"])
