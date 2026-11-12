@@ -37,7 +37,7 @@ are more than four in five of the voting names, a name whose trailing
 initial alone was set aside counting among them (the patronymic
 evidence's note says how many), and a patronymic
 votes only where the rule can read it (three name words for East
-Slavic, four for Turkic); a group decided East Slavic reads
+Slavic, three or four for Turkic); a group decided East Slavic reads
 given-first, since that rule reorders each name itself and stands down
 under a family-first order, unless its names' own votes decide a
 family-first order, which the rule never overrides. Every setting the

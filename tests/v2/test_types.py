@@ -1627,6 +1627,13 @@ def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
         patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
             "Ali Hasan oglu")
     assert (turkic.surname1, turkic.surname2) == ("Hasan oglu", "")
+    # five name words keep the positional reading, so O6 still divides
+    # the family it reads there (the father's name and the marker)
+    five = Parser(policy=Policy(
+        two_family_names=True,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
+            "Ali Ahmad Vali Hasan oglu")
+    assert (five.surname1, five.surname2) == ("Hasan", "oglu")
 
 
 def test_the_surname1_views_are_render_keys_and_not_fields() -> None:

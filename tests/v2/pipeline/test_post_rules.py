@@ -2234,6 +2234,9 @@ _TURKIC_THREE = [
     # the rule: three name words, the marker last, no comma, given first
     ("Бекмырза Чолпонбай уулу", None, "Чолпонбай уулу"),
     ("Dr. Aidai Mederbek kyzy Jr.", None, "Mederbek kyzy"),
+    # the marker's spellings: one case, and decomposed (read NFC, #1316)
+    ("AIDAI MEDERBEK KYZY", None, "MEDERBEK KYZY"),
+    ("Ali Ahmad og\u0306lu", None, "Ahmad og\u0306lu"),
     ("Aidai “Ai” Mederbek kyzy", None, "Mederbek kyzy"),
     # three name words: two and five keep the marker alone
     ("Mederbek kyzy", None, "kyzy"),

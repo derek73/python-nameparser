@@ -881,8 +881,12 @@ _OVICH_SURNAMES = ["Abramovich Roman", "Rabinovich Pavel",
     *_OVICH_SURNAMES, "Roman Abramovich",
     # rules/O1 reads three name words, the ending never on the first
     "Petrovich Ivan Sidorov", "Ivan Sidorov Petrovich Ivanovich",
-    # rules/O2 reads four name words, the marker never first or second
-    "Ali Huseyn oglu", "oglu Ali Huseyn Mamedov", "Ali oglu Huseyn Mamedov",
+    # rules/O2 reads three name words with the marker last and four with
+    # it third or last, never first or second
+    "Huseyn oglu", "oglu Ali Huseyn Mamedov", "Ali oglu Huseyn Mamedov",
+    "oglu Ali Huseyn", "Ali oglu Huseyn", "Ali Rauf Huseyn Vali oglu",
+    # a family comma
+    "Mamedov, Ali Huseyn oglu",
 ])
 def test_a_patronymic_ending_the_pipeline_cannot_read_casts_no_vote(
         text: str) -> None:
@@ -901,6 +905,13 @@ def test_a_patronymic_ending_the_pipeline_cannot_read_casts_no_vote(
     ("Лукашевич Антон Сергеевич", PatronymicRule.EAST_SLAVIC),
     ("Mamedov Ali Huseyn oglu", PatronymicRule.TURKIC),
     ("Ali Huseyn oglu Mamedov", PatronymicRule.TURKIC),
+    # three name words, no surname (rules/O2, #1187)
+    ("Ali Huseyn oglu", PatronymicRule.TURKIC),
+    ("Бекмырза Чолпонбай уулу", PatronymicRule.TURKIC),
+    ("Dr. Aidai Mederbek kyzy Jr.", PatronymicRule.TURKIC),
+    # a marker in a maiden clause, which rules/R9's Turkic arm reads (as
+    # on master, where the clause's four words cast the vote)
+    ("Leyla née Rasim qizi", PatronymicRule.TURKIC),
 ])
 def test_a_patronymic_the_pipeline_reads_still_votes(
         text: str, rule: PatronymicRule) -> None:
@@ -1669,3 +1680,15 @@ def test_a_group_never_decides_the_switch_off() -> None:
     s = base.suggest(["Mary Smith", "Ruth Hollis", "Huntley R P"])
     assert not _letters_evidence(s).decided
     assert s.parser.policy.initials_as_family is True
+
+
+def test_a_kyrgyz_group_with_no_surname_decides_the_turkic_rule() -> None:
+    # rules/O2's three-word reading (#1187): the vote reads the names
+    # the rule reads, so a group of `Given Father uulu` names gets the
+    # rule and reads the father's name and the marker as the family
+    names = ["Бекмырза Чолпонбай уулу", "Жылдыз Таалайбек кызы",
+             "Улукбек Карыбек уулу", "Aidai Mederbek kyzy",
+             "Talant Altynbek uulu"]
+    s = Parser().suggest(names)
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
+    assert s.parser.parse("Бекмырза Чолпонбай уулу").family == "Чолпонбай уулу"
