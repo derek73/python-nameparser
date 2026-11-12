@@ -149,6 +149,30 @@ def test_ne_pack_contents() -> None:
         "guru", "गुरु", "श्री"}
 
 
+@pytest.mark.parametrize("text", [
+    "Ram Bahadur B K", "Ram Bahadur B. K.", "Anjana K C(Maharjan)",
+    "Kalpana K C(Sunuwar)", "Bimala Kumari Singh (B. K.)", "Ram B K,Jr",
+    "Ram B\u200bK", "Ram B\ufeffK", "Ram B\u2063K", "Ram B\u30fbK",
+    "Ram B\u1361K", "Ram B\uff65K", "Ram E\u0301. K."])
+def test_ne_declares_every_name_its_letters_rule_moves(text: str) -> None:
+    # the #1347 review: words read by str.split() missed a name whose
+    # letters the parse divides at a bracket, a glued comma, a
+    # zero-width character or a word separator of another script
+    from nameparser.locales import ne as _ne
+    assert parser_for(locales.NE).parse(text).as_dict() != parse(
+        text).as_dict()
+    assert _ne.DEVIATES(text)
+
+
+def test_ne_declares_no_name_without_two_single_letters_in_a_row() -> None:
+    from nameparser.locales import ne as _ne
+    assert not any(map(_ne.DEVIATES, (
+        "Ram Bahadur Thapa", "Ram Bahadur BK", "Durga Kumari", "",
+        # a vowel sign stays in its letter's run: read as a divider,
+        # र and म would be two runs of one letter each
+        "राम बहादुर थापा")))
+
+
 def test_ne_reads_the_word_as_given_at_the_head_and_title_in_a_phrase() -> None:
     ne = _require_packed("ne")
     assert parse("श्री कृष्ण श्रेष्ठ").title == "श्री"

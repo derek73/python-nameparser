@@ -65,7 +65,9 @@ the list's names and at least half of the names ending in letters,
 :ref:`initials-as-family`); its evidence is the ``initials_as_family``
 entry of ``suggestion.evidence``, whose note names the letters. A list
 whose letters are its family casts no trailing-initial vote on the
-order.
+order. A base that reads names family first, or folds every middle name
+into the family (``middle_as_family``), is suggested no change here:
+the switch would change none of its names.
 
 .. doctest::
 

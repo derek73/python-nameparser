@@ -64,6 +64,7 @@ from ._pipeline._vocab import (
 )
 from ._policy import (
     UNSET, PatronymicRule, Policy, PolicyPatch, _order_repr, apply_patch,
+    initials_as_family_may_move,
 )
 from ._types import (
     FAMILY_FIRST, GIVEN_FIRST, Role, _guarded_getstate, _guarded_setstate,
@@ -299,22 +300,6 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     return None
 
 
-def _two_letters_in_a_row(text: str) -> bool:
-    """Whether `text` holds two words in a row that are each a single
-    letter, a full stop or a comma beside it allowed: every name
-    rules/O8 can move holds such a pair, so a name without one is never
-    parsed for _letter_run."""
-    previous = False
-    for word in text.split():
-        letter = (sum(ch.isalpha() for ch in word) == 1
-                  and all(ch.isalpha() or ch in ".," or unicodedata.combining(ch)
-                          for ch in word))
-        if letter and previous:
-            return True
-        previous = letter
-    return False
-
-
 def _letter_run(text: str, readers: tuple[Parser, Parser]) -> str | None:
     """The letters ending `text` that are evidence of the convention
     rules/O8 reads, folded and run together (`Lakshmi R. S.` gives
@@ -328,18 +313,22 @@ def _letter_run(text: str, readers: tuple[Parser, Parser]) -> str | None:
     suggests moves only the spaced runs beside it. Two or three bare
     capitals (`BK`) do not count: they are written as a short surname is
     (`Zhi LI`)."""
-    if _two_letters_in_a_row(text):
-        on, off = readers
-        family = on.parse(text).family
-        if family != off.parse(text).family:
-            return "".join(_normalize(word).replace(".", "")
-                           for word in family.split())
+    # the cheap text test first: a name it refuses holds no run at all
+    if not initials_as_family_may_move(text):
         return None
-    words, comma = _name_words(text, readers[0].lexicon)
-    if comma or len(words) < 2 or _is_initialed(words[0]):
+    on, off = readers
+    family = on.parse(text).family
+    if family != off.parse(text).family:
+        return "".join(_normalize(word).replace(".", "")
+                       for word in family.split())
+    # a comma name gives no words (_name_words), so it holds no run
+    words = _name_words(text, readers[0].lexicon)[0]
+    if len(words) < 2 or _is_initialed(words[0]):
         return None
     last = words[-1]
-    if not (("." in last.rstrip(".") or "-" in last)
+    # joined with full stops alone: a hyphen joins the halves of one
+    # given name (`J.-P.`, `J-H`), which is no family
+    if not ("." in last.rstrip(".") and "-" not in last
             and _is_initialed(last)):
         return None
     letters = [ch for ch in last if ch.isalpha()]
@@ -1075,14 +1064,11 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
 
 
 def _letter_readers(parser: Parser) -> tuple[Parser, Parser]:
-    """The base's lexicon and segmenter under the given-first order
-    rules/O8 reads under, the switch on and off, every other setting
-    that moves a name word left at its default, so a family that moves
-    between the two is the run of letters and nothing else."""
-    policy = dataclasses.replace(
-        parser.policy, name_order=GIVEN_FIRST, patronymic_rules=frozenset(),
-        two_family_names=False, two_given_names=False,
-        middle_as_family=False)
+    """The base under the given-first order rules/O8 reads under, the
+    switch on and off and every other setting the base's own, so a
+    family that moves between the two moves where the base would move
+    it with the switch on."""
+    policy = dataclasses.replace(parser.policy, name_order=GIVEN_FIRST)
     with warnings.catch_warnings():
         # the base's own construction warnings reached its caller
         warnings.simplefilter("ignore")
@@ -1092,14 +1078,26 @@ def _letter_readers(parser: Parser) -> tuple[Parser, Parser]:
                     policy, initials_as_family=False)))
 
 
-def _decide_letters(runs: list[str | None], base_value: bool
+def _decide_letters(runs: list[str | None], base_value: bool,
+                    inert: str
                     ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``initials_as_family``: true where at least _MIN_RUN_NAMES
     names end in one run of letters and it is at least _MIN_RUN_SHARE of
     the names ending in any run. A group never decides it false: no
-    name is evidence that letters are NOT a family."""
+    name is evidence that letters are NOT a family. Nor does it decide
+    anything under a base where the switch would change no name
+    (`inert` says which): one reading names family first, where rules/O8
+    stands down, or folding every middle into the family (rules/O3),
+    which takes the letters there already."""
     counts = Counter(run for run in runs if run)
     carrying = sum(counts.values())
+    if inert:
+        verb = "ends" if carrying == 1 else "end"
+        return (SettingEvidence(
+            _INITIALS_AS_FAMILY, base_value, False, 0, 0, 0, len(runs), (),
+            f"{carrying} of {len(runs)} names {verb} in a run of letters, "
+            f"no evidence under a base {inert}, where the switch changes "
+            f"no name"), {})
     if not counts:
         return (SettingEvidence(_INITIALS_AS_FAMILY, base_value, False,
                                 0, 0, 0, len(runs), ()), {})
@@ -1133,7 +1131,11 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     readers = _letter_readers(parser)
     runs = [_letter_run(text, readers) for text in texts]
     letters, letter_fields = _decide_letters(
-        runs, parser.policy.initials_as_family)
+        runs, parser.policy.initials_as_family,
+        "reading names family first"
+        if parser.policy.name_order != GIVEN_FIRST else
+        "folding every middle into the family"
+        if parser.policy.middle_as_family else "")
     letters_are_family = letters.decided and letters.value is True
     for text in texts:
         votes, comma = _read(text, parser.lexicon)

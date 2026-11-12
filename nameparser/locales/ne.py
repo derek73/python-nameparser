@@ -11,8 +11,8 @@ It also reads two or more single letters ending a romanized name as
 its family name (``Policy.initials_as_family``, rules/O8), its policy
 patch compiled from ne.toml's [rules] table: Nepali surnames are often
 written as their initials, ``B K`` for Bishwakarma and ``K C`` for
-Khatri Chhetri, so ``Ram Bahadur B K`` gives family ``B K`` where the
-default gives middle ``B``, family ``K``.
+Khatri Chhetri, so ``Ram Bahadur B K`` gives middle ``Bahadur``, family ``B K``
+where the default gives middle ``Bahadur B``, family ``K``.
 
 Data sources: nepal-candidates, Nepal's 2079 BS local election
 candidates, each name written in Devanagari and romanized
@@ -28,23 +28,18 @@ patch changes.
 """
 from __future__ import annotations
 
-import unicodedata
-
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale, rules_patch
+from nameparser._policy import initials_as_family_may_move
+
 
 def DEVIATES(name: str) -> bool:
     """True when the pack's patch may parse `name` differently from the
     default parser: rules/O8 moves only letters standing two or more in
-    a row, so a name declares that holds two words in a row that are
-    each a single letter, a full stop or a comma beside it allowed.
-    Where they stand in the name is not asked, which over-declares, the
-    safe direction."""
-    letters = [sum(ch.isalpha() for ch in word) == 1
-               and all(ch.isalpha() or ch in ".," or unicodedata.combining(ch)
-                       for ch in word)
-               for word in name.split()]
-    return any(a and b for a, b in zip(letters, letters[1:]))
+    a row, which Policy's initials_as_family_may_move tests, dividing
+    words at every character that is not a letter or a combining mark,
+    so it over-declares, the safe direction."""
+    return initials_as_family_may_move(name)
 
 
 NE = Locale(
