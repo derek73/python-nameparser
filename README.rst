@@ -7,26 +7,24 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 3.0 removes HumanName and the rest of the 1.x
-compatibility layer.** ``HumanName``, ``Constants``, the shared
-``CONSTANTS`` and ``nameparser.util`` are gone, along with the 1.x
-names of the word lists; ``parse()`` and ``Parser`` are the
-replacement. 2.8 is the last release that has them, and it warns at
-each use 3.0 removes; `Coming from 1.x or 2.x`_ below says where to
-start. 3.0 also configures a ``Lexicon`` `by reading
-<https://nameparser.readthedocs.io/en/latest/customize.html#configuring-by-reading>`__
-(``Lexicon.default().add("leed", kind="credential")``), renders a name
-in the order it was written (``str(parse("김민준"))`` is ``'김민준'``),
-and adds packs that choose the languages a parse reads. The `release log
+📣 **nameparser 3.1 reads lists of names, not just one name at a
+time.** ``Parser.suggest()`` reads a list from one source and returns a
+parser configured for how it is written, and ``Parser.matching()``
+groups and compares names from several sources. `Getting started
+<https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
+takes you through both. 3.0 removed ``HumanName`` and the rest of the
+1.x compatibility layer: `Coming from 1.x or 2.x`_ below says where to
+start. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
 that parses wrong.
 
 Chinese, Japanese and Korean names written in their own scripts are read
-family-first, unspaced Korean names are split against the census surname
+family-first (save a name in katakana alone, often a transcribed foreign
+name), unspaced Korean names are split against the census surname
 list, and CJK honorifics are recognized. See `East Asian names
-<https://nameparser.readthedocs.io/en/latest/usage.html#east-asian-names>`__.
+<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__.
 
 Installation
 ------------
@@ -37,8 +35,10 @@ Installation
 
 Requires Python 3.11+.
 
-Quick Start Example
---------------------
+Getting started
+---------------
+
+**Parse one name** into its fields:
 
 .. code-block:: python
 
@@ -56,75 +56,45 @@ Quick Start Example
     >>> name.family_base, name.family_particles
     ('Vega', 'de la')
 
-A Spanish name usually ends in two family names, the father's first and
-the mother's second. Out of the box the parser reads one family name,
-with the words between it and the given name as middle names. The
-Spanish pack reads the two family names and gives each its own view:
+**Have a list of names from one source?** A single name cannot show
+which word is the family name (``Smith Mary`` and ``Mary Smith`` have
+the same shape), but a list written one way can. ``suggest()`` reads
+the list and returns a parser that reads it, with the evidence for each
+setting it considered:
 
 .. code-block:: python
 
-    >>> from nameparser import Parser, Policy, locales, parser_for
-    >>> spanish = parser_for(locales.ES)
-    >>> juan = spanish.parse("Dr. Juan Carlos García de la Vega III (Juanca)")
-    >>> juan.middle, juan.family
-    ('Carlos', 'García de la Vega')
-    >>> juan.surname1, juan.surname2, juan.generation
-    ('García', 'de la Vega', 'III')
-    >>> juan.render("{family}, {given}")
-    'García de la Vega, Juan'
+    >>> from nameparser import Parser
+    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
+    ...            "Nguyen Anh", "Mary Smith"]
+    >>> suggestion = Parser().suggest(listing)
+    >>> suggestion.patch
+    PolicyPatch(name_order=FAMILY_FIRST)
+    >>> suggestion.parser.parse("Smith Mary").given
+    'Mary'
+    >>> [entry.text for entry in suggestion.disagreeing()]
+    ['Mary Smith']
 
-Juan Carlos may also be one compound given name. Nothing in the text
-says which, so reading it that way is a switch for data you know is
-written so:
-
-.. code-block:: python
-
-    >>> compound = parser_for(locales.ES,
-    ...                       base=Parser(policy=Policy(two_given_names=True)))
-    >>> compound.parse("Juan Carlos García de la Vega").given
-    'Juan Carlos'
-
-Most packs choose languages, and a choice turns on the readings the
-chosen language holds and the default leaves off. ``Lady`` is a British
-title and, in Spanish-speaking Latin America, a given name; the Spanish
-choice reads the given name, the title staying one inside a phrase:
+**Joining records from several sources?** ``matching()`` gives each
+name keys to group records by, and checks a pair field by field:
 
 .. code-block:: python
 
-    >>> parse("Lady Heidenreich").title
-    'Lady'
-    >>> spanish.parse("Lady Heidenreich").given
-    'Lady'
-    >>> spanish.parse("Lady Justice Jane Smith").title
-    'Lady Justice'
+    >>> matcher = Parser().matching()
+    >>> sorted(matcher.keys("Jane A. de la Vega"))
+    ['delavega;j', 'vega;j']
+    >>> pair = matcher.check("John A. Smith", "J. Smith")
+    >>> pair.consistent, pair["given"].outcome.value
+    (True, 'initial')
+    >>> matcher.check("Jane Smith", "John Smith").consistent
+    False
 
-A `strict choice
-<https://nameparser.readthedocs.io/en/latest/locales.html#reading-one-language-only>`__
-reads only the chosen languages' words, the words every language
-shares, and words written in a script other than Latin, so the English
-title phrase is no longer one:
-
-.. code-block:: python
-
-    >>> strict = parser_for(locales.ES, strict=True)
-    >>> strict.parse("Lady Justice Jane Smith").title
-    ''
-
-A pack can also take a reading out. Vietnamese written without its
-diacritics meets the Dutch particle ``van``, which chains onto the given
-name under a family-first order. The Vietnamese pack reads family-first
-and removes the particle reading, so ``Van`` stays a middle name:
-
-.. code-block:: python
-
-    >>> from nameparser import FAMILY_FIRST_GIVEN_LAST
-    >>> ordered = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
-    >>> ordered.parse("Nguyen Van Anh").given     # van, Dutch, chains on
-    'Van Anh'
-    >>> vietnamese = parser_for(locales.VI)
-    >>> anh = vietnamese.parse("Nguyen Van Anh")
-    >>> anh.family, anh.middle, anh.given
-    ('Nguyen', 'Van', 'Anh')
+A language pack reads the conventions of a language you know your data
+is in, such as two family names in Spanish or the patronymic in
+Russian; see `Locale packs
+<https://nameparser.readthedocs.io/en/latest/locales.html>`__ and
+`Notes by language
+<https://nameparser.readthedocs.io/en/latest/languages.html>`__.
 
 More shapes the parser reads:
 
@@ -168,6 +138,7 @@ More shapes the parser reads:
     >>> parse("نوال عبد هاشم").family             # هاشم is not one, so it stands alone
     'هاشم'
 
+    >>> from nameparser import locales, parser_for
     >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
     >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
     '毛'
@@ -190,7 +161,7 @@ to a ``Parser``:
 
 .. code-block:: python
 
-    >>> from nameparser import Lexicon
+    >>> from nameparser import Lexicon, Policy
     >>> [r.kind for r in Lexicon.default().readings_of("dean")]
     ['office', 'given', 'family']
     >>> deans = Lexicon.default().remove("dean", kind="given")    # Dean is always a title
@@ -217,9 +188,12 @@ object and nothing is shared between parsers.
 Learn more
 ----------
 
-* `Using the parser <https://nameparser.readthedocs.io/en/latest/usage.html>`__ — the full tour: input shapes, aggregates, rendering, comparison, ambiguities, tokens
-* `Customizing the parser <https://nameparser.readthedocs.io/en/latest/customize.html>`__ — vocabulary, behavior, and presentation
-* `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, and more
+* `Getting started <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__ — parse a name, let a list choose the settings, match names across sources
+* `Working with a parsed name <https://nameparser.readthedocs.io/en/latest/usage.html>`__ — aggregate views, rendering, comparison, ambiguities, tokens, corrections
+* `Names the parser reads <https://nameparser.readthedocs.io/en/latest/shapes.html>`__ — the input forms it reads without configuration
+* `Settings for a list of names <https://nameparser.readthedocs.io/en/latest/suggest.html>`__ and `Matching names across sources <https://nameparser.readthedocs.io/en/latest/matching.html>`__ — the two list features in full
+* `Customizing the parser <https://nameparser.readthedocs.io/en/latest/customize.html>`__ (vocabulary) and `Behavior: Policy <https://nameparser.readthedocs.io/en/latest/policy.html>`__ (behavior)
+* `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, Spanish double surnames, and more
 * There's also a CLI: ``python -m nameparser --json "Doe, John"``
 
 How well it reads names

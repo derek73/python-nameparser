@@ -1,6 +1,6 @@
 # Writing the user docs (docs/*.rst)
 
-This file covers the Sphinx user documentation: `usage.rst`, `shapes.rst`, `east-asian.rst`, `suggest.rst`, `matching.rst`, `customize.rst`, `policy.rst`, `locales.rst`, `languages.rst`, `migrate.rst`, `concepts.rst` and the rest of `docs/*.rst`. `docs/design/` is not user documentation and has its own `docs/design/AGENTS.md`; the mechanics of doctests (shared namespace, optional extras, which doctest runner to trust) are in the root `AGENTS.md` under Gotchas → Doctests, and are not repeated here.
+This file covers the Sphinx user documentation: `getting-started.rst`, `usage.rst`, `shapes.rst`, `east-asian.rst`, `suggest.rst`, `matching.rst`, `customize.rst`, `policy.rst`, `locales.rst`, `languages.rst`, `migrate.rst`, `concepts.rst` and the rest of `docs/*.rst`. `docs/design/` is not user documentation and has its own `docs/design/AGENTS.md`; the mechanics of doctests (shared namespace, optional extras, which doctest runner to trust) are in the root `AGENTS.md` under Gotchas → Doctests, and are not repeated here.
 
 The rules below were distilled from PR #588, which restructured `customize.rst` after three of its Policy table rows had grown to 24–38 source lines each (measured on master, 2026-10-02), and from the review rounds on that PR. Two rules carry lessons from earlier docs work, cited where they appear. Every rule names the failure it prevents, because each of those failures happened.
 

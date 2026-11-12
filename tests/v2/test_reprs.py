@@ -136,7 +136,7 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     Matching(Parser()),
     Matching(parser_for(locales.ES)),
     Matching(Parser(segmenter=functools.partial(_decline, blob="x" * 500))),
-    Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith"]),
+    Parser().suggest(["Smith Mary", "Kim Minjun", "Jason Smith"]),
     Parser().suggest([]),
 ])
 def test_config_reprs_never_leak_the_unset_sentinel(obj: object) -> None:
@@ -214,10 +214,10 @@ def test_order_repr_survives_smuggled_setstate_values() -> None:
 
 def test_suggestion_repr_shows_the_patch_and_counts_never_the_names(
         ) -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming",
                           "Jason Smith"])
     assert repr(s) == ("Suggestion(PolicyPatch(name_order=FAMILY_FIRST), "
                        "names=4, disagreeing=1)")
     for evidence in s.evidence:
-        for text in ("Priem", "Kim", "Smith"):
+        for text in ("Mary", "Kim", "Smith"):
             assert text not in repr(evidence)

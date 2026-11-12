@@ -35,8 +35,8 @@ _VOTES = [
     (unicodedata.normalize("NFC", "Nguyễn Minh"), Signal.SURNAME, FAMILY_FIRST),
     ("Kim Minjun", Signal.SURNAME, FAMILY_FIRST),
     ("Minjun Kim", Signal.SURNAME, GIVEN_FIRST),
-    ("Priem Jason", Signal.GIVEN_NAME, FAMILY_FIRST),
-    ("Jason Priem", Signal.GIVEN_NAME, GIVEN_FIRST),
+    ("Smith Mary", Signal.GIVEN_NAME, FAMILY_FIRST),
+    ("Mary Smith", Signal.GIVEN_NAME, GIVEN_FIRST),
     ("Иванов Иван Петрович", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ivan Petrovich Sidorov", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ziyo Azamat Hamid o‘g‘li", Signal.PATRONYMIC, PatronymicRule.TURKIC),
@@ -125,7 +125,7 @@ def test_a_name_with_both_patronymic_shapes_reports_turkic() -> None:
     assert votes[Signal.PATRONYMIC] == PatronymicRule.TURKIC
 
 
-@pytest.mark.parametrize("text", ["Priem, Jason", "", "   ", "Madonna"])
+@pytest.mark.parametrize("text", ["Smith, Mary", "", "   ", "Madonna"])
 def test_a_name_with_nothing_to_read_casts_nothing(text: str) -> None:
     assert name_votes(text, L) == {}
 
@@ -154,7 +154,7 @@ def test_no_signal_raises(text: str) -> None:
 @pytest.mark.parametrize("text", _NOTHING_TO_READ)
 def test_a_group_holding_a_name_with_nothing_to_read_does_not_raise(
         text: str) -> None:
-    for group in ([text], ["Jason Priem", text], [text, text, "Zhang Wei"]):
+    for group in ([text], ["Mary Smith", text], [text, text, "Zhang Wei"]):
         s = Parser().suggest(group)
         assert len(s.names) == len(group)
 
@@ -221,7 +221,7 @@ def test_trailing_initials_vote_only_as_a_share_of_the_group(
 
 def test_a_set_aside_trailing_initial_says_why_and_disagrees_with_nothing(
         ) -> None:
-    s = Parser().suggest(["Durga B K", "Jason Priem", "Anna Smith",
+    s = Parser().suggest(["Durga B K", "Mary Smith", "Anna Smith",
                           "Sita Rai"])
     order = _order_evidence(s)
     assert "1 of the group's 4 names ends in initials" in order.note
@@ -243,7 +243,7 @@ def test_a_name_whose_given_name_contests_its_initial_is_not_counted(
 @pytest.mark.parametrize("fillers", [
     # three of each, so leaving any one exclusion out makes the share
     # three of six, under 60%, and the bylines lose their vote
-    ["Priem, Jason", "Smith, Jane", "Doe, John"],     # comma names
+    ["Smith, Mary", "Smith, Jane", "Doe, John"],     # comma names
     ["", "   ", "\t"],                                 # blanks
     # each filler below is a word to _name_words, left out only by its
     # having no letter or digit: every row fails with that test dropped
@@ -316,14 +316,14 @@ def test_a_set_aside_name_still_counts_in_the_patronymic_share() -> None:
 
 def test_one_name_voting_decides_nothing() -> None:
     # _MIN_VOTES = 2: one name is thin evidence, so the base stands
-    s = Parser().suggest(["Priem Jason", "Xyzzy Plugh"])
+    s = Parser().suggest(["Smith Mary", "Xyzzy Plugh"])
     assert s.patch == PolicyPatch()
     assert not _order_evidence(s).decided
     assert _order_evidence(s).votes_against == 1
 
 
 def test_two_names_voting_one_way_decide() -> None:
-    assert Parser().suggest(["Priem Jason", "Kim Minjun"]).patch == (
+    assert Parser().suggest(["Smith Mary", "Kim Minjun"]).patch == (
         PolicyPatch(name_order=FAMILY_FIRST))
 
 
@@ -332,16 +332,16 @@ def test_an_order_needs_more_than_two_thirds_of_the_voting_names() -> None:
     # in floats too: _MIN_SHARE * 3 == (2/3) * 3 == 2.0, so the strict
     # `count <= _MIN_SHARE * total` refuses two of three as written
     assert (2 / 3) * 3 == 2.0
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith"])
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Jason Smith"])
     assert not _order_evidence(s).decided
     # three for, one against: more than two thirds
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming",
                           "Jason Smith"])
     assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
 
 
 def test_a_family_first_group_suggests_family_first() -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming"])
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming"])
     assert s.patch.name_order == FAMILY_FIRST
     assert s.parser.policy.name_order == FAMILY_FIRST
     order = _order_evidence(s)
@@ -354,7 +354,7 @@ def test_a_family_first_group_suggests_family_first() -> None:
 
 def test_a_family_first_base_can_be_moved_back() -> None:
     base = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    s = base.suggest(["Jason Priem", "Minjun Kim"])
+    s = base.suggest(["Mary Smith", "Minjun Kim"])
     assert s.patch.name_order == GIVEN_FIRST
     assert s.parser.policy.name_order == GIVEN_FIRST
 
@@ -371,13 +371,13 @@ def test_a_vi_base_keeps_its_family_first_spelling() -> None:
 
 
 def test_a_decided_order_equal_to_the_base_leaves_the_patch_empty() -> None:
-    s = Parser().suggest(["Jason Priem", "Minjun Kim"])
+    s = Parser().suggest(["Mary Smith", "Minjun Kim"])
     assert s.patch == PolicyPatch()
     assert _order_evidence(s).decided
 
 
 def test_a_tie_decides_nothing() -> None:
-    s = Parser().suggest(["Priem Jason", "Jason Smith"])
+    s = Parser().suggest(["Smith Mary", "Jason Smith"])
     assert s.patch == PolicyPatch()
     assert not _order_evidence(s).decided
     assert s.disagreeing() == ()
@@ -434,8 +434,8 @@ def test_a_patronymic_rule_needs_five_names_carrying_it(
 
 
 def test_one_patronymic_among_given_first_names_decides_nothing() -> None:
-    s = Parser().suggest(["Jason Priem", "Mary Smith", "Anna Jones",
-                          "Jason Smith", "Mary Priem",
+    s = Parser().suggest(["Mary Smith", "Ruth Hollis", "Anna Jones",
+                          "Jason Smith", "Mary Hollis",
                           "Сидоров Иван Петрович"])
     assert s.patch.patronymic_rules is UNSET
     assert not _patronymic_evidence(s).decided
@@ -449,11 +449,11 @@ def test_patronymics_need_more_than_four_in_five_of_the_voting_names(
     # so a family-first group whose names half carry a patronymic
     # (PatentsView's Russian inventors) must not be reordered.
     # Four of five voting names: four in five, not more
-    s = Parser().suggest(["Jason Priem", *_EAST_SLAVIC[:4]])
+    s = Parser().suggest(["Mary Smith", *_EAST_SLAVIC[:4]])
     assert s.patch.patronymic_rules is UNSET
     assert not _patronymic_evidence(s).decided
     # five of six: more than four in five
-    s = Parser().suggest(["Jason Priem", *_EAST_SLAVIC])
+    s = Parser().suggest(["Mary Smith", *_EAST_SLAVIC])
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
 
 
@@ -461,11 +461,11 @@ def test_a_turkic_rule_needs_more_than_four_in_five_of_the_voting_names(
         ) -> None:
     # the same share as the East Slavic rule's: four of five voting
     # names is four in five, not more
-    s = Parser().suggest(["Jason Priem", *_TURKIC[:4]])
+    s = Parser().suggest(["Mary Smith", *_TURKIC[:4]])
     assert s.patch.patronymic_rules is UNSET
     assert not _patronymic_evidence(s).decided
     # five of six: more than four in five
-    s = Parser().suggest(["Jason Priem", *_TURKIC])
+    s = Parser().suggest(["Mary Smith", *_TURKIC])
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
 
 
@@ -529,19 +529,19 @@ def test_a_base_holding_the_rule_already_leaves_the_patch_empty() -> None:
 
 
 def test_comma_names_cast_no_vote() -> None:
-    s = Parser().suggest(["Priem, Jason", "Smith, John"])
+    s = Parser().suggest(["Smith, Mary", "Smith, John"])
     assert s.patch == PolicyPatch()
     assert _order_evidence(s).no_evidence == 2
 
 
 def test_disagreeing_lists_the_names_against_the_answer() -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming",
                           "Jason Smith"])
     assert [n.text for n in s.disagreeing()] == ["Jason Smith"]
 
 
 def test_a_name_with_no_votes_never_disagrees() -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming",
                           "Jason Smith", "Xyzzy Plugh", "Smith, Jason"])
     assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
     assert [n.text for n in s.disagreeing()] == ["Jason Smith"]
@@ -549,7 +549,7 @@ def test_a_name_with_no_votes_never_disagrees() -> None:
 
 def test_names_keeps_every_input_in_order_including_blanks_and_duplicates(
         ) -> None:
-    texts = ["Priem Jason", "", "Priem Jason", "   ", "Kim Minjun"]
+    texts = ["Smith Mary", "", "Smith Mary", "   ", "Kim Minjun"]
     s = Parser().suggest(texts)
     assert [n.text for n in s.names] == texts
     assert s.names[1].votes == {}
@@ -561,23 +561,23 @@ def test_a_generator_is_consumed_once() -> None:
     pulled: list[str] = []
 
     def names() -> Iterator[str]:
-        for text in ["Priem Jason", "Kim Minjun"]:
+        for text in ["Smith Mary", "Kim Minjun"]:
             pulled.append(text)
             yield text
 
     s = Parser().suggest(names())
-    assert pulled == ["Priem Jason", "Kim Minjun"]
+    assert pulled == ["Smith Mary", "Kim Minjun"]
     assert [n.text for n in s.names] == pulled
     assert s.patch.name_order == FAMILY_FIRST
 
 
 @pytest.mark.parametrize("bad, fragment", [
-    ("Priem Jason", "bare string: 'Priem Jason'"),
-    ({"Priem Jason": 1}, "not a mapping (dict)"),
-    (b"Priem Jason", "decode"),
+    ("Smith Mary", "bare string: 'Smith Mary'"),
+    ({"Smith Mary": 1}, "not a mapping (dict)"),
+    (b"Smith Mary", "decode"),
     (5, "got 5"),
     ([1], "item 0 is 1"),
-    (["Priem Jason", None], "item 1 is None"),
+    (["Smith Mary", None], "item 1 is None"),
 ])
 def test_a_wrong_shape_raises_type_error_with_the_fix(
         bad: object, fragment: str) -> None:
@@ -599,7 +599,7 @@ def test_a_mapping_error_does_not_embed_the_mapping() -> None:
 
 def test_the_offered_fix_runs() -> None:
     with pytest.raises(TypeError) as info:
-        Parser().suggest("Priem Jason")  # type: ignore[arg-type]
+        Parser().suggest("Smith Mary")  # type: ignore[arg-type]
     offered = str(info.value).rsplit(": ", 1)[1]
     assert offered.startswith("parser.suggest(")
     result = eval(offered, {"parser": Parser()})
@@ -609,7 +609,7 @@ def test_the_offered_fix_runs() -> None:
 def test_suggest_never_mutates_the_base() -> None:
     base = Parser(policy=Policy(name_order=FAMILY_FIRST))
     before = (base.policy, base.lexicon)
-    s = base.suggest(["Jason Priem", "Minjun Kim", "Сидоров Иван Петрович"])
+    s = base.suggest(["Mary Smith", "Minjun Kim", "Сидоров Иван Петрович"])
     assert (base.policy, base.lexicon) == before
     assert s.base is base
     assert s.parser.lexicon is base.lexicon
@@ -617,7 +617,7 @@ def test_suggest_never_mutates_the_base() -> None:
 
 def test_the_parser_keeps_the_base_segmenter() -> None:
     base = Parser(segmenter=_decline)
-    s = base.suggest(["Priem Jason", "Kim Minjun"])
+    s = base.suggest(["Smith Mary", "Kim Minjun"])
     assert s.parser.segmenter is _decline
     assert s.parser.policy.name_order == FAMILY_FIRST
 
@@ -629,7 +629,7 @@ def test_the_parser_does_not_warn_again_for_its_base() -> None:
     from nameparser import locales, parser_for
     with pytest.warns(UserWarning):
         base = parser_for(locales.JA)
-    s = base.suggest(["Priem Jason", "Kim Minjun"])
+    s = base.suggest(["Smith Mary", "Kim Minjun"])
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         parser = s.parser
@@ -655,15 +655,15 @@ def test_a_patch_that_moves_segment_scripts_still_warns_its_caller() -> None:
 
 
 def test_name_evidence_votes_are_read_only() -> None:
-    evidence = NameEvidence("Priem Jason", {Signal.GIVEN_NAME: FAMILY_FIRST})
+    evidence = NameEvidence("Smith Mary", {Signal.GIVEN_NAME: FAMILY_FIRST})
     with pytest.raises(TypeError):
         evidence.votes[Signal.SURNAME] = FAMILY_FIRST  # type: ignore[index]
     assert evidence == NameEvidence(
-        "Priem Jason", {Signal.GIVEN_NAME: FAMILY_FIRST})
+        "Smith Mary", {Signal.GIVEN_NAME: FAMILY_FIRST})
 
 
 def test_the_report_names_the_setting_and_the_disagreeing_names() -> None:
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming",
                           "Jason Smith"])
     report = str(s)
     assert "Suggested for 4 names" in report
@@ -710,7 +710,7 @@ def test_a_name_whose_signals_conflict_is_contested() -> None:
     # given name at the front says given-first. (A trailing initial
     # contesting a given name, `Jason Kim J.`, casts no vote in a group
     # this small, the trailing-initial gate's tests below.)
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "JASON Smith"])
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "JASON Smith"])
     assert s.patch.name_order == FAMILY_FIRST
     order = _order_evidence(s)
     assert (order.votes_for, order.votes_against, order.contested,
@@ -724,10 +724,10 @@ def test_a_name_whose_signals_conflict_is_contested() -> None:
 @pytest.mark.parametrize("names", [
     [],
     ["Xyzzy Plugh"],
-    ["Priem Jason", "Jason Kim J.", "Smith, John", "", "Jason Smith"],
+    ["Smith Mary", "Jason Kim J.", "Smith, John", "", "Jason Smith"],
     ["Jason Smith", "Mary Jones", "KIM Jason J."],
     ["Сидоров Иван Петрович", "SIDOROV Ivan Petrovich", "Kim Minjun"],
-    ["Mamedov Ali Huseyn oglu", "Jason Kim J.", "Priem Jason"],
+    ["Mamedov Ali Huseyn oglu", "Jason Kim J.", "Smith Mary"],
 ])
 def test_the_counts_add_up_to_the_group(names: list[str]) -> None:
     s = Parser().suggest(names)
@@ -766,11 +766,11 @@ def test_name_evidence_refuses_a_vote_of_the_wrong_kind(
         votes: dict[object, object], error: type[Exception],
         fragment: str) -> None:
     with pytest.raises(error, match=fragment):
-        NameEvidence("Priem Jason", votes)  # type: ignore[arg-type]
+        NameEvidence("Smith Mary", votes)  # type: ignore[arg-type]
 
 
 def test_name_evidence_accepts_an_order_written_as_a_list() -> None:
-    evidence = NameEvidence("Priem Jason", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
+    evidence = NameEvidence("Smith Mary", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
     assert evidence.votes[Signal.SURNAME] == FAMILY_FIRST
 
 
@@ -851,10 +851,10 @@ def test_a_valid_setting_evidence_renders_in_a_report() -> None:
     ({"evidence": "name_order"}, TypeError,
      "evidence must be a tuple of SettingEvidence"),
     ({"evidence": [object()]}, TypeError, "evidence must hold SettingEvidence"),
-    ({"names": "Priem Jason"}, TypeError,
+    ({"names": "Smith Mary"}, TypeError,
      "names must be a tuple of NameEvidence"),
     ({"names": None}, TypeError, "names must be a tuple of NameEvidence"),
-    ({"names": ["Priem Jason"]}, TypeError, "names must hold NameEvidence"),
+    ({"names": ["Smith Mary"]}, TypeError, "names must hold NameEvidence"),
 ])
 def test_suggestion_refuses_fields_of_the_wrong_type(
         changes: dict[str, object], error: type[Exception],
@@ -990,14 +990,14 @@ def test_a_comma_before_post_nominals_alone_reads_the_name_before_it(
     assert name_votes(text, L)[signal] == value
 
 
-@pytest.mark.parametrize("text", ["Priem, Jason", "Kim, Minjun Jr.",
+@pytest.mark.parametrize("text", ["Smith, Mary", "Kim, Minjun Jr.",
                                   "Zhang Xiaoming, Beijing"])
 def test_any_other_comma_name_casts_nothing(text: str) -> None:
     assert name_votes(text, L) == {}
 
 
 def test_the_order_note_counts_the_comma_names_left_out() -> None:
-    s = Parser().suggest(["Priem, Jason", "Smith, John", "Kim Minjun",
+    s = Parser().suggest(["Smith, Mary", "Smith, John", "Kim Minjun",
                           "Zhang Xiaoming, PhD", "Wang Xiaoming"])
     order = _order_evidence(s)
     assert "2 names with a comma" in order.note
@@ -1118,7 +1118,7 @@ def test_a_decided_change_is_accepted_with_its_patch() -> None:
 def test_every_suggestion_suggest_returns_passes_its_own_checks() -> None:
     import dataclasses
     for group in (_EAST_SLAVIC, _TURKIC, _CAPITALS_EAST_SLAVIC,
-                  ["Priem Jason", "Kim Minjun", "Smith, John"]):
+                  ["Smith Mary", "Kim Minjun", "Smith, John"]):
         for base in (Parser(), Parser(policy=Policy(name_order=FAMILY_FIRST)),
                      Parser(policy=Policy(patronymic_rules=frozenset(
                          {PatronymicRule.TURKIC})))):
@@ -1127,7 +1127,7 @@ def test_every_suggestion_suggest_returns_passes_its_own_checks() -> None:
 
 
 def test_a_vote_is_the_shared_order_constant() -> None:
-    evidence = NameEvidence("Priem Jason", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
+    evidence = NameEvidence("Smith Mary", {Signal.SURNAME: list(FAMILY_FIRST)})  # type: ignore[dict-item]
     assert evidence.votes[Signal.SURNAME] is FAMILY_FIRST
     row = _order(by_signal=[(Signal.SURNAME, list(GIVEN_FIRST), 0)]).by_signal[0]
     assert row[1] is GIVEN_FIRST
@@ -1146,9 +1146,9 @@ def test_setting_evidence_refuses_a_signal_of_another_setting(
 
 def test_name_evidence_survives_replace() -> None:
     import dataclasses
-    evidence = NameEvidence("Priem Jason", {Signal.GIVEN_NAME: FAMILY_FIRST})
-    moved = dataclasses.replace(evidence, text="Priem J.")
-    assert moved.text == "Priem J."
+    evidence = NameEvidence("Smith Mary", {Signal.GIVEN_NAME: FAMILY_FIRST})
+    moved = dataclasses.replace(evidence, text="Smith M.")
+    assert moved.text == "Smith M."
     assert moved.votes == evidence.votes
     assert dataclasses.replace(  # type: ignore[call-arg]
         evidence, votes={Signal.SURNAME: GIVEN_FIRST}).votes == {
@@ -1206,7 +1206,7 @@ def _turkic(n: int) -> list[str]:
     return [f"{_ES_SURNAMES[i]} {_ES_GIVEN[i]} Rasim oglu" for i in range(n)]
 
 
-_OTHERS = ["Jason Priem", "Mary Smith", "Anna Jones", "Peter Brown",
+_OTHERS = ["Mary Smith", "Ruth Hollis", "Anna Jones", "Peter Brown",
            "Sarah Wilson"]
 
 
@@ -1240,14 +1240,14 @@ def test_a_contested_name_counts_in_the_patronymic_share(
 
 def test_a_family_first_given_last_base_moves_to_given_first() -> None:
     base = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
-    s = base.suggest(["Jason Priem", "Minjun Kim", "Mary Smith"])
+    s = base.suggest(["Mary Smith", "Minjun Kim", "Ruth Hollis"])
     assert s.patch.name_order == GIVEN_FIRST
 
 
 def test_a_family_first_group_on_a_family_first_base_leaves_the_patch_empty(
         ) -> None:
     base = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    s = base.suggest(["Priem Jason", "Kim Minjun", "Wang Xiaoming"])
+    s = base.suggest(["Smith Mary", "Kim Minjun", "Wang Xiaoming"])
     assert s.patch == PolicyPatch()
     assert _order_evidence(s).decided
 
@@ -1353,9 +1353,9 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
                               tuple[Role, Role, Role],
                               tuple[object, object, object],
                               tuple[object, object, object]]] = [
-    ("_MIN_VOTES", 1, ["Priem Jason", "Xyzzy Plugh"], GIVEN_FIRST,
+    ("_MIN_VOTES", 1, ["Smith Mary", "Xyzzy Plugh"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
-    ("_MIN_SHARE", 0.5, ["Priem Jason", "Kim Minjun", "Jason Smith"],
+    ("_MIN_SHARE", 0.5, ["Smith Mary", "Kim Minjun", "Jason Smith"],
      GIVEN_FIRST, (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
     ("_MIN_PATRONYMIC_SHARE", 0.5, _east_slavic(5) + _OTHERS[:2],
      GIVEN_FIRST, (UNSET, UNSET, UNSET),
@@ -1364,7 +1364,7 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
      (UNSET, UNSET, UNSET),
      (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
     # one name ending in B K decides the switch once one is enough
-    ("_MIN_RUN_NAMES", 1, ["Durga B K", "Jason Priem"], GIVEN_FIRST,
+    ("_MIN_RUN_NAMES", 1, ["Durga B K", "Mary Smith"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (UNSET, UNSET, True)),
     # B K is two of five runs: under half, enough at three in ten; the
     # decided switch then sets the trailing-initial votes aside, and the
@@ -1417,7 +1417,7 @@ def test_the_reprs_are_bounded_and_name_the_votes() -> None:
                                            Signal.PATRONYMIC: PatronymicRule.TURKIC})
     assert repr(evidence) == (
         "NameEvidence('Kim Minjun', surname=FAMILY_FIRST, patronymic=turkic)")
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Jason Smith",
                           "Wang Xiaoming"])
     assert repr(s) == ("Suggestion(PolicyPatch(name_order=FAMILY_FIRST), "
                        "names=4, disagreeing=1)")
@@ -1526,7 +1526,7 @@ def _letters_evidence(s: Suggestion) -> SettingEvidence:
 
 @pytest.mark.parametrize(("names", "decided"), [
     (["Durga B K", "Sita B K"], True),                      # two of two
-    (["Durga B K", "Jason Priem"], False),                  # one name
+    (["Durga B K", "Mary Smith"], False),                  # one name
     (["Durga B K", "Sita B K", "Ram P R", "Om T S"], True),  # half the runs
     (["Durga B K", "Sita B K", "Ram P R", "Om T S", "Hari K C"],
      False),                                                # two of five
@@ -1667,6 +1667,6 @@ def test_a_base_with_the_switch_on_keeps_it_out_of_the_patch() -> None:
 
 def test_a_group_never_decides_the_switch_off() -> None:
     base = Parser(policy=Policy(initials_as_family=True))
-    s = base.suggest(["Jason Priem", "Mary Smith", "Huntley R P"])
+    s = base.suggest(["Mary Smith", "Ruth Hollis", "Huntley R P"])
     assert not _letters_evidence(s).decided
     assert s.parser.policy.initials_as_family is True

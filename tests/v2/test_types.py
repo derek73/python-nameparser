@@ -605,7 +605,7 @@ def test_suggestion_types_pickle_round_trip() -> None:
     import pickle
 
     from nameparser import Parser
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Smith",
+    s = Parser().suggest(["Smith Mary", "Kim Minjun", "Jason Smith",
                           "Сидоров Иван Петрович"])
     loaded = pickle.loads(pickle.dumps(s))
     assert loaded == s
