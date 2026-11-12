@@ -16,7 +16,7 @@
   "DR. Anna Berg"  capitals_as_family  →  family="Berg"
   "Tom N/A Reed"  capitals_as_family  →  family="Reed"
   ```
-- **The run is every capitals word in a row**, two surnames being one family, and particles and conjunctions between capitals words join it, in any case, a listed conjunction of one letter included; a run neither opens nor ends in a conjunction; a lowercase particle written right before the run joins it.
+- **The run is every capitals word in a row**, two surnames being one family, and particles and conjunctions between capitals words join it, in any case, a listed conjunction of one letter written bare included (with its full stop it is an initial); a run neither opens nor ends in a conjunction; a lowercase particle written right before the run joins it.
   ```
   "Ayla BURSALI AKSOY"  capitals_as_family  →  family="BURSALI AKSOY"
   "Lucie FABRE DE LA MOTTE"  capitals_as_family  →  family="FABRE DE LA MOTTE"
@@ -28,13 +28,15 @@
   "Ana LOPEZ Y GARCIA"  capitals_as_family  →  family="LOPEZ Y GARCIA"
   "Artur MAS I GAVARRO"  capitals_as_family  →  family="MAS I GAVARRO"
   "Mary SMITH AND Jones"  capitals_as_family  →  family="SMITH"
+  "Ana LOPEZ Y. GARCIA"  capitals_as_family  →  family="GARCIA"
   ```
-- **The first unit holding a word that may be a given name is the given name**: a conjunction or a particle that is never a given name, standing outside the run with nothing to join, is a middle name, while a particle that may be a given name is read as one; a lowercase particle opening a unit stays with the word after it.
+- **The first unit holding a word that may be a given name is the given name**: a conjunction or a particle written in lowercase outside the run is a joining word, so a lowercase particle opening a unit stays with the word after it and a unit of nothing else is a middle name, while a particle written with a capital, as a name is, is read as one.
   ```
   "JEAN y Perez"  capitals_as_family  →  given="Perez"
   "JEAN y Perez"  capitals_as_family  →  middle="y"
   "de Marie DUPONT"  capitals_as_family  →  given="de Marie"
   "Van Mary DUPONT"  capitals_as_family  →  given="Van"
+  "De Marie DUPONT"  capitals_as_family  →  given="De"
   "Marie DUPONT y MBA"  capitals_as_family  →  middle="y"
   ```
 - **A run in the middle of the name** is the family as one at either end is, the words after it middle names.
@@ -44,7 +46,7 @@
   "Jeffrey LAM Kin-fung"  capitals_as_family  →  family="LAM"
   "Mrs Rita FAN HSU Lai-tai"  capitals_as_family  →  family="FAN HSU"
   ```
-- **The capitals settle the field**: they outrank a credential or title reading, so a listed credential that is the only capitals word is the family (S6 reads it as the credential without the switch), and so is a title written in capitals (H1, H9); a report asking which field a word of the run takes names no open fork, nor does one asking whether a lone name word is the given or the family name, while a report on another word stands.
+- **The capitals settle the field**: they outrank a credential or title reading, so a listed credential that is the only capitals word is the family (S6 reads it as the credential without the switch), and so is a title written in capitals (H1, H9); a report asking which field a word of the run takes, or a word the layout moved, names no open fork, nor does one asking whether a lone name word is the given or the family name or whether a particle opens the family, while a title or suffix fork on a word left where it was stands.
   ```
   "Hugo LAC"  capitals_as_family  →  family="LAC"
   "Yanjun MA"  capitals_as_family  →  family="MA"
@@ -52,8 +54,9 @@
   "DOYEN Hugo"  capitals_as_family  →  family="DOYEN"
   "Hugo LAC"  capitals_as_family  →  ambiguities=()
   "Dean Mary DUPONT"  capitals_as_family  →  ambiguities=("title-or-name",)
+  "Van Mary DUPONT"  capitals_as_family  →  ambiguities=()
   ```
-- **A listed credential or numeral ending the run peels off where a capitals word that is no particle is left**, at the end of the name, where the suffix slot is; a lone roman numeral of two or more letters stays the suffix, and the switch then reads nothing.
+- **A listed credential or numeral ending the run peels off where a capitals word that is no particle is left**, at the end of the name, where the suffix slot is; a lone roman numeral of two or more letters stays the suffix, and the switch then reads nothing; a numeral is one the generation reading knows, II to X.
   ```
   "Mary GRAJALES III"  capitals_as_family  →  family="GRAJALES"
   "Mary GRAJALES III"  capitals_as_family  →  suffix="III"
@@ -80,7 +83,7 @@
 
 **Except:**
 
-- **Only a name in mixed case is read: a word other than a title, a particle, a conjunction or a suffix holds a lowercase letter**, so a name written wholly in capitals is unaffected, and so is one whose lowercase letters are only in a title, a suffix, or a particle or conjunction written in lowercase; a particle written with a capital is a name word like any other.
+- **Only a name in mixed case is read: a word other than a title, a particle, a conjunction or a suffix holds a lowercase letter**, read over the words no run took: a name written wholly in capitals is unaffected, and so is one whose lowercase letters are only in a title, a suffix, a particle or conjunction written in lowercase, or a word a run joined; a particle written with a capital outside a run is a name word like any other.
   ```
   "MARY DUPONT"  capitals_as_family  →  given="MARY"
   "Dr. ANITA ROY"  capitals_as_family  →  given="ANITA"
@@ -88,6 +91,7 @@
   "JOHN McCAIN"  capitals_as_family  →  given="JOHN"
   "MARIA y LOPEZ GARCIA"  capitals_as_family  →  family="GARCIA"
   "MORRISON Van"  capitals_as_family  →  family="MORRISON"
+  "JAN Van DER BERG"  capitals_as_family  →  given="JAN"
   "Mary Dupont"  capitals_as_family  →  family="Dupont"
   ```
 - **A run of particles alone is no run, nor is a lone roman numeral**, and the name reads by position.
@@ -172,6 +176,10 @@
   ```
   "DR Anna BERG"  capitals_as_family  →  family="BERG"
   "DR Anna Berg"  capitals_as_family  →  family="DR"
+  ```
+- A conjunction in capitals trimmed off the front of a run keeps the field it was read in, a title where it opened the name.
+  ```
+  "THE ROCK Mary"  capitals_as_family  →  title="THE"
   ```
 - The rule reports nothing of its own: the caller declared the convention.
 

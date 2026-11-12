@@ -2104,11 +2104,12 @@ def is_capitals_word(text: str) -> bool:
     `d'ESTAING`), with nothing in it but letters, their combining marks
     and `_CAPITALS_JOINERS`. Single letters joined by a hyphen are
     initials (`J-P`), and a word whose capitals are one letter is a
-    name in mixed case (`PhD`, `McD`). Composed first (NFC), so a
-    capital typed as its base and an accent counts once (#652). A
+    name in mixed case (`PhD`, `McD`). A combining mark is passed over
+    in the letter's run, so a capital typed as its base and an accent
+    (NFD) reads as its composed spelling does (#652). A
     lowercase letter whose capital is not one character (`ß`) counts as
     written in capitals, as `written_as_a_name` reads it."""
-    word = unicodedata.normalize("NFC", text)
+    word = text
     # a joiner at either end is a quotation mark or a dash, not a name
     # written with one inside it ('MBA', -AB)
     if not word or word[0] in _CAPITALS_JOINERS or word[-1] in _CAPITALS_JOINERS:

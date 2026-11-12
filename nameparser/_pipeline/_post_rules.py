@@ -31,8 +31,7 @@ assign's since #613, and behind an empty part before the comma too
 since #892.
 Reads: Policy.patronymic_rules, Policy.initials_as_family,
 Policy.capitals_as_family (O9, which reads Lexicon.conjunctions for
-a run and, for its peel, Lexicon.suffix_acronyms, suffix_words,
-suffix_acronyms_ambiguous and suffix_words_ambiguous),
+a run and, for its peel, Lexicon.suffix_acronyms and suffix_words),
 Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
@@ -349,6 +348,10 @@ def _hyphenated_given(text: str, lexicon: Lexicon) -> bool:
 _SETTLED_BY_CAPITALS = frozenset({
     AmbiguityKind.SUFFIX_OR_NAME, AmbiguityKind.TITLE_OR_NAME,
     AmbiguityKind.PARTICLE_OR_GIVEN, AmbiguityKind.GIVEN_OR_FAMILY})
+#: The kinds of them that ask where the family is, which the capitals
+#: answer for every word of the name.
+_SETTLED_EVERYWHERE = frozenset({
+    AmbiguityKind.PARTICLE_OR_GIVEN, AmbiguityKind.GIVEN_OR_FAMILY})
 
 #: The roles of the words rules/O9 reads: the name words, and the
 #: titles and suffixes a word in capitals may have been read as.
@@ -358,23 +361,20 @@ _CAPITALS_READS = frozenset({
 
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
     """A credential or generation the vocabulary lists, or a roman
-    numeral of two or more letters, which rules/O9 peels off the end
-    of a run of capitals."""
+    numeral, which rules/O9 peels off the end of a run of capitals.
+    Asked only of a capitals word, which holds no full stop."""
+    # the ambiguous halves are subsets of these two
     n = _normalize(text)
     sets = lexicon._sets
-    for key in (n, n.replace(".", "")):
-        if (key in sets.suffix_acronyms or key in sets.suffix_words
-                or key in sets.suffix_acronyms_ambiguous
-                or key in sets.suffix_words_ambiguous):
-            return True
-    return _is_numeral(text)
+    return (n in sets.suffix_acronyms or n in sets.suffix_words
+            or _is_numeral(text))
 
 
 def _is_numeral(text: str) -> bool:
     # rules/O9: "a lone roman numeral of two or more letters stays the
-    # suffix" -- a single letter is no capitals word at all
-    stem = text.rstrip(".")
-    return len(stem) >= 2 and ROMAN.match(stem) is not None
+    # suffix" -- asked only of a capitals word, which has two or more
+    # letters and no full stop
+    return ROMAN.match(text) is not None
 
 
 def _capitals_runs(tokens: list[WorkToken], seq: list[int],
@@ -388,8 +388,10 @@ def _capitals_runs(tokens: list[WorkToken], seq: list[int],
         # a listed conjunction of one letter in a name in mixed case is
         # tagged an initial (rules/P8), but between two capitals words
         # it is the connective a double surname writes (`LOPEZ Y GARCIA`)
+        # written bare: a letter with its full stop is an initial (`Y.`)
         return ("conjunction" in tokens[j].tags
-                or _normalize(tokens[j].text) in conjunctions)
+                or tokens[j].text.isalpha()
+                and _normalize(tokens[j].text) in conjunctions)
 
     def joiner(j: int) -> bool:
         return not caps[j] and ("particle" in tokens[j].tags
@@ -452,22 +454,24 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
            if t.role in _CAPITALS_READS
            and (not offsets or comma_bucket(t.span.start, offsets) == 0)]
     caps = {i: is_capitals_word(tokens[i].text) for i in seq}
+    all_runs = _capitals_runs(tokens, seq, caps,
+                              state.lexicon._sets.conjunctions)
+    in_runs = {j for run in all_runs for j in run}
     # rules/O9: "a word other than a title, a particle, a conjunction or
-    # a suffix holds a lowercase letter" -- the name is in mixed case
+    # a suffix holds a lowercase letter" -- the name is in mixed case,
+    # read over the words no run took: a particle or conjunction counts
+    # where it is written as a name is, with a capital (`MORRISON Van`),
+    # and a run joining it leaves it no evidence (`JAN Van DER BERG`)
     for i in seq:
         t = tokens[i]
-        # a particle or conjunction counts only written as a name is,
-        # with a capital (`MORRISON Van`); written in lowercase it is
-        # the joining word whose case says nothing
-        if (t.role in NAME_ROLES and not caps[i]
+        if (t.role in NAME_ROLES and not caps[i] and i not in in_runs
                 and any(ch.islower() for ch in t.text)
                 and not (t.text.islower() and ("particle" in t.tags
                                                or "conjunction" in t.tags))):
             break
     else:
         return False
-    runs = [run for run in _capitals_runs(tokens, seq, caps,
-                                       state.lexicon._sets.conjunctions)
+    runs = [run for run in all_runs
             # rules/O9: "a run of particles alone is no run, nor is a
             # lone roman numeral"
             if any(caps[j] and "particle" not in tokens[j].tags
@@ -490,7 +494,6 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         while (len(run) - 1 > anchor
                and _listed_suffix(tokens[run[-1]].text, state.lexicon)):
             peeled.append(run.pop())
-        peeled.reverse()
     # a joining word the peel left ending the run joins nothing there;
     # it goes back among the other words (`Marie DUPONT y MBA`)
     while peeled and not caps[run[-1]]:
@@ -510,36 +513,44 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         i = others[n]
         if "particle" in tokens[i].tags and tokens[i].text.islower():
             piece_of[i] = piece_of.get(others[n + 1], -1 - others[n + 1])
-    clear = frozenset({FOLDED_TAG, ATTACHED_TAG})
+    # P6's attachment mark; its ATTACHED_TAG partner needs no clearing,
+    # assemble reading it only beside FOLDED_TAG or on a patronymic
+    # particle, which no layout here leaves attached
+    clear = frozenset({FOLDED_TAG})
     # rules/O9: "the first unit holding a word that may be a given name
-    # is the given name" -- a conjunction or a never-given particle
-    # outside the run, with nothing to join, is a middle name; a
-    # particle that may be a given name (`Van`) is read as one
+    # is the given name" -- a conjunction or particle written in
+    # lowercase is a joining word, and a unit of nothing else is a
+    # middle name (a particle with a word after it shares its unit,
+    # above); one written with a capital, as a name is, is read as one
     given = next((piece_of.get(i, -1 - i) for i in others
-                  if "conjunction" not in tokens[i].tags
-                  and ("particle" not in tokens[i].tags
-                       or "vocab:particle-ambiguous" in tokens[i].tags)),
+                  if not (tokens[i].text.islower()
+                          and ("conjunction" in tokens[i].tags
+                               or "particle" in tokens[i].tags))),
                  piece_of.get(others[0], -1 - others[0]) if others else None)
+    before = {i: tokens[i].role for i in others}
     for i in others:
         role = Role.GIVEN if piece_of.get(i, -1 - i) == given else Role.MIDDLE
         tokens[i] = copy_with(tokens[i], role=role,
                               tags=tokens[i].tags - clear)
     for i in run:
-        tags = tokens[i].tags - clear
-        if caps[i]:
-            tags |= {CAPITALS_FAMILY_TAG}
-        tokens[i] = copy_with(tokens[i], role=Role.FAMILY, tags=tags)
+        # every word of the run, a particle in it included, whose
+        # reading assemble names by its particle kind first
+        tokens[i] = copy_with(tokens[i], role=Role.FAMILY,
+                              tags=tokens[i].tags - clear
+                              | {CAPITALS_FAMILY_TAG})
     for i in peeled:
         tokens[i] = copy_with(tokens[i], role=Role.SUFFIX,
                               tags=tokens[i].tags - clear)
     # rules/O9: "the capitals settle the field" -- a report asking which
-    # field a word of the run takes names no open fork, nor does one
-    # asking whether a lone name word is the given or the family name,
-    # the name now holding a family beside it; a report on another word
-    # stays, the capitals deciding nothing about it
+    # field a word of the run takes, or a word the layout moved, names
+    # no open fork; nor does one asking whether a lone word is the given
+    # or the family name, or whether a particle opens the family, the
+    # capitals having named the family; a title or suffix fork on a word
+    # left where it was stays, the capitals deciding nothing about it
+    placed |= {i for i in others if tokens[i].role is not before[i]}
     ambiguities[:] = [a for a in ambiguities
                       if not (a.kind in _SETTLED_BY_CAPITALS
-                              and (a.kind is AmbiguityKind.GIVEN_OR_FAMILY
+                              and (a.kind in _SETTLED_EVERYWHERE
                                    or placed.intersection(a.indices)))]
     return True
 

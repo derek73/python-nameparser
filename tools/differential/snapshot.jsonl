@@ -259,6 +259,7 @@
 {"name": "Ana J.R. García", "given": "Ana", "middle": "J.R.", "family": "García", "initials": "A. J. R. G."}
 {"name": "Ana Jorge Flores", "given": "Ana", "middle": "Jorge", "family": "Flores", "initials": "A. J. F."}
 {"name": "Ana LOPEZ Y GARCIA", "given": "Ana", "middle": "LOPEZ Y", "family": "GARCIA", "initials": "A. L. Y. G.", "capitalized_force": "Ana Lopez Y Garcia"}
+{"name": "Ana LOPEZ Y. GARCIA", "given": "Ana", "middle": "LOPEZ Y.", "family": "GARCIA", "initials": "A. L. Y. G.", "capitalized_force": "Ana Lopez Y. Garcia"}
 {"name": "Ana M. García", "given": "Ana", "middle": "M.", "family": "García", "initials": "A. M. G."}
 {"name": "Ana M.-J. López", "given": "Ana", "middle": "M.-J.", "family": "López", "initials": "A. M. L."}
 {"name": "Ana M.-José López", "given": "Ana", "middle": "M.-José", "family": "López", "initials": "A. M. L."}
@@ -730,6 +731,7 @@
 {"name": "De La Cruz, Ed", "given": "Ed", "family": "De La Cruz", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. C.", "capitalized_force": "Ed de la Cruz"}
 {"name": "De La Cruz, M.J. K.L.", "given": "M.", "middle": "J. K.L.", "family": "De La Cruz", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)", "SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. K. L. C.", "capitalized_force": "M.J. K.L. de la Cruz"}
 {"name": "De La Cruz, M.J. PhD", "given": "M.", "middle": "J.", "family": "De La Cruz", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. C.", "capitalized_force": "M.J. de la Cruz PhD"}
+{"name": "De Marie DUPONT", "family": "De Marie DUPONT", "initials": "M. D.", "capitalized_force": "de Marie Dupont"}
 {"name": "Dean", "given": "Dean", "ambiguities": ["GIVEN_OR_FAMILY", "TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)", "GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Dean Koontz", "given": "Dean", "family": "Koontz", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D. K."}
 {"name": "Dean Martin", "given": "Dean", "family": "Martin", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D. M."}
@@ -1610,6 +1612,7 @@
 {"name": "JAN TER HORST VAN DER BERG", "given": "JAN", "middle": "TER HORST", "family": "VAN DER BERG", "initials": "J. H. B.", "capitalized": "Jan ter Horst van der Berg"}
 {"name": "JAN VAN DER BERG", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
 {"name": "JAN VAN TER HORST", "given": "JAN", "family": "VAN TER HORST", "initials": "J. H.", "capitalized": "Jan van ter Horst"}
+{"name": "JAN Van DER BERG", "given": "JAN", "family": "Van DER BERG", "initials": "J. B.", "capitalized_force": "Jan van der Berg"}
 {"name": "JANE DOE MA R.T.", "given": "JANE", "middle": "DOE MA", "family": "R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. D. M. R. T.", "capitalized": "Jane Doe Ma R.T."}
 {"name": "JANE DOE NEE SMITH MA", "given": "JANE", "family": "DOE", "suffix": "MA", "maiden": "SMITH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized": "Jane Doe (Smith) MA"}
 {"name": "JANE DOE NEE YO-YO MA", "given": "JANE", "family": "DOE", "suffix": "MA", "maiden": "YO-YO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized": "Jane Doe (Yo-Yo) MA"}
@@ -4164,6 +4167,7 @@
 {"name": "Sādāt, Ǧīhān as-", "given": "Ǧīhān", "family": "as- Sādāt", "initials": "Ǧ. S."}
 {"name": "TER HORST, JAN VAN", "given": "JAN", "family": "VAN TER HORST", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. H.", "capitalized": "Jan van ter Horst"}
 {"name": "TER PETROSYAN, LEVON", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon Ter Petrosyan"}
+{"name": "THE ROCK Mary", "title": "THE ROCK", "family": "Mary", "initials": "M.", "capitalized_force": "the Rock Mary"}
 {"name": "Tadsch ad-Din al-Hasani", "given": "Tadsch", "middle": "ad-Din", "family": "al-Hasani", "initials": "T. a. a.", "capitalized_force": "Tadsch Ad-Din Al-Hasani"}
 {"name": "Tahir Jalaluddin", "given": "Tahir", "family": "Jalaluddin", "initials": "T. J."}
 {"name": "Takamatsu, Jirō", "given": "Jirō", "family": "Takamatsu", "initials": "J. T."}
