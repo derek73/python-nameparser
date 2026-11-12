@@ -57,23 +57,27 @@ Getting started
     ('Vega', 'de la')
 
 **Have a list of names from one source?** A single name cannot show
-which word is the family name (``Smith Mary`` and ``Mary Smith`` have
-the same shape), but a list written one way can. ``suggest()`` reads
-the list and returns a parser that reads it, with the evidence for each
-setting it considered:
+which word is the family name (in ``Taylor Morgan`` either word could
+be), but a list written one way can. ``suggest()`` reads the list and
+returns a parser that reads it, with the evidence for each setting it
+considered:
 
 .. code-block:: python
 
     >>> from nameparser import Parser
-    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
+    >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
     ...            "Nguyen Anh", "Mary Smith"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> suggestion.parser.parse("Smith Mary").given
-    'Mary'
+    >>> suggestion.parser.parse("Taylor Morgan").given
+    'Morgan'
     >>> [entry.text for entry in suggestion.disagreeing()]
     ['Mary Smith']
+
+``Taylor Morgan`` carries no evidence of its own; it is read family
+first because the rest of the list is. ``Mary Smith`` votes against
+the list, so it is the name to check by hand.
 
 **Joining records from several sources?** ``matching()`` gives each
 name keys to group records by, and checks a pair field by field:

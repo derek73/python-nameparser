@@ -5,10 +5,10 @@ Settings for a list of names
 
 A list of names is usually written in one convention: a registry gives
 every family name first, a mailing list every family name last. A
-single name cannot show which, because ``Smith Mary`` and ``Mary
-Smith`` are the same shape and only a reader who knows ``Smith`` is a
-surname and ``Mary`` a given name can tell them apart. A whole list
-can: most of its names carry some evidence, and the evidence agrees.
+single name often cannot show which: in ``Taylor Morgan`` either word
+is a common given name and a common surname, so neither the parser nor
+a reader can place it. A whole list can: most of its names carry some
+evidence, and the evidence agrees.
 
 ``Parser.suggest()`` reads a list you declare to be one group (one
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
@@ -46,17 +46,43 @@ votes do not decide keeps the base parser's value.
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
+    >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
     ...            "Nguyen Anh", "Mary Smith"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> Parser().parse("Smith Mary").given
-    'Smith'
-    >>> suggestion.parser.parse("Smith Mary").given
-    'Mary'
+    >>> Parser().parse("Taylor Morgan").given
+    'Taylor'
+    >>> suggestion.parser.parse("Taylor Morgan").given
+    'Morgan'
     >>> [entry.text for entry in suggestion.disagreeing()]
     ['Mary Smith']
+
+Three names vote for family first, by the romanized surnames ``Kim``,
+``Wang`` and ``Nguyen``; ``Mary Smith`` votes against, by the given
+name ``Mary`` in front, and is the one to check by hand. ``Taylor
+Morgan`` gives no evidence: it is read family first because the list
+is, and nothing in the name can confirm that.
+
+The evidence need not be a surname. Here the common given names at the
+end decide the order, and ``Ellis Jordan``, which carries none, follows
+them:
+
+.. doctest::
+
+    >>> by_given = Parser().suggest(["Parker Emma", "Reed Sophie", "Ellis Jordan"])
+    >>> by_given.patch
+    PolicyPatch(name_order=FAMILY_FIRST)
+    >>> by_given.parser.parse("Ellis Jordan").given
+    'Jordan'
+
+Where no name in the list carries evidence, ``suggest()`` leaves every
+setting as the base parser has it:
+
+.. doctest::
+
+    >>> Parser().suggest(["Taylor Morgan", "Jordan Casey", "Avery Quinn"]).patch
+    PolicyPatch()
 
 ``suggestion.parser`` is the base parser with ``suggestion.patch``
 applied, so the base is never changed. ``suggestion.evidence`` holds a
