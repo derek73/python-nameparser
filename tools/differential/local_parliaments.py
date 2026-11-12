@@ -2,7 +2,7 @@
 parliaments, as each parliament writes their names.
 
 opensanctions-parliaments -- the members OpenSanctions' crawlers read
-off twenty-two national chambers' own websites, and the regional heads
+off twenty-three national chambers' own websites, and the regional heads
 Indonesia elected in 2018 (DATASETS), each
 dataset's `targets.simple.csv`: a row per person, the `name` column as
 the parliament writes it and `aliases` the other forms the crawler
@@ -23,10 +23,13 @@ initials (`Shri`, `Smt.`, `Dr.`, initials before the name); Slavic and
 Portuguese double surnames; Indonesian names in capitals with `H.`
 (Haji) or `R.` (Raden) before them and no family name; Ethiopian names
 of given, father's and grandfather's name; Korean names in Hangul and
-Hanja, and Hebrew ones. Issues #1186 to #1192 were
+Hanja, and Hebrew ones; and Mongolian names in Cyrillic, the father's
+name first (`mn_parliament`, added 2026-11-12: 126 members, each written
+once). Issues #1186 to #1192 were
 read from it, in a 2026-11-07/08 check of the shipped packs; the
 Indonesian datasets measure #1205 and #1206, Ethiopia's #1203, Korea's
-#1213, #1215 and #1216, and Israel's #1209, #1210 and #1211.
+#1213, #1215 and #1216, Israel's #1209, #1210 and #1211, and
+Mongolia's #1237.
 
 A record is one distinct spelling of one member: the spelling (`name`),
 the member (`entity`, the dataset and OpenSanctions' id, so a member of
@@ -68,7 +71,7 @@ DATASETS = ("az_parliament", "kg_jogorku_kenesh", "uz_legislative_chamber", "uz_
             "si_dz_rs", "sk_nrsr_poslanci", "pt_parliament", "in_sansad", "ua_rada",
             "by_council_republic", "ru_duma_deputies", "ru_federation_council",
             "id_dpr", "id_dpd", "id_regional_2018", "et_hopr",
-            "kr_assembly", "il_knesset_members")
+            "kr_assembly", "il_knesset_members", "mn_parliament")
 INDEX_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/index.json"
 RESOURCE = "targets.simple.csv"
 #: The columns read; the file holds others (birth dates, contacts), and
