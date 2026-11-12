@@ -1156,6 +1156,15 @@ def post_rules(state: ParseState) -> ParseState:
             # recomputed for H1's reason, stated at H1: a stale index
             # list is the bug shape #359 fixed
             _, givens, middles, families = _positions(tokens)
+    # rules/O2: "a name of exactly three name words ending in a
+    # standalone patronymic marker reads the father's name and the
+    # marker together as the family name" -- the middle word joins the
+    # marker in the family (history: decisions/O2, #1187)
+    elif rotations_apply and PatronymicRule.TURKIC in rules and \
+            len(givens) == 1 and len(middles) == 1 and len(families) == 1:
+        if is_patronymic_marker(tokens[families[0]].text):
+            _retag(tokens, middles[0], Role.FAMILY)
+            _, givens, middles, families = _positions(tokens)
     # rules/P6: "a particle ending the name attaches to that family
     # name and is written before it" -- the no-comma site (#467).
     # A comma is not the only thing that names the family; a declared

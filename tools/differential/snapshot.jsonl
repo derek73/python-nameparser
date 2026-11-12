@@ -98,6 +98,7 @@
 {"name": "Abdul Aziz Yassin", "given": "Abdul Aziz", "family": "Yassin", "initials": "A. A. Y."}
 {"name": "Abdul E.T. Smith", "given": "Abdul E.T.", "family": "Smith", "initials": "A. E. T. S."}
 {"name": "Abdul MA Smith", "given": "Abdul MA", "family": "Smith", "initials": "A. M. S.", "capitalized_force": "Abdul Ma Smith"}
+{"name": "Abdul Rahman Ahmad oglu", "given": "Abdul Rahman", "middle": "Ahmad", "family": "oglu", "initials": "A. R. A. o.", "capitalized_force": "Abdul Rahman Ahmad Oglu"}
 {"name": "Abdul Rahman bin Ahmad", "given": "Abdul Rahman", "family": "bin Ahmad", "initials": "A. R. A.", "patronymic": "bin Ahmad"}
 {"name": "Abdul Razak Hussein", "given": "Abdul Razak", "family": "Hussein", "initials": "A. R. H."}
 {"name": "Abdul Salam Ahmed Salem, MD", "given": "Abdul Salam", "middle": "Ahmed", "family": "Salem", "suffix": "MD", "initials": "A. S. A. S."}
@@ -206,6 +207,8 @@
 {"name": "Alfonso Reyes Echandía", "given": "Alfonso", "middle": "Reyes", "family": "Echandía", "initials": "A. R. E."}
 {"name": "Alfonsus Antonius de Sarasa", "given": "Alfonsus", "middle": "Antonius", "family": "de Sarasa", "initials": "A. A. S."}
 {"name": "Alfɔns MANƉELA Rolanɖ", "given": "Alfɔns", "middle": "MANƉELA", "family": "Rolanɖ", "initials": "A. M. R.", "capitalized_force": "Alfɔns Manɖela Rolanɖ"}
+{"name": "Ali Ahmad Oğlu", "given": "Ali", "middle": "Ahmad", "family": "Oğlu", "initials": "A. A. O."}
+{"name": "Ali Ahmad Vali Hasan oglu", "given": "Ali", "middle": "Ahmad Vali Hasan", "family": "oglu", "initials": "A. A. V. H. o.", "capitalized_force": "Ali Ahmad Vali Hasan Oglu"}
 {"name": "Ali Ahmad Vali oglu", "given": "Ali", "middle": "Ahmad Vali", "family": "oglu", "initials": "A. A. V. o.", "capitalized_force": "Ali Ahmad Vali Oglu"}
 {"name": "Ali Ahmad Vali oglu Jr.", "given": "Ali", "middle": "Ahmad Vali", "family": "oglu", "suffix": "Jr.", "initials": "A. A. V. o.", "capitalized_force": "Ali Ahmad Vali Oglu Jr.", "generation": "Jr."}
 {"name": "Ali Ahmad oglu", "given": "Ali", "middle": "Ahmad", "family": "oglu", "initials": "A. A. o.", "capitalized_force": "Ali Ahmad Oglu"}
@@ -895,6 +898,7 @@
 {"name": "Dr. (MA)", "title": "Dr.", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "capitalized_force": "Dr. \"Ma\""}
 {"name": "Dr. A.Smith", "title": "Dr.", "given": "A.", "family": "Smith", "initials": "A. S."}
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
+{"name": "Dr. Ali Ahmad oglu Jr.", "title": "Dr.", "given": "Ali", "middle": "Ahmad", "family": "oglu", "suffix": "Jr.", "initials": "A. A. o.", "capitalized_force": "Dr. Ali Ahmad Oglu Jr.", "generation": "Jr."}
 {"name": "Dr. Ana García López", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "initials": "A. G. L."}
 {"name": "Dr. Ana García López Jr.", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "suffix": "Jr.", "initials": "A. G. L.", "generation": "Jr."}
 {"name": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Dl", "middle": "Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. I. D. I. A.", "capitalized_force": "Dr. Ardelean DL Daniel Ionescu Dragoș Ioan Jr.", "generation": "Jr."}
@@ -5065,6 +5069,7 @@
 {"name": "Бат", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бат", "order": "FAMILY_FIRST", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бақытжан Қанапиянов", "given": "Бақытжан", "family": "Қанапиянов", "initials": "Б. Қ."}
+{"name": "Бекмырза Чолпонбай уулу", "given": "Бекмырза", "middle": "Чолпонбай", "family": "уулу", "initials": "Б. Ч. у.", "capitalized_force": "Бекмырза Чолпонбай Уулу"}
 {"name": "Бертрам Вилберфорс Ҳенру Роберт Вустер", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
 {"name": "Бисерка Цвејић", "given": "Бисерка", "family": "Цвејић", "initials": "Б. Ц."}
 {"name": "Биљана Плавшић", "given": "Биљана", "family": "Плавшић", "initials": "Б. П."}

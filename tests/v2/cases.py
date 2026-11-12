@@ -877,6 +877,26 @@ CASES: tuple[Case, ...] = (
          {"given": "Ram", "middle": "Bahadur", "family": "B K"},
          locale="ne", classification="feat(#1254)",
          notes="the default reads middle 'Bahadur B', family 'K'"),
+    Case("a_turkic_marker_ending_three_words_reads_with_the_fathers_name",
+         "Жылдыз Таалайбек кызы",
+         {"given": "Жылдыз", "family": "Таалайбек кызы"},
+         locale="tr_az", classification="fix(#1187)",
+         notes="no surname: the father's name and the marker are the "
+               "family (rules/O2); 1.4.0 and 3.0.1 under TR_AZ read "
+               "middle 'Таалайбек', last/family 'кызы' (2026-11-12)"),
+    Case("a_romanized_turkic_marker_ending_three_words_reads_with_the_fathers_name",
+         "Aidai Mederbek kyzy",
+         {"given": "Aidai", "family": "Mederbek kyzy"},
+         locale="tr_az", classification="fix(#1187)",
+         notes="1.4.0 and 3.0.1 under TR_AZ read middle 'Mederbek', "
+               "last/family 'kyzy' (2026-11-12)"),
+    Case("a_turkic_marker_ending_two_words_stays_positional",
+         "Cavad oğlu",
+         {"given": "Cavad", "family": "oğlu"},
+         locale="tr_az", classification="parity",
+         notes="rules/O2's boundary: a surname spelled as the marker "
+               "(PSC's 'Ahmed Oglu') leaves two words positional; 1.4.0 "
+               "and 3.0.1 read alike (2026-11-12)"),
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- the reserve/count this row used to pin no

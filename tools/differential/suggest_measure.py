@@ -626,7 +626,15 @@ def _turkic_truth(dataset: str, name: str) -> str | None:
     if convention == "caps":
         caps = [w for w in words if w.isupper()]
         return caps[0] if len(caps) == 1 else None
-    return words[0] if convention == "first" else words[-1]
+    if convention == "first":
+        return words[0]
+    # a name ending in a standalone marker has no surname: the father's
+    # name and the marker stand where it would (#1253's first statement,
+    # rules/O2, #1187), the four Kyrgyz `Given Father уулу` names
+    from nameparser._pipeline._vocab import is_patronymic_marker
+    if len(words) > 2 and is_patronymic_marker(words[-1]):
+        return " ".join(words[-2:])
+    return words[-1]
 
 
 def measure_parliaments(lists: dict[str, dict[str, list[str]]],
