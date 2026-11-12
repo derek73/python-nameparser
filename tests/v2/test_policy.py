@@ -1030,4 +1030,3 @@ def test_a_middle_dot_between_cyrillic_letters_keeps_the_word_whole() -> None:
     from nameparser import parse
     assert parse("Гал·ла Иванова").given == "Гал·ла"
     assert parse("Gal·la Ivanova").given == "Gal·la"
-
