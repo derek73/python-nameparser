@@ -46,7 +46,7 @@
   "Jeffrey LAM Kin-fung"  capitals_as_family  →  family="LAM"
   "Mrs Rita FAN HSU Lai-tai"  capitals_as_family  →  family="FAN HSU"
   ```
-- **The capitals settle the field**: they outrank a credential or title reading, so a listed credential that is the only capitals word is the family (S6 reads it as the credential without the switch), and so is a title written in capitals (H1, H9); a report asking which field a word of the run takes, or a word the layout moved, names no open fork, nor does one asking whether a lone name word is the given or the family name or whether a particle opens the family, while a title or suffix fork on a word left where it was stands.
+- **The capitals settle the field**: they outrank a credential or title reading, so a listed credential that is the only capitals word is the family (S6 reads it as the credential without the switch), and so is a title written in capitals (H1, H9); a report asking which field a word of the run takes names no open fork, nor does one asking whether a lone name word is the given or the family name or whether a particle opens the family, while a title or suffix fork on any other word stands, under every order.
   ```
   "Hugo LAC"  capitals_as_family  →  family="LAC"
   "Yanjun MA"  capitals_as_family  →  family="MA"
@@ -56,11 +56,12 @@
   "Dean Mary DUPONT"  capitals_as_family  →  ambiguities=("title-or-name",)
   "Van Mary DUPONT"  capitals_as_family  →  ambiguities=()
   ```
-- **A listed credential or numeral ending the run peels off where a capitals word that is no particle is left**, at the end of the name, where the suffix slot is; a lone roman numeral of two or more letters stays the suffix, and the switch then reads nothing; a numeral is one the generation reading knows, II to X.
+- **A listed credential or numeral ending the run peels off where a capitals word that is no particle is left**, at the end of the name, where the suffix slot is, and only a word in capitals, a joining word being no credential; a lone roman numeral of two or more letters stays the suffix, and the switch then reads nothing; a numeral is one the generation reading knows, II to X.
   ```
   "Mary GRAJALES III"  capitals_as_family  →  family="GRAJALES"
   "Mary GRAJALES III"  capitals_as_family  →  suffix="III"
   "Jean DUPONT MBA"  capitals_as_family  →  suffix="MBA"
+  "Joan MAS i MBA"  capitals_as_family  →  suffix="MBA"
   "Anna DE CARO"  capitals_as_family  →  family="DE CARO"
   "John Smith III"  capitals_as_family  →  family="Smith"
   "John Smith III"  capitals_as_family  →  suffix="III"
@@ -83,7 +84,7 @@
 
 **Except:**
 
-- **Only a name in mixed case is read: a word other than a title, a particle, a conjunction or a suffix holds a lowercase letter**, read over the words no run took: a name written wholly in capitals is unaffected, and so is one whose lowercase letters are only in a title, a suffix, a particle or conjunction written in lowercase, or a word a run joined; a particle written with a capital outside a run is a name word like any other.
+- **Only a name in mixed case is read: a word other than a title, a particle, a conjunction or a suffix holds a lowercase letter**, read over the words no run took once the peel has taken its own: a name written wholly in capitals is unaffected, and so is one whose lowercase letters are only in a title, a suffix, a particle or conjunction written in lowercase, or a word a run joined; a particle written with a capital outside a run is a name word like any other.
   ```
   "MARY DUPONT"  capitals_as_family  →  given="MARY"
   "Dr. ANITA ROY"  capitals_as_family  →  given="ANITA"

@@ -454,9 +454,37 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
            if t.role in _CAPITALS_READS
            and (not offsets or comma_bucket(t.span.start, offsets) == 0)]
     caps = {i: is_capitals_word(tokens[i].text) for i in seq}
-    all_runs = _capitals_runs(tokens, seq, caps,
-                              state.lexicon._sets.conjunctions)
-    in_runs = {j for run in all_runs for j in run}
+    runs = [run for run in _capitals_runs(tokens, seq, caps,
+                                          state.lexicon._sets.conjunctions)
+            # rules/O9: "a run of particles alone is no run, nor is a
+            # lone roman numeral"
+            if any(caps[j] and "particle" not in tokens[j].tags
+                   and not _is_numeral(tokens[j].text) for j in run)]
+    if not runs:
+        return False
+    # rules/O9: "where a name word divides two runs, the last is the
+    # family"
+    run = list(runs[-1])
+    peeled: list[int] = []
+    # rules/O9: "a listed credential or numeral ending the run peels
+    # off where a capitals word that is no particle is left" -- only at
+    # the end of the name, where the suffix slot is, and only a word in
+    # capitals: a joining word is no credential (`Joan MAS i MBA`)
+    if all(tokens[j].role is Role.SUFFIX for j in seq if j > run[-1]):
+        # the first capitals word that is no particle, which the peel
+        # stops short of; the filter above leaves one in every run
+        anchor = next(k for k, j in enumerate(run)
+                      if caps[j] and "particle" not in tokens[j].tags
+                      and not _is_numeral(tokens[j].text))
+        while (len(run) - 1 > anchor and caps[run[-1]]
+               and _listed_suffix(tokens[run[-1]].text, state.lexicon)):
+            peeled.append(run.pop())
+    # a joining word the peel left ending the run joins nothing there;
+    # it goes back among the other words (`Marie DUPONT y MBA`)
+    returned: set[int] = set()
+    while peeled and not caps[run[-1]]:
+        returned.add(run.pop())
+    in_runs = {j for other in runs[:-1] for j in other} | set(run)
     # rules/O9: "a word other than a title, a particle, a conjunction or
     # a suffix holds a lowercase letter" -- the name is in mixed case,
     # read over the words no run took: a particle or conjunction counts
@@ -471,33 +499,6 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
             break
     else:
         return False
-    runs = [run for run in all_runs
-            # rules/O9: "a run of particles alone is no run, nor is a
-            # lone roman numeral"
-            if any(caps[j] and "particle" not in tokens[j].tags
-                   and not _is_numeral(tokens[j].text) for j in run)]
-    if not runs:
-        return False
-    # rules/O9: "where a name word divides two runs, the last is the
-    # family"
-    run = runs[-1]
-    peeled: list[int] = []
-    # rules/O9: "a listed credential or numeral ending the run peels
-    # off where a capitals word that is no particle is left" -- only at
-    # the end of the name, where the suffix slot is
-    if all(tokens[j].role is Role.SUFFIX for j in seq if j > run[-1]):
-        # the first capitals word that is no particle, which the peel
-        # stops short of; the filter above leaves one in every run
-        anchor = next(k for k, j in enumerate(run)
-                      if caps[j] and "particle" not in tokens[j].tags
-                      and not _is_numeral(tokens[j].text))
-        while (len(run) - 1 > anchor
-               and _listed_suffix(tokens[run[-1]].text, state.lexicon)):
-            peeled.append(run.pop())
-    # a joining word the peel left ending the run joins nothing there;
-    # it goes back among the other words (`Marie DUPONT y MBA`)
-    while peeled and not caps[run[-1]]:
-        run.pop()
     family = set(run)
     placed = family | set(peeled)
     piece_of: dict[int, int] = {}
@@ -505,7 +506,8 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         for k, piece in enumerate(state.pieces[0]):
             for i in piece:
                 piece_of[i] = k
-    others = [i for i in seq if i not in placed and tokens[i].role in NAME_ROLES]
+    others = [i for i in seq if i not in placed
+              and (tokens[i].role in NAME_ROLES or i in returned)]
     # rules/O9: "a lowercase particle opening a unit stays with the word
     # after it" -- group leaves a particle opening the name a piece of
     # its own for P1's fold (`de Mesnil`), which this layout would part
@@ -513,10 +515,8 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         i = others[n]
         if "particle" in tokens[i].tags and tokens[i].text.islower():
             piece_of[i] = piece_of.get(others[n + 1], -1 - others[n + 1])
-    # P6's attachment mark; its ATTACHED_TAG partner needs no clearing,
-    # assemble reading it only beside FOLDED_TAG or on a patronymic
-    # particle, which no layout here leaves attached
-    clear = frozenset({FOLDED_TAG})
+    # P6's attachment marks, which the layout here undoes
+    clear = frozenset({FOLDED_TAG, ATTACHED_TAG})
     # rules/O9: "the first unit holding a word that may be a given name
     # is the given name" -- a conjunction or particle written in
     # lowercase is a joining word, and a unit of nothing else is a
@@ -527,7 +527,6 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
                           and ("conjunction" in tokens[i].tags
                                or "particle" in tokens[i].tags))),
                  piece_of.get(others[0], -1 - others[0]) if others else None)
-    before = {i: tokens[i].role for i in others}
     for i in others:
         role = Role.GIVEN if piece_of.get(i, -1 - i) == given else Role.MIDDLE
         tokens[i] = copy_with(tokens[i], role=role,
@@ -542,12 +541,11 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         tokens[i] = copy_with(tokens[i], role=Role.SUFFIX,
                               tags=tokens[i].tags - clear)
     # rules/O9: "the capitals settle the field" -- a report asking which
-    # field a word of the run takes, or a word the layout moved, names
-    # no open fork; nor does one asking whether a lone word is the given
-    # or the family name, or whether a particle opens the family, the
-    # capitals having named the family; a title or suffix fork on a word
-    # left where it was stays, the capitals deciding nothing about it
-    placed |= {i for i in others if tokens[i].role is not before[i]}
+    # field a word of the run takes names no open fork; nor does one
+    # asking whether a lone word is the given or the family name, or
+    # whether a particle opens the family, the capitals having named the
+    # family; a title or suffix fork on any other word stays, the
+    # capitals deciding nothing about it under any order
     ambiguities[:] = [a for a in ambiguities
                       if not (a.kind in _SETTLED_BY_CAPITALS
                               and (a.kind in _SETTLED_EVERYWHERE

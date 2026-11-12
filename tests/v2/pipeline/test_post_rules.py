@@ -2317,11 +2317,30 @@ _CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
      {"given": "Van", "middle": "Mary", "family": "DUPONT", "reports": ()},
      {"given": "Van", "middle": "Mary", "family": "DUPONT",
       "reports": ("particle-or-given",)}),
-    ("a fork on a word the layout moved is settled", "Dean DUPONT Mary",
+    ("a fork outside the run stands under every order", "Dean DUPONT Mary",
      {"name_order": FAMILY_FIRST},
-     {"given": "Dean", "middle": "Mary", "family": "DUPONT", "reports": ()},
      {"given": "Dean", "middle": "Mary", "family": "DUPONT",
-      "reports": ("title-or-name",)}),
+      "reports": ("title-or-name",)},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT", "reports": ()}),
+    ("P6's patronymic attachment is cleared", "Siti AMINAH BINTI",
+     {"name_order": FAMILY_FIRST},
+     {"given": "Siti", "family": "AMINAH BINTI", "patronymic": ""},
+     {"given": "Siti", "family": "AMINAH BINTI",
+      "patronymic": "AMINAH BINTI"}),
+    ("the peel takes only a word in capitals", "Marie DUPONT do MBA", {},
+     {"given": "Marie", "middle": "do", "family": "DUPONT", "suffix": "MBA",
+      "reports": ("suffix-or-name",)},
+     {"given": "Marie", "family": "DUPONT", "suffix": "do MBA",
+      "reports": ()}),
+    ("a joining word the peel returns is laid out", "Marie DUPONT do MBA",
+     {},
+     {"given": "Marie", "middle": "do", "family": "DUPONT", "suffix": "MBA",
+      "reports": ("suffix-or-name",)},
+     {"given": "Marie", "family": "DUPONT", "suffix": "do MBA",
+      "reports": ("suffix-or-name",)}),
+    ("mixed case is read after the peel", "DUPONT Van MBA", {},
+     {"given": "Van", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "DUPONT", "family": "Van", "suffix": "MBA"}),
     ("a title fork on a word of the run is settled", "DEAN Hugo", {},
      {"given": "Hugo", "family": "DEAN", "reports": ()},
      {"given": "Hugo", "family": "DEAN", "reports": ("title-or-name",)}),
@@ -2367,6 +2386,8 @@ def _capitals_reading(text: str, extra: dict[str, object],
                                if t.reading is not None)
     if "str" in keys:
         got["str"] = str(name)
+    if "patronymic" in keys:
+        got["patronymic"] = name.patronymic
     return got
 
 

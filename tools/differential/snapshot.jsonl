@@ -1887,6 +1887,7 @@
 {"name": "Jo Ann", "given": "Jo", "family": "Ann", "initials": "J. A."}
 {"name": "Joan Antoni Desvalls i d’Ardena", "given": "Joan", "middle": "Antoni", "family": "Desvalls i d’Ardena", "initials": "J. A. D. d.", "capitalized_force": "Joan Antoni Desvalls i D’Ardena"}
 {"name": "Joan Canals i Pigem", "given": "Joan", "family": "Canals i Pigem", "initials": "J. C. P."}
+{"name": "Joan MAS i MBA", "given": "Joan", "family": "MAS", "suffix": "i MBA", "initials": "J. M.", "capitalized_force": "Joan Mas I MBA", "generation": "i", "credentials": "MBA"}
 {"name": "Joan Puig i V", "given": "Joan", "family": "Puig i V", "initials": "J. P. V."}
 {"name": "Joao da Silva Do Amaral de Souza", "given": "Joao", "middle": "da Silva Do Amaral", "family": "de Souza", "initials": "J. S. A. S.", "capitalized_force": "Joao da Silva do Amaral de Souza"}
 {"name": "Joao da Silva do Amaral de Souza", "given": "Joao", "middle": "da Silva do Amaral", "family": "de Souza", "initials": "J. S. A. S."}
