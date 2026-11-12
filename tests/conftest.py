@@ -8,13 +8,16 @@ from tests.checkout import HAS_CHECKOUT
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Deselect the ``serial`` tests in a parallel run's workers.
 
-    The clock-timed scaling guards in tests/v2/test_benchmark.py bound a
-    ratio of two timings, and the other workers' load stretches the
+    The clock-timed tests in tests/v2/test_benchmark.py (the scaling
+    ratios and the thousand-names backstop) mostly bound a ratio of two
+    timings, and the other workers' load stretches the
     larger input's more than the smaller's: under -n auto the
     maiden_clause row read 6.4x against its 6.0 bound on a tree that
     passes serially (measured 2026-10-23, on the wall clock they read
     then). They run in their own -n0 pass instead, which CI makes and
-    the summary line below asks for. The frame, call and shift counts
+    the summary line below asks for. They read CPU time now, which still
+    moves under contention (decisions/parse-cost, 2026-11-11), so they
+    keep that pass. The frame, call and shift counts
     in the same module are not marked and run here, since a count does
     not move with load.
     """

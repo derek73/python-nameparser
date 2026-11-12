@@ -8,7 +8,7 @@ input; the scaling test bounds GROWTH in input length. Neither
 subsumes the other, and the absolute tests are structurally blind to a
 complexity regression: their workload is a short name with no
 delimiters, so a stage that goes quadratic in the number of delimiter
-pairs stays far inside the one-second bound. Three such quadratics
+pairs stays far inside the 5s bound. Three such quadratics
 (_extract's mask-overlap scan, ParsedName's token-subset check, and
 _group's #329 clause scan) were caught in review rather than here --
 hence the scaling test.
@@ -60,7 +60,7 @@ counts do not move under load, so they need no repeated-run
 calibration.
 
 TWO PASSES. The counted guards -- frames, calls, list shifts -- run in
-the parallel suite, so a plain `uv run pytest` holds the band. The four
+the parallel suite, so a plain `uv run pytest` holds the band. The
 timed tests carry the `serial` mark and run in their own `-n0 -m
 serial` pass (tests/conftest.py says why), and a new timed test, here
 or elsewhere, takes the mark too. They time CPU time, not wall time,
@@ -81,10 +81,11 @@ import pytest
 from nameparser import ParsedName, Parser, locales, parse, parser_for
 from nameparser._policy import Policy
 
-#: The clock-timed tests alone: the four marked below run in their own
-#: `-n0 -m serial` pass (tests/conftest.py), and the frame, call and
-#: shift counts beside them run in the parallel suite, since a count
-#: does not move with load (`_CLOCK` says what the clock tests time).
+#: The clock-timed tests alone, each marked `@serial` below, run in
+#: their own `-n0 -m serial` pass (tests/conftest.py); the frame, call
+#: and shift counts beside them run in the parallel suite, since a
+#: count does not move with load (`_CLOCK` says what the timed tests
+#: time).
 serial = pytest.mark.serial
 
 
@@ -251,10 +252,14 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
     3x, so 5s leaves roughly 5x of margin on the CI runner that failed.
     Those were wall-clock seconds; since 2026-11-11 the bound is 5s of
     CPU time (`_CLOCK`), which a loaded machine cannot stretch the way
-    it stretched the wall clock (0.12s quiet, 0.30-0.50s under 24
-    busy-loop processes, against 0.17-0.18s of CPU time). The number
+    it stretched the wall clock (wall clock 0.12s quiet and 0.30-0.50s
+    beside 24 busy-loop processes; CPU time 0.17-0.18s beside the same
+    load, 2026-11-11). The number
     did not move: CPU time is at most the wall time of a single-threaded
-    parse, so the bound is no looser than it was.
+    parse, so the bound is no looser than it was for work the parse
+    does on its own thread. What it no longer sees is time the parse
+    spends OFF the CPU -- blocked on a lock, a sleep or uncached I/O --
+    or work handed to another thread; a parse does none of these.
     """
     fn("warm up the caches")
     start = _CLOCK()
@@ -442,24 +447,33 @@ _MAX_RATIO = 6.0
 #: whichever input happened to be running when another job woke, and
 #: the ratio below reads it as growth. Measured 2026-11-11 on this
 #: module's rows (py3.11, a 12-core Apple silicon laptop, 24 busy-loop
-#: processes beside it, load average 18-75): `time.perf_counter()` read
-#: 27 of the 33 ratio rows at 6.0 or over in at least one of three
-#: runs, up to 14.0x, where the same samples on the CPU clock read none
-#: over 5.8x, and interleaved seven rounds as `_ratio` first takes them
-#: none over 5.6x in 99 more (load 30-59). CPU time
-#: still moves under contention -- a thread moved to an efficiency core
-#: or onto a cold cache is charged the slower run -- which is what the
-#: interleaving and the extra rounds in `_ratio` are for. It counts
+#: processes beside it, load average 18-75, three runs):
+#: `time.perf_counter()` read 27 of the 33 ratio rows at 6.0 or over at
+#: least once, up to 14.0x, where `time.thread_time()`, measured back
+#: to back, read none over 5.76x. CPU time still moves under contention
+#: -- a thread moved to an efficiency core or onto a cold cache is
+#: charged the slower run, in either input -- which is what the
+#: interleaving and the extra rounds in `_ratio` are for (decisions/
+#: parse-cost, 2026-11-11 #1352, has the readings). It counts
 #: everything the parse does on its own thread, C-level work and
 #: memory stalls included, so the defects the wall clock saw it sees:
-#: the controls recorded beside the tables were re-read on it
-#: (2026-11-11, in the PR that made this the clock).
+#: the controls recorded beside the tables were re-read on it. The
+#: dated measurements beside the tables from before that day are
+#: wall-clock readings; quiet, the two clocks fail the same rows under
+#: a planted quadratic, every row within 0.35x of each other.
 _CLOCK = time.thread_time
 
-#: Rounds `_ratio` takes before it judges, and the most it takes when
-#: the first rounds read over the bound.
+#: Rounds `_ratio` takes before it judges, the most it takes when the
+#: first rounds read near or over the bound, and how near: within 20%
+#: below it. Under load a ratio can read LOW as well as high -- a slow
+#: stretch landing on the small input's every round -- and on
+#: 2026-11-11 a planted quadratic reading 6.7x quiet read 5.93x once
+#: beside 24 busy loops when only a reading over the bound took more
+#: rounds (#1352's review); more rounds lower the small input's minimum
+#: too, so the ratio climbs back toward its true value.
 _ROUNDS = 7
 _MAX_ROUNDS = 35
+_NEAR = 0.8
 
 
 def _ratio(small_text: str, large_text: str,
@@ -472,11 +486,15 @@ def _ratio(small_text: str, large_text: str,
     INTERLEAVED, one parse of each per round, so a stretch of the run
     spent on a slow core or a cold cache is charged to both inputs
     rather than to whichever one was being timed then. And where the
-    first `_ROUNDS` read at or over `bound`, more rounds, up to
-    `_MAX_ROUNDS`: each round can only lower the two minimums toward
-    the true costs, so a ratio that a noisy stretch inflated comes back
-    down while a real superlinear cost stays over the bound however
-    many rounds it is given. A clean run pays for no extra rounds.
+    first `_ROUNDS` read near or over `bound` (`_NEAR`), more rounds,
+    up to `_MAX_ROUNDS`: each round can only lower the two minimums
+    toward the true costs, so a ratio that a noisy stretch inflated
+    comes back down, and one it deflated -- the small input's every
+    round slowed -- comes back up. These are not retries of a verdict:
+    once taken, all `_MAX_ROUNDS` run and the last minimums are judged,
+    the estimate moving only toward the true ratio. A clean run on a
+    quiet machine (about 4x against a bound of 6) pays for no extra
+    rounds.
 
     Timed with the cyclic collector OFF, after one collection. A full
     collection walks every live object, so its cost is the HEAP's, set
@@ -493,20 +511,23 @@ def _ratio(small_text: str, large_text: str,
     parse_(small_text)              # warm the parser cache
     parse_(large_text)
     small = large = float("inf")
-    rounds = 0
     gc.collect()
     enabled = gc.isenabled()
     gc.disable()
     try:
-        while rounds < _ROUNDS or (large / small >= bound
-                                   and rounds < _MAX_ROUNDS):
+        for i in range(_MAX_ROUNDS):
+            # judged once, after the first rounds, and never again: a
+            # loop that stopped at the first round reading under the
+            # bound would stop on a dip of the large input's minimum
+            # while the small one's was still inflated (#1352's review)
+            if i == _ROUNDS and large / small < bound * _NEAR:
+                break
             start = _CLOCK()
             parse_(small_text)
             small = min(small, _CLOCK() - start)
             start = _CLOCK()
             parse_(large_text)
             large = min(large, _CLOCK() - start)
-            rounds += 1
     finally:
         if enabled:
             gc.enable()
@@ -525,6 +546,61 @@ def _assert_grows_linearly(unit: str,
         f"{_FACTOR}x the input, which is superlinear (linear is ~{_FACTOR})")
 
 
+def _scripted_ratio(small_costs: list[float], large_costs: list[float],
+                    monkeypatch: pytest.MonkeyPatch) -> tuple[float, int]:
+    """`_ratio` over a clock that reads each round's scripted cost: the
+    two inputs' i-th parses cost small_costs[i] and large_costs[i] (the
+    last repeating), and the second value is the rounds taken."""
+    costs = {"s": iter(small_costs), "l": iter(large_costs)}
+    last = {"s": small_costs[-1], "l": large_costs[-1]}
+    now = [0.0]
+    taken = {"s": 0, "l": 0}
+
+    def fake_parse(text: str) -> None:
+        key = text
+        last[key] = next(costs[key], last[key])
+        taken[key] += 1
+        now[0] += last[key]
+
+    monkeypatch.setattr(sys.modules[__name__], "_CLOCK", lambda: now[0])
+    ratio, _, _ = _ratio("s", "l", fake_parse, 6.0)
+    # the two warm-up parses are not rounds
+    return ratio, taken["s"] - 1
+
+
+def test_ratio_takes_more_rounds_only_near_the_bound(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """`_ratio`'s rounds, on a scripted clock: a clean reading stops at
+    `_ROUNDS`; one near or over the bound takes all `_MAX_ROUNDS`; and
+    the verdict is the last minimums', so a dip under the bound after
+    the first rounds does not end them (#1352's review: a true 7.0x
+    whose small input read slow while its large one had come down
+    read under the bound and stopped)."""
+    warm = [1.0]
+    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.0], monkeypatch)
+    assert (round(ratio, 2), rounds) == (4.0, _ROUNDS)
+    # just under the near line stops; on it, goes on
+    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.79], monkeypatch)
+    assert rounds == _ROUNDS
+    ratio, rounds = _scripted_ratio(warm + [1.0], warm + [4.8], monkeypatch)
+    assert rounds == _MAX_ROUNDS
+    # the optional-stopping case, a true 7x (10 and 70): small reads 16
+    # for eight rounds, large 80 for seven, so the first rounds read
+    # 5.0 and take more; the eighth's large reads its true 70, a dip to
+    # 4.4 that a loop stopping on its first reading under the line
+    # would pass; small then reads its true 10
+    small = warm + [16.0] * (_ROUNDS + 1) + [10.0]
+    large = warm + [80.0] * _ROUNDS + [70.0]
+    ratio, rounds = _scripted_ratio(small, large, monkeypatch)
+    assert (round(ratio, 2), rounds) == (7.0, _MAX_ROUNDS)
+    # a deflated quadratic -- small slow for the first rounds -- climbs
+    # back over the bound
+    small = warm + [1.3] * _ROUNDS + [1.0]
+    large = warm + [6.7]
+    ratio, rounds = _scripted_ratio(small, large, monkeypatch)
+    assert (round(ratio, 2), rounds) == (6.7, _MAX_ROUNDS)
+
+
 @serial
 @pytest.mark.parametrize("unit", _SHAPES.values(), ids=list(_SHAPES))
 def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
@@ -536,7 +612,7 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # given part AFTER a family comma. `"a, "` puts the comma in every unit
 # and measures segment count instead; `"Smith "` alone never takes the
 # comma path. So each row is (prefix, unit, reachability probe), timed
-# on the clock like `_SHAPES` -- the defect is C-level work (a list
+# on the CPU clock (`_CLOCK`) like `_SHAPES` -- the defect is C-level work (a list
 # scanned by `in`, a tuple re-hashed as a dict key), which emits no
 # frame, so the frame-ratio guards below were blind to it (#553).
 #
@@ -648,9 +724,9 @@ _PREFIXED_SHAPES: dict[
     # every particle is in an all-particle family a connective joins
     # (rules/R2's set-aside, #939): the marking loop asks per word
     # whether it was set aside, which a list made quadratic. Measured
-    # 2026-11-03, py3.11, on a host at load average ~35, this row's
-    # test three times each: 6.7x, 7.4x and 8.5x with the list, passing
-    # all three with the set
+    # 2026-11-03, py3.11, on the wall clock, on a host at load average
+    # ~35, this row's test three times each: 6.7x, 7.4x and 8.5x with
+    # the list, passing all three with the set
     "connective_between_particles": (
         "Juan de ", "y de ", Parser(),
         lambda text: (parse(text).family_base == text[5:].strip()
@@ -762,7 +838,8 @@ def test_policy_gated_cost_grows_no_worse_than_linearly(
     _assert_grows_linearly(unit, parser.parse)
 
 
-# The shapes above repeat a unit 800 times and measure the CLOCK. That
+# The shapes above repeat a unit hundreds of times (800, or 1,600 for
+# `_PREFIXED_SHAPES`) and measure the CPU clock. That
 # pairing cannot guard a mutual recursion: #531's trailing-slot walk
 # re-entered the predicate that owns it, so a run of k ambiguous
 # credentials cost 2**k, and a run long enough to separate 2**k from

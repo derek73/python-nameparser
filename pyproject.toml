@@ -124,7 +124,7 @@ addopts = "--doctest-modules -n auto --dist worksteal"
 markers = [
     # deselected in a parallel run by tests/conftest.py; run them with
     # `uv run pytest -n0 -m serial`
-    "serial: measures CPU time, so other workers' load can still fail it",
+    "serial: times CPU, which other workers' load still moves; runs in its own pass",
 ]
 python_classes = ["*Tests", "*TestCase"]
 # Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed

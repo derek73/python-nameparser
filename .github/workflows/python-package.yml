@@ -59,7 +59,7 @@ jobs:
         # Two passes: the suite in parallel (pyproject's addopts), which
         # deselects the clock-timed `serial` tests, then those alone, since
         # other workers' load fails their timing ratios (tests/conftest.py).
-        # The frame-count guards in the same module run in the first pass.
+        # The frame, call and shift counts in the same module run in the first pass.
         if [ "$COVERAGE_ON" = "true" ]; then
           uv run pytest --cov=nameparser --cov-report=
           uv run pytest -n0 -m serial --cov=nameparser --cov-append --cov-report=xml
