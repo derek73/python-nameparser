@@ -347,9 +347,9 @@ def _take_trailing_initials(state: ParseState,
     # initial join it. In place, as every post rule writes; text order
     # already renders them first, so no tag is needed. History:
     # decisions/O8 (#1254).
-    if (state.structure is Structure.FAMILY_COMMA or state.order is None
-            or state.order[0] is not Role.GIVEN):
-        return
+    # A family comma and a family-first order need no test of their
+    # own: each puts the family first in text order, so no middle stands
+    # right before it for the run below to take (#1347 review).
     _, given, middle, family = _positions(tokens)
     if (len(family) != 1 or not middle
             or "initial" not in tokens[family[0]].tags):

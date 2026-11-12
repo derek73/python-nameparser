@@ -330,7 +330,9 @@ class Parser:
         letters ends at least two names and at least half of the names
         ending in letters (Nepal's ``B K``), and a group decided so
         casts no trailing-initial vote on its order; a group never turns
-        it off. A setting the votes do not decide keeps this parser's value, so
+        it off, nor turns it on under a base reading names family first
+        or folding every middle into the family, where it would change
+        no name. A setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 

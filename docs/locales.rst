@@ -796,11 +796,11 @@ by ``tests/v2/test_locales.py``:
 #. Write the rules the pack turns on as data, if they are ``Policy``
    fields the vocabulary files' ``[rules]`` table lists
    (``patronymic_rules``, ``name_order``, ``two_family_names``,
-   ``two_given_names``): put the
+   ``two_given_names``, ``initials_as_family``): put the
    table in the pack's language file, list the file in ``PACK_RULES``
    in ``tools/vocab/build.py``, rebuild, and give the pack
    ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as
-   ``ru``, ``tr_az``, ``es``, ``cs``, ``sk`` and ``vi`` do. ``nameparser/vocab/README.md``'s "Rules"
+   ``ru``, ``tr_az``, ``es``, ``cs``, ``sk``, ``vi`` and ``ne`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
 #. Declare a module-level ``DEVIATES(name)`` predicate. Given a name

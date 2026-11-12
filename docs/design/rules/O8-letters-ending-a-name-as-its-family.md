@@ -75,17 +75,21 @@
   "Ram Bahadur B K"  initials_as_family+two_family_names  →  middle="Bahadur"
   "Ram Bahadur B K"  initials_as_family+two_family_names  →  family="B K"
   ```
-- **Against two-given-name handling**: this rule reads first, and that rule takes the middle the letters leave (O7).
+- **Against two-given-name handling**: this rule reads first, and that rule takes the middle the letters leave (O7), so a letter that rule would take as a second given name (O7 takes an initial) goes to the family.
   ```
   "Ram Bahadur B K"  initials_as_family+two_given_names  →  given="Ram Bahadur"
+  "Ram R S"  initials_as_family+two_given_names  →  given="Ram"
+  "Ram R S"  initials_as_family+two_given_names  →  family="R S"
   ```
 - **Against compound-family handling**: this rule reads first, and O3 then folds the middles it leaves into the family.
   ```
   "Ram Bahadur B K"  initials_as_family+middle_as_family  →  family="Bahadur B K"
   ```
-- **Against a connective between the letters** (P3, P8): the connective joins its letters into the family already, which this rule leaves as it is.
+- **Against a connective between the letters** (P3, P8): the connective joins its letters into the family already, which this rule leaves as it is, a letter before them included: the rule joins letters only to a family written as one.
   ```
   "Maria R y S"  initials_as_family  →  family="R y S"
+  "Maria R A y S"  initials_as_family  →  middle="R"
+  "Maria R A y S"  initials_as_family  →  family="A y S"
   ```
 
 **Accepted:**
@@ -98,6 +102,21 @@
   ```
   "Henry V I"  initials_as_family  →  family="V I"
   "Lakshmi R S III"  initials_as_family  →  suffix="III"
+  "Lakshmi R S V"  initials_as_family  →  family="R S V"
+  ```
+- A particle opening the name that position reads as the given name (P1 folds only a never-given one) is the name word before the letters, so the letters after it are the family.
+  ```
+  "van R S"  initials_as_family  →  given="van"
+  "van R S"  initials_as_family  →  family="R S"
+  ```
+- Three or more letters joined with full stops are an unlisted dotted post-nominal before any rule reads them as a family (S3), so the name word before them stays the family.
+  ```
+  "Ram Bahadur B.K.T."  initials_as_family  →  family="Bahadur"
+  "Ram Bahadur B.K.T."  initials_as_family  →  suffix="B.K.T."
+  ```
+- Letters written in Devanagari are no initials (T5 reads a Latin letter), so a surname written so keeps its last letter as the family: 598 of nepal-candidates' 237,408 corpus spellings end that way (`वि क` 259, `बि क` 109, `वि. क.` 59; counted 2026-11-11, decisions/O8). Whether a Devanagari letter is an initial is #1273's question.
+  ```
+  "राम बहादुर वि क"  initials_as_family  →  family="क"
   ```
 - The rule reports nothing: the caller declared the convention, as O6's switch reports nothing.
 

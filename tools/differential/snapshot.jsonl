@@ -2664,6 +2664,7 @@
 {"name": "Lakshmi R S III", "given": "Lakshmi", "middle": "R", "family": "S", "suffix": "III", "initials": "L. R. S.", "generation": "III"}
 {"name": "Lakshmi R S Jr.", "given": "Lakshmi", "middle": "R", "family": "S", "suffix": "Jr.", "initials": "L. R. S.", "generation": "Jr."}
 {"name": "Lakshmi R S T", "given": "Lakshmi", "middle": "R S", "family": "T", "initials": "L. R. S. T."}
+{"name": "Lakshmi R S V", "given": "Lakshmi", "middle": "R S", "family": "V", "initials": "L. R. S. V."}
 {"name": "Lakshmi R S née Rao", "given": "Lakshmi", "middle": "R", "family": "S", "maiden": "Rao", "initials": "L. R. S."}
 {"name": "Lakshmi R S, PhD", "given": "Lakshmi", "middle": "R", "family": "S", "suffix": "PhD", "initials": "L. R. S."}
 {"name": "Lakshmi R É", "given": "Lakshmi", "middle": "R", "family": "É", "initials": "L. R. É."}
@@ -2912,6 +2913,7 @@
 {"name": "Maria Luisa y de la Cruz", "given": "Maria", "middle": "Luisa y de", "family": "la Cruz", "initials": "M. L. C."}
 {"name": "Maria López née García Pérez", "given": "Maria", "family": "López", "maiden": "García Pérez", "initials": "M. L."}
 {"name": "Maria Popescu", "given": "Maria", "family": "Popescu", "initials": "M. P."}
+{"name": "Maria R A y S", "given": "Maria", "middle": "R", "family": "A y S", "initials": "M. R. A. S."}
 {"name": "Maria R d S", "given": "Maria", "middle": "R d", "family": "S", "initials": "M. R. d. S.", "capitalized_force": "Maria R D S"}
 {"name": "Maria R y S", "given": "Maria", "family": "R y S", "initials": "M. R. S."}
 {"name": "Maria Rossi Dott.ssa", "title": "Dott.ssa", "given": "Maria", "family": "Rossi", "initials": "M. R."}
@@ -3521,9 +3523,11 @@
 {"name": "Ram Bahadur B K", "given": "Ram", "middle": "Bahadur B", "family": "K", "initials": "R. B. B. K."}
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B. K."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B. K."}
+{"name": "Ram Bahadur B.K.T.", "given": "Ram", "family": "Bahadur", "suffix": "B.K.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
 {"name": "Ram Das महाराज", "given": "Ram", "family": "Das", "suffix": "महाराज", "initials": "R. D."}
 {"name": "Ram KC", "given": "Ram", "family": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "R. K."}
+{"name": "Ram R S", "given": "Ram", "middle": "R", "family": "S", "initials": "R. R. S."}
 {"name": "Ramadhan Karta Hadimadja", "given": "Ramadhan", "middle": "Karta", "family": "Hadimadja", "initials": "R. K. H."}
 {"name": "Ramon Ferran i Pagès", "given": "Ramon", "family": "Ferran i Pagès", "initials": "R. F. P."}
 {"name": "Ramón Arellano Félix", "given": "Ramón", "middle": "Arellano", "family": "Félix", "initials": "R. A. F."}
@@ -4743,6 +4747,7 @@
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G.", "capitalized_force": "Van Gogh"}
 {"name": "van Gogh Vincent", "order": "FAMILY_FIRST", "given": "Vincent", "family": "van Gogh", "initials": "V. G."}
 {"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
+{"name": "van R S", "given": "van", "middle": "R", "family": "S", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. R. S.", "capitalized_force": "Van R S"}
 {"name": "van den Berg Cornelia", "given": "van", "family": "den Berg Cornelia", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. B. C.", "capitalized_force": "Van den Berg Cornelia"}
 {"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "suffix": "MBChB PhD", "initials": "C. M. S. A. B."}
 {"name": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "Ada", "middle": "Kornelia Sezar Martin", "family": "van den Volf", "suffix": "M.D. Ph.D.", "initials": "A. K. S. M. V."}
@@ -6190,6 +6195,7 @@
 {"name": "राजेश शर्मा", "given": "राजेश", "family": "शर्मा", "initials": "र. श."}
 {"name": "राजेश हमाल", "given": "राजेश", "family": "हमाल", "initials": "र. ह."}
 {"name": "राम कपूर", "given": "राम", "family": "कपूर", "initials": "र. क."}
+{"name": "राम बहादुर वि क", "given": "राम", "middle": "बहादुर वि", "family": "क", "initials": "र. ब. व. क."}
 {"name": "राम शर्मा साहब मोहन", "given": "राम", "family": "शर्मा", "suffix": "साहब मोहन", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "र. श.", "honorifics": "साहब"}
 {"name": "राम सुतार", "given": "राम", "family": "सुतार", "initials": "र. स."}
 {"name": "राय लक्ष्मी", "order": "FAMILY_FIRST", "given": "लक्ष्मी", "family": "राय", "initials": "ल. र."}

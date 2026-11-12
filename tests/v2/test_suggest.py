@@ -10,7 +10,7 @@ from collections.abc import Iterator
 
 from nameparser import (
     FAMILY_FIRST_GIVEN_LAST, UNSET, Lexicon, NameEvidence, Parser, Policy,
-    PolicyPatch, SettingEvidence, Suggestion,
+    PolicyPatch, SettingEvidence, Suggestion, locales, parser_for,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._suggest import Signal, name_votes
@@ -1313,6 +1313,10 @@ _LETTER_GRID = [
     "Lakshmi R S III", "Lakshmi R S V", "Lakshmi R S née Rao",
     'Lakshmi R S "Lax"', "Lakshmi Devi R S", "Ann Marie J. D.",
     "Huntley R P", "Lakshmi R. S., MD", "Lakshmi R,S", "Lakshmi R.,S.",
+    # words the parse divides where str.split() does not (#1347 review)
+    "Anjana K C(Maharjan)", "Bimala Kumari Singh (B. K.)", "Ram B K,Jr",
+    "Ram B\u200bK", "Ram B\ufeffK", "Ram B\u2063K", "Ram B\u30fbK",
+    "Ram B\u1361K",
 ]
 
 
@@ -1320,13 +1324,13 @@ _LETTER_GRID = [
     unicodedata.normalize("NFD", t) for t in ("Émile R S", "Ana É. S.")])
 def test_a_letter_run_is_read_exactly_where_the_rule_moves_a_name(
         text: str) -> None:
-    from nameparser._suggest import _letter_readers, _letter_run, \
-        _two_letters_in_a_row
+    from nameparser._policy import initials_as_family_may_move
+    from nameparser._suggest import _letter_readers, _letter_run
     on = Parser(policy=Policy(initials_as_family=True))
     moved = on.parse(text).as_dict() != Parser().parse(text).as_dict()
     # the cheap text test never skips a name the rule moves
     if moved:
-        assert _two_letters_in_a_row(text)
+        assert initials_as_family_may_move(text)
     run = _letter_run(text, _letter_readers(Parser()))
     # a run joined with full stops (`B.K.`) is evidence the rule never
     # moves, the next test's rows; every other name reads a run exactly
@@ -1339,7 +1343,11 @@ def test_a_letter_run_is_read_exactly_where_the_rule_moves_a_name(
     ("Durga B.K.", "bk"),         # joined with full stops: the convention
     ("Ram Bahadur K.C.", "kc"),
     ("Hari B.K", "bk"),
-    ("Durga J.-P.", "jp"),
+    # a hyphen joins the halves of one given name, no family
+    ("Durga J.-P.", None),
+    ("Kim J-H", None),
+    ("Dupont J.-P.", None),
+    ("J. B.K.", None),             # an initial in front: no name word
     ("Durga BK", None),            # bare capitals: a short surname's shape
     ("Zhi LI", None),
     ("B.K. Durga", None),          # letters before the name end nothing
@@ -1411,15 +1419,40 @@ def test_every_name_ending_in_a_run_is_evidence_for_the_switch() -> None:
     assert "none repeated" in undecided.note
 
 
-def test_a_decided_switch_changes_nothing_under_a_family_first_base(
-        ) -> None:
-    # rules/O8 stands down under a family-first order, so the switch is
-    # decided and inert there; the names keep the order they declare
-    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+@pytest.mark.parametrize("order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+def test_a_family_first_base_is_suggested_no_switch_it_would_ignore(
+        order: tuple[Role, Role, Role]) -> None:
+    # rules/O8 stands down under a family-first order, so a switch
+    # decided there would change no name (the #1347 review)
+    base = Parser(policy=Policy(name_order=order))
     s = base.suggest(["Durga B K", "Sita B K"])
+    e = _letters_evidence(s)
+    assert not e.decided
+    assert s.patch.initials_as_family is UNSET
+    assert "family first" in e.note
+    assert e.no_evidence == 2
+
+
+def test_a_middle_as_family_base_is_suggested_no_switch_it_would_ignore(
+        ) -> None:
+    # rules/O3 folds the letters into the family already
+    s = Parser(policy=Policy(middle_as_family=True)).suggest(
+        ["Durga B K", "Sita B K"])
+    assert s.patch.initials_as_family is UNSET
+    assert "middle into the family" in _letters_evidence(s).note
+
+
+@pytest.mark.parametrize("policy", [
+    Policy(two_given_names=True), Policy(two_family_names=True),
+    Policy(patronymic_rules=frozenset())])
+def test_a_base_switch_beside_it_still_reads_the_runs(policy: Policy) -> None:
+    s = Parser(policy=policy).suggest(["Ram Bahadur B K", "Sita Devi B K"])
     assert s.patch.initials_as_family is True
-    assert s.parser.parse("Durga B K").as_dict() == base.parse(
-        "Durga B K").as_dict()
+
+
+def test_the_vi_pack_is_suggested_no_switch_it_would_ignore() -> None:
+    s = parser_for(locales.VI).suggest(["Durga B K", "Sita B K"])
+    assert s.patch.initials_as_family is UNSET
 
 
 def test_a_base_with_the_switch_on_keeps_it_out_of_the_patch() -> None:

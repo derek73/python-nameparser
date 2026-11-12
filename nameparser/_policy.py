@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
@@ -242,6 +243,39 @@ _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 #: once it earns a member.
 _NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
                 Script.KATAKANA)
+
+
+def _letter_units(text: str) -> list[int]:
+    """How many letters each run of letters in `text` holds, a combining
+    mark kept in the run of the letter it marks and every other
+    character dividing two runs."""
+    units, letters, in_run = [], 0, False
+    for ch in text:
+        if ch.isalpha():
+            letters += 1
+            in_run = True
+        elif in_run and unicodedata.category(ch) in ("Mn", "Mc", "Me"):
+            continue
+        elif in_run:
+            units.append(letters)
+            letters, in_run = 0, False
+    if in_run:
+        units.append(letters)
+    return units
+
+
+def initials_as_family_may_move(text: str) -> bool:
+    """Whether Policy.initials_as_family may move `text`: rules/O8 moves
+    only letters standing two or more in a row, so a name it moves holds
+    two runs in a row of one letter each, wherever they stand and
+    whatever divides them. Every character but a letter and a combining
+    mark divides a run here, wider than any separator the parse reads
+    (a zero-width character, `・`, a glued comma or bracket), so the
+    test over-declares, the safe direction, and never misses a name the
+    rule moves. locales.NE's DEVIATES and Parser.suggest's letter runs
+    both ask it."""
+    units = _letter_units(text)
+    return any(a == 1 == b for a, b in zip(units, units[1:]))
 
 
 def _script_matcher(*scripts: Script,
