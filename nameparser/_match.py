@@ -21,7 +21,8 @@ repr compares a parser's policy with) and `_lexicon` (for
 the particles, and `Lexicon.default()`, which the repr compares a
 parser's lexicon with), `_pipeline._vocab` (for `_HYPHEN_CHARS`, the
 hyphens the pipeline joins two names with, every one of which the
-match reads as the hyphen-minus), `_parser` at call time, in the constructor and
+match reads as the hyphen-minus, and `_HYPHENS`, the pattern a word
+is cut at them by), `_parser` at call time, in the constructor and
 the repr, to tell a `Parser` from anything else, and `Parser` for
 typing too.
 """
