@@ -573,7 +573,9 @@ def _check_alternatives(key: tuple[str, int | None], pn: ParsedName,
                         parser: Parser) -> None:
     for a in pn.ambiguities:
         alt = a.alternative
-        if a.kind not in _FORK_KINDS:
+        if a.kind not in _FORK_KINDS or a.kind is AmbiguityKind.ORDER:
+            # rules/O4's order report names no alternative: the other
+            # order lays out the whole name, no one word's role (#1254)
             assert alt is None, (key, a)
             continue
         if key in _NO_ALTERNATIVE and alt is None:
@@ -585,14 +587,6 @@ def _check_alternatives(key: tuple[str, int | None], pn: ParsedName,
         assert alt is not None, f"{key[0]!r}: {a.kind.value} has none"
         if alt.kind in _FIELD_OF_KIND:
             assert alt.role is _FIELD_OF_KIND[alt.kind], (key, a, alt)
-            continue
-        if a.kind is AmbiguityKind.ORDER:
-            # rules/O4's other order, the word in front as the family
-            # (#1254), which no stand-in word can reach: it moves the
-            # name's layout, not the word
-            assert (a.tokens[0].role, alt.role) == (Role.GIVEN,
-                                                    Role.FAMILY), (
-                key, a, alt)
             continue
         if a.kind is AmbiguityKind.GIVEN_OR_FAMILY:
             # rules/O5's other convention, which no stand-in can reach
@@ -715,8 +709,7 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
     # a credential gated as a generation word is (#965) names a credential
     ("Ram KC", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
-    ("John V", ()): ((AmbiguityKind.ORDER, (
-        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),
+    ("John V", ()): ((AmbiguityKind.ORDER, None),
         (AmbiguityKind.SUFFIX_OR_NAME, (
             ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY))),
     ("John Smith Vi", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
@@ -725,8 +718,7 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
         ReadingKind.POST_NOMINAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     ("Jack Ma", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
-    ("Jack X.Y.Z.", ()): ((AmbiguityKind.ORDER, (
-        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),
+    ("Jack X.Y.Z.", ()): ((AmbiguityKind.ORDER, None),
         (AmbiguityKind.SUFFIX_OR_NAME, (
             ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.SHAPE))),
     ("(MA) John Smith", ()): ((AmbiguityKind.SUFFIX_OR_NICKNAME, (
@@ -889,10 +881,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # before credentials ('Jane Doe, BM PhD') under the three orders;
     # 566 -> 576 and 357 -> 360 the same day, its review's rows; 576 ->
     # 582 and 360 -> 363, its second review's three head rows; 582 ->
-    # 594 and 363 -> 366, its third review's rows; 366 -> 388 the same
-    # day, #1254's order reports on 22 rows, which no stand-in can
-    # reach, so the oracle passes each by its pair of fields
-    assert (checked, skipped) == (594, 388), (checked, skipped)
+    # 594 and 363 -> 366, its third review's rows; #1254's order
+    # reports on 22 rows carry no alternative (rules/A1), so neither
+    # count moves with them
+    assert (checked, skipped) == (594, 366), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

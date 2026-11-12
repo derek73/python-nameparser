@@ -605,8 +605,11 @@ class AmbiguityKind(StrEnum):
     #: is also a byline written family name first ("Armitage J. O.",
     #: "Gomes A.R.S.", "Kavitha S") and, with two or more letters, the
     #: South Asian name whose letters are its family ("Lakshmi R S",
-    #: rules/O4, rules/O8). ``alternative`` names the word in front as
-    #: the family name. Reported only under the given-first order, with
+    #: rules/O4, rules/O8). ``alternative`` is None: the other reading
+    #: lays out the whole name (the word in front the family, the
+    #: letters the given and middle initials), which no one word's
+    #: other role names, so the detail says it in words and a caller
+    #: reads it with ``name_order=FAMILY_FIRST``. Reported only under the given-first order, with
     #: no family comma and ``Policy.initials_as_family`` off; never
     #: for capitals written as one word with no full stops ("Armitage
     #: JO"), which are written as a short surname is ("Zhi LI"), nor for

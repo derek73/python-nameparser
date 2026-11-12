@@ -584,15 +584,18 @@ def _assign_main(seg_idx: int, state: ParseState,
     # (decisions/O4, #1254). Bare capitals (`Armitage JO`) are no
     # initials here: they are written as a short surname is (`Zhi LI`).
     # Inline and nested so a plain name exits at its second piece
-    # (the parse-cost band, decisions/parse-cost)
-    if (len(name_pieces) >= 2 and seg_idx == 0
-            and order[0] is Role.GIVEN and not resolved.by_script
-            and state.structure is not Structure.FAMILY_COMMA
+    # (the parse-cost band, decisions/parse-cost). No test of the comma
+    # or the segment is needed: assign calls this for segment 0 under
+    # no comma or a suffix comma alone. Nor of a script's order: one
+    # needs the name written wholly in Han, Hangul or kana, which hold
+    # no initial (rules/T5) for the walk below to find (#1348 review).
+    order_report: PendingAmbiguity | None = None
+    if (len(name_pieces) >= 2 and order[0] is Role.GIVEN
             and not state.policy.initials_as_family):
         first = pieces[name_pieces[0]]
-        # a particle in front is PARTICLE_OR_GIVEN's fork, reported there
+        # a particle in front is PARTICLE_OR_GIVEN's fork, reported
+        # there; an initial in front is refused below by its one letter
         initialed = (len(first) == 1
-                     and "initial" not in tokens[first[0]].tags
                      and "particle" not in tokens[first[0]].tags)
         for k in name_pieces[1:]:
             if not initialed:
@@ -600,11 +603,13 @@ def _assign_main(seg_idx: int, state: ParseState,
             piece = pieces[k]
             letters = tokens[piece[0]]
             # chunks of the composed spelling, as classify measures a
-            # letter (`composed_len`): a decomposed `É.S.` is one run
+            # letter (`composed_len`): a decomposed `É.S.` is one run;
+            # the shape tag is given only to letters (period_joined_vocab's
+            # alphabetic gate), so a chunk's length is the whole test
             initialed = len(piece) == 1 and (
                 "initial" in letters.tags
                 or SHAPE_ACRONYM_TAG in letters.tags
-                and all(len(chunk) == 1 and chunk.isalpha()
+                and all(len(chunk) == 1
                         for chunk in unicodedata.normalize(
                             "NFC", letters.text).rstrip(".").split(".")))
         text = unicodedata.normalize("NFC", tokens[first[0]].text)
@@ -615,15 +620,19 @@ def _assign_main(seg_idx: int, state: ParseState,
                 and not all(len(chunk) == 1
                             for chunk in text.rstrip(".").split("."))
                 and not in_initialless_script(text)):
-            ambiguities.append(PendingAmbiguity(
+            order_report = PendingAmbiguity(
                 AmbiguityKind.ORDER,
-                f"{tokens[first[0]].text!r} is followed only by initials, which a byline "
-                f"writes after the family name and a South Asian name "
-                f"writes as the family; read as ", tuple(first),
-                field_tail=" by the default given-first order",
-                alternative=PendingReading(ReadingKind.NAME,
-                                           ReadingSource.POSITION,
-                                           Role.FAMILY)))
+                f"{tokens[first[0]].text!r} is the only name word before "
+                f"initials, which a byline writes after the family name "
+                f"and a South Asian name writes as the family; read as ",
+                tuple(first),
+                # rules/A1: "the order (O4), whose other reading lays out
+                # the whole name rather than moving one word" -- so the
+                # report names none and says it in words (decisions/O4)
+                field_tail=(" by the given-first order; read family "
+                            "first (name_order=FAMILY_FIRST), the word in "
+                            "front is the family name and the letters "
+                            "the given and middle initials"))
 
     def as_a_name(i: int) -> PendingReading:
         # every other word read as the parse reads it -- the carve-out's
@@ -652,6 +661,10 @@ def _assign_main(seg_idx: int, state: ParseState,
         report = ambiguities[r]
         ambiguities[r] = copy_with(
             report, alternative=as_a_name(report.indices[0]))
+    # after the trailing reports are given their name reading, which
+    # the order report has none of
+    if order_report is not None:
+        ambiguities.append(order_report)
     # Both emitters below turn on the PEEL's count, so neither can
     # reach a name that kept two name pieces, and the two scans are
     # nested under the count rather than run beside it: they cost the

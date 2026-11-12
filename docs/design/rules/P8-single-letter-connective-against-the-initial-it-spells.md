@@ -10,11 +10,13 @@
   "jose e maria santos"       →  middle="e maria"
   "john e smith"              →  middle="e"
   ```
-- **What reports.** A letter the vocabulary marks as reading both ways, read as an initial in a name written wholly in one case, is a call that could have gone the other way, and is reported — unless no name word of its part stands to its right, nothing at all or only post-nominals and titles, where it connects nothing and there is no other way for the call to go: it is not reported, and where S10 reads it as a numeral S10's report is the one. A name of one word and such a letter reports its order all the same, a different fork (O4).
+- **What reports.** A letter the vocabulary marks as reading both ways, read as an initial in a name written wholly in one case, is a call that could have gone the other way, and is reported — unless no name word of its part stands to its right, nothing at all or only post-nominals and titles, where it connects nothing and there is no other way for the call to go: it is not reported, and where S10 reads it as a numeral S10's report is the one. A name of one word and such a letter, one the vocabulary marks as an initial, reports its order all the same, a different fork (O4); a one-case letter it does not mark, as `y`, is the connective there, read as no initial, and reports nothing.
   ```
   "jose e maria santos"       →  ambiguities=("conjunction-or-initial",)
   "carod i"                   →  ambiguities=("order", "suffix-or-name")  · boundary
   "jose e phd"                →  ambiguities=("order",)  · boundary
+  "SILVA Y"                   →  ambiguities=()  · boundary
+  "silva y"                   →  ambiguities=()  · boundary
   "smith, john e phd"         →  ambiguities=()  · boundary
   "john van e phd"            →  ambiguities=()  · boundary
   ```

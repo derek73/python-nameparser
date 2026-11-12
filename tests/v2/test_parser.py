@@ -3690,8 +3690,10 @@ def test_one_word_and_initials_report_the_order(text: str) -> None:
              if a.kind is AmbiguityKind.ORDER]
     assert len(order) == 1
     assert order[0].tokens[0].role is Role.GIVEN
-    assert order[0].alternative is not None
-    assert order[0].alternative.role is Role.FAMILY
+    # the other order lays out the whole name, which no one word's
+    # role names, so the report names none and says it in words
+    assert order[0].alternative is None
+    assert "name_order=FAMILY_FIRST" in order[0].detail
 
 
 @pytest.mark.parametrize("text", [
@@ -3708,10 +3710,36 @@ def test_one_word_and_initials_report_the_order(text: str) -> None:
     "Dupont J.-P.",        # hyphenated initials carry no initial tag
     "Smith J-P",
     "김 v",                 # a script that writes no initials in front
+    "王 J",
+    "?? S",                # no letter in front (#1348 review)
+    "12 S.",
+    "-- J O",
+    unicodedata.normalize("NFD", "\u00c9 S"),  # one letter, decomposed
+    # limits rules/O4 states, not extended here (#1348 review)
+    "राम बि.क.",           # Devanagari letters with a vowel sign (#1273)
+    "सीता के.सी.",
+    "Ivanov Yu. A.",       # transliteration digraphs are name words (H2)
+    "Petrov A. Yu.",
+    "Ivanov Yu.",
+    "SILVA Y",             # a one-case Y is the connective (P8)
+    "SILVA J Y",
+    "silva y",
 ])
 def test_what_does_not_report_the_order(text: str) -> None:
     assert AmbiguityKind.ORDER not in {
         a.kind for a in parse(text).ambiguities}
+
+
+@pytest.mark.parametrize("text", [
+    "PHUOC T DO", "Sigve N Aas, PhD", "Felicio S Neto", "Smith J. Jr."])
+def test_the_order_report_says_what_follows_the_word(text: str) -> None:
+    # a word read as a suffix after the initials is no name word, so
+    # the name has the shape; the text claims only the name words
+    # (#1348 review: it said "followed only by initials")
+    order = [a for a in parse(text).ambiguities
+             if a.kind is AmbiguityKind.ORDER]
+    assert len(order) == 1
+    assert "is the only name word before initials" in order[0].detail
 
 
 @pytest.mark.parametrize("policy", [

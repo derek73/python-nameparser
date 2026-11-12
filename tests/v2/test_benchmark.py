@@ -597,6 +597,18 @@ _PREFIXED_SHAPES: dict[
                       and parse(text).initials().count("d.")
                       == text.count(" de")),
     ),
+    # every initial follows one name word, so rules/O4's order report
+    # walks every piece after the word in front before it reports
+    # (#1254); the walk is tag tests alone, C-level work no frame
+    # guard sees. Measured 2026-11-11, py3.11, load average ~12, best
+    # of five at this base and 4x: 3.89-4.50 clean; 11.47-12.23 with a
+    # list scan planted per piece (`name_pieces.index(k)`), which
+    # failed this row three runs of three
+    "order_report_initials": (
+        "Armitage ", "J. ", Parser(),
+        lambda text: "order" in {a.kind.value
+                                 for a in parse(text).ambiguities},
+    ),
     # every core is dropped behind the whole name, and the part was
     # filtered against a list of the cores
     "delimiter_cores": (
