@@ -909,6 +909,12 @@ def test_a_patronymic_ending_the_pipeline_cannot_read_casts_no_vote(
     ("Ali Huseyn oglu", PatronymicRule.TURKIC),
     ("Бекмырза Чолпонбай уулу", PatronymicRule.TURKIC),
     ("Dr. Aidai Mederbek kyzy Jr.", PatronymicRule.TURKIC),
+    # a surname spelled as the marker opening the name: the rule reads
+    # only the last word
+    ("Oğlu Ahmad oğlu", PatronymicRule.TURKIC),
+    # an East Slavic ending on the father's name: O1 leaves three words
+    # ending in a marker alone, and O2 reads them
+    ("Аскар Бакытович уулу", PatronymicRule.TURKIC),
     # a marker in a maiden clause, which rules/R9's Turkic arm reads (as
     # on master, where the clause's four words cast the vote)
     ("Leyla née Rasim qizi", PatronymicRule.TURKIC),

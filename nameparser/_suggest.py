@@ -284,7 +284,8 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     can read it there. rules/O2's four name words, the marker last
     (family-first) or third (given-first, which the Turkic rule reads
     too), never first or second, and its three name words, the marker
-    last (#1187); rules/O1's three name words, the
+    last, as the rule reads them whatever the words before it (#1187);
+    rules/O1's three name words, the
     ending on the middle word (given-first) or on the last
     (`east_slavic_rotates`, the family-first shape the rule restores),
     whatever the first word ends in (a surname may end like a
@@ -295,8 +296,7 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
             and (is_patronymic_marker(bare[2])
                  or is_patronymic_marker(bare[3]))):
         return PatronymicRule.TURKIC
-    if (len(bare) == 3 and is_patronymic_marker(bare[2])
-            and not any(map(is_patronymic_marker, bare[:2]))):
+    if len(bare) == 3 and is_patronymic_marker(bare[2]):
         return PatronymicRule.TURKIC
     if (len(bare) == 3
             and not (_is_initialed(words[0]) or _is_initialed(words[1]))
