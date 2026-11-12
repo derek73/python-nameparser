@@ -26,7 +26,7 @@ Which guard a new shape needs (the comment beside each table carries
 the measurements behind its rule):
 
 - A unit repeated at n and 4n that a bare parse() reaches: a _SHAPES
-  row, timed on the clock. The rows cover different dimensions, and
+  row, timed on the CPU clock (`_CLOCK`). The rows cover different dimensions, and
   the comments at the table say which dimension each row alone covers
   and what its unit must hold to reach the code -- measure before
   pruning one. Calibrate _MAX_RATIO against the WEAKEST quadratic's
@@ -39,7 +39,7 @@ the measurements behind its rule):
   (test_a_clause_link_run_does_not_cost_quadratically).
 - A prefixed shape whose cost is C-level work (a list scanned by `in`,
   a tuple re-hashed as a key), which emits no frame: a _PREFIXED_SHAPES
-  row, on the clock at its own base. That table skips under a line
+  row, on the CPU clock at its own base. That table skips under a line
   tracer, and NAMEPARSER_REQUIRE_CLOCK_GUARDS turns the skip into a
   failure (the comment at the table says why CI still runs it).
 - An exponential, whose separating input length never finishes on the
@@ -57,8 +57,15 @@ ratio includes the parse's linear work, which its calibration accounts
 for. Either kind needs the same reachability assertion a _POLICY_SHAPES
 row carries. Frame
 counts do not move under load, so they need no repeated-run
-calibration. The module is marked `serial` (tests/conftest.py says
-why), and a new clock-timed test elsewhere takes the mark too.
+calibration.
+
+TWO PASSES. The counted guards -- frames, calls, list shifts -- run in
+the parallel suite, so a plain `uv run pytest` holds the band. The four
+timed tests carry the `serial` mark and run in their own `-n0 -m
+serial` pass (tests/conftest.py says why), and a new timed test, here
+or elsewhere, takes the mark too. They time CPU time, not wall time,
+which is what lets that pass run on a machine other jobs are loading;
+`_CLOCK` holds the measurements behind the choice.
 """
 import gc
 import operator
@@ -74,11 +81,11 @@ import pytest
 from nameparser import ParsedName, Parser, locales, parse, parser_for
 from nameparser._policy import Policy
 
-#: The whole module, though only the clock-timed tests need it: a
-#: parallel run's load fails their ratios (tests/conftest.py), and the
-#: frame-count tests beside them cost too little to be worth splitting
-#: the module's one serial pass.
-pytestmark = pytest.mark.serial
+#: The clock-timed tests alone: the four marked below run in their own
+#: `-n0 -m serial` pass (tests/conftest.py), and the frame, call and
+#: shift counts beside them run in the parallel suite, since a count
+#: does not move with load (`_CLOCK` says what the clock tests time).
+serial = pytest.mark.serial
 
 
 #: What one parse of the reference name is allowed to cost, counted in
@@ -223,6 +230,7 @@ def test_parse_cost_stays_within_its_band() -> None:
     _check_budget("parse", parse)
 
 
+@serial
 @pytest.mark.parametrize("kind,fn", [
     ("parse", parse),
 ])
@@ -241,13 +249,19 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
     The bound is loose enough that runner variance cannot reach it: the
     failures were at 1.01-1.08s against 1.0, and coverage costs about
     3x, so 5s leaves roughly 5x of margin on the CI runner that failed.
+    Those were wall-clock seconds; since 2026-11-11 the bound is 5s of
+    CPU time (`_CLOCK`), which a loaded machine cannot stretch the way
+    it stretched the wall clock (0.12s quiet, 0.30-0.50s under 24
+    busy-loop processes, against 0.17-0.18s of CPU time). The number
+    did not move: CPU time is at most the wall time of a single-threaded
+    parse, so the bound is no looser than it was.
     """
     fn("warm up the caches")
-    start = time.perf_counter()
+    start = _CLOCK()
     for i in range(1000):
         fn(_REFERENCE.format(i=i))
-    elapsed = time.perf_counter() - start
-    assert elapsed < 5.0, f"1000 {kind} parses took {elapsed:.2f}s"
+    elapsed = _CLOCK() - start
+    assert elapsed < 5.0, f"1000 {kind} parses took {elapsed:.2f}s of CPU"
 
 
 # Pathological shapes: each repeats a unit that drives one stage's inner
@@ -422,11 +436,47 @@ _FACTOR = 4
 _MAX_RATIO = 6.0
 
 
-def _best(text: str, parse_: Callable[[str], object],
-          repeats: int = 7) -> float:
-    """Minimum of several runs: on a shared runner the mean carries the
+#: The clock every timed test reads: CPU time of the calling thread,
+#: not wall time. A wall clock counts the time the scheduler spends
+#: running OTHER processes, so on a loaded machine it stretches
+#: whichever input happened to be running when another job woke, and
+#: the ratio below reads it as growth. Measured 2026-11-11 on this
+#: module's rows (py3.11, a 12-core Apple silicon laptop, 24 busy-loop
+#: processes beside it, load average 18-75): `time.perf_counter()` read
+#: 27 of the 33 ratio rows at 6.0 or over in at least one of three
+#: runs, up to 14.0x, where the same samples on the CPU clock read none
+#: over 5.8x, and interleaved seven rounds as `_ratio` first takes them
+#: none over 5.6x in 99 more (load 30-59). CPU time
+#: still moves under contention -- a thread moved to an efficiency core
+#: or onto a cold cache is charged the slower run -- which is what the
+#: interleaving and the extra rounds in `_ratio` are for. It counts
+#: everything the parse does on its own thread, C-level work and
+#: memory stalls included, so the defects the wall clock saw it sees:
+#: the controls recorded beside the tables were re-read on it
+#: (2026-11-11, in the PR that made this the clock).
+_CLOCK = time.thread_time
+
+#: Rounds `_ratio` takes before it judges, and the most it takes when
+#: the first rounds read over the bound.
+_ROUNDS = 7
+_MAX_ROUNDS = 35
+
+
+def _ratio(small_text: str, large_text: str,
+           parse_: Callable[[str], object], bound: float) -> tuple[float, float, float]:
+    """The CPU cost of `large_text` over `small_text`'s, each the
+    MINIMUM of its rounds: on a shared machine the mean carries the
     noise of whatever else is running, while the minimum approaches the
     true cost.
+
+    INTERLEAVED, one parse of each per round, so a stretch of the run
+    spent on a slow core or a cold cache is charged to both inputs
+    rather than to whichever one was being timed then. And where the
+    first `_ROUNDS` read at or over `bound`, more rounds, up to
+    `_MAX_ROUNDS`: each round can only lower the two minimums toward
+    the true costs, so a ratio that a noisy stretch inflated comes back
+    down while a real superlinear cost stays over the bound however
+    many rounds it is given. A clean run pays for no extra rounds.
 
     Timed with the cyclic collector OFF, after one collection. A full
     collection walks every live object, so its cost is the HEAP's, set
@@ -437,35 +487,45 @@ def _best(text: str, parse_: Callable[[str], object],
     (one 34ms pass inside group's snapshot comprehension) and
     4.00-4.06x with it off, on identical frame counts (96,100 ->
     384,100). The parse's own work, Python or C level, is still
-    timed whole, so a planted quadratic is as visible as before."""
-    parse_(text)                    # warm the parser cache
-    best = float("inf")
+    timed whole, so a planted quadratic is as visible as before.
+
+    Returns the ratio and the two minimums, in seconds of CPU time."""
+    parse_(small_text)              # warm the parser cache
+    parse_(large_text)
+    small = large = float("inf")
+    rounds = 0
     gc.collect()
     enabled = gc.isenabled()
     gc.disable()
     try:
-        for _ in range(repeats):
-            start = time.perf_counter()
-            parse_(text)
-            best = min(best, time.perf_counter() - start)
+        while rounds < _ROUNDS or (large / small >= bound
+                                   and rounds < _MAX_ROUNDS):
+            start = _CLOCK()
+            parse_(small_text)
+            small = min(small, _CLOCK() - start)
+            start = _CLOCK()
+            parse_(large_text)
+            large = min(large, _CLOCK() - start)
+            rounds += 1
     finally:
         if enabled:
             gc.enable()
-    return best
+    return large / small, small, large
 
 
 def _assert_grows_linearly(unit: str,
                            parse_: Callable[[str], object],
                            prefix: str = "", base: int = _BASE) -> None:
-    small = _best(prefix + unit * base, parse_)
-    large = _best(prefix + unit * (base * _FACTOR), parse_)
-    ratio = large / small
+    ratio, small, large = _ratio(prefix + unit * base,
+                                 prefix + unit * (base * _FACTOR), parse_,
+                                 _MAX_RATIO)
     assert ratio < _MAX_RATIO, (
-        f"{prefix!r} + {unit!r} x{base} took {small * 1e3:.2f}ms, "
+        f"{prefix!r} + {unit!r} x{base} took {small * 1e3:.2f}ms of CPU, "
         f"x{base * _FACTOR} took {large * 1e3:.2f}ms -- {ratio:.1f}x for "
         f"{_FACTOR}x the input, which is superlinear (linear is ~{_FACTOR})")
 
 
+@serial
 @pytest.mark.parametrize("unit", _SHAPES.values(), ids=list(_SHAPES))
 def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
     _assert_grows_linearly(unit, parse)
@@ -609,6 +669,7 @@ _PREFIXED_SHAPES: dict[
 }
 
 
+@serial
 @pytest.mark.parametrize("prefix,unit,parser,reaches",
                          _PREFIXED_SHAPES.values(),
                          ids=list(_PREFIXED_SHAPES))
@@ -691,6 +752,7 @@ def test_shape_tables_are_not_empty() -> None:
     assert _REREAD_SHAPES
 
 
+@serial
 @pytest.mark.parametrize("unit,parser,reaches", _POLICY_SHAPES.values(),
                          ids=list(_POLICY_SHAPES))
 def test_policy_gated_cost_grows_no_worse_than_linearly(

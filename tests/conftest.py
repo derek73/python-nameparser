@@ -12,8 +12,11 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     ratio of two timings, and the other workers' load stretches the
     larger input's more than the smaller's: under -n auto the
     maiden_clause row read 6.4x against its 6.0 bound on a tree that
-    passes serially (measured 2026-10-23). They run in their own -n0
-    pass instead, which CI makes and the summary line below asks for.
+    passes serially (measured 2026-10-23, on the wall clock they read
+    then). They run in their own -n0 pass instead, which CI makes and
+    the summary line below asks for. The frame, call and shift counts
+    in the same module are not marked and run here, since a count does
+    not move with load.
     """
     if not hasattr(config, "workerinput"):
         return
@@ -29,8 +32,9 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter,
     if hasattr(config, "workerinput") or not getattr(config.option, "numprocesses", None):
         return
     terminalreporter.write_line(
-        "serial tests (tests/v2/test_benchmark.py) do not run in parallel; "
-        "run them with: uv run pytest -n0 -m serial", yellow=True)
+        "serial tests (the clock-timed ones in tests/v2/test_benchmark.py) do "
+        "not run in parallel; run them with: uv run pytest -n0 -m serial",
+        yellow=True)
 
 
 
