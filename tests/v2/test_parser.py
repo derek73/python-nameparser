@@ -505,8 +505,11 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
     assert [t.text for t in numeral.ambiguities[0].tokens] == ["V"]
     # the same shape with a non-numeral letter faces no fork
     assert parse("John Smith B").ambiguities == ()
-    # and a numeral after an initial is not treated as a suffix at all
-    assert parse("John Q. V").ambiguities == ()
+    # and a numeral after an initial is not treated as a suffix at all:
+    # the name is one word and initials, which reports the order alone
+    # (rules/O4, #1254)
+    assert [a.kind for a in parse("John Q. V").ambiguities] == [
+        AmbiguityKind.ORDER]
 
 
 #: The words the _group-emitter tests below spell, apart from the
@@ -3670,3 +3673,82 @@ def test_matching_accept_none_is_the_default_and_bad_values_raise() -> None:
     assert Parser().matching({"initial"}).accept >= {"same", "initial"}
     with pytest.raises(TypeError):
         Parser().matching("initial")  # type: ignore[arg-type]
+
+
+# rules/O4's order report (#1254): one name word followed by nothing but
+# initials, read given-first by the default order
+
+
+@pytest.mark.parametrize("text", [
+    "Armitage J. O.", "Armitage J O", "Gomes A.R.S.", "Kavitha S",
+    "Delgado G.", "Lakshmi R S", "Lakshmi R S Jr.", "Dr. Kavitha S",
+    "Kavitha S, PhD", "kavitha s", "KAVITHA S", "Иванов И. И.",
+    "Иванов И.И.", unicodedata.normalize("NFD", "Gomes É.S."),
+])
+def test_one_word_and_initials_report_the_order(text: str) -> None:
+    order = [a for a in parse(text).ambiguities
+             if a.kind is AmbiguityKind.ORDER]
+    assert len(order) == 1
+    assert order[0].tokens[0].role is Role.GIVEN
+    # the other order lays out the whole name, which no one word's
+    # role names, so the report names none and says it in words
+    assert order[0].alternative is None
+    assert "name_order=FAMILY_FIRST" in order[0].detail
+
+
+@pytest.mark.parametrize("text", [
+    "John Smith",          # no initials
+    "Zhi LI",              # capitals written as one word: a surname's shape
+    "Armitage JO",
+    "Smith, J.O.",         # a family comma names the family
+    ", R S",
+    "Ram Bahadur B K",     # a second name word in front
+    "J R S",               # a run of initials in front (T7)
+    "J.A. K.D.",
+    "Van R S",             # a particle in front: PARTICLE_OR_GIVEN's
+    "Kavitha s",           # a lower-case letter among capitals (T4)
+    "Dupont J.-P.",        # hyphenated initials carry no initial tag
+    "Smith J-P",
+    "김 v",                 # a script that writes no initials in front
+    "王 J",
+    "?? S",                # no letter in front (#1348 review)
+    "12 S.",
+    "-- J O",
+    unicodedata.normalize("NFD", "\u00c9 S"),  # one letter, decomposed
+    # limits rules/O4 states, not extended here (#1348 review)
+    "राम बि.क.",           # Devanagari letters with a vowel sign (#1273)
+    "सीता के.सी.",
+    "Ivanov Yu. A.",       # transliteration digraphs are name words (H2)
+    "Petrov A. Yu.",
+    "Ivanov Yu.",
+    "SILVA Y",             # a one-case Y is the connective (P8)
+    "SILVA J Y",
+    "silva y",
+])
+def test_what_does_not_report_the_order(text: str) -> None:
+    assert AmbiguityKind.ORDER not in {
+        a.kind for a in parse(text).ambiguities}
+
+
+@pytest.mark.parametrize("text", [
+    "PHUOC T DO", "Sigve N Aas, PhD", "Felicio S Neto", "Smith J. Jr."])
+def test_the_order_report_says_what_follows_the_word(text: str) -> None:
+    # a word read as a suffix after the initials is no name word, so
+    # the name has the shape; the text claims only the name words
+    # (#1348 review: it said "followed only by initials")
+    order = [a for a in parse(text).ambiguities
+             if a.kind is AmbiguityKind.ORDER]
+    assert len(order) == 1
+    assert "is the only name word before initials" in order[0].detail
+
+
+@pytest.mark.parametrize("policy", [
+    Policy(name_order=FAMILY_FIRST),
+    Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+    Policy(initials_as_family=True),
+])
+def test_a_declared_order_or_the_switch_reports_no_order(
+        policy: Policy) -> None:
+    for text in ("Kavitha S", "Lakshmi R S", "Armitage J. O."):
+        assert AmbiguityKind.ORDER not in {
+            a.kind for a in Parser(policy=policy).parse(text).ambiguities}

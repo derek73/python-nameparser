@@ -1275,9 +1275,12 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     # of mixed case reports nothing (rules/S6), so the grid's capitals
     # spellings carry one report fewer (2,988 on the old grid), and the
     # 'Ma jd' tail added beside them restores the two-report shape.
-    assert multi == 3744, (
+    # 3,744 -> 3,780 on 2026-11-11 (#1254): a head of one name word and a
+    # dotted run of letters now reports the order beside the run's own
+    # report, a particle in front excepted (its own fork reports it).
+    assert multi == 3780, (
         f"{multi} of these parses carry more than one report, recorded "
-        f"as 3744 on 2026-10-25. A parse with one report cannot fail "
+        f"as 3780 on 2026-11-11. A parse with one report cannot fail "
         f"the check above, so this is what keeps the grid honest: move "
         f"the number deliberately, and never to 0")
     # 2,052 since 2026-10-04 (#601/#602), from 1,944: 216 parses left,
@@ -3764,8 +3767,12 @@ _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
 #: order (#1111): an initial before a maiden marker, which M4 leaves to
 #: O5's convention, now reads given under the two family-first orders,
 #: where unguarded M4 makes the letter the family ('j nee smith', the
-#: three letters v, x and j behind three heads, 396 -> 414)
-_ONE_CASE_UNGUARDED = 414
+#: three letters v, x and j behind three heads, 396 -> 414); re-taken
+#: 2026-11-11 when one name word followed by nothing but initials began
+#: reporting the order (#1254): unguarded, a lower-case letter is no
+#: initial, so 'john v' reports none where 'JOHN V' reports it
+#: (414 -> 507)
+_ONE_CASE_UNGUARDED = 507
 _ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
 _ONE_CASE_STRICT_VETO_UNGUARDED = 72
 

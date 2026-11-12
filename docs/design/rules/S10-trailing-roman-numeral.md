@@ -15,10 +15,10 @@
   "Georg VI."                 →  suffix="VI."
   "Konstantin VII."           →  suffix="VII."
   ```
-- **What reports.** A numeral of one letter reports whichever way the words-to-spare count reads it: either reading is reported, as either reading of an ambiguous acronym is. A numeral read by its shape alone reports too; a numeral the vocabulary lists in two or more letters is not in question and reports nothing.
+- **What reports.** A numeral of one letter reports whichever way the words-to-spare count reads it: either reading is reported, as either reading of an ambiguous acronym is, and behind one name word the order is reported beside it (O4). A numeral read by its shape alone reports too; a numeral the vocabulary lists in two or more letters is not in question and reports nothing.
   ```
   "John Smith V"              →  ambiguities=("suffix-or-name",)
-  "John V"                    →  ambiguities=("suffix-or-name",)
+  "John V"                    →  ambiguities=("order", "suffix-or-name")
   "John Smith VI"             →  ambiguities=("suffix-or-name",)
   "John Smith VI MD"          →  ambiguities=("suffix-or-name",)
   "John Smith III"            →  ambiguities=()
@@ -44,8 +44,8 @@
 - **A marked letter (P8) that is such a numeral reports this way and not as a connective.**
   ```
   "john i"                    →  family="i"
-  "john i"                    →  ambiguities=("suffix-or-name",)
-  "john i dr."                →  ambiguities=("suffix-or-name",)
+  "john i"                    →  ambiguities=("order", "suffix-or-name")
+  "john i dr."                →  ambiguities=("order", "suffix-or-name")
   ```
 
 **Because:** a roman numeral ending a name is its generation, and the post-nominals written after the generation do not change what it is. But one letter is also how an initial is written. A name of two words has no word to spare for it.
@@ -133,7 +133,7 @@
   "John Smith V PhD"          →  ambiguities=("suffix-or-name",)
   "John Smith V Ph. D."       →  family="V"
   "John Smith V Ph. D."       →  ambiguities=("suffix-or-name",)
-  "john i phd"                →  ambiguities=("suffix-or-name",)
+  "john i phd"                →  ambiguities=("order", "suffix-or-name")
   "Jane Doe nee Smith V PhD"  →  ambiguities=("suffix-or-name",)
   ```
 - A generation written in Title case in a mixed-case name reads as a name word, the lean that keeps a surname such as 'Vi' a name taking it too.

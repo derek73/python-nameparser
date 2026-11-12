@@ -613,7 +613,20 @@ way: the same string is a middle and a family initial in many lists
 Measured on ORCID researchers' credit names checked against the names
 they filed, a spaced run of letters ending a name was the family 66
 times, a middle and a family initial 11 times and a byline 302 times
-(2026-11-11). The switch reports nothing.
+(2026-11-11). The switch reports nothing. Without it, a name of one
+word followed by nothing but initials reports the fork as an ``order``
+ambiguity. It names no ``alternative``: the other reading lays out the
+whole name, the word in front as the family, which
+``name_order=FAMILY_FIRST`` reads:
+
+.. doctest::
+
+    >>> [a.kind.value for a in parse("Kavitha S").ambiguities]
+    ['order']
+    >>> parse("Kavitha S").ambiguities[0].alternative is None
+    True
+    >>> letters.parse("Kavitha S").ambiguities
+    ()
 
 .. _brackets:
 
