@@ -1162,7 +1162,11 @@ def post_rules(state: ParseState) -> ParseState:
     # marker in the family (history: decisions/O2, #1187)
     elif rotations_apply and PatronymicRule.TURKIC in rules and \
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
-        if is_patronymic_marker(tokens[families[0]].text):
+        # the marker must be the LAST name word: O1 above may have
+        # rotated the first word into the family (`Уулу Аскар Бакытович`
+        # with both rules on)
+        if (givens[0] < middles[0] < families[0]
+                and is_patronymic_marker(tokens[families[0]].text)):
             _retag(tokens, middles[0], Role.FAMILY)
             _, givens, middles, families = _positions(tokens)
     # rules/P6: "a particle ending the name attaches to that family

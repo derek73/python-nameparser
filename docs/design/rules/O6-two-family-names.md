@@ -112,7 +112,7 @@
   ```
   "Ana María García López"  two_family_names+middle_as_family  →  family="María García López"
   ```
-- **Against a patronymic rotation** ("Ivanov Ivan Ivanovich" with the East Slavic rotation on): where the rotation fires it wins, because it already decided which word is the family, and this rule finds no middle standing before that family to take. Where it does not fire, this rule reads the name as any other (Accepted).
+- **Against a patronymic rotation** ("Ivanov Ivan Ivanovich" with the East Slavic rotation on): where the rotation fires it wins, because it already decided which word is the family, and this rule finds no middle standing before that family to take. Where it does not fire, this rule reads the name as any other (Accepted). O2's three-word reading wins the same way, having taken the father's name into the family (O2's Precedence).
 - **Against P1's family-first reach** ("de Mesnil Jean Paul" under a family-first order): this rule wins and the family takes one name word past P1's one, because the switch is the caller saying the family holds two.
   ```
   "de Mesnil Jean Paul"  family-first+two_family_names  →  family="de Mesnil Jean"
@@ -130,7 +130,7 @@
   "Ana María-José López"  two_family_names  →  family="María-José López"
   "Ana Abdul-Rahman López"  two_family_names  →  family="Abdul-Rahman López"
   ```
-- A patronymic is a name word like any other here, a patronymic rule on or off, so where no rotation fired it can join the family.
+- A patronymic is a name word like any other here, a patronymic rule on or off, so where no rotation or O2 three-word reading fired it can join the family.
   ```
   "Petrov Ivan Sergeevich"  family-first+two_family_names  →  family="Petrov Ivan"
   ```

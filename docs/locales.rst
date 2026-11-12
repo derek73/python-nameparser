@@ -559,7 +559,7 @@ Shipped packs
        their Latin- and Cyrillic-script variants, ``o‘g‘li`` with any
        apostrophe Uzbek text writes) and reads its first
        word as the family name (``Aliyev Ilham Heydar oglu`` → family
-       ``Aliyev``). A name of three words ending in one has no surname,
+       ``Aliyev``). A name of three name words ending in one has no surname,
        so the father's name and the marker are the family
        (``Bekmyrza Cholponbai uulu`` → family ``Cholponbai uulu``). A
        marker and the name before it fill ``patronymic`` (``Heydar

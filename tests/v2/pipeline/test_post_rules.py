@@ -2242,6 +2242,8 @@ _TURKIC_THREE = [
     ("Abdul Rahman Ahmad oglu", None, "oglu"),
     # the marker last: a marker in the middle leaves the family last
     ("Aidai kyzy Mederbek", None, "Mederbek"),
+    # the family one word: a connective joins the family after the marker
+    ("Ali Ahmad oglu y Vali", None, "oglu y Vali"),
     # no comma: a suffix comma and a family comma keep their reading
     ("Aidai Mederbek kyzy, PhD", None, "kyzy"),
     ("Mederbek, Aidai Asel kyzy", None, "Mederbek"),
@@ -2263,6 +2265,18 @@ def test_o2_three_words_ending_in_a_marker(text: str, patch: PolicyPatch | None,
     packs = [locales.TR_AZ] + ([Locale(code="order", lexicon=Lexicon.empty(),
                                        policy=patch)] if patch else [])
     assert parser_for(*packs).parse(text).family == family
+
+
+def test_o2_three_words_reads_the_marker_last_after_o1() -> None:
+    # with both rules on, O1 rotates a marker-first name; the three-word
+    # reading must not then fold the patronymic into that family
+    both = parser_for(locales.TR_AZ, locales.RU)
+    for text, family, patronymic in (
+            ("Уулу Аскар Бакытович", "Уулу", "Бакытович"),
+            ("Kyzy Aigul Bakytovna", "Kyzy", "Bakytovna")):
+        got = both.parse(text)
+        assert (got.family, got.patronymic) == (family, patronymic), text
+    assert both.parse("Бекмырза Чолпонбай уулу").family == "Чолпонбай уулу"
 
 
 def test_o2_three_words_needs_the_turkic_rule() -> None:

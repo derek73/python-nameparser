@@ -882,13 +882,13 @@ CASES: tuple[Case, ...] = (
          {"given": "Жылдыз", "family": "Таалайбек кызы"},
          locale="tr_az", classification="fix(#1187)",
          notes="no surname: the father's name and the marker are the "
-               "family (rules/O2); 1.4.0 and 3.0.1 under TR_AZ read "
-               "middle 'Таалайбек', last/family 'кызы' (2026-11-12)"),
+               "family (rules/O2); 1.4.0 and 3.0.1 with Turkic handling "
+               "read middle 'Таалайбек', last/family 'кызы' (2026-11-12)"),
     Case("a_romanized_turkic_marker_ending_three_words_reads_with_the_fathers_name",
          "Aidai Mederbek kyzy",
          {"given": "Aidai", "family": "Mederbek kyzy"},
          locale="tr_az", classification="fix(#1187)",
-         notes="1.4.0 and 3.0.1 under TR_AZ read middle 'Mederbek', "
+         notes="1.4.0 and 3.0.1 with Turkic handling read middle 'Mederbek', "
                "last/family 'kyzy' (2026-11-12)"),
     Case("a_turkic_marker_ending_two_words_stays_positional",
          "Cavad oğlu",

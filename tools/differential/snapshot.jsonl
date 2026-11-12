@@ -172,6 +172,8 @@
 {"name": "Ahmad ibn-Ali", "given": "Ahmad", "family": "ibn-Ali", "initials": "A. i.", "capitalized_force": "Ahmad Ibn-Ali"}
 {"name": "Ahmad, bin Ali", "given": "bin", "middle": "Ali", "family": "Ahmad", "initials": "b. A. A.", "capitalized_force": "Bin Ali Ahmad"}
 {"name": "Ahmed Ali M.Hassan", "given": "Ahmed", "middle": "Ali M.", "family": "Hassan", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. A. M. H."}
+{"name": "Aidai Mederbek kyzy PhD", "given": "Aidai", "middle": "Mederbek", "family": "kyzy", "suffix": "PhD", "initials": "A. M. k.", "capitalized_force": "Aidai Mederbek Kyzy PhD"}
+{"name": "Aidai Mederbek kyzy, PhD", "given": "Aidai", "middle": "Mederbek", "family": "kyzy", "suffix": "PhD", "initials": "A. M. k.", "capitalized_force": "Aidai Mederbek Kyzy, PhD"}
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}

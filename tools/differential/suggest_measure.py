@@ -628,11 +628,12 @@ def _turkic_truth(dataset: str, name: str) -> str | None:
         return caps[0] if len(caps) == 1 else None
     if convention == "first":
         return words[0]
-    # a name ending in a standalone marker has no surname: the father's
-    # name and the marker stand where it would (#1253's first statement,
-    # rules/O2, #1187), the four Kyrgyz `Given Father уулу` names
+    # a name of three words ending in a standalone marker has no
+    # surname: the father's name and the marker stand where it would
+    # (#1253's first statement, rules/O2, #1187), as in kg_jogorku_kenesh's
+    # three `уулу` names and one `кызы`
     from nameparser._pipeline._vocab import is_patronymic_marker
-    if len(words) > 2 and is_patronymic_marker(words[-1]):
+    if len(words) == 3 and is_patronymic_marker(words[-1]):
         return " ".join(words[-2:])
     return words[-1]
 
