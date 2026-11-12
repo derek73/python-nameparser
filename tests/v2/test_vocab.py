@@ -1508,7 +1508,7 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ru, sk, tr"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, ru, sk, tr, vi"):
         rules_patch("en")
 
 

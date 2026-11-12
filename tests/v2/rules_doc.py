@@ -133,6 +133,20 @@ POLICIES: dict[str, Policy] = {
         name_order=FAMILY_FIRST_GIVEN_LAST, two_family_names=True),
     "two_family_names+middle_as_family": Policy(
         two_family_names=True, middle_as_family=True),
+    #: rules/O8's switch (#1254), named after its field as O6's is,
+    #: with each order, the rule standing down under both family-first
+    #: ones, and with the switches it reads before.
+    "initials_as_family": Policy(initials_as_family=True),
+    "family-first+initials_as_family": Policy(
+        name_order=FAMILY_FIRST, initials_as_family=True),
+    "family-first-given-last+initials_as_family": Policy(
+        name_order=FAMILY_FIRST_GIVEN_LAST, initials_as_family=True),
+    "initials_as_family+two_family_names": Policy(
+        initials_as_family=True, two_family_names=True),
+    "initials_as_family+two_given_names": Policy(
+        initials_as_family=True, two_given_names=True),
+    "initials_as_family+middle_as_family": Policy(
+        initials_as_family=True, middle_as_family=True),
     #: rules/O7's switch (#704), named after its field as O6's is,
     #: with each order, with O6's switch it reads after and with
     #: middle_as_family, which reads after it.

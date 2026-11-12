@@ -788,6 +788,25 @@ class Policy:
     #: the field followed name_order.
     lone_name_word: Role = field(
         default=Role.GIVEN, metadata={ADDED_IN: "3.0.0"})
+    #: Reads two or more single letters ending a name as its family
+    #: name, for data written in the South Asian convention where the
+    #: letters after the given name stand for the father's or the
+    #: family's name (rules/O8): "Lakshmi R S" gives given ``Lakshmi``,
+    #: family ``R S``, and "Ram Bahadur B K" gives given ``Ram``,
+    #: middle ``Bahadur``, family ``B K``. The letters are written as
+    #: initials are, a bare Latin capital or a letter and its period,
+    #: spaced and in a row, with a name word before them; one
+    #: letter, letters before the name or inside it, and the given part
+    #: after a family comma are left alone, and so is a name read in a
+    #: family-first order, which already places those letters. Off by
+    #: default: the same shape is a middle and a family initial in many
+    #: lists ("Melanie J D") and a byline written surname first in a
+    #: bibliography ("Huntley R P", for which name_order=FAMILY_FIRST
+    #: is the setting). locales.NE turns it on, and Parser.suggest
+    #: suggests it for a group whose names repeat one run of letters.
+    #: Added in 3.1.
+    initials_as_family: bool = field(
+        default=False, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -1019,6 +1038,10 @@ class PolicyPatch:
     #: Added in 3.0.
     lone_name_word: Role | _Unset = field(
         default=UNSET, metadata={ADDED_IN: "3.0.0"})
+    #: Patches :attr:`Policy.initials_as_family`, a scalar (later
+    #: wins). Added in 3.1.
+    initials_as_family: bool | _Unset = field(
+        default=UNSET, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate

@@ -330,13 +330,14 @@ RULE_KEYS: dict[str, tuple[str, frozenset[str]]] = {
     "patronymic_rules": ("set", frozenset({"east-slavic", "turkic"})),
     "two_family_names": ("flag", frozenset()),
     "two_given_names": ("flag", frozenset()),
+    "initials_as_family": ("flag", frozenset()),
 }
 #: The value a scalar key would restate: a pack's patch overrides the
 #: caller's own scalar, so writing the default would turn a caller's
 #: rule off rather than a rule on.
 RULE_DEFAULTS: dict[str, object] = {
     "name_order": "given-first", "two_family_names": False,
-    "two_given_names": False}
+    "two_given_names": False, "initials_as_family": False}
 #: The files whose `[rules]` a shipped pack reads: the file's tag -> the
 #: nameparser.locales attribute whose policy patch it is. A `[rules]`
 #: table elsewhere would compile into nothing a parser reads, so the
@@ -347,7 +348,7 @@ RULE_DEFAULTS: dict[str, object] = {
 #: pack reading its language's table (decisions/O6, 2026-11-04); the
 #: roster names the one pack a file is listed for.
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
-                             "sk": "SK", "vi": "VI"}
+                             "sk": "SK", "vi": "VI", "ne": "NE"}
 
 #: The words check 13 lets hold a reading in another file beside their
 #: mul.toml one, each with why (#1005): `i` is mul.toml's numeral and

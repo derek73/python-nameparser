@@ -7,7 +7,7 @@ import pytest
 
 from nameparser import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Locale, Parser,
-    Policy, parse,
+    Policy, PolicyPatch, parse,
 )
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
@@ -816,6 +816,22 @@ _REFUSED_SKEWS = [
                                            "second_surname", "surname2"),
                  "unexpected fields: surname2",
                  id="renamed-second-surname"),
+    # Policy.initials_as_family and PolicyPatch's (3.1, rules/O8) beside
+    # the shipped fields they must not excuse
+    pytest.param(Policy, lambda: _without(dict(Policy().__getstate__()),
+                                          "initials_as_family", "strip_bidi"),
+                 "missing fields: strip_bidi;",
+                 id="policy-missing-shipped-field-beside-missing-initials"),
+    pytest.param(Policy, lambda: _renamed(dict(Policy().__getstate__()),
+                                          "initials_as_family",
+                                          "initials_family"),
+                 "unexpected fields: initials_family",
+                 id="policy-renamed-initials-as-family"),
+    pytest.param(PolicyPatch, lambda: _renamed(
+        dict(PolicyPatch().__getstate__()), "initials_as_family",
+        "initials_family"),
+                 "unexpected fields: initials_family",
+                 id="patch-renamed-initials-as-family"),
     # and Reading.first_surname (3.0, rules/R11)
     pytest.param(Reading, lambda: _renamed(_reading_state(),
                                            "first_surname", "surname1"),

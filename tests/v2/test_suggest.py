@@ -1202,17 +1202,27 @@ def test_a_decomposed_name_votes_as_its_composed_twin(
 #: answers as (name_order patch, patronymic_rules patch).
 _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
                               tuple[Role, Role, Role],
-                              tuple[object, object], tuple[object, object]]] = [
+                              tuple[object, object, object],
+                              tuple[object, object, object]]] = [
     ("_MIN_VOTES", 1, ["Priem Jason", "Xyzzy Plugh"], GIVEN_FIRST,
-     (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
+     (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
     ("_MIN_SHARE", 0.5, ["Priem Jason", "Kim Minjun", "Jason Smith"],
-     GIVEN_FIRST, (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
+     GIVEN_FIRST, (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
     ("_MIN_PATRONYMIC_SHARE", 0.5, _east_slavic(5) + _OTHERS[:2],
-     GIVEN_FIRST, (UNSET, UNSET),
-     (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}))),
+     GIVEN_FIRST, (UNSET, UNSET, UNSET),
+     (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
     ("_MIN_PATRONYMIC_VOTES", 2, _east_slavic(2), FAMILY_FIRST,
-     (UNSET, UNSET),
-     (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}))),
+     (UNSET, UNSET, UNSET),
+     (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
+    # one name ending in B K decides the switch once one is enough
+    ("_MIN_RUN_NAMES", 1, ["Durga B K", "Jason Priem"], GIVEN_FIRST,
+     (UNSET, UNSET, UNSET), (UNSET, UNSET, True)),
+    # B K is two of five runs: under half, enough at three in ten; the
+    # decided switch then sets the trailing-initial votes aside, and the
+    # family-first order they decided goes with them
+    ("_MIN_RUN_SHARE", 0.3,
+     ["Durga B K", "Sita B K", "Hari K C", "Ram P R", "Om T S"],
+     GIVEN_FIRST, (FAMILY_FIRST, UNSET, UNSET), (UNSET, UNSET, True)),
 ]
 
 
@@ -1222,14 +1232,15 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
 def test_each_threshold_changes_its_recorded_answer(
         monkeypatch: pytest.MonkeyPatch, threshold: str, relaxed: object,
         names: list[str], base_order: tuple[Role, Role, Role],
-        guarded: tuple[object, object],
-        unguarded: tuple[object, object]) -> None:
+        guarded: tuple[object, object, object],
+        unguarded: tuple[object, object, object]) -> None:
     from nameparser import _suggest
     base = Parser(policy=Policy(name_order=base_order))
 
-    def answer() -> tuple[object, object]:
+    def answer() -> tuple[object, object, object]:
         patch = base.suggest(names).patch
-        return patch.name_order, patch.patronymic_rules
+        return (patch.name_order, patch.patronymic_rules,
+                patch.initials_as_family)
 
     assert answer() == guarded
     monkeypatch.setattr(_suggest, threshold, relaxed)
@@ -1287,3 +1298,139 @@ def test_with_only_a_rule_decided_a_name_of_that_rule_agrees() -> None:
     s = Parser().suggest(_TURKIC)
     assert not _order_evidence(s).decided
     assert s.disagreeing() == ()
+
+
+# -- the letters ending a name (initials_as_family, rules/O8) -----------------
+
+_LETTER_GRID = [
+    "Lakshmi R S", "Lakshmi R. S.", "Lakshmi R. S", "LAKSHMI R S",
+    "lakshmi r s", "Lakshmi r s", "Ram Bahadur B K", "Lakshmi R S T U",
+    "R S", "J R S", "Kavitha S", "John A B Smith", "R S Lakshmi",
+    "Henry V I", "Lakshmi R S Jr.", "Lakshmi R S PhD", "Lakshmi R S (Lax)",
+    "Dr. Lakshmi R S", "Lakshmi, R S", "Lakshmi R S, Jr.", ", R S",
+    "Lakshmi R É", "Ram Bahadur B.K.", "Lakshmi R (Lax) S", "Maria J y B",
+    "Maria R y S", "MARIA R Y S", "maria r e s", "Jose E I", "Maria R d S",
+    "Lakshmi R S III", "Lakshmi R S V", "Lakshmi R S née Rao",
+    'Lakshmi R S "Lax"', "Lakshmi Devi R S", "Ann Marie J. D.",
+    "Huntley R P", "Lakshmi R. S., MD", "Lakshmi R,S", "Lakshmi R.,S.",
+]
+
+
+@pytest.mark.parametrize("text", _LETTER_GRID + [
+    unicodedata.normalize("NFD", t) for t in ("Émile R S", "Ana É. S.")])
+def test_a_letter_run_is_read_exactly_where_the_rule_moves_a_name(
+        text: str) -> None:
+    from nameparser._suggest import _letter_readers, _letter_run, \
+        _two_letters_in_a_row
+    on = Parser(policy=Policy(initials_as_family=True))
+    moved = on.parse(text).as_dict() != Parser().parse(text).as_dict()
+    # the cheap text test never skips a name the rule moves
+    if moved:
+        assert _two_letters_in_a_row(text)
+    run = _letter_run(text, _letter_readers(Parser()))
+    # a run joined with full stops (`B.K.`) is evidence the rule never
+    # moves, the next test's rows; every other name reads a run exactly
+    # where the rule moves it
+    if "." not in text.split()[-1].rstrip(".,"):
+        assert (run is not None) is moved
+
+
+@pytest.mark.parametrize(("text", "run"), [
+    ("Durga B.K.", "bk"),         # joined with full stops: the convention
+    ("Ram Bahadur K.C.", "kc"),
+    ("Hari B.K", "bk"),
+    ("Durga J.-P.", "jp"),
+    ("Durga BK", None),            # bare capitals: a short surname's shape
+    ("Zhi LI", None),
+    ("B.K. Durga", None),          # letters before the name end nothing
+    ("A.B.", None),                # no name word before them
+    ("Durga B. K.", "bk"),         # spaced: the rule's own run
+    ("Kavitha S", None),           # one letter
+    ("Durga, B.K.", None),         # a comma states its own order
+    # a joined run counts only where the parse makes it the whole
+    # family: an unlisted dotted credential is a suffix (rules/S3)
+    ("John Smith X.Y.Z.", None),
+    ("John Smith F.R.C.S.", None),
+])
+def test_which_letters_count_as_a_run(text: str, run: str | None) -> None:
+    from nameparser._suggest import _letter_readers, _letter_run
+    assert _letter_run(text, _letter_readers(Parser())) == run
+
+
+def _letters_evidence(s: Suggestion) -> SettingEvidence:
+    return next(e for e in s.evidence if e.setting == "initials_as_family")
+
+
+@pytest.mark.parametrize(("names", "decided"), [
+    (["Durga B K", "Sita B K"], True),                      # two of two
+    (["Durga B K", "Jason Priem"], False),                  # one name
+    (["Durga B K", "Sita B K", "Ram P R", "Om T S"], True),  # half the runs
+    (["Durga B K", "Sita B K", "Ram P R", "Om T S", "Hari K C"],
+     False),                                                # two of five
+    (["Durga B.K.", "Sita B K", "Mary Smith"], True),       # joined counts
+    (["Durga BK", "Sita BK", "Mary Smith"], False),         # bare capitals
+])
+def test_a_repeated_run_decides_initials_as_family(
+        names: list[str], decided: bool) -> None:
+    s = Parser().suggest(names)
+    e = _letters_evidence(s)
+    assert e.decided is decided
+    assert (s.patch.initials_as_family is True) is decided
+    assert e.votes_for + e.votes_against + e.contested + e.no_evidence \
+        == len(names)
+
+
+def test_a_decided_run_sets_the_trailing_initial_votes_aside() -> None:
+    names = ["Durga B K", "Sita B K", "Maya B K", "Hari B.K."]
+    s = Parser().suggest(names)
+    assert s.patch == PolicyPatch(initials_as_family=True)
+    assert not any(Signal.TRAILING_INITIAL in n.votes for n in s.names)
+    assert s.parser.parse("Ram Bahadur B K").family == "B K"
+    assert "B K" in _letters_evidence(s).note
+    assert "letters are its family" in _order_evidence(s).note
+
+
+def test_a_group_repeating_a_dotted_credential_decides_nothing() -> None:
+    s = Parser().suggest(["John Smith X.Y.Z.", "Mary Jones X.Y.Z."])
+    assert not _letters_evidence(s).decided
+    assert s.patch.initials_as_family is UNSET
+
+
+def test_every_name_ending_in_a_run_is_evidence_for_the_switch() -> None:
+    # Hari K C's run is not the repeated one, but it is the convention
+    decided = _letters_evidence(Parser().suggest(
+        ["Durga B K", "Sita B K", "Hari K C", "Mary Smith"]))
+    assert (decided.votes_for, decided.votes_against,
+            decided.no_evidence) == (3, 0, 1)
+    # undecided under a base without the switch: the names ending in a
+    # run are against the value kept
+    undecided = _letters_evidence(Parser().suggest(
+        ["Durga B K", "Hari K C", "Om P R", "Mary Smith"]))
+    assert not undecided.decided
+    assert (undecided.votes_for, undecided.votes_against) == (0, 3)
+    assert "none repeated" in undecided.note
+
+
+def test_a_decided_switch_changes_nothing_under_a_family_first_base(
+        ) -> None:
+    # rules/O8 stands down under a family-first order, so the switch is
+    # decided and inert there; the names keep the order they declare
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(["Durga B K", "Sita B K"])
+    assert s.patch.initials_as_family is True
+    assert s.parser.parse("Durga B K").as_dict() == base.parse(
+        "Durga B K").as_dict()
+
+
+def test_a_base_with_the_switch_on_keeps_it_out_of_the_patch() -> None:
+    base = Parser(policy=Policy(initials_as_family=True))
+    s = base.suggest(["Durga B K", "Sita B K"])
+    assert _letters_evidence(s).decided
+    assert s.patch.initials_as_family is UNSET
+
+
+def test_a_group_never_decides_the_switch_off() -> None:
+    base = Parser(policy=Policy(initials_as_family=True))
+    s = base.suggest(["Jason Priem", "Mary Smith", "Huntley R P"])
+    assert not _letters_evidence(s).decided
+    assert s.parser.policy.initials_as_family is True

@@ -137,11 +137,13 @@ def test_tr_az_pack_contents() -> None:
 
 
 def test_ne_pack_contents() -> None:
-    # 3d: the first vocabulary pack, nothing but its choice; what the
-    # choice changes is exactly the three given readings ne.toml writes
-    # `default = false`, each also a title in another file
+    # 3d: the first vocabulary pack; what the choice changes is exactly
+    # the three given readings ne.toml writes `default = false`, each
+    # also a title in another file. Since #1254 its [rules] turn
+    # initials_as_family on (rules/O8)
     from nameparser._reading_index import changed_words, selected
     assert locales.NE == Locale(code="ne", lexicon=Lexicon.empty(),
+                                policy=PolicyPatch(initials_as_family=True),
                                 languages=frozenset({"ne"}))
     assert changed_words(selected(locales.NE.languages)) == {
         "guru", "गुरु", "श्री"}
@@ -2094,7 +2096,9 @@ def test_a_pack_with_a_choice_and_a_patch_declares_only_the_patch() -> None:
     assert deviates("Sidorov Ivan Petrovich")    # the patch's, declared
     assert not deviates("John Smith")
     assert not _is_vocabulary_pack(mixed)
-    assert _is_vocabulary_pack(locales.NE)
+    assert _is_vocabulary_pack(locales.HI)
+    # NE was the example until #1254 gave it a patch (rules/O8)
+    assert not _is_vocabulary_pack(locales.NE)
 
 
 @pytest.mark.parametrize("tags", _CHOICES, ids="+".join)

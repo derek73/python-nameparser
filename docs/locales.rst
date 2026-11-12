@@ -533,7 +533,11 @@ Shipped packs
        where the default reads them as titles (``श्री कृष्ण श्रेष्ठ`` →
        given ``श्री`` in the default order, where the default gives
        title ``श्री``). Each stays a title inside a title phrase
-       (``His Holiness Guru Prasad``).
+       (``His Holiness Guru Prasad``). It also turns
+       ``initials_as_family`` on, so a surname written as its initials
+       is the family (``Ram Bahadur B K`` → family ``B K``, where the
+       default gives middle ``Bahadur B``, family ``K``; see
+       :ref:`initials-as-family`).
    * - ``pt``
      - Portuguese — chooses ``pt``, which settles Portuguese's clashes
        its way (``do`` a particle, not the DO credential; see
@@ -586,11 +590,13 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``bn``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt``, ``pt_br`` and ``sl`` are each a choice of languages
+``bn``, ``ga``, ``gd``, ``hi``, ``hr``, ``pt``, ``pt_br`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ru`` and
 ``tr_az`` are policy-only — they carry no vocabulary of their own.
+``ne`` is a choice with one policy field beside it,
+``initials_as_family``.
 ``ja`` is a choice of the language ``ja`` (which turns on ``君``) beside one
 policy field, the segmentation it needs a segmenter to use.
 ``es`` and ``es_ar`` are each a choice with a list and one policy field
@@ -807,7 +813,7 @@ by ``tests/v2/test_locales.py``:
    docstring explains how the pack-contract test enforces this. A
    pack's choice of languages is never declared: its deviations are
    derived from the words the choice changes, so a pack that is nothing
-   but a choice (``ne``, ``sl``, ``ga``) declares no ``DEVIATES`` — the
+   but a choice (``hi``, ``sl``, ``ga``) declares no ``DEVIATES`` — the
    contract test refuses one, and refuses a choice that changes no
    word — and one with a fragment or a patch beside its choice
    declares only what those change.
