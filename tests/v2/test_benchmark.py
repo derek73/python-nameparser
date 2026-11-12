@@ -835,10 +835,13 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
     # rules/O9's walk over the words before the comma, its runs joined
     # across a joining word and its peel, which run only under the
     # switch: the probe reads a run joined across a conjunction and a
-    # peel. A conjunction rather than a particle: a unit of particles
-    # (`Ann DUPONT de LA MBA `) is superlinear with the switch OFF as
-    # well, 4.58x for 4x locally and on (4.52x) alike, and read 7.0x on
-    # CI's 3.13 runner, so it measured the default parse (2026-11-12)
+    # peel. A conjunction rather than a particle: the default parse of a
+    # unit of particles (`Ann DUPONT de LA MBA `) reads above linear on
+    # the CPU clock from 3,200 units, switch on and off alike, its
+    # frames linear (4.00x), part of it the collector over a growing
+    # heap; it read 7.0x on CI's 3.13 runner (2026-11-12). Its runs are
+    # four words long; `test_a_long_capitals_run_grows_linearly` below
+    # holds one run's length
     "capitals_as_family": (
         "Ann DUPONT y GARCIA MBA ",
         Parser(policy=Policy(capitals_as_family=True)),
@@ -847,6 +850,27 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
                    and p.parse("Ann DUPONT y GARCIA MBA").suffix == "MBA"),
     ),
 }
+
+
+#: rules/O9's walk over ONE run that grows with the input: the rows
+#: above repeat runs four words long, so a cost quadratic in one run's
+#: length passes them. At its own base of 3,200 units: a planted
+#: `run = run + [...]` in the run builder read 7.50x for 4x, the tree
+#: 4.39x; at the shared base of 800 the plant read 4.83x and passed
+#: (2026-11-12, py3.11)
+_LONG_CAPITALS_RUN = ("Ann ", "DUPONT y ")
+_LONG_CAPITALS_BASE = 3200
+
+
+@serial
+def test_a_long_capitals_run_grows_linearly() -> None:
+    prefix, unit = _LONG_CAPITALS_RUN
+    parser = Parser(policy=Policy(capitals_as_family=True))
+    # reaches the rule: the run is the family, the given name outside it
+    assert parser.parse(prefix + unit * 3 + "GARCIA").family == (
+        "DUPONT y DUPONT y DUPONT y GARCIA")
+    _assert_grows_linearly(unit, parser.parse, prefix=prefix,
+                           base=_LONG_CAPITALS_BASE)
 
 
 def test_shape_tables_are_not_empty() -> None:

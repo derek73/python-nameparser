@@ -641,8 +641,9 @@ Family names written in capitals
 
 Some lists write every family name in capitals: France's register of
 elected officials (``DUPONT Jean``), Hong Kong's Legislative Council
-(``CHAN Kin-por``, ``Jeffrey LAM Kin-fung``), the Turkish, Azerbaijani
-and Kazakh parliaments, and Japanese names written in Latin script.
+(``CHAN Kin-por``, ``Jeffrey LAM Kin-fung``) and the Turkish,
+Azerbaijani and Kazakh parliaments; Japanese names written in Latin
+script are often written so too (``YAMAMOTO Yukio``).
 The capitals mark the family name where position cannot: the same list
 puts it first, last or in the middle, and writes two surnames as one.
 The default reads by position, so a family name written first is read
@@ -683,14 +684,18 @@ What it reads:
   the family.
 - **The capitals outrank a credential or title reading**, so
   ``Hugo LAC`` gives family ``LAC`` and ``DOYEN Hugo`` family
-  ``DOYEN``. A listed credential or numeral ending the run still comes
-  off where a capitals word is left (``Marie GRAJALES III`` gives
-  suffix ``III``), and a roman numeral alone stays the suffix
-  (``John Smith III``).
+  ``DOYEN``. A listed credential or numeral in capitals ending the
+  name still comes off where another capitals word is left, before the
+  family is chosen (``Marie GRAJALES III`` and ``DUPONT Marie MBA`` give
+  suffix ``III`` and ``MBA``), and a roman numeral alone stays the
+  suffix (``John Smith III``). Under a patronymic rule its marker is no
+  capitals word (``OGLU``).
 
 What it leaves alone: a name with no lowercase letter outside its
-titles, particles, conjunctions and suffixes (``MARIE DUPONT``,
-``Dr. MARIE DUPONT``), and the words after the first comma, so a family comma still names the family
+titles, its suffixes and the particles and conjunctions written in
+lowercase (``MARIE DUPONT``, ``Dr. MARIE DUPONT``, ``MARIE de
+DUPONT``) -- a particle written with a capital is a name word
+(``MORRISON Van`` is read) -- and the words after the first comma, so a family comma still names the family
 and a credential after a comma stays one:
 
 .. doctest::
@@ -703,14 +708,17 @@ and a credential after a comma stays one:
     >>> chan.family, chan.suffix
     ('CHAN', 'GBS, JP')
 
-Turn it on only for data written this way. Elsewhere capitals as often
+Turn it on only for data written this way. Elsewhere capitals also
 write a given name (``ANNA Smith`` gives family ``ANNA``), a credential
 with no comma before it (``John Smith MD`` gives family ``MD``), or
 joined initials (``Jan GM Brouwer`` gives family ``GM``). Measured on
 ORCID researchers' own boxes, where one box holds the words in
 capitals, it is the family box nine times in ten (2026-11-11). The
-switch adds no report of its own, and drops a report asking which field
-a word of the run takes, the capitals having settled it.
+switch adds no report of its own. Where it acts it drops the reports the
+capitals settle: one asking which field a word of the run, or a word the
+peel took, takes; and every ``given-or-family``, ``particle-or-given``
+and ``order`` report, the capitals having said where the family is. A
+report about a title or a suffix on another word stays.
 ``capitalized()`` leaves the name as written, since it is in mixed
 case; ``capitalized(force=True)`` recases the family too. It cannot be
 set with

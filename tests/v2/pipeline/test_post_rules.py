@@ -2317,6 +2317,39 @@ _CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
      {"given": "Van", "middle": "Mary", "family": "DUPONT", "reports": ()},
      {"given": "Van", "middle": "Mary", "family": "DUPONT",
       "reports": ("particle-or-given",)}),
+    ("the peel comes before the run is chosen", "DUPONT Marie MBA", {},
+     {"given": "Marie", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "DUPONT", "middle": "Marie", "family": "MBA"}),
+    ("the peel passes a suffix written otherwise",
+     "Marie DUPONT MBA Jr. PHD", {},
+     {"given": "Marie", "family": "DUPONT", "suffix": "MBA Jr. PHD"},
+     {"given": "Marie", "family": "DUPONT MBA", "suffix": "Jr. PHD"}),
+    ("a joining word ends the peel", "Marie DUPONT MBA i PHD", {},
+     {"given": "Marie", "middle": "i", "family": "DUPONT MBA",
+      "suffix": "PHD"},
+     {"given": "Marie", "middle": "i", "family": "DUPONT",
+      "suffix": "MBA, PHD"}),
+    ("a Turkic marker in capitals is no capitals word",
+     "ALIYEV Ilham Heydar OGLU",
+     {"patronymic_rules": frozenset({PatronymicRule.TURKIC})},
+     {"given": "Ilham", "middle": "Heydar OGLU", "family": "ALIYEV",
+      "patronymic": "Heydar OGLU"},
+     {"given": "ALIYEV", "middle": "Ilham Heydar", "family": "OGLU",
+      "patronymic": "Heydar OGLU"}),
+    ("an East Slavic patronymic in capitals is no capitals word",
+     "ИВАНОВ Иван ИВАНОВИЧ",
+     {"patronymic_rules": frozenset({PatronymicRule.EAST_SLAVIC})},
+     {"given": "Иван", "middle": "ИВАНОВИЧ", "family": "ИВАНОВ",
+      "patronymic": "ИВАНОВИЧ"},
+     {"given": "ИВАНОВ", "middle": "Иван", "family": "ИВАНОВИЧ",
+      "patronymic": ""}),
+    ("an order report after initials is settled", "Anna Q. MD", {},
+     {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ()},
+     {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ("order",)}),
+    ("an order report is settled", "Kavitha S MA", {},
+     {"given": "Kavitha", "middle": "S", "family": "MA", "reports": ()},
+     {"given": "Kavitha", "middle": "S", "family": "MA",
+      "reports": ("order",)}),
     ("a fork outside the run stands under every order", "Dean DUPONT Mary",
      {"name_order": FAMILY_FIRST},
      {"given": "Dean", "middle": "Mary", "family": "DUPONT",
@@ -2412,3 +2445,47 @@ def test_a_conjunction_in_capitals_alone_is_no_run() -> None:
     text = "Mary AND Smith"
     on = Parser(policy=Policy(capitals_as_family=True)).parse(text)
     assert on.as_dict() == parse(text).as_dict()
+
+
+
+def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
+    # rules/O9's marker exclusion as an invariant over a grid rather than
+    # one row (#659): under every patronymic rule and order, a word the
+    # rule in force reads as a marker or a patronymic is in the family
+    # with the switch on only where it is there with the switch off.
+    # Not "the family and the patronymic view share no word": R9 reads a
+    # Turkic marker with the word before it whatever field that word is
+    # in, so they share one with the switch off too (5,648 of this
+    # grid's three-word rows, measured 2026-11-12), which is R9's, not
+    # this switch's
+    import itertools
+    from nameparser._pipeline._vocab import (has_patronymic_ending,
+                                             is_patronymic_marker)
+    words = ["ALIYEV", "Ilham", "Heydar", "OGLU", "oglu", "QIZI", "OĞLU",
+             "ИВАНОВ", "Иван", "ИВАНОВИЧ", "Иванович", "bin", "BIN"]
+    rule_sets = [frozenset({PatronymicRule.TURKIC}),
+                 frozenset({PatronymicRule.EAST_SLAVIC}),
+                 frozenset(PatronymicRule)]
+
+    def markers(family: str, rules: frozenset[PatronymicRule]) -> set[str]:
+        return {w for w in family.split()
+                if PatronymicRule.TURKIC in rules and is_patronymic_marker(w)
+                or PatronymicRule.EAST_SLAVIC in rules
+                and has_patronymic_ending(w)}
+
+    pairs = [(Parser(policy=Policy(capitals_as_family=True,
+                                   patronymic_rules=rules, name_order=order)),
+              Parser(policy=Policy(patronymic_rules=rules,
+                                   name_order=order)), rules)
+             for rules in rule_sets
+             for order in (GIVEN_FIRST, FAMILY_FIRST,
+                           FAMILY_FIRST_GIVEN_LAST)]
+    moved = []
+    for n in (2, 3):
+        for combo in itertools.permutations(words, n):
+            text = " ".join(combo)
+            for on, off, rules in pairs:
+                if not (markers(on.parse(text).family, rules)
+                        <= markers(off.parse(text).family, rules)):
+                    moved.append((text, on.policy))
+    assert not moved, moved[:5]

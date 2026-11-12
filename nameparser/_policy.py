@@ -859,17 +859,22 @@ class Policy:
     #: where a name word divides two runs the last is the family. The
     #: capitals outrank a credential or title reading ("Hugo LAC",
     #: "DOYEN Hugo" give family ``LAC`` and ``DOYEN``), while a listed
-    #: credential or numeral ending the run still comes off where a
-    #: capitals word is left ("Marie GRAJALES III").
+    #: credential or numeral in capitals ending the name still comes off
+    #: where another capitals word is left ("Marie GRAJALES III",
+    #: "DUPONT Marie MBA"), and a marker the patronymic rule in force
+    #: reads is no capitals word.
     #:
-    #: Only a name in mixed case is read, one where a word other than a
-    #: title, particle, conjunction or suffix holds a lowercase letter,
-    #: and only the part before its first comma: after a family comma
-    #: the comma, not the capitals, names the family.
+    #: Only a name in mixed case is read, one where a word no run took,
+    #: other than a title, a suffix, or a particle or conjunction
+    #: written in lowercase, holds a lowercase letter ("MORRISON Van" is
+    #: read, "MARIE de DUPONT" is not), and only the part before its
+    #: first comma: after a family comma the comma, not the capitals,
+    #: names the family.
     #:
     #: Off by default: in data that does not write the convention,
-    #: capitals are as often a given name ("ANNA Smith") or a credential
-    #: ("John Smith MD"). Cannot be set with
+    #: capitals also write a given name ("ANNA Smith") or a credential
+    #: ("John Smith MD"); where one of ORCID's two boxes is wholly in
+    #: capitals it is the given box about one time in ten. Cannot be set with
     #: ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads
     #: the same unlisted word as a credential. Added in 3.1.
     capitals_as_family: bool = field(

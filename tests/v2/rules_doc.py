@@ -212,6 +212,9 @@ POLICIES: dict[str, Policy] = {
     "capitals_as_family+east-slavic": Policy(
         capitals_as_family=True,
         patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})),
+    "capitals_as_family+turkic": Policy(
+        capitals_as_family=True,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})),
 }
 from nameparser._lexicon import Lexicon  # noqa: E402
 from nameparser.locales._es_given_names import GIVEN_NAMES  # noqa: E402

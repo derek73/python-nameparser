@@ -40,6 +40,7 @@
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "J. S."}
 {"name": ","}
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
+{"name": ", DUPONT Marie", "given": "DUPONT", "middle": "Marie", "initials": "D. M.", "capitalized_force": "Dupont Marie"}
 {"name": ", Dean", "given": "Dean", "initials": "D."}
 {"name": ", Dr. John", "title": "Dr.", "family": "John", "initials": "J."}
 {"name": ", Dr. Jones vd", "title": "Dr.", "given": "Jones", "family": "vd", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. v.", "capitalized_force": "Dr. Jones Vd"}
@@ -83,6 +84,7 @@
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
 {"name": "ALEXANDRE DUMAS DER ÄLTERE", "given": "ALEXANDRE", "middle": "DUMAS", "family": "DER ÄLTERE", "initials": "A. D. Ä.", "capitalized": "Alexandre Dumas Der Ältere"}
+{"name": "ALIYEV Ilham Heydar OGLU", "given": "ALIYEV", "middle": "Ilham Heydar", "family": "OGLU", "initials": "A. I. H. O.", "capitalized_force": "Aliyev Ilham Heydar Oglu"}
 {"name": "ANH DO", "given": "ANH", "family": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D.", "capitalized": "Anh Do"}
 {"name": "ANKE MAITLAND-VAN DER ZEE", "given": "ANKE", "middle": "MAITLAND-VAN", "family": "DER ZEE", "initials": "A. M. Z.", "capitalized": "Anke Maitland-van der Zee"}
 {"name": "ANNA AZ- DER BERG", "given": "ANNA", "family": "AZ- DER BERG", "initials": "A. B.", "capitalized": "Anna az- der Berg"}
@@ -333,6 +335,7 @@
 {"name": "Anna Müller (geb. Schmidt)", "given": "Anna", "family": "Müller", "maiden": "Schmidt", "initials": "A. M."}
 {"name": "Anna Müller geb. Schmidt", "given": "Anna", "family": "Müller", "maiden": "Schmidt", "initials": "A. M."}
 {"name": "Anna Paula Bērziņa", "given": "Anna", "middle": "Paula", "family": "Bērziņa", "initials": "A. P. B."}
+{"name": "Anna Y MD Mary", "given": "Anna", "family": "Y", "suffix": "MD Mary", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "A. Y."}
 {"name": "Anna z (domu) Nowak", "given": "Anna", "middle": "z", "family": "Nowak", "nickname": "domu", "initials": "A. z. N.", "capitalized_force": "Anna \"Domu\" Z Nowak"}
 {"name": "Anna z Nowak", "given": "Anna", "middle": "z", "family": "Nowak", "initials": "A. z. N.", "capitalized_force": "Anna Z Nowak"}
 {"name": "Anne Berit Bernhard Nilsen", "given": "Anne", "middle": "Berit Bernhard", "family": "Nilsen", "initials": "A. B. B. N."}
@@ -712,8 +715,11 @@
 {"name": "DR DOE", "title": "DR", "family": "DOE", "initials": "D.", "capitalized": "Dr Doe"}
 {"name": "DR. Anna Berg", "title": "DR.", "given": "Anna", "family": "Berg", "initials": "A. B.", "capitalized_force": "Dr. Anna Berg"}
 {"name": "DR. NÉE JUAN y LOPEZ", "title": "DR.", "given": "NÉE", "family": "JUAN y LOPEZ", "initials": "N. J. L.", "capitalized_force": "Dr. Née Juan y Lopez"}
+{"name": "DUPONT Jean-PIERRE", "given": "DUPONT", "family": "Jean-PIERRE", "initials": "D. J.", "capitalized_force": "Dupont Jean-Pierre"}
+{"name": "DUPONT Marie MBA", "given": "DUPONT", "family": "Marie", "suffix": "MBA", "initials": "D. M.", "capitalized_force": "Dupont Marie MBA"}
 {"name": "DUPONT Mary", "given": "DUPONT", "family": "Mary", "initials": "D. M.", "capitalized_force": "Dupont Mary"}
 {"name": "DUPONT Mary Ann", "given": "DUPONT", "middle": "Mary", "family": "Ann", "initials": "D. M. A.", "capitalized_force": "Dupont Mary Ann"}
+{"name": "DUPONT Mary y", "given": "DUPONT", "family": "Mary y", "initials": "D. M.", "capitalized_force": "Dupont Mary y"}
 {"name": "DUT.RA MARIA SILVA", "title": "DUT.RA", "given": "MARIA", "family": "SILVA", "initials": "M. S.", "capitalized": "Dut.Ra Maria Silva"}
 {"name": "Dale, Antonius van", "given": "Antonius", "family": "van Dale", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. D."}
 {"name": "Dalen, Cornelis van", "given": "Cornelis", "family": "van Dalen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. D."}
@@ -1850,12 +1856,14 @@
 {"name": "Jean (M.A) Smith", "given": "Jean", "family": "Smith", "nickname": "M.A", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "Jean (M.A,) Smith", "given": "Jean", "family": "Smith", "nickname": "M.A,", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "Jean DUPONT", "given": "Jean", "family": "DUPONT", "initials": "J. D.", "capitalized_force": "Jean Dupont"}
+{"name": "Jean DUPONT MA", "given": "Jean", "family": "DUPONT", "suffix": "MA", "initials": "J. D.", "capitalized_force": "Jean Dupont MA"}
 {"name": "Jean DUPONT MBA", "given": "Jean", "family": "DUPONT", "suffix": "MBA", "initials": "J. D.", "capitalized_force": "Jean Dupont MBA"}
 {"name": "Jean Joseph Antoine Marie de Witte", "given": "Jean", "middle": "Joseph Antoine Marie", "family": "de Witte", "initials": "J. J. A. M. W."}
 {"name": "Jean Louis Charles d'Orléans-Longueville", "given": "Jean", "middle": "Louis Charles", "family": "d'Orléans-Longueville", "initials": "J. L. C. d.", "capitalized_force": "Jean Louis Charles D'Orléans-Longueville"}
 {"name": "Jean Marie Fils", "given": "Jean", "middle": "Marie", "family": "Fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. M. F."}
 {"name": "Jean Pierre DUPONT", "given": "Jean", "middle": "Pierre", "family": "DUPONT", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont"}
 {"name": "Jean Pierre DUPONT-MORETTI", "given": "Jean", "middle": "Pierre", "family": "DUPONT-MORETTI", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont-Moretti"}
+{"name": "Jean Pierre FILS", "given": "Jean", "family": "Pierre", "suffix": "FILS", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. P.", "capitalized_force": "Jean Pierre fils", "generation": "FILS"}
 {"name": "Jean Pierre MA DUPONT", "given": "Jean", "middle": "Pierre MA", "family": "DUPONT", "initials": "J. P. M. D.", "capitalized_force": "Jean Pierre Ma Dupont"}
 {"name": "Jean St Clair", "given": "Jean", "family": "St Clair", "initials": "J. C."}
 {"name": "Jean de Beaumanoir de Lavardin", "given": "Jean", "middle": "de Beaumanoir", "family": "de Lavardin", "initials": "J. B. L."}
@@ -1990,6 +1998,8 @@
 {"name": "John Major. Smith", "given": "John", "middle": "Major.", "family": "Smith", "initials": "J. M. S."}
 {"name": "John Mkwawa", "given": "John", "family": "Mkwawa", "initials": "J. M."}
 {"name": "John P. Doe, CLU, CFP, LUTC", "given": "John", "middle": "P.", "family": "Doe", "suffix": "CLU, CFP, LUTC", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. P. D.", "capitalized_force": "John P. Doe, CLU, CFP, Lutc"}
+{"name": "John PAUL VI", "given": "John", "family": "PAUL", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. P.", "capitalized_force": "John Paul VI", "generation": "VI"}
+{"name": "John Paul JUNIOR", "given": "John", "family": "Paul", "suffix": "JUNIOR", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. P.", "capitalized_force": "John Paul Junior", "generation": "JUNIOR"}
 {"name": "John Paul Smith y III", "given": "John", "middle": "Paul", "family": "Smith y", "suffix": "III", "initials": "J. P. S.", "generation": "III"}
 {"name": "John Paul Smith y Prof.", "title": "Prof.", "given": "John", "middle": "Paul", "family": "Smith y", "initials": "J. P. S."}
 {"name": "John Ph. D.", "given": "John", "suffix": "Ph. D.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
@@ -2610,6 +2620,7 @@
 {"name": "Katy Mané", "given": "Katy", "family": "Mané", "initials": "K. M."}
 {"name": "Kaur del Carmen García", "given": "Kaur", "family": "del Carmen García", "initials": "K. C. G."}
 {"name": "Kavitha S", "given": "Kavitha", "family": "S", "ambiguities": ["ORDER"], "initials": "K. S."}
+{"name": "Kavitha S MA", "given": "Kavitha", "family": "S", "suffix": "MA", "ambiguities": ["ORDER"], "initials": "K. S."}
 {"name": "Kavitha a/p Raman", "given": "Kavitha", "middle": "a/p", "family": "Raman", "initials": "K. a. R.", "capitalized_force": "Kavitha A/P Raman"}
 {"name": "Kaya Yağız Can", "order": "FAMILY_FIRST", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
 {"name": "Kaya, Yağız Can", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
@@ -2854,6 +2865,8 @@
 {"name": "MARIA DA SILVA E SOUZA", "given": "MARIA", "family": "DA SILVA E SOUZA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "M. S. E. S.", "capitalized": "Maria da Silva E Souza"}
 {"name": "MARIA de SOUZA LIMA", "given": "MARIA", "family": "de SOUZA LIMA", "initials": "M. S. L.", "capitalized_force": "Maria de Souza Lima"}
 {"name": "MARIA y LOPEZ GARCIA", "given": "MARIA y LOPEZ", "family": "GARCIA", "initials": "M. L. G.", "capitalized_force": "Maria y Lopez Garcia"}
+{"name": "MARTIN y Ana", "given": "MARTIN", "middle": "y", "family": "Ana", "initials": "M. y. A.", "capitalized_force": "Martin y Ana"}
+{"name": "MARTIN y Ana Maria", "given": "MARTIN y Ana", "family": "Maria", "initials": "M. A. M.", "capitalized_force": "Martin y Ana Maria"}
 {"name": "MARY DUPONT", "given": "MARY", "family": "DUPONT", "initials": "M. D.", "capitalized": "Mary Dupont"}
 {"name": "MB ChB, PhD", "family": "MB ChB", "suffix": "PhD", "initials": "M. C.", "capitalized_force": "Mb Chb, PhD"}
 {"name": "MD - DO - DDS", "given": "MD", "middle": "-", "family": "DO -", "suffix": "DDS", "initials": "M. -. -.", "capitalized": "Md - do - DDS"}
@@ -2987,10 +3000,12 @@
 {"name": "Mariano Ospina Pérez", "given": "Mariano", "middle": "Ospina", "family": "Pérez", "initials": "M. O. P."}
 {"name": "Mariano Salvador de Maella", "given": "Mariano", "middle": "Salvador", "family": "de Maella", "initials": "M. S. M."}
 {"name": "Marie BARON GRAND", "given": "Marie", "middle": "BARON", "family": "GRAND", "initials": "M. B. G.", "capitalized_force": "Marie Baron Grand"}
+{"name": "Marie DUPONT Jr. MBA", "given": "Marie", "family": "DUPONT", "suffix": "Jr. MBA", "initials": "M. D.", "capitalized_force": "Marie Dupont Jr. MBA", "generation": "Jr.", "credentials": "MBA"}
 {"name": "Marie DUPONT née MARTIN", "given": "Marie", "family": "DUPONT", "maiden": "MARTIN", "initials": "M. D.", "capitalized_force": "Marie Dupont (Martin)"}
 {"name": "Marie DUPONT y MBA", "given": "Marie", "family": "DUPONT y MBA", "initials": "M. D. M.", "capitalized_force": "Marie Dupont y Mba"}
 {"name": "Marie FILS", "given": "Marie", "family": "FILS", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. F.", "capitalized_force": "Marie Fils"}
 {"name": "Marie Fils", "given": "Marie", "family": "Fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. F."}
+{"name": "Marie II DUPONT", "given": "Marie", "middle": "II", "family": "DUPONT", "initials": "M. I. D.", "capitalized_force": "Marie Ii Dupont"}
 {"name": "Marie Laure de Noailles", "given": "Marie", "middle": "Laure", "family": "de Noailles", "initials": "M. L. N."}
 {"name": "Marie Louise Fernande de Montpensier", "given": "Marie", "middle": "Louise Fernande", "family": "de Montpensier", "initials": "M. L. F. M."}
 {"name": "Marie-Agnès Suzanne Gilot", "given": "Marie-Agnès", "middle": "Suzanne", "family": "Gilot", "initials": "M. S. G."}
@@ -3029,6 +3044,7 @@
 {"name": "Mary Beth Smith", "given": "Mary", "middle": "Beth", "family": "Smith", "initials": "M. B. S."}
 {"name": "Mary DUPONT", "given": "Mary", "family": "DUPONT", "initials": "M. D.", "capitalized_force": "Mary Dupont"}
 {"name": "Mary DUPONT Jr.", "given": "Mary", "family": "DUPONT", "suffix": "Jr.", "initials": "M. D.", "capitalized_force": "Mary Dupont Jr.", "generation": "Jr."}
+{"name": "Mary DUPONT XI", "given": "Mary", "middle": "DUPONT", "family": "XI", "initials": "M. D. X.", "capitalized_force": "Mary Dupont Xi"}
 {"name": "Mary Dupont", "given": "Mary", "family": "Dupont", "initials": "M. D."}
 {"name": "Mary Ellen van DER BERG", "given": "Mary", "middle": "Ellen", "family": "van DER BERG", "initials": "M. E. B.", "capitalized_force": "Mary Ellen van der Berg"}
 {"name": "Mary GRAJALES III", "given": "Mary", "family": "GRAJALES", "suffix": "III", "initials": "M. G.", "capitalized_force": "Mary Grajales III", "generation": "III"}
@@ -3405,6 +3421,7 @@
 {"name": "Pavlović, Antonio mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P.", "capitalized_force": "Antonio Pavlović Mlađi", "generation": "mlađi"}
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
+{"name": "Pedro ALVES NETO", "given": "Pedro", "family": "ALVES", "suffix": "NETO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "capitalized_force": "Pedro Alves Neto", "generation": "NETO"}
 {"name": "Pedro Alves Filho", "given": "Pedro", "family": "Alves", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Filho"}
 {"name": "Pedro Alves Junior Filho", "given": "Pedro", "family": "Alves", "suffix": "Junior Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Junior Filho"}
 {"name": "Pedro Alves NETO", "given": "Pedro", "family": "Alves", "suffix": "NETO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "capitalized_force": "Pedro Alves Neto", "generation": "NETO"}
@@ -3593,6 +3610,7 @@
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B. K."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B. K."}
 {"name": "Ram Bahadur B.K.T.", "given": "Ram", "family": "Bahadur", "suffix": "B.K.T.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
+{"name": "Ram Bahadur KC", "given": "Ram", "family": "Bahadur", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "R. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
 {"name": "Ram Das महाराज", "given": "Ram", "family": "Das", "suffix": "महाराज", "initials": "R. D."}
 {"name": "Ram KC", "given": "Ram", "family": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "R. K."}
@@ -3686,6 +3704,7 @@
 {"name": "SEÁN Ó MURCHÚ", "given": "SEÁN", "family": "Ó MURCHÚ", "initials": "S. M.", "capitalized": "Seán Ó Murchú"}
 {"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.ra Maria Rossi"}
 {"name": "SILVA Y", "given": "SILVA", "family": "Y", "initials": "S. Y.", "capitalized": "Silva y"}
+{"name": "SIR John SMITH", "title": "SIR", "given": "John", "family": "SMITH", "initials": "J. S.", "capitalized_force": "Sir John Smith"}
 {"name": "SIR John Smith", "title": "SIR", "given": "John", "family": "Smith", "initials": "J. S.", "capitalized_force": "Sir John Smith"}
 {"name": "SMITH CPA MST CGMA, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "CPA MST CGMA", "initials": "J. S.", "capitalized": "John Smith CPA MST CGMA"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
@@ -5286,6 +5305,7 @@
 {"name": "Зендая", "order": "FAMILY_FIRST", "given": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "З."}
 {"name": "Зорин, Михаил Петрович", "given": "Михаил", "middle": "Петрович", "family": "Зорин", "initials": "М. П. З."}
 {"name": "И. Б. Зубкевич", "given": "И.", "middle": "Б.", "family": "Зубкевич", "initials": "И. Б. З."}
+{"name": "ИВАНОВ Иван ИВАНОВИЧ", "given": "ИВАНОВ", "middle": "Иван", "family": "ИВАНОВИЧ", "initials": "И. И. И.", "capitalized_force": "Иванов Иван Иванович"}
 {"name": "ИВАНОВ Иван Иванович", "given": "ИВАНОВ", "middle": "Иван", "family": "Иванович", "initials": "И. И. И.", "capitalized_force": "Иванов Иван Иванович"}
 {"name": "Иван", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}
 {"name": "Иван", "order": "FAMILY_FIRST", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}

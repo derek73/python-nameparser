@@ -62,6 +62,13 @@
   "Ali née oglu"  [tr_az]     →  patronymic=""
   ```
 
+**Precedence:**
+
+- **A marker written in capitals under capitals-as-family handling** ("ALIYEV Ilham Heydar OGLU" with that switch and the Turkic rule on): the rule in force reads the word as its marker, so the capitals do not make it the family, and the view keeps it; with no patronymic rule in force it is a word in capitals like any other (O9).
+  ```
+  "ALIYEV Ilham Heydar OGLU"  capitals_as_family+turkic  →  patronymic="Heydar OGLU"
+  ```
+
 **Accepted:**
 
 - A patronymic written with no particle and no rule to read it is not read, since a position says nothing about a parent: Wikidata's Malay names with a patronymic and no family name agree 4 of 9, those written without `bin` read as given and family.

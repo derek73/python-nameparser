@@ -55,9 +55,10 @@
   "Smith, Ma"                 →  given="Ma"
   ```
 - **A part of listed members written in capitals, at the first slot after a comma** ("Smith, MA MA"): C4 states the one exception: a part of two or more suffix words and words of this class, every word of the class listed and written in capitals in a mixed-case name, is read on its capitals before the count is asked, as the credential run behind one name word as behind two ('Smith, MA MA' reads suffix 'MA MA'), and the writing having settled every word of the class in it, the part reports nothing (C11).
-- **A name read under capitals-as-family handling** ("Hugo LAC" with that switch on): the caller has said the capitals write the family name, so a member of the class written in capitals before the first comma is the family name, the credential reading yielding, and the fork is not reported (O9). After a comma this rule reads as before.
+- **A name read under capitals-as-family handling** ("Hugo LAC" with that switch on): the caller has said the capitals write the family name, so a member of the class written in capitals that is the only word of its run to be no particle, before the first comma, is the family name, the credential reading yielding, and the fork is not reported (O9). One ending a run that holds another such word still comes off as the credential, and after a comma this rule reads as before.
   ```
   "Hugo LAC"  capitals_as_family  →  family="LAC"
+  "Jean DUPONT MA"  capitals_as_family  →  suffix="MA"
   "Hugo Lac, MA"  capitals_as_family  →  suffix="MA"
   ```
 

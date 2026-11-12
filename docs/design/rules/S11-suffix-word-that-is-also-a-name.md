@@ -83,6 +83,12 @@
   "Pedro Alves NETO"          →  suffix="NETO"
   ```
 
+- **A name read under capitals-as-family handling** ("Ram Bahadur KC" with that switch on): the caller has said the capitals write the family name, so a word of this class written in capitals that is the only word of its run to be no particle, before the first comma, is the family name, the count yielding, and the fork is not reported (O9).
+  ```
+  "Ram Bahadur KC"  capitals_as_family  →  family="KC"
+  "John Paul JUNIOR"  capitals_as_family  →  family="JUNIOR"
+  ```
+
 **Accepted:**
 
 - A name word standing straight before it counts as a name word whatever it is, so an initial there is left as the family name and a particle there as a family name of its own, as with an ambiguous acronym. An initial before an agnomen most often abbreviates the surname it follows.
