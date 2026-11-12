@@ -12,7 +12,8 @@ to the family after a family comma (#613; the attached tag, 3.0's 4c,
 tells rules/R9 the attachment from O3's fold); and order, the order
 the positional read used, None where none happened (ParseState.order).
 Reads: Policy.name_order (#270), Policy.lone_name_word (rules/O5,
-the field a lone name word takes, #1111), is_suffix_lenient on the trailing
+the field a lone name word takes, #1111), Policy.initials_as_family
+(rules/O4's order report stands down under it, #1254), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
@@ -99,12 +100,15 @@ joined unit carrying title vocabulary.
 """
 from __future__ import annotations
 
+import unicodedata
+
 from collections.abc import Sequence, Set
 from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon, _run_addresses_by_given
 from nameparser._pipeline._vocab import (
-    _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
+    _ROMAN, effective_script, in_a_title_phrase, in_initialless_script,
+    is_initial_shaped,
     TITLE_READING, is_listed_numeral, particle_reading,
     is_suffix_lenient, name_reading, suffix_reading,
     numeral_leans_to_the_name, numeral_settled_by_case,
@@ -572,6 +576,54 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
+
+    # rules/O4: "a name word followed by nothing but initials reports
+    # the order" -- the positional read takes the word as the given
+    # name, where a byline writes its family name first (`Armitage J
+    # O`); declared nowhere, so the default given-first order picked it
+    # (decisions/O4, #1254). Bare capitals (`Armitage JO`) are no
+    # initials here: they are written as a short surname is (`Zhi LI`).
+    # Inline and nested so a plain name exits at its second piece
+    # (the parse-cost band, decisions/parse-cost)
+    if (len(name_pieces) >= 2 and seg_idx == 0
+            and order[0] is Role.GIVEN and not resolved.by_script
+            and state.structure is not Structure.FAMILY_COMMA
+            and not state.policy.initials_as_family):
+        first = pieces[name_pieces[0]]
+        # a particle in front is PARTICLE_OR_GIVEN's fork, reported there
+        initialed = (len(first) == 1
+                     and "initial" not in tokens[first[0]].tags
+                     and "particle" not in tokens[first[0]].tags)
+        for k in name_pieces[1:]:
+            if not initialed:
+                break
+            piece = pieces[k]
+            letters = tokens[piece[0]]
+            # chunks of the composed spelling, as classify measures a
+            # letter (`composed_len`): a decomposed `É.S.` is one run
+            initialed = len(piece) == 1 and (
+                "initial" in letters.tags
+                or SHAPE_ACRONYM_TAG in letters.tags
+                and all(len(chunk) == 1 and chunk.isalpha()
+                        for chunk in unicodedata.normalize(
+                            "NFC", letters.text).rstrip(".").split(".")))
+        text = unicodedata.normalize("NFC", tokens[first[0]].text)
+        # the word in front is a name word a byline could write first:
+        # no run of initials itself (rules/T7's `J.A.`), and in a script
+        # that writes initials, as no byline in Han or Hangul does
+        if (initialed and any(c.isalpha() for c in text)
+                and not all(len(chunk) == 1
+                            for chunk in text.rstrip(".").split("."))
+                and not in_initialless_script(text)):
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.ORDER,
+                f"{tokens[first[0]].text!r} is followed only by initials, which a byline "
+                f"writes after the family name and a South Asian name "
+                f"writes as the family; read as ", tuple(first),
+                field_tail=" by the default given-first order",
+                alternative=PendingReading(ReadingKind.NAME,
+                                           ReadingSource.POSITION,
+                                           Role.FAMILY)))
 
     def as_a_name(i: int) -> PendingReading:
         # every other word read as the parse reads it -- the carve-out's

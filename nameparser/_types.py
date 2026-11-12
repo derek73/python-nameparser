@@ -600,10 +600,19 @@ class AmbiguityKind(StrEnum):
     a signal to act on; an empty one is not a guarantee of
     certainty."""
 
-    #: Reserved: the name's field order itself is uncertain (e.g. a
-    #: two-word name under a non-default name_order). Not yet
-    #: emitted. A lone name word is GIVEN_OR_FAMILY's, not
-    #: this.
+    #: The name's field order itself is uncertain: one name word followed
+    #: by nothing but initials, read given-first by the default order,
+    #: is also a byline written family name first ("Armitage J. O.",
+    #: "Gomes A.R.S.", "Kavitha S") and, with two or more letters, the
+    #: South Asian name whose letters are its family ("Lakshmi R S",
+    #: rules/O4, rules/O8). ``alternative`` names the word in front as
+    #: the family name. Reported only under the given-first order, with
+    #: no family comma and ``Policy.initials_as_family`` off; never
+    #: for capitals written as one word with no full stops ("Armitage
+    #: JO"), which are written as a short surname is ("Zhi LI"), nor for
+    #: a particle in front, PARTICLE_OR_GIVEN's fork, nor a word written
+    #: in a script with no initials. Reserved from 2.0 and emitted since
+    #: 3.1 (#1254). A lone name word is GIVEN_OR_FAMILY's, not this.
     ORDER = "order"
     #: Delimited content is an ambiguous suffix acronym, so it reads
     #: plausibly as either a post-nominal or a nickname -- "JEFFREY
@@ -1091,7 +1100,7 @@ class Ambiguity:
     #: call gone the other way (the first token's field, for a report on
     #: more than one). None where the kind reports no fork between two
     #: readings of a word (comma-structure, unbalanced-delimiter,
-    #: segmentation; ``order`` is reserved), and where the parse cannot
+    #: segmentation), and where the parse cannot
     #: place the other reading in any field: a connective letter
     #: opening its part ("E JOHN SMITH"), with no word before it to
     #: join, or a chained particle whose piece ends in a title a

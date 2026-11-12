@@ -20,8 +20,8 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.SUFFIX_OR_NAME: "John Smith Ma",
     AmbiguityKind.GIVEN_OR_FAMILY: "Andrew",
     AmbiguityKind.TITLE_OR_NAME: "Lord Chancellor",
-    # no emitter yet -- arrives with locale-pack order detection (2.x)
-    AmbiguityKind.ORDER: None,
+    # one name word and initials, read given-first by default (#1254)
+    AmbiguityKind.ORDER: "Kavitha S",
     # 남 and 남궁 are both shipped surnames, so longest-first picks
     # between two vocabulary-supported splits
     AmbiguityKind.SEGMENTATION: "남궁민수",

@@ -455,18 +455,20 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # capitals before credentials ('Jane Doe, BM PhD') and its reviews'
     # boundaries, 65 claims (three fixes, four, three and nine
     # boundaries reporting suffix-or-name under three orders, and three
-    # fixes under their own policy or three orders).
-    assert claims == 1860, (
-        f"the field sweep checks {claims} claims, recorded as 1860 on "
+    # fixes under their own policy or three orders); 1860 -> 1882 the
+    # same day, #1254's order report on 22 rows of one name word and
+    # initials ('Kavitha S', 'John V', 'Jack X.Y.Z.').
+    assert claims == 1882, (
+        f"the field sweep checks {claims} claims, recorded as 1882 on "
         f"2026-11-11")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
-#: the reading not taken: three of the rest report a shape, and `order`
-#: is reserved (#752 phase 2m).
+#: the reading not taken: the three left out report a shape (#752 phase
+#: 2m). `order` was reserved until #1254 gave it an emitter.
 _FORK_KINDS = frozenset(AmbiguityKind) - {
     AmbiguityKind.COMMA_STRUCTURE, AmbiguityKind.UNBALANCED_DELIMITER,
-    AmbiguityKind.SEGMENTATION, AmbiguityKind.ORDER}
+    AmbiguityKind.SEGMENTATION}
 
 #: The field a non-name reading names by what it is.
 _FIELD_OF_KIND = {
@@ -583,6 +585,14 @@ def _check_alternatives(key: tuple[str, int | None], pn: ParsedName,
         assert alt is not None, f"{key[0]!r}: {a.kind.value} has none"
         if alt.kind in _FIELD_OF_KIND:
             assert alt.role is _FIELD_OF_KIND[alt.kind], (key, a, alt)
+            continue
+        if a.kind is AmbiguityKind.ORDER:
+            # rules/O4's other order, the word in front as the family
+            # (#1254), which no stand-in word can reach: it moves the
+            # name's layout, not the word
+            assert (a.tokens[0].role, alt.role) == (Role.GIVEN,
+                                                    Role.FAMILY), (
+                key, a, alt)
             continue
         if a.kind is AmbiguityKind.GIVEN_OR_FAMILY:
             # rules/O5's other convention, which no stand-in can reach
@@ -705,16 +715,20 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
     # a credential gated as a generation word is (#965) names a credential
     ("Ram KC", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
-    ("John V", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
-        ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("John V", ()): ((AmbiguityKind.ORDER, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),
+        (AmbiguityKind.SUFFIX_OR_NAME, (
+            ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY))),
     ("John Smith Vi", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.SHAPE)),),
     ("Esq Jr", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.POST_NOMINAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     ("Jack Ma", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
-    ("Jack X.Y.Z.", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
-        ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.SHAPE)),),
+    ("Jack X.Y.Z.", ()): ((AmbiguityKind.ORDER, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),
+        (AmbiguityKind.SUFFIX_OR_NAME, (
+            ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.SHAPE))),
     ("(MA) John Smith", ()): ((AmbiguityKind.SUFFIX_OR_NICKNAME, (
         ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     # name_reading: an initial, a declared name, a word by position
@@ -875,8 +889,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # before credentials ('Jane Doe, BM PhD') under the three orders;
     # 566 -> 576 and 357 -> 360 the same day, its review's rows; 576 ->
     # 582 and 360 -> 363, its second review's three head rows; 582 ->
-    # 594 and 363 -> 366, its third review's rows
-    assert (checked, skipped) == (594, 366), (checked, skipped)
+    # 594 and 363 -> 366, its third review's rows; 366 -> 388 the same
+    # day, #1254's order reports on 22 rows, which no stand-in can
+    # reach, so the oracle passes each by its pair of fields
+    assert (checked, skipped) == (594, 388), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
