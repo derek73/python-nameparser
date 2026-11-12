@@ -395,7 +395,7 @@ Written in full the father's name is in the genitive (``Батын Сүхээ``,
 "Sükhee, Bat's"); passports write it in the nominative (``Бат Сүхээ``)
 and put it in the surname field. The default reads the father's name as
 the given name; ``mn`` reads it as the family, the field a caller sorts
-and matches by:
+and matches by, in a name written in Cyrillic:
 
 .. doctest::
 
@@ -405,21 +405,25 @@ and matches by:
     >>> sukhee = mongolian.parse("Батын Сүхээ")
     >>> sukhee.family, sukhee.given
     ('Батын', 'Сүхээ')
-    >>> mongolian.parse("Batyn Sükhee").family
-    'Batyn'
     >>> mongolian.parse("Б. Сүхээ").family
     'Б.'
 
-The order holds for every name of two words or more the pack reads
-without a family comma, in any script whose order the script does not
-settle, so keep it for names written the Mongolian way. A romanized name
-written given name first, as many Mongolians write their names in
-English, reads backwards (``mongolian.parse("Sükhee Batyn")`` gives
-family ``Sükhee``), as does a name from any other tradition, and so does
-the given name followed by the father's initial (``Sükhee B.`` gives
-family ``Sükhee``), which the default reads right. A family comma fixes
-the family name whatever the order (``Бат, Сүхээ``), and a one-word name
-reads as the given name, as under every order. The genitive ending is
-not read, so ``patronymic`` stays empty, and a word written before the
-father's name, a clan name, reads as the family, the father's name as
-the middle.
+The order is keyed to the script. Mongolians writing their own names in
+Latin letters mostly put the given name first, so a romanized name keeps
+your order (``Policy.name_order``, given-first by default), and for a
+list written the other way, declare ``FAMILY_FIRST`` on the base parser
+or let :ref:`Parser.suggest <suggest-settings>` read it:
+
+.. doctest::
+
+    >>> mongolian.parse("Sükhee Batyn").given
+    'Sükhee'
+
+Cyrillic is written for many languages in both orders, so the pack reads
+every name written wholly in Cyrillic father's name first, Russian and
+Kazakh names included (``mongolian.parse("Иван Сидоров")`` gives family
+``Иван``): keep it for Mongolian data. A family comma fixes the family
+name whatever the order (``Бат, Сүхээ``), a one-word name reads as the
+given name, and the genitive ending is not read, so ``patronymic`` stays
+empty. A word written before the father's name, a clan name, reads as the
+family, the father's name as the middle.

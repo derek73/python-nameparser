@@ -29,7 +29,7 @@ by ``tests/v2/test_locales.py``:
    table in the pack's language file, list the file in ``PACK_RULES``
    in ``tools/vocab/build.py``, rebuild, and give the pack
    ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as
-   ``ru``, ``tr_az``, ``es``, ``cs``, ``sk``, ``vi``, ``ne`` and ``mn`` do. ``nameparser/vocab/README.md``'s "Rules"
+   ``ru``, ``tr_az``, ``es``, ``cs``, ``sk``, ``vi`` and ``ne`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
 #. Declare a module-level ``DEVIATES(name)`` predicate. Given a name

@@ -374,18 +374,23 @@ def test_policy_patch_canonicalizes_script_orders_all_the_way_down() -> None:
     assert isinstance(hash(p), int)
 
 
-def test_apply_patch_overrides_script_orders_as_a_scalar() -> None:
-    # script_orders composes as a SCALAR: a patch REPLACES the table
-    # rather than merging into it, so an empty one is how a pack turns
-    # the default off. An UNSET patch must leave the default alone --
-    # the distinction a union field would blur.
-    cleared = apply_patch(Policy(), PolicyPatch(script_orders={}))  # type: ignore[arg-type]
-    assert cleared.script_orders == ()
-    untouched = apply_patch(Policy(), PolicyPatch())
-    assert untouched.script_orders == DEFAULT_SCRIPT_ORDERS
+def test_apply_patch_merges_script_orders_by_script() -> None:
+    # script_orders composes BY SCRIPT (#1237): a patch's entry
+    # replaces the base's entry for its script and the base's other
+    # entries stand, so a pack adds one script's order without erasing
+    # the rest or a caller's own opt-out; an empty patch changes nothing
+    # (a caller clears the table on Policy itself)
+    empty = PolicyPatch(script_orders={})  # type: ignore[arg-type]
+    assert apply_patch(Policy(), empty).script_orders == DEFAULT_SCRIPT_ORDERS
+    assert apply_patch(Policy(), PolicyPatch()).script_orders \
+        == DEFAULT_SCRIPT_ORDERS
     replaced = apply_patch(
         Policy(), PolicyPatch(script_orders={Script.HANGUL: GIVEN_FIRST}))  # type: ignore[arg-type]
-    assert replaced.script_orders == ((Script.HANGUL, GIVEN_FIRST),)
+    assert dict(replaced.script_orders) == {
+        **dict(DEFAULT_SCRIPT_ORDERS), Script.HANGUL: GIVEN_FIRST}
+    added = apply_patch(Policy(script_orders=()), PolicyPatch(
+        script_orders={Script.CYRILLIC: GIVEN_FIRST}))  # type: ignore[arg-type]
+    assert added.script_orders == ((Script.CYRILLIC, GIVEN_FIRST),)
 
 
 def test_apply_patch_revalidates_deferred_script_orders() -> None:

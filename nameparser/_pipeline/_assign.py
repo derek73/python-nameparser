@@ -130,7 +130,7 @@ from nameparser._pipeline._state import (
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
-from nameparser._policy import Policy, Script
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, Policy, Script
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind,
                                ReadingKind, ReadingSource, Role)
 
@@ -280,7 +280,11 @@ class EffectiveOrder(NamedTuple):
     order a Han name's W4 entry and the declaration agree, and only
     this flag distinguishes the script rule DECIDING the reading from
     the caller's declaration standing unopposed. O5's convention
-    report reads it (#449)."""
+    report reads it (#449). Set only for an East Asian script, whose
+    own convention settles the order (W4) and so a lone word's field
+    (O5's W4 Except): a Cyrillic entry, a pack's declared order
+    (locales.MN, #1237), orders a longer name and leaves a lone word to
+    O5's convention."""
 
     order: tuple[Role, Role, Role]
     by_script: bool
@@ -356,7 +360,8 @@ def _effective_order(policy: Policy,
         return declared
     for script, order in policy.script_orders:
         if script is resolved:
-            return EffectiveOrder(order, by_script=True)
+            return EffectiveOrder(
+                order, by_script=resolved in _EAST_ASIAN_SCRIPTS)
     # the resolved script has no entry: the declaration stands, and
     # nothing about the writing system decided the reading
     return declared

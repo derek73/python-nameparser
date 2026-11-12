@@ -112,6 +112,15 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
     for script in _SCRIPT_RANGES
 }
 
+#: The joiners a Cyrillic name word is written with inside it, hyphens
+#: and the apostrophes Ukrainian and Belarusian write (`Оюун-Эрдэнэ`,
+#: `Мар'яна`), deleted from the classified copy only between letters,
+#: so a hyphenated Cyrillic word keys a declared Cyrillic order as a
+#: plain one does (#1237); the shared table stays letters only, since
+#: the East Asian readers of it never see these.
+_CYRILLIC_JOINERS = "-\u2010\u2011'\u2019\u02bc"
+_DROP_CYRILLIC_JOINERS = str.maketrans("", "", _CYRILLIC_JOINERS)
+
 # The whole-token matcher over _policy's _JA_SCRIPTS union, backing
 # effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
@@ -3116,6 +3125,14 @@ def effective_script(text: str) -> Script | None:
         return script
     if _wholly_ja(normalized):
         return Script.HIRAGANA
+    # a Cyrillic word with a hyphen or an apostrophe inside it (#1237);
+    # translate is C-level, so a token with no joiner costs no frame
+    joined = normalized.translate(_DROP_CYRILLIC_JOINERS)
+    if (joined != normalized and joined
+            and normalized[0] not in _CYRILLIC_JOINERS
+            and normalized[-1] not in _CYRILLIC_JOINERS
+            and _SCRIPT_MATCHERS[Script.CYRILLIC](joined)):
+        return Script.CYRILLIC
     return None
 
 

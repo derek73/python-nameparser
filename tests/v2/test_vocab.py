@@ -783,11 +783,11 @@ def test_every_character_the_tokenizer_ignores_is_refused() -> None:
     # and the pins below hold only its constants
     from nameparser._pipeline import _tokenize
     from nameparser._pipeline._state import COMMA_CHARS, ParseState
-    from nameparser._policy import Policy, _SCRIPT_RANGES
+    from nameparser._policy import Policy, _EAST_ASIAN_SCRIPTS, _SCRIPT_RANGES
     assert build.DIVIDERS == COMMA_CHARS | _tokenize._NAME_DOT_SEPARATORS
     assert build.EMOJI_RANGES == _tokenize._EMOJI_RANGES
     assert build.EAST_ASIAN_RANGES == tuple(
-        span for spans in _SCRIPT_RANGES.values() for span in spans)
+        span for script in _EAST_ASIAN_SCRIPTS for span in _SCRIPT_RANGES[script])
     assert build.TRANSCRIPTION_DOTS == _tokenize._TRANSCRIPTION_DOTS
     state = ParseState(original="", lexicon=Lexicon.default(), policy=Policy(),
                        segmenter=None)
@@ -1510,7 +1510,7 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, mn, ne, ru, sk, tr, vi"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, ru, sk, tr, vi"):
         rules_patch("en")
 
 

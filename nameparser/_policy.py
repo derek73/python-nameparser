@@ -61,9 +61,11 @@ class Script(StrEnum):
     on: per-script name order (``Policy.script_orders``) and
     unspaced-name segmentation (``Policy.segment_scripts``). The rule
     that admits these (amendment 2026-07-27): script-conditional
-    behavior only where the script itself determines the convention --
-    Latin-script input is never affected. The codepoint table backing
-    these members is internal."""
+    DEFAULT behavior only where the script itself determines the
+    convention -- Latin-script input is never affected. A member no
+    default keys on (KATAKANA, CYRILLIC) is there for a caller's or a
+    pack's own entry, licensed by that choice (rules/W4). The codepoint
+    table backing these members is internal."""
 
     #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
     #: say which language it is, which is fine for ORDER (both write
@@ -88,6 +90,15 @@ class Script(StrEnum):
     #: deliberately declines. A caller who knows their katakana is
     #: Japanese maps it to FAMILY_FIRST in script_orders.
     KATAKANA = "katakana"
+    #: Cyrillic. Written for many languages in both orders (Russian
+    #: given-first, Mongolian father's name first), so the script
+    #: settles no order and no default keys on it: it exists so a
+    #: caller's or a pack's script_orders entry can, as locales.MN's
+    #: does, licensed by the caller's choice of that pack (#1237). Not
+    #: among the scripts the interpunct and the two-family-names count
+    #: read (_EAST_ASIAN_SCRIPTS), and no initial veto (_NO_INITIALS):
+    #: Cyrillic names abbreviate.
+    CYRILLIC = "cyrillic"
 
 
 # Codepoint ranges per Script (#271). This integer table is the single
@@ -201,7 +212,19 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HANGUL: tuple(sorted((_HANGUL_SYLLABLES, *_CONJOINING_JAMO))),
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
+    # The Cyrillic block and Cyrillic Supplement, Extended-A, -B and -C
+    # (#1237); the combining marks a decomposed letter carries are
+    # composed away before classification (_vocab._normalized_for_script)
+    Script.CYRILLIC: ((0x0400, 0x052F), (0x1C80, 0x1C8F), (0x2DE0, 0x2DFF),
+                      (0xA640, 0xA69F)),
 }
+
+#: The scripts whose characters rules/T3's interpunct flank and the
+#: two-family-names declaration's run count read as classified: the
+#: East Asian ones, every _SCRIPT_RANGES entry but CYRILLIC, which
+#: keys only a declared script order (#1237).
+_EAST_ASIAN_SCRIPTS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
+                       Script.KATAKANA)
 
 #: The Japanese repertoire: the three scripts Japanese names draw on.
 #: The kana license (_pipeline/_vocab.py's effective_script), the ja
@@ -320,7 +343,7 @@ def _script_matcher(*scripts: Script,
 #: the question the interpunct's flank guard (rules/T3) and the
 #: two-family-names declaration's run count (_locale) both ask, defined
 #: once here because _locale may not import the pipeline (#1087).
-_classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
+_classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 
 
 # Order-spec constants (#270), defined in _types beside Role since
@@ -1037,12 +1060,14 @@ class PolicyPatch:
     """
 
     name_order: tuple[Role, Role, Role] | _Unset = UNSET
-    #: Composes as a SCALAR (override, not merge) -- deliberate: nothing
-    #: shipped patches it today, so the simpler rule is the one to
-    #: defend; revisit if a pack ever needs to add one script's entry
-    #: without restating the rest.
+    #: Composes BY SCRIPT: each entry replaces the base's entry for its
+    #: script and the base's other entries stand, so a pack adds one
+    #: script's order without restating or erasing the rest, a caller's
+    #: own opt-outs included (locales.MN's Cyrillic entry, #1237; a
+    #: scalar override until then, nothing shipped having patched it).
     script_orders: tuple[
-        tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = UNSET
+        tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = field(
+        default=UNSET, metadata={"compose": "by-script"})
     segment_scripts: frozenset[Script] | _Unset = field(
         default=UNSET, metadata=_UNION)
     patronymic_rules: frozenset[PatronymicRule] | _Unset = field(
@@ -1165,6 +1190,12 @@ def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
             continue
         if f.metadata.get("compose") == "union":
             value = getattr(policy, f.name) | value
+        elif (f.metadata.get("compose") == "by-script"
+              and isinstance(value, tuple)
+              and all(isinstance(e, tuple) and len(e) == 2 for e in value)):
+            # a well-formed table merges into the base's; anything else
+            # goes to Policy whole, whose messages quote it
+            value = {**dict(getattr(policy, f.name)), **dict(value)}
         updates[f.name] = value
     if not updates:
         return policy

@@ -28,7 +28,14 @@
   "毛·泽东"                   →  given="毛"
   "威廉·莎士比亚"  family-first  →  family="威廉"
   ```
+- **A pack's order for a script that settles no order** reads a name written wholly in that script, licensed by the caller's choice of the pack rather than by the script: Cyrillic is written in both orders, so the default reads it by the declared order, and only `locales.MN`, whose Mongolian names write the father's name first, gives it an entry; a lone word in it stays O5's convention, the entry settling no field.
+  ```
+  "Батын Сүхээ"  [mn]          →  family="Батын"
+  "Batyn Sükhee"  [mn]         →  given="Batyn"  · boundary
+  "Батын Сүхээ"                →  given="Батын"  · boundary
+  "Сүхээ"  [mn]                →  given="Сүхээ"
+  ```
 
 ---
-**Signal:** script: a name written wholly in one East Asian script, or in the kana-licensed repertoire
+**Signal:** script: a name written wholly in one East Asian script, or in the kana-licensed repertoire, or in a script a chosen pack gives an order
 **history:** decisions/W4 · **implemented:** nameparser/_pipeline/_assign.py

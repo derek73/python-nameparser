@@ -12,9 +12,11 @@ policy/locale context -- the corpus carries name STRINGS and the
 snapshot reads them under the default policy, so a name from a
 zh-scoped row is simply one more CJK name to watch.
 
-Selection is by the shipped table (nameparser._policy._SCRIPT_RANGES,
-through the same _script_matcher the parser uses), so a script added
-to the table widens the harvest on the next regeneration, and a case
+Selection is by the shipped table's East Asian scripts
+(nameparser._policy._EAST_ASIAN_SCRIPTS, through the same _script_matcher
+the parser uses; Cyrillic, in the table since #1237, is not this
+corpus's), so an East Asian script added to the table widens the
+harvest on the next regeneration, and a case
 row added for new CJK work enters the corpus by being written down in
 the table everyone already reviews (#298's 间隔号 forms arrived
 exactly this way). Rows marked `tolerated` (the 2026-09-01 CJK
@@ -39,12 +41,12 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 
-from nameparser._policy import _SCRIPT_RANGES, _script_matcher  # noqa: E402
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, _script_matcher  # noqa: E402
 from tests.v2.cases import CASES  # noqa: E402
 
 OUT = HERE / "corpus_cjk.jsonl"
 
-_has_cjk = _script_matcher(*_SCRIPT_RANGES)
+_has_cjk = _script_matcher(*_EAST_ASIAN_SCRIPTS)
 
 
 def selected_names() -> list[str]:

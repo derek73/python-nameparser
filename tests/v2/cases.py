@@ -41,7 +41,7 @@ from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
 # Not in nameparser.__all__: _order_repr renders a name_order for an
 # error message, Script/_SCRIPT_RANGES/_script_matcher build the same
 # borrowed predicates build_cjk_corpus.py uses to find CJK text.
-from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
+from nameparser._policy import (PatronymicRule, Script, _EAST_ASIAN_SCRIPTS,
                                _order_repr, _script_matcher)
 
 #: rules/O6's switch, which every row of its own carries (#754).
@@ -98,10 +98,11 @@ def _stray_ascii(text: str) -> str:
 #: run by the time shape 7 consults it.
 _wholly_katakana = _script_matcher(Script.KATAKANA, whole=True)
 
-#: Whether a text carries a codepoint the parser's script table
-#: classifies -- built once, same idiom as build_cjk_corpus.py's
-#: module-scope `_has_cjk`.
-_has_cjk = _script_matcher(*_SCRIPT_RANGES)
+#: Whether a text carries a codepoint of the East Asian scripts the
+#: parser's script table classifies (Cyrillic, also in the table since
+#: #1237, keys only a declared order) -- built once, same idiom as
+#: build_cjk_corpus.py's module-scope `_has_cjk`.
+_has_cjk = _script_matcher(*_EAST_ASIAN_SCRIPTS)
 
 
 @dataclass(frozen=True)
@@ -884,11 +885,14 @@ CASES: tuple[Case, ...] = (
          notes="the father's name in the genitive, written first; 1.4.0 "
                "and 3.0.1 read first/given 'Батын', last/family 'Сүхээ' "
                "(measured on both wheels 2026-11-12)"),
-    Case("the_mongolian_pack_reads_a_romanized_fathers_name_as_the_family",
+    Case("the_mongolian_pack_leaves_a_romanized_name_to_the_callers_order",
          "Bataagiin Suhee",
-         {"given": "Suhee", "family": "Bataagiin"},
-         locale="mn", classification="feat(#1237)",
-         notes="1.4.0 and 3.0.1 read given 'Bataagiin' (2026-11-12)"),
+         {"given": "Bataagiin", "family": "Suhee"},
+         locale="mn", classification="parity",
+         notes="the pack's order is keyed to Cyrillic (#1237): Mongolians "
+               "often write a romanized name given-first, so it keeps "
+               "the caller's order; 1.4.0 and 3.0.1 read given "
+               "'Bataagiin' too (2026-11-12)"),
     Case("the_mongolian_pack_reads_the_given_name_last",
          "Боржигин Батын Сүхээ",
          {"given": "Сүхээ", "middle": "Батын", "family": "Боржигин"},

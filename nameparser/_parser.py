@@ -597,7 +597,10 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # it is, not the spelling it was given in.
     scalar_setters: dict[str, tuple[str, object]] = {}
     scalars = [f.name for f in dataclasses.fields(PolicyPatch)
-               if f.metadata.get("compose") != "union"]
+               if f.metadata.get("compose") not in ("union", "by-script")]
+    # script_orders composes by script: a later pack setting one script
+    # to another order overrides that entry, which is warned the same way
+    script_setters: dict[object, tuple[str, object]] = {}
     for loc in locales:
         # rules/D2: "applying a locale pack wraps any such error with
         # the locale's code, so a stacked configuration names which layer
@@ -618,6 +621,19 @@ def parser_for(*locales: Locale, base: Parser | None = None,
                         f"{name!r} already set by locale {code!r}; later wins",
                         UserWarning, stacklevel=2)
             scalar_setters[name] = (loc.code, value)
+        if loc.policy.script_orders is not UNSET:
+            for script, order in policy.script_orders:
+                if not any(s == script for s, _ in loc.policy.script_orders):
+                    continue
+                if script in script_setters:
+                    code, held = script_setters[script]
+                    if code != loc.code and held != order:
+                        warnings.warn(
+                            f"locale {loc.code!r} overrides the script_orders "
+                            f"entry for {script.value!r} already set by "
+                            f"locale {code!r}; later wins",
+                            UserWarning, stacklevel=2)
+                script_setters[script] = (loc.code, order)
     # rules/D1: "constructing a parser that activates division for
     # scripts with no covering surnames and no segmenter warns at
     # construction, naming the dead scripts and each way out"

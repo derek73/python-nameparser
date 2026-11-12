@@ -1,8 +1,8 @@
-"""The Mongolian locale pack: it reads a name family-first with the
-given name last (``Policy.name_order``, FAMILY_FIRST_GIVEN_LAST), its
-policy patch compiled from nameparser/vocab/mn.toml's [rules] table by
-tools/vocab/build.py, and it chooses the language ``mn``, which changes
-no reading the default holds (mn.toml's readings are on by default).
+"""The Mongolian locale pack: it reads a name written wholly in
+Cyrillic family-first with the given name last (a ``Policy.script_orders``
+entry for ``Script.CYRILLIC``, FAMILY_FIRST_GIVEN_LAST), and it chooses
+the language ``mn``, which changes no reading the default holds
+(mn.toml's readings are on by default).
 
 A Mongolian name has no inherited family name: it is the father's name,
 in the genitive when written in full (``Ухнаагийн Хүрэлсүх``) or in the
@@ -11,44 +11,48 @@ name. The father's name stands in the surname slot of the convention's
 own records, so the pack reads it as the ``family`` (#1253's decision,
 its first statement): ``Ухнаагийн Хүрэлсүх`` gives family
 ``Ухнаагийн``, given ``Хүрэлсүх``, where the default gives the reverse.
-The genitive is not read into the patronymic view (#1237). The given
-name is read last rather than second so that a word before the father's
-name, a clan name (``Боржигин Ухнаагийн Хүрэлсүх``), leaves the given
-name in place; the clan name itself is not read (it reads as the
-family, the father's name as the middle).
+
+The order is keyed to the script, not declared for every name, because
+a Mongolian writes Cyrillic father's name first but often writes a
+romanized name given-first, so a romanized name keeps the caller's
+order (``Policy.name_order``, given-first by default, or one
+``Parser.suggest`` proposes for a list). Cyrillic is written for many
+languages in both orders, so this order is the PACK's, licensed by the
+caller's choice of Mongolian, never a default the script settles
+(rules/W4). The genitive is not read into the patronymic view (#1237).
+The given name is read last rather than second so that a word before
+the father's name, a clan name (``Боржигин Ухнаагийн Хүрэлсүх``),
+leaves the given name in place; the clan name itself is not read (it
+reads as the family, the father's name as the middle).
 
 Data sources: the State Great Khural, JRC-Names, ORCID's Mongolian
 bylines and CLDR's mn sample, measured in decisions/vocabulary-model's
 2026-11-12 #1237 entry.
 
-Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the order
-can move any name of two name words or more that a family comma does
-not fix (a one-word name reads as ``Policy.lone_name_word`` names under
-every order, given by default, rules/O5), in any script but those whose
-order rules/W4 settles, so DEVIATES below declares a superset: every
-name holding a letter or a digit. The choice's own words are derived
-(``_reading_index.changed_words``, none on 2026-11-12), which the
-non-interference gate in tests/v2/test_locales.py ors in.
+Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the script
+order can move any name of two name words or more written wholly in
+Cyrillic that a family comma does not fix (a one-word name reads as
+``Policy.lone_name_word`` names under every order, rules/O5), so
+DEVIATES below declares every name holding a Cyrillic letter. The
+choice's own words are derived (``_reading_index.changed_words``, none
+on 2026-11-12), which the non-interference gate in
+tests/v2/test_locales.py ors in.
 """
 from __future__ import annotations
 
 from nameparser._lexicon import Lexicon
-from nameparser._locale import Locale, rules_patch
+from nameparser._locale import Locale
+from nameparser._policy import (
+    FAMILY_FIRST_GIVEN_LAST, PolicyPatch, Script, _script_matcher,
+)
 
 MN = Locale(
     code="mn",
     lexicon=Lexicon.empty(),
-    # nameparser/vocab/mn.toml's [rules], compiled by tools/vocab/build.py
-    policy=rules_patch("mn"),
+    policy=PolicyPatch(script_orders=((Script.CYRILLIC, FAMILY_FIRST_GIVEN_LAST),)),
     languages=frozenset({"mn"}),
 )
 
-
-def DEVIATES(name: str) -> bool:
-    """True when this pack may parse `name` differently from the
-    default parser (the declared-deviation predicate the
-    non-interference gate consumes): any name holding a letter or a
-    digit, since the order can move any name of two name words or more
-    that a family comma does not fix, so no narrower predicate is worth
-    stating by hand."""
-    return any(c.isalnum() for c in name)
+#: any Cyrillic letter: the script order reads only a name written
+#: wholly in Cyrillic, so this over-declares, the safe direction
+DEVIATES = _script_matcher(Script.CYRILLIC)

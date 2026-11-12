@@ -509,40 +509,49 @@ def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> No
 
 
 def test_mn_pack_contents() -> None:
-    # a choice of mn and its file's [rules] order, nothing else
-    # (decisions/vocabulary-model, the 2026-11-12 #1237 entry)
+    # a choice of mn and a Cyrillic script order, nothing else: the
+    # order is keyed to the script, so a romanized name keeps the
+    # caller's (decisions/vocabulary-model, the 2026-11-12 #1237 entry)
     from nameparser.locales import mn as _mn
     assert locales.MN == Locale(
         code="mn", lexicon=Lexicon.empty(),
-        policy=PolicyPatch(name_order=FAMILY_FIRST_GIVEN_LAST),
+        policy=PolicyPatch(
+            script_orders=((Script.CYRILLIC, FAMILY_FIRST_GIVEN_LAST),)),
         languages=frozenset({"mn"}))
-    assert _mn.DEVIATES("Сүхээ") and not _mn.DEVIATES(", ")
+    assert _mn.DEVIATES("Сүхээ") and _mn.DEVIATES("Dr. Сүхээ")
+    assert not _mn.DEVIATES("Bataagiin Suhee") and not _mn.DEVIATES(", ")
 
 
 #: The father's name is the family under the pack (#1253's first
-#: statement), in each form it is written in; the default reads each
-#: given-first. (text, family, middle, given)
+#: statement), in each form a Cyrillic name is written in; the default
+#: reads each given-first. (text, family, middle, given)
 _MN_READINGS = [
     ("Батын Сүхээ", "Батын", "", "Сүхээ"),
     ("Бат Сүхээ", "Бат", "", "Сүхээ"),
-    ("Bataagiin Suhee", "Bataagiin", "", "Suhee"),
-    ("BATAAGIIN SUHEE", "BATAAGIIN", "", "SUHEE"),
+    ("БАТЫН СҮХЭЭ", "БАТЫН", "", "СҮХЭЭ"),
     ("Дорждэрэмийн Ганбаатар", "Дорждэрэмийн", "", "Ганбаатар"),
-    ("Dorjiin Khürelsükh", "Dorjiin", "", "Khürelsükh"),
     ("Б. Сүхээ", "Б.", "", "Сүхээ"),
+    ("Ц.Сандаг-Очир", "Ц.", "", "Сандаг-Очир"),   # glued (#1306), rules/T8
+    # a hyphen or an apostrophe inside a Cyrillic word keeps it Cyrillic
     ("Цэрэн Оюун-Эрдэнэ", "Цэрэн", "", "Оюун-Эрдэнэ"),
+    ("Оюун-Эрдэнэ Цэрэн", "Оюун-Эрдэнэ", "", "Цэрэн"),
+    ("Мар'яна Сидоренко", "Мар'яна", "", "Сидоренко"),
     # a word before the father's name (a clan name, not read as one,
     # #1237) leaves the given name last
     ("Боржигин Батын Сүхээ", "Боржигин", "Батын", "Сүхээ"),
     ("Батын Дорж Сүхээ Болд", "Батын", "Дорж Сүхээ", "Болд"),
-    # titles and suffixes stand aside
+    # titles and suffixes stand aside, in either script: the name words
+    # decide the script
     ("Др. Батын Сүхээ", "Батын", "", "Сүхээ"),
-    ("Dr. Bataagiin Suhee", "Bataagiin", "", "Suhee"),
+    ("Dr. Батын Сүхээ", "Батын", "", "Сүхээ"),
+    ("Lama Батын Сүхээ", "Батын", "", "Сүхээ"),   # mn.toml's title
     ("Батын Сүхээ Jr.", "Батын", "", "Сүхээ"),
-    ("Bataagiin Suhee, PhD", "Bataagiin", "", "Suhee"),
-    # traditional script: the declared order, as for any script W4
-    # does not settle; the genitive joined by U+202F is one word (T6)
-    ("ᠪᠠᠲᠤ\u202fᠶᠢᠨ ᠰᠦᠬᠡ", "ᠪᠠᠲᠤ\u202fᠶᠢᠨ", "", "ᠰᠦᠬᠡ"),
+    ("Батын Сүхээ, PhD", "Батын", "", "Сүхээ"),
+    # the given name and the father's initial written given first read
+    # backwards in Cyrillic, an accepted cost (decisions/vocabulary-model)
+    ("Сүхээ Б.", "Сүхээ", "", "Б."),
+    # CLDR's sample title Ноён is no listed title
+    ("Ноён Азжаргал Төмөр", "Ноён", "Азжаргал", "Төмөр"),
 ]
 
 
@@ -562,14 +571,14 @@ _MN_DECOMPOSED = [
 
 def test_mn_decomposed_rows_exist() -> None:
     # an empty parametrize skips rather than fails
-    assert len(_MN_DECOMPOSED) >= 2
+    assert len(_MN_DECOMPOSED) >= 1
 
 
 @pytest.mark.parametrize("text, family, middle, given", _MN_DECOMPOSED)
 def test_mn_reads_a_decomposed_name_alike(
         text: str, family: str, middle: str, given: str) -> None:
-    # Cyrillic ү and ө have no decomposition, so the rows written with
-    # й (Cyrillic) and ü (Latin) are the ones NFD reaches
+    # Cyrillic ү and ө have no decomposition, so the row written with й
+    # is the one NFD reaches: the classified copy is composed first
     got = _require_packed("mn").parse(text)
     assert (got.family, got.middle, got.given) == (family, middle, given)
 
@@ -578,7 +587,7 @@ def test_mn_reads_a_decomposed_name_alike(
     "Батын, Сүхээ",       # a family comma fixes the family name
     "Сүхээ, Батын",       # whichever word stands before it
     ", Сүхээ",            # nothing before the comma
-    "Сүхээ",              # one word: given, under every order (rules/O5)
+    "Сүхээ",              # one word: given, the caller's setting (rules/O5)
     "Батын, Сүхээ Болд",
     "Батын, Др. Сүхээ",
     "Батын Сүхээ, Болд",  # a full name before the comma, one word after
@@ -586,53 +595,60 @@ def test_mn_reads_a_decomposed_name_alike(
     "Др. Сүхээ",
     "Сүхээ Jr.",
     "Батын,",
+    # a name not wholly Cyrillic keeps the caller's order: romanized,
+    # mixed, or in the traditional script (whose default order
+    # decisions/T6 leaves open)
+    "Batyn Sükhee",
+    "BATAAGIIN SUHEE",
+    "Bataagiin Suhee, PhD",
+    "Uyanga B.",
+    "Батын Sükhee",
+    "ᠪᠠᠲᠤ\u202fᠶᠢᠨ ᠰᠦᠬᠡ",
+    # Han, Hangul and kana keep their own entries
+    "山田 太郎",
+    "김 민준",
 ])
-def test_mn_reads_a_family_comma_and_a_lone_word_as_the_default(
+def test_mn_reads_as_the_default_where_its_order_does_not_reach(
         text: str) -> None:
     assert _require_packed("mn").parse(text).as_dict() == _default_parse(text)
 
 
 def test_mn_lone_word_follows_the_callers_switch() -> None:
+    # the pack's order is a declaration, not a script that settles the
+    # order (rules/W4), so a lone word is rules/O5's: given and
+    # reported by default, family where the caller says so
+    lone = _require_packed("mn").parse("Сүхээ")
+    assert lone.given == "Сүхээ"
+    assert [a.kind for a in lone.ambiguities] == [AmbiguityKind.GIVEN_OR_FAMILY]
     family_lone = parser_for(locales.MN, base=Parser(
         policy=Policy(lone_name_word=Role.FAMILY)))
     assert family_lone.parse("Сүхээ").family == "Сүхээ"
     assert family_lone.parse("Батын Сүхээ").family == "Батын"
 
 
-#: Readings the 2026-11-12 #1237 entry of decisions/vocabulary-model
-#: states, pinned so the entry goes stale loudly: (text, family, given)
-_MN_STATED = [
-    ("Ц.Сандаг-Очир", "Ц.", "Сандаг-Очир"),      # glued (#1306), rules/T8
-    ("Suhee Bataagiin", "Suhee", "Bataagiin"),    # given first: backwards
-    ("Ноён Азжаргал Төмөр", "Ноён", "Төмөр"),     # Ноён is no listed title
-    ("Lama Батын Сүхээ", "Батын", "Сүхээ"),       # mn.toml's title
-]
-
-
-@pytest.mark.parametrize("text, family, given", _MN_STATED)
-def test_mn_reads_what_its_decision_entry_states(
-        text: str, family: str, given: str) -> None:
-    got = _require_packed("mn").parse(text)
-    assert (got.family, got.given) == (family, given)
+def test_mn_order_composes_with_the_callers_script_orders() -> None:
+    # the pack adds its Cyrillic entry and keeps the caller's own table:
+    # an opt-out of the East Asian entries stands
+    opted_out = parser_for(locales.MN, base=Parser(policy=Policy(script_orders=())))
+    assert dict(opted_out.policy.script_orders) == {
+        Script.CYRILLIC: FAMILY_FIRST_GIVEN_LAST}
+    assert opted_out.parse("山田 太郎").given == "山田"
+    assert opted_out.parse("Батын Сүхээ").family == "Батын"
+    # and a declared family-first order still reaches a romanized name
+    family_first = parser_for(locales.MN, base=Parser(
+        policy=Policy(name_order=FAMILY_FIRST)))
+    assert family_first.parse("Batyn Sükhee").family == "Batyn"
 
 
 def test_mn_strict_reads_its_file_and_the_shared_vocabulary() -> None:
     # the choice is what a strict parser reads: mn.toml's lama stays a
-    # title, en.toml's Sir is no title, and the order still holds
+    # title, en.toml's Sir is no title (so it is a Latin name word and
+    # the name is no longer wholly Cyrillic), and the order still holds
     strict = parser_for(locales.MN, strict=True)
     assert strict.parse("Lama Батын Сүхээ").title == "Lama"
-    assert strict.parse("Sir Bataagiin Suhee").title == ""
-    assert _require_packed("mn").parse("Sir Bataagiin Suhee").title == "Sir"
+    assert strict.parse("Sir Батын Сүхээ").title == ""
+    assert _require_packed("mn").parse("Sir Батын Сүхээ").title == "Sir"
     assert strict.parse("Батын Сүхээ").family == "Батын"
-
-
-def test_mn_reads_a_trailing_initial_as_the_given_name() -> None:
-    # accepted (decisions/vocabulary-model, 2026-11-12 #1237): the given
-    # name and the father's initial written given first read backwards,
-    # where the default reads them right and reports the order (O4)
-    got = _require_packed("mn").parse("Uyanga B.")
-    assert (got.family, got.given, got.ambiguities) == ("Uyanga", "B.", ())
-    assert parse("Uyanga B.").family == "B."
 
 
 def test_mn_fills_no_patronymic() -> None:
@@ -711,7 +727,7 @@ def test_the_two_family_names_declaration_counts_by_the_script_table(
     monkeypatch.setitem(_policy._SCRIPT_RANGES, Script.HANGUL,
                         (_policy._HANGUL_SYLLABLES,))
     monkeypatch.setattr(_locale, "_classified_char", _policy._script_matcher(
-        *_policy._SCRIPT_RANGES, whole=True))
+        *_policy._EAST_ASIAN_SCRIPTS, whole=True))
     assert _locale.deviates_by_two_family_names(name) is by_syllables
 
 
@@ -1817,16 +1833,16 @@ _ROTATORS["vi"] = [
     "Nguyen, Pgs Van Anh",           # pgs
     "Nguyen, PGS.TS. An",            # the stacked form
 ]
-# mn: the order alone (its choice changes no word), in each script and
-# form the father's name is written in, and with a word before it
+# mn: the Cyrillic script order alone (its choice changes no word), in
+# each form the father's name is written in, with a word before it and
+# with a Latin title beside it; a romanized name does not deviate
 _ROTATORS["mn"] = [
     "Батын Сүхээ",                   # the genitive, Cyrillic
     "Бат Сүхээ",                     # the nominative, as passports write it
-    "Bataagiin Suhee",               # the genitive, romanized
     "Б. Сүхээ",                      # the father's name as its initial
     "Цэрэн Оюун-Эрдэнэ",             # a hyphenated given name
     "Боржигин Батын Сүхээ",          # a word before the father's name
-    "ᠪᠠᠲᠤ\u202fᠶᠢᠨ ᠰᠦᠬᠡ",           # traditional script, the genitive joined (rules/T6)
+    "Dr. Батын Сүхээ",               # a Latin title beside a Cyrillic name
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head

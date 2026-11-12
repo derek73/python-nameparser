@@ -14,10 +14,10 @@ words or more for the packs that read two family names — and a choice
 of languages declares the words whose reading it changes. Read that precisely — a shape is a pattern, not a
 language, so a pack can act on a name from a tradition it was not
 written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
-and ``sk`` may read any name of three words differently, and ``vi`` and
-``mn``, whose name order is their shape, any name: the order moves every name a
-family comma does not fix, and ``vi``'s titles and removed readings
-reach the comma names too. The warning
+and ``sk`` may read any name of three words differently, ``vi``, whose
+name order is its shape, any name: the order moves every name a family
+comma does not fix, and its titles and removed readings reach the comma
+names too; and ``mn`` any name written wholly in Cyrillic. The warning
 under `Using a pack`_ shows what that costs.
 
 What works without a pack
@@ -128,6 +128,10 @@ How each part combines:
 - **Set-valued policy fields union** the same way — the fields
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
+- **``script_orders`` merges by script**: a pack's entry replaces the
+  base's entry for its script and the other entries stand, so ``mn``
+  adds its Cyrillic order to your table, opt-outs included; two packs
+  setting one script to different orders warn, and the later wins.
 - **Every other, scalar field is later-wins.** If two packs with
   different codes set the same scalar field to different values, the
   later one wins and a ``UserWarning`` is raised; two that set it to the
@@ -522,10 +526,11 @@ Shipped packs
        ``王君`` is a complete Chinese name, so a Chinese name read under
        this pack loses its ``君`` the same way.
    * - ``mn``
-     - Mongolian — reads every name family first, the given name last,
-       so the father's name, which a Mongolian name writes first and
-       official records file as the surname, is the family
-       (``Батын Сүхээ`` → family ``Батын``, given ``Сүхээ``). See
+     - Mongolian — reads a name written wholly in Cyrillic family first,
+       the given name last, so the father's name, which a Mongolian name
+       writes first and official records file as the surname, is the
+       family (``Батын Сүхээ`` → family ``Батын``, given ``Сүхээ``); a
+       romanized name keeps your order. See
        :ref:`Mongolian names <mongolian-names>`.
    * - ``ne``
      - Nepali given names — chooses the language ``ne``, which reads
@@ -603,7 +608,7 @@ policy field, the segmentation it needs a segmenter to use.
 beside it: each turns ``two_family_names`` on and carries the given
 names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
 field beside it and no list. ``mn`` is a choice with one policy field,
-``name_order``, and its choice turns on nothing. ``vi`` is a choice with one policy field,
+a ``script_orders`` entry for Cyrillic, and its choice turns on nothing. ``vi`` is a choice with one policy field,
 ``name_order``, and the one fragment that takes readings out rather
 than adding them: a choice prefers its language's reading of a word
 only where that reading is a title, a particle or another vocabulary

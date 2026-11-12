@@ -172,6 +172,7 @@ def test_every_script_is_classified_for_initials() -> None:
         Script.HANGUL: False,    # syllable blocks
         Script.HIRAGANA: False,  # syllables
         Script.KATAKANA: False,  # syllables
+        Script.CYRILLIC: True,   # letters: А. С. Пушкин
     }
     assert set(has_initials) == set(Script), (
         "a Script member is unclassified for initials: decide whether "
