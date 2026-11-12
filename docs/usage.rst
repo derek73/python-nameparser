@@ -108,6 +108,25 @@ name written without the particle has none:
     >>> parse("Anwar Ibrahim").patronymic
     ''
 
+Some conventions have no inherited family name. There ``family`` holds
+the name the convention files a person under, the word that stands where
+a surname would, and the order decides which word that is. An Ethiopian
+name is the person's own name, the father's and often the grandfather's,
+so ``family`` is the grandfather's name where it is written and the
+father's where it is not. Nothing in the name marks the father's name,
+so ``patronymic`` stays empty:
+
+.. doctest::
+
+    >>> full = parse("Abiy Ahmed Ali")
+    >>> full.middle, full.family, full.patronymic
+    ('Ahmed', 'Ali', '')
+    >>> parse("Abiy Ahmed").family
+    'Ahmed'
+
+To match the two spellings of one such name, see
+:ref:`matching-without-a-family-name`.
+
 ``surname2`` is the family's second name, where the parse read the
 family as two: with ``two_family_names`` on
 (:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs`` and ``sk``

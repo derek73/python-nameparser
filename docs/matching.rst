@@ -376,6 +376,56 @@ an initial, and records each match it made in ``across``:
 The middle word a match uses is taken out of the middle comparison,
 and the middle words left are compared role to role.
 
+.. _matching-without-a-family-name:
+
+Names with no family name
+-------------------------
+
+Some conventions have no family name. An Ethiopian or Eritrean name is
+the person's own name, then the father's, then often the grandfather's,
+and abroad the father's name is filed as the surname. The parser reads
+by position, so the father's name is the ``family`` of ``Abiy Ahmed``
+and the ``middle`` of ``Abiy Ahmed Ali``, whose family is the
+grandfather's. The default matcher therefore keeps the two spellings of
+one person apart:
+
+.. doctest::
+
+    >>> matcher.check("Abiy Ahmed Ali", "Abiy Ahmed")["family"].outcome.value
+    'conflict'
+
+For a list known to follow this convention, build the matcher from a
+parser that folds the middle names into the family
+(``middle_as_family``), and keep the default parser for reading the
+fields. The father's name is then part of the family on both sides, so
+the two spellings are consistent and share a key, while a different
+father still conflicts:
+
+.. doctest::
+
+    >>> from nameparser import Policy
+    >>> folded = Parser(policy=Policy(middle_as_family=True)).matching()
+    >>> ethiopian = folded.check("Abiy Ahmed Ali", "Abiy Ahmed")
+    >>> ethiopian.consistent, ethiopian["family"].outcome.value
+    (True, 'part-of-other')
+    >>> sorted(folded.keys("Abiy Ahmed Ali") & folded.keys("Abiy Ahmed"))
+    ['ahmed;a']
+    >>> folded.check("Abiy Ahmed", "Abiy Ali").consistent
+    False
+    >>> folded.check("Abiy Ahmed Ali", "Abiy Ahmed Bekele").consistent
+    False
+
+Use it only for such a list. The fold treats every middle name as part
+of the family, so it also calls ``John Paul Smith`` and ``John Paul``
+consistent, which the default matcher keeps apart:
+
+.. doctest::
+
+    >>> folded.check("John Paul Smith", "John Paul").consistent
+    True
+    >>> matcher.check("John Paul Smith", "John Paul").consistent
+    False
+
 Consistency is not transitive
 -----------------------------
 
