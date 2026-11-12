@@ -380,6 +380,17 @@ def _is_numeral(text: str) -> bool:
     return ROMAN.match(text) is not None
 
 
+def _is_conjunction(token: WorkToken, conjunctions: frozenset[str]) -> bool:
+    """A conjunction as rules/O9 reads one. A listed conjunction of one
+    letter in a name in mixed case is tagged an initial (rules/P8), but
+    beside a capitals word it is the connective a double surname writes
+    (`LOPEZ Y GARCIA`), written bare: a letter with its full stop is an
+    initial (`Y.`)."""
+    return ("conjunction" in token.tags
+            or token.text.isalpha()
+            and _normalize(token.text) in conjunctions)
+
+
 def _capitals_runs(tokens: list[WorkToken], seq: list[int],
                    caps: dict[int, bool],
                    conjunctions: frozenset[str]) -> list[list[int]]:
@@ -388,13 +399,7 @@ def _capitals_runs(tokens: list[WorkToken], seq: list[int],
     at either end, and extended back over the lowercase particles
     written right before it (rules/O9)."""
     def conjunction(j: int) -> bool:
-        # a listed conjunction of one letter in a name in mixed case is
-        # tagged an initial (rules/P8), but between two capitals words
-        # it is the connective a double surname writes (`LOPEZ Y GARCIA`)
-        # written bare: a letter with its full stop is an initial (`Y.`)
-        return ("conjunction" in tokens[j].tags
-                or tokens[j].text.isalpha()
-                and _normalize(tokens[j].text) in conjunctions)
+        return _is_conjunction(tokens[j], conjunctions)
 
     def joiner(j: int) -> bool:
         return not caps[j] and ("particle" in tokens[j].tags
@@ -458,22 +463,31 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
            if t.role in _CAPITALS_READS
            and (not offsets or comma_bucket(t.span.start, offsets) == 0)]
     caps = {i: is_capitals_word(tokens[i].text) for i in seq}
-    rules = state.policy.patronymic_rules
-    if rules:
-        # rules/O9: "a word the patronymic rule in force reads as its
-        # marker is no capitals word" -- the switch never moves a marker
-        # into the family (`ALIYEV Ilham Heydar OGLU`)
-        for i in seq:
-            if caps[i] and (
-                    PatronymicRule.TURKIC in rules
-                    and is_patronymic_marker(tokens[i].text)
-                    or PatronymicRule.EAST_SLAVIC in rules
-                    and has_patronymic_ending(tokens[i].text)):
-                caps[i] = False
+    conjunctions = state.lexicon._sets.conjunctions
 
     def name_word(j: int) -> bool:
+        # a capitals word that may be the family: no particle, numeral
+        # or conjunction, which no run keeps by itself
         return (caps[j] and "particle" not in tokens[j].tags
-                and not _is_numeral(tokens[j].text))
+                and not _is_numeral(tokens[j].text)
+                and not _is_conjunction(tokens[j], conjunctions))
+
+    rules = state.policy.patronymic_rules
+    if rules:
+        markers = {i for i in seq if caps[i] and (
+            PatronymicRule.TURKIC in rules
+            and is_patronymic_marker(tokens[i].text)
+            or PatronymicRule.EAST_SLAVIC in rules
+            and has_patronymic_ending(tokens[i].text))}
+        # rules/O9: "a word the patronymic rule in force reads as its
+        # marker is no capitals word where another capitals word is
+        # left to be the family" -- the switch never moves a marker into
+        # the family (`ALIYEV Ilham Heydar OGLU`), and a surname spelled
+        # like one stays the family where nothing else can be
+        # (`ABRAMOVICH Roman`)
+        if markers and any(name_word(j) for j in seq if j not in markers):
+            for i in markers:
+                caps[i] = False
 
     def lowercase_joiner(j: int) -> bool:
         return tokens[j].text.islower() and (
@@ -488,6 +502,7 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
     # MBA`), and so does a word in capitals the vocabulary does not list
     names_left = sum(1 for j in seq if name_word(j))
     peeled: list[int] = []
+    peeled_set: set[int] = set()
     for j in reversed(seq):
         if caps[j]:
             if (not _listed_suffix(tokens[j].text, state.lexicon)
@@ -495,11 +510,12 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
                 break
             names_left -= name_word(j)
             peeled.append(j)
+            peeled_set.add(j)
         elif tokens[j].role is not Role.SUFFIX or lowercase_joiner(j):
             break
-    rest = [j for j in seq if j not in peeled] if peeled else seq
+    rest = [j for j in seq if j not in peeled_set] if peeled else seq
     runs = [run for run in _capitals_runs(tokens, rest, caps,
-                                          state.lexicon._sets.conjunctions)
+                                          conjunctions)
             # rules/O9: "a run of particles alone is no run, nor is a
             # lone roman numeral"
             if any(name_word(j) for j in run)]

@@ -862,6 +862,24 @@ _LONG_CAPITALS_RUN = ("Ann ", "DUPONT y ")
 _LONG_CAPITALS_BASE = 3200
 
 
+#: rules/O9's peel over a suffix slot that grows with the input, each
+#: word a listed credential it takes. The trailing numerals take the same
+#: loop, so they need no row of their own. At this base, a peel testing
+#: membership against its list of peeled words rather than a set read
+#: 8.22x for 4x (2026-11-12, the fifth review)
+_TRAILING_CREDENTIALS = ("Ann DUPONT ", "MBA ")
+
+
+@serial
+def test_a_long_suffix_slot_grows_linearly() -> None:
+    prefix, unit = _TRAILING_CREDENTIALS
+    parser = Parser(policy=Policy(capitals_as_family=True))
+    # reaches the peel: every credential comes off, DUPONT the family
+    assert parser.parse(prefix + unit * 3).family == "DUPONT"
+    _assert_grows_linearly(unit, parser.parse, prefix=prefix,
+                           base=_LONG_CAPITALS_BASE)
+
+
 @serial
 def test_a_long_capitals_run_grows_linearly() -> None:
     prefix, unit = _LONG_CAPITALS_RUN

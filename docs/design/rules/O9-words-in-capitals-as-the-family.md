@@ -74,11 +74,12 @@
   "John Smith III"  capitals_as_family  →  family="Smith"
   "John Smith III"  capitals_as_family  →  suffix="III"
   ```
-- **A word the patronymic rule in force reads as its marker is no capitals word**, neither forming a run nor joining one, so the family and the patronymic never share it: a Turkic marker under that rule (`OGLU`, `QIZI`), and a word with an East Slavic patronymic ending under that one (R9).
+- **A word the patronymic rule in force reads as its marker is no capitals word where another capitals word is left to be the family**, neither forming a run nor joining one, so the switch never moves it into the family: a Turkic marker under that rule (`OGLU`, `QIZI`), and a word with an East Slavic patronymic ending under that one (R9); where it is the only capitals word it is one like any other, a surname spelled like a marker.
   ```
   "ALIYEV Ilham Heydar OGLU"  capitals_as_family+turkic  →  family="ALIYEV"
   "ALIYEV Ilham Heydar OGLU"  capitals_as_family+turkic  →  patronymic="Heydar OGLU"
   "ИВАНОВ Иван ИВАНОВИЧ"  capitals_as_family+east-slavic  →  family="ИВАНОВ"
+  "ABRAMOVICH Roman"  capitals_as_family+east-slavic  →  family="ABRAMOVICH"
   ```
 - **Titles, suffixes, nicknames and a maiden name keep their fields**: a title written in mixed case stays the title, and the words between brackets and in a maiden clause are no words of the name for the rule to read.
   ```
@@ -159,12 +160,13 @@
   "Juan Carlos GARCÍA"  capitals_as_family+two_given_names  →  given="Juan Carlos"
   "Mary Ann DUPONT"  capitals_as_family+middle_as_family  →  family="Ann DUPONT"
   ```
-- **Against a suffix word that is also a name, and a trailing numeral** (S11, S10): their counts read such a word ending the name as the suffix, reporting it; under the switch the word written in capitals is the family where it is the run's only word that is no particle, and the report goes.
+- **Against a suffix word that is also a name, and a trailing numeral** (S11, S10): their counts read such a word ending the name as the suffix, reporting it; under the switch the word written in capitals is the family where it is the only capitals word before the first comma that is no particle, conjunction or marker, and the report goes; with another such word before the comma it comes off as the suffix.
   ```
   "John Paul JUNIOR"  capitals_as_family  →  family="JUNIOR"
   "Jean Pierre FILS"  capitals_as_family  →  family="FILS"
+  "DUPONT Jean FILS"  capitals_as_family  →  suffix="FILS"
   ```
-- **Against a patronymic** (R9): the patronymic view reads the words the rule leaves in the middle under the rules a policy turns on.
+- **Against a patronymic** (R9): the patronymic view is read over the words in their written order, whatever field this rule gives them, under the rules a policy turns on.
   ```
   "ИВАНОВ Иван Иванович"  capitals_as_family+east-slavic  →  patronymic="Иванович"
   ```
@@ -228,6 +230,19 @@
 - Shapes no list writes read as the run takes them: a numeral inside a run (`MARY III Smith` → family `MARY III`), conjunctions in a row (`Mary AND AND AND SMITH` → family `SMITH`), a name word after a credential (`Anna Y MD Mary` → family `MD`, suffix `Mary`), and a particle opening the given name initialled as a name word (`de Marie DUPONT` → `d. M. D.`).
   ```
   "Anna Y MD Mary"  capitals_as_family  →  suffix="Mary"
+  ```
+- A lowercase joining word the parse read as a suffix ends the peel, so a credential written before it stays in the family.
+  ```
+  "Ivan FAN R IVANOV MD de"  capitals_as_family  →  family="IVANOV MD"
+  ```
+- A capitals word written right before a marker in other case is both the family and the father's name the patronymic view reads.
+  ```
+  "AHMED Kyzy"  capitals_as_family+turkic  →  patronymic="AHMED Kyzy"
+  ```
+- A joining word before a letter can leave the reports, and the given-middle split, to the declared order.
+  ```
+  "ALLIOT-MARIE Anna y V PhD"  capitals_as_family  →  given="Anna y V"
+  "ALLIOT-MARIE Anna y V PhD"  family-first+capitals_as_family  →  middle="y V"
   ```
 - A conjunction in capitals trimmed off the front of a run keeps the field it was read in, a title where it opened the name.
   ```

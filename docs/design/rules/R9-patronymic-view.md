@@ -64,9 +64,10 @@
 
 **Precedence:**
 
-- **A marker written in capitals under capitals-as-family handling** ("ALIYEV Ilham Heydar OGLU" with that switch and the Turkic rule on): the rule in force reads the word as its marker, so the capitals do not make it the family, and the view keeps it; with no patronymic rule in force it is a word in capitals like any other (O9).
+- **A marker written in capitals under capitals-as-family handling** ("ALIYEV Ilham Heydar OGLU" with that switch and the Turkic rule on): the rule in force reads the word as its marker, so where another capitals word is left to be the family the capitals do not make the marker the family, and the view keeps it; where the marker is the only capitals word, or with no patronymic rule in force, it is a word in capitals like any other (O9). The view is read over the words in their written order whatever field they take, so a capitals word written right before a marker in other case is both the family and the father's name the view reads.
   ```
   "ALIYEV Ilham Heydar OGLU"  capitals_as_family+turkic  →  patronymic="Heydar OGLU"
+  "AHMED Kyzy"  capitals_as_family+turkic  →  patronymic="AHMED Kyzy"
   ```
 
 **Accepted:**

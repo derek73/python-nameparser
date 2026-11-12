@@ -2343,6 +2343,15 @@ _CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
       "patronymic": "ИВАНОВИЧ"},
      {"given": "ИВАНОВ", "middle": "Иван", "family": "ИВАНОВИЧ",
       "patronymic": ""}),
+    ("a marker-spelled surname with no other capitals word stays the family",
+     "ABRAMOVICH Roman",
+     {"patronymic_rules": frozenset({PatronymicRule.EAST_SLAVIC})},
+     {"given": "Roman", "family": "ABRAMOVICH"},
+     {"given": "ABRAMOVICH", "family": "Roman"}),
+    ("a capitals conjunction is no word the peel must leave", "Hugo AND LAC",
+     {},
+     {"given": "Hugo AND", "family": "LAC"},
+     {"given": "Hugo AND LAC"}),
     ("an order report after initials is settled", "Anna Q. MD", {},
      {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ()},
      {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ("order",)}),
@@ -2450,9 +2459,11 @@ def test_a_conjunction_in_capitals_alone_is_no_run() -> None:
 
 def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
     # rules/O9's marker exclusion as an invariant over a grid rather than
-    # one row (#659): under every patronymic rule and order, a word the
-    # rule in force reads as a marker or a patronymic is in the family
-    # with the switch on only where it is there with the switch off.
+    # one row (#659), both ways: under every patronymic rule and order,
+    # where another capitals word could be the family, a word the rule
+    # in force reads as a marker or a patronymic is in the family with
+    # the switch on only where it is there with the switch off; and where
+    # it is the only capitals word, it is the family.
     # Not "the family and the patronymic view share no word": R9 reads a
     # Turkic marker with the word before it whatever field that word is
     # in, so they share one with the switch off too (5,648 of this
@@ -2460,9 +2471,11 @@ def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
     # this switch's
     import itertools
     from nameparser._pipeline._vocab import (has_patronymic_ending,
+                                             is_capitals_word,
                                              is_patronymic_marker)
     words = ["ALIYEV", "Ilham", "Heydar", "OGLU", "oglu", "QIZI", "OĞLU",
-             "ИВАНОВ", "Иван", "ИВАНОВИЧ", "Иванович", "bin", "BIN"]
+             "ИВАНОВ", "Иван", "ИВАНОВИЧ", "Иванович", "bin", "BIN",
+             "ABRAMOVICH", "АБРАМОВИЧ", "Roman"]
     rule_sets = [frozenset({PatronymicRule.TURKIC}),
                  frozenset({PatronymicRule.EAST_SLAVIC}),
                  frozenset(PatronymicRule)]
@@ -2481,11 +2494,30 @@ def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
              for order in (GIVEN_FIRST, FAMILY_FIRST,
                            FAMILY_FIRST_GIVEN_LAST)]
     moved = []
+    kept = []
     for n in (2, 3):
         for combo in itertools.permutations(words, n):
             text = " ".join(combo)
+            capitals = [w for w in combo if is_capitals_word(w)]
+            # mixed as the rule reads it: a lowercase particle is none
+            mixed = any(any(c.islower() for c in w)
+                        for w in combo if w != "bin")
             for on, off, rules in pairs:
-                if not (markers(on.parse(text).family, rules)
-                        <= markers(off.parse(text).family, rules)):
+                family = on.parse(text).family
+                # where another capitals word, no marker and no particle,
+                # is left to be the family, no marker enters it
+                others = [w for w in capitals
+                          if not markers(w, rules) and w != "BIN"]
+                if others and not (markers(family, rules)
+                                   <= markers(off.parse(text).family,
+                                              rules)):
                     moved.append((text, on.policy))
+                # the other direction: a name whose only capitals word is
+                # spelled as a marker keeps it as the family, nothing
+                # else being left to be one
+                if (mixed and len(capitals) == 1
+                        and markers(capitals[0], rules)
+                        and capitals[0] not in family.split()):
+                    kept.append((text, on.policy))
     assert not moved, moved[:5]
+    assert not kept, kept[:5]

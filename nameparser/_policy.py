@@ -860,7 +860,8 @@ class Policy:
     #: capitals outrank a credential or title reading ("Hugo LAC",
     #: "DOYEN Hugo" give family ``LAC`` and ``DOYEN``), while a listed
     #: credential or numeral in capitals ending the name still comes off
-    #: where another capitals word is left ("Marie GRAJALES III",
+    #: where another capitals word that is no particle or conjunction
+    #: is left ("Marie GRAJALES III",
     #: "DUPONT Marie MBA"), and a marker the patronymic rule in force
     #: reads is no capitals word.
     #:

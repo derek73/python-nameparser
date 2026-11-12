@@ -26,6 +26,7 @@
   ```
   "SIR John Smith"  capitals_as_family  →  family="SIR"
   "SIR John SMITH"  capitals_as_family  →  title="SIR"
+  "SIR John MD"  capitals_as_family  →  family="SIR"
   ```
 
 **Accepted:**
