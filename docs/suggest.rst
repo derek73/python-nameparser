@@ -5,9 +5,9 @@ Settings for a list of names
 
 A list of names is usually written in one convention: a registry gives
 every family name first, a mailing list every family name last. A
-single name cannot show which, because ``Priem Jason`` and ``Jason
-Priem`` are the same shape and only a reader who knows ``Priem`` is a
-surname and ``Jason`` a given name can tell them apart. A whole list
+single name cannot show which, because ``Smith Mary`` and ``Mary
+Smith`` are the same shape and only a reader who knows ``Smith`` is a
+surname and ``Mary`` a given name can tell them apart. A whole list
 can: most of its names carry some evidence, and the evidence agrees.
 
 ``Parser.suggest()`` reads a list you declare to be one group (one
@@ -46,17 +46,17 @@ votes do not decide keeps the base parser's value.
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> listing = ["Priem Jason", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Jason Priem"]
+    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
+    ...            "Nguyen Anh", "Mary Smith"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> Parser().parse("Priem Jason").given
-    'Priem'
-    >>> suggestion.parser.parse("Priem Jason").given
-    'Jason'
+    >>> Parser().parse("Smith Mary").given
+    'Smith'
+    >>> suggestion.parser.parse("Smith Mary").given
+    'Mary'
     >>> [entry.text for entry in suggestion.disagreeing()]
-    ['Jason Priem']
+    ['Mary Smith']
 
 ``suggestion.parser`` is the base parser with ``suggestion.patch``
 applied, so the base is never changed. ``suggestion.evidence`` holds a
