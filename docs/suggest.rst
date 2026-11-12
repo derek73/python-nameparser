@@ -18,7 +18,9 @@ name written in capitals at one end, a trailing initial
 that hold a name word (names with a comma, blanks and names of nothing
 but titles or marks leave the count), end in initials no other evidence
 in the same name contradicts, as a bibliography's do (in a South Asian
-list the letters ending a name are often the family name), a lowercase
+list the letters ending a name are often the family name; a short list
+of bylines may therefore get no order suggestion, so where you know a
+list is bylines, set ``name_order=FAMILY_FIRST`` yourself), a lowercase
 particle first
 or before the last word, a
 first or last word that is a common romanized Chinese, Korean or
