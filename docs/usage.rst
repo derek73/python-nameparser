@@ -257,14 +257,17 @@ Credentials that are also surnames
 The post-nominals that double as ordinary surnames, such as ``MA``,
 report an ambiguity the same way. The writing usually settles which
 reading a bare one gets: capitals in a name written in more than one
-case read the credential (``Jack MA``), and any other cased spelling
-that is not wholly lowercase reads the surname (``Jack Ma``), with
-nothing reported. Where the writing gives no signal, all lowercase or
-a name written wholly in one case, the count of words before it
-decides, and the choice is recorded:
+case read the credential (``Jack MA``) and settle it, as periods do,
+so no ``suffix-or-name`` fork is reported. Any other cased spelling
+that is not wholly lowercase leans to the surname (``Jack Ma``), and
+where the writing gives no signal, all lowercase or a name written
+wholly in one case, the count of words before it decides. Both choices
+are recorded:
 
 .. doctest::
 
+    >>> parse("Jack Ma").family, parse("Jack Ma").ambiguities
+    ('Ma', (Ambiguity('suffix-or-name': 'Ma'),))
     >>> parse("JOHN SMITH MA").suffix
     'MA'
     >>> [a.kind.value for a in parse("JOHN SMITH MA").ambiguities]

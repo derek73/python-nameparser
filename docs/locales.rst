@@ -73,10 +73,12 @@ the word after it isn't read as a family name.
 East Asian names need no pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Chinese, Japanese and Korean names written in their own scripts are
-read family-first, and an unspaced hangul name is split into surname
-and given name, by default, because the script alone settles both
-(:ref:`east-asian-names`; :ref:`east-asian-defaults` turns them off).
+A name written wholly in Han or Hangul, or in Japanese kanji and kana
+other than katakana alone, is read family-first, and an unspaced hangul
+name is split into surname and given name, by default, because the
+script alone settles both (:ref:`east-asian-names`;
+:ref:`east-asian-defaults` turns them off). A name only in katakana
+keeps the default order, since it may be a transcribed foreign name.
 Splitting an unspaced Han name is the exception: the same characters
 can be a Chinese or a Japanese name, divided in different places, so
 the ``zh`` and ``ja`` packs below turn it on for data whose language

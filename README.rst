@@ -21,7 +21,8 @@ issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
 that parses wrong.
 
 Chinese, Japanese and Korean names written in their own scripts are read
-family-first, unspaced Korean names are split against the census surname
+family-first (save a name in katakana alone, often a transcribed foreign
+name), unspaced Korean names are split against the census surname
 list, and CJK honorifics are recognized. See `East Asian names
 <https://nameparser.readthedocs.io/en/latest/east-asian.html>`__.
 
@@ -59,7 +60,7 @@ Getting started
 which word is the family name (``Priem Jason`` and ``Jason Priem`` have
 the same shape), but a list written one way can. ``suggest()`` reads
 the list and returns a parser that reads it, with the evidence for each
-setting it changed:
+setting it considered:
 
 .. code-block:: python
 

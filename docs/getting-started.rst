@@ -8,8 +8,7 @@ list of names choose the settings, and compare names from several
 sources. Each links to the page that covers it in full.
 
 Install it with ``pip install nameparser``. It needs Python 3.11 or
-later and nothing else. The one optional extra, ``nameparser[ja]``,
-divides unspaced Japanese kanji names (:ref:`east-asian-names`).
+later. The optional extra ``nameparser[ja]`` divides unspaced Japanese kanji names (:ref:`east-asian-names`).
 
 Parse one name
 --------------
@@ -29,6 +28,8 @@ cannot be changed after the parse:
     ('Dr.', 'Q. Xavier', 'III')
     >>> juan.render("{family}, {given}")
     'de la Vega, Juan'
+    >>> juan.as_dict(include_empty=False)
+    {'title': 'Dr.', 'given': 'Juan', 'middle': 'Q. Xavier', 'family': 'de la Vega', 'suffix': 'III'}
 
 Parsing never raises on a string. Where a name has two readings and
 nothing in the text chooses between them, the parser takes the likelier
@@ -51,17 +52,16 @@ you, and :doc:`shapes` the forms of input it reads.
 A list of names: let ``suggest`` choose the settings
 -----------------------------------------------------
 
-A single name cannot always show how it was written. ``Priem Jason``
-and ``Jason Priem`` have the same shape, and only a reader who knows
-that ``Priem`` is a surname can tell which word is the family name. A
-list of names from one source can show it, because a source usually
-writes every name the same way (a registry family name first, a mailing
-list family name last), and many of its names carry some evidence of
+One name cannot show its order: ``Priem Jason`` and ``Jason Priem``
+have the same shape. A list from one source can, because a source
+writes every name the same way and many of its names carry evidence of
 the order.
 
 :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads a list you
 declare to be one group and returns a :class:`~nameparser.Suggestion`.
-Its ``parser`` is a parser configured for the list:
+Parse the list's names with its ``parser``. ``suggest`` reads its
+argument once, so pass a list, not a ``csv.reader`` you mean to parse
+afterwards:
 
 .. doctest::
 
@@ -77,8 +77,9 @@ Its ``parser`` is a parser configured for the list:
     'Jason'
 
 ``patch`` holds the settings the list changed. Printing the suggestion
-shows the evidence for each setting it considered, and the names that
-voted against the decision, which are the ones to check by hand:
+shows the evidence for each setting and the names that voted against
+it. Check those by hand: the suggested parser misreads them, and
+``suggestion.base`` is the parser you started from:
 
 .. doctest::
 
@@ -93,7 +94,8 @@ voted against the decision, which are the ones to check by hand:
       disagreeing (1): Jason Priem
 
 The evidence is in the names themselves: a common romanized Chinese,
-Korean or Vietnamese surname, or a common given name, at one end; a
+Korean or Vietnamese surname, or a common given name that is rarely
+a surname (``Mary``, not ``John``), at one end; a
 family name written in capitals; a lowercase particle; initials after
 the name, as a bibliography writes them. ``suggest`` decides three
 settings from it, and leaves every other one as the parser you called
@@ -103,20 +105,21 @@ it on has it:
   name first.
 - **A patronymic rule** (:class:`~nameparser.PatronymicRule`): East
   Slavic or Turkic, where at least five names, and more than four in
-  five of the names that vote, carry that patronymic.
+  five of the names that cast any vote, carry that patronymic.
 - **Letters as the family name** (:ref:`initials-as-family`): where
-  the list repeats the same letters at the end of its names, as Nepal's
-  ``B K`` and ``K C`` are family names written short.
+  one run of letters ends at least two names, and at least half of the
+  names that end in letters, as Nepal's ``B K`` and ``K C`` are family
+  names written short (only on a base that reads given names first and
+  keeps middle names apart).
 
 Choose the language first
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``suggest`` never chooses a language. A language pack does
 (:doc:`locales`), so where you know the list's language, choose its
-pack and call ``suggest`` on that parser. This Spanish list writes the family
-names first; the default parser, told only the order, reads the second
-family name as the given name, while the Spanish pack reads the two
-family names and ``suggest`` adds the order:
+pack and call ``suggest`` on that parser. Told only the order, the
+default reads this Spanish list's second family name as the given name;
+the pack reads both family names and ``suggest`` adds the order:
 
 .. doctest::
 
@@ -134,22 +137,22 @@ family names and ``suggest`` adds the order:
 Where it declines
 ~~~~~~~~~~~~~~~~~
 
-``suggest`` changes a setting only where enough names agree, and keeps
-the base parser's value otherwise. It needs at least two names voting
-for one order, and more than two thirds of the names that vote. A name
-of one word casts no vote, and neither does a name with a comma, which
-states its own order (unless only post-nominals follow the comma, as in
-``Zhang Wei, PhD``). In this list only ``Mary``, a common given name,
-votes, one vote short, so nothing is suggested:
+Where too few names agree, ``suggest`` keeps the base parser's value.
+An order needs at least two votes, more than two thirds of the names
+whose order votes agree with each other. A name of one word casts none,
+nor does a name with a comma, unless only post-nominals follow it
+(``Zhang Wei, PhD``). Here only ``Mary`` votes (``John`` is also a
+surname), one short:
 
 .. doctest::
 
     >>> Parser().suggest(["Smith John", "Jones Mary"]).patch
     PolicyPatch()
 
-Initials after the name vote only where at least three names, and 60%
-of the list, end in them, so a short list of bylines may get no order
-suggestion:
+Initials after the name vote only where at least three names end in
+them and those are at least 60% of the list's names (a name with a
+comma, or with nothing but titles, is not counted), so a short list of
+bylines may get no order suggestion:
 
 .. doctest::
 
@@ -158,19 +161,17 @@ suggestion:
     >>> Parser().suggest(["Smith J", "Jones M", "Brown K"]).patch
     PolicyPatch(name_order=FAMILY_FIRST)
 
-Where you know a list is bylines, set the order yourself with
-``Policy(name_order=FAMILY_FIRST)`` (:ref:`name-order`).
+Where you know the order a list is written in, bylines included, set it
+yourself with ``Policy(name_order=FAMILY_FIRST)`` (:ref:`name-order`).
 :doc:`suggest` has the full rules, how many names each population took
 to be read right, and the evidence it reports.
 
 Names from several sources: ``matching``
 ----------------------------------------
 
-Joining records from several sources asks whether two names could
-belong to the same person. One source writes ``John A. Smith``, another
-``J. Smith``. :meth:`Parser.matching() <nameparser.Parser.matching>`
-builds a :class:`~nameparser.Matching` that answers this field by
-field. Its ``keys()`` gives each name a few short strings to group
+Could ``John A. Smith`` in one source and ``J. Smith`` in another be
+the same person? :meth:`Parser.matching() <nameparser.Parser.matching>`
+builds a :class:`~nameparser.Matching` that answers field by field. Its ``keys()`` gives each name a few short strings to group
 records by, so that you compare only the names that share one:
 
 .. doctest::
@@ -191,11 +192,10 @@ compare:
     >>> matcher.check("Jane Smith", "John Smith").consistent
     False
 
-Parse each source with the parser that reads it. A registry written
-family name first reads right under the parser ``suggest`` gave it, and
-``check()`` compares the names as they were parsed, so the two sources
-need not share an order. Read with the default parser, the registry's
-``Priem`` is a given name and the pair does not match:
+Parse each source with the parser that reads it: ``check()`` compares
+names as they were parsed, so two sources need not share an order. Read
+with the default parser, the registry's ``Priem`` is a given name and
+the pair does not match:
 
 .. doctest::
 
@@ -206,12 +206,14 @@ need not share an order. Read with the default parser, the registry's
     >>> matcher.check("Priem Jason", "J. Priem").consistent
     False
 
-A consistent pair is one where nothing in the two names contradicts
-the match. That does not make them the same person: ``J. Smith`` is
-consistent with many people. Combine the answer with your own
-evidence, such as dates, places or identifiers. Consistency is not
-transitive either, so ``J. Smith`` can match both ``John Smith`` and
-``Jane Smith``. :doc:`matching` covers the outcomes it accepts and how
+A pair is consistent when every field compares in a way the matcher
+accepts: by default the same name, an initial against its name, or a
+middle name on one side only, among others. Some outcomes are opt-in
+(``Bill`` against ``William``), and a name with no family name, such
+as a lone ``Suharto``, gets no key and matches nothing, itself
+included. It is not proof of the same person, so combine it with your own
+evidence (dates, places, identifiers), and it is not transitive:
+``J. Smith`` matches both ``John Smith`` and ``Jane Smith``. :doc:`matching` covers the outcomes it accepts and how
 to accept more.
 
 Where to go next

@@ -526,8 +526,8 @@ capitalization decides:
     'Ma'
 
 The full reading of a bare marked acronym, in order (where the parse
-leaves the choice to the count, it reports a ``suffix-or-name``
-ambiguity, :ref:`credentials-also-surnames`):
+reads it by the count or by a Title-case lean, it reports a
+``suffix-or-name`` ambiguity, :ref:`credentials-also-surnames`):
 
 - **ALL CAPITALS** in a mixed-case name leans to the credential: it is
   a suffix even with no words to spare (``"Jack MA"``). The capitals
