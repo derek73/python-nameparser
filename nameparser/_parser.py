@@ -316,13 +316,17 @@ class Parser:
         post-nominals follow the comma. A patronymic votes only where
         the patronymic rule reads one, and a trailing initial
         (``Smith J.``) only where at least three names, and 60% of the
-        group, end in initials. ``name_order`` is
+        group's names holding a name word, end in initials no other
+        signal in the same name contradicts. ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end and they are more than two thirds of the names casting
         an order vote. A patronymic rule is decided where more than four
         in five of the names that cast a vote carry its patronymic (and
-        at least five do), for the East Slavic and the Turkic rule alike.
+        at least five do), for the East Slavic and the Turkic rule alike;
+        a name whose only vote was a set-aside trailing initial counts
+        among the names that cast one, and the patronymic evidence's
+        note says how many.
         A group decided East Slavic gets the rule and reads given-first,
         since the rule reorders each name and stands down under a
         family-first order, unless its names' own votes decide

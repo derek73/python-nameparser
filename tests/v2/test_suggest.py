@@ -223,7 +223,7 @@ def test_a_set_aside_trailing_initial_says_why_and_disagrees_with_nothing(
     s = Parser().suggest(["Durga B K", "Jason Priem", "Anna Smith",
                           "Sita Rai"])
     order = _order_evidence(s)
-    assert "1 of 4 names ends in initials" in order.note
+    assert "1 of the group's 4 names ends in initials" in order.note
     assert s.names[0].votes == {}
     assert s.disagreeing() == ()
     assert order.votes_for + order.votes_against + order.contested \
@@ -239,11 +239,56 @@ def test_a_name_whose_given_name_contests_its_initial_is_not_counted(
         row[0] for row in _order_evidence(s).by_signal}
 
 
-def test_a_comma_name_and_a_blank_are_not_in_the_trailing_share() -> None:
-    # three of three read names; the comma name and the blank are not
-    # counted in the group the share is taken of
-    s = Parser().suggest(_BYLINES[:3] + ["Priem, Jason", "  "])
+@pytest.mark.parametrize("fillers", [
+    # three of each, so leaving any one exclusion out makes the share
+    # three of six, under 60%, and the bylines lose their vote
+    ["Priem, Jason", "Smith, Jane", "Doe, John"],     # comma names
+    ["", "   ", "\t"],                                 # blanks
+    ["\u200b", "\u200f", ","],                        # no word at all
+    ["-", ".", "()"],                                  # marks alone
+    ["Dr.", "Professor", "Jr."],                       # nothing but titles
+])
+def test_names_with_no_name_word_are_not_in_the_trailing_share(
+        fillers: list[str]) -> None:
+    s = Parser().suggest(_BYLINES[:3] + fillers)
     assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+    # and a name word in each place does count, the control
+    s = Parser().suggest(_BYLINES[:3] + _PLAIN[:3])
+    assert s.patch == PolicyPatch()
+
+
+def test_contested_names_lose_their_trailing_vote_at_every_count() -> None:
+    # one rule at every count: three names whose listed given name
+    # contests their initials count none, so the trailing votes are set
+    # aside and the given-name votes decide, with or without one
+    # uncontested byline beside them
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    contested = ["Anna R S", "Maria J M", "Mary A B"]
+    for names in (contested, contested + ["Huntley R P"]):
+        s = base.suggest(names)
+        assert s.patch == PolicyPatch(name_order=GIVEN_FIRST)
+        assert "trailing-initial signal" in _order_evidence(s).note
+
+
+def test_the_note_counts_the_names_it_names() -> None:
+    s = Parser().suggest(["Huntley R P", "Hoy A M", "Anna R S"])
+    assert _order_evidence(s).note.startswith(
+        "2 of the group's 3 names end in initials no other signal "
+        "contradicts")
+
+
+def test_a_group_with_no_trailing_initial_carries_no_note_of_one() -> None:
+    s = Parser().suggest(["John Smith", "Mary Jones", "Anna Berg"])
+    assert "initials" not in _order_evidence(s).note
+
+
+def test_the_patronymic_evidence_says_what_its_share_counted() -> None:
+    s = Parser().suggest(_EAST_SLAVIC + ["Popov Ivan I.", "Orlov Oleg P."])
+    note = _patronymic_evidence(s).note
+    assert ("2 names whose only vote was a set-aside trailing initial "
+            "count among the names casting a vote") in note
+    plain = Parser().suggest(_EAST_SLAVIC + ["Xyzzy Plugh", "Qwrt Zxcv"])
+    assert "set-aside" not in _patronymic_evidence(plain).note
 
 
 def test_a_set_aside_name_still_counts_in_the_patronymic_share() -> None:
@@ -648,9 +693,11 @@ def test_two_signal_names_count_once_each() -> None:
 
 
 def test_a_name_whose_signals_conflict_is_contested() -> None:
-    # `Jason Kim J.`: the trailing initial says family-first, the given
-    # name at the front says given-first
-    s = Parser().suggest(["Priem Jason", "Kim Minjun", "Jason Kim J."])
+    # `JASON Smith`: the capitals at the front say family-first, the
+    # given name at the front says given-first. (A trailing initial
+    # contesting a given name, `Jason Kim J.`, casts no vote in a group
+    # this small, the trailing-initial gate's tests below.)
+    s = Parser().suggest(["Priem Jason", "Kim Minjun", "JASON Smith"])
     assert s.patch.name_order == FAMILY_FIRST
     order = _order_evidence(s)
     assert (order.votes_for, order.votes_against, order.contested,
@@ -658,7 +705,7 @@ def test_a_name_whose_signals_conflict_is_contested() -> None:
     assert s.disagreeing() == ()
     # the signal breakdown still holds both of its votes
     assert (Signal.GIVEN_NAME, GIVEN_FIRST, 1) in order.by_signal
-    assert (Signal.TRAILING_INITIAL, FAMILY_FIRST, 1) in order.by_signal
+    assert (Signal.CAPITALS, FAMILY_FIRST, 1) in order.by_signal
 
 
 @pytest.mark.parametrize("names", [
@@ -1172,7 +1219,7 @@ def test_a_contested_name_counts_in_the_patronymic_share(
         contested: int, decided: bool) -> None:
     # five East Slavic names and one contested name: 5 of 6; with two,
     # 5 of 7, which is not more than four in five
-    names = _east_slavic(5) + ["Jason Kim J.", "Mary Lee J."][:contested]
+    names = _east_slavic(5) + ["JASON Smith", "MARY Jones"][:contested]
     s = Parser().suggest(names)
     assert _order_evidence(s).contested == contested
     assert _patronymic_evidence(s).decided is decided

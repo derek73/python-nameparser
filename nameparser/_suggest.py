@@ -1021,30 +1021,45 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
         yield text
 
 
-def _trailing_initials_vote(read: list[tuple[str, dict[Signal, Vote], bool]]
-                            ) -> tuple[bool, str]:
-    """Whether the group's trailing-initial votes are cast, and the note
-    saying so where they are not. The share is of the names a comma did
-    not leave out and that are not blank; a name counts where its
+def _counts_as_initialed(votes: Mapping[Signal, Vote]) -> bool:
+    """Whether a name counts toward the trailing-initial share: its
     trailing initial is its only order evidence or agrees with the rest
     of it, so a name whose listed given name contradicts it (`Anna R S`)
-    is not counted."""
-    group = sum(1 for text, _, comma in read if text.strip() and not comma)
-    initialed = sum(
-        1 for _, votes, _ in read
-        if Signal.TRAILING_INITIAL in votes
-        and len(_order_ends(votes.items())) == 1)
-    if not initialed:
+    does not count."""
+    return (Signal.TRAILING_INITIAL in votes
+            and len(_order_ends(votes.items())) == 1)
+
+
+def _trailing_initials_vote(read: list[tuple[str, dict[Signal, Vote], bool]],
+                            lexicon: Lexicon) -> tuple[bool, str]:
+    """Whether the group's trailing-initial votes are cast, and the note
+    saying so where they are not. One rule at every count: where any
+    name casts one, they are cast only where at least _MIN_TRAILING_NAMES
+    names, and _MIN_TRAILING_SHARE of the group's names, count as
+    initialed (_counts_as_initialed). The group is the names that hold
+    a word with a letter or a digit once their titles and post-nominals
+    are read past, as _name_words reads them: a blank, a mark, a
+    zero-width character alone (`\u200b`), a name of nothing but titles
+    and a name a comma left out (which _name_words gives no word) are
+    no names of the group."""
+    if not any(Signal.TRAILING_INITIAL in votes for _, votes, _ in read):
         return True, ""
+    group = initialed = 0
+    for text, votes, _ in read:
+        words = _name_words(text, lexicon)[0]
+        if not any(c.isalnum() for word in words for c in word):
+            continue
+        group += 1
+        initialed += _counts_as_initialed(votes)
     if (initialed >= _MIN_TRAILING_NAMES
             and initialed >= _MIN_TRAILING_SHARE * group):
         return True, ""
     verb = "ends" if initialed == 1 else "end"
     return False, (
-        f"{initialed} of {group} names {verb} in initials, too few for the "
-        f"trailing-initial signal to vote: it votes where at least "
-        f"{_MIN_TRAILING_NAMES} names and {_MIN_TRAILING_SHARE:.0%} of the "
-        f"group end that way")
+        f"{initialed} of the group's {group} names {verb} in initials no "
+        f"other signal contradicts, too few for the trailing-initial "
+        f"signal to vote: it votes where at least {_MIN_TRAILING_NAMES} "
+        f"names and {_MIN_TRAILING_SHARE:.0%} of the group do")
 
 
 def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
@@ -1054,7 +1069,9 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     evidence: list[NameEvidence] = []
     any_voters = comma_left_out = 0
     read = [(text, *_read(text, parser.lexicon)) for text in _texts(names)]
-    trailing_votes, trailing_note = _trailing_initials_vote(read)
+    trailing_votes, trailing_note = _trailing_initials_vote(
+        read, parser.lexicon)
+    set_aside = 0
     for text, votes, comma in read:
         # counted before a set-aside vote leaves it: a name ending in
         # initials carries evidence all the same, and leaving it out of
@@ -1062,8 +1079,9 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         # of family-first names written with a patronymic initial
         # (`Popov Ivan I.`, PatentsView's Russian inventors)
         any_voters += bool(votes)
-        if not trailing_votes:
-            votes.pop(Signal.TRAILING_INITIAL, None)
+        if not trailing_votes and Signal.TRAILING_INITIAL in votes:
+            del votes[Signal.TRAILING_INITIAL]
+            set_aside += not votes
         evidence.append(NameEvidence(text, votes))
         comma_left_out += comma
         per_setting: dict[str, list[tuple[Signal, Vote]]] = {
@@ -1075,6 +1093,18 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     policy = parser.policy
     patronymic, patronymic_fields, settled = _decide_patronymic(
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
+    if set_aside:
+        # the evidence says what its share was taken of: the names a
+        # set-aside vote left with none still count among those casting
+        # one, and show as no evidence
+        counted = ("1 name whose only vote was a set-aside trailing "
+                   "initial counts" if set_aside == 1 else
+                   f"{set_aside} names whose only vote was a set-aside "
+                   f"trailing initial count")
+        patronymic = dataclasses.replace(patronymic, note="; ".join(
+            n for n in (patronymic.note,
+                        f"{counted} among the names casting a vote, the "
+                        f"share's denominator") if n))
     order, order_fields = _decide_order(
         tallies[_NAME_ORDER], policy.name_order, settled, comma_left_out,
         trailing_note)

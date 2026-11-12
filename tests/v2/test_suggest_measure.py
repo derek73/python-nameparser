@@ -162,6 +162,18 @@ def test_an_override_is_undone_after_a_run_in_this_process(
             _suggest._MIN_PATRONYMIC_VOTES) == before
 
 
+def test_a_threshold_the_tree_lacks_is_left_to_its_own_rule(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # a base checkout older than a threshold has no such name: the run
+    # there leaves it alone rather than raising (#1345's review)
+    from nameparser import _suggest
+    monkeypatch.delattr(_suggest, "_MIN_TRAILING_NAMES")
+    with tool._thresholds({"_MIN_TRAILING_NAMES": 0, "_MIN_VOTES": 7}):
+        assert _suggest._MIN_VOTES == 7
+        assert not hasattr(_suggest, "_MIN_TRAILING_NAMES")
+    assert _suggest._MIN_VOTES == 2
+
+
 def test_the_groups_are_drawn_apart_from_the_reservoir() -> None:
     # seeded alike, the groups were runs of the slots the reservoir had
     # just filled, consecutive records of a sorted file
@@ -210,6 +222,37 @@ def test_patentsview_reads_the_country_whatever_the_key_order(
     tool._patentsview(keep)
     assert sorted(keep.pools["pv-JP"]) == [
         ("Hiroshi", "Tanaka"), ("Kenji", "Ito"), ("Yuki", "Sato")]
+
+
+@needs_checkout
+def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
+        _cache: Path) -> None:
+    rows = [
+        # kept: spaced, joined, dotted and capitals; a hyphen or a space
+        # in the family box
+        {"credit": "Huntley R P", "family": "Huntley", "given": "Rosa"},
+        {"credit": "Hoy AM", "family": "Hoy", "given": "Anna"},
+        {"credit": "Smith J.", "family": "smith", "given": "John"},
+        {"credit": "Lopez-Diaz M.A.", "family": "Lopez Diaz",
+         "given": "Maria"},
+        # dropped: a box missing, one word, a word after the head that is
+        # no initial, a head that is not the family box, a first initial
+        # that is not the given box's first letter
+        {"credit": "Jones R", "family": "Jones", "given": ""},
+        {"credit": "Jones", "family": "Jones", "given": "Rita"},
+        {"credit": "Jones Rita", "family": "Jones", "given": "Rita"},
+        {"credit": "Rita J", "family": "Jones", "given": "Rita"},
+        {"credit": "Jones K", "family": "Jones", "given": "Rita"},
+    ]
+    folder = _cache / "local" / "orcid-researchers"
+    folder.mkdir(parents=True)
+    (folder / "raw.jsonl").write_text(
+        "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    keep = tool._Reservoir(1)
+    tool._orcid_bylines(keep)
+    assert sorted(keep.pools["orcid-byline"]) == [
+        ("AM", "Hoy"), ("J.", "Smith"), ("M.A.", "Lopez-Diaz"),
+        ("R P", "Huntley")]
 
 
 @needs_checkout
