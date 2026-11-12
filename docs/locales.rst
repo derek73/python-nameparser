@@ -225,6 +225,8 @@ Chief Justice``, ``Lady Mayor``, ``Lady of``):
     'Lady'
     >>> parser_for(locales.ES).parse("Lady Heidenreich").given
     'Lady'
+    >>> parser_for(locales.ES).parse("Lady Justice Jane Smith").title
+    'Lady Justice'
 
 A peeress written with the bare title reads the given name under it,
 and the pack's two family names then take her own given name into the

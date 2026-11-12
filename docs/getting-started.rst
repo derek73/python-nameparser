@@ -3,11 +3,9 @@
 Getting started
 ===============
 
-This page takes you through the three things most people use
-nameparser for, in order: reading one name into its fields, letting a
-list of names choose the settings that read it, and comparing names
-from several sources. Each step links to the page that covers it in
-full.
+Three steps, in the order most people need them: read one name, let a
+list of names choose the settings, and compare names from several
+sources. Each links to the page that covers it in full.
 
 Install it with ``pip install nameparser``. It needs Python 3.11 or
 later and nothing else. The one optional extra, ``nameparser[ja]``,
@@ -115,8 +113,7 @@ Choose the language first
 
 ``suggest`` never chooses a language. A language pack does
 (:doc:`locales`), so where you know the list's language, choose its
-pack and call ``suggest`` on that parser. The settings ``suggest``
-decides are added to the pack's. This Spanish list writes the family
+pack and call ``suggest`` on that parser. This Spanish list writes the family
 names first; the default parser, told only the order, reads the second
 family name as the given name, while the Spanish pack reads the two
 family names and ``suggest`` adds the order:
