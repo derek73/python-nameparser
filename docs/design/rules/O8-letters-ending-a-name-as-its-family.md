@@ -114,9 +114,10 @@
   "Ram Bahadur B.K.T."  initials_as_family  →  family="Bahadur"
   "Ram Bahadur B.K.T."  initials_as_family  →  suffix="B.K.T."
   ```
-- Letters written in Devanagari are no initials (T5 reads a Latin letter), so a surname written so keeps its last letter as the family: 598 of nepal-candidates' 237,408 corpus spellings end that way (`वि क` 259, `बि क` 109, `वि. क.` 59; counted 2026-11-11, decisions/O8). Whether a Devanagari letter is an initial is #1273's question.
+- A Devanagari letter is an initial to T5 only bare and written with a full stop (`आ. म.`), so letters written without one, or with a vowel sign (`वि`, `के`), are no run, and a surname written so keeps its last letter as the family: 597 of nepal-candidates' 237,408 corpus spellings end that way (`वि क` 259, `बि क` 109, `वि. क.` 59), and one ends in a run the rule reads (`झलक बहादुर आ. म.`; counted 2026-11-11, decisions/O8). Whether the others are initials is #1273's question.
   ```
   "राम बहादुर वि क"  initials_as_family  →  family="क"
+  "झलक बहादुर आ. म."  initials_as_family  →  family="आ. म."
   ```
 - The rule reports nothing: the caller declared the convention, as O6's switch reports nothing.
 

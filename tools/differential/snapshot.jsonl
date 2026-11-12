@@ -6115,6 +6115,7 @@
 {"name": "जोनस मैरी सिलविया", "order": "FAMILY_FIRST", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "जोनस, मैरी सिलविया", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "ज्ञानेन्द्र वीर विक्रम शाहदेव", "given": "ज्ञानेन्द्र", "middle": "वीर विक्रम", "family": "शाहदेव", "initials": "ज. व. व. श."}
+{"name": "झलक बहादुर आ. म.", "given": "झलक", "middle": "बहादुर आ.", "family": "म.", "initials": "झ. ब. आ. म."}
 {"name": "डा. राम वर्मा", "title": "डा.", "given": "राम", "family": "वर्मा", "initials": "र. व."}
 {"name": "दिशा", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}
 {"name": "दिशा", "order": "FAMILY_FIRST", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}

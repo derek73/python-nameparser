@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import unicodedata
+import dataclasses
 import warnings
 
 import pytest
@@ -1433,21 +1434,68 @@ def test_a_family_first_base_is_suggested_no_switch_it_would_ignore(
     assert e.no_evidence == 2
 
 
-def test_a_middle_as_family_base_is_suggested_no_switch_it_would_ignore(
-        ) -> None:
-    # rules/O3 folds the letters into the family already
-    s = Parser(policy=Policy(middle_as_family=True)).suggest(
-        ["Durga B K", "Sita B K"])
-    assert s.patch.initials_as_family is UNSET
-    assert "middle into the family" in _letters_evidence(s).note
+_NEPALI_GROUP = ["Ram Bahadur B K", "Sita B K", "Hari B K", "Gita Kumari B K",
+                 "Shyam Thapa"]
+
+#: One non-default value of every Policy field, as a base (the #1347
+#: second review: the inert gate had turned a middle_as_family base's
+#: suggestion into a family-first order)
+_BASE_FIELDS: dict[str, dict[str, object]] = {
+    "name_order": {"name_order": FAMILY_FIRST},
+    "script_orders": {"script_orders": {}},
+    "segment_scripts": {"segment_scripts": frozenset()},
+    "patronymic_rules": {"patronymic_rules": frozenset(
+        {PatronymicRule.EAST_SLAVIC})},
+    "middle_as_family": {"middle_as_family": True},
+    "nickname_delimiters": {"nickname_delimiters": frozenset()},
+    "maiden_delimiters": {"maiden_delimiters": frozenset({("[", "]")})},
+    "extra_suffix_delimiters": {"extra_suffix_delimiters": frozenset({"/"})},
+    "lenient_comma_suffixes": {"lenient_comma_suffixes": False},
+    "strip_emoji": {"strip_emoji": False},
+    "strip_bidi": {"strip_bidi": False},
+    "unlisted_dotted_suffixes": {"unlisted_dotted_suffixes": False},
+    "unlisted_caps_suffixes": {"unlisted_caps_suffixes": "everywhere"},
+    "two_family_names": {"two_family_names": True},
+    "two_given_names": {"two_given_names": True},
+    "lone_name_word": {"lone_name_word": Role.FAMILY},
+    "initials_as_family": {"initials_as_family": True},
+}
 
 
-@pytest.mark.parametrize("policy", [
-    Policy(two_given_names=True), Policy(two_family_names=True),
-    Policy(patronymic_rules=frozenset())])
-def test_a_base_switch_beside_it_still_reads_the_runs(policy: Policy) -> None:
-    s = Parser(policy=policy).suggest(["Ram Bahadur B K", "Sita Devi B K"])
-    assert s.patch.initials_as_family is True
+def test_the_base_sweep_names_every_policy_field() -> None:
+    assert set(_BASE_FIELDS) == {f.name for f in dataclasses.fields(Policy)}
+
+
+def _letters_under(base: Parser) -> None:
+    s = base.suggest(_NEPALI_GROUP)
+    e = _letters_evidence(s)
+    given_first = base.policy.name_order == GIVEN_FIRST
+    # decided wherever the rule acts, a family-first base alone excepted
+    assert e.decided is given_first, (base, e)
+    if given_first:
+        # and the group's letters set its trailing-initial votes aside,
+        # so no family-first order rides on them
+        assert s.patch.name_order is UNSET, (base, s.patch)
+        assert (s.patch.initials_as_family is UNSET) is (
+            base.policy.initials_as_family), (base, s.patch)
+        assert s.parser.policy.initials_as_family
+    else:
+        assert s.patch.initials_as_family is UNSET
+        # no name was read, so the note claims no count
+        assert "family first" in e.note and not e.note[0].isdigit()
+
+
+@pytest.mark.parametrize("field", list(_BASE_FIELDS))
+def test_every_policy_field_as_the_base_reads_the_letters(field: str) -> None:
+    _letters_under(Parser(policy=Policy(**_BASE_FIELDS[field])))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("code", sorted(locales.available()))
+def test_every_pack_as_the_base_reads_the_letters(code: str) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # JA's segmenterless warning
+        base = parser_for(locales.get(code))
+    _letters_under(base)
 
 
 def test_the_vi_pack_is_suggested_no_switch_it_would_ignore() -> None:

@@ -1064,11 +1064,12 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
 
 
 def _letter_readers(parser: Parser) -> tuple[Parser, Parser]:
-    """The base under the given-first order rules/O8 reads under, the
-    switch on and off and every other setting the base's own, so a
-    family that moves between the two moves where the base would move
-    it with the switch on."""
-    policy = dataclasses.replace(parser.policy, name_order=GIVEN_FIRST)
+    """The base with the switch on and off, every other setting the
+    base's own save the fold of every middle into the family (rules/O3),
+    which takes the letters there too and so would hide the run the
+    switch reads. Asked only of a base reading names given first, where
+    the rule acts."""
+    policy = dataclasses.replace(parser.policy, middle_as_family=False)
     with warnings.catch_warnings():
         # the base's own construction warnings reached its caller
         warnings.simplefilter("ignore")
@@ -1079,25 +1080,22 @@ def _letter_readers(parser: Parser) -> tuple[Parser, Parser]:
 
 
 def _decide_letters(runs: list[str | None], base_value: bool,
-                    inert: str
+                    family_first: bool
                     ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``initials_as_family``: true where at least _MIN_RUN_NAMES
     names end in one run of letters and it is at least _MIN_RUN_SHARE of
     the names ending in any run. A group never decides it false: no
     name is evidence that letters are NOT a family. Nor does it decide
-    anything under a base where the switch would change no name
-    (`inert` says which): one reading names family first, where rules/O8
-    stands down, or folding every middle into the family (rules/O3),
-    which takes the letters there already."""
+    anything under a base reading names family first (`family_first`),
+    where rules/O8 stands down, so the switch would change no name and
+    no name was read for a run."""
     counts = Counter(run for run in runs if run)
     carrying = sum(counts.values())
-    if inert:
-        verb = "ends" if carrying == 1 else "end"
+    if family_first:
         return (SettingEvidence(
             _INITIALS_AS_FAMILY, base_value, False, 0, 0, 0, len(runs), (),
-            f"{carrying} of {len(runs)} names {verb} in a run of letters, "
-            f"no evidence under a base {inert}, where the switch changes "
-            f"no name"), {})
+            "not read: the base reads names family first, where letters "
+            "ending a name are never taken as its family"), {})
     if not counts:
         return (SettingEvidence(_INITIALS_AS_FAMILY, base_value, False,
                                 0, 0, 0, len(runs), ()), {})
@@ -1128,14 +1126,14 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     evidence: list[NameEvidence] = []
     any_voters = comma_left_out = 0
     texts = list(_texts(names))
-    readers = _letter_readers(parser)
-    runs = [_letter_run(text, readers) for text in texts]
+    family_first = parser.policy.name_order != GIVEN_FIRST
+    if family_first:
+        runs: list[str | None] = [None] * len(texts)
+    else:
+        readers = _letter_readers(parser)
+        runs = [_letter_run(text, readers) for text in texts]
     letters, letter_fields = _decide_letters(
-        runs, parser.policy.initials_as_family,
-        "reading names family first"
-        if parser.policy.name_order != GIVEN_FIRST else
-        "folding every middle into the family"
-        if parser.policy.middle_as_family else "")
+        runs, parser.policy.initials_as_family, family_first)
     letters_are_family = letters.decided and letters.value is True
     for text in texts:
         votes, comma = _read(text, parser.lexicon)
