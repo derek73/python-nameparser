@@ -47,7 +47,7 @@ votes do not decide keeps the base parser's value.
 
     >>> from nameparser import Parser
     >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Mary Smith"]
+    ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
@@ -55,14 +55,34 @@ votes do not decide keeps the base parser's value.
     'Taylor'
     >>> suggestion.parser.parse("Taylor Morgan").given
     'Morgan'
-    >>> [entry.text for entry in suggestion.disagreeing()]
-    ['Mary Smith']
 
-Three names vote for family first, by the romanized surnames ``Kim``,
-``Wang`` and ``Nguyen``; ``Mary Smith`` votes against, by the given
-name ``Mary`` in front, and is the one to check by hand. ``Taylor
-Morgan`` gives no evidence: it is read family first because the list
-is, and nothing in the name can confirm that.
+Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+the romanized surname in front, ``Garcia Emily`` by the common given
+name at the end. ``Taylor Morgan`` gives no evidence: it is read family
+first because the list is, and nothing in the name can confirm that.
+
+.. _suggest-disagreeing:
+
+A list from one source can still hold a name written the other way
+round. Here ``Emily Clark`` puts its given name first, votes against
+the list, and is listed by ``disagreeing()``. Check such a name by
+hand: the suggested parser reads it the way the rest of the list is
+written, so it takes ``Clark`` for the given name:
+
+.. doctest::
+
+    >>> mixed = Parser().suggest(listing + ["Emily Clark"])
+    >>> print(mixed)
+    Suggested for 6 names (base: Parser(Lexicon(default), Policy())):
+      name_order  FAMILY_FIRST  4 for, 1 against, 1 no evidence
+          surname FAMILY_FIRST  3
+          given-name FAMILY_FIRST  1
+          given-name GIVEN_FIRST  1
+      patronymic_rules  unchanged (none)  no evidence
+      initials_as_family  unchanged (False)  no evidence
+      disagreeing (1): Emily Clark
+    >>> mixed.parser.parse("Emily Clark").given
+    'Clark'
 
 The evidence need not be a surname. Here the common given names at the
 end decide the order, and ``Ellis Jordan``, which carries none, follows

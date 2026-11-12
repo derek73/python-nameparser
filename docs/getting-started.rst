@@ -68,7 +68,7 @@ afterwards:
 
     >>> from nameparser import Parser
     >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Mary Smith"]
+    ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
@@ -78,28 +78,27 @@ afterwards:
     'Morgan'
 
 ``patch`` holds the settings the list changed. Printing the suggestion
-shows the evidence for each setting and the names that voted against
-it. Check those by hand: the suggested parser may misread them, and
-``suggestion.base`` is the parser you started from:
+shows the evidence for each setting and any names that voted against
+it, and ``suggestion.base`` is the parser you started from:
 
 .. doctest::
 
     >>> print(suggestion)
     Suggested for 5 names (base: Parser(Lexicon(default), Policy())):
-      name_order  FAMILY_FIRST  3 for, 1 against, 1 no evidence
+      name_order  FAMILY_FIRST  4 for, 0 against, 1 no evidence
           surname FAMILY_FIRST  3
-          given-name GIVEN_FIRST  1
+          given-name FAMILY_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
-      disagreeing (1): Mary Smith
 
-The three votes for family first are the romanized surnames ``Kim``,
-``Wang`` and ``Nguyen`` at the front of their names. The vote against
-is ``Mary Smith``, whose common given name ``Mary`` comes first: it is
-the name to check by hand. ``Taylor Morgan`` gives no evidence, so the
-suggested parser reads it family first only because the rest of the
-list is written that way; nothing in the name itself can confirm that
-reading.
+Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+the romanized surname in front, ``Garcia Emily`` by the common given
+name at the end. ``Taylor Morgan`` gives no evidence, so the suggested
+parser reads it family first only because the rest of the list is
+written that way; nothing in the name itself can confirm that reading.
+A name written the other way round votes against the list, and is the
+one to check by hand (see :ref:`a name that disagrees
+<suggest-disagreeing>`).
 
 The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely

@@ -66,18 +66,15 @@ considered:
 
     >>> from nameparser import Parser
     >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Mary Smith"]
+    ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
     >>> suggestion.parser.parse("Taylor Morgan").given
     'Morgan'
-    >>> [entry.text for entry in suggestion.disagreeing()]
-    ['Mary Smith']
 
 ``Taylor Morgan`` carries no evidence of its own; it is read family
-first because the rest of the list is. ``Mary Smith`` votes against
-the list, so it is the name to check by hand.
+first because the rest of the list is.
 
 **Joining records from several sources?** ``matching()`` gives each
 name keys to group records by, and checks a pair field by field:
