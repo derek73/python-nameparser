@@ -57,8 +57,9 @@ from typing import Literal
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize, _spells_an_initial,
 )
-from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
-                                _SCRIPT_RANGES, _script_matcher)
+from nameparser._policy import (CapsSuffixes, Policy, Script, _EAST_ASIAN_SCRIPTS,
+                                _JA_SCRIPTS, _NO_INITIALS, _SCRIPT_RANGES,
+                                _script_matcher)
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS, COMMA_STRIP,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
@@ -111,6 +112,14 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
     script: _script_matcher(script, whole=True)
     for script in _SCRIPT_RANGES
 }
+#: The East Asian matchers _classify tries in turn, and the characters a
+#: Cyrillic word can open with: a token opening with none of them is no
+#: Cyrillic, which a C-level membership test says without the matcher's
+#: frame, so a non-ASCII Latin word pays nothing for Cyrillic (#1237)
+_EAST_ASIAN_MATCHERS = tuple((script, _SCRIPT_MATCHERS[script])
+                             for script in _EAST_ASIAN_SCRIPTS)
+_CYRILLIC_LETTERS = frozenset(chr(c) for lo, hi in _SCRIPT_RANGES[Script.CYRILLIC]
+                              for c in range(lo, hi + 1))
 
 #: The joiners a Cyrillic name word is written with inside it, hyphens
 #: and the apostrophes Ukrainian and Belarusian write (`Оюун-Эрдэнэ`,
@@ -3017,11 +3026,13 @@ def _normalized_for_script(text: str) -> str | None:
     fell back to positional ('양 지훈.' lost family-first), and the
     segmenter's neighbour precondition missed a writer-drawn boundary
     ('山田太郎 田中.' consulted the segmenter on 山田太郎 as if it stood
-    alone). The scripts this classifies -- every _SCRIPT_RANGES entry,
-    which today coincide with _policy._NO_INITIALS (#320), a
-    coincidence _policy says a new member must not inherit -- have no
+    alone). The East Asian scripts this classifies (_policy's
+    _EAST_ASIAN_SCRIPTS, the same four as _NO_INITIALS, #320) have no
     initials and no period abbreviations, so a stop on such a token
-    carries no information about the word; ASCII text is stripped too,
+    carries no information about the word; on a Cyrillic word it is an
+    initial's stop (`Б.`), dropped all the same, deliberately: the
+    classification keys only a declared Cyrillic order (#1237), under
+    which an initial is a word of the name in its script; ASCII text is stripped too,
     but the guard below returns None for it regardless, so 'Smith.'
     never classifies. TRAILING only, matching the surname site's own
     rstrip in _script_segment (the same arithmetic, not a shared
@@ -3080,10 +3091,15 @@ def _normalized_for_script(text: str) -> str | None:
 def _classify(normalized: str) -> Script | None:
     """The FIRST _SCRIPT_MATCHERS entry covering all of `normalized`
     (already NFC, via _normalized_for_script), else None. Shared by
-    both public classifiers so each of them normalizes exactly once."""
-    for script, matcher in _SCRIPT_MATCHERS.items():
+    both public classifiers so each of them normalizes exactly once.
+    The East Asian scripts first, then CYRILLIC, asked only of a word
+    that opens with a Cyrillic letter."""
+    for script, matcher in _EAST_ASIAN_MATCHERS:
         if matcher(normalized):
             return script
+    if (normalized[0] in _CYRILLIC_LETTERS
+            and _SCRIPT_MATCHERS[Script.CYRILLIC](normalized)):
+        return Script.CYRILLIC
     return None
 
 
@@ -3128,8 +3144,7 @@ def effective_script(text: str) -> Script | None:
     # a Cyrillic word with a hyphen or an apostrophe inside it (#1237);
     # translate is C-level, so a token with no joiner costs no frame
     joined = normalized.translate(_DROP_CYRILLIC_JOINERS)
-    if (joined != normalized and joined
-            and normalized[0] not in _CYRILLIC_JOINERS
+    if (joined != normalized and normalized[0] in _CYRILLIC_LETTERS
             and normalized[-1] not in _CYRILLIC_JOINERS
             and _SCRIPT_MATCHERS[Script.CYRILLIC](joined)):
         return Script.CYRILLIC

@@ -483,7 +483,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     reading that cannot stand beside one the choice turns on raises
     ValueError here, naming the call (decisions/vocabulary-model,
     2026-11-02 #754, items 3 and 4). Policy patches apply left-to-right
-    (later wins; set-valued fields union per the patch metadata). A
+    (later wins; set-valued fields union and script_orders merges by
+    script, per the patch metadata). A
     pack that chooses no language leaves the base vocabulary exactly
     as it is.
 
@@ -592,9 +593,7 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # each scalar field's setter so far and the value it left in the
     # policy: a later pack leaving another value overrides it, which is
     # warned; one leaving the same value (cs and sk's two_family_names)
-    # agrees. Compared as the applied Policy holds it, canonical, so a
-    # mapping written in another key order (script_orders) is the value
-    # it is, not the spelling it was given in.
+    # agrees. Compared as the applied Policy holds it, canonical.
     scalar_setters: dict[str, tuple[str, object]] = {}
     scalars = [f.name for f in dataclasses.fields(PolicyPatch)
                if f.metadata.get("compose") not in ("union", "by-script")]

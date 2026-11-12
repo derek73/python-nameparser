@@ -639,6 +639,8 @@ class Policy:
     #: locales.ZH for Chinese and locales.JA -- which activates
     #: Script.HIRAGANA alongside it, the kana license's carrier key --
     #: for Japanese.
+    #: Only the East Asian members divide anything: Script.CYRILLIC keys
+    #: a declared order alone, and listed here it is inert.
     #: Opt out with ``segment_scripts=frozenset()``; note a PolicyPatch unions
     #: rather than replaces, so a pack can only add scripts, never
     #: disable one.
@@ -1011,7 +1013,9 @@ class Policy:
     def patched(self, patch: PolicyPatch) -> Policy:
         """Fold a :class:`PolicyPatch` onto this Policy and return the
         combined Policy. Set-valued fields union with the patch's;
-        scalar fields are overridden by the patch; UNSET fields are
+        script_orders merges by script, the patch's entries replacing
+        the base's for their scripts; scalar fields are overridden by
+        the patch; UNSET fields are
         left alone. Patch VALUES are validated here (Policy's
         constructor re-runs on the result), not at patch construction
         -- see PolicyPatch. The maiden-wins canonicalization applies
@@ -1046,13 +1050,16 @@ class _Unset(Enum):
 UNSET = _Unset.UNSET
 
 _UNION = {"compose": "union"}  # field metadata: set-valued -> union
+_BY_SCRIPT = {"compose": "by-script"}  # field metadata: merge per script
 
 
 @dataclass(frozen=True, slots=True)
 class PolicyPatch:
     """A partial Policy: one field per Policy field, all defaulting to
     UNSET. Composition per field is DECLARED via metadata -- set-valued
-    fields union, scalars override (later wins). Kept in lockstep with
+    fields union, script_orders merges by script (a patch's entry
+    replaces the base's entry for its script, the rest standing), and
+    scalars override (later wins). Kept in lockstep with
     Policy by the parity test in tests/v2/test_policy.py.
 
     Values are validated when the patch is applied (Policy's constructor
@@ -1067,7 +1074,7 @@ class PolicyPatch:
     #: scalar override until then, nothing shipped having patched it).
     script_orders: tuple[
         tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = field(
-        default=UNSET, metadata={"compose": "by-script"})
+        default=UNSET, metadata=_BY_SCRIPT)
     segment_scripts: frozenset[Script] | _Unset = field(
         default=UNSET, metadata=_UNION)
     patronymic_rules: frozenset[PatronymicRule] | _Unset = field(
@@ -1190,12 +1197,14 @@ def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
             continue
         if f.metadata.get("compose") == "union":
             value = getattr(policy, f.name) | value
-        elif (f.metadata.get("compose") == "by-script"
-              and isinstance(value, tuple)
-              and all(isinstance(e, tuple) and len(e) == 2 for e in value)):
+        elif f.metadata.get("compose") == "by-script":
             # a well-formed table merges into the base's; anything else
+            # (a bare string, an entry not a pair, an unhashable key)
             # goes to Policy whole, whose messages quote it
-            value = {**dict(getattr(policy, f.name)), **dict(value)}
+            try:
+                value = {**dict(getattr(policy, f.name)), **dict(value)}
+            except (TypeError, ValueError):
+                pass
         updates[f.name] = value
     if not updates:
         return policy

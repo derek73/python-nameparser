@@ -413,6 +413,10 @@ def test_policy_patch_defers_malformed_script_orders_verbatim() -> None:
         apply_patch(Policy(), PolicyPatch(script_orders="han"))  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="decode first"):
         apply_patch(Policy(), PolicyPatch(script_orders=b"han"))  # type: ignore[arg-type]
+    # an unhashable key reaches Policy's curated message too, not the
+    # by-script merge's own TypeError (#1237)
+    with pytest.raises(ValueError, match="unknown script"):
+        apply_patch(Policy(), PolicyPatch(script_orders=[(["han"], GIVEN_FIRST)]))  # type: ignore[arg-type]
 
 
 def test_apply_patch_revalidates_deferred_values() -> None:
@@ -975,3 +979,24 @@ def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
     assert policy.two_given_names is False
     assert policy.lone_name_word is Role.GIVEN
     assert policy == Policy(two_family_names=True)
+
+
+def test_script_orders_is_the_one_by_script_patch_field() -> None:
+    # apply_patch and parser_for read this metadata: a field joining it,
+    # or a misspelled compose value, fails here
+    from nameparser._policy import _BY_SCRIPT
+    composed = {f.name: f.metadata.get("compose")
+                for f in dataclasses.fields(PolicyPatch)}
+    assert {n for n, c in composed.items() if c == "by-script"} == {"script_orders"}
+    assert set(composed.values()) <= {None, "union", _BY_SCRIPT["compose"]}
+
+
+def test_a_callers_katakana_entry_settles_a_lone_word_as_han_does() -> None:
+    # by_script is set for an East Asian script's entry, a caller's
+    # katakana entry included (it asserts the Japanese convention), and
+    # not for a Cyrillic one, a pack's declared order (#1237)
+    from nameparser import Parser
+    kata = Parser(policy=Policy(script_orders={Script.KATAKANA: FAMILY_FIRST}))  # type: ignore[arg-type]
+    assert kata.parse("タロウ").family == "タロウ"
+    cyr = Parser(policy=Policy(script_orders={Script.CYRILLIC: FAMILY_FIRST}))  # type: ignore[arg-type]
+    assert cyr.parse("Батболд").given == "Батболд"

@@ -274,8 +274,9 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
 
 class EffectiveOrder(NamedTuple):
     """What _effective_order made of a name's scripts. `order` is the
-    order the positional read uses; `by_script` says a script_orders
-    entry RESOLVED it, which is not the same as `order` happening to
+    order the positional read uses; `by_script` says an East Asian
+    script's script_orders entry RESOLVED it, which is not the same as
+    `order` happening to
     equal the declared name_order -- under a declared family-first
     order a Han name's W4 entry and the declaration agree, and only
     this flag distinguishes the script rule DECIDING the reading from
@@ -331,7 +332,9 @@ def _effective_order(policy: Policy,
     parse (decisions/parse-cost).
 
     Returns an EffectiveOrder: the order triple, and `by_script` set only on
-    the one path where an entry answered. Every fallback below is a
+    the one path where an entry answered for an East Asian script (a
+    Cyrillic entry answers the order with `by_script` False, see
+    EffectiveOrder). Every fallback below is a
     script rule DECLINING, and reports it as such.
     """
     declared = EffectiveOrder(policy.name_order, by_script=False)
