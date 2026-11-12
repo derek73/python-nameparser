@@ -743,7 +743,11 @@ _PREFIXED_SHAPES: dict[
     # row's own harness: 4.00-4.05 clean; 7.5 with one list scan planted
     # per piece (`name_pieces.index(k)`), failing this row three runs of
     # three with 1.25x to spare over _MAX_RATIO, and 12.0-12.1 with two
-    # scans (the #1348 review read the one-scan figure, 7.53-7.62)
+    # scans (the #1348 review read the one-scan figure, 7.53-7.62); those
+    # on the wall clock. On `_ratio`'s CPU clock (#1352, 2026-11-12,
+    # py3.11), the one-scan plant read 7.51-7.57 quiet and 8.44-9.23
+    # beside 24 busy loops, three runs each, against 3.98 and 3.34-4.44
+    # clean
     "order_report_initials": (
         "Armitage ", "J. ", Parser(),
         lambda text: "order" in {a.kind.value
