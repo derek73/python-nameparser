@@ -314,7 +314,9 @@ class Parser:
         name of fewer than two words once those are read past casts
         none, and so does a name with a comma, unless only
         post-nominals follow the comma. A patronymic votes only where
-        the patronymic rule reads one. ``name_order`` is
+        the patronymic rule reads one, and a trailing initial
+        (``Smith J.``) only where at least three names, and 60% of the
+        group, end in initials. ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end and they are more than two thirds of the names casting
@@ -330,19 +332,20 @@ class Parser:
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
-        Measured 2026-11-10 with tools/differential/suggest_measure.py
+        Measured 2026-11-10, re-taken 2026-11-11, with
+        tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's THRESHOLDS entry
-        holds the table): a group written in this parser's own order kept
+        groups a size (decisions/group-suggestion's 2026-11-11 TRAILING
+        INITIAL entry holds the table): a group written in this parser's own order kept
         it in at least 98% of groups at every size from 2 to 200 names,
         under either base order. Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups
-        from 5 names; German, Dutch, Italian, Spanish, British, Russian
-        and Vietnamese from 10; French, US, Japanese, Brazilian and
-        Turkish from 20; Nigerian and Romanian from 50; and Indian only
-        at 200. A group whose votes fall short of the thresholds keeps
+        from 5 names; German, Dutch, Italian, Spanish, British and
+        Vietnamese from 10; French, US, Japanese and Turkish from 20;
+        Nigerian, Romanian, Russian and Brazilian from 50; and Indian
+        only at 200. A group whose votes fall short of the thresholds keeps
         the base rather than guess, so a smaller group moves it in fewer
         of the draws.
         """

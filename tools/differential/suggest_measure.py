@@ -3,7 +3,8 @@
 `Parser.suggest(names)` reads a group of names a caller declares to share
 one convention and suggests a `name_order` (and `patronymic_rules`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
-`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`) and its word tables
+`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, and the trailing-initial
+signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
 chosen with this tool, and the figures quoted for them in `suggest`'s
 docstring and docs/design/decisions/group-suggestion.md are its output.
@@ -119,9 +120,10 @@ PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
 GF, FF = "GF", "FF"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
-            "_MIN_PATRONYMIC_VOTES")
+            "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
+            "_MIN_TRAILING_SHARE")
 #: The thresholds that count names, read as int.
-_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES")
+_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES")
 
 #: decisions/group-suggestion's TURKIC lists, and the end each writes the
 #: family at: "caps" where the one capitals word is the family, else the

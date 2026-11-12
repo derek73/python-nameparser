@@ -129,9 +129,33 @@ def test_a_name_with_nothing_to_read_casts_nothing(text: str) -> None:
     assert name_votes(text, L) == {}
 
 
-@pytest.mark.parametrize("text", ["\u0000", "A.", "a b c d", "İ İ İ", "-", ". ."])
+#: Names that leave the signals nothing or almost nothing to read: empty
+#: and blank text, a name that is only a title (H2's shape takes `Jr.` at
+#: the head too, so it is read past as a title), only post-nominals, only
+#: a nickname clause, only punctuation, one letter. A title-only name
+#: raised IndexError until _ends_in_post_nominal asked the length first.
+_NOTHING_TO_READ = [
+    "", " ", "\t\n", "\u0000",
+    "Dr.", "Professor", "Chief Physician", "Dr. Prof.", "Mr. III",
+    "Jr.", "PhD", "III", "Jr., PhD", "Dr. Jr.",
+    "(Bob)", '"Bob"', "(Bob) Jr.",
+    ".", ",", "...", "-", "()", ", ,", ". .", "&", "・",
+    "J", "J.", "j", "A.",
+    "a b c d", "İ İ İ",
+]
+
+
+@pytest.mark.parametrize("text", _NOTHING_TO_READ)
 def test_no_signal_raises(text: str) -> None:
     assert isinstance(name_votes(text, L), dict)
+
+
+@pytest.mark.parametrize("text", _NOTHING_TO_READ)
+def test_a_group_holding_a_name_with_nothing_to_read_does_not_raise(
+        text: str) -> None:
+    for group in ([text], ["Jason Priem", text], [text, text, "Zhang Wei"]):
+        s = Parser().suggest(group)
+        assert len(s.names) == len(group)
 
 
 # -- the group: Parser.suggest ------------------------------------------
@@ -166,6 +190,70 @@ def test_a_group_without_evidence_keeps_the_base() -> None:
     assert s.patch == PolicyPatch()
     assert not _order_evidence(s).decided
     assert _order_evidence(s).no_evidence == 1
+
+
+# -- the trailing-initial gate (_MIN_TRAILING_NAMES, _MIN_TRAILING_SHARE) --
+
+_BYLINES = ["Huntley R P", "Hoy A M", "Khalaf T. A.", "Kessler H A",
+            "Armitage J."]
+_PLAIN = ["Xyzzy Plugh", "Qwrt Zxcv", "Blorp Fnord", "Grault Garply",
+          "Waldo Fred"]
+
+
+@pytest.mark.parametrize(("initialed", "plain", "votes"), [
+    (2, 0, False),   # two names: under _MIN_TRAILING_NAMES
+    (3, 0, True),    # three of three
+    (3, 2, True),    # three of five: 60%, at the share
+    (3, 3, False),   # three of six: 50%, under it
+    (4, 3, False),   # four of seven: 57%
+    (5, 3, True),    # five of eight: 62%
+])
+def test_trailing_initials_vote_only_as_a_share_of_the_group(
+        initialed: int, plain: int, votes: bool) -> None:
+    s = Parser().suggest(_BYLINES[:initialed] + _PLAIN[:plain])
+    rows = {row[0] for row in _order_evidence(s).by_signal}
+    assert (Signal.TRAILING_INITIAL in rows) is votes
+    assert (s.patch == PolicyPatch(name_order=FAMILY_FIRST)) is votes
+    cast = sum(Signal.TRAILING_INITIAL in n.votes for n in s.names)
+    assert cast == (initialed if votes else 0)
+
+
+def test_a_set_aside_trailing_initial_says_why_and_disagrees_with_nothing(
+        ) -> None:
+    s = Parser().suggest(["Durga B K", "Jason Priem", "Anna Smith",
+                          "Sita Rai"])
+    order = _order_evidence(s)
+    assert "1 of 4 names ends in initials" in order.note
+    assert s.names[0].votes == {}
+    assert s.disagreeing() == ()
+    assert order.votes_for + order.votes_against + order.contested \
+        + order.no_evidence == 4
+
+
+def test_a_name_whose_given_name_contests_its_initial_is_not_counted(
+        ) -> None:
+    # `Anna`'s given-name vote contests the trailing initial, so the
+    # name is no evidence of a byline list: two uncontested of three
+    s = Parser().suggest(["Huntley R P", "Hoy A M", "Anna R S"])
+    assert Signal.TRAILING_INITIAL not in {
+        row[0] for row in _order_evidence(s).by_signal}
+
+
+def test_a_comma_name_and_a_blank_are_not_in_the_trailing_share() -> None:
+    # three of three read names; the comma name and the blank are not
+    # counted in the group the share is taken of
+    s = Parser().suggest(_BYLINES[:3] + ["Priem, Jason", "  "])
+    assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+
+
+def test_a_set_aside_name_still_counts_in_the_patronymic_share() -> None:
+    # five East Slavic names and two ending in initials: the two carry
+    # evidence, so the rule holds 5 of 7 voting names, under four in
+    # five, and decides nothing (it decided East Slavic, 5 of 5, while
+    # a set-aside name left the denominator)
+    s = Parser().suggest(_EAST_SLAVIC + ["Popov Ivan I.", "Orlov Oleg P."])
+    assert not _patronymic_evidence(s).decided
+    assert s.patch == PolicyPatch()
 
 
 def test_one_name_voting_decides_nothing() -> None:
@@ -536,7 +624,9 @@ def test_the_new_types_are_exported() -> None:
 
 
 def test_one_heavily_marked_name_does_not_outvote_two() -> None:
-    # `KIM Jason J.` carries three family-first signals, but is one name
+    # `KIM Jason J.` carries family-first signals, but is one name (its
+    # trailing initial is one of four names, so it casts no vote: the
+    # gate's tests below)
     s = Parser().suggest(["Jason Smith", "Mary Jones", "Anna Brown",
                           "KIM Jason J."])
     assert s.patch.name_order is UNSET
@@ -544,7 +634,6 @@ def test_one_heavily_marked_name_does_not_outvote_two() -> None:
     assert order.decided
     assert (order.votes_for, order.votes_against) == (3, 1)
     assert (Signal.CAPITALS, FAMILY_FIRST, 1) in order.by_signal
-    assert (Signal.TRAILING_INITIAL, FAMILY_FIRST, 1) in order.by_signal
 
 
 def test_two_signal_names_count_once_each() -> None:
@@ -1213,6 +1302,12 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
     ("_MIN_PATRONYMIC_VOTES", 2, _east_slavic(2), FAMILY_FIRST,
      (UNSET, UNSET),
      (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}))),
+    ("_MIN_TRAILING_NAMES", 2, ["Huntley R P", "Hoy A M"], GIVEN_FIRST,
+     (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
+    ("_MIN_TRAILING_SHARE", 0.5,
+     ["Huntley R P", "Hoy A M", "Kessler H A",
+      "Xyzzy Plugh", "Qwrt Zxcv", "Blorp Fnord"], GIVEN_FIRST,
+     (UNSET, UNSET), (FAMILY_FIRST, UNSET)),
 ]
 
 

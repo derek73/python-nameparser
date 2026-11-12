@@ -14,7 +14,10 @@ can: most of its names carry some evidence, and the evidence agrees.
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
 Each name votes on its order from the evidence it carries: a family
 name written in capitals at one end, a trailing initial
-(``Smith J.``), a lowercase particle first or before the last word, a
+(``Smith J.``) where at least three names and 60% of the list end in
+initials, as a bibliography's do (in a South Asian list the letters
+ending a name are often the family name), a lowercase particle first
+or before the last word, a
 first or last word that is a common romanized Chinese, Korean or
 Vietnamese surname, or a common given name, each read past the titles
 and post-nominals your parser's vocabulary lists (``Dr.``, ``PhD``,
