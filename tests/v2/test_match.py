@@ -23,6 +23,7 @@ from nameparser import (
     parse,
     parser_for,
 )
+from nameparser._pipeline._vocab import _HYPHEN_CHARS
 from nameparser._match import (
     DEFAULT_ACCEPT,
     CrossRoleMatch,
@@ -77,6 +78,10 @@ NAMES: tuple[str, ...] = (
     "Bill Smith", "BILL SMITH", "Sepp Huber", "Josef Huber", "Bob Smith",
     "Robert Smith", "John Bill Smith", "John William Smith",
     'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
+    # any of the pipeline's hyphens, and a maiden name's particles (#1264)
+    "Ann Smith\u2010Jones", "Ann Smith\u2013Jones", "Jean\u2010Pierre Dupont",
+    "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
+    "Ana Ruiz (née de la Vega Gómez)", "Ana Ruiz (née Vega\u2013Gómez)",
 )
 
 #: NAMES parsed once by the default parser, for the grid tests, so a
@@ -353,10 +358,18 @@ def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
     assert _fold("María") == _fold("Mari\u0301a") == "maria"
 
 
+@pytest.mark.parametrize("hyphen", list(_HYPHEN_CHARS))
+def test_fold_writes_every_hyphen_of_the_pipeline_as_the_hyphen_minus(
+        hyphen: str) -> None:
+    # rules/O6's joiners, the set the pipeline reads (#1264)
+    assert _fold(f"Smith{hyphen}Jones") == "smith-jones"
+
+
 def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
     # The key guarantee rests on these two: keys fold a spelling set's
     # members again, and a family word's hyphen halves are cut from the
-    # raw word by position (_spelling_keys, _family_words). Every
+    # raw word by position (_spelling_keys, _family_words), at any of
+    # the pipeline's hyphens, each folding to the hyphen-minus. Every
     # assigned code point is folded alone, after a letter, beside a
     # hyphen on either side, and with a combining mark after it behind a
     # Latin letter, a hyphen and a Devanagari letter (an unassigned one
@@ -364,7 +377,9 @@ def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
     # found the micro sign U+00B5 and U+2183, which casefold into Greek
     # and Latin, and a full stop or apostrophe before a mark (review of
     # #1221). Measured 2026-11-08: about 6 s serial on py3.11, the module's
-    # heaviest test.
+    # heaviest test; 2026-11-11, with the hyphen set counted (#1264),
+    # 10 to 16 s against the merge base's 6 to 10 s run in the same
+    # minutes, under a load average near 20.
     bad = []
     for i in range(0x110000):
         c = chr(i)
@@ -374,10 +389,17 @@ def test_fold_is_idempotent_and_keeps_hyphens_over_every_code_point() -> None:
                      "a" + c + "\u0301", "-" + c + "\u0301",
                      "\u0915" + c + "\u0301"):
             folded = _fold(text)
-            if (_fold(folded) != folded or folded.count("-") != text.count("-")
+            # a hyphen of `_HYPHEN_CHARS` folds to the hyphen-minus
+            # (#1264), so it is the set that is counted
+            if (_fold(folded) != folded or _hyphens(folded) != _hyphens(text)
                     or folded.count(" ") != text.count(" ")):
                 bad.append((hex(i), text, folded))
     assert bad == []
+
+
+def _hyphens(text: str) -> int:
+    """How many of the pipeline's hyphens `text` holds."""
+    return sum(text.count(h) for h in _HYPHEN_CHARS)
 
 
 def test_fold_reads_a_letters_script_before_and_after_casefolding() -> None:
@@ -645,7 +667,9 @@ def _assert_the_key_guarantee(matching: Matching,
 #: each mutation applied to `_match.py` and reverted, every pair as the
 #: prose had it and the symmetry test passing under every one. Not
 #: re-run here: a mutation edits `_match` from inside, so a re-take is
-#: by hand, after any commit that moves NAMES, the keys or the check. The maiden name's words, removed, once failed
+#: by hand, after any commit that moves NAMES, the keys or the check;
+#: re-taken 2026-11-11 for #1264's names and hyphen fold, every pair
+#: standing and the new mutation added. The maiden name's words, removed, once failed
 #: across-roles and all-opt-ins on ("J. Smith", "Jane Doe (née
 #: Smith)"), until #1261 keyed the maiden name whole, joined; those
 #: keys are held since by
@@ -691,6 +715,15 @@ _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
     "the nickname's given letter removed": ("keys", {
         "across-roles": ('William "Bill" Clinton', "Bill Clinton"),
         "all": None,
+    }),
+    # the keys alone cutting a family word at the hyphen-minus, the check
+    # at every hyphen (#1264): the narrowing on one side the grids catch
+    "the keys' family words cut at the hyphen-minus alone": ("keys", {
+        **dict.fromkeys(("default", "familiar-form", "given-one-side",
+                         "hyphenated-part", "other-readings", "across-roles"),
+                        ("Ann Smith", "Ann Smith\u2010Jones")),
+        # passed through the family-initial key
+        "family-initial": None, "all": None,
     }),
 }
 
@@ -749,6 +782,9 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "William Smith", "Smith Bill", "Smith William", "Mr. Smith",
     "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
     "Guo Hong-Yi",
+    # any of the pipeline's hyphens, and a maiden name's particles (#1264)
+    "Smith\u2010Jones, Ann", "Ann Smith\u2013Jones", "Guo Hong\u2010Yi",
+    "María López (née de la Vega)", "María López (née Vega)",
 )
 
 #: Names only one parser of `_SHAPE_PARSERS` reads differently from
@@ -776,7 +812,9 @@ _SHAPE_PARSERS: dict[str, Parser] = {
 #: parser of `_SHAPE_PARSERS`, the first failing ordered pair of
 #: `_SHAPE_NAMES` under each setting that fails, every run not named
 #: passing. The part-of-other mutation and the nickname's fail no run
-#: of this grid. Not re-run here, as `_RECORDED_CONTROLS` is not.
+#: of this grid. Re-taken 2026-11-11 for #1264's names and hyphen fold,
+#: every pair standing and the new mutation added (24 runs). Not
+#: re-run here, as `_RECORDED_CONTROLS` is not.
 _FOUR = ("default", "family-first", "es", "zh")
 _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     "only the joined form of a hyphenated word keyed": {
@@ -817,6 +855,14 @@ _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     },
     "the middle words' given letters removed": {
         "family-first": {"across-roles": ("María García López", "María López")},
+    },
+    "the keys' family words cut at the hyphen-minus alone": {
+        parser_id: dict.fromkeys(
+            ("default", "familiar-form", "given-one-side", "hyphenated-part",
+             "across-roles", "other-readings"),
+            ("Smith Ann" if parser_id == "family-first" else "Ann Smith",
+             "Smith\u2010Jones, Ann"))
+        for parser_id in _FOUR
     },
 }
 
@@ -898,7 +944,7 @@ def test_the_key_guarantee_and_symmetry_hold_over_comma_shapes_and_packs(
     parser fills the roles differently and reads its own spellings, so
     each holds only if it holds there too. Each setting beyond the
     default must find a pair of two names its parser's default matcher
-    refuses. 32 runs, about 12 seconds serial (measured 2026-11-11 under a load average near 4 from other work, so an upper bound). Its negative controls are
+    refuses. 32 runs, about 12 seconds serial (measured 2026-11-11 under a load average near 4 from other work, so an upper bound); with #1264's five names added, 17 seconds against the merge base's 12 run alternately in the same minutes (2026-11-11, load average 9 to 14). Its negative controls are
     `_SHAPE_CONTROLS`."""
     parser = _SHAPE_PARSERS[parser_id]
     _assert_the_key_guarantee(
@@ -1964,12 +2010,14 @@ def test_every_role_has_one_rule_and_its_columns_agree() -> None:
     ("Jane Doe (née Smith)", "Jane Doe (née SMITH)", Outcome.FOLDED),
     # read in the family group: Mc is listed as a spelling of Mac there
     ("Jane Doe (née Mc)", "Jane Doe (née Mac)", Outcome.LISTED_SPELLING),
-    # compared whole, with no family leniency: no particles set aside,
-    # no part of the other
-    ("Jane Doe (née de la Vega)", "Jane Doe (née Vega)", Outcome.CONFLICT),
-    ("Jane Doe (née Smith Jones)", "Jane Doe (née Smith)", Outcome.CONFLICT),
+    # its particles set aside, and part of the other, as the family
+    # name's are (#1264; a conflict before)
+    ("Jane Doe (née de la Vega)", "Jane Doe (née Vega)",
+     Outcome.PARTICLES_ASIDE),
+    ("Jane Doe (née Smith Jones)", "Jane Doe (née Smith)",
+     Outcome.PART_OF_OTHER),
 ])
-def test_a_maiden_name_on_both_sides_is_compared_whole_as_a_surname(
+def test_a_maiden_name_on_both_sides_is_compared_as_a_surname(
         a: str, b: str, outcome: Outcome) -> None:
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
@@ -2491,3 +2539,319 @@ def test_only_two_initials_written_together_read_as_two_words() -> None:
         Token("Smith", Span(5, 10), Role.FAMILY)))
     assert (initials.given, _role_text(initials, Role.GIVEN)) == ("J.R.", "J. R.")
     assert (words.given, _role_text(words, Role.GIVEN)) == ("Ab.c", "Ab.c")
+
+
+# -- any of the pipeline's hyphens is a hyphen (#1264) ------------------------
+
+#: Names holding the hyphen-minus wherever a hyphen stands and the
+#: parser reads the name alike whichever hyphen it holds: in a family
+#: name (before and after a family comma), a given name and a maiden
+#: name, beside a particle half (`Al-`, `al-`, `Ter-`), in a title at
+#: the head, at the end and after a comma (`Dipl.-Ing.`, `Lt.-Col.`,
+#: `Dr.-Ing.`), doubled, leading, trailing, stray before a given name
+#: or a nickname (#1261's rows), and spaced as a separator, which must
+#: read as the spaced hyphen-minus does and never join the words it
+#: stands between. No suffix written with a hyphen is among them: the
+#: parser reads none alike (`_PARSER_HYPHEN_LIMITS`). Each is read again
+#: with every other hyphen in the hyphen-minus's place
+#: (test_any_hyphen_reads_as_the_hyphen_minus).
+_HYPHENATED: tuple[str, ...] = (
+    "Ann Smith-Jones", "Smith-Jones, Ann", "Smith-Jones Ann",
+    "Jean-Paul Smith", "Ann Smith (née Vega-Gómez)",
+    "Ana Ruiz (née de la Vega-Gómez)", "Ahmed Al-Saud", "Sami al-Rashid",
+    "Levon Ter-Petrosyan", "Ann Smith--Jones", "Ann -Smith", "Ann Smith-",
+    "- Pierre Dupont", '"- Boy" Dupont', "Dipl.-Ing. Hans Meier",
+    "Hans Meier Dipl.-Ing.", "John Smith Lt.-Col.", "Hans Meier, Dr.-Ing.",
+    "Hong-Yi Guo", "Kim Min-jun", "J.-P. Dupont",
+    "Ann Smith - Jones", "Jean - Pierre Dupont", "John Smith-Jones Jr.",
+)
+
+#: What they are compared with besides one another: each one's parts,
+#: written whole, spaced, joined and with the hyphen-minus.
+_HYPHEN_PARTNERS: tuple[str, ...] = (
+    "Ann Smith", "Ann Jones", "Ann SmithJones", "Ann Smith Jones",
+    "Smith, Ann", "Smith Ann", "Jean Smith", "Jeanpaul Smith", "J. Smith",
+    "Ann Smith (née Vega)", "Ann Smith (née Gómez)", "Ana Ruiz (née Vega)",
+    "Ahmed Saud", "Ahmed Al", "Sami Rashid", "Levon Petrosyan",
+    "Pierre Dupont", "Boy Dupont", "Hans Meier", "Dr. Hans Meier",
+    "John Smith", "Lt. Col. John Smith",
+    "Hong Guo", "Kim Min Jun", "Jean-Pierre Dupont", "John Smith Jr.",
+)
+
+#: The other hyphens rules/O6 lists, written out here rather than read
+#: from `_HYPHEN_CHARS`, so a character leaving that set fails the
+#: parse parity and the match below, the hyphen-minus being the one
+#: they are read as.
+_OTHER_HYPHENS = "\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
+
+#: Characters that are no hyphen, each of which makes the parser read
+#: some name of `_HYPHENATED` differently (a trailing title written
+#: with one is no title shape), so a character joining the set fails
+#: test_no_other_character_reads_as_a_hyphen.
+_NOT_HYPHENS = "\u2014\u2015/~"
+
+
+@functools.cache
+def _hyphen_parse(parser_id: str, text: str) -> ParsedName:
+    return _SHAPE_PARSERS[parser_id].parse(text)
+
+
+def _reads_as(result: MatchResult, ascii: MatchResult) -> bool:
+    """`result` reads as `ascii`, the same pair with the hyphen-minus
+    written in place of another hyphen: the same verdict and each row's
+    outcome, save that a row `ascii` reads `same` may read `folded`
+    where its two texts differ."""
+    return result.consistent is ascii.consistent and all(
+        r.outcome is a.outcome or (
+            a.outcome is Outcome.SAME and r.outcome is Outcome.FOLDED
+            and r.left != r.right)
+        for r, a in zip(result.roles, ascii.roles))
+
+
+@pytest.mark.parametrize("parser_id", list(_SHAPE_PARSERS))
+def test_any_hyphen_reads_as_the_hyphen_minus(parser_id: str) -> None:
+    """Every hyphen of `_HYPHEN_CHARS` reads as the hyphen-minus, on
+    either side, on both and in the keys alike (#1264), under the
+    default and with every opt-in and the other-reading switch on: a
+    name written with one has the keys of the name written with the
+    hyphen-minus, and compared with that name, with every partner and
+    with every other hyphenated name written with the en dash (U+2010
+    for the en dash itself), in either order, reads as the hyphen-minus
+    pair does (`_reads_as`); a consistent pair shares a key. Linear in
+    the names, so every hyphen is read; the pairwise grids read U+2010
+    and the en dash (NAMES, `_SHAPE_NAMES`). The parser reads each name
+    alike whichever hyphen it holds, every field the hyphen-minus
+    reading with the hyphen written back, which this test asserts too,
+    so the rest is the match's reading alone, for these names: the
+    names the parser reads differently are `_PARSER_HYPHEN_LIMITS`. About
+    3.3 seconds a parser, serial (2026-11-11). Negative controls, taken
+    2026-11-11 with each mutation applied and reverted, every one failing
+    all four parsers: the fold mapping no hyphen; `_part_agrees` cutting at
+    the hyphen-minus alone (`J.‐P. Dupont`); `_family_words` cutting at
+    it alone, the check and the keys both; the keys' joined and whole
+    forms of a hyphenated word reading it alone; `_noted` folding one
+    side with the lexicon's fold alone (`Dipl.‐Ing. Hans Meier`, which
+    no name reached before #1264's review); and `_HYPHEN_CHARS` cut to
+    the hyphen-minus (the parse parity, through the trailing titles).
+    The keys alone cutting a family word at it is `_RECORDED_CONTROLS`'
+    last, which the grids catch; a non-hyphen joining the set is
+    test_no_other_character_reads_as_a_hyphen's (the em dash added fails
+    it under all four parsers)."""
+    p = functools.partial(_hyphen_parse, parser_id)
+    partners = [p(x) for x in _HYPHEN_PARTNERS]
+    read: set[str] = set()
+    for setting in (SETTINGS[0], SETTINGS[-1]):
+        matching = Matching(_SHAPE_PARSERS[parser_id], *setting)
+        keys = functools.cache(matching.keys)
+        check = functools.cache(matching.check)
+        for text in _HYPHENATED:
+            ascii = p(text)
+            for hyphen in _OTHER_HYPHENS:
+                written = p(text.replace("-", hyphen))
+                read.add(hyphen)
+                where = (parser_id, setting, written.original)
+                # the parser reads the name as it reads the hyphen-minus
+                assert {f: v.replace(hyphen, "-") for f, v in
+                        written.as_dict().items()} == ascii.as_dict(), where
+                assert keys(written) == keys(ascii), where
+                theirs = "\u2010" if hyphen == "\u2013" else "\u2013"
+                pairs = [(ascii, ascii), *((x, x) for x in partners),
+                         *((p(o.replace("-", theirs)), p(o))
+                           for o in _HYPHENATED)]
+                for other, other_ascii in pairs:
+                    for result, expected in (
+                            (check(written, other), check(ascii, other_ascii)),
+                            (check(other, written), check(other_ascii, ascii))):
+                        assert _reads_as(result, expected), (
+                            where, other.original)
+                        if result.consistent:
+                            assert keys(written) & keys(other), (
+                                where, other.original)
+    # every listed hyphen was read, so the test cannot pass on nothing
+    assert _OTHER_HYPHENS and read == set(_OTHER_HYPHENS)
+
+
+@pytest.mark.parametrize("parser_id", list(_SHAPE_PARSERS))
+def test_no_other_character_reads_as_a_hyphen(parser_id: str) -> None:
+    """The parse parity above is discriminating: each character of
+    `_NOT_HYPHENS` written in the hyphen-minus's place makes some name
+    of `_HYPHENATED` read differently, under every parser (the trailing
+    titles), so one joining `_HYPHEN_CHARS` fails here (#1264)."""
+    p = functools.partial(_hyphen_parse, parser_id)
+    for dash in _NOT_HYPHENS:
+        assert any(
+            {f: v.replace(dash, "-") for f, v in
+             p(text.replace("-", dash)).as_dict().items()} != p(text).as_dict()
+            for text in _HYPHENATED), (parser_id, dash)
+
+
+#: Names the PARSER reads differently with another hyphen in the
+#: hyphen-minus's place, under every parser of `_SHAPE_PARSERS`, at the
+#: merge base of #1264 too: credentials and a generation joined by one,
+#: a trailing title the vocabulary lists with the hyphen-minus, and a
+#: spaced one between credentials, each with the hyphen-minus reading
+#: and the one the other hyphens give. The match reads the fields the
+#: parse gives, so these pairs stay apart; a parser fix moves a row,
+#: which then belongs in `_HYPHENATED`. (#1264's review, 2026-11-11.)
+_PARSER_HYPHEN_LIMITS: tuple[tuple[str, str], ...] = (
+    ("John Smith MD-PhD", "suffix"), ("John Smith, NP-C", "suffix"),
+    ("John Smith, OTR-L", "suffix"), ("John Smith Jr.-III", "suffix"),
+    ("John Smith, M.D.-Ph.D.", "suffix"), ("Hans Meier Priv.-Doz.", "title"),
+)
+#: Of those, the ones the family-first order reads consistent with the
+#: hyphen-minus spelling: the moved word lands in the middle name there
+#: and reads one-sided; after a comma it lands in the given name.
+_LIMITS_CONSISTENT_FAMILY_FIRST = frozenset({
+    "John Smith MD-PhD", "John Smith Jr.-III", "Hans Meier Priv.-Doz."})
+
+
+@pytest.mark.parametrize("text, role_name", _PARSER_HYPHEN_LIMITS)
+@pytest.mark.parametrize("parser_id", list(_SHAPE_PARSERS))
+def test_the_parser_reads_a_joined_credential_by_its_hyphen(
+        parser_id: str, text: str, role_name: str) -> None:
+    # the hyphen-minus spelling reads the last word in `role_name`; each
+    # other hyphen moves it out into a name field, where the pair
+    # conflicts, save the family-first readings that land it in the
+    # middle name (`_LIMITS_CONSISTENT_FAMILY_FIRST`)
+    p = functools.partial(_hyphen_parse, parser_id)
+    word = text.split()[-1]
+    assert getattr(p(text), role_name) == word
+    matching = Matching(_SHAPE_PARSERS[parser_id])
+    for hyphen in _OTHER_HYPHENS:
+        written = p(text.replace("-", hyphen))
+        assert getattr(written, role_name) == "", (parser_id, written.original)
+        assert matching.check(written, p(text)).consistent is (
+            parser_id == "family-first"
+            and text in _LIMITS_CONSISTENT_FAMILY_FIRST)
+
+
+def test_a_spaced_hyphen_between_credentials_is_read_by_its_character() -> None:
+    # the hyphen-minus spaced between credentials divides them, another
+    # hyphen spaced so is a word the suffix keeps (parser, #1264's review)
+    assert parse("John Smith, MD - PhD").suffix == "MD, PhD"
+    assert parse("John Smith, MD \u2010 PhD").suffix == "MD \u2010 PhD"
+
+
+# -- the maiden name sets its particles aside as the family name does (#1264) -
+
+@pytest.mark.parametrize("a, b, outcome", [
+    ("Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
+     Outcome.PARTICLES_ASIDE),
+    ("Ana Ruiz (geb. von Berg)", "Ana Ruiz (geb. Berg)",
+     Outcome.PARTICLES_ASIDE),
+    ("Ana Ruiz (née de la Vega Gómez)", "Ana Ruiz (née Vega)",
+     Outcome.PART_OF_OTHER),
+    # a hyphen half, any hyphen, and a hyphen half that is a particle
+    ("Ana Ruiz (née Vega-Gómez)", "Ana Ruiz (née Vega)",
+     Outcome.PART_OF_OTHER),
+    ("Ana Ruiz (née Vega‐Gómez)", "Ana Ruiz (née Vega)",
+     Outcome.PART_OF_OTHER),
+    ("Ana Ruiz (née Al-Vega)", "Ana Ruiz (née Vega)", Outcome.PART_OF_OTHER),
+    ("山田 花子 (旧姓 田中 中)", "山田 花子 (旧姓 田中)", Outcome.PART_OF_OTHER),
+    # the outcomes it read before stay
+    ("Ana Ruiz (née DelaVega)", "Ana Ruiz (née de la Vega)", Outcome.JOINED),
+    ("Ana Ruiz (née VEGA)", "Ana Ruiz (née Vega)", Outcome.FOLDED),
+    ("Ana Ruiz (née Vega–Gómez)", "Ana Ruiz (née Vega-Gómez)",
+     Outcome.FOLDED),
+    # an initial against it reads `initial`, never the opt-in
+    # `family-initial` the family chain would give it
+    ("Ana Ruiz (née V.)", "Ana Ruiz (née Vega)", Outcome.INITIAL),
+    ("Ana Ruiz (née Vega)", "Ana Ruiz", Outcome.ONE_SIDE),
+    # particles alone: a maiden particle carries no unjoined tag, so
+    # both bases are empty and neither leniency holds, where the family
+    # name keeps them (test_where_the_maiden_name_departs_from_the_family)
+    ("Ana Ruiz (née de la)", "Ana Ruiz (née de)", Outcome.CONFLICT),
+    ("Ana Ruiz (née V.)", "Ana Ruiz (née de la Vega)", Outcome.CONFLICT),
+    # two texts of initials alone are initials-agree's to read, as they
+    # are joined's exception, so they read as before (part-of-other
+    # would cover each by the other)
+    ("Ana Ruiz (née J.-P.)", "Ana Ruiz (née J. P.)", Outcome.INITIALS_AGREE),
+    ("Ana Ruiz (née J. P.)", "Ana Ruiz (née P. J.)", Outcome.CONFLICT),
+    ("Ana Ruiz (née J.)", "Ana Ruiz (née J. P.)", Outcome.CONFLICT),
+    # a maiden marker with no name after it is the nickname, as parsed
+    ("Ana Ruiz (née)", "Ana Ruiz (née Vega)", Outcome.ONE_SIDE),
+])
+def test_a_maiden_name_reads_the_family_names_leniencies(
+        a: str, b: str, outcome: Outcome) -> None:
+    # Negative control (2026-11-11): the maiden row given its comparator
+    # at the merge base back (`_compare_text`) fails the seven rows
+    # reading particles-aside and part-of-other here, both rows of
+    # test_a_maiden_name_on_both_sides_is_compared_as_a_surname,
+    # test_a_listed_spelling_counts_inside_a_compound_maiden_name and the
+    # hyphen-half row of
+    # test_a_maiden_outcome_accepted_at_the_merge_base_stays_accepted;
+    # the initials exception removed fails the three initials rows here
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["maiden"].outcome is outcome, (x, y)
+        assert r.consistent is (outcome is not Outcome.CONFLICT), (x, y)
+
+
+def test_a_listed_spelling_counts_inside_a_compound_maiden_name() -> None:
+    # as in a compound family name (#1262), in the family group (#1264)
+    matching = Matching(Parser(lexicon=_SMYTH_LEXICON))
+    r = matching.check("Ann Doe (née Smyth-Jones)", "Ann Doe (née Smith)")
+    assert r["maiden"].outcome is Outcome.PART_OF_OTHER and r.consistent
+    r = matching.check("Ann Doe (née de Smyth)", "Ann Doe (née Smith)")
+    assert r["maiden"].outcome is Outcome.PARTICLES_ASIDE and r.consistent
+
+
+_NO_PART_OF_OTHER = ((DEFAULT_ACCEPT - {Outcome.PART_OF_OTHER})
+                     | {Outcome.HYPHENATED_PART})
+
+
+@pytest.mark.parametrize("a, b, accept", [
+    ("Ana Ruiz (née Vega-Gómez)", "Ana Ruiz (née Vega)", _NO_PART_OF_OTHER),
+    ("Ana Ruiz (née V.)", "Ana Ruiz (née Vega)", _NO_PART_OF_OTHER),
+    ("Ana Ruiz (née V.)", "Ana Ruiz (née Vega)",
+     DEFAULT_ACCEPT | {Outcome.FAMILY_INITIAL}),
+])
+def test_a_maiden_outcome_accepted_at_the_merge_base_stays_accepted(
+        a: str, b: str, accept: frozenset[Outcome]) -> None:
+    # outside the family chain (#1264): each pair is consistent under
+    # its setting with the merge base's `_match.py` too, a caller who
+    # accepts hyphenated-part but not part-of-other still reading the
+    # hyphen half, and the initial still reading `initial`
+    matching = Matching(Parser(), accept)
+    assert matching.check(a, b).consistent
+    assert matching.check(b, a).consistent
+
+
+def test_where_the_maiden_name_departs_from_the_family() -> None:
+    # two departures from the family comparison, each recorded in
+    # decisions/name-matching's #1264 entry: particles alone (no
+    # unjoined tag on a maiden particle, so its base is empty; new with
+    # the maiden bases, a conflict before as now) and a hyphen half
+    # that is a particle (read as `hyphenated-part` outside the chain,
+    # at the merge base too)
+    assert m.check("de la, Ana", "de, Ana")["family"].outcome \
+        is Outcome.PART_OF_OTHER
+    assert m.check("Ana Ruiz (née de la)", "Ana Ruiz (née de)")["maiden"] \
+        .outcome is Outcome.CONFLICT
+    hyphenated = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.HYPHENATED_PART})
+    assert not hyphenated.check("al-Rashid, Ana", "al, Ana").consistent
+    r = hyphenated.check("Ana Ruiz (née al-Rashid)", "Ana Ruiz (née al)")
+    assert r["maiden"].outcome is Outcome.HYPHENATED_PART and r.consistent
+
+
+def test_a_maiden_name_against_the_family_still_counts_full_names_only() -> None:
+    # across-roles compares a family name with the other's maiden name
+    # by full names alone (`_full_outcome`), so particles are not set
+    # aside across the two roles, as at the merge base (#1264)
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    for a, b in (("Ana Vega", "Ana Ruiz (née de la Vega)"),
+                 ("Ana de la Vega", "Ana Ruiz (née Vega)")):
+        assert not across.check(a, b).consistent
+        assert not across.check(b, a).consistent
+
+
+@pytest.mark.parametrize("name", [
+    "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
+    "Ana Ruiz (née de la Vega Gómez)", "Ana Ruiz (née Vega-Gómez)",
+    "山田 花子 (旧姓 田中)",
+])
+def test_the_default_keys_hold_no_maiden_word(name: str) -> None:
+    # the maiden leniencies need no key: a consistent pair's family
+    # names agree, and they are keyed (#1264)
+    without = name.split(" (")[0]
+    assert m.keys(name) == m.keys(without)
