@@ -1,8 +1,3 @@
-.. Nameparser documentation master file, created by
-   sphinx-quickstart on Fri May 16 01:29:58 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Python Human Name Parser
 ========================
 
@@ -23,7 +18,22 @@ packs are opt-in. Requires Python 3.11+.
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
 
+New here? :doc:`getting-started` takes you through the three steps
+most people need:
+
+- **Parse one name** into its fields, as above.
+- **Have a list of names from one source?** :doc:`suggest` reads the
+  order it is written in and returns a parser configured for it.
+- **Joining records from several sources?** :doc:`matching` groups the
+  names and compares them field by field.
+
 Coming from 1.x, or from 2.x code using ``HumanName``? :doc:`migrate`.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Start here
+
+   getting-started
 
 .. toctree::
    :maxdepth: 2

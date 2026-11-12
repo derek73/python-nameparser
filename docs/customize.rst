@@ -1,6 +1,24 @@
 Customizing the parser
 =======================
 
+When the defaults misread your data, try these in order, each a
+smaller and more specific change than the one before:
+
+#. **Let the data choose.** If you have a list of names from one
+   source, :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads
+   the order it is written in, a patronymic rule and whether letters
+   ending a name are its family name, and returns a parser set for them
+   (:doc:`suggest`).
+#. **Choose the language.** If you know the data's language, a locale
+   pack (:doc:`locales`) reads that language's words and conventions,
+   such as Spanish double surnames or Russian patronymics. Call
+   ``suggest`` on the pack's parser to have both.
+#. **Set a behavior.** A :class:`~nameparser.Policy` field changes how
+   positions and punctuation are read, the same for every word:
+   :doc:`policy` lists them.
+#. **Edit the vocabulary.** A :class:`~nameparser.Lexicon` edit, the
+   subject of this page, changes how one word is read.
+
 Every piece of nameparser configuration sorts into one of three places
 by asking what it varies with: vocabulary varies by **language**
 (:class:`~nameparser.Lexicon`), behavior varies by **data source or
@@ -504,8 +522,12 @@ capitalization decides:
     'M.A.'
     >>> parse("Jack MA").suffix
     'MA'
+    >>> parse("John Smith Ma").family
+    'Ma'
 
-The full reading of a bare marked acronym, in order:
+The full reading of a bare marked acronym, in order (where the parse
+leaves the choice to the count, it reports a ``suffix-or-name``
+ambiguity, :ref:`credentials-also-surnames`):
 
 - **ALL CAPITALS** in a mixed-case name leans to the credential: it is
   a suffix even with no words to spare (``"Jack MA"``). The capitals

@@ -1,7 +1,11 @@
-Using the parser
-================
+Working with a parsed name
+==========================
 
-Requires Python 3.11+.  ``pip install nameparser``
+What a :class:`~nameparser.ParsedName` gives you once a name is
+parsed: its fields and the views that combine them, strings and dicts,
+case repair, comparison, the guesses it reports, its tokens, how to
+correct it, and the command line. New to nameparser? Start with
+:doc:`getting-started`.
 
 Parse a name
 ------------
@@ -250,21 +254,14 @@ for routing a record to human review instead of trusting it silently.
 Credentials that are also surnames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The post-nominals that double as ordinary surnames report an ambiguity
-the same way.
-Which reading a bare one gets depends on what the writing says:
-
-- **Capitals** in a name written in more than one case lean to the
-  credential, even with no words to spare (``Jack MA``). They settle it,
-  as periods do, so nothing is reported.
-- **Any other cased spelling** that is not wholly lowercase leans to
-  the surname, even with words to spare (``Jack Ma``, ``John Smith Ma``).
-- **No signal** — all lowercase, or a name written wholly in one
-  case — leaves it to the count: the credential with two or more words
-  before it, not counting a title or a nickname, the surname otherwise.
-
-Where the writing leaves the choice to the parser, the choice is
-recorded:
+The post-nominals that double as ordinary surnames, such as ``MA``,
+report an ambiguity the same way. The writing usually settles which
+reading a bare one gets: capitals in a name written in more than one
+case read the credential (``Jack MA``), and any other cased spelling
+that is not wholly lowercase reads the surname (``Jack Ma``), with
+nothing reported. Where the writing gives no signal, all lowercase or
+a name written wholly in one case, the count of words before it
+decides, and the choice is recorded:
 
 .. doctest::
 
@@ -274,12 +271,6 @@ recorded:
     ['suffix-or-name']
     >>> parse("John Smith MA").ambiguities
     ()
-    >>> parse("Jack MA").suffix
-    'MA'
-    >>> parse("Jack Ma").family
-    'Ma'
-    >>> parse("John Smith Ma").family
-    'Ma'
 
 :ref:`ambiguous-words` has the full rules, including how a comma
 changes them.
@@ -308,13 +299,12 @@ Titles that are also given names
 
 A title that is also borne as a given name, such as ``Dean``, ``King``
 or ``Major``, is a title only inside a title phrase (since 2.7), and
-otherwise a name word. Where it opens the name and a phrase could have
-held it, the choice is recorded as ``title-or-name``:
+otherwise a name word (``Dean of Students`` is a title). Where it opens
+the name and a phrase could have held it, the choice is recorded as
+``title-or-name``:
 
 .. doctest::
 
-    >>> parse("Dean of Students Jane Smith").title
-    'Dean of Students'
     >>> dean_smith = parse("Dean Smith")
     >>> dean_smith.given, [a.kind.value for a in dean_smith.ambiguities]
     ('Dean', ['title-or-name'])
@@ -661,7 +651,7 @@ flag turns only the second off:
 Where next
 ----------
 
-* :doc:`concepts` — how the parser works
-* :doc:`customize` — your own vocabulary and behavior
-* :doc:`locales` — locale packs
-* :doc:`migrate` — coming from 1.x or 2.x ``HumanName``, which 3.0 removes
+* :doc:`shapes` — the input forms the parser reads, and
+  :doc:`east-asian` for Chinese, Japanese and Korean names
+* :doc:`customize` and :doc:`policy` — your own vocabulary and behavior
+* :doc:`getting-started` — the map of every page, by task
