@@ -684,8 +684,11 @@ def _split_candidate(state: ParseState) -> int | None:
     # load-bearingly, and in the two structures that reach here it
     # reads exactly this one, only backwards; the argument lives at
     # that scan.
+    # a Cyrillic word is no site, CYRILLIC keying a declared order alone
+    # (#1237), so a segmenter is never handed one
     i = next((i for i in state.segments[0]
-              if effective_script(state.tokens[i].text) in scripts), None)
+              if (script := effective_script(state.tokens[i].text)) in scripts
+              and script is not Script.CYRILLIC), None)
     # A post-nominal in the surname's own position is not a site to
     # skip past but an answer: a surname LEADS, so if the leading
     # script-written token is an honorific there is no surname here to

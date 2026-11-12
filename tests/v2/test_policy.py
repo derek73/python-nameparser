@@ -1000,3 +1000,24 @@ def test_a_callers_katakana_entry_settles_a_lone_word_as_han_does() -> None:
     assert kata.parse("タロウ").family == "タロウ"
     cyr = Parser(policy=Policy(script_orders={Script.CYRILLIC: FAMILY_FIRST}))  # type: ignore[arg-type]
     assert cyr.parse("Батболд").given == "Батболд"
+
+
+def test_cyrillic_in_segment_scripts_divides_nothing() -> None:
+    # CYRILLIC keys a declared order alone (#1237): listed in
+    # segment_scripts, no Cyrillic word is a site, so a segmenter is never
+    # handed one, and the construction warning does not ask for one
+    import warnings
+    from nameparser import Parser
+    from nameparser._types import Segmentation
+    calls = []
+
+    def seg(text: str) -> Segmentation:
+        calls.append(text)
+        return Segmentation((2,))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Parser(policy=Policy(segment_scripts=frozenset({Script.CYRILLIC})))
+    parser = Parser(policy=Policy(segment_scripts=frozenset({Script.CYRILLIC})),
+                    segmenter=seg)
+    assert parser.parse("Иванов Иван").as_dict()["given"] == "Иванов"
+    assert calls == []

@@ -23,7 +23,7 @@ from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._post_rules import suffix_entries
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
-from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
+from nameparser._policy import UNSET, Policy, PolicyPatch, Script, _Unset, apply_patch
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Role, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
@@ -104,7 +104,9 @@ class Parser:
             uncovered = sorted(
                 script.value
                 for script in self.policy.segment_scripts
-                if not any(_SCRIPT_MATCHERS[script](entry)
+                # CYRILLIC divides nothing in any configuration (#1237)
+                if script is not Script.CYRILLIC
+                and not any(_SCRIPT_MATCHERS[script](entry)
                            for entry in self.lexicon._sets.surnames))
             if uncovered:
                 names = ", ".join(uncovered)

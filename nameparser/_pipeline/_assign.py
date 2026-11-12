@@ -294,7 +294,10 @@ class EffectiveOrder(NamedTuple):
 # rules/W4: "a name written wholly in one East Asian script, or in
 # the kana-licensed Japanese repertoire, reads family-first whatever
 # order the caller declared; a wholly-katakana name keeps the declared
-# order" (history: decisions/W4)
+# order; and a name written wholly in a script a chosen locale pack
+# gives an order reads by that order" -- both clauses: the entry
+# answers for any script, its by_script only for an East Asian one
+# (history: decisions/W4)
 def _effective_order(policy: Policy,
                      pieces: Sequence[tuple[int, ...]],
                      name_pieces: Sequence[int],
