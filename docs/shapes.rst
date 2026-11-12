@@ -125,7 +125,7 @@ Latin honorific or credential set beside it — is tolerated input:
 parsed best-effort, its handling changeable without notice.
 
 Forms 6 and 7, and how a Latin wrapper around either is handled, are
-covered in full under :ref:`East Asian names <east-asian-names>` below.
+covered in full on their own page, :ref:`East Asian names <east-asian-names>`.
 
 Words that attach to their neighbors
 --------------------------------------

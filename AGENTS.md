@@ -126,7 +126,7 @@ uv run sphinx-build -b html docs dist/docs
 #    Then sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
 #    it: prose describes behavior in words, not identifiers. Walk these sites
 #    explicitly — every one of them has gone stale at least once.
-#    - docs/*.rst: usage.rst and shapes.rst examples and API surface, plus any file listing
+#    - docs/*.rst: getting-started.rst, usage.rst and shapes.rst examples and API surface, plus any file listing
 #      config constants or Policy fields
 #    - migrate.rst's "Changed in ..." list: the shapes whose 1.4 reading
 #      moved, each with a doctest. Every release log bullet saying "1.4.0
