@@ -833,13 +833,18 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
                    == "Ivanovich"),
     ),
     # rules/O9's walk over the words before the comma, its runs joined
-    # across particles and its peel, which run only under the switch:
-    # the probe reads a run joined across a particle and a peel
+    # across a joining word and its peel, which run only under the
+    # switch: the probe reads a run joined across a conjunction and a
+    # peel. A conjunction rather than a particle: a unit of particles
+    # (`Ann DUPONT de LA MBA `) is superlinear with the switch OFF as
+    # well, 4.58x for 4x locally and on (4.52x) alike, and read 7.0x on
+    # CI's 3.13 runner, so it measured the default parse (2026-11-12)
     "capitals_as_family": (
-        "Ann DUPONT de LA MBA ",
+        "Ann DUPONT y GARCIA MBA ",
         Parser(policy=Policy(capitals_as_family=True)),
-        lambda p: (p.parse("Ann DUPONT de LA MBA").family == "DUPONT de LA"
-                   and p.parse("Ann DUPONT de LA MBA").suffix == "MBA"),
+        lambda p: (p.parse("Ann DUPONT y GARCIA MBA").family
+                   == "DUPONT y GARCIA"
+                   and p.parse("Ann DUPONT y GARCIA MBA").suffix == "MBA"),
     ),
 }
 
