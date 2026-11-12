@@ -8,7 +8,7 @@ list of names choose the settings, and compare names from several
 sources. Each links to the page that covers it in full.
 
 Install it with ``pip install nameparser``. It needs Python 3.11 or
-later. The optional extra ``nameparser[ja]`` divides unspaced Japanese kanji names (:ref:`east-asian-names`).
+later and no other package. The optional extra ``nameparser[ja]`` divides unspaced Japanese kanji names (:ref:`east-asian-names`).
 
 Parse one name
 --------------
@@ -52,7 +52,7 @@ you, and :doc:`shapes` the forms of input it reads.
 A list of names: let ``suggest`` choose the settings
 -----------------------------------------------------
 
-One name cannot show its order: ``Priem Jason`` and ``Jason Priem``
+One name cannot show its order: ``Smith Mary`` and ``Mary Smith``
 have the same shape. A list from one source can, because a source
 writes every name the same way and many of its names carry evidence of
 the order.
@@ -66,19 +66,19 @@ afterwards:
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> listing = ["Priem Jason", "Kim Minjun", "Wang Xiaoming",
-    ...            "Nguyen Anh", "Jason Priem"]
+    >>> listing = ["Smith Mary", "Kim Minjun", "Wang Xiaoming",
+    ...            "Nguyen Anh", "Mary Smith"]
     >>> suggestion = Parser().suggest(listing)
     >>> suggestion.patch
     PolicyPatch(name_order=FAMILY_FIRST)
-    >>> parse("Priem Jason").given
-    'Priem'
-    >>> suggestion.parser.parse("Priem Jason").given
-    'Jason'
+    >>> parse("Smith Mary").given
+    'Smith'
+    >>> suggestion.parser.parse("Smith Mary").given
+    'Mary'
 
 ``patch`` holds the settings the list changed. Printing the suggestion
 shows the evidence for each setting and the names that voted against
-it. Check those by hand: the suggested parser misreads them, and
+it. Check those by hand: the suggested parser may misread them, and
 ``suggestion.base`` is the parser you started from:
 
 .. doctest::
@@ -91,7 +91,7 @@ it. Check those by hand: the suggested parser misreads them, and
           given-name GIVEN_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
-      disagreeing (1): Jason Priem
+      disagreeing (1): Mary Smith
 
 The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely
@@ -109,8 +109,7 @@ it on has it:
 - **Letters as the family name** (:ref:`initials-as-family`): where
   one run of letters ends at least two names, and at least half of the
   names that end in letters, as Nepal's ``B K`` and ``K C`` are family
-  names written short (only on a base that reads given names first and
-  keeps middle names apart).
+  names written short (only on a base that reads given names first).
 
 Choose the language first
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,8 +137,8 @@ Where it declines
 ~~~~~~~~~~~~~~~~~
 
 Where too few names agree, ``suggest`` keeps the base parser's value.
-An order needs at least two votes, more than two thirds of the names
-whose order votes agree with each other. A name of one word casts none,
+An order needs at least two names voting for it, more than two thirds
+of the names whose own order votes do not contradict each other. A name of one word casts none,
 nor does a name with a comma, unless only post-nominals follow it
 (``Zhang Wei, PhD``). Here only ``Mary`` votes (``John`` is also a
 surname), one short:
@@ -150,8 +149,9 @@ surname), one short:
     PolicyPatch()
 
 Initials after the name vote only where at least three names end in
-them and those are at least 60% of the list's names (a name with a
-comma, or with nothing but titles, is not counted), so a short list of
+initials nothing else in the name contradicts, and those are at least
+60% of the list's names (a name a comma leaves out of the vote, or one
+of nothing but titles, is not counted), so a short list of
 bylines may get no order suggestion:
 
 .. doctest::
@@ -194,16 +194,16 @@ compare:
 
 Parse each source with the parser that reads it: ``check()`` compares
 names as they were parsed, so two sources need not share an order. Read
-with the default parser, the registry's ``Priem`` is a given name and
+with the default parser, the registry's ``Smith`` is a given name and
 the pair does not match:
 
 .. doctest::
 
-    >>> registry = Parser().suggest(["Priem Jason", "Kim Minjun",
+    >>> registry = Parser().suggest(["Smith Mary", "Kim Minjun",
     ...                              "Wang Xiaoming", "Nguyen Anh"]).parser
-    >>> matcher.check(registry.parse("Priem Jason"), parse("J. Priem")).consistent
+    >>> matcher.check(registry.parse("Smith Mary"), parse("M. Smith")).consistent
     True
-    >>> matcher.check("Priem Jason", "J. Priem").consistent
+    >>> matcher.check("Smith Mary", "M. Smith").consistent
     False
 
 A pair is consistent when every field compares in a way the matcher

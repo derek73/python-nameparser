@@ -254,11 +254,11 @@ for routing a record to human review instead of trusting it silently.
 Credentials that are also surnames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The post-nominals that double as ordinary surnames, such as ``MA``,
-report an ambiguity the same way. The writing usually settles which
-reading a bare one gets: capitals in a name written in more than one
-case read the credential (``Jack MA``) and settle it, as periods do,
-so no ``suffix-or-name`` fork is reported. Any other cased spelling
+The post-nominals that double as ordinary surnames report an ambiguity
+the same way. For an acronym such as ``MA`` the writing usually settles
+which reading a bare one gets: capitals in a name written in more than
+one case read the credential (``Jack MA``) and settle it, as periods
+do, so no ``suffix-or-name`` fork is reported. Any other cased spelling
 that is not wholly lowercase leans to the surname (``Jack Ma``), and
 where the writing gives no signal, all lowercase or a name written
 wholly in one case, the count of words before it decides. Both choices
@@ -274,6 +274,15 @@ are recorded:
     ['suffix-or-name']
     >>> parse("John Smith MA").ambiguities
     ()
+
+A credential written as a word that is also a surname (``KC``, ``PC``,
+``DL``) takes no lean from capitals: the count decides, and the fork is
+reported:
+
+.. doctest::
+
+    >>> parse("John Smith KC").suffix, parse("John Smith KC").ambiguities
+    ('KC', (Ambiguity('suffix-or-name': 'KC'),))
 
 :ref:`ambiguous-words` has the full rules, including how a comma
 changes them.
