@@ -27,15 +27,36 @@ Coming from 1.x, or from 2.x code using ``HumanName``? :doc:`migrate`.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Reading names
 
    usage
-   concepts
+   shapes
+   east-asian
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Lists of names
+
+   suggest
+   matching
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Configuring
+
    customize
+   policy
    locales
-   migrate
+   languages
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Background and reference
+
+   concepts
    modules
+   migrate
    release_log
-   resources
    contributing
 
 Indices and tables

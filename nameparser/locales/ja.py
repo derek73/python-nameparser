@@ -162,7 +162,7 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     statistically divided name carries the report and every
     rule-divided one carries none. The two-character rule is the case
     to know about: dividing 原恵 one character each way is a
-    presumption Japanese practice makes, not a measurement (usage.rst
+    presumption Japanese practice makes, not a measurement (east-asian.rst
     says so), yet the 1.0 keeps it silent. That is namedivider's own
     stated certainty, taken as given here; ``DividedName.algorithm``
     names which rule answered and is the hook if presumption-reporting

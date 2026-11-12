@@ -691,7 +691,7 @@ def test_zh_composes_with_korean_defaults() -> None:
 
 
 def test_honorific_spellings_agree_where_the_vocabulary_divides() -> None:
-    # usage.rst says a SPACED honorific is how you keep a family name
+    # east-asian.rst says a SPACED honorific is how you keep a family name
     # whole. That holds only where a SEGMENTER divides it -- the ja
     # tests below pin that half -- because the segmenter's precondition
     # counts any neighbour and a spaced honorific is one. The
@@ -1162,7 +1162,7 @@ def test_ja_stacked_on_zh_pays_the_zh_packs_documented_cost() -> None:
     # under ZH+JA exactly as it does under ZH alone -- the same reading
     # cases.py's zh_japanese_kanji_tradeoff row records, and the reason
     # the docs call the two packs corpus alternatives and qualify the
-    # stack (see _script_segment.py's module docstring, usage.rst and
+    # stack (see _script_segment.py's module docstring, east-asian.rst and
     # the release log). JA alone reads it correctly (test_ja_end_to_end).
     p = parser_for(locales.ZH, locales.JA, segmenter=locales.ja_segmenter())
     n = p.parse("高橋一郎")

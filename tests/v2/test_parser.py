@@ -220,7 +220,7 @@ def test_ambiguous_particle_middle_defeats_both_family_first_orders() -> None:
     # the vocabulary layer joins the ambiguous particle "van" forward
     # before the positional layer runs, so a name whose middle word
     # collides with it parses identically under either family-first
-    # order -- the caution in customize.rst rests on this
+    # order -- the caution in policy.rst rests on this
     for order in (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
         pn = Parser(policy=Policy(name_order=order)).parse("Nguyen Van Minh")
         assert (pn.family, pn.middle, pn.given) == ("Nguyen", "", "Van Minh")
@@ -2294,7 +2294,7 @@ _NFD_ROWS = [
     # jamo, outside every _NO_INITIALS range until #1087, so composing the initial
     # shape alone made a decomposed '씨.' an initial (a title or a
     # given name). Spaced or after a comma, since an UNSPACED
-    # decomposed hangul name is not split (docs/usage.rst) and so has
+    # decomposed hangul name is not split (docs/east-asian.rst) and so has
     # no composed twin to match
     "김민준, 씨.",
     "김 민준 씨.",

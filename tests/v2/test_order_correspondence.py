@@ -38,7 +38,7 @@ ENTRY CLAIMED 216 of 216 ... Recompute over the WHOLE vocabulary,
 never a sample").
 
 Three limits, load-bearing (from #469 and #467). All three are now
-restated in customize.rst's family-first section, alongside the
+restated in policy.rst's family-first section, alongside the
 corrected 603/630 measurement:
 
 - One shape written two ways, NOT comma-deletion in general. A name

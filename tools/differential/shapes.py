@@ -2,7 +2,7 @@
 name_order it is an input shape FOR, and the oldest baseline whose
 worker can honor that order.
 
-Shapes 1-3 are docs/usage.rst's three given-first arrangements.
+Shapes 1-3 are docs/shapes.rst's three given-first arrangements.
 Shapes 4-5 are the family-first arrangements: their names are only
 supported UNDER their order, so the snapshot reads them under it, and
 compare.py does not compare them at all below min_baseline -- "we

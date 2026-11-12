@@ -46,7 +46,7 @@ extlinks = {
 # Declaration order is canonical in this codebase (Role order drives the
 # seven-field order everywhere), so the reference lists members in
 # source order, not alphabetically -- Lexicon's vocabulary grouping and
-# Policy's field ordering match the customize.rst table.
+# Policy's field ordering match the policy.rst table.
 autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.

@@ -3356,7 +3356,7 @@ def test_the_case_only_walk_can_fail(
 # differently is set aside rather than compared: both views follow the
 # parse, so the comparison would report the parse, and the one class that does so is
 # unspaced hangul, which segmentation matches as written by decision
-# (docs/usage.rst, "Decomposed text"). The test below pins that filter.
+# (docs/east-asian.rst, "Decomposed text"). The test below pins that filter.
 
 def _hangul(text: str) -> bool:
     return any("가" <= c <= "힣"
