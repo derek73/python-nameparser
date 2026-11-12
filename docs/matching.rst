@@ -422,11 +422,12 @@ records, where holders filed their own names, it agrees with their
 boxes about 21.5 points less often than the default does (measured
 2026-11-12, #1203).
 
-The fold compares the family's words regardless of order, so two names
-consistent under it are not always one person. A name whose father and
-grandfather are written the other way round is consistent, and so, under
-either matcher, is a two-word name whose second word is the other
-name's grandfather:
+The matcher compares a family of several words regardless of order, and
+the fold makes every such family several words, so two names consistent
+under it are not always one person. A name whose father and grandfather
+are written the other way round is consistent, and so, under either
+matcher, is a two-word name whose second word is the other name's
+grandfather:
 
 .. doctest::
 
