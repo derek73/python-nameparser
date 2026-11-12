@@ -56,7 +56,7 @@ Getting started
     >>> name.family_base, name.family_particles
     ('Vega', 'de la')
 
-**Have a list of names from one source?** A single name cannot show
+**Have a list of names from one source?** A single name often cannot show
 which word is the family name (in ``Taylor Morgan`` either word could
 be), but a list written one way can. ``suggest()`` reads the list and
 returns a parser that reads it, with the evidence for each setting it

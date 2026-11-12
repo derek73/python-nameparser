@@ -142,9 +142,8 @@ takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 200 for Indian ones. One list keeps its order less
 often: bylines written with the initials first (``GH Yoon``), whose
 joined initials are read as a family name, so a group of ten or more is
-usually suggested family-first. A plain list of names with no
-listed surname, or given name rarely written as a surname, in it
-(``Taylor Morgan``) carries no evidence,
+usually suggested family-first. A list whose names hold no such surname or
+given name (``Taylor Morgan``, ``Jordan Casey``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The
 parser never detects the language of a name; the suggester may, over a

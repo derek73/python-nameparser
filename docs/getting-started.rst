@@ -93,11 +93,12 @@ it, and ``suggestion.base`` is the parser you started from:
 
 Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
 the romanized surname in front, ``Garcia Emily`` by the common given
-name at the end. ``Taylor Morgan`` gives no evidence, so the suggested
+name at the end (``Garcia`` is not one of the surnames ``suggest``
+reads). ``Taylor Morgan`` gives no evidence, so the suggested
 parser reads it family first only because the rest of the list is
 written that way; nothing in the name itself can confirm that reading.
-A name written the other way round votes against the list, and is the
-one to check by hand (see :ref:`a name that disagrees
+A name written the other way round that carries evidence (``Emily
+Clark``) votes against the list, and is the one to check by hand (see :ref:`a name that disagrees
 <suggest-disagreeing>`).
 
 The evidence is in the names themselves: a common romanized Chinese,
