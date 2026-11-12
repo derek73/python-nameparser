@@ -1103,7 +1103,9 @@ class Ambiguity:
     #: call gone the other way (the first token's field, for a report on
     #: more than one). None where the kind reports no fork between two
     #: readings of a word (comma-structure, unbalanced-delimiter,
-    #: segmentation), and where the parse cannot
+    #: segmentation), for ORDER, whose other reading lays out the whole
+    #: name rather than moving one word (its detail says it in words),
+    #: and where the parse cannot
     #: place the other reading in any field: a connective letter
     #: opening its part ("E JOHN SMITH"), with no word before it to
     #: join, or a chained particle whose piece ends in a title a

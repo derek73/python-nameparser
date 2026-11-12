@@ -600,10 +600,11 @@ _PREFIXED_SHAPES: dict[
     # every initial follows one name word, so rules/O4's order report
     # walks every piece after the word in front before it reports
     # (#1254); the walk is tag tests alone, C-level work no frame
-    # guard sees. Measured 2026-11-11, py3.11, load average ~12, best
-    # of five at this base and 4x: 3.89-4.50 clean; 11.47-12.23 with a
-    # list scan planted per piece (`name_pieces.index(k)`), which
-    # failed this row three runs of three
+    # guard sees. Measured 2026-11-11, py3.11, load average ~5, this
+    # row's own harness: 4.00-4.05 clean; 7.5 with one list scan planted
+    # per piece (`name_pieces.index(k)`), failing this row three runs of
+    # three with 1.25x to spare over _MAX_RATIO, and 12.0-12.1 with two
+    # scans (the #1348 review read the one-scan figure, 7.53-7.62)
     "order_report_initials": (
         "Armitage ", "J. ", Parser(),
         lambda text: "order" in {a.kind.value
