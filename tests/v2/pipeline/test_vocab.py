@@ -21,6 +21,7 @@ from nameparser._pipeline._vocab import (
     lexicon_cue,
     maiden_marker_run, name_word_count, period_joined_credential,
     period_joined_title, period_joined_vocab, written_as_a_name,
+    is_capitals_word,
     resolve_script_set, single_script, suffix_as_written, _joined_chunks,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
@@ -1631,3 +1632,24 @@ def test_a_saint_particle_glued_to_a_name(text: str, cut: int | None) -> None:
     from nameparser._pipeline._vocab import glued_saint_cut
     assert glued_saint_cut(text, _GLUED_LEX.add("sta", "sto", "ste",
                                                 kind="saint")) == cut
+
+
+@pytest.mark.parametrize(("text", "expected"), [
+    # rules/O9's capitals word (#659): two or more capitals ending it,
+    # after any lowercase prefix glued in front
+    ("DUPONT", True), ("MA", True), ("O'BRIEN", True), ("O\u2019BRIEN", True),
+    ("ALLIOT-MARIE", True), ("McDONALD", True), ("d'ESTAING", True),
+    ("ŞAHİN", True), ("ИВАНОВ", True), ("ΚΑΡΑΓΙΑΝΝΗΣ", True),
+    ("WEIß", True), ("E\u0301COLE", True),
+    # one capital, or a name in mixed case
+    ("A", False), ("PhD", False), ("McD", False), ("Dupont", False),
+    ("dupont", False), ("MEng", False),
+    # initials joined by a hyphen, a joiner at either end
+    ("J-P", False), ("A-B-C", False), ("'MBA'", False), ("-AB", False),
+    ("AB-", False),
+    # a full stop, a slash, a digit, a bracket, a caseless letter
+    ("DR.", False), ("GS.TS.", False), ("N/A", False), ("ABC8", False),
+    ("(MBA)", False), ("李", False), ("", False),
+])
+def test_is_capitals_word(text: str, expected: bool) -> None:
+    assert is_capitals_word(text) is expected

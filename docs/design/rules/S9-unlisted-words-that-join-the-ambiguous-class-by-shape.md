@@ -32,6 +32,7 @@
 - **Paired initials at the first slot after a comma** ("García Márquez, G.J."): the dotted shape does not take every promise of the class with it, and the comma's decision reads them as the given name unless something speaks for them (C5).
 - **Paired initials at a trailing slot** ("Ram Bahadur B.K."): in a script that writes capitals, the dotted shape does not admit them to the class where the words-to-spare count would read them, and they are the name word they are written as unless an unambiguous suffix word in front starts a credential run (S3).
 - **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): the dotted shape does not take this promise either: the comma's decision makes it in silence where no listed member takes part, unless paired initials speak only for each other (C11).
+- **An unlisted word in capitals ending a name, under capitals-as-family handling** ("Jean DUPONT"): the caller has said the capitals write the family name, which is the opposite statement about the same word, so the setting that admits it to the class at the end of a name cannot be built with that switch (O9).
 
 ---
 **Signal:** shape: an unlisted word written in capitals or in dotted chunks, standing in a suffix position

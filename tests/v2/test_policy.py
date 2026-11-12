@@ -1,5 +1,5 @@
 import dataclasses
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 import pytest
 
@@ -329,11 +329,13 @@ def test_the_2_3_positional_fields_did_not_move() -> None:
         assert names[:len(_FIELDS_AT_2_3)] == _FIELDS_AT_2_3, cls.__name__
         # each later cycle's fields appended behind the last: 2.4's two,
         # then 2.6's two_family_names, then 3.0's two_given_names and
-        # lone_name_word, then 3.1's initials_as_family
+        # lone_name_word, then 3.1's initials_as_family and
+        # capitals_as_family
         assert names[len(_FIELDS_AT_2_3):] == (
             "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
             "two_family_names", "two_given_names",
-            "lone_name_word", "initials_as_family"), cls.__name__
+            "lone_name_word", "initials_as_family",
+            "capitals_as_family"), cls.__name__
     # the positional binding itself, not just the names
     assert Policy(GIVEN_FIRST, (), frozenset(), frozenset(), False,
                   frozenset(), frozenset(), frozenset(), True,
@@ -929,15 +931,16 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     assert on.parse("John Smith MC").suffix == "MC"
 
 
-def test_a_3_0_policy_pickle_loads_without_initials_as_family() -> None:
+def test_a_3_0_policy_pickle_loads_without_the_3_1_fields() -> None:
     """tests/v2/data/policy_v301.pickle is `Policy(two_family_names=True)`
     and patch_v301.pickle `PolicyPatch(two_given_names=True)`, pickled
     (protocol 4) by the released 3.0.1 wheel, from a directory outside
     the checkout under `PYTHONSAFEPATH=1 uv run --isolated --no-project
     --with 'nameparser==3.0.1'`, the version and module path printed to
     show the wheel answered (2026-11-11). 3.1's `initials_as_family`
-    (rules/O8, #1254) carries ADDED_IN on both types, so each loads
-    with the field's default instead of being refused."""
+    (rules/O8, #1254) and `capitals_as_family` (rules/O9, #659) carry
+    ADDED_IN on both types, so each loads with the fields' defaults
+    instead of being refused."""
     import pickle
     from pathlib import Path
 
@@ -947,8 +950,10 @@ def test_a_3_0_policy_pickle_loads_without_initials_as_family() -> None:
     with open(data / "patch_v301.pickle", "rb") as f:
         patch = pickle.load(f)
     assert policy.initials_as_family is False
+    assert policy.capitals_as_family is False
     assert policy == Policy(two_family_names=True)
     assert patch.initials_as_family is UNSET
+    assert patch.capitals_as_family is UNSET
     assert patch == PolicyPatch(two_given_names=True)
 
 
@@ -970,3 +975,52 @@ def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
     assert policy.two_given_names is False
     assert policy.lone_name_word is Role.GIVEN
     assert policy == Policy(two_family_names=True)
+
+
+# rules/O9's refusal of the switch beside an unlisted capitals word read
+# as a credential everywhere, built directly, through a patch on either
+# side, through dataclasses.replace and through a pack (#659)
+def _capitals_everywhere_ways() -> list[Callable[[], object]]:
+    return [
+        lambda: Policy(capitals_as_family=True,
+                       unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+        lambda: Policy(capitals_as_family=True).patched(PolicyPatch(
+            unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)),
+        lambda: Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
+        .patched(PolicyPatch(capitals_as_family=True)),
+        lambda: dataclasses.replace(
+            Policy(capitals_as_family=True),
+            unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+    ]
+
+
+@pytest.mark.parametrize("build", _capitals_everywhere_ways())
+def test_capitals_as_family_refuses_caps_suffixes_everywhere(
+        build: Callable[[], object]) -> None:
+    with pytest.raises(ValueError) as caught:
+        build()
+    message = str(caught.value)
+    # the offending values, and code that runs: the offered call is
+    # executed, so a spelling that type-checks but raises fails here
+    assert "capitals_as_family=True" in message
+    assert "CapsSuffixes.EVERYWHERE" in message
+    offered = message[message.index("e.g. ") + len("e.g. "):]
+    built = eval(offered, {"Policy": Policy, "CapsSuffixes": CapsSuffixes})
+    assert built.capitals_as_family is True
+    assert built.unlisted_caps_suffixes is CapsSuffixes.AFTER_COMMA
+
+
+@pytest.mark.parametrize("caps", [CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA])
+def test_capitals_as_family_composes_with_the_other_caps_settings(
+        caps: CapsSuffixes) -> None:
+    from nameparser import Parser
+    policy = Policy(capitals_as_family=True, unlisted_caps_suffixes=caps)
+    assert Parser(policy=policy).parse("DUPONT Mary").family == "DUPONT"
+
+
+def test_a_pack_cannot_build_capitals_with_caps_suffixes_everywhere() -> None:
+    from nameparser import Lexicon, Locale, Parser, parser_for
+    pack = Locale(code="xx", lexicon=Lexicon(), policy=PolicyPatch(
+        unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
+    with pytest.raises(ValueError, match="capitals_as_family"):
+        parser_for(pack, base=Parser(policy=Policy(capitals_as_family=True)))

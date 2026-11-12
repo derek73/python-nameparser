@@ -50,6 +50,8 @@ _TWO = Policy(two_family_names=True)
 _GIVEN2 = Policy(two_given_names=True)
 #: rules/O8's switch, likewise (#1254).
 _LETTERS = Policy(initials_as_family=True)
+#: rules/O9's switch, likewise (#659).
+_CAPITALS = Policy(capitals_as_family=True)
 
 #: mirrors tools/differential/shapes.py's SHAPES keys;
 #: test_case_shape_ids_exist_in_the_inventory (test_corpora.py)
@@ -872,6 +874,61 @@ CASES: tuple[Case, ...] = (
          policy=Policy(initials_as_family=True,
                        name_order=FAMILY_FIRST_GIVEN_LAST),
          classification="feat(#1254)"),
+    # rules/O9, the capitals_as_family switch (#659): off by default, so
+    # the default rows say nothing moved (1.4.0, 2.0.0, 2.8.0 and 3.0.1
+    # all read them so, run 2026-11-12), and the switch rows carry the
+    # policy, one per comma shape and order.
+    Case("a_family_in_capitals_first_reads_by_position_by_default",
+         "DUPONT Mary", {"given": "DUPONT", "family": "Mary"},
+         notes="rules/O9's switch is off by default (#659)"),
+    Case("two_surnames_in_capitals_read_by_position_by_default",
+         "Ayla BURSALI AKSOY",
+         {"given": "Ayla", "middle": "BURSALI", "family": "AKSOY"},
+         notes="rules/O9's switch is off by default (#659)"),
+    Case("capitals_as_family_reads_capitals_first_as_the_family",
+         "DUPONT Mary", {"given": "Mary", "family": "DUPONT"},
+         policy=_CAPITALS, classification="feat(#659)"),
+    Case("capitals_as_family_reads_two_surnames_as_one_family",
+         "Ayla BURSALI AKSOY", {"given": "Ayla", "family": "BURSALI AKSOY"},
+         policy=_CAPITALS, classification="feat(#659)"),
+    Case("capitals_as_family_reads_a_run_in_the_middle",
+         "Jeffrey LAM Kin-fung",
+         {"given": "Jeffrey", "middle": "Kin-fung", "family": "LAM"},
+         policy=_CAPITALS, classification="feat(#659)",
+         notes="#1181 under the switch: the other words keep their order"),
+    Case("capitals_as_family_outranks_the_credential_reading",
+         "Hugo LAC", {"given": "Hugo", "family": "LAC"},
+         policy=_CAPITALS, classification="feat(#659)",
+         notes="S6 reads suffix 'LAC' and reports given-or-family "
+               "without the switch; the capitals settle the fork"),
+    Case("capitals_as_family_reads_the_name_before_a_suffix_comma",
+         "Mary DUPONT, PhD",
+         {"given": "Mary", "family": "DUPONT", "suffix": "PhD"},
+         policy=_CAPITALS, classification="feat(#659)"),
+    Case("capitals_as_family_leaves_a_family_comma_to_the_comma",
+         "Dupont, MARY", {"given": "MARY", "family": "Dupont"},
+         policy=_CAPITALS, classification="feat(#659)",
+         notes="the comma names the family; the switch reads only the "
+               "part before the first comma"),
+    Case("capitals_as_family_reads_one_word_before_a_suffix_comma",
+         "DUPONT, PhD", {"family": "DUPONT", "suffix": "PhD"},
+         policy=_CAPITALS, classification="feat(#659)"),
+    Case("capitals_as_family_leaves_a_comma_with_nothing_before_it",
+         ", DUPONT Mary", {"given": "DUPONT", "middle": "Mary"},
+         policy=_CAPITALS, classification="feat(#659)"),
+    Case("capitals_as_family_names_the_family_under_family_first",
+         "Mary DUPONT", {"given": "Mary", "family": "DUPONT"},
+         policy=Policy(capitals_as_family=True, name_order=FAMILY_FIRST),
+         classification="feat(#659)"),
+    Case("capitals_as_family_keeps_the_written_order_under_family_first_given_last",
+         "DUPONT Mary Ann",
+         {"given": "Mary", "middle": "Ann", "family": "DUPONT"},
+         policy=Policy(capitals_as_family=True,
+                       name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#659)"),
+    Case("capitals_as_family_leaves_a_name_wholly_in_capitals",
+         "MARY DUPONT", {"given": "MARY", "family": "DUPONT"},
+         policy=_CAPITALS, classification="feat(#659)"),
     Case("the_nepali_pack_reads_the_letters_as_the_family",
          "Ram Bahadur B K",
          {"given": "Ram", "middle": "Bahadur", "family": "B K"},

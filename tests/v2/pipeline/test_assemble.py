@@ -374,6 +374,14 @@ _EXPECTED_READINGS = [
      "oglu", "patronymic", "shape"),
     ("Ali Ahmad oglu", Policy(patronymic_rules={"turkic"}),  # type: ignore[arg-type]
      "Ahmad", "patronymic", "position"),
+    # rules/O9's switch: a family word in capitals reads by its shape, the
+    # capitals that named it, and a credential's capitals the switch
+    # outranks the same way; a particle the run took keeps its reading
+    ("Mary DUPONT", Policy(capitals_as_family=True), "DUPONT", "name",
+     "shape"),
+    ("Hugo LAC", Policy(capitals_as_family=True), "LAC", "name", "shape"),
+    ("Jean de LA FONTAINE", Policy(capitals_as_family=True), "de",
+     "particle", "vocabulary"),
 ]
 
 

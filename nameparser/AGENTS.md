@@ -70,6 +70,10 @@ Initials run together are also how some SURNAMES are written (Nepali `B.K.`, `K.
 
 Capitals between two name words have the same second reading: some writers put their own initials there (`Maria Ana MA Silva`), so a rule that reads a word's capitals as a credential reads the initials too; #785 met it only in ctgov's field moves, no grid having held the shape, and Derek chose the initials (rules/S8: a name word behind capitals keeps them a name word where no family comma stands).
 
+### A word written in capitals
+
+A rule that reads a word's capitals meets spellings the plain `isupper()` misjudges both ways, and a gate measured before #659's rule (rules/O9) found each in real data: a title or a placeholder written in capitals (`DR.` opening 192 ORCID given boxes, `N/A` in every one of `psc-individuals`' 128 such names), which a full stop or a slash rules out; a surname written in capitals behind a lowercase prefix (`McDONALD`, `d'ESTAING`), which `isupper()` refuses; and a name whose only lowercase letters stand in a title or a particle (`Dr. ANITA ROY`, `MARIA de SOUZA LIMA`), which a whole-name case test calls mixed. Put each in the grid, with a lowercase and a Title-case twin of every example (the twins must not move), and the NFD spelling.
+
 ### Adjacent pairs of words
 
 A predicate over ADJACENT PAIRS of words meets two shapes no grid of one word holds: an overlapping pair and a joining word beside an initial. #752's split-credential test (phase 2e) read `Dr. Ph.` in `Jane Doe Dr. Ph. D.` as the listed `drph`, leaving `D.` a word of its own (found by the maiden take's candidate grid), and a particle beside a surname written short as the listed `ded` (`DE D JUNIOR`, found only in tse-donors' readings), so put a title, a particle and a connective beside each pair spelling, and a pair overlapping another, in the grid.

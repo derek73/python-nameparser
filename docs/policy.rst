@@ -67,6 +67,12 @@ listed below.
        name (``Lakshmi R S``), for South Asian data where the letters
        stand for a family name. Defaults to ``False``. See
        :ref:`initials-as-family`.
+   * - ``capitals_as_family``
+     - ``bool``
+     - Reads the words a name writes in capitals as its family name
+       (``DUPONT Jean``), for data whose source writes every family
+       name in capitals. Defaults to ``False``. See
+       :ref:`capitals-as-family`.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
@@ -627,6 +633,87 @@ whole name, the word in front as the family, which
     True
     >>> letters.parse("Kavitha S").ambiguities
     ()
+
+.. _capitals-as-family:
+
+Family names written in capitals
+--------------------------------
+
+Some lists write every family name in capitals: France's register of
+elected officials (``DUPONT Jean``), Hong Kong's Legislative Council
+(``CHAN Kin-por``, ``Jeffrey LAM Kin-fung``), the Turkish, Azerbaijani
+and Kazakh parliaments, and Japanese names written in Latin script.
+The capitals mark the family name where position cannot: the same list
+puts it first, last or in the middle, and writes two surnames as one.
+The default reads by position, so a family name written first is read
+as the given name, and a second surname as a middle name:
+
+.. doctest::
+
+    >>> dupont = parse("DUPONT Marie")
+    >>> dupont.given, dupont.family
+    ('DUPONT', 'Marie')
+    >>> parse("Ayla BURSALI AKSOY").middle
+    'BURSALI'
+
+``capitals_as_family=True`` reads the run of words in capitals as the
+family name wherever it stands, and the other words in their written
+order, the first the given name:
+
+.. doctest::
+
+    >>> capitals = Parser(policy=Policy(capitals_as_family=True))
+    >>> capitals.parse("DUPONT Marie").family
+    'DUPONT'
+    >>> capitals.parse("Ayla BURSALI AKSOY").family
+    'BURSALI AKSOY'
+    >>> lam = capitals.parse("Jeffrey LAM Kin-fung")
+    >>> lam.given, lam.middle, lam.family
+    ('Jeffrey', 'Kin-fung', 'LAM')
+
+What it reads:
+
+- **A capitals word** has two or more letters written in capitals
+  (``O'BRIEN`` and ``McDONALD`` count) and no full stop or slash
+  (``DR.`` and ``N/A`` do not).
+- **The run** joins across particles and conjunctions
+  (``Aude BROSSARD de VILLEMONT``), and takes a lowercase particle
+  written right before it (``Jean de LA FONTAINE``). A run of particles
+  alone is none, and where a name word divides two runs, the last is
+  the family.
+- **The capitals outrank a credential or title reading**, so
+  ``Hugo LAC`` gives family ``LAC`` and ``DOYEN Hugo`` family
+  ``DOYEN``. A listed credential or numeral ending the run still comes
+  off where a capitals word is left (``Marie GRAJALES III`` gives
+  suffix ``III``), and a roman numeral alone stays the suffix
+  (``John Smith III``).
+
+What it leaves alone: a name with no lowercase letter outside its
+titles and particles (``MARIE DUPONT``, ``Dr. MARIE DUPONT``), and the
+words after the first comma, so a family comma still names the family
+and a credential after a comma stays one:
+
+.. doctest::
+
+    >>> capitals.parse("MARIE DUPONT").given
+    'MARIE'
+    >>> capitals.parse("Dupont, MARIE").family
+    'Dupont'
+    >>> chan = capitals.parse("Hon CHAN Kin-por, GBS, JP")
+    >>> chan.family, chan.suffix
+    ('CHAN', 'GBS, JP')
+
+Turn it on only for data written this way. Elsewhere capitals as often
+write a given name (``ANNA Smith`` gives family ``ANNA``), a credential
+with no comma before it (``John Smith MD`` gives family ``MD``), or
+joined initials (``Jan GM Brouwer`` gives family ``GM``). Measured on
+ORCID researchers' own boxes, where one box holds the words in
+capitals, it is the family box nine times in ten (2026-11-11). The
+switch reports nothing, and ``capitalized()`` leaves the name as
+written, since it is in mixed case; ``capitalized(force=True)`` recases
+the family too. It cannot be set with
+``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads an
+unlisted capitals word ending a name as a credential.
 
 .. _brackets:
 

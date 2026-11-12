@@ -832,6 +832,15 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
                    and p.parse("Ivan Ivanovich Ivanov").patronymic
                    == "Ivanovich"),
     ),
+    # rules/O9's walk over the words before the comma, its runs joined
+    # across particles and its peel, which run only under the switch:
+    # the probe reads a run joined across a particle and a peel
+    "capitals_as_family": (
+        "Ann DUPONT de LA MBA ",
+        Parser(policy=Policy(capitals_as_family=True)),
+        lambda p: (p.parse("Ann DUPONT de LA MBA").family == "DUPONT de LA"
+                   and p.parse("Ann DUPONT de LA MBA").suffix == "MBA"),
+    ),
 }
 
 

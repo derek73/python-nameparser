@@ -154,7 +154,7 @@ _SCALARS: dict[str, tuple[object, object, object]] = {
     **{flag: (False, True, False) for flag in (
         "middle_as_family", "lenient_comma_suffixes", "strip_emoji",
         "strip_bidi", "unlisted_dotted_suffixes", "two_family_names",
-        "two_given_names", "initials_as_family")},
+        "two_given_names", "initials_as_family", "capitals_as_family")},
 }
 
 

@@ -2223,3 +2223,94 @@ def test_a_surname_pair_tag_post_rules_cannot_read_is_inert(
     out = post_rules(copy_with(state, tokens=tuple(tokens)))
     assert not any("vocab:second-surname" in t.tags for t in out.tokens)
     assert out.ambiguities == state.ambiguities
+
+
+# rules/O9, the capitals_as_family switch (#659). One row per condition
+# of `_post_rules._family_in_capitals`: the reading with the condition in
+# place, and the recorded negative control, the reading with it removed
+# (measured 2026-11-12 by deleting each condition alone on this branch),
+# so a row whose two readings agreed could not show its condition does
+# anything. Each reading names the fields, the reports and, where the
+# condition is what sets it, each word's reading source.
+_CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
+                             dict[str, object], dict[str, object]]] = [
+    ("a family comma names the family", "DUPONT Mary, Ann", {},
+     {"given": "Ann", "family": "DUPONT Mary"},
+     {"given": "Mary Ann", "family": "DUPONT"}),
+    ("only the part before the first comma", "Mary Dupont, MA", {},
+     {"given": "Mary", "family": "Dupont", "suffix": "MA"},
+     {"given": "Mary", "middle": "Dupont", "family": "MA"}),
+    ("only a name in mixed case", "MARY DUPONT", {},
+     {"given": "MARY", "family": "DUPONT"},
+     {"family": "MARY DUPONT"}),
+    ("a run of particles alone is no run", "Karim AL Haddadi", {},
+     {"given": "Karim", "family": "AL Haddadi"},
+     {"given": "Karim", "middle": "Haddadi", "family": "AL"}),
+    ("a lone numeral is no run", "John Smith III", {},
+     {"given": "John", "family": "Smith", "suffix": "III"},
+     {"given": "John", "middle": "Smith", "family": "III"}),
+    ("the last of two runs", "PETER Okello MUWANGA", {},
+     {"given": "PETER", "middle": "Okello", "family": "MUWANGA"},
+     {"given": "Okello", "middle": "MUWANGA", "family": "PETER"}),
+    ("the peel only at the end of the name", "Ann DUPONT MBA Lee", {},
+     {"given": "Ann", "middle": "Lee", "family": "DUPONT MBA"},
+     {"given": "Ann", "middle": "Lee", "family": "DUPONT", "suffix": "MBA"}),
+    ("the peel never leaves only particles", "Anna DE CARO", {},
+     {"given": "Anna", "family": "DE CARO"},
+     {"given": "Anna", "family": "DE", "suffix": "CARO"}),
+    ("a lowercase particle before the run joins it",
+     "Jean de LA FONTAINE", {},
+     {"given": "Jean", "family": "de LA FONTAINE"},
+     {"given": "Jean", "middle": "de", "family": "LA FONTAINE"}),
+    ("runs join across a particle", "Aude BROSSARD de VILLEMONT", {},
+     {"given": "Aude", "family": "BROSSARD de VILLEMONT"},
+     {"given": "Aude", "middle": "BROSSARD", "family": "de VILLEMONT"}),
+    ("the other words keep their units", "Abdul Rahman DUPONT", {},
+     {"given": "Abdul Rahman", "family": "DUPONT"},
+     {"given": "Abdul", "middle": "Rahman", "family": "DUPONT"}),
+    ("a settled fork reports nothing", "Hugo LAC", {},
+     {"given": "Hugo", "family": "LAC", "reports": ()},
+     {"given": "Hugo", "family": "LAC", "reports": ("given-or-family",)}),
+    ("the capitals are the family's source", "Mary DUPONT", {},
+     {"given": "Mary", "family": "DUPONT",
+      "sources": ("position", "shape")},
+     {"given": "Mary", "family": "DUPONT",
+      "sources": ("position", "position")}),
+    ("an earlier rule's attachment mark is cleared", "Mary DUPONT LA",
+     {"name_order": FAMILY_FIRST},
+     {"given": "Mary", "family": "DUPONT LA", "str": "DUPONT LA Mary"},
+     {"given": "Mary", "family": "LA DUPONT", "str": "LA DUPONT Mary"}),
+    ("two family names stand down", "Lucie Anne MARTIN",
+     {"two_family_names": True},
+     {"given": "Lucie", "middle": "Anne", "family": "MARTIN"},
+     {"given": "Lucie", "family": "Anne MARTIN"}),
+]
+
+
+def _capitals_reading(text: str, extra: dict[str, object],
+                      keys: set[str]) -> dict[str, object]:
+    name = Parser(policy=Policy(capitals_as_family=True, **extra)).parse(text)  # type: ignore[arg-type]
+    got: dict[str, object] = {k: v for k, v in name.as_dict().items() if v}
+    if "reports" in keys:
+        got["reports"] = tuple(a.kind.value for a in name.ambiguities)
+    if "sources" in keys:
+        got["sources"] = tuple(t.reading.source.value for t in name.tokens
+                               if t.reading is not None)
+    if "str" in keys:
+        got["str"] = str(name)
+    return got
+
+
+@pytest.mark.parametrize("guard,text,extra,guarded,unguarded",
+                         _CAPITALS_GUARDS,
+                         ids=[row[0] for row in _CAPITALS_GUARDS])
+def test_each_capitals_condition_decides_a_recorded_name(
+        guard: str, text: str, extra: dict[str, object],
+        guarded: dict[str, object], unguarded: dict[str, object]) -> None:
+    assert guarded != unguarded, guard
+    assert _capitals_reading(text, extra, set(guarded)) == guarded
+
+
+def test_the_capitals_switch_is_off_by_default() -> None:
+    assert parse("DUPONT Mary").given == "DUPONT"
+    assert parse("Hugo LAC").suffix == "LAC"
