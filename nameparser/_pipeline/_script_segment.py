@@ -101,7 +101,7 @@ from nameparser._pipeline._vocab import (
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
-from nameparser._policy import Script
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, Script
 from nameparser._types import (
     AmbiguityKind, ReadingKind, ReadingSource, Role, Segmentation, Span,
 )
@@ -896,7 +896,7 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # a neighbour in an East Asian script, not a Cyrillic word, whose
     # classification keys only a declared order (#1237)
     if any(j != i and effective_script(state.tokens[j].text)
-           not in (None, Script.CYRILLIC)
+           in _EAST_ASIAN_SCRIPTS
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state

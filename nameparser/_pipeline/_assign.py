@@ -281,9 +281,10 @@ class EffectiveOrder(NamedTuple):
     order a Han name's W4 entry and the declaration agree, and only
     this flag distinguishes the script rule DECIDING the reading from
     the caller's declaration standing unopposed. O5's convention
-    report reads it (#449). Set only for an East Asian script, whose
-    own convention settles the order (W4) and so a lone word's field
-    (O5's W4 Except): a Cyrillic entry, a pack's declared order
+    report reads it (#449). Set only for an East Asian script's entry:
+    Han, Hangul and kana, whose own convention settles the order (W4)
+    and so a lone word's field (O5's W4 Except), and a caller's own
+    katakana entry, which asserts the Japanese convention (#594): a Cyrillic entry, a pack's declared order
     (locales.MN, #1237), orders a longer name and leaves a lone word to
     O5's convention."""
 

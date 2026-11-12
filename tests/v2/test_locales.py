@@ -599,6 +599,14 @@ def test_mn_reads_a_decomposed_name_alike(
     # mixed, or in the traditional script (whose default order
     # decisions/T6 leaves open)
     "Batyn Sükhee",
+    # a joiner at an edge is no word-inner joiner: the word is no
+    # Cyrillic word (#1237)
+    "-Батын Сүхээ",
+    "'Батын Сүхээ",
+    "Батын- Сүхээ",
+    "Батын' Сүхээ",
+    # a non-ASCII Latin word with a hyphen is no Cyrillic word
+    "Jürgen Müller-Lüdenscheid",
     "BATAAGIIN SUHEE",
     "Bataagiin Suhee, PhD",
     "Uyanga B.",
@@ -700,6 +708,8 @@ _TWICE_COUNTED = [
     ("ꥠᅡ Kim", True, True, False),    # Extended-A
     ("ힰ Kim", True, True, False),      # Extended-B
     ("Pérez García", False, False, False),
+    ("Ли Ли", False, False, False),     # Cyrillic, in the table since #1237, is no run
+
     # the narrowing: compatibility jamo and the katakana phonetic
     # extensions were counted twice by name and are counted once now,
     # being in no range W1 divides (the test below shows the packs

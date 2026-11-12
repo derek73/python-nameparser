@@ -178,6 +178,10 @@ def test_parser_for_warns_where_two_packs_set_one_script_differently() -> None:
                    {Script.CYRILLIC: FAMILY_FIRST}):
         parser_for(_pack("aa", "script_orders", _HAN_FIRST),
                    _pack("bb", "script_orders", second))
+    # a pack setting another script owns none of the base's entries, so
+    # a later pack overriding a default entry warns of nothing
+    parser_for(_pack("aa", "script_orders", {Script.CYRILLIC: FAMILY_FIRST}),
+               _pack("bb", "script_orders", {Script.HAN: GIVEN_FIRST}))
 
 
 def _pack(code: str, field: str, value: object) -> Locale:

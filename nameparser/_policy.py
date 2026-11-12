@@ -213,8 +213,9 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
     # The Cyrillic block and Cyrillic Supplement, Extended-A, -B and -C
-    # (#1237); the combining marks a decomposed letter carries are
-    # composed away before classification (_vocab._normalized_for_script)
+    # (#1237); a decomposed letter is composed before classification
+    # (_vocab._normalized_for_script) where a precomposed form exists,
+    # so a stress mark with none (е́) leaves its word unclassified
     Script.CYRILLIC: ((0x0400, 0x052F), (0x1C80, 0x1C8F), (0x2DE0, 0x2DFF),
                       (0xA640, 0xA69F)),
 }

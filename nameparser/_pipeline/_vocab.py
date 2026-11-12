@@ -123,7 +123,8 @@ _CYRILLIC_LETTERS = frozenset(chr(c) for lo, hi in _SCRIPT_RANGES[Script.CYRILLI
 
 #: The joiners a Cyrillic name word is written with inside it, hyphens
 #: and the apostrophes Ukrainian and Belarusian write (`Оюун-Эрдэнэ`,
-#: `Мар'яна`), deleted from the classified copy only between letters,
+#: `Мар'яна`), deleted from the classified copy of a word that neither
+#: opens nor ends with one,
 #: so a hyphenated Cyrillic word keys a declared Cyrillic order as a
 #: plain one does (#1237); the shared table stays letters only, since
 #: the East Asian readers of it never see these.

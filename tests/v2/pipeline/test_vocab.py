@@ -912,6 +912,16 @@ def test_maiden_marker_run_does_not_claim_a_word_that_folds_away() -> None:
     assert maiden_marker_run([".", "z", "domu"], _PHRASE) == 0
 
 
+def test_effective_script_reads_a_joined_cyrillic_word() -> None:
+    # #1237: a hyphen or apostrophe inside a Cyrillic word keeps it
+    # Cyrillic; at an edge, beside another script, or in Latin it does not
+    assert effective_script("Оюун-Эрдэнэ") is Script.CYRILLIC
+    assert effective_script("Мар'яна") is Script.CYRILLIC
+    for text in ("-Ива", "Ива-", "'Ива", "Müller-Lüdenscheid", "Иван-王",
+                 "Jean-Paul", "José"):
+        assert effective_script(text) is None, text
+
+
 def test_single_script_requires_every_char_in_one_script() -> None:
     assert single_script("毛泽东") is Script.HAN
     assert single_script("諸葛") is Script.HAN          # traditional

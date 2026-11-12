@@ -1021,3 +1021,13 @@ def test_cyrillic_in_segment_scripts_divides_nothing() -> None:
                     segmenter=seg)
     assert parser.parse("Иванов Иван").as_dict()["given"] == "Иванов"
     assert calls == []
+
+
+def test_a_middle_dot_between_cyrillic_letters_keeps_the_word_whole() -> None:
+    # rules/T3's flank reads the East Asian scripts only: Cyrillic, in
+    # the script table since #1237, keeps a punt volat inside its word
+    # as Latin does, so the default reads as on 3.0.1
+    from nameparser import parse
+    assert parse("Гал·ла Иванова").given == "Гал·ла"
+    assert parse("Gal·la Ivanova").given == "Gal·la"
+

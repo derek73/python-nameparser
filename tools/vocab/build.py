@@ -775,8 +775,8 @@ DIVIDERS = frozenset({",", "\u060c", "\uff0c", "\u1363", "\u104a",
 #: _tokenize.py's _EMOJI_RANGES, stripped under strip_emoji (default on).
 EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                 (0x2600, 0x26FF), (0x2700, 0x27BF))
-#: The spans of nameparser/_policy.py's _SCRIPT_RANGES (Han, Hangul,
-#: hiragana, katakana): an interpunct between two of these characters
+#: The spans of nameparser/_policy.py's _EAST_ASIAN_SCRIPTS (Han, Hangul,
+#: hiragana, katakana; not CYRILLIC, in _SCRIPT_RANGES since #1237): an interpunct between two of these characters
 #: divides the name (rules/T3), anywhere else it is part of the word.
 EAST_ASIAN_RANGES = ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                      (0xF900, 0xFAFF), (0x20000, 0x323AF), (0x1100, 0x11FF),
