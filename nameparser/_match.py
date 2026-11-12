@@ -689,7 +689,8 @@ def _fold(text: str) -> str:
 
 def _base_of(name: ParsedName, role: Role) -> str:
     """A role's text without its particles, as `family_base` writes the
-    family's (the maiden's, which `across-roles` keys as family words)."""
+    family's: the maiden's, which the check's maiden row compares
+    (`_compare_maiden`) and `across-roles` keys as family words."""
     return name._text_for(role, without_tag="particle",
                           unless_tag=UNJOINED_TAG)
 
