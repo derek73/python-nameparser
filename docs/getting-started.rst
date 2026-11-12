@@ -52,7 +52,7 @@ you, and :doc:`shapes` the forms of input it reads.
 A list of names: let ``suggest`` choose the settings
 -----------------------------------------------------
 
-One name cannot show its order: in ``Taylor Morgan`` either word
+One name often cannot show its order: in ``Taylor Morgan`` either word
 could be the family name, and a reader cannot tell which any more than
 the parser can. A list from one source can, because a source writes
 every name the same way and many of its names carry evidence of the
