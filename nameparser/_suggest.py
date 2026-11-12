@@ -225,9 +225,11 @@ def _ends_in_post_nominal(words: list[str], lexicon: Lexicon,
     name words in front of them, as the trailing fork's words-to-spare
     count asks (rules/S10, rules/S3): `Armitage V` and `Smith J.P.` end
     in initials."""
-    word = words[-1]
-    if len(words) < 2 or _a_listed_name(word):
+    # the length first: the titles read past at the head can leave no
+    # word at all (`Dr.`, `Jr.`, which H2's shape reads as a title there)
+    if len(words) < 2 or _a_listed_name(words[-1]):
         return False
+    word = words[-1]
     stem = word.rstrip(".")
     if len(words) < 3 and (len(stem) == 1 or _is_initialed(word)):
         return False
@@ -349,10 +351,11 @@ Vote = tuple[Role, Role, Role] | PatronymicRule
 #: patronymic rules.
 SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule]
 
-# The four thresholds, chosen with tools/differential/suggest_measure.py
+# The thresholds, chosen with tools/differential/suggest_measure.py
 # so that a group written in its base's own order stays right in at
 # least 95% of draws at every size; the measurements behind each are in
-# decisions/group-suggestion, 2026-11-10 THRESHOLDS.
+# decisions/group-suggestion, 2026-11-10 THRESHOLDS and 2026-11-11
+# TRAILING INITIAL.
 
 #: The fewest names voting for a value that can decide it.
 _MIN_VOTES = 2
@@ -368,6 +371,14 @@ _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
 #: besides the share, for the same reason.
 _MIN_PATRONYMIC_VOTES = 5
+#: The trailing-initial signal casts its votes only where the names it
+#: reads are at least this many and at least _MIN_TRAILING_SHARE of the
+#: group's names: a byline list ends nearly every name in initials,
+#: while a South Asian or Brazilian list ends a minority that way, and
+#: there the letters are the family or a middle and a family initial
+#: (decisions/group-suggestion, 2026-11-11 TRAILING INITIAL, #1254).
+_MIN_TRAILING_NAMES = 3
+_MIN_TRAILING_SHARE = 0.6
 
 _NAME_ORDER = "name_order"
 _PATRONYMIC_RULES = "patronymic_rules"
@@ -484,7 +495,9 @@ class NameEvidence:
     Order votes are one per NAME: the end the name's order signals
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
-    ``votes`` keeps every signal's vote all the same.
+    ``votes`` keeps every signal's vote all the same, save a
+    trailing-initial vote the group did not cast, too few of its names
+    ending in initials (``Parser.suggest``).
     ``dataclasses.replace`` keeps the votes unless it is passed
     ``votes=`` too."""
 
@@ -937,7 +950,8 @@ def _comma_note(left_out: int) -> str:
 
 
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
-                  rule_needs_given_first: bool, comma_left_out: int
+                  rule_needs_given_first: bool, comma_left_out: int,
+                  trailing_note: str = ""
                   ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``name_order`` in either direction. A family-first answer
     keeps the base's family-first spelling where the base has one. A
@@ -945,7 +959,7 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     the rule reorders each name and stands down under a family-first
     order, unless the names' own votes decide family-first: a decided
     order is never overridden, and the rule then stands down."""
-    notes = [_comma_note(comma_left_out)]
+    notes = [_comma_note(comma_left_out), trailing_note]
     end = tally.winner()
     if rule_needs_given_first and end != FAMILY_FIRST:
         fields: dict[str, object] = (
@@ -1007,16 +1021,68 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
         yield text
 
 
+def _counts_as_initialed(votes: Mapping[Signal, Vote]) -> bool:
+    """Whether a name counts toward the trailing-initial share: its
+    trailing initial is its only order evidence or agrees with the rest
+    of it, so a name whose listed given name contradicts it (`Anna R S`)
+    does not count."""
+    return (Signal.TRAILING_INITIAL in votes
+            and len(_order_ends(votes.items())) == 1)
+
+
+def _trailing_initials_vote(read: list[tuple[str, dict[Signal, Vote], bool]],
+                            lexicon: Lexicon) -> tuple[bool, str]:
+    """Whether the group's trailing-initial votes are cast, and the note
+    saying so where they are not. One rule at every count: where any
+    name casts one, they are cast only where at least _MIN_TRAILING_NAMES
+    names, and _MIN_TRAILING_SHARE of the group's names, count as
+    initialed (_counts_as_initialed). The group is the names that hold
+    a word with a letter or a digit once their titles and post-nominals
+    are read past, as _name_words reads them: a blank, a mark, a
+    zero-width character alone (`\u200b`), a name of nothing but titles
+    and a name a comma left out (which _name_words gives no word) are
+    no names of the group."""
+    if not any(Signal.TRAILING_INITIAL in votes for _, votes, _ in read):
+        return True, ""
+    group = initialed = 0
+    for text, votes, _ in read:
+        words = _name_words(text, lexicon)[0]
+        if not any(c.isalnum() for word in words for c in word):
+            continue
+        group += 1
+        initialed += _counts_as_initialed(votes)
+    if (initialed >= _MIN_TRAILING_NAMES
+            and initialed >= _MIN_TRAILING_SHARE * group):
+        return True, ""
+    verb = "ends" if initialed == 1 else "end"
+    return False, (
+        f"{initialed} of the group's {group} names {verb} in initials no "
+        f"other signal contradicts, too few for the trailing-initial "
+        f"signal to vote: it votes where at least {_MIN_TRAILING_NAMES} "
+        f"names and {_MIN_TRAILING_SHARE:.0%} of the group do")
+
+
 def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     """The settings a group of names suggests, with ``parser`` as the
     base: see :meth:`Parser.suggest`."""
     tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
     evidence: list[NameEvidence] = []
     any_voters = comma_left_out = 0
-    for text in _texts(names):
-        votes, comma = _read(text, parser.lexicon)
-        evidence.append(NameEvidence(text, votes))
+    read = [(text, *_read(text, parser.lexicon)) for text in _texts(names)]
+    trailing_votes, trailing_note = _trailing_initials_vote(
+        read, parser.lexicon)
+    set_aside = 0
+    for text, votes, comma in read:
+        # counted before a set-aside vote leaves it: a name ending in
+        # initials carries evidence all the same, and leaving it out of
+        # the patronymic share's denominator lets one rule win a group
+        # of family-first names written with a patronymic initial
+        # (`Popov Ivan I.`, PatentsView's Russian inventors)
         any_voters += bool(votes)
+        if not trailing_votes and Signal.TRAILING_INITIAL in votes:
+            del votes[Signal.TRAILING_INITIAL]
+            set_aside += not votes
+        evidence.append(NameEvidence(text, votes))
         comma_left_out += comma
         per_setting: dict[str, list[tuple[Signal, Vote]]] = {
             setting: [] for setting in tallies}
@@ -1027,7 +1093,20 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     policy = parser.policy
     patronymic, patronymic_fields, settled = _decide_patronymic(
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
+    if set_aside and any(Signal.PATRONYMIC in n.votes for n in evidence):
+        # the evidence says what its share was taken of: the names a
+        # set-aside vote left with none still count among those casting
+        # one, and show as no evidence
+        counted = ("1 name whose only vote was a set-aside trailing "
+                   "initial counts" if set_aside == 1 else
+                   f"{set_aside} names whose only vote was a set-aside "
+                   f"trailing initial count")
+        patronymic = dataclasses.replace(patronymic, note="; ".join(
+            n for n in (patronymic.note,
+                        f"{counted} among the names casting a vote, the "
+                        f"share's denominator") if n))
     order, order_fields = _decide_order(
-        tallies[_NAME_ORDER], policy.name_order, settled, comma_left_out)
+        tallies[_NAME_ORDER], policy.name_order, settled, comma_left_out,
+        trailing_note)
     patch = PolicyPatch(**order_fields, **patronymic_fields)  # type: ignore[arg-type]
     return Suggestion(parser, patch, (order, patronymic), tuple(evidence))
