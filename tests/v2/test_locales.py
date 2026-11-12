@@ -569,7 +569,7 @@ def test_mn_decomposed_rows_exist() -> None:
 def test_mn_reads_a_decomposed_name_alike(
         text: str, family: str, middle: str, given: str) -> None:
     # Cyrillic ү and ө have no decomposition, so the rows written with
-    # й and ё are the ones NFD reaches
+    # й (Cyrillic) and ü (Latin) are the ones NFD reaches
     got = _require_packed("mn").parse(text)
     assert (got.family, got.middle, got.given) == (family, middle, given)
 
@@ -579,6 +579,13 @@ def test_mn_reads_a_decomposed_name_alike(
     "Сүхээ, Батын",       # whichever word stands before it
     ", Сүхээ",            # nothing before the comma
     "Сүхээ",              # one word: given, under every order (rules/O5)
+    "Батын, Сүхээ Болд",
+    "Батын, Др. Сүхээ",
+    "Батын Сүхээ, Болд",  # a full name before the comma, one word after
+    "Батын, Сүхээ, Jr.",
+    "Др. Сүхээ",
+    "Сүхээ Jr.",
+    "Батын,",
 ])
 def test_mn_reads_a_family_comma_and_a_lone_word_as_the_default(
         text: str) -> None:
@@ -590,6 +597,33 @@ def test_mn_lone_word_follows_the_callers_switch() -> None:
         policy=Policy(lone_name_word=Role.FAMILY)))
     assert family_lone.parse("Сүхээ").family == "Сүхээ"
     assert family_lone.parse("Батын Сүхээ").family == "Батын"
+
+
+#: Readings the 2026-11-12 #1237 entry of decisions/vocabulary-model
+#: states, pinned so the entry goes stale loudly: (text, family, given)
+_MN_STATED = [
+    ("Ц.Сандаг-Очир", "Ц.", "Сандаг-Очир"),      # glued (#1306), rules/T8
+    ("Suhee Bataagiin", "Suhee", "Bataagiin"),    # given first: backwards
+    ("Ноён Азжаргал Төмөр", "Ноён", "Төмөр"),     # Ноён is no listed title
+    ("Lama Батын Сүхээ", "Батын", "Сүхээ"),       # mn.toml's title
+]
+
+
+@pytest.mark.parametrize("text, family, given", _MN_STATED)
+def test_mn_reads_what_its_decision_entry_states(
+        text: str, family: str, given: str) -> None:
+    got = _require_packed("mn").parse(text)
+    assert (got.family, got.given) == (family, given)
+
+
+def test_mn_strict_reads_its_file_and_the_shared_vocabulary() -> None:
+    # the choice is what a strict parser reads: mn.toml's lama stays a
+    # title, en.toml's Sir is no title, and the order still holds
+    strict = parser_for(locales.MN, strict=True)
+    assert strict.parse("Lama Батын Сүхээ").title == "Lama"
+    assert strict.parse("Sir Bataagiin Suhee").title == ""
+    assert _require_packed("mn").parse("Sir Bataagiin Suhee").title == "Sir"
+    assert strict.parse("Батын Сүхээ").family == "Батын"
 
 
 def test_mn_reads_a_trailing_initial_as_the_given_name() -> None:
@@ -1811,11 +1845,12 @@ _ROTATORS["bn"] = [
 
 #: Packs whose choice of languages changes no compiled reading: the
 #: chosen file's readings are all on by default and clash with none
-#: other's, so the choice is recorded (a strict parser reads only that
-#: file) and its derived surface is empty. mn: mn.toml held `lama` and
+#: other's, so the choice is recorded (a strict parser reads that file)
+#: and its derived surface is empty. mn: mn.toml held `lama` and
 #: an exclusion when locales.MN shipped (#1237). A choice that comes to
 #: change a word fails test_an_inert_choice_changes_no_word until its
-#: pack leaves this set and its rotators name the word.
+#: pack leaves this set and its rotators name the word, and
+#: docs/locales.rst's line that mn's choice turns on nothing changes.
 _INERT_CHOICES = frozenset({"mn"})
 
 

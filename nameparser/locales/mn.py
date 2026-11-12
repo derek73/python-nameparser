@@ -17,15 +17,16 @@ name, a clan name (``Боржигин Ухнаагийн Хүрэлсүх``), le
 name in place; the clan name itself is not read (it reads as the
 family, the father's name as the middle).
 
-Data sources: #1237's measurements and the gate re-taken for its pack,
-in decisions/vocabulary-model's 2026-11-12 #1237 entry.
+Data sources: the State Great Khural, JRC-Names, ORCID's Mongolian
+bylines and CLDR's mn sample, measured in decisions/vocabulary-model's
+2026-11-12 #1237 entry.
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the order
 can move any name of two name words or more that a family comma does
 not fix (a one-word name reads as ``Policy.lone_name_word`` names under
 every order, given by default, rules/O5), in any script but those whose
-order rules/W4 settles, so DEVIATES below declares every name holding a
-letter or a digit. The choice's own words are derived
+order rules/W4 settles, so DEVIATES below declares a superset: every
+name holding a letter or a digit. The choice's own words are derived
 (``_reading_index.changed_words``, none on 2026-11-12), which the
 non-interference gate in tests/v2/test_locales.py ors in.
 """

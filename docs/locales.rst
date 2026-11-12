@@ -603,7 +603,7 @@ policy field, the segmentation it needs a segmenter to use.
 beside it: each turns ``two_family_names`` on and carries the given
 names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
 field beside it and no list. ``mn`` is a choice with one policy field,
-``name_order``, and its choice turns on nothing yet. ``vi`` is a choice with one policy field,
+``name_order``, and its choice turns on nothing. ``vi`` is a choice with one policy field,
 ``name_order``, and the one fragment that takes readings out rather
 than adding them: a choice prefers its language's reading of a word
 only where that reading is a title, a particle or another vocabulary

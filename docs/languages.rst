@@ -405,8 +405,8 @@ and matches by:
     >>> sukhee = mongolian.parse("Батын Сүхээ")
     >>> sukhee.family, sukhee.given
     ('Батын', 'Сүхээ')
-    >>> mongolian.parse("Bataagiin Suhee").family
-    'Bataagiin'
+    >>> mongolian.parse("Batyn Sükhee").family
+    'Batyn'
     >>> mongolian.parse("Б. Сүхээ").family
     'Б.'
 
@@ -414,12 +414,12 @@ The order holds for every name of two words or more the pack reads
 without a family comma, in any script whose order the script does not
 settle, so keep it for names written the Mongolian way. A romanized name
 written given name first, as many Mongolians write their names in
-English, reads backwards (``mongolian.parse("Suhee Bataagiin")`` gives
-family ``Suhee``), as does the given name followed by the father's
-initial (``Uyanga B.`` gives family ``Uyanga``), which the default reads
-right, and a name from any other tradition. A
-family comma fixes the family name whatever the order (``Бат, Сүхээ``),
-and a one-word name reads as the given name, as under every order. The
-genitive ending is not read, so ``patronymic`` stays empty, and a word
-written before the father's name, a clan name, reads as the family, the
-father's name as the middle.
+English, reads backwards (``mongolian.parse("Sükhee Batyn")`` gives
+family ``Sükhee``), as does a name from any other tradition, and so does
+the given name followed by the father's initial (``Sükhee B.`` gives
+family ``Sükhee``), which the default reads right. A family comma fixes
+the family name whatever the order (``Бат, Сүхээ``), and a one-word name
+reads as the given name, as under every order. The genitive ending is
+not read, so ``patronymic`` stays empty, and a word written before the
+father's name, a clan name, reads as the family, the father's name as
+the middle.
