@@ -248,6 +248,8 @@ MUTATIONS = [
     ("rules-flag-default", {"ru.toml": _w('[rules]\ntwo_family_names = false')}, "is the default"),
     # 4g's flag (#704), refused as its default like O6's
     ("rules-two-given-names-default", {"ru.toml": _w('[rules]\ntwo_given_names = false')}, "is the default"),
+    # rules/O8's flag (#1254), refused as its default like O6's and O7's
+    ("rules-initials-as-family-default", {"ru.toml": _w('[rules]\ninitials_as_family = false')}, "is the default"),
     ("rules-order-default", {"ru.toml": _w('[rules]\nname_order = "given-first"')}, "is the default"),
     ("pack-file-without-rules", {"ru.toml": OK}, "locales.RU reads its policy patch"),
     # 1: schema, unknown keys, file names
@@ -1508,7 +1510,7 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ru, sk, tr"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, ru, sk, tr, vi"):
         rules_patch("en")
 
 

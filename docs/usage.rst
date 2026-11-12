@@ -639,8 +639,9 @@ field a name of one name word reads as under every order
 
 The ``Policy`` switches that turn a reading on or off have a flag each,
 spelled as the field: ``--two-given-names``, ``--two-family-names``,
-``--middle-as-family``, ``--lenient-comma-suffixes`` and
-``--unlisted-dotted-suffixes``, each with a ``--no-`` form, and
+``--middle-as-family``, ``--initials-as-family``,
+``--lenient-comma-suffixes`` and ``--unlisted-dotted-suffixes``, each
+with a ``--no-`` form, and
 ``--unlisted-caps-suffixes`` taking ``off``, ``after-comma`` or
 ``everywhere``. Like ``--order``, each replaces the setting of a pack
 given with ``--locale``, keeping the pack's vocabulary, and one left

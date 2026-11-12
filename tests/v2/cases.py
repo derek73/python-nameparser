@@ -48,6 +48,8 @@ from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
 _TWO = Policy(two_family_names=True)
 #: rules/O7's switch, likewise (#704).
 _GIVEN2 = Policy(two_given_names=True)
+#: rules/O8's switch, likewise (#1254).
+_LETTERS = Policy(initials_as_family=True)
 
 #: mirrors tools/differential/shapes.py's SHAPES keys;
 #: test_case_shape_ids_exist_in_the_inventory (test_corpora.py)
@@ -830,6 +832,50 @@ CASES: tuple[Case, ...] = (
          {"given": "Hassan Mohamad", "family": "Ali Omar"},
          policy=Policy(two_given_names=True, middle_as_family=True),
          classification="feat(#704)"),
+    # rules/O8, the initials_as_family switch (#1254): off by default, so
+    # the default row says nothing moved (1.4.0, 2.0.0, 2.8.0 and 3.0.1
+    # all read it so, run 2026-11-11), and the switch rows carry the
+    # policy, one per comma shape and order.
+    Case("letters_ending_a_name_keep_the_last_as_the_family_by_default",
+         "Lakshmi R S",
+         {"given": "Lakshmi", "middle": "R", "family": "S"},
+         notes="rules/O8's switch is off by default (#1254)"),
+    Case("initials_as_family_reads_the_letters_as_the_family",
+         "Lakshmi R S", {"given": "Lakshmi", "family": "R S"},
+         policy=_LETTERS, classification="feat(#1254)"),
+    Case("initials_as_family_leaves_the_middle_name_before_the_letters",
+         "Ram Bahadur B. K.",
+         {"given": "Ram", "middle": "Bahadur", "family": "B. K."},
+         policy=_LETTERS, classification="feat(#1254)"),
+    Case("initials_as_family_reads_the_name_before_a_suffix_comma",
+         "Lakshmi R S, PhD",
+         {"given": "Lakshmi", "family": "R S", "suffix": "PhD"},
+         policy=_LETTERS, classification="feat(#1254)"),
+    Case("initials_as_family_leaves_the_given_part_after_a_family_comma",
+         "Lakshmi, R S",
+         {"given": "R", "middle": "S", "family": "Lakshmi"},
+         policy=_LETTERS, classification="feat(#1254)",
+         notes="the comma names the family; the switch moves nothing"),
+    Case("initials_as_family_leaves_a_comma_with_nothing_before_it",
+         ", R S", {"given": "R", "middle": "S"},
+         policy=_LETTERS, classification="feat(#1254)"),
+    Case("initials_as_family_leaves_one_letter_where_it_is",
+         "Kavitha S", {"given": "Kavitha", "family": "S"},
+         policy=_LETTERS, classification="feat(#1254)"),
+    Case("initials_as_family_stands_down_under_a_family_first_order",
+         "Huntley R P", {"given": "R", "middle": "P", "family": "Huntley"},
+         policy=Policy(initials_as_family=True, name_order=FAMILY_FIRST),
+         classification="feat(#1254)"),
+    Case("initials_as_family_stands_down_under_family_first_given_last",
+         "Huntley R P", {"given": "P", "middle": "R", "family": "Huntley"},
+         policy=Policy(initials_as_family=True,
+                       name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#1254)"),
+    Case("the_nepali_pack_reads_the_letters_as_the_family",
+         "Ram Bahadur B K",
+         {"given": "Ram", "middle": "Bahadur", "family": "B K"},
+         locale="ne", classification="feat(#1254)",
+         notes="the default reads middle 'Bahadur B', family 'K'"),
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- the reserve/count this row used to pin no

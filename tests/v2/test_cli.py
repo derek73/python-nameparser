@@ -211,6 +211,7 @@ _SWITCH_ROWS = [
      "García Márquez", "Márquez"),
     ("middle_as_family", "John Quincy Adams", "family",
      "Quincy Adams", "Adams"),
+    ("initials_as_family", "Lakshmi R S", "family", "R S", "S"),
     ("lenient_comma_suffixes", "John Smith, V", "suffix", "V", ""),
     ("unlisted_dotted_suffixes", "John Smith X.Y.Z.", "suffix",
      "X.Y.Z.", ""),

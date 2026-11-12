@@ -9,7 +9,7 @@ extracted, one_case and original, which S1's set-apart pass reads,
 settling S13's members with its own (#810, #792), original also read
 by R1's entry pass for a comma a set-apart clause kept; and order,
 the order assign read the name under, which H1, P1's fold, P6's
-attachment, P10, O1, O2, O6, O7 and W5's surname pair key on rather than
+attachment, P10, O1, O2, O6, O7, O8 and W5's surname pair key on rather than
 Policy.name_order (#395).
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
@@ -29,7 +29,8 @@ SEGMENTATION report where that pair was written undivided, and the ambiguity P6'
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
-Reads: Policy.patronymic_rules, Policy.two_family_names,
+Reads: Policy.patronymic_rules, Policy.initials_as_family,
+Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
 Policy.middle_as_family,
@@ -336,6 +337,39 @@ def _hyphenated_given(text: str, lexicon: Lexicon) -> bool:
     parts = [part for part in _HYPHENS.split(text) if part]
     return len(parts) > 1 and all(is_initial(part) or is_listed_given_name(part, lexicon)
                for part in parts)
+
+
+def _take_trailing_initials(state: ParseState,
+                            tokens: list[WorkToken]) -> None:
+    # rules/O8: "the letters ending the name are its family name" --
+    # under the given-first order, with no family comma, the middle
+    # initials standing right before a family name written as one
+    # initial join it. In place, as every post rule writes; text order
+    # already renders them first, so no tag is needed. History:
+    # decisions/O8 (#1254).
+    # A family comma and a family-first order need no test of their
+    # own: each puts the family first in text order, so no middle stands
+    # right before it for the run below to take (#1347 review).
+    _, given, middle, family = _positions(tokens)
+    if (len(family) != 1 or not middle
+            or "initial" not in tokens[family[0]].tags):
+        return
+    run: list[int] = []
+    i = family[0] - 1
+    while (i >= 0 and tokens[i].role is Role.MIDDLE
+           and "initial" in tokens[i].tags):
+        run.append(i)
+        i -= 1
+    if not run:
+        return
+    # rules/O8: "a name written as nothing but letters keeps its first
+    # letter as the given name" -- a non-initial name word must stand
+    # before the run
+    if not any("initial" not in tokens[j].tags
+               for j in given + middle if j < run[-1]):
+        return
+    for j in run:
+        tokens[j] = copy_with(tokens[j], role=Role.FAMILY)
 
 
 def _take_second_family_name(state: ParseState,
@@ -1251,6 +1285,8 @@ def post_rules(state: ParseState) -> ParseState:
         _given_phrase_middle(state, tokens)
     if pair and (report := _read_surname_pair(state, tokens)) is not None:
         ambiguities.append(report)
+    if state.policy.initials_as_family:
+        _take_trailing_initials(state, tokens)
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
     if state.policy.two_given_names:

@@ -67,6 +67,26 @@ setting's evidence and the names that disagree with it.
 ``disagreeing()`` lists the names whose vote is against a decided
 setting, the ones to check by hand.
 
+A list of South Asian names often ends each name in letters that are
+the family name, and repeats them: Nepal's ``B K`` and ``K C`` are
+surnames written short. Where one run of letters ends at least two of
+the list's names and at least half of the names ending in letters,
+``suggest()`` turns ``initials_as_family`` on (see
+:ref:`initials-as-family`); its evidence is the ``initials_as_family``
+entry of ``suggestion.evidence``, whose note names the letters. A list
+whose letters are its family casts no trailing-initial vote on the
+order. A base that reads names family first, or folds every middle name
+into the family (``middle_as_family``), is suggested no change here:
+the switch would change none of its names.
+
+.. doctest::
+
+    >>> nepal = Parser().suggest(["Durga B K", "Sita B.K.", "Hari Thapa"])
+    >>> nepal.patch
+    PolicyPatch(initials_as_family=True)
+    >>> nepal.parser.parse("Ram Bahadur B K").family
+    'B K'
+
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10, re-taken 2026-11-11), a list written in the base's own order keeps it

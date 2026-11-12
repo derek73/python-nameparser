@@ -3,8 +3,9 @@
 `Parser.suggest(names)` reads a group of names a caller declares to share
 one convention and suggests a `name_order` (and `patronymic_rules`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
-`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, and the trailing-initial
-signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`) and its word tables
+`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
+signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`, and for
+`initials_as_family`, `_MIN_RUN_NAMES` and `_MIN_RUN_SHARE`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
 chosen with this tool, and the figures quoted for them in `suggest`'s
 docstring and docs/design/decisions/group-suggestion.md are its output.
@@ -41,7 +42,11 @@ was written with; a given-first group under the given-first base is right
 where the suggester kept or confirmed the base, and wrong only where it
 moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
-same-order rows, which must not fall below 95%.
+same-order rows, which must not fall below 95%. Under each population,
+the groups that decided the East Slavic rule and the groups that decided
+`initials_as_family` (rules/O8), each over every group of both written
+orders and both bases; `--base` lists a population whose counts moved.
+`--set _MIN_RUN_NAMES=1000000` decides the switch in no group.
 
 THE SIGNALS: per population and written order, over at most SIGNAL_NAMES
 names, the per-NAME order votes (`suggest`'s unit: right, wrong,
@@ -126,9 +131,10 @@ GF, FF = "GF", "FF"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
             "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
-            "_MIN_TRAILING_SHARE")
+            "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE")
 #: The thresholds that count names, read as int.
-_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES")
+_COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
+           "_MIN_RUN_NAMES")
 
 #: decisions/group-suggestion's TURKIC lists, and the end each writes the
 #: family at: "caps" where the one capitals word is the family, else the
@@ -431,7 +437,7 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
     lexicon = bases[GF].lexicon
     rng = group_rng(seed, label)
     cells: dict[str, list[float | None]] = {}
-    east_slavic = 0
+    east_slavic = letters = 0
     for order in (GF, FF):
         row = {base: [] for base in bases}
         for size in sizes:
@@ -447,6 +453,10 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     right[base] += _end(s.parser.policy.name_order) == order
                     east_slavic += PatronymicRule.EAST_SLAVIC in (
                         s.parser.policy.patronymic_rules)
+                    # rules/O8's switch (#1254); a tree without the
+                    # field reads False
+                    letters += getattr(s.parser.policy,
+                                       "initials_as_family", False)
             for base in bases:
                 row[base].append(right[base] / trials)
         for base in bases:
@@ -484,7 +494,8 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
         signals[order] = dict(stats)
         words[order] = {s: c.most_common(wrong_words) for s, c in wrong.items()}
     return {"label": label, "size": len(pool), "cells": cells,
-            "signals": signals, "words": words, "east_slavic": east_slavic}
+            "signals": signals, "words": words, "east_slavic": east_slavic,
+            "letters": letters}
 
 
 #: The populations whose names the romanized surname table is for.
@@ -646,8 +657,12 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
         for script, names in scripts.items():
             for base, parser in bases.items():
                 s = parser.suggest(names)
-                order, rules = s.evidence
-                suggestions.append({
+                # by setting, not position: a tree that suggests a
+                # setting more (initials_as_family, #1254) adds an entry
+                evidence = {e.setting: e for e in s.evidence}
+                order = evidence["name_order"]
+                rules = evidence["patronymic_rules"]
+                row = {
                     "dataset": dataset, "script": script, "base": base,
                     "names": len(names), "order": _end(order.value),  # type: ignore[arg-type]
                     "order_decided": order.decided,
@@ -655,7 +670,13 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
                                order.contested, order.no_evidence],
                     "rules": sorted(r.value for r in rules.value),  # type: ignore[attr-defined]
                     "rules_decided": rules.decided,
-                    "rule_counts": [rules.votes_for, rules.votes_against]})
+                    "rule_counts": [rules.votes_for, rules.votes_against]}
+                letters = evidence.get("initials_as_family")
+                # recorded only where decided, so a base that cannot
+                # suggest it compares equal on every other list
+                if letters is not None and letters.decided:
+                    row["letters"] = [letters.votes_for, letters.votes_against]
+                suggestions.append(row)
     return {"turkic": turkic, "suggestions": suggestions}
 
 
@@ -706,6 +727,9 @@ def report(result: dict[str, Any], show_words: bool) -> None:
         if p["east_slavic"]:
             print(f"{'':14} (the East Slavic rule was decided in "
                   f"{p['east_slavic']} groups, and forced a given-first order)")
+        if p.get("letters"):
+            print(f"{'':14} (initials_as_family was decided in "
+                  f"{p['letters']} groups)")
     print(f"\n-- votes per name (right/wrong/contested/none) and per signal "
           f"(right/wrong), at most {SIGNAL_NAMES} names")
     for p in result["populations"]:
@@ -769,6 +793,9 @@ def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
         if was.get("east_slavic") != p["east_slavic"]:
             out.append(f"{p['label']:14} east_slavic groups "
                        f"{was.get('east_slavic')} -> {p['east_slavic']}")
+        if was.get("letters", 0) != p.get("letters", 0):
+            out.append(f"{p['label']:14} initials_as_family groups "
+                       f"{was.get('letters', 0)} -> {p.get('letters', 0)}")
     parl_old, parl_new = base.get("parliaments") or {}, head.get("parliaments") or {}
     turkic_old = parl_old.get("turkic", {})
     for dataset, row in (parl_new.get("turkic") or {}).items():

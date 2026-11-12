@@ -30,7 +30,10 @@ together, ``patronymic_rules`` first and ``name_order`` second: a
 decided East Slavic rule reorders each name itself and stands down
 under a family-first order, so it decides the order as given-first,
 unless the names' own votes decide family-first, which it never
-overrides (decisions/group-suggestion). A setting is
+overrides (decisions/group-suggestion). Before either it decides
+``initials_as_family`` (rules/O8) from the runs of letters ending the
+group's names, a group property with no per-name vote, and a group
+decided so casts no trailing-initial vote on its order. A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
 votes, gives back a parser that reads exactly as the base does. The
@@ -61,6 +64,7 @@ from ._pipeline._vocab import (
 )
 from ._policy import (
     UNSET, PatronymicRule, Policy, PolicyPatch, _order_repr, apply_patch,
+    initials_as_family_may_move,
 )
 from ._types import (
     FAMILY_FIRST, GIVEN_FIRST, Role, _guarded_getstate, _guarded_setstate,
@@ -298,6 +302,46 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     return None
 
 
+def _letter_run(text: str, readers: tuple[Parser, Parser]) -> str | None:
+    """The letters ending `text` that are evidence of the convention
+    rules/O8 reads, folded and run together (`Lakshmi R. S.` gives
+    ``rs``), or None. A spaced run counts where the rule reads it, asked
+    of the parse itself with the switch on and off (the base's lexicon,
+    the given-first order the rule reads under), so it counts exactly
+    where the rule moves a name. A run written joined with full stops
+    (`B.K.`, `K.C.`) ending the name's words after a name word counts
+    too, though the rule never moves it: the parse makes it the family
+    already (rules/T7), so it is the same convention, and the setting it
+    suggests moves only the spaced runs beside it. Two or three bare
+    capitals (`BK`) do not count: they are written as a short surname is
+    (`Zhi LI`)."""
+    # the cheap text test first: a name it refuses holds no run at all
+    if not initials_as_family_may_move(text):
+        return None
+    on, off = readers
+    family = on.parse(text).family
+    if family != off.parse(text).family:
+        return "".join(_normalize(word).replace(".", "")
+                       for word in family.split())
+    # a comma name gives no words (_name_words), so it holds no run
+    words = _name_words(text, readers[0].lexicon)[0]
+    if len(words) < 2 or _is_initialed(words[0]):
+        return None
+    last = words[-1]
+    # joined with full stops alone: a hyphen joins the halves of one
+    # given name (`J.-P.`, `J-H`), which is no family
+    if not ("." in last.rstrip(".") and "-" not in last
+            and _is_initialed(last)):
+        return None
+    letters = [ch for ch in last if ch.isalpha()]
+    # only where the parse makes the word the whole family: an unlisted
+    # dotted credential (`John Smith X.Y.Z.`, rules/S3) is a suffix
+    if len(letters) < 2 or _normalize(
+            readers[1].parse(text).family) != _normalize(last):
+        return None
+    return "".join(letters).lower()
+
+
 def _read(text: str, lexicon: Lexicon
           ) -> tuple[dict[Signal, tuple[Role, Role, Role] | PatronymicRule], bool]:
     """The votes one name casts, and whether a comma left it out."""
@@ -347,9 +391,9 @@ def name_votes(text: str, lexicon: Lexicon
 #: A vote one signal casts: an order, or the patronymic rule a shape
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
-#: A setting's value as SettingEvidence holds it: an order, or a set of
-#: patronymic rules.
-SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule]
+#: A setting's value as SettingEvidence holds it: an order, a set of
+#: patronymic rules, or a switch (initials_as_family).
+SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule] | bool
 
 # The thresholds, chosen with tools/differential/suggest_measure.py
 # so that a group written in its base's own order stays right in at
@@ -371,6 +415,14 @@ _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
 #: besides the share, for the same reason.
 _MIN_PATRONYMIC_VOTES = 5
+#: The fewest names ending in one run of letters (rules/O8) that can
+#: decide initials_as_family, and the share of the names ending in any
+#: run that one run must hold at least: a list written in that
+#: convention repeats its letters (Nepal's `B K` and `K C`), where a
+#: list of middle and family initials or of bylines rarely does
+#: (decisions/group-suggestion, 2026-11-11 LETTER RUNS).
+_MIN_RUN_NAMES = 2
+_MIN_RUN_SHARE = 0.5
 #: The trailing-initial signal casts its votes only where the names it
 #: reads are at least this many and at least _MIN_TRAILING_SHARE of the
 #: group's names: a byline list ends nearly every name in initials,
@@ -382,6 +434,7 @@ _MIN_TRAILING_SHARE = 0.6
 
 _NAME_ORDER = "name_order"
 _PATRONYMIC_RULES = "patronymic_rules"
+_INITIALS_AS_FAMILY = "initials_as_family"
 _SIGNAL_RANK = {signal: rank for rank, signal in enumerate(Signal)}
 
 
@@ -496,8 +549,9 @@ class NameEvidence:
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
     ``votes`` keeps every signal's vote all the same, save a
-    trailing-initial vote the group did not cast, too few of its names
-    ending in initials (``Parser.suggest``).
+    trailing-initial vote the group did not cast: too few of its names
+    ending in initials (``Parser.suggest``), or its runs of letters
+    decided ``initials_as_family``, whose letters are its family.
     ``dataclasses.replace`` keeps the votes unless it is passed
     ``votes=`` too."""
 
@@ -1021,6 +1075,62 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
         yield text
 
 
+def _letter_readers(parser: Parser) -> tuple[Parser, Parser]:
+    """The base with the switch on and off, every other setting the
+    base's own save the fold of every middle into the family (rules/O3),
+    which takes the letters there too and so would hide the run the
+    switch reads. Asked only of a base reading names given first, where
+    the rule acts."""
+    policy = dataclasses.replace(parser.policy, middle_as_family=False)
+    with warnings.catch_warnings():
+        # the base's own construction warnings reached its caller
+        warnings.simplefilter("ignore")
+        return (dataclasses.replace(parser, policy=dataclasses.replace(
+                    policy, initials_as_family=True)),
+                dataclasses.replace(parser, policy=dataclasses.replace(
+                    policy, initials_as_family=False)))
+
+
+def _decide_letters(runs: list[str | None], base_value: bool,
+                    family_first: bool
+                    ) -> tuple[SettingEvidence, dict[str, object]]:
+    """Decide ``initials_as_family``: true where at least _MIN_RUN_NAMES
+    names end in one run of letters and it is at least _MIN_RUN_SHARE of
+    the names ending in any run. A group never decides it false: no
+    name is evidence that letters are NOT a family. Nor does it decide
+    anything under a base reading names family first (`family_first`),
+    where rules/O8 stands down, so the switch would change no name and
+    no name was read for a run."""
+    counts = Counter(run for run in runs if run)
+    carrying = sum(counts.values())
+    if family_first:
+        return (SettingEvidence(
+            _INITIALS_AS_FAMILY, base_value, False, 0, 0, 0, len(runs), (),
+            "not read: the base reads names family first, where letters "
+            "ending a name are never taken as its family"), {})
+    if not counts:
+        return (SettingEvidence(_INITIALS_AS_FAMILY, base_value, False,
+                                0, 0, 0, len(runs), ()), {})
+    run, top = counts.most_common(1)[0]
+    decided = top >= _MIN_RUN_NAMES and top >= _MIN_RUN_SHARE * carrying
+    value = True if decided else base_value
+    # a name ending in a run is evidence FOR the switch, whatever the
+    # group decided; the others carry none
+    votes_for, votes_against = (carrying, 0) if value else (0, carrying)
+    if top >= _MIN_RUN_NAMES:
+        note = (f"{top} of the {carrying} names ending in a run of "
+                f"letters end in {' '.join(run.upper())}")
+    else:
+        verb = "ends" if carrying == 1 else "end"
+        note = (f"{carrying} of {len(runs)} names {verb} in a run of "
+                f"letters, none repeated")
+    fields: dict[str, object] = (
+        {_INITIALS_AS_FAMILY: True} if decided and not base_value else {})
+    return (SettingEvidence(_INITIALS_AS_FAMILY, value, decided, votes_for,
+                            votes_against, 0, len(runs) - carrying, (),
+                            note), fields)
+
+
 def _counts_as_initialed(votes: Mapping[Signal, Vote]) -> bool:
     """Whether a name counts toward the trailing-initial share: its
     trailing initial is its only order evidence or agrees with the rest
@@ -1068,9 +1178,25 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
     evidence: list[NameEvidence] = []
     any_voters = comma_left_out = 0
-    read = [(text, *_read(text, parser.lexicon)) for text in _texts(names)]
+    texts = list(_texts(names))
+    family_first = parser.policy.name_order != GIVEN_FIRST
+    if family_first:
+        runs: list[str | None] = [None] * len(texts)
+    else:
+        readers = _letter_readers(parser)
+        runs = [_letter_run(text, readers) for text in texts]
+    letters, letter_fields = _decide_letters(
+        runs, parser.policy.initials_as_family, family_first)
+    letters_are_family = letters.decided and letters.value is True
+    read = [(text, *_read(text, parser.lexicon)) for text in texts]
     trailing_votes, trailing_note = _trailing_initials_vote(
         read, parser.lexicon)
+    if letters_are_family:
+        # the group's letters are its family (rules/O8), so a name
+        # ending in letters is no evidence of a family-first order
+        trailing_votes, trailing_note = False, (
+            "the trailing-initial signal casts no vote: the group's "
+            "letters are its family (initials_as_family)")
     set_aside = 0
     for text, votes, comma in read:
         # counted before a set-aside vote leaves it: a name ending in
@@ -1108,5 +1234,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     order, order_fields = _decide_order(
         tallies[_NAME_ORDER], policy.name_order, settled, comma_left_out,
         trailing_note)
-    patch = PolicyPatch(**order_fields, **patronymic_fields)  # type: ignore[arg-type]
-    return Suggestion(parser, patch, (order, patronymic), tuple(evidence))
+    fields = {**order_fields, **patronymic_fields, **letter_fields}
+    patch = PolicyPatch(**fields)  # type: ignore[arg-type]
+    return Suggestion(parser, patch, (order, patronymic, letters),
+                      tuple(evidence))
