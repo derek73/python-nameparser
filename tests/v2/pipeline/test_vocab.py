@@ -1641,6 +1641,8 @@ def test_a_saint_particle_glued_to_a_name(text: str, cut: int | None) -> None:
     ("ALLIOT-MARIE", True), ("McDONALD", True), ("d'ESTAING", True),
     ("ŞAHİN", True), ("ИВАНОВ", True), ("ΚΑΡΑΓΙΑΝΝΗΣ", True),
     ("WEIß", True), ("E\u0301COLE", True),
+    # a combining mark with no composed form stays in its letter's run
+    ("BA\u0331R", True),
     # one capital, or a name in mixed case
     ("A", False), ("PhD", False), ("McD", False), ("Dupont", False),
     ("dupont", False), ("MEng", False),
@@ -1650,6 +1652,8 @@ def test_a_saint_particle_glued_to_a_name(text: str, cut: int | None) -> None:
     # a full stop, a slash, a digit, a bracket, a caseless letter
     ("DR.", False), ("GS.TS.", False), ("N/A", False), ("ABC8", False),
     ("(MBA)", False), ("李", False), ("", False),
+    # a digit in the prefix glued in front
+    ("2cDUPONT", False),
 ])
 def test_is_capitals_word(text: str, expected: bool) -> None:
     assert is_capitals_word(text) is expected

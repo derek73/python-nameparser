@@ -2268,9 +2268,43 @@ _CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
     ("the other words keep their units", "Abdul Rahman DUPONT", {},
      {"given": "Abdul Rahman", "family": "DUPONT"},
      {"given": "Abdul", "middle": "Rahman", "family": "DUPONT"}),
-    ("a settled fork reports nothing", "Hugo LAC", {},
+    ("a lone word's fork is settled", "Hugo LAC", {},
      {"given": "Hugo", "family": "LAC", "reports": ()},
      {"given": "Hugo", "family": "LAC", "reports": ("given-or-family",)}),
+    ("a fork on a word of the run is settled", "LE GRAND Hugo", {},
+     {"given": "Hugo", "family": "LE GRAND", "reports": ()},
+     {"given": "Hugo", "family": "LE GRAND",
+      "reports": ("particle-or-given",)}),
+    ("a fork on a word outside the run stands", "Dean Mary DUPONT", {},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT",
+      "reports": ("title-or-name",)},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT",
+      "reports": ()}),
+    ("a one-letter conjunction joins two runs", "Ana LOPEZ Y GARCIA", {},
+     {"given": "Ana", "family": "LOPEZ Y GARCIA"},
+     {"given": "Ana", "middle": "LOPEZ Y", "family": "GARCIA"}),
+    ("a run does not end in a conjunction", "Mary SMITH AND Jones", {},
+     {"given": "Mary", "middle": "AND Jones", "family": "SMITH"},
+     {"given": "Mary", "middle": "Jones", "family": "SMITH AND"}),
+    ("a run does not open with a conjunction", "Mary Ann AND SMITH", {},
+     {"given": "Mary", "middle": "Ann AND", "family": "SMITH"},
+     {"given": "Mary", "middle": "Ann", "family": "AND SMITH"}),
+    ("a particle in Title case is a name word", "MORRISON Van", {},
+     {"given": "Van", "family": "MORRISON"},
+     {"given": "MORRISON", "family": "Van"}),
+    ("a lowercase particle stays with its word", "de Mesnil JEAN Paul", {},
+     {"given": "de Mesnil", "middle": "Paul", "family": "JEAN"},
+     {"given": "Mesnil", "middle": "de Paul", "family": "JEAN"}),
+    ("a joining word left by the peel leaves the run",
+     "Marie DUPONT y MBA", {},
+     {"given": "Marie", "middle": "y", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "Marie", "family": "DUPONT y", "suffix": "MBA"}),
+    ("a joining word is no given name", "JEAN y Perez", {},
+     {"given": "Perez", "middle": "y", "family": "JEAN"},
+     {"given": "y", "middle": "Perez", "family": "JEAN"}),
+    ("a particle that may be a given name is one", "Van Mary DUPONT", {},
+     {"given": "Van", "middle": "Mary", "family": "DUPONT"},
+     {"given": "Mary", "middle": "Van", "family": "DUPONT"}),
     ("the capitals are the family's source", "Mary DUPONT", {},
      {"given": "Mary", "family": "DUPONT",
       "sources": ("position", "shape")},
@@ -2314,3 +2348,11 @@ def test_each_capitals_condition_decides_a_recorded_name(
 def test_the_capitals_switch_is_off_by_default() -> None:
     assert parse("DUPONT Mary").given == "DUPONT"
     assert parse("Hugo LAC").suffix == "LAC"
+
+
+def test_a_conjunction_in_capitals_alone_is_no_run() -> None:
+    # rules/O9's trim leaves nothing of a run that is one conjunction, so
+    # the name reads as it does with the switch off
+    text = "Mary AND Smith"
+    on = Parser(policy=Policy(capitals_as_family=True)).parse(text)
+    assert on.as_dict() == parse(text).as_dict()

@@ -720,7 +720,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: review's dotted-chunk and modifier-head reads, 192 -> 194; #1323's
 #: review, the chunk test of a joined word behind the pair reading the
 #: generation and gated-word sets, 194 -> 196; #659's capitals peel,
-#: its `sets =` binding and the four suffix sets it reads, 196 -> 201);
+#: its `sets =` binding and the four suffix sets it reads, 196 -> 201,
+#: and its review's conjunctions read for a run, 201 -> 202);
 #: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -733,7 +734,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 201, "tools": 20}
+_UNGUARDED_READS = {"library": 202, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

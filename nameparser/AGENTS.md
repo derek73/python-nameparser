@@ -72,7 +72,7 @@ Capitals between two name words have the same second reading: some writers put t
 
 ### A word written in capitals
 
-A rule that reads a word's capitals meets spellings the plain `isupper()` misjudges both ways, and a gate measured before #659's rule (rules/O9) found each in real data: a title or a placeholder written in capitals (`DR.` opening 192 ORCID given boxes, `N/A` in every one of `psc-individuals`' 128 such names), which a full stop or a slash rules out; a surname written in capitals behind a lowercase prefix (`McDONALD`, `d'ESTAING`), which `isupper()` refuses; and a name whose only lowercase letters stand in a title or a particle (`Dr. ANITA ROY`, `MARIA de SOUZA LIMA`), which a whole-name case test calls mixed. Put each in the grid, with a lowercase and a Title-case twin of every example (the twins must not move), and the NFD spelling.
+A rule that reads a word's capitals meets spellings the plain `isupper()` misjudges both ways, and a gate measured before #659's rule (rules/O9) found each in real data on 2026-11-12: a title or a placeholder written in capitals (`DR.` opening 192 given boxes of the 2025-10 ORCID dump, `N/A` in every one of `psc-individuals`' 128 such names), which a full stop or a slash rules out; a surname written in capitals behind a lowercase prefix (`McDONALD`, `d'ESTAING`), which `isupper()` refuses; and a name whose only lowercase letters stand in a title or a particle (`Dr. ANITA ROY`, `MARIA de SOUZA LIMA`), which a whole-name case test calls mixed. Put each in the grid, with a lowercase and a Title-case twin of every example (the twins must not move), and the NFD spelling.
 
 ### Adjacent pairs of words
 

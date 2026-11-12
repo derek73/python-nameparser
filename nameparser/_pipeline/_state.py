@@ -258,9 +258,9 @@ PARTICLE_GIVEN_TAG = "vocab:particle-given"
 #: from the published token like the kind tags above (#694).
 BOUND_PHRASE_TAG = "vocab:bound-phrase"
 #: rules/O9 ("the capitals settle the field"): a word in capitals that
-#: Policy.capitals_as_family read as
-#: the family, written by post_rules, so assemble reads its reading as
-#: the shape's (a word in capitals) rather than its position's.
+#: Policy.capitals_as_family read as the family, written by post_rules,
+#: so assemble reads its reading as the shape's (a word in capitals)
+#: rather than its position's.
 CAPITALS_FAMILY_TAG = "capitals-family"
 
 #: EITHER way a token joins the ambiguous credential class -- the

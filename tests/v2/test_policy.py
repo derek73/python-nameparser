@@ -1010,6 +1010,13 @@ def test_capitals_as_family_refuses_caps_suffixes_everywhere(
     assert built.unlisted_caps_suffixes is CapsSuffixes.AFTER_COMMA
 
 
+def test_a_patch_holding_both_values_is_refused_only_when_applied() -> None:
+    patch = PolicyPatch(capitals_as_family=True,
+                        unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
+    with pytest.raises(ValueError, match="cannot be set with"):
+        Policy().patched(patch)
+
+
 @pytest.mark.parametrize("caps", [CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA])
 def test_capitals_as_family_composes_with_the_other_caps_settings(
         caps: CapsSuffixes) -> None:

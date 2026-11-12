@@ -673,9 +673,9 @@ order, the first the given name:
 
 What it reads:
 
-- **A capitals word** has two or more letters written in capitals
-  (``O'BRIEN`` and ``McDONALD`` count) and no full stop or slash
-  (``DR.`` and ``N/A`` do not).
+- **A capitals word** has two or more capital letters and nothing but
+  letters, apostrophes and hyphens (``O'BRIEN`` and ``McDONALD`` count,
+  ``DR.``, ``N/A`` and ``J-P`` do not).
 - **The run** joins across particles and conjunctions
   (``Aude BROSSARD de VILLEMONT``), and takes a lowercase particle
   written right before it (``Jean de LA FONTAINE``). A run of particles
@@ -689,8 +689,8 @@ What it reads:
   (``John Smith III``).
 
 What it leaves alone: a name with no lowercase letter outside its
-titles and particles (``MARIE DUPONT``, ``Dr. MARIE DUPONT``), and the
-words after the first comma, so a family comma still names the family
+titles, particles, conjunctions and suffixes (``MARIE DUPONT``,
+``Dr. MARIE DUPONT``), and the words after the first comma, so a family comma still names the family
 and a credential after a comma stays one:
 
 .. doctest::
@@ -709,9 +709,11 @@ with no comma before it (``John Smith MD`` gives family ``MD``), or
 joined initials (``Jan GM Brouwer`` gives family ``GM``). Measured on
 ORCID researchers' own boxes, where one box holds the words in
 capitals, it is the family box nine times in ten (2026-11-11). The
-switch reports nothing, and ``capitalized()`` leaves the name as
-written, since it is in mixed case; ``capitalized(force=True)`` recases
-the family too. It cannot be set with
+switch adds no report of its own, and drops a report asking which field
+a word of the run takes, the capitals having settled it.
+``capitalized()`` leaves the name as written, since it is in mixed
+case; ``capitalized(force=True)`` recases the family too. It cannot be
+set with
 ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads an
 unlisted capitals word ending a name as a credential.
 

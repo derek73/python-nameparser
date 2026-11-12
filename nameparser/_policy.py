@@ -52,7 +52,9 @@ class CapsSuffixes(StrEnum):
     #: After a comma and ending a name with no comma ("John Smith XYZ"
     #: gives suffix ``XYZ``), where the all-caps surname convention
     #: does write them -- "Jean Pierre DUPONT" then gives family
-    #: ``Pierre``, suffix ``DUPONT``.
+    #: ``Pierre``, suffix ``DUPONT``. Cannot be set with
+    #: ``Policy.capitals_as_family``, which reads that word as the
+    #: family.
     EVERYWHERE = "everywhere"
 
 
@@ -843,25 +845,31 @@ class Policy:
         default=False, metadata={ADDED_IN: "3.1.0"})
     #: Reads the words a name writes in capitals as its family name,
     #: for data whose source writes every family name in capitals
-    #: (rules/O9): "DUPONT Jean" gives given ``Jean``, family
-    #: ``DUPONT``, "Şebnem BURSALI AKSOY" gives family ``BURSALI
-    #: AKSOY``, and "Jeffrey LAM Kin-fung" gives given ``Jeffrey``,
-    #: middle ``Kin-fung``, family ``LAM``, wherever the capitals stand.
-    #: The capitals outrank a credential or title reading of the word
-    #: ("Hugo LAC", "DOYEN Hugo" give family ``LAC`` and ``DOYEN``),
-    #: while a listed credential or numeral ending the run still peels
-    #: off where a capitals word is left ("Mary GRAJALES III"). A
-    #: capitals word has two or more letters and no full stop or slash
-    #: ("O'BRIEN" and "McDONALD" count, "DR." and "N/A" do not);
-    #: particles and conjunctions join the run, a run of particles alone
-    #: is none, and where a name word divides two runs the last is the
-    #: family. The other words keep their written order, the first the
-    #: given name. Only a name in mixed case is read, a word other than
-    #: a title, particle or suffix holding a lowercase letter, and only
-    #: the part before its first comma, the comma deciding a family
-    #: comma. Off by default: in data that does not write the
-    #: convention, capitals are as often a given name ("ANNA Smith") or
-    #: a credential ("John Smith MD"). Cannot be set with
+    #: (rules/O9): "DUPONT Marie" gives given ``Marie``, family
+    #: ``DUPONT``, "Ayla BURSALI AKSOY" gives family ``BURSALI AKSOY``,
+    #: and "Jeffrey LAM Kin-fung" gives given ``Jeffrey``, middle
+    #: ``Kin-fung``, family ``LAM``, wherever the capitals stand. The
+    #: other words keep their written order, the first that may be a
+    #: given name being the given name.
+    #:
+    #: A capitals word has two or more capital letters and nothing but
+    #: letters, apostrophes and hyphens ("O'BRIEN" and "McDONALD"
+    #: count, "DR.", "N/A" and "J-P" do not). Particles and
+    #: conjunctions join a run, a run of particles alone is none, and
+    #: where a name word divides two runs the last is the family. The
+    #: capitals outrank a credential or title reading ("Hugo LAC",
+    #: "DOYEN Hugo" give family ``LAC`` and ``DOYEN``), while a listed
+    #: credential or numeral ending the run still comes off where a
+    #: capitals word is left ("Marie GRAJALES III").
+    #:
+    #: Only a name in mixed case is read, one where a word other than a
+    #: title, particle, conjunction or suffix holds a lowercase letter,
+    #: and only the part before its first comma: after a family comma
+    #: the comma, not the capitals, names the family.
+    #:
+    #: Off by default: in data that does not write the convention,
+    #: capitals are as often a given name ("ANNA Smith") or a credential
+    #: ("John Smith MD"). Cannot be set with
     #: ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads
     #: the same unlisted word as a credential. Added in 3.1.
     capitals_as_family: bool = field(
@@ -991,8 +999,10 @@ class Policy:
                 "capitals_as_family=True cannot be set with "
                 "unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE: the first "
                 "reads an unlisted word in capitals ending a name as the "
-                "family, the second reads it as a credential. Keep one, "
-                "e.g. Policy(capitals_as_family=True, "
+                "family, the second reads it as a credential. Keep one: "
+                "leave capitals_as_family False, or set "
+                "unlisted_caps_suffixes to CapsSuffixes.AFTER_COMMA or "
+                "CapsSuffixes.OFF, e.g. Policy(capitals_as_family=True, "
                 "unlisted_caps_suffixes=CapsSuffixes.AFTER_COMMA)")
         lone = self.lone_name_word
         if not isinstance(lone, str):
