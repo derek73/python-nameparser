@@ -8,7 +8,7 @@
 - **The East Slavic rule** (`PatronymicRule.EAST_SLAVIC`, which RU turns on): a middle word carrying O1's patronymic ending.
 - **The Turkic rule** (`PatronymicRule.TURKIC`, which TR_AZ turns on): a standalone patronymic marker, O2's, with the name word before it in its comma part, the father's name, a marker in the maiden name taking the maiden name's word before it.
 
-**Because:** a patronymic names the parent, which a caller addressing the bearer or matching records needs to tell from a family name, and the people filling in fielded records, like CLDR's samples, put it in the family or the given part. Naming it in a view of its own leaves every field where those sources put it. The view reads only a word or a rule that says patronymic, never a position, since nothing in a name's shape says which name word is a parent's; it may hold the same words as the family, or a part of them, where a convention files the bearer under the parent's name.
+**Because:** a patronymic names the parent, which a caller addressing the bearer or matching records needs to tell from a family name, and the people filling in fielded records, like CLDR's samples, put it in the family or the given part. Naming it in a view of its own leaves every field where those sources put it. The view reads only a word or a rule that says patronymic, never a position, since nothing in a name's shape says which name word is a parent's; it may overlap the family, or be a part of it, where a convention files the bearer under the parent's name.
 
 ```
 "Mahathir bin Mohamad"      →  patronymic="bin Mohamad"
