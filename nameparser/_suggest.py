@@ -1043,7 +1043,7 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
 def _texts(names: Iterable[str]) -> Iterator[str]:
     """The names, checked as they are consumed: one pass, so a
     generator is read once."""
-    example = 'parser.suggest(["Priem Jason", "Kim Minjun"])'
+    example = 'parser.suggest(["Smith Mary", "Kim Minjun"])'
     if isinstance(names, str):
         raise TypeError(
             f"suggest() takes an iterable of names, not a bare string: "
