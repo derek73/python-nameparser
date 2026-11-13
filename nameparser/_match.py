@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -587,7 +588,7 @@ class Matching:
         if across:
             texts += [t for other in family_rule.across
                       for t in _cross_texts(parsed, other)]
-        words |= {_joined(_fold(t)) for t in texts if t} - {""}
+        words |= {_joined(f) for t in texts if t for f in _forms(t)} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
@@ -689,6 +690,37 @@ _RANK_ROLE = {r: i for i, r in enumerate(Role)}
 #: period `_spellings` reads off a word as written.
 _FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
+
+
+#: The letters a standard transcription writes out where a keyboard or
+#: an encoding lacks them: German `ä` `ö` `ü` as `ae` `oe` `ue`, Danish
+#: and Norwegian `ø` and `å` as `oe` and `aa`, Serbo-Croatian `đ` as
+#: `dj`. A word holding one also reads as its transcription, a second
+#: folded form (`_forms`), so `Müller` / `Mueller` and `Srđan` /
+#: `Srdjan` read `folded` (decisions/name-matching, 2026-11-12 A
+#: KEYBOARD'S SPELLING IS FOLDED); lower case only, as it is applied
+#: to the casefolded word.
+_TRANSCRIBED = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ø": "oe",
+                              "å": "aa", "đ": "dj"})
+
+
+def _transcribed(text: str) -> str | None:
+    """The text's standard transcription folded (`_TRANSCRIBED`), or
+    None where it holds none of those letters, its accented and
+    decomposed spellings included."""
+    lowered = unicodedata.normalize("NFC", text.casefold())
+    written = lowered.translate(_TRANSCRIBED)
+    return None if written == lowered else _fold(written)
+
+
+def _forms(text: str) -> frozenset[str]:
+    """The text folded, and its transcription folded where it has one:
+    the forms two texts read `folded` by where any meet. A written-out
+    word (`Mueller`) has one form, which meets the second of the word
+    written with the letter (`Müller`), so the reading is symmetric."""
+    folded = _fold(text)
+    written = _transcribed(text)
+    return frozenset((folded,) if written is None else (folded, written))
 
 
 def _fold(text: str) -> str:
@@ -807,7 +839,9 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     period = word.endswith(_FULL_STOPS)
     heads = (lexicon._headwords(word, group, period=period)
              | lexicon._headwords(_fold(word), group, period=period))
-    return heads | {_fold(h) for h in heads}
+    # a written-out spelling of a letter a keyboard lacks meets the
+    # word written with it (`_forms`)
+    return heads | {_fold(h) for h in heads} | _forms(word)
 
 
 def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
@@ -963,9 +997,11 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
     `group`), else `None`."""
     if a == b:
         return Outcome.SAME
-    if fa == fb:
+    forms_a, forms_b = _forms(a), _forms(b)
+    if fa == fb or not forms_a.isdisjoint(forms_b):
         return Outcome.FOLDED
-    if _joined(fa) == _joined(fb) and not (
+    if not {_joined(f) for f in forms_a}.isdisjoint(
+            {_joined(f) for f in forms_b}) and not (
             _initials_only(fa) and _initials_only(fb)):
         # two texts of initials alone are `initials-agree`'s to read
         return Outcome.JOINED

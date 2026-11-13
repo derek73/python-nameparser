@@ -80,6 +80,8 @@ NAMES: tuple[str, ...] = (
     "Robert Smith", "John Bill Smith", "John William Smith",
     'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
     "Yuliya Ivanova", "Iuliia Ivanova",
+    # a keyboard's spelling (2026-11-12 A KEYBOARD'S SPELLING IS FOLDED)
+    "Łukasz Nowak", "Lukasz Nowak", "Hans Müller", "Hans Mueller",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
     "Ann Smith\u2010Jones", "Ann Smith\u2013Jones", "Jean\u2010Pierre Dupont",
     "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
@@ -798,7 +800,8 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "Wang Xiaoming", "Xiaoming Wang", "김민준", "Kim Min-jun",
     "Min-jun Kim", "Nguyễn Văn An", "Nguyen An", "Bill Smith",
     "William Smith", "Smith Bill", "Smith William", "Yuliya Smith",
-    "Iuliia Smith", "Smith Yuliya", "Smith Iuliia", "Mr. Smith",
+    "Iuliia Smith", "Smith Yuliya", "Smith Iuliia", "Müller, Hans",
+    "Mueller, Hans", "Hans Mueller", "Mr. Smith",
     "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
     "Guo Hong-Yi",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
@@ -1821,6 +1824,38 @@ def test_an_accepted_middle_word_never_hides_an_unaccepted_one(
     assert role(r, Role.MIDDLE).outcome is hidden
     both = Matching(Parser(), DEFAULT_ACCEPT | {accepted, hidden})
     assert both.check(a, b).consistent
+
+
+# -- a keyboard's spelling (decisions/name-matching, 2026-11-12 A KEYBOARD'S
+# SPELLING IS FOLDED) ---------------------------------------------------------
+
+@pytest.mark.parametrize("a, b", [
+    # (a) a letter a keyboard lacks, written as one types it
+    ("Łukasz Nowak", "Lukasz Nowak"), ("Anna Kowałski", "Anna Kowalski"),
+    ("Pınar Yılmaz", "Pinar Yilmaz"), ("Søren Hansen", "Soren Hansen"),
+    ("Đorđe Petrović", "Dorde Petrovic"), ("Ægir Olsen", "Aegir Olsen"),
+    ("Hrafn Þórsson", "Hrafn Thorsson"),
+    # (b) a standard transcription, read from either side
+    ("Hans Müller", "Hans Mueller"), ("Jürgen Weber", "Juergen Weber"),
+    ("Søren Hansen", "Soeren Hansen"), ("Ola Ågård", "Ola Aagaard"),
+    ("Srđan Petrović", "Srdjan Petrovic"), ("Mueller, Hans", "Hans Müller"),
+])
+def test_a_keyboards_spelling_reads_folded_by_default(a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent, (x, y)
+        assert {row.outcome for row in r.roles} <= {
+            Outcome.SAME, Outcome.FOLDED}, (x, y)
+        assert Outcome.FOLDED in {row.outcome for row in r.roles}
+        assert m.keys(x) & m.keys(y)
+
+
+def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
+    # Muller and Mueller each meet Müller, and not each other: neither
+    # holds the letter, and the check is not transitive
+    assert not m.check("Hans Muller", "Hans Mueller").consistent
+    assert m.check("Hans Muller", "Hans Müller").consistent
+    assert m.check("Hans Mueller", "Hans Müller").consistent
 
 
 def test_no_parse_reads_an_alternate_spelling() -> None:
