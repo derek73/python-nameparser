@@ -311,7 +311,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('bella', (('en', 'familiar', (('short_for', ('arabella', 'arabelle', 'isabel', 'isabella', 'isabelle', 'rosabella')),)),)),
     ('belle', (('en', 'familiar', (('short_for', ('arabella', 'arabelle', 'belinda', 'isabel', 'isabella', 'isabelle', 'rosabel', 'rosabella')),)),)),
     ('bem', (('en', 'credential', ()), ('en', 'family', ()))),
-    ('ben', (('en', 'familiar', (('short_for', ('benedict', 'benjamin', 'bennett')),)),)),
+    ('ben', (('en', 'given', ()), ('en', 'familiar', (('short_for', ('benedict', 'benjamin', 'bennett')),)))),
     ('bench', (('en', 'modifier', ()),)),
     ('benj', (('en', 'given', (('same_as', 'benjamin'),)),)),
     ('benjamin', (('en', 'familiar', (('short_for', ('benjy',)),)),)),
