@@ -26,7 +26,13 @@ before the surname), Czech candidates (cz-candidates, `jmeno` and
 given name, as Vietnamese writes them) and ORCID credit names written as
 a byline (orcid-researchers, `orcid-byline`: `Huntley R P`, the given
 name its initials, the family name the box it matches; written
-family-first it is the byline itself). A population keeps at most
+family-first it is the byline itself), and ORCID holders who typed one
+box wholly in capitals and the other with none, in a name holding a
+lowercase letter (rules/O9, #659): `orcid-famcaps` the family box
+(`Jean DUPONT`, the convention `capitals_as_family` reads),
+`orcid-famcaps-ea` the same from CN, KR, VN and TW, where many surnames
+are two or three letters, and `orcid-givcaps` the given box (`ANNA
+Smith`, the convention's other writing). A population keeps at most
 POOL_CAP names, drawn by a seeded reservoir. A source not fetched is
 left out with a note, as is one present that yields no names and each
 population a present source yields none of; one present but unreadable
@@ -42,11 +48,17 @@ was written with; a given-first group under the given-first base is right
 where the suggester kept or confirmed the base, and wrong only where it
 moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
-same-order rows, which must not fall below 95%. Under each population,
+same-order rows, which must not fall below 95%, save orcid-byline's
+given-first row and orcid-givcaps' two, which the capitals signal reads
+the wrong way round at the base too. Under each population,
 the groups that decided the East Slavic rule and the groups that decided
 `initials_as_family` (rules/O8), each over every group of both written
 orders and both bases; `--base` lists a population whose counts moved.
-`--set _MIN_RUN_NAMES=1000000` decides the switch in no group.
+`--set _MIN_RUN_NAMES=1000000` decides the switch in no group. Then the
+share of groups deciding `capitals_as_family` (rules/O9), per written
+order, base and size, where any group did; `--base` lists every such
+cell that moved. `--set _MIN_CAPITALS_LETTERS=1000000` decides it in no
+group.
 
 THE SIGNALS: per population and written order, over at most SIGNAL_NAMES
 names, the per-NAME order votes (`suggest`'s unit: right, wrong,
@@ -100,8 +112,9 @@ import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from collections import Counter
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -132,10 +145,13 @@ GF, FF = "GF", "FF"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
             "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
-            "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE")
-#: The thresholds that count names, read as int.
+            "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE",
+            "_MIN_CAPITALS_LETTERS")
+#: The thresholds that count names (or letters), read as int.
 _COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
-           "_MIN_RUN_NAMES")
+           "_MIN_RUN_NAMES", "_MIN_CAPITALS_LETTERS")
+#: The countries `orcid-famcaps-ea` reads.
+EAST_ASIAN_COUNTRIES = frozenset({"CN", "KR", "VN", "TW"})
 
 #: decisions/group-suggestion's TURKIC lists, and the end each writes the
 #: family at: "caps" where the one capitals word is the family, else the
@@ -313,38 +329,69 @@ def _vi(keep: _Reservoir) -> None:
 _BYLINE_INITIAL = re.compile(r"^(?:[^\W\d_]\.?|(?:[^\W\d_]\.)+[^\W\d_]?\.?|[A-Z]{2,3})$")
 
 
-def _orcid_bylines(keep: _Reservoir) -> None:
+def _orcid(keep: _Reservoir) -> None:
+    """The ORCID populations: the bylines, and the boxes typed one
+    wholly in capitals (`_orcid_capitals`)."""
+    from nameparser._pipeline._vocab import is_capitals_word
+    for r in _checked_rows("orcid-researchers"):
+        _orcid_capitals(keep, r, is_capitals_word)
+        _orcid_byline(keep, r)
+
+
+def _orcid_capitals(keep: _Reservoir, r: dict[str, Any],
+                    is_capitals_word: Callable[[str], bool]) -> None:
+    """A holder whose name holds a lowercase letter, one box every word
+    of it in capitals (`_vocab.is_capitals_word`, rules/O9's test) and
+    the other box none: `orcid-famcaps` (and `orcid-famcaps-ea`) where
+    it is the family box, `orcid-givcaps` where it is the given box."""
+    given = unicodedata.normalize("NFC", r.get("given") or "").split()
+    family = unicodedata.normalize("NFC", r.get("family") or "").split()
+    if not (given and family) or not any(
+            c.islower() for w in given + family for c in w):
+        return
+    in_given = [is_capitals_word(w) for w in given]
+    in_family = [is_capitals_word(w) for w in family]
+    pair = (" ".join(given), " ".join(family))
+    if all(in_family) and not any(in_given):
+        keep.add("orcid-famcaps", *pair)
+        if r.get("country") in EAST_ASIAN_COUNTRIES:
+            keep.add("orcid-famcaps-ea", *pair)
+    elif all(in_given) and not any(in_family):
+        keep.add("orcid-givcaps", *pair)
+
+
+def _orcid_byline(keep: _Reservoir, r: dict[str, Any]) -> None:
     """ORCID credit names written as a byline, the family name first and
     the given names as initials (`Huntley R P`, `Hoy AM`, `Smith J.`),
     each confirmed by the holder's own boxes: the word in front is the
     family box, and the first initial the given box's first letter. A
     pair keeps the initials as the given name, so written family-first
     it is the byline as the holder wrote it (#1254)."""
-    for r in _checked_rows("orcid-researchers"):
-        credit, family, given = r.get("credit"), r.get("family"), r.get("given")
-        if not (credit and family and given):
-            continue
-        words = credit.split()
-        if len(words) < 2 or not all(_BYLINE_INITIAL.match(w) for w in words[1:]):
-            continue
-        if (words[0].casefold().replace("-", "")
-                != family.strip().casefold().replace("-", "").replace(" ", "")):
-            continue
-        if words[1][0].casefold() != given.strip()[:1].casefold():
-            continue
-        keep.add("orcid-byline", " ".join(words[1:]), words[0])
+    credit, family, given = r.get("credit"), r.get("family"), r.get("given")
+    if not (credit and family and given):
+        return
+    words = credit.split()
+    if len(words) < 2 or not all(_BYLINE_INITIAL.match(w) for w in words[1:]):
+        return
+    if (words[0].casefold().replace("-", "")
+            != family.strip().casefold().replace("-", "").replace(" ", "")):
+        return
+    if words[1][0].casefold() != given.strip()[:1].casefold():
+        return
+    keep.add("orcid-byline", " ".join(words[1:]), words[0])
 
 
 SOURCES = (("patentsview-inventors", _patentsview),
            ("psc-individuals", _psc), ("cz-candidates", _cz),
-           ("uit-vinames", _vi), ("orcid-researchers", _orcid_bylines))
+           ("uit-vinames", _vi), ("orcid-researchers", _orcid))
 
 
 #: The populations each source is read for.
 WANTED = {"patentsview-inventors": tuple(f"pv-{c}" for c in PV_COUNTRIES),
           "psc-individuals": tuple(f"psc-{n}" for n in PSC_NATIONALITIES),
           "cz-candidates": ("cz",), "uit-vinames": ("vi",),
-          "orcid-researchers": ("orcid-byline",)}
+          "orcid-researchers": ("orcid-byline", "orcid-famcaps",
+                                "orcid-famcaps-ea", "orcid-givcaps")}
 
 
 def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
@@ -455,15 +502,19 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
     lexicon = bases[GF].lexicon
     rng = group_rng(seed, label)
     cells: dict[str, list[float | None]] = {}
+    capitals: dict[str, list[float | None]] = {}
     east_slavic = letters = 0
     for order in (GF, FF):
         row = {base: [] for base in bases}
+        caps_row = {base: [] for base in bases}
         for size in sizes:
             if size > len(pool):
                 for base in bases:
                     row[base].append(None)
+                    caps_row[base].append(None)
                 continue
             right = Counter[str]()
+            decided = Counter[str]()
             for _ in range(trials):
                 group = [written(t, order) for t in rng.sample(pool, size)]
                 for base, parser in bases.items():
@@ -471,14 +522,18 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     right[base] += _end(s.parser.policy.name_order) == order
                     east_slavic += PatronymicRule.EAST_SLAVIC in (
                         s.parser.policy.patronymic_rules)
-                    # rules/O8's switch (#1254); a tree without the
-                    # field reads False
+                    # rules/O8's switch (#1254) and rules/O9's (#659); a
+                    # tree without the field reads False
                     letters += getattr(s.parser.policy,
                                        "initials_as_family", False)
+                    decided[base] += getattr(s.parser.policy,
+                                             "capitals_as_family", False)
             for base in bases:
                 row[base].append(right[base] / trials)
+                caps_row[base].append(decided[base] / trials)
         for base in bases:
             cells[f"{order}/{base}"] = row[base]
+            capitals[f"{order}/{base}"] = caps_row[base]
     signals: dict[str, dict[str, int]] = {}
     words: dict[str, dict[str, list[tuple[str, int]]]] = {}
     sample = random.Random(f"{seed}-{label}-signals").sample(
@@ -513,7 +568,11 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
         words[order] = {s: c.most_common(wrong_words) for s, c in wrong.items()}
     return {"label": label, "size": len(pool), "cells": cells,
             "signals": signals, "words": words, "east_slavic": east_slavic,
-            "letters": letters}
+            "letters": letters,
+            # only where some group decided it, so a population none
+            # decides in compares equal against a tree without the switch
+            "capitals": (capitals if any(x for row in capitals.values()
+                                         for x in row) else {})}
 
 
 #: The populations whose names the romanized surname table is for.
@@ -703,6 +762,10 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
                 # suggest it compares equal on every other list
                 if letters is not None and letters.decided:
                     row["letters"] = [letters.votes_for, letters.votes_against]
+                capitals = evidence.get("capitals_as_family")
+                if capitals is not None and capitals.decided:
+                    row["capitals"] = [capitals.votes_for,
+                                       capitals.votes_against]
                 suggestions.append(row)
     return {"turkic": turkic, "suggestions": suggestions}
 
@@ -757,6 +820,17 @@ def report(result: dict[str, Any], show_words: bool) -> None:
         if p.get("letters"):
             print(f"{'':14} (initials_as_family was decided in "
                   f"{p['letters']} groups)")
+    caps = [p for p in result["populations"] if p.get("capitals")]
+    if caps:
+        print("\n-- groups deciding capitals_as_family (rules/O9), where "
+              "any did; written order / base order")
+        print(f"{'population':16} {'written':7} {'base':4} "
+              + " ".join(f"{n:>6}" for n in sizes))
+        for p in caps:
+            for key, row in p["capitals"].items():
+                order, base = key.split("/")
+                print(f"{p['label']:16} {order:7} {base:4} "
+                      + " ".join(_pct(x) for x in row))
     print(f"\n-- votes per name (right/wrong/contested/none) and per signal "
           f"(right/wrong), at most {SIGNAL_NAMES} names")
     for p in result["populations"]:
@@ -823,6 +897,13 @@ def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
         if was.get("letters", 0) != p.get("letters", 0):
             out.append(f"{p['label']:14} initials_as_family groups "
                        f"{was.get('letters', 0)} -> {p.get('letters', 0)}")
+        old_caps, new_caps = was.get("capitals") or {}, p.get("capitals") or {}
+        for key in sorted(set(old_caps) | set(new_caps)):
+            before, after = old_caps.get(key), new_caps.get(key)
+            if before != after:
+                out.append(f"{p['label']:14} capitals_as_family {key:6} "
+                           + " ".join(_pct(x, 1) for x in before or [])
+                           + "  ->  " + " ".join(_pct(x, 1) for x in after or []))
     parl_old, parl_new = base.get("parliaments") or {}, head.get("parliaments") or {}
     turkic_old = parl_old.get("turkic", {})
     for dataset, row in (parl_new.get("turkic") or {}).items():

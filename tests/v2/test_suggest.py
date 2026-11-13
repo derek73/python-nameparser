@@ -10,7 +10,8 @@ import pytest
 from collections.abc import Iterator
 
 from nameparser import (
-    FAMILY_FIRST_GIVEN_LAST, UNSET, Lexicon, NameEvidence, Parser, Policy,
+    FAMILY_FIRST_GIVEN_LAST, UNSET, CapsSuffixes, Lexicon, NameEvidence,
+    Parser, Policy,
     PolicyPatch, SettingEvidence, Suggestion, locales, parser_for,
 )
 from nameparser._policy import PatronymicRule
@@ -1410,11 +1411,12 @@ def test_a_decomposed_name_votes_as_its_composed_twin(
 #: same group gets, beside the answer it gets guarded. A guard whose
 #: relaxed answer equals its guarded one guards nothing here.
 #: (threshold, relaxed value, group, base order, guarded, relaxed), the
-#: answers as (name_order patch, patronymic_rules patch).
+#: answers as the name_order, patronymic_rules and initials_as_family
+#: patches, and the capitals_as_family patch where a fourth is given (a
+#: row of three holds it unset under both).
 _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
                               tuple[Role, Role, Role],
-                              tuple[object, object, object],
-                              tuple[object, object, object]]] = [
+                              tuple[object, ...], tuple[object, ...]]] = [
     ("_MIN_VOTES", 1, ["Smith Mary", "Xyzzy Plugh"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
     ("_MIN_SHARE", 0.5, ["Smith Mary", "Kim Minjun", "Jason Smith"],
@@ -1440,6 +1442,14 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
      ["Huntley R P", "Hoy A M", "Kessler H A",
       "Xyzzy Plugh", "Qwrt Zxcv", "Blorp Fnord"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
+    # rules/O9's switch (#659): one name in capitals, and two of three
+    # with evidence, are too few; three-letter runs are no evidence
+    ("_MIN_VOTES", 1, ["Jean DUPONT", "JEAN MARTIN"], GIVEN_FIRST,
+     (UNSET, UNSET, UNSET, UNSET), (UNSET, UNSET, UNSET, True)),
+    ("_MIN_SHARE", 0.5, ["Jean DUPONT", "Marie MARTIN", "Anne Leroy"],
+     GIVEN_FIRST, (UNSET, UNSET, UNSET, UNSET), (UNSET, UNSET, UNSET, True)),
+    ("_MIN_CAPITALS_LETTERS", 3, ["Anna LEE", "Mary COX"], GIVEN_FIRST,
+     (UNSET, UNSET, UNSET, UNSET), (UNSET, UNSET, UNSET, True)),
 ]
 
 
@@ -1449,19 +1459,21 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
 def test_each_threshold_changes_its_recorded_answer(
         monkeypatch: pytest.MonkeyPatch, threshold: str, relaxed: object,
         names: list[str], base_order: tuple[Role, Role, Role],
-        guarded: tuple[object, object, object],
-        unguarded: tuple[object, object, object]) -> None:
+        guarded: tuple[object, ...], unguarded: tuple[object, ...]) -> None:
     from nameparser import _suggest
     base = Parser(policy=Policy(name_order=base_order))
 
-    def answer() -> tuple[object, object, object]:
+    def answer() -> tuple[object, ...]:
         patch = base.suggest(names).patch
         return (patch.name_order, patch.patronymic_rules,
-                patch.initials_as_family)
+                patch.initials_as_family, patch.capitals_as_family)
 
-    assert answer() == guarded
+    def four(answers: tuple[object, ...]) -> tuple[object, ...]:
+        return answers if len(answers) == 4 else (*answers, UNSET)
+
+    assert answer() == four(guarded)
     monkeypatch.setattr(_suggest, threshold, relaxed)
-    assert answer() == unguarded
+    assert answer() == four(unguarded)
 
 
 def test_every_threshold_has_a_recorded_control() -> None:
@@ -1744,3 +1756,133 @@ def test_a_kyrgyz_group_with_no_surname_decides_the_turkic_rule() -> None:
     s = Parser().suggest(names)
     assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
     assert s.parser.parse("Бекмырза Чолпонбай уулу").family == "Чолпонбай уулу"
+
+
+# -- capitals_as_family (rules/O9, #659) --------------------------------------
+
+def _capitals(suggestion: object) -> object:
+    return next(e for e in suggestion.evidence  # type: ignore[attr-defined]
+                if e.setting == "capitals_as_family")
+
+
+#: The vote at each of its edges: (group, base, decided, for, against, no
+#: evidence), the counts as SettingEvidence holds them, for the value
+#: under the suggested parser (so, undecided, the names in mixed case
+#: with no capitals are its `for`).
+_CAPITALS_VOTE = [
+    # two names for and none against, at size 2, decide it
+    (["Jean DUPONT", "Marie MARTIN"], Policy(), True, 2, 0, 0),
+    # two for and one against are two thirds, not more
+    (["Jean DUPONT", "Marie MARTIN", "Anne Leroy"], Policy(), False, 1, 2, 0),
+    # three for and one against are more
+    (["Jean DUPONT", "Marie MARTIN", "Paul GIRARD", "Anne Leroy"],
+     Policy(), True, 3, 1, 0),
+    # one name in capitals among names in mixed case
+    (["Jean DUPONT", "Mary Smith", "Anne Leroy", "Paul Martin"],
+     Policy(), False, 3, 1, 0),
+    # a run of three letters is no evidence (joined initials or a short
+    # surname); four letters are
+    (["Anna LEE", "Mary COX"], Policy(), False, 0, 0, 2),
+    (["AM Hoy", "JK Larsen", "RP Huntley"], Policy(), False, 0, 0, 3),
+    (["Anna LEES", "Mary COXE"], Policy(), True, 2, 0, 0),
+    # a credential the rule would take is no evidence for the switch: a
+    # listed one is read past, leaving a name in mixed case with no
+    # capitals; one that is also a name (MBA) is not, so the name holds
+    # a capitals word and carries none
+    (["John Smith FRCS", "Mary Jones MBA"], Policy(), False, 1, 0, 1),
+    # a listed numeral likewise; a longer one is a word of the run
+    # (rules/O9's Accepted), and counts as the rule reads it
+    (["Mary Smith VIII", "John Jones VIII"], Policy(), False, 2, 0, 0),
+    (["Mary Smith XVIII", "John Jones XVIII"], Policy(), True, 2, 0, 0),
+    # a group wholly in capitals carries none: the rule reads no name
+    (["JEAN DUPONT", "MARIE MARTIN"], Policy(), False, 0, 0, 2),
+    # a family comma states the family, and the rule reads before it
+    (["DUPONT, Jean", "MARTIN, Marie"], Policy(), False, 0, 0, 2),
+    # a suffix comma: the part before it is read
+    (["Jean DUPONT, MBA", "Marie MARTIN, PhD"], Policy(), True, 2, 0, 0),
+    # an unlisted credential after a comma is read by its shape, as the
+    # suffix: no family, no evidence
+    (["Jean Dupont, FCPS", "Marie Martin, XYZW"], Policy(), False, 0, 0, 2),
+    # a one-word name, and a name in a script with no case, carry none
+    (["Jean DUPONT", "Marie MARTIN", "Dupont", "Leroy"], Policy(),
+     True, 2, 0, 2),
+    (["Jean DUPONT", "Marie MARTIN", "محمد علي", "أحمد حسن"], Policy(),
+     True, 2, 0, 2),
+    # the switch cannot be set beside this: nothing is read
+    (["Jean DUPONT", "Marie MARTIN", "Anne Leroy"],
+     Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False, 0, 0, 3),
+    # a base with the switch on is confirmed, never turned off
+    (["Jean Dupont", "Marie Martin"], Policy(capitals_as_family=True),
+     False, 0, 2, 0),
+    # under every order alike
+    (["DUPONT Jean", "MARTIN Marie"], Policy(name_order=FAMILY_FIRST),
+     True, 2, 0, 0),
+    (["DUPONT Jean", "MARTIN Marie"],
+     Policy(name_order=FAMILY_FIRST_GIVEN_LAST), True, 2, 0, 0),
+]
+
+
+@pytest.mark.parametrize("names, policy, decided, for_, against, none",
+                         _CAPITALS_VOTE)
+def test_capitals_as_family_is_decided_at_its_edges(
+        names: list[str], policy: Policy, decided: bool, for_: int,
+        against: int, none: int) -> None:
+    s = Parser(policy=policy).suggest(names)
+    e = _capitals(s)
+    assert (e.decided, e.votes_for, e.votes_against,  # type: ignore[attr-defined]
+            e.no_evidence) == (decided, for_, against, none)  # type: ignore[attr-defined]
+    assert (s.patch.capitals_as_family is True) == (
+        decided and not policy.capitals_as_family)
+
+
+def test_the_capitals_vote_reads_the_rule_not_a_copy() -> None:
+    # the vote counts where rules/O9, asked of the parse, takes the family:
+    # a base whose policy the rule reads the run under decides it alike,
+    # and a word a family comma names is no evidence however written
+    s = Parser().suggest(["DUPONT, Jean", "MARTIN, Marie", "Anne LEROY"])
+    assert _capitals(s).votes_for == 0  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("pack, names", [
+    # a family written first in capitals before a patronymic
+    (locales.TR_AZ, ["ALIYEV Ilham Heydar oglu", "MAMMADOV Anar Elman oglu"]),
+    (locales.RU, ["IVANOV Ivan Petrovich", "PETROV Pavel Ivanovich"]),
+    # a marker the only word in capitals: the rule takes it as the family
+    # where nothing else can be (rules/O9's marker clause), so it counts,
+    # an unwritten shape
+    (locales.TR_AZ, ["Ilham Heydar OGLU", "Anar Elman OGLU"]),
+    (locales.RU, ["Ivan PETROVICH", "Pavel IVANOVICH"]),
+])
+def test_the_capitals_vote_under_a_patronymic_pack(
+        pack: object, names: list[str]) -> None:
+    s = parser_for(pack).suggest(names)  # type: ignore[arg-type]
+    assert s.patch.capitals_as_family is True
+    assert _capitals(s).votes_for == 2  # type: ignore[attr-defined]
+
+
+def test_a_group_with_no_capitals_parses_nothing_twice(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the vote's second parse, with the switch on, is built and run only
+    # for a name holding a word in capitals
+    from nameparser import _suggest
+    built: list[object] = []
+    real = _suggest._capitals_reader
+
+    def counting(parser: Parser) -> object:
+        built.append(parser)
+        return real(parser)
+
+    monkeypatch.setattr(_suggest, "_capitals_reader", counting)
+    Parser().suggest(["Jean Dupont", "Mary Smith", "McDonald Anne"] * 50)
+    assert built == []
+    Parser().suggest(["Jean DUPONT"] + ["Mary Smith"] * 5)
+    assert len(built) == 1
+
+
+def test_the_capitals_note_says_what_it_saw() -> None:
+    s = Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Anne Leroy",
+                          "Anna LEE"])
+    assert _capitals(s).note == (  # type: ignore[attr-defined]
+        "2 of the 3 names with evidence write the family in capitals of 4 "
+        "letters or more, 1 in mixed case with no capitals")
+    assert "capitals_as_family  unchanged (False)" in str(s)

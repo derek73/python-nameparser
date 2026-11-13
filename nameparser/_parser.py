@@ -340,7 +340,19 @@ class Parser:
         casts no trailing-initial vote on its order; a group never turns
         it off, nor turns it on under a base reading names family first
         or folding every middle into the family, where it would change
-        no name. A setting the votes do not decide keeps this parser's value, so
+        no name. ``capitals_as_family`` (rules/O9) is turned on where
+        at least two names, and more than two thirds of the names with
+        evidence either way, write the family in capitals: the rule,
+        asked of the name parsed with the switch on, reads as its family
+        a word in capitals of four letters or more that is no listed
+        credential or numeral (``Jean DUPONT``), against a name of two
+        words or more in mixed case with none in capitals. Two or three
+        capitals are no evidence (``Zhi LI``, or initials, ``AM Hoy``),
+        and only a name holding a word in capitals is parsed. A group
+        never turns it off, nor turns it on under a base with
+        ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, beside which
+        it cannot be set; it is decided apart from the order, which the
+        capitals in a name vote on as before. A setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
@@ -363,7 +375,13 @@ class Parser:
         Nigerian, Romanian, Russian and Brazilian from 50; and Indian
         only at 200. A group whose votes fall short of the thresholds keeps
         the base rather than guess, so a smaller group moves it in fewer
-        of the draws.
+        of the draws. ``capitals_as_family``, measured 2026-11-12
+        (decisions/group-suggestion's CAPITALS entry): ORCID holders who
+        typed their family name in capitals were suggested it in 95% of
+        groups from 3 names, and from 10 where many of the surnames are
+        two or three letters (holders in China, Korea, Vietnam and
+        Taiwan); no list measured that does not write its family names
+        so was suggested it, ORCID's bylines (``AM Hoy``) included.
         """
         from nameparser._suggest import suggest
         return suggest(self, names)
