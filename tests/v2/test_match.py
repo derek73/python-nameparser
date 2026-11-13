@@ -1900,6 +1900,21 @@ def test_a_transcription_reaches_a_hyphen_half_and_the_vocabulary() -> None:
             assert matching.keys(x) & matching.keys(y)
 
 
+def test_a_callers_pair_written_with_another_hyphen_reads_both_ways() -> None:
+    # the lexicon's pair index reads the pipeline's hyphens as the match
+    # does (review of 87b1d5c3: a pair written with U+2010 was found
+    # from its own side alone)
+    lexicon = Lexicon.default().add("jöri", kind="familiar",
+                                    short_for=["jöran\u2010peter"])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for long in ("Jöran-Peter Smith", "Joeran-Peter Smith",
+                 "Jöran\u2010Peter Smith"):
+        r = matching.check("Jöri Smith", long)
+        assert r.consistent, long
+        assert matching.check(long, "Jöri Smith") == r.mirrored()
+
+
 def test_a_name_with_many_transcribable_letters_has_few_keys() -> None:
     # the keys collapse the transcription digraphs, so a name's keys do
     # not grow with its forms (2^k for k letters: 530 keys for this name

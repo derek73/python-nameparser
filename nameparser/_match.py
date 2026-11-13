@@ -378,7 +378,10 @@ class Matching:
         return min(candidates, key=_strength)
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
-        """Grouping keys: for each word of the folded family base, and
+        """Grouping keys, each folded with the transcription digraphs
+        written as their first letter (`_key`: `Doe` keys `do`, and
+        `Müller`, `Mueller` and `Muller` share `muller`): for each word
+        of the folded family base, and
         each half of a hyphenated one (cut at any of the pipeline's
         hyphens, each folded to the hyphen-minus) beside its joined and
         its whole form, a half that is a listed particle left out (`Al-Saud` keys

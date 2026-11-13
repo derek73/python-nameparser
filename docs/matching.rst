@@ -29,7 +29,9 @@ Grouping by key
 ``keys()`` gives each name a set of short strings, the family name's
 words without their particles, and the whole family name joined (its
 spaces and hyphens dropped, particles kept), each beside the given
-name's first letter.
+name's first letter. A key is folded and writes ``ae``, ``oe``, ``ue``,
+``aa`` and ``dj`` as their first letter, so ``Müller``, ``Mueller`` and
+``Muller`` share one; a key is no spelling of the name, only a bucket.
 Two names ``check()`` calls consistent always share a key, so grouping
 by key loses no match, and a pair that shares no key need never be
 checked:

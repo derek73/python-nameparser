@@ -689,6 +689,11 @@ SameAsNamed = Mapping[str, frozenset[str]]
 #: which `_normalize` deletes too (#1151), so a name's two spellings that
 #: differ by one fold alike where the vocabulary and the match meet.
 _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
+#: The hyphens the parser joins two names with (rules/O6), defined here,
+#: below the pipeline, so the match's forms and the lexicon's pair index
+#: (`_forms`) read them alike; `_pipeline._vocab` reads them from here.
+_HYPHEN_CHARS = "-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
+_TO_HYPHEN_MINUS = str.maketrans(dict.fromkeys(_HYPHEN_CHARS, "-"))
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 #: The Latin letters NFD leaves whole that a keyboard lacks, written as
@@ -769,13 +774,14 @@ def _forms(text: str) -> frozenset[str]:
     the word written with the letter (`Müller`), so the reading is
     symmetric; and `Muller` and `Mueller` each meet `Müller` and not each
     other."""
-    lowered = unicodedata.normalize("NFC", text.casefold())
+    lowered = unicodedata.normalize("NFC", text.casefold()).translate(
+        _TO_HYPHEN_MINUS)
     slots = [i for i, c in enumerate(lowered) if c in _TRANSCRIBED]
     if not slots:
-        return frozenset((_fold(text),))
+        return frozenset((_fold(lowered),))
     if len(slots) > _MOST_TRANSCRIBED:
         written = "".join(_TRANSCRIBED.get(c, c) for c in lowered)
-        return frozenset((_fold(text), _fold(written)))
+        return frozenset((_fold(lowered), _fold(written)))
     out = set()
     for choice in itertools.product((False, True), repeat=len(slots)):
         chars = list(lowered)
