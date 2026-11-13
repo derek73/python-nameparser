@@ -447,6 +447,28 @@ consistent, which the default matcher keeps apart:
     >>> matcher.check("John Paul Smith", "John Paul").consistent
     False
 
+The fold has a cost the other way too. A father's name written as an
+initial becomes part of the family, so the pair conflicts as a family
+written with an initial (``family-initial``, which the default does not
+accept), where the default matcher reads a middle initial and calls it
+consistent. Accept ``family-initial`` on the folded matcher to restore
+it:
+
+.. doctest::
+
+    >>> matcher.check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye").consistent
+    True
+    >>> ethiopian_matcher.check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye")["family"].outcome.value
+    'family-initial'
+    >>> Parser(policy=Policy(middle_as_family=True)).matching(
+    ...     accept=ethiopian_matcher.accept | {"family-initial"}
+    ... ).check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye").consistent
+    True
+
+Neither matcher removes a title the vocabulary does not list: ``Ato``
+reads as the given name, so ``Ato Dawit Bekele Tesfaye`` and
+``Dawit Bekele`` conflict under both.
+
 Consistency is not transitive
 -----------------------------
 
