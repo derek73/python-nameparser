@@ -84,6 +84,11 @@ def test_the_title_shape_reads_its_two_columns(key: str,
     shaped = row.period_abbreviations and not row.spells_initials
     assert is_title_shaped(c + c + ".", _LEX) is shaped, key
     assert is_title_shaped("Xy.", _LEX)
+    # rules/S3's joined shape asks the period-abbreviation column alone
+    # ('X.Y.Z.' is the control)
+    assert (_vocab.period_joined_vocab(f"{c}.{c}.", _LEX) == "shape") \
+        is row.period_abbreviations, key
+    assert _vocab.period_joined_vocab("X.Q.", _LEX) == "shape"
 
 
 @pytest.mark.parametrize(("key", "row"), _ROWS, ids=[k for k, _ in _ROWS])
@@ -155,3 +160,38 @@ def test_a_script_with_no_initials_may_still_write_abbreviations(
     name = parse(text)
     assert getattr(name, field) == value, (text, name)
     assert name.initials() == ""
+
+
+#: Georgian beside its Arabic twin: a script the table gives no case
+#: reads as a script Unicode gives none, at every name-level case
+#: question (#1222). Master (161ebd28) failed ten of these rows; the
+#: other five agreed there too (MA, ჯეკ; the MD and III rows; ნინო
+#: SMITH; the Latin control).
+_GEORGIAN = {"ჯეკ": "محمد", "ბერიძე": "علي", "ნინო": "حسن",
+             "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ": "فاطمة"}
+_TWIN_SHAPES = (
+    "ჯეკ MA", "ჯეკ, MA", ", ჯეკ MA", "MA, ჯეკ", "ჯეკ ბერიძე MA",
+    "ბერიძე, ჯეკ MA", "ჯეკ DO", "j.r. ბერიძე", "ბერიძე, j.r.",
+    "ჯეკ ბერიძე Jr. ნინო", "ჯეკ ბერიძე MD ნინო", "ჯეკ ბერიძე III ნინო",
+    "ნინო SMITH", "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ MA",
+    "ნინო Smith MA",                       # control: Latin case speaks
+)
+
+
+def _shape(text: str, order: tuple[object, ...]) -> tuple[object, ...]:
+    from nameparser import Parser, Policy
+    name = Parser(policy=Policy(name_order=order)).parse(text)  # type: ignore[arg-type]
+    return (tuple(len(getattr(name, f).split()) for f in
+                  ("title", "given", "middle", "family", "suffix")),
+            tuple(a.kind for a in name.ambiguities),
+            len(name.initials().split()))
+
+
+@pytest.mark.parametrize("text", _TWIN_SHAPES)
+def test_georgian_reads_as_its_arabic_twin(text: str) -> None:
+    from nameparser import FAMILY_FIRST, GIVEN_FIRST
+    twin = text
+    for ka, ar in _GEORGIAN.items():
+        twin = twin.replace(ka, ar)
+    for order in (GIVEN_FIRST, FAMILY_FIRST):
+        assert _shape(text, order) == _shape(twin, order), (text, twin)

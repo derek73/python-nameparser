@@ -472,7 +472,9 @@ _SPELLED_INITIAL_RANGES = _ranges_where("spells_initials", True)
 #: The letters the name-case contrast reads no case in (rules/S6's "a
 #: script with no case to write in"), mapped to None so that
 #: `str.translate` drops them at C level before a contrast is read:
-#: _vocab.is_one_case, _vocab.ambiguous_lean and _render's R5 gate, and
+#: _vocab.is_one_case, _vocab.ambiguous_lean, _render's R5 gate, the
+#: lower-case run of initials (rules/T7 in _assemble, R3 in _render) and
+#: S8's name word behind a credential (two predicates in _pieces); and
 #: _render._capitalize writes a first letter in it in its lower case (R4).
 #: Only the letters Unicode gives a case are listed, the others being
 #: caseless to the comparison already.

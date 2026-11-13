@@ -2,7 +2,7 @@
 
 ## Standing
 
-- A word whose first letter is in Han, Hangul or kana (the rows of `_policy._SCRIPT_PROPERTIES` that write no initials, which the parse's initial veto reads, #320, decisions/script-properties) contributes nothing to `initials()`, the test asked of the letter's composed spelling — 2026-10-28 #754 (Derek).
+- A word whose first letter is in Han, Hangul or kana, and since 2026-11-12 the Myanmar and Thai scripts (the rows of `_policy._SCRIPT_PROPERTIES` that write no initials, which the parse's initial veto reads, #320, decisions/script-properties) contributes nothing to `initials()`, the test asked of the letter's composed spelling — 2026-10-28 #754 (Derek).
 - A word opening with conjoining jamo that compose to no syllable gives no initial, the jamo being hangul: `ᄒᆞᆫ 김` gives '' — 2026-11-05 #1087
 - A word opening with a letter of the Myanmar script gives no initial: `ကြည် ကြည် ဌေး` gives '' — 2026-11-12 #1234 (decisions/script-properties).
 - A word opening with a Thai letter gives no initial: `สมชาย ใจดี` gives '' — 2026-11-12 #1256 (decisions/script-properties).

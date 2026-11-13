@@ -400,7 +400,9 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     # a loop, not a generator, which would resume a frame per word
     all_lower = True
     for t in name.tokens:
-        if t.role in _NAME_WORD_ROLES and not t.text.islower():
+        # a word with no case for the contrast, as the parse reads it
+        if (t.role in _NAME_WORD_ROLES
+                and not t.text.translate(_CASELESS_LETTERS).islower()):
             all_lower = False
             break
     for key in _INITIALS_KEYS:

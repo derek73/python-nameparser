@@ -64,7 +64,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _DIGRAPH_INITIALS, _PERIOD_ABBREV, _ROMAN, _SPELLED_INITIAL,
+    _CASELESS_LETTERS, _DIGRAPH_INITIALS, _PERIOD_ABBREV, _ROMAN, _SPELLED_INITIAL,
     Lean, ambiguous_lean,
     in_unabbreviating_script,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
@@ -1589,8 +1589,9 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
     tok = tokens[piece[0]]
     if "particle" in tok.tags:
         return True
-    text = tok.text
-    if text.islower():
+    # a word of a script with no case for the contrast is no word in
+    # lower case (_policy._SCRIPT_PROPERTIES, #1222)
+    if tok.text.translate(_CASELESS_LETTERS).islower():
         return False
     return ("vocab:suffix" not in tok.tags
             and SHAPE_ACRONYM_TAG not in tok.tags
@@ -1657,7 +1658,10 @@ def generation_word_before_a_name(token: WorkToken,
         return False
     if "particle" in tags:
         return True
-    return bool(one_case) or not (text.islower() or text.isupper())
+    # a script with no case for the contrast writes neither case
+    # (_policy._SCRIPT_PROPERTIES, #1222)
+    cased = text.translate(_CASELESS_LETTERS)
+    return bool(one_case) or not (cased.islower() or cased.isupper())
 
 
 #: what a word behind a generation word is that is no word of the name

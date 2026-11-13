@@ -69,7 +69,7 @@ from nameparser._pipeline._vocab import (
     has_patronymic_ending, is_patronymic_marker, is_title_shaped,
     name_source, suffix_kind,
 )
-from nameparser._policy import PatronymicRule
+from nameparser._policy import _CASELESS_LETTERS, PatronymicRule
 from nameparser._reading_index import CATEGORY
 from nameparser._types import (
     FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
@@ -852,7 +852,10 @@ def assemble(state: ParseState) -> ParsedName:
                       else j)
         elif tok.role is Role.FAMILY:
             has_family = True
-        if tok.role in NAME_ROLES and not tok.text.islower():
+        # a script with no case for the contrast writes no capital here
+        # (_policy._SCRIPT_PROPERTIES, #1222)
+        if (tok.role in NAME_ROLES
+                and not tok.text.translate(_CASELESS_LETTERS).islower()):
             capitals = True
     out = tuple(final.values())
     if (run_at is not None and run_at >= 0 and has_family
