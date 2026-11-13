@@ -1204,9 +1204,8 @@ def _capitals_family(text: str, words: list[str], base: Parser,
     reads as the family a word of at least _MIN_CAPITALS_LETTERS letters
     that the lexicon lists as no credential or numeral, and that the
     base, parsing the name itself, does not read as a title. False
-    where the switch would move the family onto words the base reads as
-    titles and nothing else (`MISS Ann Berg`, `VICE PRESIDENT Ann
-    Berg`), and where the words the signals read (`words`) are two or
+    where the switch would move the family onto any word the base reads
+    as a title (`MISS Ann Berg`, `DR DUPONT Jean`), and where the words the signals read (`words`) are two or
     more, hold an uppercase and a lowercase letter and none is in
     capitals: a title or a credential they are read past leaves such a
     name (`DR Ann Berg`, `Prof. Ann Berg`, `John Smith FRCS`). None
@@ -1217,7 +1216,9 @@ def _capitals_family(text: str, words: list[str], base: Parser,
     A word is a title by the base's own reading of the name, so a
     surname the vocabulary also lists as a title counts as the family
     the base reads it as (`Mary BISHOP`); the base parse is asked only
-    where a family word the switch reads is a listed title. Only a name
+    where a word of the family the switch reads is a listed title. A
+    word in capitals ending in a full stop is no capitals word to the
+    rule, so a name holding one carries none (`Ann Berg DUPONT.`). Only a name
     holding a word in capitals is parsed, its words cut at commas and
     read past quotes and brackets as `_name_words` reads them. The loops
     are plain and their per-character tests C-level, so a name with no
@@ -1227,41 +1228,47 @@ def _capitals_family(text: str, words: list[str], base: Parser,
     for word in _COMMAS.split(text):
         # a capitals word holds two capitals at least
         if (sum(map(str.isupper, word)) >= 2
-                and is_capitals_word(word.strip(_EDGES))):
+                and is_capitals_word(word.strip(_EDGES).rstrip("."))):
             held = True
             break
     if held:
         lexicon = base.lexicon
         sets = lexicon._sets
         family = []
+        counted = False
         listed = False
         for token in reader().parse(text).tokens:
+            if token.role is not Role.FAMILY:
+                continue
+            family.append(token)
             # rules/O9's family: a family word read by its shape is a
             # word of the run in capitals (a particle the run took reads
             # by vocabulary, a family comma's by position)
-            if (token.role is Role.FAMILY and token.reading is not None
-                    and token.reading.source is ReadingSource.SHAPE
-                    and sum(map(str.isalpha, token.text))
-                    >= _MIN_CAPITALS_LETTERS
-                    and not _listed_suffix(token.text, lexicon)):
-                family.append(token)
-                # a title of any kind the vocabulary lists (a modifier and
-                # a style compile into the titles, a word that is also a
-                # given name into the ambiguous titles instead): only such
-                # a word may be the base's title, so only it costs the
-                # base parse
-                word = _normalize(token.text)
-                listed = listed or (
-                    word in sets.titles or word in sets.titles_ambiguous)
-        if family:
+            counted = counted or (
+                token.reading is not None
+                and token.reading.source is ReadingSource.SHAPE
+                and sum(map(str.isalpha, token.text))
+                >= _MIN_CAPITALS_LETTERS
+                and not _listed_suffix(token.text, lexicon))
+            # a title of any kind the vocabulary lists (a modifier and a
+            # style compile into the titles, a word that is also a given
+            # name into the ambiguous titles instead): only such a word
+            # may be the base's title, so only it costs the base parse
+            word = _normalize(token.text)
+            listed = listed or (
+                word in sets.titles or word in sets.titles_ambiguous)
+        if counted:
             if listed:
                 titles = {token.span for token in base.parse(text).tokens
                           if token.role is Role.TITLE}
-                # the switch would move the family onto the base's titles
-                return not all(token.span in titles for token in family)
+                # the switch would move the family onto a word the base
+                # reads as a title (`DR DUPONT Jean`, `MISS Ann Berg`)
+                return not any(token.span in titles for token in family)
             return True
         for word in words:
-            if is_capitals_word(word):
+            # a word in capitals the rule reads as no family, a final
+            # full stop read past (`Ann Berg DUPONT.`)
+            if is_capitals_word(word.rstrip(".")):
                 return None
     if len(words) < 2:
         return None

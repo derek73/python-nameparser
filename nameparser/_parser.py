@@ -347,8 +347,9 @@ class Parser:
         a word in capitals of four letters or more that is no listed
         credential or numeral and that this parser, reading the name,
         does not take for a title (``Jean DUPONT``, ``Mary BISHOP``),
-        against a name whose family the switch would move onto words
-        this parser reads as titles (``MISS Ann Berg``) and a name of two
+        against a name whose family the switch would move onto a word
+        this parser reads as a title (``MISS Ann Berg``, ``DR DUPONT
+        Jean``) and a name of two
         words or more in mixed case with none in capitals, read past its
         titles and post-nominals (``DR Ann Berg``, ``John Smith FRCS``);
         a name against a decided switch is among ``disagreeing()``. Two or three

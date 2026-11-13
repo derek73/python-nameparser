@@ -1833,6 +1833,10 @@ _CAPITALS_VOTE = [
      True, 4, 0, 0),
     # a bare title word ending the name is the family to the base (H5)
     (["Ann Berg MISS", "Jane Doe MISS"], Policy(), True, 2, 0, 0),
+    # titles written before a family in capitals: the switch would take
+    # each into the family, so nothing is decided (as on master)
+    (["DR DUPONT Jean", "PROF MARTIN Luc", "MISS PETIT Anne"], Policy(),
+     False, 3, 0, 0),
     # a name wholly in lower case carries none, as one in capitals
     (["Mary SMITH", "Ruth HOLLIS", "tom reed", "ann lee"], Policy(),
      True, 2, 0, 2),
@@ -1934,8 +1938,14 @@ _CAPITALS_MARKS = [
     ("KING Ann Berg", True), ("DEAN Ann Berg", True),
     ("Mary BISHOP", True), ("Paul DEAN", True), ("Ann FIELD", True),
     ("Ann Berg MISS", True),
-    # a title in capitals beside a family in capitals: the family counts
-    ("MISS SMITH Ann", True),
+    # a title the switch would take into the family counts against,
+    # beside a family in capitals or before it (#1369's third review);
+    # a title the switch leaves out of the family does not
+    ("MISS SMITH Ann", False), ("DR DUPONT Jean", False),
+    ("ST JOHN Ann", False), ("FREIHERR von BERG Otto", False),
+    # a short title before one name word, and a capitals word with a
+    # final full stop, which the rule reads as no capitals word: none
+    ("DR Mary", None), ("Ann Berg DUPONT.", None),
     # beside a family in capitals, the family still counts
     ("DR Jean DUPONT", True), ("Jean DUPONT PROF", True),
     ("DEAN Mary SMITH", True),
@@ -1972,7 +1982,12 @@ def test_each_name_carries_its_capitals_evidence(
     (Parser(policy=Policy(name_order=FAMILY_FIRST)), "MISS Berg Ann", False),
     (Parser(policy=Policy(name_order=FAMILY_FIRST)), "BISHOP Mary", False),
     (Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
-     "DR DUPONT Jean", True),
+     "DR DUPONT Jean", False),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "DR DUPONT Jean", False),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "DR Jean DUPONT", True),
+    # only the position matters: written last, a surname listed as a
+    # title is the family under a family-first base too
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "Mary BISHOP", True),
     (Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
      "DR Berg Ann", False),
 ])
