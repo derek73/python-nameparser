@@ -71,9 +71,9 @@
   ```
 - The East Slavic arm reads the middle only, the field the parse puts a patronymic in after a given name: one the parse put in the family (a two-word `Ivan Petrovich`) or in the given name (FAMILY_FIRST_GIVEN_LAST's last word) is not read, and under a declared FAMILY_FIRST a surname the order puts in the middle is, `Иван Петрович Абрамович` reading patronymic `Абрамович`, the declaration O1 honors.
 - The East Slavic endings are O1's, so a Ukrainian `-ївна` (`Оксана Сергіївна Баюл`) is not read.
-- The Turkic father's name may stand in another field than the marker, as O2 leaves a three-word name, and a two-word name with a marker is read whole, a family name spelled as a marker included.
+- The Turkic father's name may stand in another field than the marker, as O2 leaves a name of five name words, and a two-word name with a marker is read whole, a family name spelled as a marker included.
   ```
-  "Ali Ahmad oglu"  [tr_az]   →  patronymic="Ahmad oglu"
+  "Ali Ahmad Vali Hasan oglu"  [tr_az]  →  patronymic="Hasan oglu"
   "Ali oglu"  [tr_az]         →  patronymic="Ali oglu"
   "Mehmet Oğlu"  [tr_az]      →  patronymic="Mehmet Oğlu"
   ```

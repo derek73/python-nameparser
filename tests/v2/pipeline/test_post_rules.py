@@ -2223,3 +2223,69 @@ def test_a_surname_pair_tag_post_rules_cannot_read_is_inert(
     out = post_rules(copy_with(state, tokens=tuple(tokens)))
     assert not any("vocab:second-surname" in t.tags for t in out.tokens)
     assert out.ambiguities == state.ambiguities
+
+
+#: rules/O2's three-word reading (#1187): each condition of the rule
+#: with a row that reads the father's name and the marker as the family
+#: where it holds and a row it fails on, so dropping any condition from
+#: the rule fails one of the "positional" rows. (text, policy patch
+#: beside TR_AZ's, expected family)
+_TURKIC_THREE = [
+    # the rule: three name words, the marker last, no comma, given first
+    ("Бекмырза Чолпонбай уулу", None, "Чолпонбай уулу"),
+    ("Dr. Aidai Mederbek kyzy Jr.", None, "Mederbek kyzy"),
+    # the marker's spellings: one case, and decomposed (read NFC, #1316)
+    ("AIDAI MEDERBEK KYZY", None, "MEDERBEK KYZY"),
+    ("Ali Ahmad og\u0306lu", None, "Ahmad og\u0306lu"),
+    ("Aidai “Ai” Mederbek kyzy", None, "Mederbek kyzy"),
+    # three name words: two and five keep the marker alone
+    ("Mederbek kyzy", None, "kyzy"),
+    ("Aidai Bek Asel Mederbek kyzy", None, "kyzy"),
+    # name words, not name units: a bound given name (rules/P5) is two
+    ("Abdul Rahman Ahmad oglu", None, "oglu"),
+    # the marker last: a marker in the middle leaves the family last
+    ("Aidai kyzy Mederbek", None, "Mederbek"),
+    # the family one word: a connective joins the family after the marker
+    ("Ali Ahmad oglu y Vali", None, "oglu y Vali"),
+    # no comma: a suffix comma and a family comma keep their reading
+    ("Aidai Mederbek kyzy, PhD", None, "kyzy"),
+    ("Mederbek, Aidai Asel kyzy", None, "Mederbek"),
+    ("kyzy, Aidai Mederbek", None, "kyzy"),
+    ("Asanov Bekov, Aidai Mederbek kyzy", None, "Asanov Bekov"),
+    (", Aidai Mederbek kyzy", None, ""),
+    # the given-first order: a declared family-first one stands (O1's scope)
+    ("Aidai Mederbek kyzy", PolicyPatch(name_order=FAMILY_FIRST), "Aidai"),
+    ("Aidai Mederbek kyzy", PolicyPatch(name_order=FAMILY_FIRST_GIVEN_LAST),
+     "Aidai"),
+    # the rows the gate decides: the marker in the family slot
+    ("kyzy Mederbek Aidai", PolicyPatch(name_order=FAMILY_FIRST), "kyzy"),
+    ("kyzy Aidai Mederbek", PolicyPatch(name_order=FAMILY_FIRST_GIVEN_LAST),
+     "kyzy"),
+]
+
+
+@pytest.mark.parametrize("text, patch, family", _TURKIC_THREE)
+def test_o2_three_words_ending_in_a_marker(text: str, patch: PolicyPatch | None,
+                                           family: str) -> None:
+    packs = [locales.TR_AZ] + ([Locale(code="order", lexicon=Lexicon.empty(),
+                                       policy=patch)] if patch else [])
+    assert parser_for(*packs).parse(text).family == family
+
+
+def test_o2_three_words_reads_the_marker_last_after_o1() -> None:
+    # with both rules on, O1 rotates a marker-first name; the three-word
+    # reading must not then fold the patronymic into that family
+    both = parser_for(locales.TR_AZ, locales.RU)
+    for text, family, patronymic in (
+            ("Уулу Аскар Бакытович", "Уулу", "Бакытович"),
+            ("Kyzy Aigul Bakytovna", "Kyzy", "Bakytovna")):
+        got = both.parse(text)
+        assert (got.family, got.patronymic) == (family, patronymic), text
+    assert both.parse("Бекмырза Чолпонбай уулу").family == "Чолпонбай уулу"
+
+
+def test_o2_three_words_needs_the_turkic_rule() -> None:
+    # the rule off: the default reads the marker alone as the family
+    assert parse("Aidai Mederbek kyzy").family == "kyzy"
+    # and the East Slavic rule alone does not read it
+    assert parser_for(locales.RU).parse("Aidai Mederbek kyzy").family == "kyzy"
