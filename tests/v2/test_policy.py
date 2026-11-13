@@ -599,6 +599,14 @@ def test_patched_rejects_non_patch() -> None:
         Policy().patched({"strip_emoji": False})  # type: ignore[arg-type]
 
 
+def test_the_default_keys_no_order_to_cyrillic() -> None:
+    # Cyrillic settles no order (rules/W4, #1237): only a pack's or a
+    # caller's entry reads a Cyrillic name by script, never the default
+    assert Script.CYRILLIC not in dict(DEFAULT_SCRIPT_ORDERS)
+    assert Script.CYRILLIC not in dict(Policy().script_orders)
+    assert Script.CYRILLIC not in Policy().segment_scripts
+
+
 def test_script_orders_default_and_canonical_storage() -> None:
     p = Policy()
     assert p.script_orders == DEFAULT_SCRIPT_ORDERS

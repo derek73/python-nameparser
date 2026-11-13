@@ -132,6 +132,19 @@ How each part combines:
   base's entry for its script and the other entries stand, so ``mn``
   adds its Cyrillic order to your table, opt-outs included; two packs
   setting one script to different orders warn, and the later wins.
+  A script order takes a name before a patronymic rule does: the East
+  Slavic and Turkic rotations stand down where an order is declared, so
+  beside ``mn`` the ``ru`` and ``tr_az`` rules no longer read a name
+  written wholly in Cyrillic, which ``mn`` reads father's name first:
+
+  .. doctest::
+
+      >>> parser_for(locales.RU).parse("Сидоров Иван Петрович").family
+      'Сидоров'
+      >>> parser_for(locales.RU).parse("Сидоров Иван Петрович").given
+      'Иван'
+      >>> parser_for(locales.MN, locales.RU).parse("Сидоров Иван Петрович").given
+      'Петрович'
 - **Every other, scalar field is later-wins.** If two packs with
   different codes set the same scalar field to different values, the
   later one wins and a ``UserWarning`` is raised; two that set it to the

@@ -130,7 +130,7 @@ from nameparser._pipeline._state import (
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
-from nameparser._policy import _EAST_ASIAN_SCRIPTS, Policy, Script
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, _JA_SCRIPTS, Policy, Script
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind,
                                ReadingKind, ReadingSource, Role)
 
@@ -359,6 +359,17 @@ def _effective_order(policy: Policy,
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
                 return declared
+            if script not in _JA_SCRIPTS:
+                # A script outside the kana license resolves alone to
+                # itself or, beside any other, to None, so one with no
+                # entry decides the declared order now; this spares a
+                # Cyrillic name the rest of its words' classifying
+                # under a policy with no Cyrillic entry.
+                for keyed, _order in policy.script_orders:
+                    if keyed is script:
+                        break
+                else:
+                    return declared
             found.add(script)
     resolved = resolve_script_set(found)
     if resolved is None:

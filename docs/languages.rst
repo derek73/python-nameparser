@@ -427,3 +427,20 @@ name whatever the order (``Бат, Сүхээ``), a one-word name reads as the
 given name, and the genitive ending is not read, so ``patronymic`` stays
 empty. A word written before the father's name, a clan name, reads as the
 family, the father's name as the middle.
+
+Mongolian names are often written short, with the father's name as an
+initial (``Б. Сүхээ``). Under the pack that initial is the family, so a
+matcher built from it reads the pair as a family written with an
+initial, ``family-initial``, which no matcher accepts unless asked, and
+calls the two spellings inconsistent. The default matcher calls them
+consistent only because it reads the father's name as the given name.
+Accept ``family-initial`` to match them under the pack:
+
+.. doctest::
+
+    >>> mongolian.matching().check("Батын Сүхээ", "Б. Сүхээ")["family"].outcome.value
+    'family-initial'
+    >>> plain = mongolian.matching()
+    >>> mongolian.matching(accept=plain.accept | {"family-initial"}).check(
+    ...     "Батын Сүхээ", "Б. Сүхээ").consistent
+    True
