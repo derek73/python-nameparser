@@ -342,7 +342,8 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 # row and a misjudged answer sits in one place. Private, and keyed by
 # a private name rather than by Script: that enum holds what a caller
 # can key a setting on, and membership there settles nothing about
-# case or initials. Each answer is a writing CONVENTION, never the
+# case or initials. mechanisms.md#SCRIPT-PROPERTY-TABLE ("a reader selects the spans of the column that is ITS question")
+# names the pattern. Each answer is a writing CONVENTION, never the
 # script's typology: Devanagari is an abugida and Arabic an abjad,
 # and both abbreviate a name to a letter and a period ("म. गांधी",
 # "م. الفارسي"), as Cyrillic does ("А. С. Пушкин"). decisions/script-properties holds each row's

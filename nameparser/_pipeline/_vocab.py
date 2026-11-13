@@ -317,10 +317,12 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 
     The shape reads a Latin convention: a period marks an
-    abbreviation. Scripts with no initials have no period
-    abbreviations either (_policy._SCRIPT_PROPERTIES'
-    period_abbreviations), so a CJK word wearing a period is a name
-    word, not a title -- a lone '田中.' is the family name (#323).
+    abbreviation, and a script that writes no period abbreviations
+    (_policy._SCRIPT_PROPERTIES' period_abbreviations) has nothing for
+    one to mark, so a CJK word wearing a period is a name word, not a
+    title -- a lone '田中.' is the family name (#323). The four East
+    Asian rows write no initials either; Thai writes no initials but
+    writes its titles short, so the two are separate columns (#1256).
     `_PERIOD_ABBREV` stays ASCII-period only: a word wearing '。' never
     matches it, and the veto is what makes the ASCII spelling agree.
     ASCII text can carry no such character (every range sits

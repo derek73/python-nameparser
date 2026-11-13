@@ -176,6 +176,18 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Reach for it when.** You are about to write a condition that mirrors, matches or "does what X does" — or you find a comment saying one does. Grep for the other site's predicate and call it instead.
 
+## SCRIPT-PROPERTY-TABLE — one row per script, one column per question
+
+**Problem shape.** A rule needs to know what a script's writing does -- whether its case is a writer's choice, whether a letter and a period stand in for a name, whether a period marks an abbreviation -- and the answer is about to be written where the rule needed it, as a range, a constant or Python's own case properties.
+
+**Contract statement.** One private table answers it: a row per script, with its codepoint spans, a value per column, a reason and a source, keyed by a private name rather than by the public `Script` enum; a reader selects the spans of the column that is ITS question, and two questions that every row so far answers alike are still two columns.
+
+**How it works.** Readers build their matchers once at import from the spans a column selects (`_policy._ranges_where`), so a row added is read everywhere at once and a misjudged row sits in one place; a contrast that a script's letters must not enter drops them with a `str.translate` table, at C level. ONE-PREDICATE-PER-QUESTION's rule applied to data: a range written into a reader is the condition written to match. Its trap is the conflated column: `_NO_INITIALS` answered both "writes initials" and "writes period abbreviations" for the four East Asian scripts, and the readers that asked the second through the first were invisible until a row (Thai) answered them apart (#1256, decisions/script-properties).
+
+**Lives in.** nameparser/_policy.py (`_SCRIPT_PROPERTIES`, `_ScriptRow`, `_ranges_where` and the derived spans), read by nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_pieces.py, nameparser/_render.py and nameparser/_match.py; tests/v2/test_script_properties.py checks each row through every reader of its column and refuses a range restated outside `_policy`.
+
+**Reach for it when.** Writing a codepoint range, a script name or `isupper()` into a rule to decide what a script does -- or splitting a column, which asks you to read every reader of the old one for which question it asks.
+
 ## RENDER-HONORS-THE-PARSE — the parse decides it, the views honor it
 
 **Problem shape.** A render view needs a fact the parse already settled — whether a word is the conjunction or an initial, whether a particle is acting as one, which word renders first.

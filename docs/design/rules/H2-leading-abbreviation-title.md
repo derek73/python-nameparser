@@ -85,7 +85,7 @@
   "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
   "คุณ. สมชาย"                 →  given="คุณ."
   ```
-- The shape reads a Latin convention, and a script with no initials has no period abbreviations either, so a period-marked opening word carrying a Han, kana or hangul character — as the script table classifies them, halfwidth katakana included since #594 — is a name word and never a title by shape (#323; decisions/cjk-full-stops) — the same veto that keeps 씨. from reading as an initial. The Latin reading is unchanged, and W3's example block carries the CJK reading this clause vetoes into. The veto reads the composed spelling, so hangul typed decomposed, as conjoining jamo, is hangul to it too (#665); the second line below is typed that way.
+- The shape reads a Latin convention, and Han, kana and hangul write no period abbreviations, as they write no initials, so a period-marked opening word carrying a Han, kana or hangul character — as the script table classifies them, halfwidth katakana included since #594 — is a name word and never a title by shape (#323; decisions/cjk-full-stops) — a veto of its own, which the script that writes no initials need not share: Thai writes none, and writes its titles short with periods (decisions/script-properties). The Latin reading is unchanged, and W3's example block carries the CJK reading this clause vetoes into. The veto reads the composed spelling, so hangul typed decomposed, as conjoining jamo, is hangul to it too (#665); the second line below is typed that way.
   ```
   "Smith. John"               →  title="Smith."
   "김. 민준"                    →  title=""

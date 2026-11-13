@@ -592,7 +592,7 @@ def assemble(state: ParseState) -> ParsedName:
                     # rules/H2: "an abbreviation the vocabulary reads as
                     # a given name written short", "word in one of the
                     # ten Brahmic scripts from Devanagari to Sinhala" and
-                    # "has no period abbreviations either" -- H2's shape,
+                    # "write no period abbreviations" -- H2's shape,
                     # asked through its own predicate; a word it refuses
                     # is a title only by where it stands (decisions/A1,
                     # 2026-11-09)
