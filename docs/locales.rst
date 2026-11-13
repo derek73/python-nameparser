@@ -282,7 +282,7 @@ checked in one of four ways:
   is accepted and reads that language's file, there being none of its
   own.
 - **A language whose file holds no reading a parse reads yet**
-  (``hu``, whose file records only words kept out) raises ``ValueError``, a plain choice
+  (``hu``, whose file records only words kept out and familiar forms, which only name matching reads) raises ``ValueError``, a plain choice
   of it changing nothing; a strict choice accepts it (`Reading one language
   only`_).
 

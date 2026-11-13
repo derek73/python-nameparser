@@ -155,7 +155,7 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``same``
      - ``Smith`` / ``Smith``
      - yes
-   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away, and each hyphen the parser joins two names with (U+2010, the en dash and others) read as the hyphen-minus wherever the parser reads the name alike, which it does not for a credential joined by one (``MD‐PhD``)
+   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away, and each hyphen the parser joins two names with (U+2010, the en dash and others) read as the hyphen-minus wherever the parser reads the name alike, which it does not for a credential joined by one (``MD‐PhD``); and a letter a keyboard lacks written as one types it or as its standard transcription (``Łukasz`` / ``Lukasz``, ``Müller`` / ``Mueller``)
      - ``María García`` / ``MARIA GARCIA``
      - yes
    * - ``joined``: equal once folded and stripped of spaces and hyphens, save where both are initials alone
@@ -362,9 +362,11 @@ ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
 ``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. It
 is read as a familiar form is, in the same roles, either way round and
 never chained, and the keys follow it where it is accepted. The same
-review as the familiar forms gives its 491 pairs (counted 2026-11-12),
+review as the familiar forms gives its 429 pairs (counted 2026-11-12),
 each called a spelling of one name by both reviewers or by the
-maintainer where they split. It is outside the default because people
+maintainer where they split, less the spellings a keyboard forces,
+which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``
+/ ``Juergen``, ``Srđan`` / ``Srdjan``, from either side). It is outside the default because people
 sometimes spell a name differently on purpose, to be told apart from
 someone of the same name, so two spellings are evidence of a match
 only for a caller who knows their sources write one name several ways:

@@ -1,11 +1,11 @@
-"""Draw candidate familiar forms from CC0 data, for a review by hand.
+"""Draw candidate familiar forms and spellings from CC0 data, for a review.
 
-WHY THIS IS IN THE TREE. The shipped familiar forms are English alone
-since nam_dict's pairs left (decisions/name-matching, 2026-11-12
-ENGLISH ONLY UNTIL REBUILT): a compiler's list copied whole keeps its
-licence (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE
-MEASURE), so other languages' pairs are rebuilt from pairs the project
-FINDS in data it may use and then reviews by hand, as the nicknames
+WHY THIS IS IN THE TREE. nam_dict's familiar forms left the vocabulary
+because a compiler's list copied whole keeps its licence
+(decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE),
+so other languages' pairs are rebuilt from pairs the project FINDS in
+data it may use and then reviews (decisions/name-matching, 2026-11-12
+ALTERNATE SPELLINGS ARE OPT-IN), as the nicknames
 list was reviewed. This tool finds them; it never reads nam_dict or any
 other list of familiar forms, so what it proposes is a measurement of
 usage, not a selection copied from a compiler.
@@ -33,8 +33,8 @@ reads as one, equal under its fold (`_match._fold`: `José` / `Jose`).
 What stays for the review to sort, by the nicknames list's categories
 (tools/vocab/nicknames_excluded.tsv) and a transliteration: two
 spellings of one name (`Olga` / `Olha`, shape `spelling` here by a
-similarity a reviewer may overrule), which ship as listed spellings
-rather than familiar forms; a transliteration (`Ігор` / `Igor`, shape
+similarity a reviewer may overrule), which ship as alternate spellings,
+the opt-in `alternate-spelling`, rather than familiar forms; a transliteration (`Ігор` / `Igor`, shape
 `two-scripts`) and another language's form (`Jorge` / `George`),
 recorded and not shipped; and another name used beside the given one
 (`Scott` / `Robert`). The pairs the nicknames list's review refused as
