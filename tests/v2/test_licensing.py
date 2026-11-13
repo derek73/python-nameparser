@@ -34,6 +34,11 @@ _CREDITED = {
 }
 
 
+def _license_section() -> str:
+    readme = (ROOT / "README.rst").read_text(encoding="utf-8")
+    return readme.split("\nLicense\n-------\n", 1)[1].split("\n.. |", 1)[0]
+
+
 def _project() -> dict:
     return tomllib.loads(
         (ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
@@ -81,19 +86,21 @@ def test_licence_expression_names_nothing_without_a_row() -> None:
 @pytest.mark.parametrize("spdx", sorted(_CREDITED))
 def test_each_measured_source_is_credited(spdx: str) -> None:
     modules, credit = _CREDITED[spdx]
-    readme = (ROOT / "README.rst").read_text(encoding="utf-8")
+    section = " ".join(_license_section().split())
+    assert " ".join(credit.split()) in section, (
+        f"README.rst's License section does not name {credit}")
     for module in modules:
         text = (ROOT / module).read_text(encoding="utf-8")
         assert " ".join(credit.split()) in " ".join(text.split()), (
             f"{module} does not credit its data under {credit}")
-        assert f"``{module}``" in readme or f"``{Path(module).name}``" in readme, (
+        assert (f"``{module}``" in section
+                or f"``{Path(module).name}``" in section), (
             f"README.rst's License section does not name {module}")
 
 
 @needs_checkout
 @pytest.mark.parametrize("name", sorted(_THIRD_PARTY))
 def test_readme_names_each_licence_file(name: str) -> None:
-    readme = (ROOT / "README.rst").read_text(encoding="utf-8")
-    section = readme.split("\nLicense\n-------\n", 1)[1].split("\n.. |", 1)[0]
+    section = _license_section()
     assert f"``{name}``" in section
     assert _project()["license"] in section
