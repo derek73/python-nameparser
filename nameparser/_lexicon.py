@@ -739,8 +739,8 @@ def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
     """The compile's `FAMILIAR`, a familiar form -> the longer names its
     `short_for` lists, read both ways: each word with every name it is
     paired with directly, as the shorter name or the longer. The
-    sources do not always write the shorter name first (nam_dict's
-    `Maria` / `Masha`, the nicknames list's `barbara` / `babs`), so the
+    sources do not always write the shorter name first (the nicknames
+    list's `barbara` / `babs`), so the
     match reads a pair whichever way it was written, and never chains
     two pairs (decisions/name-matching, 2026-11-08
     FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
@@ -1751,7 +1751,7 @@ class Lexicon:
     _same_as_named: SameAsNamed = field(
         init=False, repr=False, compare=False, hash=False)
     # a given name -> every name it is paired with as a familiar form,
-    # either way (`max` -> {`maksim`, `maxim`, `maximilian`},
+    # either way (`max` -> {`maxwell`, `maximilian`, ...},
     # `maximilian` -> {`max`}), from every `familiar` reading's
     # `short_for`, read by the name match alone (`_familiar_forms`);
     # built like `_same_as`
@@ -2246,8 +2246,8 @@ class Lexicon:
 
     def _familiar_forms(self, word: str) -> frozenset[str]:
         """The given names `word`, normalized, is paired with directly
-        as a familiar form, in either direction (`max` -> {`maksim`,
-        `maxim`, `maximilian`}, `maximilian` -> {`max`}), empty for a
+        as a familiar form, in either direction (`max` -> {`maxwell`,
+        `maximilian`, ...}, `maximilian` -> {`max`}), empty for a
         word in no pair. Never chained: two longer names paired with
         one shorter one (`maximilian`, `maxim`) do not reach each
         other. Read by the name match alone, never by a parse."""

@@ -3828,7 +3828,7 @@ credential = { note = "NPPES 2 US healthcare providers write it (healthcare only
 
 [[word]]
 text = "ed"
-familiar = { short_for = ["eddie", "eddy", "edgar", "edmond", "edmund", "eduardo", "edward", "edwin"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Edgar, U.S.A. 1; Edward, Great Britain 1, U.S.A. 2; Edwin, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with eddie, eddy, edmond, edmund, eduardo" }
+familiar = { short_for = ["eddie", "eddy", "edgar", "edmond", "edmund", "eduardo", "edward", "edwin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 family = { us_census_2010 = 262, wikidata = 7, as_of = 2026-10-25 }
 given = { us_ssa = 26370, wikidata = 2924, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 6 in the Netherlands, 3 in U.S.A., 2 in Great Britain" }
 credential = { expands = "Doctor of Education" }
@@ -5974,7 +5974,7 @@ familiar = { short_for = ["abbigail", "abbigale", "abigail", "abigale"], note = 
 
 [[word]]
 text = "abe"
-familiar = { short_for = ["abel", "abraham", "abram"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Abraham, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with abel, abram" }
+familiar = { short_for = ["abel", "abraham", "abram"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ada"
@@ -6018,15 +6018,11 @@ familiar = { short_for = ["agatha", "agnes", "augusta", "augustina"], note = "ni
 
 [[word]]
 text = "al"
-familiar = { short_for = ["alan", "alanson", "alastair", "albert", "aldo", "alex", "alexander", "alfonse", "alfred", "allan", "allen", "alonzo", "alyssa"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Albert, U.S.A. 1; Alfred, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with alan, alanson, alastair, aldo, alex, alexander, alfonse, allan, allen, alonzo, alyssa" }
+familiar = { short_for = ["alan", "alanson", "alastair", "albert", "aldo", "alex", "alexander", "alfonse", "alfred", "allan", "allen", "alonzo", "alyssa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "alec"
-familiar = { short_for = ["alexander"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Alexander, Great Britain 1, U.S.A. 1" }
-
-[[word]]
-text = "aleck"
-familiar = { short_for = ["alexander"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Alexander, U.S.A. 1" }
+familiar = { short_for = ["alexander"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "alek"
@@ -6070,7 +6066,7 @@ familiar = { short_for = ["mabel"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "amanda"
-familiar = { short_for = ["mandie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["mandie", "mandy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ance"
@@ -6082,7 +6078,7 @@ familiar = { short_for = ["andrea"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "andy"
-familiar = { short_for = ["anderson", "andrea", "andrew"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Andrew, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with anderson, andrea" }
+familiar = { short_for = ["anderson", "andrea", "andrew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "angel"
@@ -6090,7 +6086,7 @@ familiar = { short_for = ["angela", "angelica", "angelina"], note = "nicknames l
 
 [[word]]
 text = "angie"
-familiar = { short_for = ["angela", "angelica", "angelina"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Angela, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with angelica, angelina" }
+familiar = { short_for = ["angela", "angelica", "angelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ann"
@@ -6117,6 +6113,10 @@ text = "ant"
 familiar = { short_for = ["anthony", "antonio"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "anthony"
+familiar = { short_for = ["tony"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "app"
 familiar = { short_for = ["absalom"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -6138,7 +6138,7 @@ familiar = { short_for = ["bella"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "archie"
-familiar = { short_for = ["archibald"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Archibald, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["archibald"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ari"
@@ -6158,7 +6158,7 @@ familiar = { short_for = ["arlene"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "arnie"
-familiar = { short_for = ["arnold"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Arnold, U.S.A. 1" }
+familiar = { short_for = ["arnold"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "arry"
@@ -6166,15 +6166,7 @@ familiar = { short_for = ["ara", "arabella", "arabelle", "armena"], note = "nick
 
 [[word]]
 text = "art"
-familiar = { short_for = ["artemus", "arthur"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Arthur, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with artemus" }
-
-[[word]]
-text = "artie"
-familiar = { short_for = ["arthur"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Arthur, U.S.A. 1" }
-
-[[word]]
-text = "arty"
-familiar = { short_for = ["arthur"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Arthur, U.S.A. 1" }
+familiar = { short_for = ["artemus", "arthur"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ash"
@@ -6250,7 +6242,7 @@ familiar = { short_for = ["bea"], note = "nicknames list (Old Dominion Universit
 
 [[word]]
 text = "becca"
-familiar = { short_for = ["rebecca"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Rebecca, U.S.A. 1" }
+familiar = { short_for = ["rebecca"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "beck"
@@ -6258,7 +6250,7 @@ familiar = { short_for = ["becca", "rebecca"], note = "nicknames list (Old Domin
 
 [[word]]
 text = "becky"
-familiar = { short_for = ["beck", "rebecca"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Rebecca, Great Britain 3, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with beck" }
+familiar = { short_for = ["beck", "rebecca"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "beda"
@@ -6286,7 +6278,7 @@ familiar = { short_for = ["arabella", "arabelle", "belinda", "isabel", "isabella
 
 [[word]]
 text = "ben"
-familiar = { short_for = ["benedict", "benjamin", "bennett"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Benjamin, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with benedict, bennett" }
+familiar = { short_for = ["benedict", "benjamin", "bennett"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "benjamin"
@@ -6302,11 +6294,11 @@ familiar = { short_for = ["benjamin"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "bennie"
-familiar = { short_for = ["ben", "benedict", "benjamin", "bennett"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Benjamin, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with ben, benedict, bennett" }
+familiar = { short_for = ["ben", "benedict", "benjamin", "bennett"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "benny"
-familiar = { short_for = ["ben", "benjamin", "bennett"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Benjamin, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with ben, bennett" }
+familiar = { short_for = ["ben", "benjamin", "bennett"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "berney"
@@ -6326,7 +6318,7 @@ familiar = { short_for = ["greenberry", "littleberry"], note = "nicknames list (
 
 [[word]]
 text = "bert"
-familiar = { short_for = ["adelbert", "albert", "alberta", "bertha", "bertram", "delbert", "egbert", "elbert", "elbertson", "gilbert", "herbert", "hubert", "norbert", "roberta", "wilber"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Albert, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with adelbert, alberta, bertha, bertram, delbert, egbert, elbert, elbertson, gilbert, herbert, hubert, norbert, roberta, wilber" }
+familiar = { short_for = ["adelbert", "albert", "alberta", "bertha", "bertram", "delbert", "egbert", "elbert", "elbertson", "gilbert", "herbert", "hubert", "norbert", "roberta", "wilber"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "bertie"
@@ -6334,7 +6326,7 @@ familiar = { short_for = ["alberta", "bert", "bertha", "roberta"], note = "nickn
 
 [[word]]
 text = "bess"
-familiar = { short_for = ["bessie", "elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with bessie" }
+familiar = { short_for = ["bessie", "elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "bessie"
@@ -6342,15 +6334,15 @@ familiar = { short_for = ["bess", "elizabeth"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "beth"
-familiar = { short_for = ["bethanie", "bethany", "bethena", "elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Bethanie, Great Britain 1; Bethany, Great Britain 1; Elizabeth, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with bethena" }
+familiar = { short_for = ["bethena", "elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "betsy"
-familiar = { short_for = ["elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, U.S.A. 1" }
+familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "betty"
-familiar = { short_for = ["elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, Great Britain 1, Ireland 1, U.S.A. 1" }
+familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "bev"
@@ -6374,15 +6366,11 @@ familiar = { short_for = ["abijah"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "bill"
-familiar = { short_for = ["will", "william", "willis"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: William, Great Britain 2, Ireland 1, U.S.A. 4; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with will, willis" }
-
-[[word]]
-text = "billie"
-familiar = { short_for = ["william"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: William, U.S.A. 1" }
+familiar = { short_for = ["will", "william", "willis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "billy"
-familiar = { short_for = ["bill", "william"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: William, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with bill" }
+familiar = { short_for = ["bill", "william"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "birdie"
@@ -6398,7 +6386,7 @@ familiar = { short_for = ["boetius"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "bob"
-familiar = { short_for = ["bobby", "robert"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robert, Great Britain 1, Ireland 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with bobby" }
+familiar = { short_for = ["bobby", "robert"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "bobbie"
@@ -6406,7 +6394,7 @@ familiar = { short_for = ["barbara", "roberta"], note = "nicknames list (Old Dom
 
 [[word]]
 text = "bobby"
-familiar = { short_for = ["robert"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robert, U.S.A. 1" }
+familiar = { short_for = ["robert"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "brad"
@@ -6446,7 +6434,7 @@ familiar = { short_for = ["brooklyn"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "brooke"
-familiar = { short_for = ["brookie", "brooklyn"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Brookie, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with brooklyn" }
+familiar = { short_for = ["brooklyn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "brose"
@@ -6478,7 +6466,7 @@ familiar = { short_for = ["caitlin", "caitlyn"], note = "nicknames list (Old Dom
 
 [[word]]
 text = "cal"
-familiar = { short_for = ["caleb", "callie", "calvin"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Calvin, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with caleb, callie" }
+familiar = { short_for = ["caleb", "callie", "calvin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "callie"
@@ -6557,12 +6545,16 @@ text = "cassie"
 familiar = { short_for = ["cassandra", "cassidy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "cathie"
-familiar = { short_for = ["catherine", "cathleen"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Catherine, Great Britain 1, U.S.A. 1; Cathleen, U.S.A. 1" }
+text = "catherine"
+familiar = { short_for = ["cathy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "cathleen"
+familiar = { short_for = ["cathy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "cathy"
-familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Catherine, Great Britain 3, Ireland 1, U.S.A. 1; Cathleen, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with katherine, kathleen" }
+familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ced"
@@ -6589,8 +6581,12 @@ text = "char"
 familiar = { short_for = ["charlotte"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "charles"
+familiar = { short_for = ["charlie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "charlie"
-familiar = { short_for = ["charles"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Charles, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["charles"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "charlotte"
@@ -6638,15 +6634,11 @@ familiar = { short_for = ["charles"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "chris"
-familiar = { short_for = ["christa", "christian", "christiana", "christiano", "christina", "christine", "christoffer", "christoph", "christopher", "crystal", "kristen", "kristin", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Christina, Great Britain 1, Ireland 1, U.S.A. 1; Christine, Great Britain 1, Ireland 1, U.S.A. 1; Christopher, Great Britain 2, Ireland 1, U.S.A. 3; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with christa, christian, christiana, christiano, christoffer, christoph, crystal, kristen, kristin, kristine, kristofer, kristoffer, kristopher" }
+familiar = { short_for = ["christa", "christian", "christiana", "christiano", "christina", "christine", "christoffer", "christoph", "christopher", "crystal", "kristen", "kristin", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "chrissy"
 familiar = { short_for = ["christina", "christine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "christie"
-familiar = { short_for = ["christine", "christopher"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Christine, Ireland 1; Christopher, Great Britain 1" }
 
 [[word]]
 text = "christina"
@@ -6654,7 +6646,7 @@ familiar = { short_for = ["tina"], note = "nicknames list (Old Dominion Universi
 
 [[word]]
 text = "christy"
-familiar = { short_for = ["christiana", "christina", "christine", "christopher", "kristine"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Christopher, Great Britain 1, Ireland 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with christiana, christina, christine, kristine" }
+familiar = { short_for = ["christiana", "christina", "christine", "kristine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "chuck"
@@ -6706,7 +6698,11 @@ familiar = { short_for = ["clement", "clementine"], note = "nicknames list (Old 
 
 [[word]]
 text = "cliff"
-familiar = { short_for = ["clifford", "clifton"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Clifford, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with clifton" }
+familiar = { short_for = ["clifford", "clifton"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "clifford"
+familiar = { short_for = ["cliff"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "clo"
@@ -6722,7 +6718,7 @@ familiar = { short_for = ["corey", "cory"], note = "nicknames list (Old Dominion
 
 [[word]]
 text = "cole"
-familiar = { short_for = ["coleman", "nichole", "nicholette", "nicole"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Coleman, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with nichole, nicholette, nicole" }
+familiar = { short_for = ["nichole", "nicholette", "nicole"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "colie"
@@ -6818,11 +6814,15 @@ familiar = { short_for = ["dalton"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "dan"
-familiar = { short_for = ["daniel", "sheridan"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Daniel, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with sheridan" }
+familiar = { short_for = ["daniel", "sheridan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "dani"
 familiar = { short_for = ["danielle"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "daniel"
+familiar = { short_for = ["danny"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "dann"
@@ -6830,7 +6830,7 @@ familiar = { short_for = ["daniel"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "danny"
-familiar = { short_for = ["dan", "daniel", "daniela", "sheridan"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Daniel, Great Britain 1, U.S.A. 1; Daniela, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with dan, sheridan" }
+familiar = { short_for = ["dan", "daniel", "sheridan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "daph"
@@ -6850,15 +6850,11 @@ familiar = { short_for = ["darlene"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "dave"
-familiar = { short_for = ["david"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: David, Great Britain 2, Ireland 1, U.S.A. 1" }
+familiar = { short_for = ["david"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "davey"
 familiar = { short_for = ["dave", "david"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "davy"
-familiar = { short_for = ["david"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: David, U.S.A. 1" }
 
 [[word]]
 text = "day"
@@ -6870,15 +6866,19 @@ familiar = { short_for = ["demaris", "demerias"], note = "nicknames list (Old Do
 
 [[word]]
 text = "deb"
-familiar = { short_for = ["debbie", "debby", "debora", "deborah", "debra"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Deborah, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with debbie, debby, debora, debra" }
+familiar = { short_for = ["debbie", "debby", "debora", "deborah", "debra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "debbie"
-familiar = { short_for = ["debora", "deborah", "debra"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Deborah, Great Britain 2, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with debora, debra" }
+familiar = { short_for = ["debora", "deborah", "debra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "debby"
-familiar = { short_for = ["debbie", "debora", "deborah"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Deborah, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with debbie, debora" }
+familiar = { short_for = ["debbie", "debora", "deborah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "deborah"
+familiar = { short_for = ["debbie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "debra"
@@ -6937,20 +6937,16 @@ text = "dena"
 familiar = { short_for = ["adena"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "denis"
-familiar = { short_for = ["denny"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Denny, U.S.A. 1" }
-
-[[word]]
 text = "dennie"
 familiar = { short_for = ["dennis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "denny"
-familiar = { short_for = ["dennis", "dennison"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Dennis, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with dennison" }
+familiar = { short_for = ["dennis", "dennison"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "di"
-familiar = { short_for = ["diana", "diane"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Diana, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with diane" }
+familiar = { short_for = ["diana", "diane"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "diah"
@@ -6962,7 +6958,7 @@ familiar = { short_for = ["diana", "diane", "eudicy", "eurydice"], note = "nickn
 
 [[word]]
 text = "dick"
-familiar = { short_for = ["dickson", "melchizedek", "richard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Richard, Great Britain 2, U.S.A. 3; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with dickson, melchizedek" }
+familiar = { short_for = ["dickson", "melchizedek", "richard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "dickie"
@@ -7026,7 +7022,7 @@ familiar = { short_for = ["domenic", "dominic", "dominick", "dominico"], note = 
 
 [[word]]
 text = "don"
-familiar = { short_for = ["donald", "donato", "donovan"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Donald, Great Britain 1, Ireland 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with donato, donovan" }
+familiar = { short_for = ["donald", "donato", "donovan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "donnie"
@@ -7070,7 +7066,7 @@ familiar = { short_for = ["dorothy", "dotha"], note = "nicknames list (Old Domin
 
 [[word]]
 text = "doug"
-familiar = { short_for = ["douglas"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Douglas, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["douglas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "drea"
@@ -7170,7 +7166,7 @@ familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "elizabeth"
-familiar = { short_for = ["eliza"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["beth", "eliza"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ella"
@@ -7221,20 +7217,12 @@ text = "epsey"
 familiar = { short_for = ["artelepsa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "eric"
-familiar = { short_for = ["rick"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Rick, U.S.A. 1" }
-
-[[word]]
 text = "ernie"
-familiar = { short_for = ["earnest", "ernest"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Ernest, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with earnest" }
+familiar = { short_for = ["earnest", "ernest"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "es"
 familiar = { short_for = ["essy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "esme"
-familiar = { short_for = ["esmeralda"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Esmeralda, U.S.A. 1" }
 
 [[word]]
 text = "essa"
@@ -7398,7 +7386,7 @@ familiar = { short_for = ["frances", "francine"], note = "nicknames list (Old Do
 
 [[word]]
 text = "fred"
-familiar = { short_for = ["alfred", "ferdinand", "ferdinando", "frederick", "frieda", "wilfred", "winnifred"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Alfred, U.S.A. 1; Frederick, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with ferdinand, ferdinando, frieda, wilfred, winnifred" }
+familiar = { short_for = ["alfred", "ferdinand", "ferdinando", "frederick", "frieda", "wilfred", "winnifred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "freda"
@@ -7406,11 +7394,11 @@ familiar = { short_for = ["alfreda", "fredericka"], note = "nicknames list (Old 
 
 [[word]]
 text = "freddie"
-familiar = { short_for = ["ferdinand", "fred", "frederick", "frieda", "winifred", "winnifred"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Frederick, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with ferdinand, fred, frieda, winifred, winnifred" }
+familiar = { short_for = ["ferdinand", "fred", "frederick", "frieda", "winifred", "winnifred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "freddy"
-familiar = { short_for = ["alfred", "alfreda", "ferdinand", "fred", "frederica", "frederick", "fredericka", "frieda", "winnifred"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Frederick, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with alfred, alfreda, ferdinand, fred, frederica, fredericka, frieda, winnifred" }
+familiar = { short_for = ["alfred", "alfreda", "ferdinand", "fred", "frederica", "frederick", "fredericka", "frieda", "winnifred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "frieda"
@@ -7474,7 +7462,7 @@ familiar = { short_for = ["eugene"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "geoff"
-familiar = { short_for = ["geoffrey", "jeffrey"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Geoffrey, Great Britain 2, U.S.A. 3; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jeffrey" }
+familiar = { short_for = ["geoffrey", "jeffrey"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "georgia"
@@ -7483,10 +7471,6 @@ familiar = { short_for = ["georgiana"], note = "nicknames list (Old Dominion Uni
 [[word]]
 text = "georgie"
 familiar = { short_for = ["george", "georgia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "ger"
-familiar = { short_for = ["geraldine", "gerard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Geraldine, Ireland 1; Gerard, Ireland 1" }
 
 [[word]]
 text = "geraldine"
@@ -7566,11 +7550,11 @@ familiar = { short_for = ["greenberry"], note = "nicknames list (Old Dominion Un
 
 [[word]]
 text = "greg"
-familiar = { short_for = ["gregory"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Gregory, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["gregory"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "gregg"
-familiar = { short_for = ["greggory", "gregory"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Gregory, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with greggory" }
+familiar = { short_for = ["greggory"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "greta"
@@ -7598,7 +7582,7 @@ familiar = { short_for = ["augusta", "augustina", "gus", "gustavus"], note = "ni
 
 [[word]]
 text = "gwen"
-familiar = { short_for = ["gwendolyn"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Gwendolyn, U.S.A. 1" }
+familiar = { short_for = ["gwendolyn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "hal"
@@ -7625,8 +7609,12 @@ text = "haps"
 familiar = { short_for = ["harold", "harrison", "harry", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "harold"
+familiar = { short_for = ["harry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "harry"
-familiar = { short_for = ["harold", "harrison", "henry"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Harold, Great Britain 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with harrison, henry" }
+familiar = { short_for = ["harold", "harrison", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "harty"
@@ -7654,7 +7642,7 @@ familiar = { short_for = ["harry"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "herb"
-familiar = { short_for = ["herbert"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Herbert, U.S.A. 1" }
+familiar = { short_for = ["herbert"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "hermie"
@@ -7734,7 +7722,7 @@ familiar = { short_for = ["hosea"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "howie"
-familiar = { short_for = ["howard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Howard, U.S.A. 1" }
+familiar = { short_for = ["howard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "hub"
@@ -7790,15 +7778,11 @@ familiar = { short_for = ["isadore", "isidore"], note = "nicknames list (Old Dom
 
 [[word]]
 text = "jack"
-familiar = { short_for = ["jackson", "jacqueline", "john"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: John, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jackson, jacqueline" }
+familiar = { short_for = ["jackson", "jacqueline", "john"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jackie"
-familiar = { short_for = ["jack", "jacqueline"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jacqueline, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jack" }
-
-[[word]]
-text = "jacky"
-familiar = { short_for = ["jacqueline"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jacqueline, Great Britain 1" }
+familiar = { short_for = ["jack", "jacqueline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jacqui"
@@ -7810,7 +7794,7 @@ familiar = { short_for = ["jacob", "jakob"], note = "nicknames list (Old Dominio
 
 [[word]]
 text = "james"
-familiar = { short_for = ["jamey", "jamie", "jimmie", "jimmy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jimmie, Great Britain 1; Jimmy, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jamey, jamie" }
+familiar = { short_for = ["jamey", "jamie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jamie"
@@ -7870,7 +7854,7 @@ familiar = { short_for = ["jedediah", "jedidiah"], note = "nicknames list (Old D
 
 [[word]]
 text = "jeff"
-familiar = { short_for = ["geoffrey", "jefferey", "jefferson", "jeffery", "jeffrey"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jeffrey, Great Britain 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with geoffrey, jefferey, jefferson, jeffery" }
+familiar = { short_for = ["geoffrey", "jefferey", "jefferson", "jeffery", "jeffrey"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jem"
@@ -7890,23 +7874,19 @@ familiar = { short_for = ["jennifer"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "jennie"
-familiar = { short_for = ["jane", "jennifer"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jennifer, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jane" }
+familiar = { short_for = ["jane", "jennifer"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jenny"
-familiar = { short_for = ["genevieve", "jennet", "jennie", "jennifer"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jennifer, Great Britain 4, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with genevieve, jennet, jennie" }
+familiar = { short_for = ["genevieve", "jennet", "jennie", "jennifer"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jereme"
 familiar = { short_for = ["jeremiah", "jerry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "jeremy"
-familiar = { short_for = ["jeremiah"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jeremiah, Ireland 1, U.S.A. 1" }
-
-[[word]]
 text = "jerry"
-familiar = { short_for = ["garrett", "gerald", "geraldine", "jeremiah"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Gerald, U.S.A. 1; Jeremiah, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with garrett, geraldine" }
+familiar = { short_for = ["garrett", "gerald", "geraldine", "jeremiah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jess"
@@ -7914,11 +7894,7 @@ familiar = { short_for = ["jesse", "jessica", "jessie"], note = "nicknames list 
 
 [[word]]
 text = "jessie"
-familiar = { short_for = ["jane", "janet", "jeanette", "jennet", "jessica"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jessica, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jane, janet, jeanette, jennet" }
-
-[[word]]
-text = "jessy"
-familiar = { short_for = ["jessica"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Jessica, U.S.A. 1" }
+familiar = { short_for = ["jane", "janet", "jeanette", "jennet", "jessica"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jettie"
@@ -7938,15 +7914,15 @@ familiar = { short_for = ["jillian"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "jim"
-familiar = { short_for = ["james", "jimmie", "jimmy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: James, Great Britain 1, Ireland 1, U.S.A. 1; Jimmy, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with jimmie" }
+familiar = { short_for = ["james", "jimmie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jimmie"
-familiar = { short_for = ["jim"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["james", "jim"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jimmy"
-familiar = { short_for = ["jimmie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["james", "jimmie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jock"
@@ -7962,19 +7938,15 @@ familiar = { short_for = ["joanna", "johannah", "joseph", "josephine"], note = "
 
 [[word]]
 text = "joe"
-familiar = { short_for = ["joey", "joseph", "joshua"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Joseph, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with joey, joshua" }
+familiar = { short_for = ["joey", "joseph", "joshua"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "joey"
 familiar = { short_for = ["joe", "joseph", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "john"
-familiar = { short_for = ["johnny"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Johnny, U.S.A. 1" }
-
-[[word]]
 text = "johnny"
-familiar = { short_for = ["jon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["john", "jon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "johny"
@@ -8041,8 +8013,12 @@ text = "judie"
 familiar = { short_for = ["judith"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "judith"
+familiar = { short_for = ["judy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "judy"
-familiar = { short_for = ["judith"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Judith, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["judith"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "jule"
@@ -8082,19 +8058,15 @@ familiar = { short_for = ["kameron"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "kate"
-familiar = { short_for = ["catherine", "katelin", "katelyn", "katey", "katherine", "kathleen", "kathryn", "katy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Catherine, Great Britain 2, Ireland 1, U.S.A. 1; Katey, U.S.A. 1; Katherine, Great Britain 3, Ireland 1, U.S.A. 1; Kathleen, Great Britain 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with katelin, katelyn, kathryn, katy" }
-
-[[word]]
-text = "kathie"
-familiar = { short_for = ["katherine"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Katherine, U.S.A. 1" }
+familiar = { short_for = ["katelin", "katelyn", "katherine", "kathryn", "katy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kathy"
-familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen", "kathryn"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Katherine, Great Britain 2, Ireland 1, U.S.A. 1; Kathleen, Great Britain 3, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with catherine, cathleen, kathryn" }
+familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "katie"
-familiar = { short_for = ["catherine", "katherine", "kathryn"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Catherine, Ireland 1; Katherine, Ireland 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with kathryn" }
+familiar = { short_for = ["katherine", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "katy"
@@ -8114,15 +8086,19 @@ familiar = { short_for = ["makayla"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "ken"
-familiar = { short_for = ["kendall", "kendrick", "kendrik", "kennedy", "kenneth", "kenny", "kent", "mckenna"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Kenneth, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with kendall, kendrick, kendrik, kennedy, kenny, kent, mckenna" }
+familiar = { short_for = ["kendall", "kendrick", "kendrik", "kennedy", "kenneth", "kenny", "kent", "mckenna"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kenna"
 familiar = { short_for = ["mckenna"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "kenneth"
+familiar = { short_for = ["kenny"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "kenny"
-familiar = { short_for = ["kendall", "kendra", "kendrick", "kendrik", "kennedy", "kenneth", "kent"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Kenneth, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with kendall, kendra, kendrick, kendrik, kennedy, kent" }
+familiar = { short_for = ["kendall", "kendra", "kendrick", "kendrik", "kennedy", "kenneth", "kent"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kenzy"
@@ -8130,7 +8106,7 @@ familiar = { short_for = ["mackenzie"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "kev"
-familiar = { short_for = ["kevin"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Kevin, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["kevin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kiah"
@@ -8146,7 +8122,7 @@ familiar = { short_for = ["archilles"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "kim"
-familiar = { short_for = ["kimberley", "kimberly"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Kimberley, Great Britain 1, Ireland 1, U.S.A. 1; Kimberly, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["kimberley", "kimberly"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "kimmy"
@@ -8222,15 +8198,23 @@ familiar = { short_for = ["alanson"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "larry"
-familiar = { short_for = ["laurance", "laurence", "lawrence"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Laurance, U.S.A. 1; Laurence, Great Britain 1, U.S.A. 1; Lawrence, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["laurence", "lawrence"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "laura"
 familiar = { short_for = ["laurinda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "laurence"
+familiar = { short_for = ["larry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "laurie"
 familiar = { short_for = ["laura", "laurel", "lauren", "lauryn", "lorelei"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "lawrence"
+familiar = { short_for = ["larry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lawrie"
@@ -8262,15 +8246,11 @@ familiar = { short_for = ["lemuel"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "len"
-familiar = { short_for = ["leonard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Leonard, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["leonard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lena"
 familiar = { short_for = ["adaline", "adeline", "aileen", "arlene", "darlene", "evaline", "helen", "helena", "helene", "madeline", "magdalena", "magdelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "lennie"
-familiar = { short_for = ["leonard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Leonard, Great Britain 1" }
 
 [[word]]
 text = "lenny"
@@ -8353,10 +8333,6 @@ text = "lily"
 familiar = { short_for = ["lil", "liliana", "lillah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "lin"
-familiar = { short_for = ["caroline", "carolyn", "lynn", "lynne"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Caroline, U.S.A. 1; Carolyn, U.S.A. 1; Lynn, Great Britain 1; Lynne, Great Britain 1" }
-
-[[word]]
 text = "lina"
 familiar = { short_for = ["angelina", "paulina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -8374,7 +8350,7 @@ familiar = { short_for = ["lincoln"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "lisa"
-familiar = { short_for = ["elisa", "elizabeth", "elysia", "melissa"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, Great Britain 3, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with elisa, elysia, melissa" }
+familiar = { short_for = ["elisa", "elizabeth", "elysia", "melissa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lish"
@@ -8398,23 +8374,19 @@ familiar = { short_for = ["olivia"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "liz"
-familiar = { short_for = ["elizabeth", "lizzie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, Great Britain 5, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with lizzie" }
+familiar = { short_for = ["elizabeth", "lizzie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "liza"
-familiar = { short_for = ["elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, Great Britain 1, Ireland 1, U.S.A. 1" }
+familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lizzie"
-familiar = { short_for = ["elizabeth"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Elizabeth, Great Britain 2" }
+familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lizzy"
 familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "llew"
-familiar = { short_for = ["llewellyn"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Llewellyn, Great Britain 1" }
 
 [[word]]
 text = "lodi"
@@ -8474,11 +8446,15 @@ familiar = { short_for = ["carlotta", "charlotte", "lotta"], note = "nicknames l
 
 [[word]]
 text = "lou"
-familiar = { short_for = ["lois", "louis", "louisa", "louise", "lucille", "lucinda"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Louis, U.S.A. 1; Louisa, U.S.A. 1; Louise, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with lois, lucille, lucinda" }
+familiar = { short_for = ["lois", "louis", "louisa", "louise", "lucille", "lucinda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "louie"
 familiar = { short_for = ["louis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "louis"
+familiar = { short_for = ["lou"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lu"
@@ -8514,7 +8490,7 @@ familiar = { short_for = ["lidia", "lydia"], note = "nicknames list (Old Dominio
 
 [[word]]
 text = "lynn"
-familiar = { short_for = ["caroline", "carolyn", "celinda", "lyndon"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Caroline, Ireland 1, U.S.A. 1; Carolyn, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with celinda, lyndon" }
+familiar = { short_for = ["caroline", "carolyn", "celinda", "lyndon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mabel"
@@ -8530,7 +8506,7 @@ familiar = { short_for = ["maddison", "madeline"], note = "nicknames list (Old D
 
 [[word]]
 text = "maddie"
-familiar = { short_for = ["maddison", "madeleine", "madeline"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Madeleine, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with maddison, madeline" }
+familiar = { short_for = ["maddison", "madeline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "maddy"
@@ -8562,7 +8538,7 @@ familiar = { short_for = ["magdelina"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "maggie"
-familiar = { short_for = ["magdalena", "magdelina", "margaret", "margaretta", "margarita"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Margaret, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with magdalena, magdelina, margaretta, margarita" }
+familiar = { short_for = ["magdalena", "magdelina", "margaret", "margaretta", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "maggy"
@@ -8594,7 +8570,7 @@ familiar = { short_for = ["amanda"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "mandy"
-familiar = { short_for = ["amanda", "armanda", "manda", "miranda"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Amanda, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with armanda, manda, miranda" }
+familiar = { short_for = ["amanda", "armanda", "manda", "miranda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "manny"
@@ -8613,12 +8589,16 @@ text = "marcie"
 familiar = { short_for = ["marsha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "margaret"
+familiar = { short_for = ["marge"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "margaretta"
 familiar = { short_for = ["marge"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "marge"
-familiar = { short_for = ["margaret", "margaretta", "margarita"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Margaret, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with margaretta, margarita" }
+familiar = { short_for = ["margaret", "margaretta", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "margery"
@@ -8670,7 +8650,7 @@ familiar = { short_for = ["martha", "mathew"], note = "nicknames list (Old Domin
 
 [[word]]
 text = "matt"
-familiar = { short_for = ["mathew", "matthew", "matthews", "matthias"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Matthew, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with mathew, matthews, matthias" }
+familiar = { short_for = ["mathew", "matthew", "matthews", "matthias"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mattie"
@@ -8714,7 +8694,7 @@ familiar = { short_for = ["mabel"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "mel"
-familiar = { short_for = ["amelia", "emily", "melanie", "melinda", "melissa", "melvin"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Melanie, Great Britain 4, Ireland 1, U.S.A. 1; Melvin, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with amelia, emily, melinda, melissa" }
+familiar = { short_for = ["amelia", "emily", "melinda", "melissa", "melvin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "melia"
@@ -8769,8 +8749,12 @@ text = "mia"
 familiar = { short_for = ["maria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "michael"
+familiar = { short_for = ["mike"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "mick"
-familiar = { short_for = ["michael", "mike"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Michael, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with mike" }
+familiar = { short_for = ["michael", "mike"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mickey"
@@ -8798,7 +8782,7 @@ familiar = { short_for = ["miguel"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "mike"
-familiar = { short_for = ["michael", "micheal", "miguel"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Michael, Great Britain 5, Ireland 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with micheal, miguel" }
+familiar = { short_for = ["michael", "micheal", "miguel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mikey"
@@ -8862,7 +8846,11 @@ familiar = { short_for = ["melissa", "millicent"], note = "nicknames list (Old D
 
 [[word]]
 text = "mitch"
-familiar = { short_for = ["mitchell"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Mitchell, U.S.A. 1" }
+familiar = { short_for = ["mitchell"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "mitchell"
+familiar = { short_for = ["mitch"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mitty"
@@ -8970,11 +8958,11 @@ familiar = { short_for = ["napoleon"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "nat"
-familiar = { short_for = ["natalia", "natasha", "nathalie", "nathan", "nathaniel"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Nathalie, U.S.A. 1; Nathan, U.S.A. 1; Nathaniel, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with natalia, natasha" }
+familiar = { short_for = ["natalia", "natasha", "nathan", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "nate"
-familiar = { short_for = ["nathan", "nathaniel"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Nathan, U.S.A. 1; Nathaniel, U.S.A. 1" }
+familiar = { short_for = ["nathan", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "nathan"
@@ -9058,7 +9046,7 @@ familiar = { short_for = ["isabel", "isabella", "isabelle"], note = "nicknames l
 
 [[word]]
 text = "nic"
-familiar = { short_for = ["domenic", "dominic", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Nicholas, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with domenic, dominic, nicodemus, nicolas, nikolas" }
+familiar = { short_for = ["domenic", "dominic", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "nicey"
@@ -9070,7 +9058,7 @@ familiar = { short_for = ["eunice", "unice"], note = "nicknames list (Old Domini
 
 [[word]]
 text = "nick"
-familiar = { short_for = ["dominick", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Nicholas, Great Britain 3, Ireland 1, U.S.A. 1; Nicolas, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with dominick, nicodemus, nikolas" }
+familiar = { short_for = ["dominick", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "nickey"
@@ -9218,7 +9206,7 @@ familiar = { short_for = ["patrick"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "pam"
-familiar = { short_for = ["pamela"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Pamela, Great Britain 2, U.S.A. 1" }
+familiar = { short_for = ["pamela"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "parsuny"
@@ -9230,7 +9218,7 @@ familiar = { short_for = ["parthenia"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "pat"
-familiar = { short_for = ["patience", "patricia", "patrick"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Patricia, Great Britain 2, Ireland 1, U.S.A. 1; Patrick, Great Britain 3, Ireland 3, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with patience" }
+familiar = { short_for = ["patience", "patricia", "patrick"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "pate"
@@ -9238,7 +9226,7 @@ familiar = { short_for = ["patrick", "peter"], note = "nicknames list (Old Domin
 
 [[word]]
 text = "patricia"
-familiar = { short_for = ["trish"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["patty", "trish"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "patsy"
@@ -9250,11 +9238,7 @@ familiar = { short_for = ["patricia"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "patty"
-familiar = { short_for = ["martha", "mathilda", "patience", "patricia"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Patricia, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with martha, mathilda, patience" }
-
-[[word]]
-text = "paul"
-familiar = { short_for = ["paulie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Paulie, Great Britain 1, U.S.A. 1" }
+familiar = { short_for = ["martha", "mathilda", "patience", "patricia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "peg"
@@ -9306,7 +9290,7 @@ familiar = { short_for = ["parthenia"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "phil"
-familiar = { short_for = ["philetus", "philip", "phillip"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Philip, Great Britain 1, Ireland 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with philetus, phillip" }
+familiar = { short_for = ["philetus", "philip", "phillip"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "philadelphia"
@@ -9390,7 +9374,11 @@ familiar = { short_for = ["miranda", "randall", "randolf", "randolph"], note = "
 
 [[word]]
 text = "ray"
-familiar = { short_for = ["raymond"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Raymond, Great Britain 1, Ireland 1, U.S.A. 1" }
+familiar = { short_for = ["raymond"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "raymond"
+familiar = { short_for = ["ray"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "raze"
@@ -9473,16 +9461,20 @@ text = "rich"
 familiar = { short_for = ["aldrich", "richard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "richard"
+familiar = { short_for = ["dick"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
 text = "riche"
 familiar = { short_for = ["aldrich"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "richie"
-familiar = { short_for = ["aldrich", "richard"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Richard, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with aldrich" }
+familiar = { short_for = ["aldrich", "richard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "rick"
-familiar = { short_for = ["broderick", "cedric", "derek", "derick", "derrick", "dick", "erick", "erik", "frederick", "ricardo", "richard", "rickie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Richard, Great Britain 1, Ireland 1, U.S.A. 2; Rickie, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with broderick, cedric, derek, derick, derrick, dick, erick, erik, frederick, ricardo" }
+familiar = { short_for = ["broderick", "cedric", "derek", "derick", "derrick", "dick", "eric", "erick", "erik", "frederick", "ricardo", "richard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ricka"
@@ -9522,19 +9514,19 @@ familiar = { short_for = ["jerita", "margaret", "margaretta", "margarita"], note
 
 [[word]]
 text = "rob"
-familiar = { short_for = ["bob", "bobby", "robert", "roberto", "robin"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robert, Great Britain 2, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with bob, bobby, roberto, robin" }
+familiar = { short_for = ["bob", "bobby", "robert", "roberto", "robin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "robbie"
-familiar = { short_for = ["robert", "roberta"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robert, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with roberta" }
+familiar = { short_for = ["roberta", "robin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "robby"
-familiar = { short_for = ["robert"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robert, U.S.A. 1" }
+familiar = { short_for = ["robert"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "robin"
-familiar = { short_for = ["robbie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Robbie, U.S.A. 1" }
+text = "robert"
+familiar = { short_for = ["bob"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "roby"
@@ -9542,7 +9534,7 @@ familiar = { short_for = ["roberta"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "rod"
-familiar = { short_for = ["broderick", "roderick", "rodger", "rodney", "roger"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Roderick, U.S.A. 1; Rodney, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with broderick, rodger, roger" }
+familiar = { short_for = ["broderick", "roderick", "rodger", "rodney", "roger"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "roddy"
@@ -9566,11 +9558,11 @@ familiar = { short_for = ["roland"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "ron"
-familiar = { short_for = ["aaron", "aron", "cameron", "ronald", "veronica"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Ronald, Great Britain 1, U.S.A. 2; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with aaron, aron, cameron, veronica" }
+familiar = { short_for = ["aaron", "aron", "cameron", "ronald", "veronica"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ronald"
-familiar = { short_for = ["ronnie", "ronny"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Ronnie, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with ronny" }
+familiar = { short_for = ["ronny"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ronie"
@@ -9582,7 +9574,7 @@ familiar = { short_for = ["veronica"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "ronnie"
-familiar = { short_for = ["aaron", "aron", "ron", "veronica"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["aaron", "aron", "ron", "ronald", "veronica"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ronny"
@@ -9633,12 +9625,8 @@ text = "rube"
 familiar = { short_for = ["reuben"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "rudi"
-familiar = { short_for = ["rudolph"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Rudolph, U.S.A. 1" }
-
-[[word]]
 text = "rudy"
-familiar = { short_for = ["rudolph", "rudolphus"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Rudolph, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with rudolphus" }
+familiar = { short_for = ["rudolph", "rudolphus"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "ruminta"
@@ -9674,19 +9662,15 @@ familiar = { short_for = ["salvador", "solomon"], note = "nicknames list (Old Do
 
 [[word]]
 text = "sally"
-familiar = { short_for = ["sarah"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Sarah, U.S.A. 1" }
+familiar = { short_for = ["sarah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sam"
-familiar = { short_for = ["samantha", "sampson", "samson", "samuel", "samyra"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Samantha, Great Britain 1, U.S.A. 1; Samuel, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with sampson, samson, samyra" }
-
-[[word]]
-text = "sammie"
-familiar = { short_for = ["samantha", "samuel"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Samantha, U.S.A. 1; Samuel, U.S.A. 1" }
+familiar = { short_for = ["samantha", "sampson", "samson", "samuel", "samyra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sammy"
-familiar = { short_for = ["sam", "samantha", "sampson", "samson", "samuel", "samyra"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Samantha, U.S.A. 1; Samuel, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with sam, sampson, samson, samyra" }
+familiar = { short_for = ["sam", "samantha", "sampson", "samson", "samuel", "samyra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sandra"
@@ -9710,7 +9694,7 @@ familiar = { short_for = ["prescott", "scott"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "seb"
-familiar = { short_for = ["sebastian"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Sebastian, Great Britain 1" }
+familiar = { short_for = ["sebastian"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sebby"
@@ -9777,10 +9761,6 @@ text = "sheri"
 familiar = { short_for = ["sheryl"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
-text = "sherm"
-familiar = { short_for = ["sherman"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Sherman, U.S.A. 1" }
-
-[[word]]
 text = "sherri"
 familiar = { short_for = ["sheryl"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9790,7 +9770,7 @@ familiar = { short_for = ["sheryl", "shirley"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "shirl"
-familiar = { short_for = ["shirley"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Shirley, U.S.A. 1" }
+familiar = { short_for = ["shirley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sibbie"
@@ -9866,7 +9846,7 @@ familiar = { short_for = ["crystal"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "stan"
-familiar = { short_for = ["stanley"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Stanley, U.S.A. 1" }
+familiar = { short_for = ["stanley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "steffi"
@@ -9890,11 +9870,7 @@ familiar = { short_for = ["stephanie"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "steve"
-familiar = { short_for = ["stephan", "stephen", "steven"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Stephen, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with stephan, steven" }
-
-[[word]]
-text = "steven"
-familiar = { short_for = ["stephen"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Stephen, Great Britain 1" }
+familiar = { short_for = ["stephan", "stephen", "steven"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "stevie"
@@ -9906,7 +9882,7 @@ familiar = { short_for = ["stuart"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "sue"
-familiar = { short_for = ["susan", "susannah", "suzanne"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Susan, Great Britain 3, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with susannah, suzanne" }
+familiar = { short_for = ["susan", "susannah", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sukey"
@@ -9930,11 +9906,11 @@ familiar = { short_for = ["sullivan"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "susan"
-familiar = { short_for = ["susie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Susie, Great Britain 1" }
+familiar = { short_for = ["sue"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "susie"
-familiar = { short_for = ["sue", "susannah", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["sue", "susan", "susannah", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "suzie"
@@ -10022,7 +9998,7 @@ familiar = { short_for = ["octavia"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "ted"
-familiar = { short_for = ["edmund", "edward", "robert", "theodore"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Edward, Great Britain 1, Ireland 1, U.S.A. 1; Robert, Ireland 1, U.S.A. 1; Theodore, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with edmund" }
+familiar = { short_for = ["edmund", "edward", "theodore"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "teddy"
@@ -10106,7 +10082,7 @@ familiar = { short_for = ["thomas"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "thomas"
-familiar = { short_for = ["thom"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["thom", "tom"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "thursa"
@@ -10146,15 +10122,11 @@ familiar = { short_for = ["matilda"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "tim"
-familiar = { short_for = ["timothy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Timothy, Great Britain 1, Ireland 1, U.S.A. 1" }
-
-[[word]]
-text = "timmie"
-familiar = { short_for = ["timothy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Timothy, Great Britain 1" }
+familiar = { short_for = ["timothy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "timmy"
-familiar = { short_for = ["tim", "timothy"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Timothy, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with tim" }
+familiar = { short_for = ["tim", "timothy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "tina"
@@ -10182,11 +10154,11 @@ familiar = { short_for = ["tobias"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "tom"
-familiar = { short_for = ["thomas"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Thomas, Great Britain 1, Ireland 1, U.S.A. 3" }
+familiar = { short_for = ["thomas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "tommy"
-familiar = { short_for = ["thom", "thomas", "tom"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Thomas, Great Britain 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with thom, tom" }
+familiar = { short_for = ["thom", "thomas", "tom"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "toni"
@@ -10194,7 +10166,7 @@ familiar = { short_for = ["tonya"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "tony"
-familiar = { short_for = ["anthony", "antoinette", "antonia", "antonio"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Anthony, Great Britain 2, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with antoinette, antonia, antonio" }
+familiar = { short_for = ["anthony", "antoinette", "antonia", "antonio"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "tori"
@@ -10242,7 +10214,7 @@ familiar = { short_for = ["trevor"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "tricia"
-familiar = { short_for = ["patricia"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Patricia, Great Britain 1" }
+familiar = { short_for = ["patricia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "trina"
@@ -10278,7 +10250,7 @@ familiar = { short_for = ["tyler"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "val"
-familiar = { short_for = ["valentina", "valentine", "valeri", "valeria", "valerie"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Valentine, U.S.A. 1; Valerie, Great Britain 2, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with valentina, valeri, valeria" }
+familiar = { short_for = ["valentina", "valeri", "valeria", "valerie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "vallie"
@@ -10346,7 +10318,7 @@ familiar = { short_for = ["vic", "victoria"], note = "nicknames list (Old Domini
 
 [[word]]
 text = "vicky"
-familiar = { short_for = ["vic", "victoria"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Victoria, Great Britain 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with vic" }
+familiar = { short_for = ["vic", "victoria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "victor"
@@ -10374,7 +10346,7 @@ familiar = { short_for = ["lavina", "lavinia", "lavonia", "louvinia", "melvina"]
 
 [[word]]
 text = "vince"
-familiar = { short_for = ["vincent", "vincenzo", "vinson"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Vincent, Great Britain 1, Ireland 1, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with vincenzo, vinson" }
+familiar = { short_for = ["vincent", "vincenzo", "vinson"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "viney"
@@ -10466,7 +10438,7 @@ familiar = { short_for = ["wilber", "wilbur", "wilfred", "william", "wilson"], n
 
 [[word]]
 text = "william"
-familiar = { short_for = ["willie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["bill", "billy", "willie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "willie"
@@ -10474,7 +10446,7 @@ familiar = { short_for = ["bill", "wilbur", "wilda", "wilfred", "wilhelm", "wilh
 
 [[word]]
 text = "willy"
-familiar = { short_for = ["wilbur", "william", "willis", "wilson"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: William, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with wilbur, willis, wilson" }
+familiar = { short_for = ["wilbur", "william", "willis", "wilson"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "wilma"
@@ -10538,7 +10510,7 @@ familiar = { short_for = ["zachariah", "zachary", "zachery"], note = "nicknames 
 
 [[word]]
 text = "zack"
-familiar = { short_for = ["zachariah", "zachary", "zachery"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Zachary, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with zachariah, zachery" }
+familiar = { short_for = ["zachariah", "zachary", "zachery"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "zada"
@@ -10578,7 +10550,7 @@ familiar = { short_for = ["bezaleel"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "zeke"
-familiar = { short_for = ["ezekiel", "zachariah", "zachary", "zachery"], note = "nam_dict (Jörg Michael, 2008; GNU FDL 1.2) pairs it with the longer names it stands for, bands from 1 (rare) to 13: Ezekiel, U.S.A. 1; the nicknames list (Old Dominion University WS-DL; Apache License 2.0) with zachariah, zachary, zachery" }
+familiar = { short_for = ["ezekiel", "zachariah", "zachary", "zachery"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "zeph"

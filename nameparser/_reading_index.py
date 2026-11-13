@@ -318,9 +318,10 @@ def tags() -> frozenset[str]:
     """The tags of the shipped files that hold a reading a choice can
     change: any but a familiar one. A plain choice never drops a
     familiar reading, which no parse reads, so a file holding only
-    those (`hu.toml`, `mt.toml`, `sq.toml`) would change nothing as a
-    plain choice, and is refused as one holding no reading
-    (decisions/name-matching, 2026-11-08 FAMILIAR FORMS)."""
+    those would change nothing as a plain choice, and is refused as one
+    holding no reading (decisions/name-matching, 2026-11-08 FAMILIAR
+    FORMS; no shipped file has that shape since 2026-11-12 ENGLISH ONLY
+    UNTIL REBUILT)."""
     return frozenset(row[0] for rows in _by_text().values() for row in rows
                      if CATEGORY[row[1]] != "familiar")
 
@@ -345,7 +346,7 @@ def selected(languages: Iterable[str], *,
     A plain choice selects among the files that hold a reading, since a
     file holding none would change nothing; a `strict` one among every
     file, since it drops whatever is not chosen and so is never inert
-    (``hu``, whose file holds only exclusions and familiar forms).
+    (``hu``, whose file holds only exclusions).
 
     Raises ValueError for ``mul`` or ``und``, and for a tag that selects
     no file at all, naming the tags that do."""

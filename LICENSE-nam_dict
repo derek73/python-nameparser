@@ -1,13 +1,7 @@
-Two parts of nameparser are derived from Jörg Michael's nam_dict.txt and are
-distributed under the license below:
-
-- the familiar forms seeded from it: the `familiar` readings in
-  nameparser/vocab/*.toml whose note opens "nam_dict (Jörg Michael, 2008;
-  GNU FDL 1.2)", and their compiled copies in nameparser/config/_compiled.py
-  and nameparser/config/_index.py, written by tools/vocab/familiar.py;
-- the common given names of the group suggester, the generated
-  _COMMON_GIVEN block in nameparser/config/_order_names.py, written by
-  tools/vocab/order_names.py.
+One part of nameparser is derived from Jörg Michael's nam_dict.txt and is
+distributed under the license below: the common given names of the group
+suggester, the generated _COMMON_GIVEN block in
+nameparser/config/_order_names.py, written by tools/vocab/order_names.py.
 
 The file's copyright and license notices, as it states them:
 

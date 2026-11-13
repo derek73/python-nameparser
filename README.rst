@@ -302,9 +302,9 @@ under other licences, which apply to those parts:
 
 - the familiar forms from Old Dominion University's nicknames list:
   Apache License 2.0, in ``LICENSE-nicknames``;
-- the familiar forms and the group suggester's common given names from
-  Jörg Michael's nam_dict: GNU Free Documentation License 1.2 or later,
-  in ``LICENSE-nam_dict``;
+- the group suggester's common given names from Jörg Michael's
+  nam_dict: GNU Free Documentation License 1.2 or later, in
+  ``LICENSE-nam_dict``;
 - ``locales.ES`` and ``locales.ES_AR``'s given names from Spain's
   Instituto Nacional de Estadística: Creative Commons Attribution 4.0,
   credited in ``nameparser/locales/_es_given_names.py`` and
