@@ -146,8 +146,6 @@ def test_parser_for_warns_on_scalar_conflict() -> None:
 _HAN_FIRST = {Script.HAN: FAMILY_FIRST, Script.HANGUL: GIVEN_FIRST}
 _SCALARS: dict[str, tuple[object, object, object]] = {
     "name_order": (GIVEN_FIRST, FAMILY_FIRST, GIVEN_FIRST),
-    "script_orders": (_HAN_FIRST, {Script.HAN: GIVEN_FIRST},
-                      dict(reversed(list(_HAN_FIRST.items())))),
     "unlisted_caps_suffixes": (CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA,
                                CapsSuffixes.OFF),
     "lone_name_word": (Role.FAMILY, Role.GIVEN, "family"),
@@ -160,7 +158,30 @@ _SCALARS: dict[str, tuple[object, object, object]] = {
 
 def test_the_scalar_table_is_every_scalar_patch_field() -> None:
     assert set(_SCALARS) == {f.name for f in dataclasses.fields(PolicyPatch)
-                             if f.metadata.get("compose") != "union"}
+                             if f.metadata.get("compose")
+                             not in ("union", "by-script")}
+
+
+def test_parser_for_warns_where_two_packs_set_one_script_differently() -> None:
+    # script_orders composes by script (#1237): a later pack setting the
+    # same script to another order overrides that entry and warns; one
+    # adding another script's entry, or the same order in another key
+    # order, merges in silence
+    with pytest.warns(UserWarning, match="'bb' overrides the script_orders "
+                                         "entry for 'han' already set by "
+                                         "locale 'aa'; later wins"):
+        stacked = parser_for(_pack("aa", "script_orders", _HAN_FIRST),
+                             _pack("bb", "script_orders", {Script.HAN: GIVEN_FIRST}))
+    assert dict(stacked.policy.script_orders)[Script.HAN] == GIVEN_FIRST
+    assert dict(stacked.policy.script_orders)[Script.HANGUL] == GIVEN_FIRST
+    for second in (dict(reversed(list(_HAN_FIRST.items()))),
+                   {Script.CYRILLIC: FAMILY_FIRST}):
+        parser_for(_pack("aa", "script_orders", _HAN_FIRST),
+                   _pack("bb", "script_orders", second))
+    # a pack setting another script owns none of the base's entries, so
+    # a later pack overriding a default entry warns of nothing
+    parser_for(_pack("aa", "script_orders", {Script.CYRILLIC: FAMILY_FIRST}),
+               _pack("bb", "script_orders", {Script.HAN: GIVEN_FIRST}))
 
 
 def _pack(code: str, field: str, value: object) -> Locale:

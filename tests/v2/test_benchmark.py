@@ -1275,6 +1275,32 @@ def test_post_rules_helpers_return_before_their_frames() -> None:
                        only="_leading_name_piece") >= 1
 
 
+def test_a_script_with_no_order_entry_stops_the_script_walk() -> None:
+    """`_effective_order` asks one word's script and returns the
+    declared order where that script, outside the kana license, has no
+    `script_orders` entry (#1237): the default holds no Cyrillic entry,
+    so a Cyrillic name's other words are not classified for an answer
+    that cannot change. The band cannot see a per-word cost on a script
+    its reference row does not hold. Recorded negative control
+    (2026-11-12, py3.11, on e944bb30, before the return): 2, 3 and 4
+    calls for the names of two, three and four words below, and whole
+    parses of `Иван Петров` and `Иванов Иван Иванович` 9 and 17 frames
+    over master's."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    names = ("Иван Петров", "Иванов Иван Иванович",
+             "Иванов Иван Иванович Петров")
+    for text in names:
+        assert _frames_for(text, only="effective_script",
+                           caller="_effective_order") == 1, text
+    # REACHABILITY: with a Cyrillic entry (locales.MN) the walk asks
+    # every word, so the pin above measures the loop it guards
+    mn = parser_for(locales.MN).parse
+    for words, text in enumerate(names, start=2):
+        assert _frames_for(text, only="effective_script",
+                           caller="_effective_order", parse=mn) == words, text
+
+
 def test_post_rules_walks_the_roles_once_per_reader() -> None:
     """On a name no gated reader reaches, post_rules reads the TITLE,
     GIVEN, MIDDLE and FAMILY positions in two `_positions` walks, at its

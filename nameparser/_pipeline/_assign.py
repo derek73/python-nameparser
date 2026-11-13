@@ -130,7 +130,7 @@ from nameparser._pipeline._state import (
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
-from nameparser._policy import Policy, Script
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, _JA_SCRIPTS, Policy, Script
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind,
                                ReadingKind, ReadingSource, Role)
 
@@ -274,13 +274,19 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
 
 class EffectiveOrder(NamedTuple):
     """What _effective_order made of a name's scripts. `order` is the
-    order the positional read uses; `by_script` says a script_orders
-    entry RESOLVED it, which is not the same as `order` happening to
+    order the positional read uses; `by_script` says an East Asian
+    script's script_orders entry RESOLVED it, which is not the same as
+    `order` happening to
     equal the declared name_order -- under a declared family-first
     order a Han name's W4 entry and the declaration agree, and only
     this flag distinguishes the script rule DECIDING the reading from
     the caller's declaration standing unopposed. O5's convention
-    report reads it (#449)."""
+    report reads it (#449). Set only for an East Asian script's entry:
+    Han, Hangul and kana, whose own convention settles the order (W4)
+    and so a lone word's field (O5's W4 Except), and a caller's own
+    katakana entry, which asserts the Japanese convention (#594): a Cyrillic entry, a pack's declared order
+    (locales.MN, #1237), orders a longer name and leaves a lone word to
+    O5's convention."""
 
     order: tuple[Role, Role, Role]
     by_script: bool
@@ -289,7 +295,10 @@ class EffectiveOrder(NamedTuple):
 # rules/W4: "a name written wholly in one East Asian script, or in
 # the kana-licensed Japanese repertoire, reads family-first whatever
 # order the caller declared; a wholly-katakana name keeps the declared
-# order" (history: decisions/W4)
+# order; and a name written wholly in a script a chosen locale pack
+# gives an order reads by that order" -- both clauses: the entry
+# answers for any script, its by_script only for an East Asian one
+# (history: decisions/W4)
 def _effective_order(policy: Policy,
                      pieces: Sequence[tuple[int, ...]],
                      name_pieces: Sequence[int],
@@ -327,7 +336,9 @@ def _effective_order(policy: Policy,
     parse (decisions/parse-cost).
 
     Returns an EffectiveOrder: the order triple, and `by_script` set only on
-    the one path where an entry answered. Every fallback below is a
+    the one path where an entry answered for an East Asian script (a
+    Cyrillic entry answers the order with `by_script` False, see
+    EffectiveOrder). Every fallback below is a
     script rule DECLINING, and reports it as such.
     """
     declared = EffectiveOrder(policy.name_order, by_script=False)
@@ -348,6 +359,17 @@ def _effective_order(policy: Policy,
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
                 return declared
+            if script not in _JA_SCRIPTS:
+                # A script outside the kana license resolves alone to
+                # itself or, beside any other, to None, so one with no
+                # entry decides the declared order now; this spares a
+                # Cyrillic name the rest of its words' classifying
+                # under a policy with no Cyrillic entry.
+                for keyed, _order in policy.script_orders:
+                    if keyed is script:
+                        break
+                else:
+                    return declared
             found.add(script)
     resolved = resolve_script_set(found)
     if resolved is None:
@@ -356,7 +378,8 @@ def _effective_order(policy: Policy,
         return declared
     for script, order in policy.script_orders:
         if script is resolved:
-            return EffectiveOrder(order, by_script=True)
+            return EffectiveOrder(
+                order, by_script=resolved in _EAST_ASIAN_SCRIPTS)
     # the resolved script has no entry: the declaration stands, and
     # nothing about the writing system decided the reading
     return declared

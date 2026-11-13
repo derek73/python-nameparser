@@ -12,6 +12,7 @@ tables printed.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import re
 from pathlib import Path
@@ -21,7 +22,7 @@ import pytest
 
 from tests.checkout import needs_checkout
 
-from ._differential_fixtures import load_tool, own_cache
+from ._differential_fixtures import load_tool, own_cache, plant_corpus
 
 tool: ModuleType = load_tool("suggest_measure")
 
@@ -54,15 +55,25 @@ _PARLIAMENTS = [
 def _cache(monkeypatch: pytest.MonkeyPatch,
            tmp_path_factory: pytest.TempPathFactory) -> Path:
     cache = own_cache(monkeypatch, tmp_path_factory)
+    # fetched as the tool's own local_corpora writes a corpus, so the
+    # tool reads them through the checks a real cache gets
     for source, rows in (("uit-vinames", _VI), ("cz-candidates", _CZ),
                          ("psc-individuals", _PSC),
                          ("opensanctions-parliaments", _PARLIAMENTS)):
-        folder = cache / "local" / source
-        folder.mkdir(parents=True)
-        (folder / "raw.jsonl").write_text(
-            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
-            encoding="utf-8")
+        plant_corpus(monkeypatch, tool.local_corpora, source, rows,
+                     "2026-11-12", "names")
     return cache
+
+
+def _plant(monkeypatch: pytest.MonkeyPatch, source: str,
+           rows: list[dict[str, str]]) -> None:
+    """`rows` as `source`'s fetched corpus, each given a `name` (which a
+    fetched record holds) where the row has none, replacing what the
+    autouse fixture planted."""
+    named = [{"name": r.get("credit") or " ".join(v for v in r.values() if v)
+              or "-", **r} for r in rows]
+    plant_corpus(monkeypatch, tool.local_corpora, source, named,
+                 "2026-11-12", "names")
 
 
 def _rows(out: str) -> dict[tuple[str, str, str], list[str]]:
@@ -226,7 +237,7 @@ def test_patentsview_reads_the_country_whatever_the_key_order(
 
 @needs_checkout
 def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
-        _cache: Path) -> None:
+        _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The orcid-byline population's filter, and nothing past it: what
     the gate (decisions/group-suggestion, 2026-11-11 TRAILING INITIAL)
     does with the population is the tool's table, read by hand."""
@@ -247,10 +258,7 @@ def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
         {"credit": "Rita J", "family": "Jones", "given": "Rita"},
         {"credit": "Jones K", "family": "Jones", "given": "Rita"},
     ]
-    folder = _cache / "local" / "orcid-researchers"
-    folder.mkdir(parents=True)
-    (folder / "raw.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _plant(monkeypatch, "orcid-researchers", rows)
     keep = tool._Reservoir(1)
     tool._orcid_bylines(keep)
     assert sorted(keep.pools["orcid-byline"]) == [
@@ -260,13 +268,11 @@ def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
 
 @needs_checkout
 def test_an_orcid_file_holding_no_byline_gets_a_note(
-        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        _cache: Path, capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
     # an empty population is a note, never a silently empty row
-    folder = _cache / "local" / "orcid-researchers"
-    folder.mkdir(parents=True)
-    (folder / "raw.jsonl").write_text(json.dumps(
-        {"credit": "Rita Jones", "family": "Jones", "given": "Rita"}) + "\n",
-        encoding="utf-8")
+    _plant(monkeypatch, "orcid-researchers",
+           [{"credit": "Rita Jones", "family": "Jones", "given": "Rita"}])
     out = _run(capsys)
     assert "orcid-researchers: present, but no names read" in out
 
@@ -286,9 +292,9 @@ def test_a_wanted_population_that_yields_no_names_gets_a_note(
 
 @needs_checkout
 def test_a_present_source_yielding_nothing_gets_a_note(
-        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    (_cache / "local" / "cz-candidates" / "raw.jsonl").write_text(
-        json.dumps({"jmeno": "", "prijmeni": ""}) + "\n", encoding="utf-8")
+        _cache: Path, capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _plant(monkeypatch, "cz-candidates", [{"jmeno": "", "prijmeni": ""}])
     out = _run(capsys)
     assert "cz-candidates: present, but no names" in out
 
@@ -312,7 +318,8 @@ def test_moved_compares_the_parliaments_and_the_east_slavic_counts() -> None:
 
 @needs_checkout
 def test_checks_report_the_groups_a_contested_name_moves(
-        _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        _cache: Path, capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
     # a positive control: five patronymic names and two whose only
     # evidence is a contested order. With the two in the denominator,
     # 5 of 7 is not more than four in five; without them, 5 of 5 is
@@ -320,8 +327,7 @@ def test_checks_report_the_groups_a_contested_name_moves(
              "nationality": "British"}] * 5 + [
         {"forename": "Jason", "surname": "Kim J.",
          "nationality": "British"}] * 2
-    (_cache / "local" / "psc-individuals" / "raw.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _plant(monkeypatch, "psc-individuals", rows)
     assert tool.main(["--sizes", "7", "--trials", "3", "--jobs", "1",
                       "--checks"]) == 0
     out = capsys.readouterr().out
@@ -331,6 +337,31 @@ def test_checks_report_the_groups_a_contested_name_moves(
     # the three written given-first move, the family-first ones
     # (`Kim J. Jason`) being uncontested
     assert "3 of 6 groups that could decide a rule" in line, line
+
+
+@needs_checkout
+@pytest.mark.parametrize("damage", ["stale", "edited"])
+def test_a_stale_or_edited_local_corpus_stops_the_run(
+        _cache: Path, capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch, damage: str) -> None:
+    """The tool reads each local corpus through local_corpora.load, so a
+    parliaments cache fetched from another dataset list, or a raw.jsonl
+    edited after its fetch, stops the run naming the refetch, where
+    reading raw.jsonl alone ran on it (2026-11-12, #1237)."""
+    folder = _cache / "local" / "opensanctions-parliaments"
+    if damage == "stale":
+        real = tool.local_corpora.SOURCES["opensanctions-parliaments"]
+        monkeypatch.setitem(
+            tool.local_corpora.SOURCES, "opensanctions-parliaments",
+            dataclasses.replace(
+                real, check=lambda meta: "was fetched from other datasets"))
+    else:
+        with open(folder / "raw.jsonl", "a", encoding="utf-8") as raw:
+            raw.write(json.dumps({"dataset": "az_parliament", "form": "name",
+                                  "script": "Latin", "name": "X Y"}) + "\n")
+    with pytest.raises(SystemExit, match="opensanctions-parliaments: present "
+                                         "but unreadable"):
+        tool.parliament_lists()
 
 
 @pytest.mark.parametrize("dataset, name, truth", [

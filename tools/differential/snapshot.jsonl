@@ -456,6 +456,7 @@
 {"name": "Bard Larsen", "given": "Bard", "family": "Larsen", "initials": "B. L."}
 {"name": "Baron Davis", "title": "Baron", "family": "Davis", "initials": "D."}
 {"name": "Barrera y Leirado, Cayetano Alberto de la", "given": "Cayetano", "middle": "Alberto", "family": "de la Barrera y Leirado", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. A. B. L."}
+{"name": "Batyn Sükhee", "given": "Batyn", "family": "Sükhee", "initials": "B. S."}
 {"name": "Baʿal-Maḥshoves̀", "given": "Baʿal-Maḥshoves̀", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Beatriz Elena Paredes Rangel", "given": "Beatriz", "middle": "Elena Paredes", "family": "Rangel", "initials": "B. E. P. R."}
 {"name": "Beauchêne Jacqueline", "order": "FAMILY_FIRST", "given": "Jacqueline", "family": "Beauchêne", "initials": "J. B."}
@@ -5177,6 +5178,7 @@
 {"name": "Балдырған Қожамқұлова", "given": "Балдырған", "family": "Қожамқұлова", "initials": "Б. Қ."}
 {"name": "Бат", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бат", "order": "FAMILY_FIRST", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
+{"name": "Батын Сүхээ", "given": "Батын", "family": "Сүхээ", "initials": "Б. С."}
 {"name": "Бақытжан Қанапиянов", "given": "Бақытжан", "family": "Қанапиянов", "initials": "Б. Қ."}
 {"name": "Бекмырза Чолпонбай уулу", "given": "Бекмырза", "middle": "Чолпонбай", "family": "уулу", "initials": "Б. Ч. у.", "capitalized_force": "Бекмырза Чолпонбай Уулу"}
 {"name": "Бертрам Вилберфорс Ҳенру Роберт Вустер", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
@@ -5604,6 +5606,7 @@
 {"name": "Сёмин, Виталий Николаевич", "given": "Виталий", "middle": "Николаевич", "family": "Сёмин", "initials": "В. Н. С."}
 {"name": "Сіндбад", "given": "Сіндбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Сіндбад", "order": "FAMILY_FIRST", "given": "Сіндбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
+{"name": "Сүхээ", "given": "Сүхээ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Татьяна Васильевна Костина", "given": "Татьяна", "middle": "Васильевна", "family": "Костина", "initials": "Т. В. К."}
 {"name": "Татьяна Николаевна Семенова", "given": "Татьяна", "middle": "Николаевна", "family": "Семенова", "initials": "Т. Н. С."}
 {"name": "Теофил Панчић", "given": "Теофил", "family": "Панчић", "initials": "Т. П."}

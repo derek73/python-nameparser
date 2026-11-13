@@ -1,7 +1,7 @@
 Notes by language
 =================
 
-What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles and Vietnamese names.
+What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles, and Vietnamese and Mongolian names.
 
 
 .. _west-south-slavic-packs:
@@ -382,3 +382,65 @@ Anh``, given ``DO``), and ``CHI`` without a comma or in a name written
 wholly in capitals (``NGUYEN VAN ANH, CHI`` gives given ``CHI``); other
 credentials, and ``CHI`` after a comma in a name written in mixed case,
 stay suffixes (``Nguyen Van Anh, PhD``).
+
+
+.. _mongolian-names:
+
+Mongolian names
+---------------
+
+A Mongolian name has no inherited family name. It is the father's name
+(rarely the mother's), then the given name, the name a person goes by.
+Written in full the father's name is in the genitive (``Батын Сүхээ``,
+"Sükhee, Bat's"); passports write it in the nominative (``Бат Сүхээ``)
+and put it in the surname field. The default reads the father's name as
+the given name; ``mn`` reads it as the family, the field a caller sorts
+and matches by, in a name written in Cyrillic:
+
+.. doctest::
+
+    >>> parse("Батын Сүхээ").given
+    'Батын'
+    >>> mongolian = parser_for(locales.MN)
+    >>> sukhee = mongolian.parse("Батын Сүхээ")
+    >>> sukhee.family, sukhee.given
+    ('Батын', 'Сүхээ')
+    >>> mongolian.parse("Б. Сүхээ").family
+    'Б.'
+
+The order is keyed to the script. Mongolians writing their own names in
+Latin letters mostly put the given name first, so a romanized name keeps
+your order (``Policy.name_order``, given-first by default), and for a
+list written the other way, declare ``FAMILY_FIRST`` on the base parser
+or let :ref:`Parser.suggest <suggest-settings>` read it:
+
+.. doctest::
+
+    >>> mongolian.parse("Sükhee Batyn").given
+    'Sükhee'
+
+Cyrillic is written for many languages in both orders, so the pack reads
+every name written wholly in Cyrillic father's name first, Russian and
+Kazakh names included (``mongolian.parse("Иван Сидоров")`` gives family
+``Иван``): keep it for Mongolian data. A family comma fixes the family
+name whatever the order (``Бат, Сүхээ``), a one-word name reads as the
+given name, and the genitive ending is not read, so ``patronymic`` stays
+empty. A word written before the father's name, a clan name, reads as the
+family, the father's name as the middle.
+
+Mongolian names are often written short, with the father's name as an
+initial (``Б. Сүхээ``). Under the pack that initial is the family, so a
+matcher built from it reads the pair as a family written with an
+initial, ``family-initial``, which no matcher accepts unless asked, and
+calls the two spellings inconsistent. The default matcher calls them
+consistent only because it reads the father's name as the given name.
+Accept ``family-initial`` to match them under the pack:
+
+.. doctest::
+
+    >>> mongolian.matching().check("Батын Сүхээ", "Б. Сүхээ")["family"].outcome.value
+    'family-initial'
+    >>> plain = mongolian.matching()
+    >>> mongolian.matching(accept=plain.accept | {"family-initial"}).check(
+    ...     "Батын Сүхээ", "Б. Сүхээ").consistent
+    True

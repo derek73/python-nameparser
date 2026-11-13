@@ -173,6 +173,7 @@ def test_every_script_is_classified_for_initials() -> None:
         Script.HANGUL: False,    # syllable blocks
         Script.HIRAGANA: False,  # syllables
         Script.KATAKANA: False,  # syllables
+        Script.CYRILLIC: True,   # letters: А. С. Пушкин
     }
     assert set(has_initials) == set(Script), (
         "a Script member is unclassified for initials: decide whether "
@@ -910,6 +911,16 @@ def test_maiden_marker_run_does_not_claim_a_word_that_folds_away() -> None:
     # would
     assert maiden_marker_run([".", "née"], _WORD_ONLY) == 0
     assert maiden_marker_run([".", "z", "domu"], _PHRASE) == 0
+
+
+def test_effective_script_reads_a_joined_cyrillic_word() -> None:
+    # #1237: a hyphen or apostrophe inside a Cyrillic word keeps it
+    # Cyrillic; at an edge, beside another script, or in Latin it does not
+    assert effective_script("Оюун-Эрдэнэ") is Script.CYRILLIC
+    assert effective_script("Мар'яна") is Script.CYRILLIC
+    for text in ("-Ива", "Ива-", "'Ива", "Müller-Lüdenscheid", "Иван-王",
+                 "Jean-Paul", "José"):
+        assert effective_script(text) is None, text
 
 
 def test_single_script_requires_every_char_in_one_script() -> None:
