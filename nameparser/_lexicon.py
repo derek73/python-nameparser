@@ -13,6 +13,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import sys
+import itertools
 import unicodedata
 import warnings
 from collections.abc import Iterable, Mapping, Set
@@ -742,6 +743,49 @@ def _fold(text: str) -> str:
             _KEYBOARD)
 
 
+#: The letters a standard transcription writes out where a keyboard or
+#: an encoding lacks them: German `ä` `ö` `ü` as `ae` `oe` `ue`, Danish
+#: and Norwegian `ø` and `å` as `oe` and `aa`, Serbo-Croatian `đ` as
+#: `dj`. A word holding one also reads as its transcription, a second
+#: folded form (`_forms`), so `Müller` / `Mueller` and `Srđan` /
+#: `Srdjan` read `folded` (decisions/name-matching, 2026-11-12 A
+#: KEYBOARD'S SPELLING IS FOLDED); lower case only, as it is applied
+#: to the casefolded word.
+_TRANSCRIBED: Mapping[str, str] = {"ä": "ae", "ö": "oe", "ü": "ue",
+                                   "ø": "oe", "å": "aa", "đ": "dj"}
+#: The most letters of `_TRANSCRIBED` a text is read letter by letter
+#: for (2 ** this many forms); past it, all of them transcribed or none.
+_MOST_TRANSCRIBED = 8
+
+
+@functools.lru_cache(maxsize=4096)
+def _forms(text: str) -> frozenset[str]:
+    """The text's folded forms: each letter of `_TRANSCRIBED` it holds
+    (its decomposed spelling included) written as the keyboard writes it
+    or as its transcription, letter by letter, so a text mixing the two
+    (`Ødegård` / `Odegaard`, `Müller Lüdenscheidt` / `Mueller
+    Ludenscheidt`) meets it too. Two texts read `folded` where any forms
+    meet. A written-out word (`Mueller`) has one form, which meets one of
+    the word written with the letter (`Müller`), so the reading is
+    symmetric; and `Muller` and `Mueller` each meet `Müller` and not each
+    other."""
+    lowered = unicodedata.normalize("NFC", text.casefold())
+    slots = [i for i, c in enumerate(lowered) if c in _TRANSCRIBED]
+    if not slots:
+        return frozenset((_fold(text),))
+    if len(slots) > _MOST_TRANSCRIBED:
+        written = "".join(_TRANSCRIBED.get(c, c) for c in lowered)
+        return frozenset((_fold(text), _fold(written)))
+    out = set()
+    for choice in itertools.product((False, True), repeat=len(slots)):
+        chars = list(lowered)
+        for i, transcribe in zip(slots, choice):
+            if transcribe:
+                chars[i] = _TRANSCRIBED[chars[i]]
+        out.add(_fold("".join(chars)))
+    return frozenset(out)
+
+
 #: A given name -> every name it is paired with as a familiar form, in
 #: either direction (`FAMILIAR`, read both ways).
 Familiar = Mapping[str, frozenset[str]]
@@ -757,17 +801,18 @@ def _familiar_of(compiled: Mapping[str, Any],
     match reads a pair whichever way it was written, and never chains
     two pairs (decisions/name-matching, 2026-11-08
     FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
-    the match's own), so a pair written accented (`józsi`, `józsef`)
-    is found from either name written without its accents. With
+    the match's own), and under every transcription of it (`_forms`),
+    so a pair written accented (`józsi`, `józsef`) is found from either
+    name written without its accents or written out (`günni`, `guenni`). With
     `key="ALTERNATE_SPELLINGS"` the same index of the alternate
     spellings, which pair alike (decisions/name-matching, 2026-11-12
     ALTERNATE SPELLINGS ARE OPT-IN)."""
     paired: dict[str, set[str]] = {}
     for short, longs in compiled[key].items():
         for long in longs:
-            for key in {short, _fold(short)}:
+            for key in {short} | _forms(short):
                 paired.setdefault(key, set()).add(long)
-            for key in {long, _fold(long)}:
+            for key in {long} | _forms(long):
                 paired.setdefault(key, set()).add(short)
     return MappingProxyType({w: frozenset(ns) for w, ns in paired.items()})
 

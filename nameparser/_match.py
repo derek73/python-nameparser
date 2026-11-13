@@ -31,9 +31,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
-import itertools
 import re
-import unicodedata
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -41,6 +39,7 @@ from typing import TYPE_CHECKING
 
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._lexicon import _fold as _lexicon_fold
+from nameparser._lexicon import _forms as _lexicon_forms
 from nameparser._pipeline._vocab import _HYPHEN_CHARS, _HYPHENS
 from nameparser._policy import _NO_INITIALS, Policy, _script_matcher
 from nameparser._types import (
@@ -590,7 +589,7 @@ class Matching:
         if across:
             texts += [t for other in family_rule.across
                       for t in _cross_texts(parsed, other)]
-        words |= {_joined(f) for t in texts if t for f in _forms(t)} - {""}
+        words |= {_key(_joined(_fold(t))) for t in texts if t} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
@@ -694,47 +693,14 @@ _FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
 
 
-#: The letters a standard transcription writes out where a keyboard or
-#: an encoding lacks them: German `ä` `ö` `ü` as `ae` `oe` `ue`, Danish
-#: and Norwegian `ø` and `å` as `oe` and `aa`, Serbo-Croatian `đ` as
-#: `dj`. A word holding one also reads as its transcription, a second
-#: folded form (`_forms`), so `Müller` / `Mueller` and `Srđan` /
-#: `Srdjan` read `folded` (decisions/name-matching, 2026-11-12 A
-#: KEYBOARD'S SPELLING IS FOLDED); lower case only, as it is applied
-#: to the casefolded word.
-_TRANSCRIBED: Mapping[str, str] = {"ä": "ae", "ö": "oe", "ü": "ue",
-                                   "ø": "oe", "å": "aa", "đ": "dj"}
-#: The most letters of `_TRANSCRIBED` a text is read letter by letter
-#: for (2 ** this many forms); past it, all of them transcribed or none.
-_MOST_TRANSCRIBED = 8
-
-
 @functools.lru_cache(maxsize=4096)
 def _forms(text: str) -> frozenset[str]:
-    """The text's folded forms: each letter of `_TRANSCRIBED` it holds
-    (its decomposed spelling included) written as the keyboard writes it
-    or as its transcription, letter by letter, so a text mixing the two
-    (`Ødegård` / `Odegaard`, `Müller Lüdenscheidt` / `Mueller
-    Ludenscheidt`) meets it too. Two texts read `folded` where any forms
-    meet. A written-out word (`Mueller`) has one form, which meets one of
-    the word written with the letter (`Müller`), so the reading is
-    symmetric; and `Muller` and `Mueller` each meet `Müller` and not each
-    other."""
-    lowered = unicodedata.normalize("NFC", text.casefold())
-    slots = [i for i, c in enumerate(lowered) if c in _TRANSCRIBED]
-    if not slots:
-        return frozenset((_fold(text),))
-    if len(slots) > _MOST_TRANSCRIBED:
-        written = "".join(_TRANSCRIBED.get(c, c) for c in lowered)
-        return frozenset((_fold(text), _fold(written)))
-    out = set()
-    for choice in itertools.product((False, True), repeat=len(slots)):
-        chars = list(lowered)
-        for i, transcribe in zip(slots, choice):
-            if transcribe:
-                chars[i] = _TRANSCRIBED[chars[i]]
-        out.add(_fold("".join(chars)))
-    return frozenset(out)
+    """The lexicon's forms of a text (`_lexicon._forms`: each letter a
+    keyboard lacks written as typed or as its transcription, letter by
+    letter), each with its hyphens written as the hyphen-minus, as
+    `_fold` writes them."""
+    return frozenset(f.translate(_TO_HYPHEN_MINUS)
+                     for f in _lexicon_forms(text))
 
 
 def _fold(text: str) -> str:
@@ -858,6 +824,25 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     return heads | {f for h in heads | {word} for f in _forms(h)}
 
 
+#: The transcription digraphs a key writes as their first letter, so every
+#: form of a text (`_forms`) cuts one key: `muller` for `Müller`,
+#: `Mueller` and `Muller` alike. A key need only be shared by the texts
+#: the check matches, so a coarser key keeps the guarantee and gives a
+#: name one key where its forms number 2^k (review of #1379); the rules
+#: are confluent, so the result is one whatever order they apply in.
+_KEY_DIGRAPHS = re.compile(r"ae|oe|ue|aa|dj")
+
+
+def _key(folded: str) -> str:
+    """A folded text as a key: every transcription digraph written as its
+    first letter, until none is left (`aae` is `a`)."""
+    while True:
+        shorter = _KEY_DIGRAPHS.sub(lambda m: m.group(0)[0], folded)
+        if shorter == folded:
+            return folded
+        folded = shorter
+
+
 def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
     """The folded members of `word`'s spelling set in `group`, which
     `keys` cuts its keys from: every spelling set holds each member's
@@ -865,7 +850,7 @@ def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
     idempotent (test_match.py holds it over every assigned code point,
     alone and beside letters, hyphens and combining marks), so the
     folded members are the folds of `_spellings`' own."""
-    return {_fold(h) for h in _spellings(word, group, lexicon)}
+    return {_key(_fold(h)) for h in _spellings(word, group, lexicon)}
 
 
 def _listed(a: str, b: str, group: str, lexicon: Lexicon) -> bool:
@@ -901,7 +886,8 @@ def _paired_forms(spellings: frozenset[str], lexicon: Lexicon,
                   ) -> set[str]:
     """The given names any member of a spelling set is paired with
     directly as a familiar form (or by `pairs`, the alternate
-    spellings), in either direction, each folded and as normalized."""
+    spellings), in either direction, each as normalized and in every
+    folded form (`_forms`)."""
     pairs = pairs or lexicon._familiar_forms
     paired = {name for word in spellings for name in pairs(word)}
     return paired | {f for name in paired for f in _forms(name)}
@@ -921,10 +907,7 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     first does not (measured over every pair of the 1,034 familiar
     names the default shipped and their folds, 2026-11-08)."""
     sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
-    # asked from both sides: the lexicon indexes a name under its fold,
-    # not under its transcription (`Guenni` finds no pair `günni` holds)
-    return (not _paired_forms(sa, lexicon).isdisjoint(sb)
-            or not _paired_forms(sb, lexicon).isdisjoint(sa))
+    return not _paired_forms(sa, lexicon).isdisjoint(sb)
 
 
 def _alternate(a: str, b: str, lexicon: Lexicon) -> bool:
@@ -932,9 +915,8 @@ def _alternate(a: str, b: str, lexicon: Lexicon) -> bool:
     spelling (`Yuliya` / `Iuliia`), read as `_familiar` reads a
     familiar form: either way, never chained."""
     sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
-    pairs = lexicon._alternate_spellings
-    return (not _paired_forms(sa, lexicon, pairs).isdisjoint(sb)
-            or not _paired_forms(sb, lexicon, pairs).isdisjoint(sa))
+    return not _paired_forms(
+        sa, lexicon, lexicon._alternate_spellings).isdisjoint(sb)
 
 
 def _familiar_outcome(wa: list[str], wb: list[str], lexicon: Lexicon,

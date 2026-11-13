@@ -1263,8 +1263,10 @@ def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
     assert "hoover;e" not in m.keys("J. Edgar Hoover")
     assert "clinton;b" in _across.keys('William "Bill" Clinton')
     assert "clinton;b" not in m.keys('William "Bill" Clinton')
-    assert _across.keys("Jane Doe (née Smith)") == {"doe;j", "smith;j"}
-    assert m.keys("Jane Doe (née Smith)") == {"doe;j"}
+    # `doe` keys as `do`: a key writes the transcription digraphs as
+    # their first letter (`_key`), so it is shared by every form
+    assert _across.keys("Jane Doe (née Smith)") == {"do;j", "smith;j"}
+    assert m.keys("Jane Doe (née Smith)") == {"do;j"}
 
 
 @pytest.mark.parametrize(("a", "b"), [
@@ -1882,14 +1884,32 @@ def test_a_transcription_reaches_a_hyphen_half_and_the_vocabulary() -> None:
         Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING})
     for a, b in (("Günni Smith", "Guenther Smith"),
                  ("Guenni Smith", "Günther Smith"),
+                 # both written out, which asking each side alone missed
+                 ("Guenni Smith", "Guenther Smith"),
+                 # accepted: each side reaches its member of the listed
+                 # pair by a form of its own (review of #1379)
+                 ("Gunni Smith", "Guenther Smith"),
                  ("Jöran Smith", "Goeran Smith"),
                  ("Joeran Smith", "Göran Smith"),
+                 ("Joeran Smith", "Goeran Smith"),
                  ("Jürg Smith", "Juergen Smith")):
         for x, y in ((a, b), (b, a)):
             r = matching.check(x, y)
             assert r.consistent, (x, y)
             assert matching.check(y, x) == r.mirrored()
             assert matching.keys(x) & matching.keys(y)
+
+
+def test_a_name_with_many_transcribable_letters_has_few_keys() -> None:
+    # the keys collapse the transcription digraphs, so a name's keys do
+    # not grow with its forms (2^k for k letters: 530 keys for this name
+    # before the review of #1379)
+    name = "Hans Ødegård-Søndergård-Bøgh-Åsøå"
+    assert len(m.keys(name)) <= 8
+    for other in ("Hans Odegaard-Sondergaard-Bogh-Aasoaa",
+                  "Hans Oedegard-Soendergard-Boegh-Asoa"):
+        assert m.check(name, other).consistent
+        assert m.keys(name) & m.keys(other)
 
 
 def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
