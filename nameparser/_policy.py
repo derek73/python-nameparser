@@ -353,17 +353,18 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 # common/main/<locale>.xml's personNames block (a pattern whose text
 # is the inheritance marker ↑↑↑ is not authored) that produce an
 # initial ("-initial" in the pattern). ja and ko author 29 and 32 and
-# use one in none; ru uses one in 7 of 42 ("{given-initial}
+# use one in none; ru uses one in 7 of 39 ("{given-initial}
 # {given2-initial} {surname}"); zh abbreviates but overrides
 # initialPattern to "{0}", no period. Do NOT read initialPattern alone:
 # root defaults it to "{0}." and nearly every locale inherits it. And
 # before counting, check that the block is the locale's own: compare
 # each pattern with en.xml's for the same order, length, usage and
 # formality, with en's comma written as the locale's and spaces
-# removed; a block that matches en's throughout is a copy, and states
-# nothing about the locale (my's, measured 2026-11-12: 36 of 42
-# identical, the other 6 differing by a space, decisions/
-# script-properties).
+# removed; a block that matches en's in every pattern is a copy, and
+# states nothing about the locale (my's, measured 2026-11-12: 42 of
+# 42). A block matching in most is not: ru's matches in 36 of 39 and
+# is Russian's own, short patterns being written alike in most
+# locales (decisions/script-properties).
 
 @dataclass(frozen=True, slots=True)
 class _ScriptRow:
@@ -437,6 +438,13 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "decided on #1234 from the convention; CLDR my's patterns are en's "
         "copied (36 of 42 identical once the comma is ၊, cldr main "
         "c0b65ae3, 2026-11-12), so the recipe does not answer"),
+    "thai": _ScriptRow(
+        ((0x0E00, 0x0E7F),), None, False, True, False,
+        "no Thai name is abbreviated to a letter and a period, but a title "
+        "is written short with periods between its consonants (ดร., "
+        "ร.ต.อ.), so it writes period abbreviations",
+        "CLDR th: 0 of 20 authored patterns use an initial, not a copy of "
+        "en's (2026-08-02 #320, re-run 2026-11-12, #1256)"),
 }
 
 

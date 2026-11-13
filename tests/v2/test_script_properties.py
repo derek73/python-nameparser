@@ -138,3 +138,20 @@ def test_the_initial_reader_and_the_matcher_agree_on_every_letter() -> None:
                         is _render._initialless(c)
                         is _match._initialless(c)
                         is (not row.writes_initials))
+
+
+@pytest.mark.parametrize(("text", "field", "value"), [
+    ("ดร. สมชาย ใจดี", "title", "ดร."),          # listed
+    ("ร.ต.อ.สมชาย ใจดี", "title", "ร.ต.อ."),     # listed, glued
+    ("กข. สมชาย ใจดี", "title", "กข."),          # unlisted, by H2's shape
+    ("สมชาย ใจดี พ.บ.", "suffix", "พ.บ."),       # unlisted, by S3's shape
+])
+def test_a_script_with_no_initials_may_still_write_abbreviations(
+        text: str, field: str, value: str) -> None:
+    """Thai writes no initials but writes titles and degrees short with
+    periods, so its two columns part (#1256): a reader that asked the
+    initials column for an abbreviation question would move these."""
+    from nameparser import parse
+    name = parse(text)
+    assert getattr(name, field) == value, (text, name)
+    assert name.initials() == ""

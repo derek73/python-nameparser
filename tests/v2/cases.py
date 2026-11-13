@@ -5485,9 +5485,11 @@ CASES: tuple[Case, ...] = (
     Case("thai_trailing_run_of_initials_opening_like_a_rank",
          "สมชาย พ.ต.ส.",
          {"given": "สมชาย", "family": "พ.ต.ส."},
-         ambiguities=("order", "suffix-or-name"),
+         ambiguities=("suffix-or-name",),
          notes="the boundary: a run of single letters running past the "
-               "rank is T7's run of initials (the fix-commit review)"),
+               "rank is T7's run of initials (the fix-commit review); "
+               "no order report since #1256, Thai writing no initials, "
+               "so no byline writes a Thai name before them"),
     Case("thai_acting_before_a_short_title_not_marked_to_peel",
          "ว่าที่ดร.สมชาย ใจดี",
          {"title": "ว่าที่ดร.", "given": "สมชาย", "family": "ใจดี"},

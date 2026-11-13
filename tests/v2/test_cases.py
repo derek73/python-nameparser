@@ -459,9 +459,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # same day, #1254's order report on 22 rows of one name word and
     # initials ('Kavitha S', 'John V', 'Jack X.Y.Z.'); 1882 -> 1888 on
     # 2026-11-12, #1222's two Georgian rows ('ჯეკ MA', 'ჯეკ, MA')
-    # reporting suffix-or-name under three orders.
-    assert claims == 1888, (
-        f"the field sweep checks {claims} claims, recorded as 1888 on "
+    # reporting suffix-or-name under three orders; 1888 -> 1887 the same
+    # day, #1256's Thai row ('สมชาย พ.ต.ส.') dropping its order report.
+    assert claims == 1887, (
+        f"the field sweep checks {claims} claims, recorded as 1887 on "
         f"2026-11-12")
 
 
