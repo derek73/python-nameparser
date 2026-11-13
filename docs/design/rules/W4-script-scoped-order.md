@@ -1,9 +1,14 @@
 # W4 — script-scoped order
 
-**When:** a name is written wholly in one East Asian script, or in the kana-licensed Japanese repertoire, as in "山田 太郎".
+**When:** a name is written wholly in one East Asian script, or in the kana-licensed Japanese repertoire, as in "山田 太郎", or wholly in a script a chosen locale pack gives an order.
 
-**Then:** a name written wholly in one East Asian script, or in the kana-licensed Japanese repertoire, reads family-first whatever order the caller declared; a wholly-katakana name keeps the declared order.
+**Then:** a name written wholly in one East Asian script, or in the kana-licensed Japanese repertoire, reads family-first whatever order the caller declared; a wholly-katakana name keeps the declared order; and a name written wholly in a script a chosen locale pack gives an order reads by that order.
 
+- **A pack's order is the caller's choice, not the script's**: it is for a script that settles no order, Cyrillic, written for Russian given-first and for Mongolian father's name first, so no default reads Cyrillic by its script, and only `locales.MN` gives it an entry; the entry orders a longer name and settles no lone word's field, which stays O5's convention, and a patronymic rotation (O1, O2) stands down under it as under any declared family-first order.
+  ```
+  "Батын Сүхээ"  [mn]          →  family="Батын"
+  "Сүхээ"  [mn]                →  given="Сүхээ"
+  ```
 - **A name the katakana middle dot divides still reads by the script license**: that divider (T2) carries no transcription signal.
   ```
   "威廉・莎士比亚"            →  family="威廉"
@@ -18,6 +23,8 @@
 "山田 ﾀﾛｳ"                  →  family="山田"
 "マイケル ジャクソン"        →  given="マイケル"  · boundary
 "ﾔﾏﾀﾞ ﾀﾛｳ"                  →  given="ﾔﾏﾀﾞ"  · boundary
+"Batyn Sükhee"  [mn]         →  given="Batyn"  · boundary
+"Батын Сүхээ"                →  given="Батын"  · boundary
 "ア゙イ タロウ"                 →  given="ア\u3099イ"  · boundary
 ```
 
@@ -30,5 +37,5 @@
   ```
 
 ---
-**Signal:** script: a name written wholly in one East Asian script, or in the kana-licensed repertoire
+**Signal:** script: a name written wholly in one East Asian script, or in the kana-licensed repertoire, or in a script a chosen locale pack gives an order
 **history:** decisions/W4 · **implemented:** nameparser/_pipeline/_assign.py

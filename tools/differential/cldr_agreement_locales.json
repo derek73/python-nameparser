@@ -882,6 +882,173 @@
   },
   "text": "一郎安藤"
  },
+ "mn/foreignFull/givenFirst": {
+  "family": {
+   "expected": "вон Брюхл",
+   "got": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
+  },
+  "family_base": {
+   "expected": "Брюхл",
+   "got": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
+  },
+  "family_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелиа Эва Софиа",
+   "got": "Анагаах ухааны доктор"
+  },
+  "suffix": {
+   "expected": "Жр Анагаах ухааны доктор",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "Брюхл",
+   "got": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
+  },
+  "surname1_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "text": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр, Анагаах ухааны доктор",
+  "title": {
+   "expected": "Проф. Др.",
+   "got": "Проф."
+  }
+ },
+ "mn/foreignFull/sorting": {
+  "family": {
+   "expected": "Брюхл вон",
+   "got": "Брюхл"
+  },
+  "family_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелиа Эва Софиа",
+   "got": "Ада Корнелиа Эва Софиа вон"
+  },
+  "surname1_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "text": "Брюхл, Ада Корнелиа Эва Софиа вон"
+ },
+ "mn/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "вон Брюхл Гонзалес Доминго",
+   "got": "вон"
+  },
+  "family_base": {
+   "expected": "Брюхл Гонзалес Доминго",
+   "got": "вон"
+  },
+  "family_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелиа Эва Софиа",
+   "got": "Брюхл Гонзалес Доминго Проф. Др. Ада Корнелиа Эва Софиа Анагаах ухааны доктор"
+  },
+  "suffix": {
+   "expected": "Анагаах ухааны доктор",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "Брюхл",
+   "got": "вон"
+  },
+  "surname1_particles": {
+   "expected": "вон",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Гонзалес Доминго",
+   "got": ""
+  },
+  "text": "вон Брюхл Гонзалес Доминго Проф. Др. Ада Корнелиа Эва Софиа Анагаах ухааны доктор",
+  "title": {
+   "expected": "Проф. Др.",
+   "got": ""
+  }
+ },
+ "mn/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Стобер",
+   "got": "Зазилиа"
+  },
+  "given_names": {
+   "expected": "Зазилиа Хамиш",
+   "got": "Хамиш Стобер"
+  },
+  "text": "Зазилиа Хамиш Стобер"
+ },
+ "mn/foreignGS/givenFirst": {
+  "family": {
+   "expected": "Мюллер",
+   "got": "Кате"
+  },
+  "given_names": {
+   "expected": "Кате",
+   "got": "Мюллер"
+  },
+  "text": "Кате Мюллер"
+ },
+ "mn/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Төмөр",
+   "got": "Ноён"
+  },
+  "family_base": {
+   "expected": "Төмөр",
+   "got": "Ноён"
+  },
+  "given_names": {
+   "expected": "Азжаргал",
+   "got": "Азжаргал Төмөр"
+  },
+  "text": "Ноён Азжаргал Төмөр",
+  "title": {
+   "expected": "Ноён",
+   "got": ""
+  }
+ },
+ "mn/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "Азжаргал",
+   "got": "Ноён Азжаргал"
+  },
+  "text": "Төмөр Ноён Азжаргал",
+  "title": {
+   "expected": "Ноён",
+   "got": ""
+  }
+ },
+ "mn/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Болд",
+   "got": "Дулмаа"
+  },
+  "given_names": {
+   "expected": "Дулмаа",
+   "got": "Болд"
+  },
+  "text": "Дулмаа Болд"
+ },
+ "mn/nativeGS/givenFirst": {
+  "family": {
+   "expected": "Дорж",
+   "got": "Цэцэг"
+  },
+  "given_names": {
+   "expected": "Цэцэг",
+   "got": "Дорж"
+  },
+  "text": "Цэцэг Дорж"
+ },
  "ne/foreignFull/givenFirst": {
   "family": {
    "expected": "भोन ब्रुहल",

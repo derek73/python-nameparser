@@ -23,7 +23,7 @@ from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._post_rules import suffix_entries
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
-from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
+from nameparser._policy import UNSET, Policy, PolicyPatch, Script, _Unset, apply_patch
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Role, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
@@ -104,7 +104,9 @@ class Parser:
             uncovered = sorted(
                 script.value
                 for script in self.policy.segment_scripts
-                if not any(_SCRIPT_MATCHERS[script](entry)
+                # CYRILLIC divides nothing in any configuration (#1237)
+                if script is not Script.CYRILLIC
+                and not any(_SCRIPT_MATCHERS[script](entry)
                            for entry in self.lexicon._sets.surnames))
             if uncovered:
                 names = ", ".join(uncovered)
@@ -483,7 +485,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     reading that cannot stand beside one the choice turns on raises
     ValueError here, naming the call (decisions/vocabulary-model,
     2026-11-02 #754, items 3 and 4). Policy patches apply left-to-right
-    (later wins; set-valued fields union per the patch metadata). A
+    (later wins; set-valued fields union and script_orders merges by
+    script, per the patch metadata). A
     pack that chooses no language leaves the base vocabulary exactly
     as it is.
 
@@ -592,12 +595,13 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # each scalar field's setter so far and the value it left in the
     # policy: a later pack leaving another value overrides it, which is
     # warned; one leaving the same value (cs and sk's two_family_names)
-    # agrees. Compared as the applied Policy holds it, canonical, so a
-    # mapping written in another key order (script_orders) is the value
-    # it is, not the spelling it was given in.
+    # agrees. Compared as the applied Policy holds it, canonical.
     scalar_setters: dict[str, tuple[str, object]] = {}
     scalars = [f.name for f in dataclasses.fields(PolicyPatch)
-               if f.metadata.get("compose") != "union"]
+               if f.metadata.get("compose") not in ("union", "by-script")]
+    # script_orders composes by script: a later pack setting one script
+    # to another order overrides that entry, which is warned the same way
+    script_setters: dict[object, tuple[str, object]] = {}
     for loc in locales:
         # rules/D2: "applying a locale pack wraps any such error with
         # the locale's code, so a stacked configuration names which layer
@@ -618,6 +622,19 @@ def parser_for(*locales: Locale, base: Parser | None = None,
                         f"{name!r} already set by locale {code!r}; later wins",
                         UserWarning, stacklevel=2)
             scalar_setters[name] = (loc.code, value)
+        if loc.policy.script_orders is not UNSET:
+            for script, order in policy.script_orders:
+                if not any(s == script for s, _ in loc.policy.script_orders):
+                    continue
+                if script in script_setters:
+                    code, held = script_setters[script]
+                    if code != loc.code and held != order:
+                        warnings.warn(
+                            f"locale {loc.code!r} overrides the script_orders "
+                            f"entry for {script.value!r} already set by "
+                            f"locale {code!r}; later wins",
+                            UserWarning, stacklevel=2)
+                script_setters[script] = (loc.code, order)
     # rules/D1: "constructing a parser that activates division for
     # scripts with no covering surnames and no segmenter warns at
     # construction, naming the dead scripts and each way out"

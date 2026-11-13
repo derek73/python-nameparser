@@ -589,6 +589,15 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         assert out.ambiguities == (), name
 
 
+def test_a_cyrillic_neighbour_does_not_block_the_consult() -> None:
+    # Cyrillic is in the script table since #1237 only to key a declared
+    # order: it is no East Asian writer's boundary, so 山田太郎 beside a
+    # Cyrillic word still goes to the segmenter, as on 3.0.1
+    for name in ("山田太郎 Иван", "山田太郎 Оюун-Эрдэнэ"):
+        out = _run(name, policy=_JA, segmenter=_fake((2,)))
+        assert _texts(out)[:2] == ["山田", "太郎"], name
+
+
 def test_a_period_marked_neighbour_still_blocks_the_consult() -> None:
     # #323: the neighbour precondition reads effective_script, which
     # now sees through an edge stop, so '田中.' beside 山田太郎 counts

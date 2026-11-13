@@ -55,7 +55,8 @@ class Locale:
     #: item 3).
     lexicon: Lexicon
     #: Behavior changes folded onto the base policy (set-valued fields
-    #: union; scalars override, later pack wins).
+    #: union; script_orders merges by script; scalars override, later
+    #: pack wins).
     policy: PolicyPatch = PolicyPatch()
     #: The languages chosen, as BCP 47 tags (``{"pt"}``, ``{"pt-BR"}``):
     #: ``parser_for`` unions the packs' languages, and the base's recorded

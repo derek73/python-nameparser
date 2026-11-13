@@ -101,7 +101,7 @@ from nameparser._pipeline._vocab import (
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
-from nameparser._policy import Script
+from nameparser._policy import _EAST_ASIAN_SCRIPTS, Script
 from nameparser._types import (
     AmbiguityKind, ReadingKind, ReadingSource, Role, Segmentation, Span,
 )
@@ -684,8 +684,11 @@ def _split_candidate(state: ParseState) -> int | None:
     # load-bearingly, and in the two structures that reach here it
     # reads exactly this one, only backwards; the argument lives at
     # that scan.
+    # a Cyrillic word is no site, CYRILLIC keying a declared order alone
+    # (#1237), so a segmenter is never handed one
     i = next((i for i in state.segments[0]
-              if effective_script(state.tokens[i].text) in scripts), None)
+              if (script := effective_script(state.tokens[i].text)) in scripts
+              and script is not Script.CYRILLIC), None)
     # A post-nominal in the surname's own position is not a site to
     # skip past but an answer: a surname LEADS, so if the leading
     # script-written token is an honorific there is no surname here to
@@ -890,7 +893,10 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # Provenance, not vocabulary: the two spellings put the same word
     # in the same place, and asking the suffix set instead cannot
     # separate them.
-    if any(j != i and effective_script(state.tokens[j].text) is not None
+    # a neighbour in an East Asian script, not a Cyrillic word, whose
+    # classification keys only a declared order (#1237)
+    if any(j != i and effective_script(state.tokens[j].text)
+           in _EAST_ASIAN_SCRIPTS
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state

@@ -374,18 +374,23 @@ def test_policy_patch_canonicalizes_script_orders_all_the_way_down() -> None:
     assert isinstance(hash(p), int)
 
 
-def test_apply_patch_overrides_script_orders_as_a_scalar() -> None:
-    # script_orders composes as a SCALAR: a patch REPLACES the table
-    # rather than merging into it, so an empty one is how a pack turns
-    # the default off. An UNSET patch must leave the default alone --
-    # the distinction a union field would blur.
-    cleared = apply_patch(Policy(), PolicyPatch(script_orders={}))  # type: ignore[arg-type]
-    assert cleared.script_orders == ()
-    untouched = apply_patch(Policy(), PolicyPatch())
-    assert untouched.script_orders == DEFAULT_SCRIPT_ORDERS
+def test_apply_patch_merges_script_orders_by_script() -> None:
+    # script_orders composes BY SCRIPT (#1237): a patch's entry
+    # replaces the base's entry for its script and the base's other
+    # entries stand, so a pack adds one script's order without erasing
+    # the rest or a caller's own opt-out; an empty patch changes nothing
+    # (a caller clears the table on Policy itself)
+    empty = PolicyPatch(script_orders={})  # type: ignore[arg-type]
+    assert apply_patch(Policy(), empty).script_orders == DEFAULT_SCRIPT_ORDERS
+    assert apply_patch(Policy(), PolicyPatch()).script_orders \
+        == DEFAULT_SCRIPT_ORDERS
     replaced = apply_patch(
         Policy(), PolicyPatch(script_orders={Script.HANGUL: GIVEN_FIRST}))  # type: ignore[arg-type]
-    assert replaced.script_orders == ((Script.HANGUL, GIVEN_FIRST),)
+    assert dict(replaced.script_orders) == {
+        **dict(DEFAULT_SCRIPT_ORDERS), Script.HANGUL: GIVEN_FIRST}
+    added = apply_patch(Policy(script_orders=()), PolicyPatch(
+        script_orders={Script.CYRILLIC: GIVEN_FIRST}))  # type: ignore[arg-type]
+    assert added.script_orders == ((Script.CYRILLIC, GIVEN_FIRST),)
 
 
 def test_apply_patch_revalidates_deferred_script_orders() -> None:
@@ -408,6 +413,10 @@ def test_policy_patch_defers_malformed_script_orders_verbatim() -> None:
         apply_patch(Policy(), PolicyPatch(script_orders="han"))  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="decode first"):
         apply_patch(Policy(), PolicyPatch(script_orders=b"han"))  # type: ignore[arg-type]
+    # an unhashable key reaches Policy's curated message too, not the
+    # by-script merge's own TypeError (#1237)
+    with pytest.raises(ValueError, match="unknown script"):
+        apply_patch(Policy(), PolicyPatch(script_orders=[(["han"], GIVEN_FIRST)]))  # type: ignore[arg-type]
 
 
 def test_apply_patch_revalidates_deferred_values() -> None:
@@ -588,6 +597,14 @@ def test_patched_validates_patch_values_at_apply_time() -> None:
 def test_patched_rejects_non_patch() -> None:
     with pytest.raises(TypeError, match="takes a PolicyPatch"):
         Policy().patched({"strip_emoji": False})  # type: ignore[arg-type]
+
+
+def test_the_default_keys_no_order_to_cyrillic() -> None:
+    # Cyrillic settles no order (rules/W4, #1237): only a pack's or a
+    # caller's entry reads a Cyrillic name by script, never the default
+    assert Script.CYRILLIC not in dict(DEFAULT_SCRIPT_ORDERS)
+    assert Script.CYRILLIC not in dict(Policy().script_orders)
+    assert Script.CYRILLIC not in Policy().segment_scripts
 
 
 def test_script_orders_default_and_canonical_storage() -> None:
@@ -970,3 +987,54 @@ def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
     assert policy.two_given_names is False
     assert policy.lone_name_word is Role.GIVEN
     assert policy == Policy(two_family_names=True)
+
+
+def test_script_orders_is_the_one_by_script_patch_field() -> None:
+    # apply_patch and parser_for read this metadata: a field joining it,
+    # or a misspelled compose value, fails here
+    from nameparser._policy import _BY_SCRIPT
+    composed = {f.name: f.metadata.get("compose")
+                for f in dataclasses.fields(PolicyPatch)}
+    assert {n for n, c in composed.items() if c == "by-script"} == {"script_orders"}
+    assert set(composed.values()) <= {None, "union", _BY_SCRIPT["compose"]}
+
+
+def test_a_callers_katakana_entry_settles_a_lone_word_as_han_does() -> None:
+    # by_script is set for an East Asian script's entry, a caller's
+    # katakana entry included (it asserts the Japanese convention), and
+    # not for a Cyrillic one, a pack's declared order (#1237)
+    from nameparser import Parser
+    kata = Parser(policy=Policy(script_orders={Script.KATAKANA: FAMILY_FIRST}))  # type: ignore[arg-type]
+    assert kata.parse("タロウ").family == "タロウ"
+    cyr = Parser(policy=Policy(script_orders={Script.CYRILLIC: FAMILY_FIRST}))  # type: ignore[arg-type]
+    assert cyr.parse("Батболд").given == "Батболд"
+
+
+def test_cyrillic_in_segment_scripts_divides_nothing() -> None:
+    # CYRILLIC keys a declared order alone (#1237): listed in
+    # segment_scripts, no Cyrillic word is a site, so a segmenter is never
+    # handed one, and the construction warning does not ask for one
+    import warnings
+    from nameparser import Parser
+    from nameparser._types import Segmentation
+    calls = []
+
+    def seg(text: str) -> Segmentation:
+        calls.append(text)
+        return Segmentation((2,))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Parser(policy=Policy(segment_scripts=frozenset({Script.CYRILLIC})))
+    parser = Parser(policy=Policy(segment_scripts=frozenset({Script.CYRILLIC})),
+                    segmenter=seg)
+    assert parser.parse("Иванов Иван").as_dict()["given"] == "Иванов"
+    assert calls == []
+
+
+def test_a_middle_dot_between_cyrillic_letters_keeps_the_word_whole() -> None:
+    # rules/T3's flank reads the East Asian scripts only: Cyrillic, in
+    # the script table since #1237, keeps a punt volat inside its word
+    # as Latin does, so the default reads as on 3.0.1
+    from nameparser import parse
+    assert parse("Гал·ла Иванова").given == "Гал·ла"
+    assert parse("Gal·la Ivanova").given == "Gal·la"
