@@ -28,7 +28,7 @@ keeps its licence, and nam_dict's is the GFDL
 THE REVIEWED PAIRS. familiar_reviewed.tsv beside this file holds the
 pairs tools/vocab/familiar_candidates.py finds in ORCID's public data
 file (CC0), each as two readers categorized it (decisions/name-matching,
-2026-11-12 SPELLINGS ARE A KIND OF THEIR OWN). A pair both called a
+2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN). A pair both called a
 familiar form is written as a `familiar` reading on its shorter name; a
 pair both called a spelling as a `spelling` reading (`spelling_of`,
 compiled into ALTERNATE_SPELLINGS, read as the opt-in
@@ -100,7 +100,7 @@ NICKNAMES_EXCLUDED = Path(__file__).with_name("nicknames_excluded.tsv")
 #: The pairs found in ORCID's public data file (CC0) by
 #: tools/vocab/familiar_candidates.py, as two readers reviewed them, and
 #: the note of every reading drawn from it (decisions/name-matching,
-#: 2026-11-12 SPELLINGS ARE A KIND OF THEIR OWN).
+#: 2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN).
 REVIEWED = Path(__file__).with_name("familiar_reviewed.tsv")
 REVIEWED_SOURCE = ("found in ORCID's public data file (CC0) and reviewed, "
                    "tools/vocab/familiar_reviewed.tsv")

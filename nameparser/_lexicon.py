@@ -855,7 +855,7 @@ _LIST_PROPS: Mapping[str, str] = MappingProxyType({
 #: form stands for, the names a spelling is another spelling of. A
 #: caller's add of one EXTENDS the word's names in a reading of its own
 #: (decisions/name-matching, 2026-11-08 FAMILIAR FORMS and 2026-11-12
-#: SPELLINGS ARE A KIND OF THEIR OWN).
+#: ALTERNATE SPELLINGS ARE OPT-IN).
 _MATCHING_LISTS: Mapping[str, str] = MappingProxyType({
     "familiar": "short_for", "spelling": "spelling_of"})
 
