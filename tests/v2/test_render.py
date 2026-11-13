@@ -996,10 +996,21 @@ def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
             assert _repairs(text, force) == repaired, (text, force)
     assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").initials() == "Ნ. Ბ."
     assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").capitalized().initials() == "ნ. ბ."
-    # a Mtavruli first letter on Mkhedruli is mixed case: kept as
-    # written on the default path (rules/R5), repaired under force
-    assert _repairs("Ნინო Ბურჯანაძე", False) == "Ნინო Ბურჯანაძე"
-    assert _repairs("Ნინო Ბურჯანაძე", True) == "ნინო ბურჯანაძე"
+    # a Mtavruli first letter on Mkhedruli, or a Mtavruli word beside
+    # Mkhedruli, is no case contrast, Georgian having no case the
+    # contrast reads (rules/S6, R5, #1222): repaired on the default path
+    # as under force, where 3.0.1 kept it as written
+    for text, repaired in (("Ნინო Ბურჯანაძე", "ნინო ბურჯანაძე"),
+                           ("ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "ნინო ბურჯანაძე")):
+        for force in (False, True):
+            assert _repairs(text, force) == repaired, (text, force)
+    # beside a Latin word in capitals the name is in one case, as an
+    # Arabic one is, so the Latin word repairs; a Latin Title-case word
+    # keeps the contrast its own letters make
+    assert _repairs("محمد MA", False) == "محمد Ma"
+    assert _repairs("ჯეკ MA", False) == "ჯეკ Ma"
+    assert _repairs("ნინო SMITH", False) == "ნინო Smith"
+    assert _repairs("ნინო Smith", False) == "ნინო Smith"
     assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
     # the other cased scripts the repair reaches keep their title case
     assert _repairs("ΟΔΥΣΣΕΑΣ ΕΛΥΤΗΣ", False) == "Οδυσσεας Ελυτης"

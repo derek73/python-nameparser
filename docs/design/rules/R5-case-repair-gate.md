@@ -23,6 +23,13 @@
   "john smith EdD"            →  capitalized_forced="John Smith EDD"
   ```
 
+- **A script whose case no writer chooses against the rest of the name makes no contrast**: Georgian writes its capitals only for a whole word set in them, so a name mixing them with its lower case, or beside a Latin word, is in one case as one in Arabic is, and is repaired.
+  ```
+  "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ"             →  capitalized="ნინო ბურჯანაძე"
+  "ჯეკ MA"                    →  capitalized="ჯეკ Ma"
+  "ნინო Smith"                →  capitalized="ნინო Smith"  · boundary
+  ```
+
 **Because:** mixed case is evidence that the writer cased the name deliberately, and a repair cannot tell a deliberate spelling from a mistaken one. A name written wholly in one case leaves the repair no such evidence to read either way — the writer who always writes lowercase is indistinguishable from the writer who could not be bothered — so repair proceeds there, which is a choice about how to act absent evidence rather than a claim that nothing can be lost by it.
 
 ```

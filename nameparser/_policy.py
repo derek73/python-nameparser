@@ -418,6 +418,16 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "initials, and spell a Latin one out by its sound with no vowel "
         "sign (एम. for M.), a run of letters the title shape misreads",
         "rules/H2's Brahmic Except, decisions/H2 (#1191)"),
+    "georgian": _ScriptRow(
+        ((0x10D0, 0x10FF), (0x1C90, 0x1CBF)), False, True, True, False,
+        "Mkhedruli has no capitals in use; Mtavruli, its upper case since "
+        "Unicode 11, is written only for a whole word in capitals, so no "
+        "letter's case is a choice made against the rest of the name, and "
+        "a name in Mtavruli repairs to Mkhedruli (rules/R4). The "
+        "ecclesiastical Asomtavruli and Nuskhuri, a pair that does write "
+        "initial capitals, are not in the row",
+        "#1222 (the contrast), #1223 (case repair); CLDR ka writes "
+        "initials, 1 of 15 authored patterns"),
 }
 
 

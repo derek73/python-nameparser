@@ -6851,6 +6851,8 @@
 {"name": "ნიკოლოზ სანიშვილი", "given": "ნიკოლოზ", "family": "სანიშვილი", "initials": "ნ. ს."}
 {"name": "ნინო", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
 {"name": "ნინო", "order": "FAMILY_FIRST", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
+{"name": "ნინო Smith", "given": "ნინო", "family": "Smith", "initials": "ნ. S."}
+{"name": "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "given": "ნინო", "family": "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "initials": "ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "ნოდარ ღვალაძე", "given": "ნოდარ", "family": "ღვალაძე", "initials": "ნ. ღ."}
 {"name": "ნოდარ ცინცაძე", "given": "ნოდარ", "family": "ცინცაძე", "initials": "ნ. ც."}
 {"name": "ნოდარ ჯობავა", "given": "ნოდარ", "family": "ჯობავა", "initials": "ნ. ჯ."}
@@ -6868,6 +6870,7 @@
 {"name": "შტიობერი ცეცილია ჰეიმიშ", "order": "FAMILY_FIRST", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ცეცილია ჰეიმიშ შტიობერი", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ხვიჩა კვარაცხელია", "given": "ხვიჩა", "family": "კვარაცხელია", "initials": "ხ. კ."}
+{"name": "ჯეკ MA", "given": "ჯეკ", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "ჯ. M.", "capitalized": "ჯეკ Ma"}
 {"name": "김. 민준", "given": "민준", "family": "김."}
 {"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
 {"name": "이서연·김민준", "given": "이서연", "family": "김민준"}
@@ -6950,7 +6953,7 @@
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ", "middle": "ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠶ. ᠴ."}
 {"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠴ."}
-{"name": "Ნინო Ბურჯანაძე", "given": "Ნინო", "family": "Ბურჯანაძე", "initials": "Ნ. Ბ.", "capitalized_force": "ნინო ბურჯანაძე"}
+{"name": "Ნინო Ბურჯანაძე", "given": "Ნინო", "family": "Ბურჯანაძე", "initials": "Ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "given": "ᲜᲘᲜᲝ", "family": "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "initials": "Ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "Ḥabīballāh Kalakānī", "given": "Ḥabīballāh", "family": "Kalakānī", "initials": "Ḥ. K."}
 {"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "family": "al- Ḥakīm", "initials": "T. Ḥ."}

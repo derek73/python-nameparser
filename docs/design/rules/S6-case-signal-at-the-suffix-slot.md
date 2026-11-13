@@ -13,10 +13,12 @@
   "Doe, John DO"              →  ambiguities=()
   "John Smith Ma"             →  ambiguities=("suffix-or-name",)
   ```
-- **A name written wholly in one case says nothing about any word in it**, and the count decides alone and reports as S4 says; so does a script with no case to write in. The case asked of a word in a maiden clause or between brackets is the whole name's, the clause and the brackets being no name of their own.
+- **A name written wholly in one case says nothing about any word in it**, and the count decides alone and reports as S4 says; so does a script with no case to write in, and so does Georgian, whose capitals are written only for a whole word set in them, so that no letter's case is chosen against the rest of the name. The case asked of a word in a maiden clause or between brackets is the whole name's, the clause and the brackets being no name of their own.
   ```
   "JACK MA"                   →  family="MA"  · boundary
   "JOHN SMITH MA"             →  ambiguities=("suffix-or-name",)
+  "ჯეკ MA"                    →  family="MA"
+  "ჯეკ MA"                    →  ambiguities=("suffix-or-name",)
   ```
 - **At the trailing slot of the given part** after a family comma, the comma has already settled the count, so the writing is the only evidence there is (S5).
 - **A suffix word that is also a name (S11), a generation word or a credential listed as a word whose Title case is its writing as a name (`fils`, `KC`), is written the other way at one end**: its lower case in a name of mixed case is the suffix wherever the name keeps a family word, never with none to spare (S11), its capitals say nothing, a surname being often written in them, and its Title case leans to the name as an acronym's does. Any other such word's writing says nothing at all: an agnomen takes the case of the name around it, and Junior is written in Title case as the generation as often as the given name.

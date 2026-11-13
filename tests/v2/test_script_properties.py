@@ -98,7 +98,10 @@ def test_has_case_reaches_every_contrast(key: str, row: _ScriptRow) -> None:
     for letter, contrast in ((c, False), ("j", True)):
         assert is_one_case([letter, "MA"]) is not contrast, (key, letter)
         assert _render._in_one_case(f"{letter} MA") is not contrast
-        assert (ambiguous_lean(letter, False) is None) is not contrast
+        # a capital is a lean in a name of mixed case: a Latin one is
+        # the credential's, a Mtavruli one none
+        assert (ambiguous_lean(letter.upper(), False) is None) \
+            is not contrast, (key, letter)
 
 
 def test_a_reader_never_restates_a_row() -> None:
