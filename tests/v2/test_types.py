@@ -1184,7 +1184,8 @@ _TR = Parser(policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-typ
      "Ali bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa"),
     # the Turkic arm: a marker and the name word before it, in its part
     (_TR, "Ali Ahmad Vali oglu", "Vali oglu", "Ali"),
-    (_TR, "Ali Ahmad oglu", "Ahmad oglu", "oglu"),
+    # three name words: the father and the marker are the family (O2, #1187)
+    (_TR, "Ali Ahmad oglu", "Ahmad oglu", "Ahmad oglu"),
     (_TR, "Ali (Bob) oglu", "Ali oglu", "oglu"),
     (_TR, "oglu Ali", "", "Ali"),
     (_TR, "Aliyev, oglu", "", "Aliyev"),
@@ -1617,7 +1618,9 @@ def test_the_surname1_views_read_the_first_unit_o6_read(
 def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
     """rules/R11's O3 Except (#1022): the fold's middles are in neither
     unit where O6 read none, so the first surname is the family as it
-    stood before the fold, and a Turkic father's reading keeps it."""
+    stood before the fold; and where rules/O2 read a three-word Turkic
+    name's father and marker as the family, O6 finds no middle, so the
+    family is one unit (#1187)."""
     folded = Parser(policy=Policy(middle_as_family=True)).parse(
         "Ana María García López")
     assert (folded.family, folded.surname1, folded.surname1_base) == (
@@ -1638,7 +1641,14 @@ def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
         two_family_names=True,
         patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
             "Ali Hasan oglu")
-    assert (turkic.surname1, turkic.surname2) == ("Hasan", "oglu")
+    assert (turkic.surname1, turkic.surname2) == ("Hasan oglu", "")
+    # five name words keep the positional reading, so O6 still divides
+    # the family it reads there (the father's name and the marker)
+    five = Parser(policy=Policy(
+        two_family_names=True,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
+            "Ali Ahmad Vali Hasan oglu")
+    assert (five.surname1, five.surname2) == ("Hasan", "oglu")
 
 
 def test_the_surname1_views_are_render_keys_and_not_fields() -> None:

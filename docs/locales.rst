@@ -559,8 +559,11 @@ Shipped packs
        their Latin- and Cyrillic-script variants, ``o‘g‘li`` with any
        apostrophe Uzbek text writes) and reads its first
        word as the family name (``Aliyev Ilham Heydar oglu`` → family
-       ``Aliyev``). A marker and the name before it fill
-       ``patronymic`` (``Heydar oglu`` there).
+       ``Aliyev``). A name of three name words ending in one has no surname,
+       so the father's name and the marker are the family
+       (``Bekmyrza Cholponbai uulu`` → family ``Cholponbai uulu``). A
+       marker and the name before it fill ``patronymic`` (``Heydar
+       oglu``, ``Cholponbai uulu``).
    * - ``vi``
      - Vietnamese — reads every name family first, the given name last
        (``Nguyen Van Anh`` → family ``Nguyen``, middle ``Van``, given

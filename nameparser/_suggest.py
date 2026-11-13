@@ -283,16 +283,27 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     """The rule a name's patronymic votes for, where the pipeline's rule
     can read it there. rules/O2's four name words, the marker last
     (family-first) or third (given-first, which the Turkic rule reads
-    too), never first or second; rules/O1's three name words, the
+    too), never first or second, and its three, the marker last
+    whatever the words before it (#1187); rules/O1's three name words, the
     ending on the middle word (given-first) or on the last
     (`east_slavic_rotates`, the family-first shape the rule restores),
     whatever the first word ends in (a surname may end like a
     patronymic: `Abramovich Roman Arkadyevich`), and no initial first or in the middle (O1's
-    precedence). A final full stop is read past."""
+    precedence). A final full stop is read past.
+
+    Both Turkic shapes count the words `_name_words` keeps, not the
+    rule's name words, so they vote where the rule reads nothing: a
+    nickname counted as a word (a bracketed marker among them), a given
+    name P5 binds from two words, a name before a suffix comma, and a
+    marker with a final full stop. The rule the vote turns on leaves
+    each such name as it was (decisions/group-suggestion, 2026-11-12
+    #1187)."""
     bare = [w.rstrip(".") or w for w in words]
     if (len(bare) == 4 and not any(map(is_patronymic_marker, bare[:2]))
             and (is_patronymic_marker(bare[2])
                  or is_patronymic_marker(bare[3]))):
+        return PatronymicRule.TURKIC
+    if len(bare) == 3 and is_patronymic_marker(bare[2]):
         return PatronymicRule.TURKIC
     if (len(bare) == 3
             and not (_is_initialed(words[0]) or _is_initialed(words[1]))

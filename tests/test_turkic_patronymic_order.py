@@ -238,11 +238,12 @@ class TurkicPatronymicNameOrderGuardsTests(FlaggedPolicyTestBase):
         assert n.family == "Aliyev"
 
     def test_three_token_no_surname(self) -> None:
-        # No surname to rotate into place — parses as last=oglu, unchanged.
+        # No surname: the father's name and the marker are the family
+        # (rules/O2, #1187); v1 read last=oglu.
         n = self.hn("Vusal Said oglu")
         assert n.given == "Vusal"
-        assert n.middle == "Said"
-        assert n.family == "oglu"
+        assert n.middle == ""
+        assert n.family == "Said oglu"
 
     def test_five_token_extra_given_name(self) -> None:
         # Extra token before the patronymic phrase breaks the strict 4-token shape.
