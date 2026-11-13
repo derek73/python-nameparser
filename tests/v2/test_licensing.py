@@ -16,7 +16,6 @@ from tests.checkout import ROOT, needs_checkout
 #: Each third-party licence file and the SPDX identifier it stands for.
 _THIRD_PARTY = {
     "LICENSE-nicknames": "Apache-2.0",
-    "LICENSE-nam_dict": "GFDL-1.2-no-invariants-or-later",
 }
 
 #: Each source licensed for attribution only: its SPDX identifier, the
