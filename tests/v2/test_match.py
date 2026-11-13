@@ -2242,8 +2242,17 @@ def test_a_familiar_form_that_reads_as_a_title_is_never_compared() -> None:
     result = matching.check(pres, "Prescott Kovacs")
     assert not result.consistent
     assert Outcome.FAMILIAR_FORM not in {row.outcome for row in result.roles}
-    # the pair is there, and only the title reading keeps it inert
-    assert lexicon._familiar_forms("pres") == {"prescott"}
+    # the control: the same pair with Pres's title reading taken away
+    # reads `familiar-form`, so the title reading alone keeps it inert
+    # (without the pair, `Pres Kovacs` / `Prescott Kovacs` would read
+    # `given-one-side` either way)
+    bare = lexicon.remove("pres", kind="office")
+    control = Matching(Parser(lexicon=bare),
+                       DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    assert control.parser.parse("Pres Kovacs").given == "Pres"
+    paired = control.check("Pres Kovacs", "Prescott Kovacs")
+    assert paired.consistent
+    assert paired[Role.GIVEN].outcome is Outcome.FAMILIAR_FORM
 
 
 def test_a_planted_accented_pair_is_found_from_either_name() -> None:

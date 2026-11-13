@@ -124,8 +124,9 @@ def test_every_shipped_reading_is_one_the_tool_writes() -> None:
 
 
 def test_stripping_the_tree_leaves_no_familiar_or_spelling_reading() -> None:
-    # without the review: every familiar reading in the tree is one the
-    # tool owns, and taking them out leaves a file the build reads
+    # without the review: every familiar and spelling reading in the
+    # tree is one the tool owns, and taking them out leaves a file the
+    # build reads
     for path in sorted(_VOCAB.glob("*.toml")):
         text = path.read_text()
         stripped = tool.strip(text)
@@ -299,11 +300,19 @@ def test_a_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
     # a pair from a list of familiar forms, not data the project measured
     ((_row("kasia", "katarzyna", "familiar", source="nicknames-spelling"),),
      "source 'nicknames-spelling' is not one of"),
+    # Wikidata joins only with its fetch tool (#1387)
+    ((_row("kasia", "katarzyna", "familiar", source="wikidata"),),
+     "source 'wikidata' is not one of"),
 ])
 def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
                                        match: str) -> None:
     with pytest.raises(ValueError, match=match):
         tool.read_reviewed(_reviewed(*rows))
+
+
+def test_the_sources_are_the_ones_whose_counts_the_tree_reproduces() -> None:
+    # a widening needs its counting recipe or tool in the tree first
+    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress"}
 
 
 @pytest.mark.parametrize("source", sorted(tool.REVIEW_SOURCES))
