@@ -870,6 +870,11 @@ _LIST_PROPS: Mapping[str, str] = MappingProxyType({
 #: ALTERNATE SPELLINGS ARE OPT-IN).
 _MATCHING_LISTS: Mapping[str, str] = MappingProxyType({
     "familiar": "short_for", "spelling": "spelling_of"})
+#: Each matching-only category's example add, offered by the messages
+#: refusing one: code that runs (tests/v2/test_match.py executes it).
+_MATCHING_EXAMPLES: Mapping[str, str] = MappingProxyType({
+    "familiar": "add('max', kind='familiar', short_for=['maxwell'])",
+    "spelling": "add('olha', kind='spelling', spelling_of=['olga'])"})
 
 
 def _prop_value(kind: str, prop: str, value: object) -> object:
@@ -919,7 +924,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
             raise ValueError(
                 f"{prop} must be a non-empty list of given names, none "
                 f"normalizing to nothing, got {value!r}; write e.g. "
-                f"{what}")
+                f"{prop}={['maxwell'] if prop == 'short_for' else ['olga']!r}")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
         if prop == "completed_by" and any(" " in w for w in folded):
             # rules/P12 joins a bound word to the ONE word after it
@@ -1059,8 +1064,7 @@ def _make_edit(op: object, words: object, kind: object,
         if not names:
             raise ValueError(
                 f"a {category} reading needs {prop}, a non-empty list of "
-                f"given names, e.g. add({'max' if category == 'familiar' else 'olha'!r}, "
-                f"kind={category!r}, {_LIST_PROPS[prop]})")
+                f"given names, e.g. {_MATCHING_EXAMPLES[category]}")
         for w in ws:
             if w in names:
                 raise ValueError(
@@ -2176,7 +2180,14 @@ class Lexicon:
             pair lives on the word whose reading lists the other (its
             shorter name, as the files write it): to cut
             ``Max`` / ``Maximilian``, remove ``max``'s familiar
-            reading and add it back without ``maximilian``; a property
+            reading and add it back without ``maximilian``.
+            ``spelling_of=[...]`` on a ``spelling`` reading is its twin:
+            the given names the word is another spelling of, by the
+            person's or a romanization's choice, which name matching
+            reads as an ``alternate-spelling`` where that outcome is
+            accepted and no parse reads (``add("olha",
+            kind="spelling", spelling_of=["olga"])``), extending as a
+            familiar reading does; a property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no

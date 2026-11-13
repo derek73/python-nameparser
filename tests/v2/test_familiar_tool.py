@@ -113,7 +113,8 @@ def test_stripping_the_tree_leaves_no_familiar_reading() -> None:
     for path in sorted(_VOCAB.glob("*.toml")):
         text = path.read_text()
         stripped = tool.strip(text)
-        assert "familiar = " not in stripped, path.name
+        for kind in tool.KINDS:
+            assert f"{kind} = " not in stripped, (path.name, kind)
         tomllib.loads(stripped)  # still a file
 
 
@@ -368,8 +369,8 @@ def test_no_refused_pair_is_shipped() -> None:
     assert shipped == []
 
 
-# -- the reviewed pairs (decisions/name-matching, 2026-11-12 SPELLINGS ARE
-# A KIND OF THEIR OWN) --------------------------------------------------------
+# -- the reviewed pairs (decisions/name-matching, 2026-11-12 ALTERNATE
+# SPELLINGS ARE OPT-IN) --------------------------------------------------------
 
 def _reviewed(*rows: tuple[str, ...]) -> str:
     return "\n".join(["\t".join(tool.REVIEWED_HEADER),

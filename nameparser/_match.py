@@ -885,27 +885,42 @@ def _alternate(a: str, b: str, lexicon: Lexicon) -> bool:
         sa, lexicon, lexicon._alternate_spellings).isdisjoint(sb)
 
 
-def _familiar_outcome(wa: list[str], wb: list[str],
-                      lexicon: Lexicon) -> Outcome | None:
+def _familiar_outcome(wa: list[str], wb: list[str], lexicon: Lexicon,
+                      accept: frozenset[Outcome]) -> Outcome | None:
     """Two given texts' words, pair by pair, each the same once folded,
     a listed spelling, an alternate spelling or a familiar form, and at
-    least one of the last two: `familiar-form` where a pair needed a
-    familiar form, else `alternate-spelling`; `None` where no pair
-    needed either or one is neither (decisions/name-matching,
-    2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN)."""
+    least one of the last two: `alternate-spelling` where every such pair
+    is one, `familiar-form` where every one is a familiar form, and
+    where some need one and some the other, `familiar-form` where the
+    caller accepts both and otherwise the one they do not accept, so a
+    pair needing an unaccepted leniency is never accepted on the other
+    (decisions/name-matching, 2026-11-12 ALTERNATE SPELLINGS ARE
+    OPT-IN). `None` where no pair needed either or one is neither."""
     if len(wa) != len(wb):
         return None
-    found: Outcome | None = None
+    alts: list[bool] = []
+    fams: list[bool] = []
     for x, y in zip(wa, wb):
         if _fold(x) == _fold(y) or _listed(x, y, "given", lexicon):
             continue
-        if _alternate(x, y, lexicon):
-            found = found or Outcome.ALTERNATE_SPELLING
-        elif _familiar(x, y, lexicon):
-            found = Outcome.FAMILIAR_FORM
-        else:
+        alts.append(_alternate(x, y, lexicon))
+        fams.append(_familiar(x, y, lexicon))
+        if not (alts[-1] or fams[-1]):
             return None
-    return found
+    if not alts:
+        return None
+    alt, fam = Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM
+    holding = [o for o, every in ((alt, all(alts)), (fam, all(fams)))
+               if every]
+    accepted = [o for o in holding if o in accept]
+    if accepted:
+        return accepted[0]
+    if holding:
+        return holding[0]
+    # some pairs need an alternate spelling, others a familiar form
+    if alt in accept and fam in accept:
+        return fam
+    return fam if alt in accept else alt
 
 
 def _lettered_words(text: str) -> list[str]:
@@ -963,7 +978,9 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
 
 def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
                    bases: tuple[str, str] | None = None,
-                   chain: bool = True) -> Iterator[Outcome]:
+                   chain: bool = True,
+                   accept: frozenset[Outcome] = frozenset(),
+                   ) -> Iterator[Outcome]:
     """The outcomes that hold for two non-empty texts of one role,
     strongest first, lazily, and last conflict, which always holds. An
     outcome holds only where the leniency it names was needed: none is
@@ -1025,8 +1042,8 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
             initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
             if initials is not None:
                 yield initials
-            if group == "given" and (
-                    familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+            if group == "given" and (familiar := _familiar_outcome(
+                    wa, wb, lexicon, accept)) is not None:
                 yield familiar
             if len(wa) == len(wb) == 1 and (
                     _first_half(fa, fb) or _first_half(fb, fa)):
@@ -1109,7 +1126,8 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
                   chain: bool = True) -> Outcome:
     """Two non-empty texts of one role, by `_pick` over the outcomes
     that hold (`_text_outcomes`)."""
-    return _pick(_text_outcomes(a, b, lexicon, group, bases, chain), accept)
+    return _pick(_text_outcomes(a, b, lexicon, group, bases, chain, accept),
+                 accept)
 
 
 def _particle_half(folded: str, lexicon: Lexicon) -> bool:
@@ -1221,8 +1239,8 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     outcomes = [_text_outcome(x, y, lexicon, group, accept)
                 for x, y in zip(wa, wb)]
     if len(wa) == len(wb):
-        return _weakest(outcomes)
-    left = _one_sided(_weakest(outcomes), accept)
+        return _combined(outcomes, accept)
+    left = _one_sided(_combined(outcomes, accept), accept)
     short, long = (wa, wb) if len(wa) < len(wb) else (wb, wa)
     aligned = _subsequence_outcome(short, long, lexicon, group, accept)
     if aligned is None:
@@ -1234,6 +1252,17 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     if (aligned in accept) != (left in accept):
         return aligned if aligned in accept else left
     return aligned if _STRENGTH[aligned] > _STRENGTH[left] else left
+
+
+def _combined(outcomes: list[Outcome],
+              accept: frozenset[Outcome]) -> Outcome:
+    """The words' outcomes as one: the weakest, save where a word's
+    outcome is not accepted, when the weakest of those, so an accepted
+    weaker outcome (`familiar-form`) never hides a stronger one the
+    caller does not accept (`alternate-spelling`, `hyphenated-part`), as
+    `_one_sided` keeps it from hiding the one-sided word."""
+    refused = [o for o in outcomes if o not in accept]
+    return _weakest(refused or outcomes)
 
 
 def _one_sided(outcome: Outcome, accept: frozenset[Outcome]) -> Outcome:

@@ -7,6 +7,7 @@ import dataclasses
 import functools
 import itertools
 import pickle
+import re
 import unicodedata
 
 import pytest
@@ -1780,21 +1781,84 @@ def test_an_alternate_spelling_is_no_familiar_form_and_no_listed_spelling() -> N
         Lexicon.default()._headwords("alexey", "given"))
 
 
-def test_a_name_needing_both_reads_the_weaker_familiar_form() -> None:
-    # one word an alternate spelling, the other a familiar form: the
-    # pair needed the familiar form, so it reads that and only both
-    # opt-ins together accept it
-    lexicon = Lexicon.default().add("zzr", kind="spelling", spelling_of=["zzs"]).add(
-        "zzq", kind="familiar", short_for=["zzt"])
-    both = Matching(Parser(lexicon=lexicon), DEFAULT_ACCEPT | {
-        Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM})
-    alone = Matching(Parser(lexicon=lexicon),
-                     DEFAULT_ACCEPT | {Outcome.ALTERNATE_SPELLING})
-    r = both.check("Zzq Zzr Smith", "Zzt Zzs Smith")
-    assert r.consistent
-    assert {role(r, x).outcome for x in (Role.GIVEN, Role.MIDDLE)} == {
-        Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING}
-    assert not alone.check("Zzq Zzr Smith", "Zzt Zzs Smith").consistent
+@pytest.mark.parametrize("accepted, consistent, outcome", [
+    ((Outcome.FAMILIAR_FORM,), False, Outcome.ALTERNATE_SPELLING),
+    ((Outcome.ALTERNATE_SPELLING,), False, Outcome.FAMILIAR_FORM),
+    ((Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM), True,
+     Outcome.FAMILIAR_FORM),
+])
+def test_a_given_name_needing_both_is_accepted_only_with_both(
+        accepted: tuple[Outcome, ...], consistent: bool,
+        outcome: Outcome) -> None:
+    # two given words, one an alternate spelling, the other a familiar
+    # form: accepted on neither alone, the row naming the one refused,
+    # and the keys shared wherever it is consistent (review of #1379:
+    # a familiar-form-only caller once accepted it with no shared key)
+    parser = Parser(policy=Policy(two_given_names=True))
+    matching = Matching(parser, DEFAULT_ACCEPT | set(accepted))
+    a, b = "Iuliia Liz Smith", "Yuliya Elizabeth Smith"
+    for x, y in ((a, b), (b, a)):
+        r = matching.check(x, y)
+        assert r.consistent is consistent
+        assert role(r, Role.GIVEN).outcome is outcome
+        if consistent:
+            assert matching.keys(x) & matching.keys(y)
+
+
+@pytest.mark.parametrize("a, b, accepted, hidden", [
+    # an alternate spelling, unaccepted, beside an accepted familiar form
+    ("John Iuliia Liz Smith", "John Yuliya Elizabeth Smith",
+     Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING),
+    # a familiar form, unaccepted, beside an accepted hyphenated part
+    ("John Liz Jean Smith", "John Elizabeth Jean-Paul Smith",
+     Outcome.HYPHENATED_PART, Outcome.FAMILIAR_FORM),
+])
+def test_an_accepted_middle_word_never_hides_an_unaccepted_one(
+        a: str, b: str, accepted: Outcome, hidden: Outcome) -> None:
+    matching = Matching(Parser(), DEFAULT_ACCEPT | {accepted})
+    r = matching.check(a, b)
+    assert not r.consistent
+    assert role(r, Role.MIDDLE).outcome is hidden
+    both = Matching(Parser(), DEFAULT_ACCEPT | {accepted, hidden})
+    assert both.check(a, b).consistent
+
+
+def test_no_parse_reads_an_alternate_spelling() -> None:
+    # every spelling reading taken out: every set a parse reads, and the
+    # parse of every spelling as a given name, are what they were
+    default = Lexicon.default()
+    without = default.remove(kind="spelling", every=True)
+    assert default._alternate and not without._alternate
+    assert all(getattr(default._sets, f) == getattr(without._sets, f)
+               for f in type(default._sets).__slots__)
+    assert default._same_as == without._same_as
+    bare, plain = Parser(), Parser(lexicon=without)
+    for w in sorted(default._alternate):
+        for text in (f"{w.title()} Smith", f"Smith, {w.title()}",
+                     f"{w.title()}. Smith"):
+            a, b = bare.parse(text), plain.parse(text)
+            assert a.tokens == b.tokens and a.ambiguities == b.ambiguities, text
+
+
+def test_a_choice_of_languages_keeps_its_own_alternate_spellings() -> None:
+    # a plain choice drops none (a choice prefers by none); a strict one
+    # keeps its own files' and mul.toml's, and no other's
+    from nameparser._reading_index import index
+    plain = Lexicon(_base="default", _languages={"uk"})
+    assert plain._alternate == Lexicon.default()._alternate
+    ukrainian = Lexicon(_base="default", _languages={"uk"}, _strict=True)
+    english = Lexicon(_base="default", _languages={"en"}, _strict=True)
+    # the pairs a spelling reading of uk.toml writes and none of en.toml's
+    # or mul.toml's does
+    def pairs(tags: set[str]) -> set[frozenset[str]]:
+        return {frozenset((r.text, n)) for r in index()
+                if r.kind == "spelling" and r.tag in tags
+                for n in r.props["spelling_of"]}
+    uk_only = pairs({"uk"}) - pairs({"en", "mul"})
+    assert uk_only
+    for a, b in map(sorted, uk_only):
+        assert b in ukrainian._alternate_spellings(a)
+        assert b not in english._alternate_spellings(a)
 
 
 def test_a_callers_spelling_extends_the_shipped_ones() -> None:
@@ -1853,21 +1917,47 @@ def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
     assert matching.check("Max Smith", "Maxim Smith").consistent
 
 
-@pytest.mark.parametrize("props, error, match", [
-    ({}, ValueError, "needs short_for"),
-    ({"short_for": []}, ValueError, "non-empty list"),
-    ({"short_for": ["."]}, ValueError, "none normalizing to nothing"),
-    ({"short_for": [".", "maxwell"]}, ValueError, "none normalizing to nothing"),
-    ({"short_for": ["Max"]}, ValueError, "names the word itself"),
-    ({"short_for": "maxwell"}, TypeError, "short_for must be an iterable"),
-    ({"short_for": ["max well"]}, ValueError, "single given names"),
-    ({"short_for": ["maxwell"], "same_as": "maxwell"}, ValueError,
-     "takes short_for"),
+#: Each matching-only kind, its list property and the word it is added
+#: to, for the refusals every one of them shares.
+_MATCHING_KINDS = (("familiar", "short_for", "max"),
+                   ("spelling", "spelling_of", "olha"))
+
+
+@pytest.mark.parametrize("kind, prop, word", _MATCHING_KINDS)
+@pytest.mark.parametrize("value, other, error, match", [
+    (None, {}, ValueError, "needs {prop}"),
+    ([], {}, ValueError, "non-empty list"),
+    (["."], {}, ValueError, "none normalizing to nothing"),
+    ([".", "zzr"], {}, ValueError, "none normalizing to nothing"),
+    ("{Word}", {}, ValueError, "names the word itself"),
+    ("zzr", {}, TypeError, "{prop} must be an iterable"),
+    (["zz r"], {}, ValueError, "single given names"),
+    (["zzr"], {"same_as": "zzr"}, ValueError, "takes {prop}"),
 ])
-def test_a_callers_familiar_reading_is_refused_where_it_lists_no_name(
-        props: dict[str, object], error: type[Exception], match: str) -> None:
-    with pytest.raises(error, match=match):
-        Lexicon.default().add("max", kind="familiar", **props)
+def test_a_callers_matching_reading_is_refused_where_it_lists_no_name(
+        kind: str, prop: str, word: str, value: object, other: dict[str, object],
+        error: type[Exception], match: str) -> None:
+    # the guard, the hint and the refusal for the whole family: every
+    # matching-only kind refuses alike (AGENTS.md)
+    if value == "{Word}":
+        value = [word.title()]
+    props = dict(other) if value is None else {prop: value, **other}
+    with pytest.raises(error, match=match.format(prop=prop)):
+        Lexicon.default().add(word, kind=kind, **props)
+
+
+@pytest.mark.parametrize("kind, prop, word", _MATCHING_KINDS)
+def test_the_code_a_refusal_offers_runs(kind: str, prop: str, word: str) -> None:
+    for bad in ({}, {prop: ["."]}):
+        with pytest.raises(ValueError) as info:
+            Lexicon.default().add(word, kind=kind, **bad)
+        offered = re.search(r"e\.g\. (add\(.*\)|\w+=\[.*\])$", str(info.value))
+        assert offered is not None, str(info.value)
+        code = offered.group(1)
+        if not code.startswith("add("):
+            code = f"add({word!r}, kind={kind!r}, {code})"
+        lexicon = eval(f"Lexicon.default().{code}", {"Lexicon": Lexicon})
+        assert kind in {r.kind for r in lexicon.readings_of(eval(code[4:].split(",")[0]))}
 
 
 def test_a_callers_pair_under_a_strict_choice_reaches_no_other_file() -> None:
