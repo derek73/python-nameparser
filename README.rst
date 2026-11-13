@@ -297,21 +297,20 @@ License
 LGPL licensed. See `LICENSE <https://github.com/derek73/python-nameparser/blob/master/LICENSE>`__
 for details.
 
-Some of the vocabulary nameparser ships is derived from data published
-under other licences, which apply to those parts:
+The familiar forms from Old Dominion University's nicknames list are a
+list copied whole, under the Apache License 2.0, in ``LICENSE-nicknames``.
+The package's licence expression is ``LGPL-2.1-or-later AND Apache-2.0``.
 
-- the familiar forms from Old Dominion University's nicknames list:
-  Apache License 2.0, in ``LICENSE-nicknames``;
-- ``locales.ES`` and ``locales.ES_AR``'s given names from Spain's
-  Instituto Nacional de Estadística: Creative Commons Attribution 4.0,
-  credited in ``nameparser/locales/_es_given_names.py`` and
-  ``_es_ar_given_names.py``;
-- part of ``locales.ZH``'s surnames from Taiwan's Ministry of the
-  Interior: Open Government Data License, version 1, credited in
-  ``nameparser/locales/zh.py``.
+Other word lists are the project's own measurements over public data,
+and their sources are credited:
 
-The package's licence expression is
-``LGPL-2.1-or-later AND Apache-2.0 AND CC-BY-4.0 AND OGDL-Taiwan-1.0``.
+- ``locales.ES`` and ``locales.ES_AR``'s given names, measured on Spain's
+  Instituto Nacional de Estadística census tables (Creative Commons
+  Attribution 4.0), credited in ``nameparser/locales/_es_given_names.py``
+  and ``_es_ar_given_names.py``;
+- part of ``locales.ZH``'s surnames, selected from Taiwan's Ministry of
+  the Interior surname ranking (Open Government Data License, version 1),
+  credited in ``nameparser/locales/zh.py``.
 
 .. |Build Status| image:: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml
