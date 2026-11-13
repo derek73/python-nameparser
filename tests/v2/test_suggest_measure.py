@@ -362,3 +362,18 @@ def test_a_stale_or_edited_local_corpus_stops_the_run(
     with pytest.raises(SystemExit, match="opensanctions-parliaments: present "
                                          "but unreadable"):
         tool.parliament_lists()
+
+
+@pytest.mark.parametrize("dataset, name, truth", [
+    # a three-word name ending in a marker: the father's name and the
+    # marker are the family (rules/O2, #1187)
+    ("kg_jogorku_kenesh", "Бекмырза Чолпонбай уулу", "Чолпонбай уулу"),
+    # a family-last name with a surname keeps its last word
+    ("kg_jogorku_kenesh", "Равшанбек Рысбаевич Рысбаев", "Рысбаев"),
+    ("uz_legislative_chamber", "Odiljon Fotihjon o'g'li Tojiyev", "Tojiyev"),
+    # four words ending in a marker in a family-first list: the first
+    ("uz_senate", "Ziyo Azamat Hamid o‘g‘li", "Ziyo"),
+])
+def test_the_turkic_truth_reads_a_three_word_marker_name_whole(
+        dataset: str, name: str, truth: str) -> None:
+    assert tool._turkic_truth(dataset, name) == truth

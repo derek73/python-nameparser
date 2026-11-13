@@ -68,6 +68,12 @@
   "John V"                    →  ambiguities=("order", "suffix-or-name")
   ```
 - A byline written in bare capitals (`Armitage JO`) is not reported, the cost of not reporting every short capital surname (`Zhi LI`, `Jason NG`) as an order.
+- A name with no inherited family name reads by position like any other, under the default given-first order its last name word the family: an Ethiopian name, the bearer's own name, the father's and often the grandfather's, gives the grandfather's name as the family where it is written and the father's where it is not, so the same person's family differs between the two spellings. The father's name fills no patronymic view, as rules/R9's Accepted clause says of a patronymic no particle or rule reads.
+  ```
+  "Abiy Ahmed Ali"            →  family="Ali"
+  "Abiy Ahmed"                →  family="Ahmed"
+  "Abiy Ahmed Ali"            →  patronymic=""
+  ```
 
 ---
 no-boundary: this is the default reading every other rule carves exceptions from; its boundaries are the other rules.
