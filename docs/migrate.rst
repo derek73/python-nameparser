@@ -1302,3 +1302,19 @@ of Congress ``Iu.``) are unchanged:
     ('', 'Yu.', 'A.')
     >>> parse("Ts. Sandag-Ochir").title
     'Ts.'
+
+``Ait``, ``Aït``, ``Nait``, ``Ould`` and ``Ouled`` start the family name
+they open, where 1.4 through 3.0 left them in the middle name, and
+``Ould`` fills ``patronymic``. So do Hebrew-script ``אבו`` and ``אל``;
+``בן`` opening a name is the given name again, as in 1.4, where 2.0
+through 3.0 read the name whole as the family, and inside a name it no
+longer fills ``patronymic``:
+
+.. doctest::
+
+    >>> [parse(n).family for n in ("Youssef Ait Haddou",
+    ...     "Ahmed Ould Haddou", "סאמי אבו חליל")]
+    ['Ait Haddou', 'Ould Haddou', 'אבו חליל']
+    >>> hebrew_ben = parse("בן כהן")
+    >>> hebrew_ben.given, hebrew_ben.family
+    ('בן', 'כהן')

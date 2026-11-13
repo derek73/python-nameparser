@@ -73,6 +73,11 @@
 **Accepted:**
 
 - A patronymic written with no particle and no rule to read it is not read, since a position says nothing about a parent: Wikidata's Malay names with a patronymic and no family name agree 4 of 9, those written without `bin` read as given and family.
+- The particle's kind is the word's, not the name's: a word some convention still forms a father's name with is a patronymic wherever it stands, so it fills the view where it opens a fixed family name too, as Hassaniya `ould` does in an Algerian surname; and a word the vocabulary holds as a clan particle, because the names it joins are family names, fills none where a name uses it for the father, as Hebrew `בן` does in an Arab name transcribed in Hebrew script (decisions/vocabulary-collisions, 2026-11-12 #1257).
+  ```
+  "Karim Ould Haddou"         →  patronymic="Ould Haddou"
+  "סאמר בן חליל"              →  patronymic=""
+  ```
 - The particle's run is every word after it in its field, so where the parse joined more than the parent's name the view holds it too, as the family does: a never-given particle opening the name takes the rest of it by default (P1).
   ```
   "ibn Ali Hasan"             →  patronymic="ibn Ali Hasan"

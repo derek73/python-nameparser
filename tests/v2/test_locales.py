@@ -165,6 +165,68 @@ def test_ar_and_he_packs_are_their_choice_alone() -> None:
         assert (name.middle, name.family) == ("", "Ben Haddad")
 
 
+@pytest.mark.parametrize("code, text, repaired", [
+    # #1257: each particle keeps the capital its family names are written
+    # with (its `cased` mask), where without one case repair would
+    # lowercase it as a particle: lower case, Title case and capitals,
+    # by default and under the packs that turn ben on
+    (None, "youssef ait haddou", "Youssef Ait Haddou"),
+    (None, "YOUSSEF AIT HADDOU", "Youssef Ait Haddou"),
+    (None, "Youssef Ait Haddou", "Youssef Ait Haddou"),
+    (None, "KARIM AÏT HADDOU", "Karim Aït Haddou"),
+    (None, "leila nait haddou", "Leila Nait Haddou"),
+    (None, "AHMED OULD HADDOU", "Ahmed Ould Haddou"),
+    (None, "karim ouled haddou", "Karim Ouled Haddou"),
+    (None, "karim ben haddad", "Karim Ben Haddad"),
+    ("ar", "karim ben haddad", "Karim Ben Haddad"),
+    ("ar", "KARIM BEN HADDAD", "Karim Ben Haddad"),
+    ("ar", "Karim Ben Haddad", "Karim Ben Haddad"),
+    ("he", "YAEL BEN ARIEH", "Yael Ben Arieh"),
+    ("he", "yael ben arieh", "Yael Ben Arieh"),
+    ("ar", "youssef ait haddou", "Youssef Ait Haddou"),
+])
+def test_a_maghrebi_particle_keeps_its_capital(
+        code: str | None, text: str, repaired: str) -> None:
+    parser = parser_for(locales.get(code)) if code else Parser()
+    name = parser.parse(text)
+    assert str(parser.capitalized(name)) == repaired
+    assert str(name.capitalized(parser.lexicon, force=True)) == repaired
+
+
+def test_ould_fills_the_patronymic_view_and_hebrew_ben_does_not() -> None:
+    # #1257, the patronymic view: `ould` is a patronymic, filling it even in
+    # an Algerian fixed surname (the accepted cost of the kind); Hebrew
+    # `בן` is a clan particle, which fills none where an Arab name
+    # transcribed in Hebrew uses it for the father (the other one)
+    assert parse("Ahmed Ould Haddou").patronymic == "Ould Haddou"
+    assert parse("Karim Ould Haddou").patronymic == "Ould Haddou"
+    assert parse("Karim Ouled Haddou").patronymic == ""
+    assert parse("יעל בן חיים").family == "בן חיים"
+    assert parse("יעל בן חיים").patronymic == ""
+    assert parse("סאמר בן חליל אל חלבי").patronymic == ""
+    # the Latin ben, the same kind, fills none under either pack
+    for pack in (locales.AR, locales.HE):
+        assert parser_for(pack).parse("Karim Ben Haddad").patronymic == ""
+
+
+@pytest.mark.parametrize("code, a, b", [
+    (None, "Youssef Ait Haddou", "Haddou, Youssef Ait"),
+    (None, "Youssef Ait Haddou", "AIT HADDOU, YOUSSEF"),
+    (None, "Ahmed Ould Haddou", "Ould Haddou, Ahmed"),
+    (None, "סאמי אבו חליל", "אבו חליל, סאמי"),
+    (None, "בן כהן", "כהן, בן"),
+    ("ar", "Karim Ben Haddad", "Ben Haddad, Karim"),
+    ("he", "Yael Ben Arieh", "Ben Arieh, Yael"),
+])
+def test_a_maghrebi_or_hebrew_particle_matches_its_comma_form(
+        code: str | None, a: str, b: str) -> None:
+    parser = parser_for(locales.get(code)) if code else Parser()
+    matching = parser.matching()
+    for left, right in ((a, b), (b, a)):
+        result = matching.check(left, right)
+        assert result.consistent and result.weakest in ("same", "folded")
+
+
 @pytest.mark.parametrize("text", [
     "Ram Bahadur B K", "Ram Bahadur B. K.", "Anjana K C(Maharjan)",
     "Kalpana K C(Sunuwar)", "Bimala Kumari Singh (B. K.)", "Ram B K,Jr",
@@ -2984,8 +3046,8 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     # conjunctions need the same single-letter carve-out headroom (enough
     # rootname pieces), so pinned with the 6-piece shape the и row uses
     ("الأستاذ و الدكتور طارق حسن السيد", "title", "الأستاذ و الدكتور"),
-    # Hebrew patronymic prefixes: same non-leading chain-onto-family
-    # behavior.
+    # Hebrew particles: same non-leading chain-onto-family behavior,
+    # בת a patronymic, בן a clan particle since #1257.
     ("דוד בן גוריון", "family", "בן גוריון"),
     ("שרה בת אברהם", "family", "בת אברהם"),
     # Hebrew "מר" title (plain title, not GIVEN_NAME_TITLES -- like

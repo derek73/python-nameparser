@@ -190,6 +190,7 @@
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}
+{"name": "Ait Haddou Karim", "family": "Ait Haddou Karim", "initials": "H. K."}
 {"name": "Aita Caduff", "given": "Aita", "family": "Caduff", "initials": "A. C."}
 {"name": "Aitken, Robert", "given": "Robert", "family": "Aitken", "initials": "R. A."}
 {"name": "Ajay Reddy B", "given": "Ajay", "middle": "Reddy", "family": "B", "initials": "A. R. B."}
@@ -2620,6 +2621,7 @@
 {"name": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)", "given": "Anna", "middle": "Karolína Eva Kristína von Mgr. Ing.", "family": "Kant", "suffix": "CSc.", "initials": "A. K. E. K. M. I. K.", "capitalized_force": "Anna Karolína Eva Kristína von Mgr. Ing. Kant CSC."}
 {"name": "Kar, Ida", "given": "Ida", "family": "Kar", "initials": "I. K."}
 {"name": "Karim AL Haddadi", "given": "Karim", "family": "AL Haddadi", "initials": "K. H.", "capitalized_force": "Karim al Haddadi"}
+{"name": "Karim Ould Haddou", "given": "Karim", "family": "Ould Haddou", "initials": "K. H.", "patronymic": "Ould Haddou"}
 {"name": "Karima", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima", "order": "FAMILY_FIRST", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima Balóch", "given": "Karima", "family": "Balóch", "initials": "K. B."}
@@ -5852,6 +5854,7 @@
 {"name": "משה בן-שאול", "given": "משה", "family": "בן-שאול", "initials": "מ. ב."}
 {"name": "משה חלוץ", "given": "משה", "family": "חלוץ", "initials": "מ. ח."}
 {"name": "משה מזור", "given": "משה", "family": "מזור", "initials": "מ. מ."}
+{"name": "סאמר בן חליל", "given": "סאמר", "family": "בן חליל", "initials": "ס. ח."}
 {"name": "סטובר זזיליה חמיש", "order": "FAMILY_FIRST", "given": "זזיליה", "middle": "חמיש", "family": "סטובר", "initials": "ז. ח. ס."}
 {"name": "סינבד", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
 {"name": "סינבד", "order": "FAMILY_FIRST", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}

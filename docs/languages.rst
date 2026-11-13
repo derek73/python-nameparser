@@ -1,7 +1,7 @@
 Notes by language
 =================
 
-What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles, and Vietnamese and Mongolian names.
+What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles, Vietnamese and Mongolian names, and Maghrebi, Amazigh and Hebrew particles.
 
 
 .. _west-south-slavic-packs:
@@ -444,3 +444,76 @@ Accept ``family-initial`` to match them under the pack:
     >>> mongolian.matching(accept=plain.accept | {"family-initial"}).check(
     ...     "Батын Сүхээ", "Б. Сүхээ").consistent
     True
+
+
+.. _maghrebi-hebrew-particles:
+
+Maghrebi, Amazigh and Hebrew particles
+--------------------------------------
+
+Family names in Morocco, Algeria, Tunisia and Mauritania, written in
+French spelling, often open with a word that joins the next one: the
+Amazigh ``Ait`` and ``Nait`` ("the people of"), the Hassaniya ``Ould``
+("son of") and the Algerian ``Ouled``. The default reads each as part
+of the family name, and ``Ould``, with which a Mauritanian name still
+forms the father's name, fills ``patronymic`` too:
+
+.. doctest::
+
+    >>> parse("Youssef Ait Haddou").family
+    'Ait Haddou'
+    >>> haddou = parse("Ahmed Ould Haddou")
+    >>> haddou.family, haddou.patronymic
+    ('Ould Haddou', 'Ould Haddou')
+
+``Ben`` ("son of") opens Tunisian and Israeli family names the same way
+(``Ben Haddad``), but it is also the given name Ben, and a British
+middle name, standing where the particle would claim it, so the default
+leaves it to position. The Arabic and Hebrew packs, ``locales.AR`` and
+``locales.HE``, each choose their one language and read it as the
+family name; a ``Ben`` opening a name stays the given name and reports
+the fork:
+
+.. doctest::
+
+    >>> parse("Karim Ben Haddad").family
+    'Haddad'
+    >>> arabic = parser_for(locales.AR)
+    >>> arabic.parse("Karim Ben Haddad").family
+    'Ben Haddad'
+    >>> arabic.parse("Ben Haddad").given
+    'Ben'
+
+Among ORCID's researchers, who split their own names into a given and a
+family box, the names agreeing in both boxes rise from 86.9% to 95.5%
+in Tunisia and from 92.7% to 93.5% in Israel under either pack, and
+the default's other particles raise Morocco from 84.1% to 85.4%
+(measured 2026-11-12). A listing written family name first without a
+comma reads whole as the family name (``Ait Haddou Karim``), as one
+opening with ``de`` does; write the comma or declare the order.
+
+Choosing Arabic also costs English's reading of ``abd``, which Arabic
+reads as a given name (``Abd Rahman``), so the credential ABD (All But
+Dissertation) is a name word under ``locales.AR``: ``Jane Smith, ABD``
+gives given ``ABD``, family ``Jane Smith``. Choose ``en`` too to keep it.
+
+In Hebrew script ``בן`` is read by default: opening a name it is the
+given name Ben, the fork reported, and inside a name it starts the
+family name, which it does not fill ``patronymic`` with, since the
+Israeli family names written with it name no father. ``אבו`` and ``אל``,
+the Arabic ``Abu`` and ``al-`` that Arab citizens of Israel write in
+Hebrew script, read as their Latin spellings do:
+
+.. doctest::
+
+    >>> parse("בן כהן").given
+    'בן'
+    >>> parse("יעל בן חיים").family
+    'בן חיים'
+    >>> parse("סאמי אבו חליל").family
+    'אבו חליל'
+
+An Arab name written in Hebrew with ``בן`` for the father therefore
+leaves ``patronymic`` empty, and a given name written with ``אל``
+inside it (``עבד אל עזיז``, Abd al-Aziz) gives the article and the rest
+to the family name.
