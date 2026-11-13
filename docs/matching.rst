@@ -319,7 +319,7 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     (True, 'familiar-form')
     >>> matcher.check("Bill Smith", "William Smith")["given"].outcome.value
     'familiar-form'
-    >>> with_familiar.check("Maximilian Smith", "Maxim Smith").consistent
+    >>> with_familiar.check("Maximilian Smith", "Maxwell Smith").consistent
     False
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']

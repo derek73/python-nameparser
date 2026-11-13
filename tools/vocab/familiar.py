@@ -21,7 +21,8 @@ their reasons in nicknames_excluded.tsv beside this file
 (decisions/name-matching, 2026-11-09 THE NICKNAMES LIST). The rest go
 in NICKNAMES_TAG's file, English usage, with a note naming the list
 alone, as the list gives no evidence per pair. The pairs nam_dict gave
-until 2026-11-12, every other language's, are no longer written: a
+until 2026-11-12, every other language's and English ones the list
+does not hold, are no longer written: a
 compiler's list copied whole keeps its licence, and nam_dict's is the
 GFDL (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE
 MEASURE; decisions/name-matching, 2026-11-12 ENGLISH ONLY UNTIL REBUILT).
