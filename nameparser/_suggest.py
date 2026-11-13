@@ -36,8 +36,9 @@ group's names, a group property with no per-name vote, and a group
 decided so casts no trailing-initial vote on its order. Beside them it
 decides ``capitals_as_family`` (rules/O9) from the names whose family
 the rule, asked of the parse itself with the switch on, reads as a
-word in capitals of four letters or more, against the names in mixed
-case with no word in capitals; it is no vote on the order, which the
+word in capitals of four letters or more that the lexicon lists as no
+title, credential or numeral, against the names in mixed case with no
+word in capitals; it is no vote on the order, which the
 capitals signal casts as before. A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
@@ -73,8 +74,8 @@ from ._policy import (
     apply_patch, initials_as_family_may_move,
 )
 from ._types import (
-    FAMILY_FIRST, GIVEN_FIRST, ReadingSource, Role, _guarded_getstate,
-    _guarded_setstate,
+    ADDED_IN, FAMILY_FIRST, GIVEN_FIRST, ReadingSource, Role,
+    _guarded_getstate, _guarded_setstate,
 )
 from .config._order_names import COMMON_GIVEN_NAMES, ROMANIZED_SURNAMES
 
@@ -412,7 +413,7 @@ def name_votes(text: str, lexicon: Lexicon
 #: matches.
 Vote = tuple[Role, Role, Role] | PatronymicRule
 #: A setting's value as SettingEvidence holds it: an order, a set of
-#: patronymic rules, or a switch (initials_as_family).
+#: patronymic rules, or a switch (initials_as_family, capitals_as_family).
 SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule] | bool
 
 # The thresholds, chosen with tools/differential/suggest_measure.py
@@ -581,6 +582,10 @@ class NameEvidence:
     trailing-initial vote the group did not cast: too few of its names
     ending in initials (``Parser.suggest``), or its runs of letters
     decided ``initials_as_family``, whose letters are its family.
+    ``family_in_capitals`` is the name's evidence on
+    ``capitals_as_family`` (rules/O9), which is no per-signal vote:
+    True where it writes its family in capitals, False where it is in
+    mixed case with no word in capitals, None where it carries none.
     ``dataclasses.replace`` keeps the votes unless it is passed
     ``votes=`` too."""
 
@@ -590,12 +595,16 @@ class NameEvidence:
     # the type stays frozen, hashable and picklable; read it through
     # the `votes` property
     _votes: tuple[tuple[Signal, Vote], ...]
+    #: The name's evidence on ``capitals_as_family``: True, False or None.
+    family_in_capitals: bool | None = dataclasses.field(
+        default=None, metadata={ADDED_IN: "3.1.0"})
 
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
     def __init__(self, text: str,
                  votes: Mapping[Signal, Vote] | None = None, *,
+                 family_in_capitals: bool | None = None,
                  _votes: Iterable[tuple[Signal, Vote]] | None = None
                  ) -> None:
         # `_votes` is the stored field's name, which dataclasses.replace
@@ -616,13 +625,22 @@ class NameEvidence:
         pairs = tuple(sorted(
             (_checked_vote(signal, vote) for signal, vote in votes.items()),
             key=lambda pair: _SIGNAL_RANK[pair[0]]))
+        if family_in_capitals is not None and not isinstance(
+                family_in_capitals, bool):
+            raise TypeError(
+                f"NameEvidence family_in_capitals must be True, False or "
+                f"None, got {family_in_capitals!r}; pass e.g. "
+                f"NameEvidence('Jean DUPONT', {{}}, family_in_capitals=True)")
         object.__setattr__(self, "text", text)
         object.__setattr__(self, "_votes", pairs)
+        object.__setattr__(self, "family_in_capitals", family_in_capitals)
 
     def __repr__(self) -> str:
         votes = "".join(f", {signal.value}={_label(vote)}"
                         for signal, vote in self._votes)
-        return f"NameEvidence({self.text!r}{votes})"
+        capitals = ("" if self.family_in_capitals is None else
+                    f", family_in_capitals={self.family_in_capitals}")
+        return f"NameEvidence({self.text!r}{votes}{capitals})"
 
     @property
     def votes(self) -> Mapping[Signal, Vote]:
@@ -822,7 +840,9 @@ class Suggestion:
         """The names whose vote is against a decided setting's value,
         in input order. A setting left undecided has no answer to
         disagree with; a name that cast no vote, or whose order signals
-        are contested, never disagrees on order; and a name carrying an
+        are contested, never disagrees on order; a name in mixed case
+        with no word in capitals disagrees with a decided
+        ``capitals_as_family``; and a name carrying an
         East Slavic patronymic never disagrees on order where the East
         Slavic rule is decided, since the rule reorders it."""
         decided = {e.setting: e.value for e in self.evidence if e.decided}
@@ -892,6 +912,9 @@ def _setting_of(signal: Signal) -> str:
 
 def _disagrees(name: NameEvidence, decided: Mapping[str, object]) -> bool:
     """Whether one name's votes contradict a decided setting."""
+    if (decided.get(_CAPITALS_AS_FAMILY) is True
+            and name.family_in_capitals is False):
+        return True
     patronymic = dict(name._votes).get(Signal.PATRONYMIC)
     rules = decided.get(_PATRONYMIC_RULES)
     if rules is not None and patronymic is not None:
@@ -1160,12 +1183,10 @@ def _decide_letters(runs: list[str | None], base_value: bool,
                             note), fields)
 
 
-def _capitals_reader(parser: Parser) -> Parser | None:
+def _capitals_reader(parser: Parser) -> Parser:
     """The base with rules/O9's switch on, every other setting the
-    base's own; None under a base reading an unlisted capitals word as
-    a credential everywhere, beside which the switch cannot be set."""
-    if parser.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE:
-        return None
+    base's own. Never asked of a base reading an unlisted capitals word
+    as a credential everywhere, beside which the switch cannot be set."""
     with warnings.catch_warnings():
         # the base's own construction warnings reached its caller
         warnings.simplefilter("ignore")
@@ -1173,33 +1194,47 @@ def _capitals_reader(parser: Parser) -> Parser | None:
             parser.policy, capitals_as_family=True))
 
 
-def _capitals_family(text: str, words: list[str],
-                     reader: Callable[[], Parser | None]) -> bool | None:
+def _listed_title(text: str, lexicon: Lexicon) -> bool:
+    """A word the lexicon lists as a title of any kind: a title, one
+    read so only in a phrase (`DEAN`, `KING`), a modifier or a style."""
+    n = _normalize(text)
+    sets = lexicon._sets
+    return (n in sets.titles or n in sets.titles_ambiguous
+            or n in sets.title_modifiers or n in sets.title_styles)
+
+
+def _capitals_family(text: str, words: list[str], lexicon: Lexicon,
+                     reader: Callable[[], Parser]) -> bool | None:
     """One name's evidence on ``capitals_as_family``: True where
     rules/O9, asked of the parse itself with the switch on, reads as the
-    family a word of at least _MIN_CAPITALS_LETTERS letters that is no
-    listed credential or numeral; False where the words the signals
-    read (`words`) are two or more, hold a lowercase letter and none is
-    in capitals; None otherwise (a name in one case, a run of two or
-    three capitals, a credential alone, a family comma).
+    family a word of at least _MIN_CAPITALS_LETTERS letters; False where
+    the words the signals read (`words`) are two or more, hold an
+    uppercase and a lowercase letter and none is in capitals; None
+    otherwise. A word the base reads as a title, a credential or a
+    numeral is no evidence that a list writes its FAMILIES in capitals,
+    so such a word in capitals casts nothing for it, and a name whose
+    only capitals are a listed title carries none (`MISS Ann Berg`);
+    a credential the name is read past leaves a name in mixed case with
+    no capitals, which counts against (`John Smith FRCS`). A name in one
+    case carries none, nor does a run of two or three capitals (`Zhi
+    LI`), a credential the name is not read past (`Mary Jones MBA`, a
+    name too), a family comma or a name of one word.
 
     Only a name holding a word in capitals is parsed, its words cut at
     commas and read past quotes and brackets as `_name_words` reads
     them. The loops are plain and their per-character tests C-level, so
     a name with no word holding two capitals costs this one call: the
     group suggester parses no name of a list with none."""
-    held = False
+    titled = held = False
     for word in _COMMAS.split(text):
         # a capitals word holds two capitals at least
-        if (sum(map(str.isupper, word)) >= 2
-                and is_capitals_word(word.strip(_EDGES))):
-            held = True
-            break
+        if sum(map(str.isupper, word)) >= 2:
+            bare = word.strip(_EDGES)
+            if is_capitals_word(bare):
+                held = True
+                titled = titled or _listed_title(bare, lexicon)
     if held:
-        parser = reader()
-        if parser is None:
-            return None
-        for token in parser.parse(text).tokens:
+        for token in reader().parse(text).tokens:
             # rules/O9's family: a family word read by its shape is a
             # word of the run in capitals (a particle the run took reads
             # by vocabulary, a family comma's by position)
@@ -1207,12 +1242,18 @@ def _capitals_family(text: str, words: list[str],
                     and token.reading.source is ReadingSource.SHAPE
                     and sum(map(str.isalpha, token.text))
                     >= _MIN_CAPITALS_LETTERS
-                    and not _listed_suffix(token.text, parser.lexicon)):
+                    and not _listed_suffix(token.text, lexicon)
+                    and not _listed_title(token.text, lexicon)):
                 return True
+        if titled:
+            return None
         for word in words:
             if is_capitals_word(word):
                 return None
-    if len(words) < 2 or not any(map(str.islower, "".join(words))):
+    if len(words) < 2:
+        return None
+    joined = "".join(words)
+    if not (any(map(str.islower, joined)) and any(map(str.isupper, joined))):
         return None
     return False
 
@@ -1316,17 +1357,22 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         runs, parser.policy.initials_as_family, family_first)
     letters_are_family = letters.decided and letters.value is True
     with_words = [(text, *_read(text, parser.lexicon)) for text in texts]
-    capitals_parser: list[Parser | None] = []
+    capitals_parser: list[Parser] = []
 
-    def capitals_reader() -> Parser | None:
+    def capitals_reader() -> Parser:
         # built once, and only for a group holding a word in capitals
         if not capitals_parser:
             capitals_parser.append(_capitals_reader(parser))
         return capitals_parser[0]
 
-    capitals, capitals_fields = _decide_capitals(
-        [_capitals_family(text, words, capitals_reader)
-         for text, _, _, words in with_words], parser.policy)
+    if parser.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE:
+        # the switch cannot be set beside it: no name is read for it
+        marks: list[bool | None] = [None] * len(texts)
+    else:
+        marks = [_capitals_family(text, words, parser.lexicon,
+                                  capitals_reader)
+                 for text, _, _, words in with_words]
+    capitals, capitals_fields = _decide_capitals(marks, parser.policy)
     read = [(text, votes, comma) for text, votes, comma, _ in with_words]
     trailing_votes, trailing_note = _trailing_initials_vote(
         read, parser.lexicon)
@@ -1337,7 +1383,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
             "the trailing-initial signal casts no vote: the group's "
             "letters are its family (initials_as_family)")
     set_aside = 0
-    for text, votes, comma in read:
+    for (text, votes, comma), mark in zip(read, marks):
         # counted before a set-aside vote leaves it: a name ending in
         # initials carries evidence all the same, and leaving it out of
         # the patronymic share's denominator lets one rule win a group
@@ -1347,7 +1393,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         if not trailing_votes and Signal.TRAILING_INITIAL in votes:
             del votes[Signal.TRAILING_INITIAL]
             set_aside += not votes
-        evidence.append(NameEvidence(text, votes))
+        evidence.append(NameEvidence(text, votes, family_in_capitals=mark))
         comma_left_out += comma
         per_setting: dict[str, list[tuple[Signal, Vote]]] = {
             setting: [] for setting in tallies}

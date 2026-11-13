@@ -56,8 +56,10 @@ the groups that decided the East Slavic rule and the groups that decided
 orders and both bases; `--base` lists a population whose counts moved.
 `--set _MIN_RUN_NAMES=1000000` decides the switch in no group. Then the
 share of groups deciding `capitals_as_family` (rules/O9), per written
-order, base and size, where any group did; `--base` lists every such
-cell that moved. `--set _MIN_CAPITALS_LETTERS=1000000` decides it in no
+order, base and size, where any group did, and over every group that
+decided it the share of its names whose family the suggested parser
+reads as the box (case folded), with the switch and with the same
+suggestion less it; `--base` lists every such cell that moved. `--set _MIN_CAPITALS_LETTERS=1000000` decides it in no
 group.
 
 THE SIGNALS: per population and written order, over at most SIGNAL_NAMES
@@ -104,6 +106,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import dataclasses
 import gzip
 import json
 import os
@@ -120,7 +123,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from nameparser import Policy
+    from nameparser import Parser, Policy
 
 HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
@@ -503,6 +506,18 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
     rng = group_rng(seed, label)
     cells: dict[str, list[float | None]] = {}
     capitals: dict[str, list[float | None]] = {}
+    # where a group decided capitals_as_family: its names whose family the
+    # suggested parser reads as the box (case folded), with the switch
+    # and with the same suggestion less the switch
+    family_right = Counter[str]()
+    families: dict[tuple[Any, str], str] = {}
+
+    def family(parser: Parser, text: str) -> str:
+        key = (parser.policy, text)
+        if key not in families:
+            families[key] = parser.parse(text).family.casefold()
+        return families[key]
+
     east_slavic = letters = 0
     for order in (GF, FF):
         row = {base: [] for base in bases}
@@ -516,7 +531,8 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
             right = Counter[str]()
             decided = Counter[str]()
             for _ in range(trials):
-                group = [written(t, order) for t in rng.sample(pool, size)]
+                names = rng.sample(pool, size)
+                group = [written(t, order) for t in names]
                 for base, parser in bases.items():
                     s = parser.suggest(group)
                     right[base] += _end(s.parser.policy.name_order) == order
@@ -526,8 +542,18 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     # tree without the field reads False
                     letters += getattr(s.parser.policy,
                                        "initials_as_family", False)
-                    decided[base] += getattr(s.parser.policy,
-                                             "capitals_as_family", False)
+                    switched = getattr(s.parser.policy,
+                                       "capitals_as_family", False)
+                    decided[base] += switched
+                    if switched:
+                        on = s.parser
+                        off = dataclasses.replace(on, policy=dataclasses.replace(
+                            on.policy, capitals_as_family=False))
+                        for (_, box), text in zip(names, group):
+                            truth = box.casefold()
+                            family_right["names"] += 1
+                            family_right["on"] += family(on, text) == truth
+                            family_right["off"] += family(off, text) == truth
             for base in bases:
                 row[base].append(right[base] / trials)
                 caps_row[base].append(decided[base] / trials)
@@ -572,7 +598,8 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
             # only where some group decided it, so a population none
             # decides in compares equal against a tree without the switch
             "capitals": (capitals if any(x for row in capitals.values()
-                                         for x in row) else {})}
+                                         for x in row) else {}),
+            "capitals_family_right": dict(family_right)}
 
 
 #: The populations whose names the romanized surname table is for.
@@ -831,6 +858,12 @@ def report(result: dict[str, Any], show_words: bool) -> None:
                 order, base = key.split("/")
                 print(f"{p['label']:16} {order:7} {base:4} "
                       + " ".join(_pct(x) for x in row))
+            right = p.get("capitals_family_right") or {}
+            if right.get("names"):
+                n = right["names"]
+                print(f"{'':16} family read as the box where decided: "
+                      f"{right['on'] / n:.1%} with the switch, "
+                      f"{right['off'] / n:.1%} without, over {n} names")
     print(f"\n-- votes per name (right/wrong/contested/none) and per signal "
           f"(right/wrong), at most {SIGNAL_NAMES} names")
     for p in result["populations"]:
@@ -897,6 +930,11 @@ def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
         if was.get("letters", 0) != p.get("letters", 0):
             out.append(f"{p['label']:14} initials_as_family groups "
                        f"{was.get('letters', 0)} -> {p.get('letters', 0)}")
+        if (was.get("capitals_family_right") or {}) != (
+                p.get("capitals_family_right") or {}):
+            out.append(f"{p['label']:14} capitals_as_family family right "
+                       f"{was.get('capitals_family_right')} -> "
+                       f"{p.get('capitals_family_right')}")
         old_caps, new_caps = was.get("capitals") or {}, p.get("capitals") or {}
         for key in sorted(set(old_caps) | set(new_caps)):
             before, after = old_caps.get(key), new_caps.get(key)

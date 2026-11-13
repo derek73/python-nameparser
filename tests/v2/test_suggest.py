@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import unicodedata
 import dataclasses
+import pickle
 import warnings
 
 import pytest
@@ -1811,9 +1812,20 @@ _CAPITALS_VOTE = [
     # the switch cannot be set beside this: nothing is read
     (["Jean DUPONT", "Marie MARTIN", "Anne Leroy"],
      Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False, 0, 0, 3),
-    # a base with the switch on is confirmed, never turned off
+    # a base with the switch on is confirmed, never turned off, and a
+    # group deciding it on such a base changes nothing in the patch
     (["Jean Dupont", "Marie Martin"], Policy(capitals_as_family=True),
      False, 0, 2, 0),
+    (["Jean DUPONT", "Marie MARTIN"], Policy(capitals_as_family=True),
+     True, 2, 0, 0),
+    # a listed title in capitals is no evidence that FAMILIES are written
+    # so (#1369 review): neither for, nor against
+    (["MISS Ann Berg", "MISS Jane Doe", "PROF Paul Hollis"], Policy(),
+     False, 0, 0, 3),
+    (["Ann Berg MISS", "Jane Doe MISS"], Policy(), False, 0, 0, 2),
+    # a name wholly in lower case carries none, as one in capitals
+    (["Mary SMITH", "Ruth HOLLIS", "tom reed", "ann lee"], Policy(),
+     True, 2, 0, 2),
     # under every order alike
     (["DUPONT Jean", "MARTIN Marie"], Policy(name_order=FAMILY_FIRST),
      True, 2, 0, 0),
@@ -1845,12 +1857,12 @@ def test_the_capitals_vote_reads_the_rule_not_a_copy() -> None:
 
 @pytest.mark.parametrize("pack, names", [
     # a family written first in capitals before a patronymic
-    (locales.TR_AZ, ["ALIYEV Ilham Heydar oglu", "MAMMADOV Anar Elman oglu"]),
+    (locales.TR_AZ, ["QASIMOV Tural Rauf oglu", "MAMMADOV Anar Elman oglu"]),
     (locales.RU, ["IVANOV Ivan Petrovich", "PETROV Pavel Ivanovich"]),
     # a marker the only word in capitals: the rule takes it as the family
     # where nothing else can be (rules/O9's marker clause), so it counts,
     # an unwritten shape
-    (locales.TR_AZ, ["Ilham Heydar OGLU", "Anar Elman OGLU"]),
+    (locales.TR_AZ, ["Tural Rauf OGLU", "Anar Elman OGLU"]),
     (locales.RU, ["Ivan PETROVICH", "Pavel IVANOVICH"]),
 ])
 def test_the_capitals_vote_under_a_patronymic_pack(
@@ -1886,3 +1898,75 @@ def test_the_capitals_note_says_what_it_saw() -> None:
         "2 of the 3 names with evidence write the family in capitals of 4 "
         "letters or more, 1 in mixed case with no capitals")
     assert "capitals_as_family  unchanged (False)" in str(s)
+
+
+#: One name's evidence on capitals_as_family, NameEvidence's
+#: family_in_capitals: True for, False against, None none.
+_CAPITALS_MARKS = [
+    # a word the base reads as a title is no evidence, of any title kind:
+    # plain, read so only in a phrase, a title-particle, one addressing
+    # the given name, and a surname also listed as a title
+    ("MISS Ann Berg", None), ("Ann Berg MISS", None),
+    ("PROF Paul Hollis", None), ("DEAN Ann Berg", None),
+    ("KING Ann Berg", None), ("ST Ann Berg", None), ("SIR Ann Berg", None),
+    ("Mary DEAN", None), ("Mary BISHOP", None),
+    # one with a full stop is no capitals word (rules/O9): the name is in
+    # mixed case with none, read past the title
+    ("PROF. Ann Berg", False),
+    # beside a family in capitals, the family still counts
+    ("DR Jean DUPONT", True), ("Jean DUPONT PROF", True),
+    ("DEAN Mary SMITH", True),
+    # a lowercase particle or conjunction the run takes
+    ("Jean de la FONTAINE", True), ("Aude BROSSARD de VILLEMONT", True),
+    ("Ana LOPEZ y GARCIA", True),
+    # one case: none, single capital letters too (no capitals word)
+    ("tom reed", None), ("TOM REED", None), ("J K", None),
+    # mixed case with no capitals: against
+    ("Tom Reed", False),
+]
+
+
+@pytest.mark.parametrize("text, mark", _CAPITALS_MARKS)
+def test_each_name_carries_its_capitals_evidence(
+        text: str, mark: bool | None) -> None:
+    assert Parser().suggest([text]).names[0].family_in_capitals is mark
+
+
+def test_a_name_against_a_decided_capitals_switch_disagrees() -> None:
+    s = Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Luc PETIT",
+                          "John Smith FRCS"])
+    assert s.patch.capitals_as_family is True
+    assert [n.text for n in s.disagreeing()] == ["John Smith FRCS"]
+    assert "disagreeing (1): John Smith FRCS" in str(s)
+    # undecided, nothing disagrees with it
+    assert Parser().suggest(["Jean DUPONT", "John Smith"]).disagreeing() == ()
+
+
+def test_name_evidence_holds_its_capitals_mark() -> None:
+    e = NameEvidence("Jean DUPONT", {}, family_in_capitals=True)
+    assert repr(e) == "NameEvidence('Jean DUPONT', family_in_capitals=True)"
+    assert dataclasses.replace(e).family_in_capitals is True
+    assert NameEvidence("Jean Dupont", {}).family_in_capitals is None
+    with pytest.raises(TypeError, match="family_in_capitals"):
+        NameEvidence("Jean DUPONT", {}, family_in_capitals=1)  # type: ignore[arg-type]
+
+
+def test_a_name_evidence_pickled_before_the_capitals_mark_loads() -> None:
+    # a 3.1 development pickle, written before the field: its state
+    # holds the two older fields alone, and loads with the default
+    e = NameEvidence("Kim Minjun", {Signal.SURNAME: FAMILY_FIRST})
+    state: dict[str, object] = {"text": e.text, "_votes": e._votes}
+    loaded = NameEvidence.__new__(NameEvidence)
+    loaded.__setstate__(state)
+    assert loaded == e and loaded.family_in_capitals is None
+    assert pickle.loads(pickle.dumps(
+        NameEvidence("Jean DUPONT", {}, family_in_capitals=True))
+        ).family_in_capitals is True
+
+
+def test_an_everywhere_base_says_why_it_reads_no_capitals() -> None:
+    base = Parser(policy=Policy(
+        unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
+    e = _capitals(base.suggest(["Jean DUPONT", "Marie MARTIN"]))
+    assert e.note.startswith("not read: the base reads an unlisted word "  # type: ignore[attr-defined]
+                             "in capitals as a credential everywhere")

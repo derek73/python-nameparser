@@ -3,7 +3,7 @@
 ## Standing
 
 - The default reading of a name with words in capitals does not change: `DUPONT Mary` keeps given `DUPONT` — 2026-11-11 #659.
-- Reading the capitals as the family is an opt-in `Policy` switch, `capitals_as_family`, off by default; no locale pack sets it; the decision also has the group suggester turn it on for a list that writes its families in capitals consistently, which a later PR implements — 2026-11-11 #659.
+- Reading the capitals as the family is an opt-in `Policy` switch, `capitals_as_family`, off by default; no locale pack sets it; the decision also has the group suggester turn it on for a list that writes its families in capitals consistently, which decisions/group-suggestion's 2026-11-12 CAPITALS entry records — 2026-11-11 #659.
 - The run of capitals words in a mixed-case name is the family wherever it stands, outranking the credential and title readings, the other words keeping their written order — 2026-11-11 #659.
 - A capitals word holds two or more letters in capitals and no full stop, slash or digit; runs join across particles and conjunctions, a lowercase particle right before the run joins it, a run of particles alone or a lone roman numeral is none, the last of two runs is the family, and only the part before the first comma is read — 2026-11-12 #659.
 - A listed credential or numeral ending the name peels off before a run is chosen, wherever a capitals word that is no particle is left — 2026-11-12 #659, the FOURTH REVIEW.

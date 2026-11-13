@@ -722,7 +722,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: generation and gated-word sets, 194 -> 196; #659's capitals peel,
 #: its `sets =` binding and the four suffix sets it reads, 196 -> 201,
 #: its review's conjunctions read for a run, 201 -> 202, and the
-#: ambiguous suffix halves dropped from the peel as subsets, 202 -> 200);
+#: ambiguous suffix halves dropped from the peel as subsets, 202 -> 200;
+#: #1369's capitals vote refusing a listed title, its `sets =` binding
+#: and the four title sets it reads, 200 -> 205);
 #: the tools' 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -735,7 +737,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 200, "tools": 20}
+_UNGUARDED_READS = {"library": 205, "tools": 20}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

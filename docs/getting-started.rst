@@ -92,7 +92,10 @@ it, and ``suggestion.base`` is the parser you started from:
       initials_as_family  unchanged (False)  no evidence
       capitals_as_family  unchanged (False)  5 for, 0 against, 0 no evidence
 
-Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+Each setting counts its names for and against the value the suggested
+parser has: all five names are in mixed case with no word in capitals,
+so they are evidence for leaving ``capitals_as_family`` off. Four names
+vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
 the romanized surname in front, ``Garcia Emily`` by the common given
 name at the end (``Garcia`` is not one of the surnames ``suggest``
 reads). ``Taylor Morgan`` gives no evidence, so the suggested

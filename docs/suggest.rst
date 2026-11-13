@@ -152,8 +152,14 @@ surname (``AM Hoy``, ``Zhi LI``), and a name wholly in one case carries
 none. A group never turns the switch off, and a base reading an
 unlisted word in capitals as a credential everywhere
 (``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``) is suggested no
-change, the two settings being opposite readings of the same word. The
-order is decided apart from it:
+change, the two settings being opposite readings of the same word. A
+word your parser lists as a title, a credential or a numeral is no
+evidence either way (``MISS Ann Berg``), whatever its case. The order is
+decided apart from it. In the report, each setting counts its names
+for and against the value the suggested parser has, so a list left with
+the switch off counts its names in mixed case with no capitals as
+``for`` (``6 for`` above), and its names in capitals as ``against``;
+a name that writes no capitals disagrees with a decided switch:
 
 .. doctest::
 
@@ -170,16 +176,18 @@ names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10, re-taken 2026-11-11), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
-Polish names to 200 for Indian ones. One list keeps its order less
-often: bylines written with the initials first (``GH Yoon``), whose
-joined initials are read as a family name, so a group of ten or more is
-usually suggested family-first. ``capitals_as_family`` was suggested
-in 95% of groups from 3 names for ORCID holders who typed their family
-name in capitals, from 10 for those in China, Korea, Vietnam and Taiwan,
-whose short surnames are no evidence, and for no list measured that does
-not write its family names so (2026-11-12). A list that writes its given
-names in capitals (``ANNA Smith``) cannot be told apart and gets it
-too; such a list is already read the wrong way round by its order. A list whose names hold no such surname or
+Polish names to 200 for Indian ones. Two lists keep their order less
+often, the capitals in them read as a family name: bylines written with
+the initials first (``GH Yoon``), so a group of ten or more is usually
+suggested family-first, and names written with the given name in
+capitals (``ANNA Smith``). ``capitals_as_family`` was suggested in at
+least 95% of groups from 4 names for ORCID holders who typed their
+family name in capitals, and from 10 for those in China, Korea, Vietnam
+and Taiwan, whose short surnames are no evidence (2026-11-12). Of the
+lists measured that do not write their family names in capitals, only
+the one writing its given names so was suggested it, which nothing in a
+name tells apart and whose order is read the wrong way round already;
+no other was, ORCID's bylines (``AM Hoy``) included. A list whose names hold no such surname or
 given name (``Taylor Morgan``, ``Jordan Casey``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The
