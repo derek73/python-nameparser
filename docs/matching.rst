@@ -137,8 +137,9 @@ that holds and is accepted, and where none of those holding is
 accepted, the strongest that holds, so an unaccepted one shows what
 the pair needed. The default accepts the writing
 variants a hand-built comparison usually forgives; the rest count as a
-conflict until you accept them. ``familiar-form``, ``family-initial``,
-``given-one-side`` and ``hyphenated-part`` are reported in the table
+conflict until you accept them. ``alternate-spelling``,
+``familiar-form``, ``family-initial``, ``given-one-side`` and
+``hyphenated-part`` are reported in the table
 either way, so an unaccepted one shows what the pair needed. ``across-roles`` is
 searched only where accepted, and each side's other readings only where
 the search is switched on (below): otherwise the table shows the names
@@ -184,6 +185,9 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``noted``: titles and credentials, which never conflict
      - ``Dr. John Smith`` / ``John Smith, PhD``
      - yes
+   * - ``alternate-spelling``: two given names the vocabulary lists as one name spelled two ways, either way round, never chained
+     - ``Yuliya Ivanova`` / ``Iuliia Ivanova``
+     - no
    * - ``familiar-form``: two given names the vocabulary lists as a familiar-form pair, either way round, never chained
      - ``Bill Smith`` / ``William Smith``
      - no
@@ -336,10 +340,7 @@ language's form (``Ivan`` / ``John``), another name (``Erin`` /
 ``Oluwaseun``), are pairs ORCID's researchers wrote for themselves both
 ways, in the given-name box and in a published name, each read by two
 reviewers, in the file of the languages written where their holders
-work. The same review gives the given names' listed spellings
-(``Łukasz`` / ``Lukasz``, ``Aleksey`` / ``Alexey``, ``Saeed`` /
-``Saeid``), which read ``listed-spelling`` and so are accepted by
-default. A plain choice of languages keeps every file's pairs, and a
+work. A plain choice of languages keeps every file's pairs, and a
 strict one keeps its own files' and the shared ones. A pair whose short name
 reads as a title in front of a name (``Ab``, ``Nanny``) is never
 compared as a given name, so it stays inert while the title reading
@@ -355,6 +356,27 @@ them, ``remove(word, kind="familiar")`` first):
     >>> mine = Parser(lexicon=rickie).matching(accept=matcher.accept | {"familiar-form"})
     >>> mine.check("Rickie Smith", "Richard Smith").consistent, mine.check("Rickie Smith", "Roderick Smith").consistent
     (True, True)
+
+``alternate-spelling`` reads two given names as one name spelled two
+ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
+``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. It
+is read as a familiar form is, in the same roles, either way round and
+never chained, and the keys follow it where it is accepted. The same
+review as the familiar forms gives its 491 pairs (counted 2026-11-12),
+each called a spelling of one name by both reviewers or by the
+maintainer where they split. It is outside the default because people
+sometimes spell a name differently on purpose, to be told apart from
+someone of the same name, so two spellings are evidence of a match
+only for a caller who knows their sources write one name several ways:
+
+.. doctest::
+
+    >>> spelled = Parser().matching(accept=matcher.accept | {"alternate-spelling"})
+    >>> yuliya = spelled.check("Yuliya Ivanova", "Iuliia Ivanova")
+    >>> yuliya.consistent, yuliya["given"].outcome.value
+    (True, 'alternate-spelling')
+    >>> matcher.check("Yuliya Ivanova", "Iuliia Ivanova").consistent
+    False
 
 A familiar form is outside the default because it is many-valued and
 often a name of its own: ``Max`` is a given name in its own right, as

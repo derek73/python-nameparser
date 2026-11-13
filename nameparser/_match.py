@@ -9,7 +9,8 @@ Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headwords`, each role in the group of its kind
 (its `_RULES` row), for the familiar forms (`short_for`) through
-`Lexicon._familiar_forms`, and for `Lexicon.particles`, a hyphen half
+`Lexicon._familiar_forms`, for the alternate spellings
+(`spelling_of`) through `Lexicon._alternate_spellings`, and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
 name's other readings (`Matching.other_readings`); no `Policy` field.
 
@@ -393,7 +394,9 @@ class Matching:
         and where `familiar-form` is accepted also by the first letter
         of every name a word of that set is paired with directly as a
         familiar form, in either direction (`Bill` and `William` each
-        key both `b` and `w`).
+        key both `b` and `w`), and where `alternate-spelling` is
+        accepted by that of every name it is paired with as an alternate
+        spelling (`Yuliya` and `Iuliia`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -403,7 +406,8 @@ class Matching:
         name with no family has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
-        `familiar-form` the given letters of the paired names (above),
+        `alternate-spelling` and `familiar-form` the given letters of
+        the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's

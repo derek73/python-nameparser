@@ -671,7 +671,11 @@ def _assert_the_key_guarantee(matching: Matching,
 #: re-run here: a mutation edits `_match` from inside, so a re-take is
 #: by hand, after any commit that moves NAMES, the keys or the check;
 #: re-taken 2026-11-11 for #1264's names and hyphen fold, every pair
-#: standing and the new mutation added. The maiden name's words, removed, once failed
+#: standing and the new mutation added. The alternate-spelling setting
+#: (2026-11-12) stands in each older row beside familiar-form, as it
+#: reads those mutations as familiar-form does: added, not re-taken, and
+#: held by test_a_recorded_control_still_reaches_what_it_mutated; its own
+#: mutation was taken. The maiden name's words, removed, once failed
 #: across-roles and all-opt-ins on ("J. Smith", "Jane Doe (née
 #: Smith)"), until #1261 keyed the maiden name whole, joined; those
 #: keys are held since by
@@ -680,15 +684,17 @@ def _assert_the_key_guarantee(matching: Matching,
 #: text cannot give.
 _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
     "only the joined form of a hyphenated word keyed": ("keys", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ann Smith-Jones", "Ann Smith")),
         **dict.fromkeys(("family-initial", "all"),
                         ("Ahmed Al-Saud", "Ahmed Saud")),
     }),
     "part-of-other keeping a hyphen half that is a particle the keys drop": ("check", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ahmed Al", "Ahmed Al-Saud")),
         # passed through the family-initial key
         "family-initial": None, "all": None,
@@ -697,6 +703,14 @@ _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
         # a listed spelling of the longer name; all passes it through
         # given-one-side's bare family keys
         "familiar-form": ("Wm. Smith", "Bill Smith"), "all": None,
+    }),
+    # taken 2026-11-12 with the alternate-spelling outcome, the keys'
+    # alternate block removed: the main grid's one witness, whose
+    # letters differ (an Aleksey / Alexey witness shared a key without
+    # the block and caught nothing); all passes it through
+    # given-one-side's bare family keys
+    "the alternate spellings' paired names left out of the given letters": ("keys", {
+        "alternate-spelling": ("Yuliya Ivanova", "Iuliia Ivanova"), "all": None,
     }),
     "the family-initial key removed": ("keys", {
         "family-initial": ("J. Smith", "Jane S"),
@@ -721,8 +735,9 @@ _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
     # the keys alone cutting a family word at the hyphen-minus, the check
     # at every hyphen (#1264): the narrowing on one side the grids catch
     "the keys' family words cut at the hyphen-minus alone": ("keys", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ann Smith", "Ann Smith\u2010Jones")),
         # passed through the family-initial key
         "family-initial": None, "all": None,
@@ -822,8 +837,9 @@ _FOUR = ("default", "family-first", "es", "zh")
 _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     "only the joined form of a hyphenated word keyed": {
         parser_id: dict.fromkeys(
-            ("default", "familiar-form", "given-one-side", "hyphenated-part",
-             "across-roles", "other-readings"),
+            ("default", "alternate-spelling", "familiar-form",
+             "given-one-side", "hyphenated-part", "across-roles",
+             "other-readings"),
             ("Smith-Jones, Ann",
              "Smith Ann" if parser_id == "family-first" else "Ann Smith"))
         for parser_id in _FOUR
@@ -833,6 +849,14 @@ _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
         parser_id: {"familiar-form": (
             ("Smith Bill", "Smith William") if parser_id == "family-first"
             else ("Bill Smith", "William Smith"))}
+        for parser_id in _FOUR
+    },
+    "the alternate spellings' paired names left out of the given letters": {
+        # taken 2026-11-12; all passes it through given-one-side's bare
+        # family keys
+        parser_id: {"alternate-spelling": (
+            ("Smith Yuliya", "Smith Iuliia") if parser_id == "family-first"
+            else ("Yuliya Smith", "Iuliia Smith"))}
         for parser_id in _FOUR
     },
     "the family-initial key removed": {
@@ -861,8 +885,9 @@ _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     },
     "the keys' family words cut at the hyphen-minus alone": {
         parser_id: dict.fromkeys(
-            ("default", "familiar-form", "given-one-side", "hyphenated-part",
-             "across-roles", "other-readings"),
+            ("default", "alternate-spelling", "familiar-form",
+             "given-one-side", "hyphenated-part", "across-roles",
+             "other-readings"),
             ("Smith Ann" if parser_id == "family-first" else "Ann Smith",
              "Smith\u2010Jones, Ann"))
         for parser_id in _FOUR
