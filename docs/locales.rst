@@ -475,7 +475,9 @@ Shipped packs
      - Arabic — chooses ``ar``, which turns on ``Ben`` as the particle
        opening a Tunisian family name (``Karim Ben Haddad`` → family
        ``Ben Haddad``); a ``Ben`` opening a name stays the given name,
-       reported. Choosing it drops English's credential ``ABD`` for
+       reported, save under ``strict=True``. It is for surnames, not a
+       register's chain of fathers' names (``Karim ben Ali ben Salah
+       Haddad`` → family ``ben Salah Haddad``). Choosing it drops English's credential ``ABD`` for
        Arabic's given name ``abd``. See
        :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``bn``

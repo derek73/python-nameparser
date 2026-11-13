@@ -1052,10 +1052,10 @@ CASES: tuple[Case, ...] = (
     Case("hebrew_ben_inside_a_name_starts_the_family_name",
          "יעל בן חיים",
          {"given": "יעל", "family": "בן חיים"},
-         classification="fix(#269)",
-         notes="2.0.0 through master read the same fields, 3.0 with the "
-               "patronymic view filled, which it no longer is (#1210); "
-               "1.4.0 read middle 'בן', last 'חיים'"),
+         classification="fix(#1210)",
+         notes="what #1210 changes is the view: 2.0.0 through master read "
+               "these fields, 3.0 with the patronymic view filled, which it "
+               "no longer is; 1.4.0 read middle 'בן', last 'חיים'"),
     Case("hebrew_abu_starts_the_family_name",
          "סאמי אבו חליל",
          {"given": "סאמי", "family": "אבו חליל"},
