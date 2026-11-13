@@ -53,7 +53,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
-from zh_surnames import ask, batched  # noqa: E402  (a sibling script)
+import zh_surnames  # noqa: E402  (a sibling script; its ask and batched)
 
 from nameparser._suggest import fold  # noqa: E402  (the one fold)
 
@@ -155,17 +155,20 @@ def load_pinyin(chars: list[str], refresh: bool) -> dict[str, set[str]]:
     answer to these very queries, from Wikidata otherwise: an answer to
     other characters, or to a query this code no longer writes, is
     never reused."""
-    queries = [items_query(batch) for batch in batched(chars)]
+    queries = [items_query(batch) for batch in zh_surnames.batched(chars)]
     key = hashlib.sha256(("".join(queries) + pinyin_query(["Q"]))
                          .encode("utf-8")).hexdigest()
     path = name_usage.cache_dir() / PINYIN_FILE
     cached = (json.loads(path.read_text(encoding="utf-8"))
               if path.exists() and not refresh else None)
     if cached is None or cached.get("query_sha256") != key:
-        items = ask(queries, ("item", "label"))
+        items = zh_surnames.ask(queries, ("item", "label"))
         qids = list({row["item"].rsplit("/", 1)[-1] for row in items})
-        pinyin = ask([pinyin_query(batch) for batch in batched(qids)],
-                     ("item", "py"))
+        # a batch of items may hold none with a reading: 8 of the 100 in
+        # one batch had one on 2026-11-12, so an empty batch is an answer
+        pinyin = zh_surnames.ask(
+            [pinyin_query(batch) for batch in zh_surnames.batched(qids)],
+            ("item", "py"), may_be_empty=True)
         cached = {"query_sha256": key, "items": items, "pinyin": pinyin}
         name_usage._write(path, cached)
     return read_pinyin(cached["items"], cached["pinyin"])

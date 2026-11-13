@@ -9,8 +9,9 @@ where the cache is absent.
 from __future__ import annotations
 
 import importlib.util
-import sys
 import json
+import sys
+import urllib.request
 from pathlib import Path
 from types import ModuleType
 
@@ -39,6 +40,21 @@ def _load() -> ModuleType:
 @pytest.fixture(scope="module")
 def tool() -> ModuleType:
     return _load()
+
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    def refuse(*args: object, **kwargs: object) -> None:
+        raise AssertionError("a test reached the network")
+    monkeypatch.setattr(urllib.request, "urlopen", refuse)
+
+
+def _stub_sparql(monkeypatch: pytest.MonkeyPatch, tool: ModuleType,
+                 answer: object) -> None:
+    """Answer every query through the ``name_usage`` the tool's ``ask``
+    calls: the copy ``zh_surnames`` holds, which another test module's
+    loader may have made a different object from ``tool.name_usage``."""
+    monkeypatch.setattr(tool.zh_surnames.name_usage, "_sparql_csv", answer)
 
 
 @needs_checkout
@@ -92,7 +108,7 @@ def test_the_pinyin_cache_answers_only_the_queries_it_was_asked(
         if "?label ?item" in query:
             return [{"label": "鄭", "item": w + "Q1"}]
         return [{"item": w + "Q1", "py": "Zhèng"}]
-    monkeypatch.setattr(tool.name_usage, "_sparql_csv", sparql_csv)
+    _stub_sparql(monkeypatch, tool, sparql_csv)
     assert tool.load_pinyin(["鄭"], False) == {"鄭": {"zheng"}}
     assert len(asked) == 2
     tool.load_pinyin(["鄭"], False)
@@ -100,7 +116,31 @@ def test_the_pinyin_cache_answers_only_the_queries_it_was_asked(
     tool.load_pinyin(["鄭"], True)
     tool.load_pinyin(["鄭", "王"], False)
     assert len(asked) == 6
+    # a SUBSET of the characters cached is another query: asked again
+    tool.load_pinyin(["王"], False)
+    assert len(asked) == 8
+    # and so is the same characters asked by another pinyin query
+    monkeypatch.setattr(tool, "pinyin_query",
+                        lambda qids: "SELECT ?item ?py # another" + str(qids))
+    tool.load_pinyin(["王"], False)
+    assert len(asked) == 10
     assert (cache / tool.PINYIN_FILE).exists()
+
+
+@needs_checkout
+def test_a_batch_of_items_with_no_reading_is_an_answer(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    own_cache(monkeypatch, tmp_path_factory)
+    w = "http://www.wikidata.org/entity/"
+
+    def sparql_csv(query: str) -> list[dict[str, str]]:
+        if "?label ?item" in query:
+            return [{"label": "刁", "item": w + "Q1"}]
+        return []
+    _stub_sparql(monkeypatch, tool, sparql_csv)
+    assert tool.load_pinyin(["刁"], False) == {}
 
 
 @needs_checkout
@@ -116,7 +156,7 @@ def test_a_cut_pinyin_answer_is_refused(
             return [{"label": "鄭", "item": w + "Q1"}]
         # csv.DictReader fills a short row's missing columns with None
         return [{"item": "http:/SPARQL-QUERY: queryStr=", "py": None}]
-    monkeypatch.setattr(tool.name_usage, "_sparql_csv", sparql_csv)
+    _stub_sparql(monkeypatch, tool, sparql_csv)
     with pytest.raises(ValueError, match="not one"):
         tool.load_pinyin(["鄭"], False)
     assert not (cache / tool.PINYIN_FILE).exists()

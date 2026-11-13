@@ -18,7 +18,7 @@
 
 Elsewhere: a segmenter is asked only of a name its writer left undivided, decisions/W3's 2026-08 entry; the Japanese surnames and married doubles kept out of the ZH list, decisions/vocabulary-exclusions' #695 lines.
 
-Open: [#981](https://github.com/derek73/python-nameparser/issues/981) (a mainland-weighted ranking as a third source in `tools/zh_surnames.py`, which would catch the next surname both rankings miss without a hand addition — the route the 2026-10-30 #952 entry did not take; wainshine/Chinese-Names-Corpus, the candidate it weighed, is under Sources not used as data).
+Open: [#981](https://github.com/derek73/python-nameparser/issues/981) (a mainland-weighted ranking as a third source in `tools/zh_surnames.py`, which would catch the next surname both rankings miss without a hand addition, and since 2026-11-12 would restore the seven simplified forms no Wikidata label attests (买厐盖篮芈诸谌), a mainland ranking writing them simplified — the route the 2026-10-30 #952 entry did not take; wainshine/Chinese-Names-Corpus, the candidate it weighed, is under Sources not used as data).
 
 ## Log
 

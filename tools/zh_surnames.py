@@ -326,14 +326,15 @@ def load_wikidata(refresh: bool) -> list[Item]:
     return read_wikidata(json.loads(path.read_text(encoding="utf-8")))
 
 
-def checked_rows(rows: list[dict[str, str]],
-                 columns: tuple[str, ...]) -> list[dict[str, str]]:
+def checked_rows(rows: list[dict[str, str]], columns: tuple[str, ...], *,
+                 may_be_empty: bool = False) -> list[dict[str, str]]:
     """``rows`` if every one is a whole answer row: each column filled
     and the first an entity IRI. The query service, cut off at its time
     limit, appends its error text to a CSV answer, which reads as rows
     with the trailing columns empty (2026-11-12); an answer of no rows
-    is refused too."""
-    if not rows:
+    is refused too, unless ``may_be_empty`` says no row is a possible
+    answer."""
+    if not rows and not may_be_empty:
         raise ValueError("the Wikidata query returned no rows")
     for row in rows:
         if (any(not row.get(c) for c in columns)
@@ -355,11 +356,13 @@ def batched(items: list[str]) -> list[list[str]]:
     return [ordered[i:i + BATCH] for i in range(0, len(ordered), BATCH)]
 
 
-def ask(queries: list[str], columns: tuple[str, ...]) -> list[dict[str, str]]:
+def ask(queries: list[str], columns: tuple[str, ...], *,
+        may_be_empty: bool = False) -> list[dict[str, str]]:
     """The checked rows of each query, one after another."""
     rows: list[dict[str, str]] = []
     for query in queries:
-        rows.extend(checked_rows(name_usage._sparql_csv(query), columns))
+        rows.extend(checked_rows(name_usage._sparql_csv(query), columns,
+                                 may_be_empty=may_be_empty))
     return rows
 
 
