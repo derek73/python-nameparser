@@ -45,14 +45,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import sys
 import re
+import sys
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
+from zh_surnames import ask, batched  # noqa: E402  (a sibling script)
 
 from nameparser._suggest import fold  # noqa: E402  (the one fold)
 
@@ -150,20 +151,23 @@ def rewrite(module_text: str, name: str, block: str) -> str:
 
 
 def load_pinyin(chars: list[str], refresh: bool) -> dict[str, set[str]]:
-    """The readings of ``chars``, from the cache where it asked about
-    every one of them, from Wikidata otherwise."""
+    """The readings of ``chars``, from the cache where it holds the
+    answer to these very queries, from Wikidata otherwise: an answer to
+    other characters, or to a query this code no longer writes, is
+    never reused."""
+    queries = [items_query(batch) for batch in batched(chars)]
+    key = hashlib.sha256(("".join(queries) + pinyin_query(["Q"]))
+                         .encode("utf-8")).hexdigest()
     path = name_usage.cache_dir() / PINYIN_FILE
     cached = (json.loads(path.read_text(encoding="utf-8"))
               if path.exists() and not refresh else None)
-    if cached is None or not set(chars) <= set(cached["chars"]):
-        items = name_usage._sparql_csv(items_query(chars))
-        qids = sorted({row["item"].rsplit("/", 1)[-1] for row in items})
-        if not qids:
-            raise ValueError("the Wikidata item query returned no items")
-        pinyin = name_usage._sparql_csv(pinyin_query(qids))
-        cached = {"chars": sorted(chars), "items": items, "pinyin": pinyin}
-        path.write_text(json.dumps(cached, ensure_ascii=False),
-                        encoding="utf-8")
+    if cached is None or cached.get("query_sha256") != key:
+        items = ask(queries, ("item", "label"))
+        qids = list({row["item"].rsplit("/", 1)[-1] for row in items})
+        pinyin = ask([pinyin_query(batch) for batch in batched(qids)],
+                     ("item", "py"))
+        cached = {"query_sha256": key, "items": items, "pinyin": pinyin}
+        name_usage._write(path, cached)
     return read_pinyin(cached["items"], cached["pinyin"])
 
 

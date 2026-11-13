@@ -64,6 +64,65 @@ def test_pinyin_is_every_reading_of_every_item_labelled_with_the_character(
 
 
 @needs_checkout
+def test_the_queries_ask_each_character_and_every_pinyin_statement(
+        tool: ModuleType) -> None:
+    items = tool.items_query(["鄭", "王"])
+    assert all(f'"{c}"@{lang}' in items for c in "鄭王"
+               for lang in tool.LABEL_LANGUAGES)
+    assert "wd:Q101352" in items and "wd:Q1093580" in items
+    pinyin = tool.pinyin_query(["Q1", "Q2"])
+    assert "wd:Q1 wd:Q2" in pinyin
+    # the three statements, each qualified as Hanyu Pinyin (Q42222)
+    assert "ps:P2440 ?py ; pq:P459 wd:Q42222" in pinyin
+    assert "?item p:P1705 ?st . ?st pq:P1721 ?py" in pinyin
+    assert "pq:P1013 wd:Q42222" in pinyin and "?latin wdt:P1705 ?py" in pinyin
+
+
+@needs_checkout
+def test_the_pinyin_cache_answers_only_the_queries_it_was_asked(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    w = "http://www.wikidata.org/entity/"
+    asked: list[str] = []
+
+    def sparql_csv(query: str) -> list[dict[str, str]]:
+        asked.append(query)
+        if "?label ?item" in query:
+            return [{"label": "鄭", "item": w + "Q1"}]
+        return [{"item": w + "Q1", "py": "Zhèng"}]
+    monkeypatch.setattr(tool.name_usage, "_sparql_csv", sparql_csv)
+    assert tool.load_pinyin(["鄭"], False) == {"鄭": {"zheng"}}
+    assert len(asked) == 2
+    tool.load_pinyin(["鄭"], False)
+    assert len(asked) == 2
+    tool.load_pinyin(["鄭"], True)
+    tool.load_pinyin(["鄭", "王"], False)
+    assert len(asked) == 6
+    assert (cache / tool.PINYIN_FILE).exists()
+
+
+@needs_checkout
+def test_a_cut_pinyin_answer_is_refused(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    w = "http://www.wikidata.org/entity/"
+
+    def sparql_csv(query: str) -> list[dict[str, str | None]]:
+        if "?label ?item" in query:
+            return [{"label": "鄭", "item": w + "Q1"}]
+        # csv.DictReader fills a short row's missing columns with None
+        return [{"item": "http:/SPARQL-QUERY: queryStr=", "py": None}]
+    monkeypatch.setattr(tool.name_usage, "_sparql_csv", sparql_csv)
+    with pytest.raises(ValueError, match="not one"):
+        tool.load_pinyin(["鄭"], False)
+    assert not (cache / tool.PINYIN_FILE).exists()
+
+
+@needs_checkout
 def test_pinyin_surnames_drop_one_letter_readings_and_unread_characters(
         tool: ModuleType) -> None:
     assert tool.pinyin_surnames(["阿", "鄭", "刁"],

@@ -25,9 +25,12 @@ neither region's bias decides alone. Where a source gives one script
 only, Wikidata's family-name items supply the other, in ONE direction:
 a form gains a simplified one where the items labelled with it (any
 item that is a family name, Q101352, or a Chinese family name,
-Q1093580, at any rank) give exactly one other in their simplified
+Q1093580, at any rank) give exactly one form in their simplified
 Chinese labels (zh-hans, zh-cn, zh-sg, zh-my), in the Basic
-Multilingual Plane. A traditional form ships only where a source
+Multilingual Plane, and it is not the form itself: an item writing the
+form the same in both scripts counts against another's simplified
+form, as Unihan listed such a character among its own simplified
+variants. A traditional form ships only where a source
 attests it -- a ranked Wikidata item labelled with both, or the Taiwan
 ranking itself -- since a simplified character's traditional forms are
 one-to-many (餘 is one of 余's, and no one's surname). Until 3.1 the
@@ -52,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import re
@@ -97,7 +101,8 @@ def scripts_query(forms: list[str]) -> str:
     """Every family-name item labelled with one of ``forms``, with its
     Chinese labels. The labels are matched exactly, in each Chinese
     label language, which the query service answers from its index; a
-    filter over every family name's labels times out."""
+    filter over every family name's labels times out, and so did
+    asking for the "X姓" and "X氏" labels as well (2026-11-12)."""
     values = " ".join(f'"{form}"@{lang}' for form in forms
                       for lang in SCRIPT_LANGUAGES)
     langs = ", ".join(f'"{lang}"' for lang in SCRIPT_LANGUAGES)
@@ -180,8 +185,11 @@ def read_wikidata(rows: list[dict[str, str]]) -> list[Item]:
 def read_scripts(rows: list[dict[str, str]]) -> dict[str, set[str]]:
     """Each form's simplified forms: for every item, the single
     characters its simplified labels give, credited to each of its
-    other single-character labels. A form the items label only in
-    simplified characters gains nothing."""
+    single-character labels. A form an item writes the same in both
+    scripts is its own simplified form there, as Unihan's table listed
+    such a character among its own simplified variants, so an item
+    writing 乾 in simplified characters and another writing 干 leave
+    乾 two forms, and :func:`select` adds neither."""
     labels: dict[str, dict[str, set[str]]] = {}
     for row in rows:
         match = _SURNAME_WORD.match(row["lab"])
@@ -193,7 +201,7 @@ def read_scripts(rows: list[dict[str, str]]) -> dict[str, set[str]]:
     for by_lang in labels.values():
         hans = set().union(*(by_lang.get(lang, set())
                              for lang in SIMPLIFIED_LANGUAGES))
-        for form in set().union(*by_lang.values()) - hans:
+        for form in set().union(*by_lang.values()):
             simplified.setdefault(form, set()).update(hans)
     return simplified
 
@@ -318,19 +326,57 @@ def load_wikidata(refresh: bool) -> list[Item]:
     return read_wikidata(json.loads(path.read_text(encoding="utf-8")))
 
 
+def checked_rows(rows: list[dict[str, str]],
+                 columns: tuple[str, ...]) -> list[dict[str, str]]:
+    """``rows`` if every one is a whole answer row: each column filled
+    and the first an entity IRI. The query service, cut off at its time
+    limit, appends its error text to a CSV answer, which reads as rows
+    with the trailing columns empty (2026-11-12); an answer of no rows
+    is refused too."""
+    if not rows:
+        raise ValueError("the Wikidata query returned no rows")
+    for row in rows:
+        if (any(not row.get(c) for c in columns)
+                or not row[columns[0]].startswith(
+                    "http://www.wikidata.org/entity/Q")):
+            raise ValueError(f"the Wikidata answer holds a row that is not "
+                             f"one ({row!r:.200}): it was cut short or "
+                             "answered an error; ask again")
+    return rows
+
+
+#: Forms (or items) a query asks about at once: all 442 forms in one
+#: query outran the service's time limit on 2026-11-12.
+BATCH = 100
+
+
+def batched(items: list[str]) -> list[list[str]]:
+    ordered = sorted(items)
+    return [ordered[i:i + BATCH] for i in range(0, len(ordered), BATCH)]
+
+
+def ask(queries: list[str], columns: tuple[str, ...]) -> list[dict[str, str]]:
+    """The checked rows of each query, one after another."""
+    rows: list[dict[str, str]] = []
+    for query in queries:
+        rows.extend(checked_rows(name_usage._sparql_csv(query), columns))
+    return rows
+
+
 def load_scripts(forms: list[str], refresh: bool) -> dict[str, set[str]]:
-    """The simplified forms of ``forms``, from the cache where it was
-    asked about every one of them, from Wikidata otherwise."""
+    """The simplified forms of ``forms``, from the cache where it holds
+    the answer to these very queries, from Wikidata otherwise: an
+    answer to other forms, or to a query this code no longer writes, is
+    never reused."""
+    queries = [scripts_query(batch) for batch in batched(forms)]
+    key = hashlib.sha256("".join(queries).encode("utf-8")).hexdigest()
     path = name_usage.cache_dir() / SCRIPTS_FILE
     cached = (json.loads(path.read_text(encoding="utf-8"))
               if path.exists() and not refresh else None)
-    if cached is None or not set(forms) <= set(cached["forms"]):
-        rows = name_usage._sparql_csv(scripts_query(forms))
-        if not rows:
-            raise ValueError("the Wikidata script query returned no labels")
-        cached = {"forms": sorted(forms), "rows": rows}
-        path.write_text(json.dumps(cached, ensure_ascii=False),
-                        encoding="utf-8")
+    if cached is None or cached.get("query_sha256") != key:
+        rows = ask(queries, ("item", "lab", "lang"))
+        cached = {"query_sha256": key, "rows": rows}
+        name_usage._write(path, cached)
     return read_scripts(cached["rows"])
 
 
