@@ -1627,7 +1627,6 @@ _familiar = _with(Outcome.FAMILIAR_FORM)
 @pytest.mark.parametrize("a, b, key", [
     ("Max Smith", "Maximilian Smith", "smith;m"),
     ("Bill Smith", "William Smith", "smith;w"),
-    ("Sepp Huber", "Josef Huber", "huber;j"),
     ("Bob Smith", "Robert Smith", "smith;r"),
     ("BILL SMITH", "WILLIAM SMITH", "smith;w"),
     ("Smith, Bill", "William Smith", "smith;w"),
@@ -1657,9 +1656,10 @@ def test_the_default_keys_a_familiar_form_by_its_own_letter_alone() -> None:
                                          ("masha", "maria")])
 def test_a_pair_reads_whichever_way_the_source_wrote_it(
         short: str, long: str) -> None:
-    # nam_dict writes some pairs long first (`Maria` / `Masha`), so a
-    # pair is read either way: written either way round here, on a
-    # lexicon holding no other familiar reading, it matches and keys alike
+    # a source may write a pair long first (the nicknames list's
+    # `barbara` / `babs`), so a pair is read either way: written either
+    # way round here, on a lexicon holding no other familiar reading, it
+    # matches and keys alike
     lexicon = Lexicon.default().remove(kind="familiar", every=True).add(
         short, kind="familiar", short_for=[long])
     matching = Matching(Parser(lexicon=lexicon),
@@ -1670,7 +1670,6 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
         assert r.consistent, (short, a)
         assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
         assert matching.keys(a) & matching.keys(b)
-    assert _familiar.check("Masha Ivanova", "Maria Ivanova").consistent
 
 
 @pytest.mark.parametrize("a, b", [
@@ -1723,8 +1722,7 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
                                     short_for=["Maxence"])
     assert lexicon._familiar_forms("Max") == shipped | {"maxence"}
     readings = [r for r in lexicon.readings_of("max") if r.kind == "familiar"]
-    assert sorted(r.languages for r in readings) == [
-        (), ("be", "ru", "uk"), ("de",), ("en",)]
+    assert sorted(r.languages for r in readings) == [(), ("en",)]
     assert next(r for r in readings if not r.languages).properties == (
         ("short_for", ("maxence",)),)
     matching = Matching(Parser(lexicon=lexicon),
@@ -1736,7 +1734,7 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
     again = lexicon.add("max", kind="familiar", short_for=["maxi"])
     assert again._familiar_forms("max") == shipped | {"maxence", "maxi"}
     assert len([r for r in again.readings_of("max")
-                if r.kind == "familiar"]) == 4
+                if r.kind == "familiar"]) == 2
     added = Lexicon.empty().add("zzq", kind="familiar", short_for=["zzr"])
     assert added._familiar_forms("zzq") == {"zzr"}
     assert added._familiar_forms("zzr") == {"zzq"}
@@ -1782,8 +1780,8 @@ def test_a_callers_pair_under_a_strict_choice_reaches_no_other_file() -> None:
     assert lexicon._familiar_forms("bill") == {"william"}
     assert [r.languages for r in lexicon.readings_of("bill")
             if r.kind == "familiar"] == [()]
-    # de's own pairs stay, and no other file's comes back
-    assert lexicon._familiar_forms("max") == {"maximilian"}
+    # de.toml holds no familiar reading, and en.toml's do not come back
+    assert not lexicon._familiar_forms("max")
     assert not lexicon._familiar_forms("bob")
     assert Parser(lexicon=lexicon).parse("Bill Smith").tokens == strict.parse(
         "Bill Smith").tokens
@@ -1813,20 +1811,35 @@ def test_no_parse_reads_a_familiar_form() -> None:
 
 def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     # a plain choice drops no familiar reading (a choice prefers by none);
-    # a strict one keeps its own files' alone
+    # a strict one keeps its own files' alone: en.toml's for a strict
+    # choice of English, and none for one of German, whose file holds no
+    # familiar reading (decisions/name-matching, 2026-11-12 ENGLISH ONLY
+    # UNTIL REBUILT)
     plain = Lexicon(_base="default", _languages={"de"})
-    strict = Lexicon(_base="default", _languages={"de"}, _strict=True)
     assert plain._familiar == Lexicon.default()._familiar
     assert plain._familiar_forms("max") == (
         Lexicon.default()._familiar_forms("max"))
-    assert strict._familiar_forms("max") == {"maximilian"}
-    assert not strict._familiar_forms("bill")
+    english = Lexicon(_base="default", _languages={"en"}, _strict=True)
+    assert english._familiar == Lexicon.default()._familiar
+    german = Lexicon(_base="default", _languages={"de"}, _strict=True)
+    assert not german._familiar_forms("max")
+    assert not german._familiar
+
+
+#: Accented pairs as a caller writes them, the shipped ones being English
+#: alone: Hungarian `józsi` of `józsef`, `klára` written long first of
+#: `klári`, and `mari` of `mária`.
+_ACCENTED = Matching(
+    Parser(lexicon=Lexicon.default()
+           .add("józsi", kind="familiar", short_for=["józsef"])
+           .add("klára", kind="familiar", short_for=["klári"])
+           .add("mari", kind="familiar", short_for=["mária"])),
+    DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
 
 
 @pytest.mark.parametrize("a, b", [
-    # an accented pair (hu `józsi` of `józsef`) in each of its four
-    # spellings: as written, the short name folded, the long name
-    # folded, both folded
+    # each accented pair in each of its four spellings: as written, the
+    # short name folded, the long name folded, both folded
     ("Józsi Kovács", "József Kovács"), ("Jozsi Kovacs", "József Kovács"),
     ("Józsi Kovács", "Jozsef Kovacs"), ("Jozsi Kovacs", "Jozsef Kovacs"),
     ("Klára Nagy", "Klári Nagy"), ("Klara Nagy", "Klári Nagy"),
@@ -1835,9 +1848,9 @@ def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
 ])
 def test_a_familiar_form_holds_whatever_the_accents(a: str, b: str) -> None:
     for x, y in ((a, b), (b, a)):
-        r = _familiar.check(x, y)
+        r = _ACCENTED.check(x, y)
         assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
-        assert _familiar.keys(x) & _familiar.keys(y)
+        assert _ACCENTED.keys(x) & _ACCENTED.keys(y)
 
 
 #: The shipped pairs whose short name reads as a title in front of a
@@ -1847,7 +1860,7 @@ _TITLE_SHORT_FORMS = {
     ("ab", "abel"), ("ab", "abiel"), ("ab", "abijah"), ("ab", "abner"),
     ("ab", "abraham"), ("ab", "abram"), ("ab", "absalom"),
     ("govie", "governor"), ("nanny", "hannah"), ("nanny", "nancy"),
-    ("nanny", "nannette"), ("pres", "prescott"), ("timi", "tímea")}
+    ("pres", "prescott")}
 
 
 def test_every_shipped_pair_is_consistent_in_every_spelling() -> None:

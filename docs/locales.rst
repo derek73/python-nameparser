@@ -282,8 +282,7 @@ checked in one of four ways:
   is accepted and reads that language's file, there being none of its
   own.
 - **A language whose file holds no reading a parse reads yet**
-  (``hu``, whose file records only words kept out and familiar forms,
-  which only name matching reads) raises ``ValueError``, a plain choice
+  (``hu``, whose file records only words kept out) raises ``ValueError``, a plain choice
   of it changing nothing; a strict choice accepts it (`Reading one language
   only`_).
 
@@ -433,8 +432,9 @@ drops from every name:
 - **A language whose file holds no reading a parse reads yet is
   accepted.** ``hu.toml`` holds none, so a plain ``hu`` choice is
   refused; a strict one reads the other scripts' words and, in Latin
-  letters, only the shared ones, and keeps ``hu.toml``'s familiar
-  forms, which name matching reads, dropping every other file's.
+  letters, only the shared ones. It keeps no familiar form, which name
+  matching reads: those are English alone, so a strict choice keeps
+  them only where it chooses ``en``.
 - **Your own words stay.** A word a strict choice drops is kept where
   you added it yourself, your lexicon's readings applying after the
   choice (`Your own words outrank a choice`_).
@@ -449,7 +449,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -471,6 +471,15 @@ Shipped packs
 
    * - Code
      - Turns on
+   * - ``ar``
+     - Arabic — chooses ``ar``, which turns on ``Ben`` as the particle
+       opening a Tunisian family name (``Karim Ben Haddad`` → family
+       ``Ben Haddad``); a ``Ben`` opening a name stays the given name,
+       reported, save under ``strict=True``. It is for surnames, not a
+       register's chain of fathers' names (``Karim ben Ali ben Salah
+       Haddad`` → family ``ben Salah Haddad``). Choosing it drops English's credential ``ABD`` for
+       Arabic's given name ``abd``. See
+       :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``bn``
      - Bengali — chooses ``bn``, which turns on the romanized
        salutations ``Smt`` and ``Shrimati`` (Mrs.) and the academic
@@ -519,6 +528,14 @@ Shipped packs
    * - ``gd``
      - Scottish Gaelic — chooses ``gd``, which turns on ``Nic``
        (``Màiri Nic Leòid`` → family ``Nic Leòid``).
+   * - ``he``
+     - Hebrew — chooses ``he``, which turns on ``Ben`` as the particle
+       opening an Israeli family name written in Latin letters (``Yael
+       Ben Arieh`` → family ``Ben Arieh``); the Hebrew ``בן`` is read
+       by default. It is for surnames, not a register's chain of
+       fathers' names (``Karim ben Ali ben Salah Haddad`` → family
+       ``ben Salah Haddad``). See
+       :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``hi``
      - Hindi — chooses ``hi``, which turns on the romanized salutations
        ``Smt`` and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.), read as

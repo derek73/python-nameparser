@@ -551,7 +551,8 @@ def _spellings(value: str) -> tuple[str, ...]:
 #: reach. Each tag is one a choice can name (test_config_diff holds it);
 #: a country none of whose languages has a file maps to ().
 LANGUAGES_OF: dict[str, tuple[str, ...]] = {
-    "AD": ("ca",), "AE": ("ar", "en"), "AF": ("fa",), "AG": ("en",), "AL": ("sq",),
+    "AD": ("ca",), "AE": ("ar", "en"), "AF": ("fa",), "AG": ("en",),
+    "AL": (),  # Albanian, which no file holds
     "AM": ("hy",), "AO": ("pt",), "AQ": (), "AR": ("es",), "AS": ("en",),
     "AT": ("de",), "AU": ("en",), "AW": ("nl",), "AX": ("sv",), "AZ": ("tr",),
     "BA": ("bs", "hr", "sr"), "BB": ("en",), "BD": ("bn",), "BE": ("nl", "fr", "de"),
@@ -562,7 +563,7 @@ LANGUAGES_OF: dict[str, tuple[str, ...]] = {
     "CI": ("fr",), "CL": ("es",), "CM": ("fr", "en"), "CN": ("zh",), "CO": ("es",),
     "CR": ("es",), "CU": ("es",), "CV": ("pt",), "CW": ("nl",), "CY": ("el", "tr"),
     "CZ": ("cs",), "DE": ("de",), "DJ": ("fr", "ar"), "DK": ("da",), "DM": ("en",),
-    "DO": ("es",), "DZ": ("ar", "fr"), "EC": ("es",), "EE": ("et",), "EG": ("ar",),
+    "DO": ("es",), "DZ": ("ar", "fr", "ber"), "EC": ("es",), "EE": ("et",), "EG": ("ar",),
     "ER": ("ti", "ar"), "ES": ("es", "ca"), "ET": ("am",), "FI": ("fi", "sv"),
     "FJ": ("en",), "FO": ("da",), "FR": ("fr",), "GA": ("fr",),
     "GB": ("en",), "GB-ENG": ("en",), "GB-NIR": ("en", "ga"), "GB-SCT": ("en", "gd"),
@@ -578,10 +579,10 @@ LANGUAGES_OF: dict[str, tuple[str, ...]] = {
     "KH": ("km",), "KM": ("ar", "fr"), "KN": ("en",), "KP": ("ko",), "KR": ("ko",),
     "KW": ("ar",), "KY": ("en",), "KZ": ("kk", "ru"), "LA": ("lo",), "LB": ("ar", "fr"),
     "LC": ("en",), "LI": ("de",), "LK": ("si", "ta"), "LR": ("en",), "LS": ("en",),
-    "LT": ("lt",), "LU": ("fr", "de"), "LV": ("lv",), "LY": ("ar",), "MA": ("ar", "fr"),
+    "LT": ("lt",), "LU": ("fr", "de"), "LV": ("lv",), "LY": ("ar",), "MA": ("ar", "fr", "ber"),
     "MC": ("fr",), "MD": ("ro", "ru"), "ME": ("sr",), "MG": ("fr",), "MK": ("mk",),
     "ML": ("fr",), "MM": ("my", "shn"), "MN": ("mn",), "MO": ("zh", "pt"),
-    "MQ": ("fr",), "MR": ("ar",), "MT": ("mt", "en"), "MU": ("en", "fr"), "MV": (),
+    "MQ": ("fr",), "MR": ("ar",), "MT": ("en",), "MU": ("en", "fr"), "MV": (),
     "MW": ("en",), "MX": ("es",), "MY": ("ms", "zh", "ta", "en"), "MZ": ("pt",),
     "NA": ("en",), "NC": ("fr",), "NE": ("fr", "ha"), "NG": ("en", "yo", "ha", "bin"),
     "NI": ("es",), "NL": ("nl",), "NO": ("nb", "nn"), "NP": ("ne",), "NZ": ("en", "mi"),

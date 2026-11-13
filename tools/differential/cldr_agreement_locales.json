@@ -1,4 +1,100 @@
 {
+ "ar/foreignFull/givenFirst": {
+  "family": {
+   "expected": "فون برول",
+   "got": "عايدة كورنيليا سيزار مارتن فون برول"
+  },
+  "family_base": {
+   "expected": "برول",
+   "got": "عايدة كورنيليا سيزار مارتن فون برول"
+  },
+  "family_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "عايدة كورنيليا سيزار مارتن",
+   "got": "طبيب وجراح"
+  },
+  "suffix": {
+   "expected": "الإبن طبيب وجراح",
+   "got": "الإبن"
+  },
+  "surname1_base": {
+   "expected": "برول",
+   "got": "عايدة كورنيليا سيزار مارتن فون برول"
+  },
+  "surname1_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "text": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح"
+ },
+ "ar/foreignFull/sorting": {
+  "family_base": {
+   "expected": "برول",
+   "got": "فون برول"
+  },
+  "family_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "برول",
+   "got": "فون برول"
+  },
+  "surname1_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "text": "فون برول، عايدة كورنيليا سيزار مارتن"
+ },
+ "ar/foreignFull/surnameFirst": {
+  "family_base": {
+   "expected": "برول",
+   "got": "فون برول"
+  },
+  "family_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "برول",
+   "got": "فون برول"
+  },
+  "surname1_particles": {
+   "expected": "فون",
+   "got": ""
+  },
+  "text": "فون برول، عايدة كورنيليا سيزار مارتن"
+ },
+ "ar/nativeFull/givenFirst": {
+  "family": {
+   "expected": "أبو الأغا",
+   "got": "السيد أحمد رامي نجيب محفوظ أبو الأغا"
+  },
+  "family_base": {
+   "expected": "الأغا",
+   "got": "السيد أحمد رامي نجيب محفوظ الأغا"
+  },
+  "given_names": {
+   "expected": "أحمد رامي نجيب محفوظ",
+   "got": "النائب"
+  },
+  "suffix": {
+   "expected": "الابن النائب",
+   "got": "الابن"
+  },
+  "surname1_base": {
+   "expected": "الأغا",
+   "got": "السيد أحمد رامي نجيب محفوظ الأغا"
+  },
+  "text": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب",
+  "title": {
+   "expected": "السيد",
+   "got": ""
+  }
+ },
  "az/foreignFull/givenFirst": {
   "surname1_base": {
    "expected": "Volf",
@@ -518,6 +614,188 @@
    "got": ""
   },
   "text": "Mac a’ Ghobhainn Chorùna, Mgr. Dòmhnall Iain Bàn am post"
+ },
+ "he/foreignFull/givenFirst": {
+  "family": {
+   "expected": "פון ברוהל גונזלס דומינגו",
+   "got": "ד״ר"
+  },
+  "family_base": {
+   "expected": "ברוהל גונזלס דומינגו",
+   "got": "ד״ר"
+  },
+  "family_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "עדה קורנליה סזאר מרטין",
+   "got": "עדה קורנליה סזאר מרטין פון ברוהל גונזלס דומינגו"
+  },
+  "suffix": {
+   "expected": "ד״ר",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "ברוהל",
+   "got": "ד״ר"
+  },
+  "surname1_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
+   "got": ""
+  },
+  "text": "פרופ׳ עדה קורנליה סזאר מרטין פון ברוהל גונזלס דומינגו ד״ר"
+ },
+ "he/foreignFull/sorting": {
+  "family_base": {
+   "expected": "ברוהל גונזלס דומינגו",
+   "got": "פון ברוהל גונזלס דומינגו"
+  },
+  "family_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "עדה קורנליה סזאר מרטין",
+   "got": "עדה קורנליה סזאר מרטין ד״ר"
+  },
+  "suffix": {
+   "expected": "ד״ר",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "ברוהל",
+   "got": "פון ברוהל גונזלס דומינגו"
+  },
+  "surname1_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
+   "got": ""
+  },
+  "text": "פון ברוהל גונזלס דומינגו, פרופ׳ עדה קורנליה סזאר מרטין ד״ר"
+ },
+ "he/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "פון ברוהל גונזלס דומינגו",
+   "got": "פון"
+  },
+  "family_base": {
+   "expected": "ברוהל גונזלס דומינגו",
+   "got": "פון"
+  },
+  "family_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "עדה קורנליה סזאר מרטין",
+   "got": "ברוהל גונזלס דומינגו פרופ׳ עדה קורנליה סזאר מרטין ד״ר"
+  },
+  "suffix": {
+   "expected": "ד״ר",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "ברוהל",
+   "got": "פון"
+  },
+  "surname1_particles": {
+   "expected": "פון",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
+   "got": ""
+  },
+  "text": "פון ברוהל גונזלס דומינגו פרופ׳ עדה קורנליה סזאר מרטין ד״ר",
+  "title": {
+   "expected": "פרופ׳",
+   "got": ""
+  }
+ },
+ "he/nativeFull/givenFirst": {
+  "family": {
+   "expected": "אבן אבן-גבירול",
+   "got": "ח״כ"
+  },
+  "family_base": {
+   "expected": "אבן-גבירול",
+   "got": "ח״כ"
+  },
+  "family_particles": {
+   "expected": "אבן",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "בנימין משה",
+   "got": "בנימין משה אבן אבן-גבירול"
+  },
+  "suffix": {
+   "expected": "ח״כ",
+   "got": ""
+  },
+  "text": "מר בנימין משה אבן אבן-גבירול ח״כ"
+ },
+ "he/nativeFull/sorting": {
+  "family": {
+   "expected": "אבן אבן-גבירול",
+   "got": "אבן"
+  },
+  "family_base": {
+   "expected": "אבן-גבירול",
+   "got": "אבן"
+  },
+  "family_particles": {
+   "expected": "אבן",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "בנימין משה",
+   "got": "אבן-גבירול מר בנימין משה ח״כ"
+  },
+  "suffix": {
+   "expected": "ח״כ",
+   "got": ""
+  },
+  "text": "אבן אבן-גבירול מר בנימין משה ח״כ",
+  "title": {
+   "expected": "מר",
+   "got": ""
+  }
+ },
+ "he/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "אבן אבן-גבירול",
+   "got": "אבן"
+  },
+  "family_base": {
+   "expected": "אבן-גבירול",
+   "got": "אבן"
+  },
+  "family_particles": {
+   "expected": "אבן",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "בנימין משה",
+   "got": "אבן-גבירול מר בנימין משה ח״כ"
+  },
+  "suffix": {
+   "expected": "ח״כ",
+   "got": ""
+  },
+  "text": "אבן אבן-גבירול מר בנימין משה ח״כ",
+  "title": {
+   "expected": "מר",
+   "got": ""
+  }
  },
  "hi/foreignFull/givenFirst": {
   "family": {

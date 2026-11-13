@@ -245,7 +245,7 @@ def test_a_group_without_evidence_keeps_the_base() -> None:
 _BYLINES = ["Huntley R P", "Hoy A M", "Khalaf T. A.", "Kessler H A",
             "Armitage J."]
 _PLAIN = ["Xyzzy Plugh", "Qwrt Zxcv", "Blorp Fnord", "Grault Garply",
-          "Waldo Fred"]
+          "Thud Corge"]
 
 
 @pytest.mark.parametrize(("initialed", "plain", "votes"), [
@@ -268,7 +268,10 @@ def test_trailing_initials_vote_only_as_a_share_of_the_group(
 
 def test_a_set_aside_trailing_initial_says_why_and_disagrees_with_nothing(
         ) -> None:
-    s = Parser().suggest(["Durga B K", "Mary Smith", "Anna Smith",
+    # `Sabitri` is in neither table, so its trailing initials are the
+    # name's only evidence (`Durga`, a listed given name since the table
+    # was ranked from ORCID, would contest them)
+    s = Parser().suggest(["Sabitri B K", "Mary Smith", "Anna Smith",
                           "Sita Rai"])
     order = _order_evidence(s)
     assert "1 of the group's 4 names ends in initials" in order.note
@@ -396,7 +399,8 @@ def test_a_family_first_group_suggests_family_first() -> None:
     assert (order.votes_for, order.votes_against, order.no_evidence) == (
         3, 0, 0)
     assert (Signal.SURNAME, FAMILY_FIRST, 2) in order.by_signal
-    assert (Signal.GIVEN_NAME, FAMILY_FIRST, 1) in order.by_signal
+    # `Mary` and `Xiaoming`, each a listed given name at the end
+    assert (Signal.GIVEN_NAME, FAMILY_FIRST, 2) in order.by_signal
 
 
 def test_a_family_first_base_can_be_moved_back() -> None:

@@ -152,7 +152,7 @@ More shapes the parser reads:
     >>> ivan.given, ivan.patronymic, ivan.family
     ('Иван', 'Петрович', 'Сидоров')
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
 
 When a reading is wrong for your data
 -------------------------------------
@@ -296,6 +296,22 @@ License
 
 LGPL licensed. See `LICENSE <https://github.com/derek73/python-nameparser/blob/master/LICENSE>`__
 for details.
+
+Some of the vocabulary nameparser ships is derived from data published
+under other licences, which apply to those parts:
+
+- the familiar forms from Old Dominion University's nicknames list:
+  Apache License 2.0, in ``LICENSE-nicknames``;
+- ``locales.ES`` and ``locales.ES_AR``'s given names from Spain's
+  Instituto Nacional de Estadística: Creative Commons Attribution 4.0,
+  credited in ``nameparser/locales/_es_given_names.py`` and
+  ``_es_ar_given_names.py``;
+- part of ``locales.ZH``'s surnames from Taiwan's Ministry of the
+  Interior: Open Government Data License, version 1, credited in
+  ``nameparser/locales/zh.py``.
+
+The package's licence expression is
+``LGPL-2.1-or-later AND Apache-2.0 AND CC-BY-4.0 AND OGDL-Taiwan-1.0``.
 
 .. |Build Status| image:: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml

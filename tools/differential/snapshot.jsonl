@@ -101,6 +101,7 @@
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
+{"name": "Abd El Kader Haddou", "given": "Abd", "family": "El Kader Haddou", "initials": "A. K. H."}
 {"name": "Abd al-Aziz ibn Muhammad", "given": "Abd al-Aziz", "family": "ibn Muhammad", "initials": "A. a. M.", "capitalized_force": "Abd Al-Aziz ibn Muhammad", "patronymic": "ibn Muhammad"}
 {"name": "Abd van der Berg", "given": "Abd", "family": "van der Berg", "initials": "A. B."}
 {"name": "Abd van der Berg née Jones", "given": "Abd", "family": "van der Berg", "maiden": "Jones", "initials": "A. B."}
@@ -123,6 +124,7 @@
 {"name": "Abu Bakr Al Baghdadi, MD", "given": "Abu Bakr", "family": "Al Baghdadi", "suffix": "MD", "initials": "A. B. B.", "capitalized_force": "Abu Bakr al Baghdadi, MD"}
 {"name": "Abu Bakr Carlos García", "given": "Abu Bakr", "middle": "Carlos", "family": "García", "initials": "A. B. C. G."}
 {"name": "Abu Bakr del Carmen García", "given": "Abu Bakr", "family": "del Carmen García", "initials": "A. B. C. G."}
+{"name": "Abu El Hassan Haddou", "given": "Abu", "family": "El Hassan Haddou", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. H. H."}
 {"name": "Abu Karim", "given": "Abu", "family": "Karim", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. K."}
 {"name": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī", "given": "Abu-'l-Fidāʾ", "middle": "Ismāʿīl", "family": "Ibn-ʿAlī", "initials": "A. I. I.", "capitalized_force": "Abu-'L-Fidāʾ Ismāʿīl Ibn-ʿAlī"}
 {"name": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-Maǧrīṭī", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al-Maǧrīṭī", "initials": "A. M. I. a.", "capitalized_force": "Abu-'L-Qāsim Maslama Ibn-Aḥmad Al-Maǧrīṭī"}
@@ -190,6 +192,7 @@
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}
+{"name": "Ait Haddou Karim", "family": "Ait Haddou Karim", "initials": "H. K."}
 {"name": "Aita Caduff", "given": "Aita", "family": "Caduff", "initials": "A. C."}
 {"name": "Aitken, Robert", "given": "Robert", "family": "Aitken", "initials": "R. A."}
 {"name": "Ajay Reddy B", "given": "Ajay", "middle": "Reddy", "family": "B", "initials": "A. R. B."}
@@ -1098,7 +1101,7 @@
 {"name": "Einar Jónsson", "given": "Einar", "family": "Jónsson", "initials": "E. J."}
 {"name": "Eitel Friedrich II.", "given": "Eitel", "family": "Friedrich", "suffix": "II.", "initials": "E. F.", "generation": "II."}
 {"name": "Eiður Gunnarsson", "given": "Eiður", "family": "Gunnarsson", "initials": "E. G."}
-{"name": "El Dine", "given": "El", "family": "Dine", "initials": "E. D."}
+{"name": "El Dine", "given": "El", "family": "Dine", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "E. D."}
 {"name": "Eladio Andino y del Solar", "given": "Eladio", "middle": "Andino y del", "family": "Solar", "initials": "E. A. S."}
 {"name": "Elard von Oldenburg-Januschau", "given": "Elard", "family": "von Oldenburg-Januschau", "initials": "E. O."}
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
@@ -2621,6 +2624,7 @@
 {"name": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)", "given": "Anna", "middle": "Karolína Eva Kristína von Mgr. Ing.", "family": "Kant", "suffix": "CSc.", "initials": "A. K. E. K. M. I. K.", "capitalized_force": "Anna Karolína Eva Kristína von Mgr. Ing. Kant CSC."}
 {"name": "Kar, Ida", "given": "Ida", "family": "Kar", "initials": "I. K."}
 {"name": "Karim AL Haddadi", "given": "Karim", "family": "AL Haddadi", "initials": "K. H.", "capitalized_force": "Karim al Haddadi"}
+{"name": "Karim Ould Haddou", "given": "Karim", "family": "Ould Haddou", "initials": "K. H.", "patronymic": "Ould Haddou"}
 {"name": "Karima", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima", "order": "FAMILY_FIRST", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima Balóch", "given": "Karima", "family": "Balóch", "initials": "K. B."}
@@ -3209,7 +3213,7 @@
 {"name": "Mohamad Asri Muda", "given": "Mohamad", "middle": "Asri", "family": "Muda", "initials": "M. A. M."}
 {"name": "Mohamad X", "given": "Mohamad", "family": "X", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "M. X."}
 {"name": "Mohamad X Surname", "given": "Mohamad", "middle": "X", "family": "Surname", "initials": "M. X. S."}
-{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein El", "family": "Dine", "initials": "M. Z. E. D."}
+{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein", "family": "El Dine", "initials": "M. Z. D."}
 {"name": "Mohamad Zeineddine", "given": "Mohamad", "family": "Zeineddine", "initials": "M. Z."}
 {"name": "Mohamad, Mahathir bin", "given": "Mahathir", "family": "bin Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "Mohamed Ali Abd Allah", "given": "Mohamed", "middle": "Ali Abd", "family": "Allah", "initials": "M. A. A. A."}
@@ -3375,6 +3379,7 @@
 {"name": "None John None Doe None (None)", "given": "None", "middle": "John None Doe", "family": "None", "nickname": "None", "initials": "N. J. N. D. N."}
 {"name": "None Smith", "given": "None", "family": "Smith", "initials": "N. S."}
 {"name": "Nonez Smith", "given": "Nonez", "family": "Smith", "initials": "N. S."}
+{"name": "Nour El Houda Haddou", "given": "Nour", "family": "El Houda Haddou", "initials": "N. H. H."}
 {"name": "Novak, Janez Peter", "given": "Janez", "middle": "Peter", "family": "Novak", "initials": "J. P. N."}
 {"name": "Nováková Jana", "order": "FAMILY_FIRST", "given": "Jana", "family": "Nováková", "initials": "J. N."}
 {"name": "Nováková, Jana", "given": "Jana", "family": "Nováková", "initials": "J. N."}
@@ -4545,7 +4550,7 @@
 {"name": "Zazilia Hamiş Ştöber", "given": "Zazilia", "middle": "Hamiş", "family": "Ştöber", "initials": "Z. H. Ş."}
 {"name": "Zaziliya Hemish Shtober", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
 {"name": "Zaʿīm, Ḥusnī az-", "given": "Ḥusnī", "family": "az- Zaʿīm", "initials": "Ḥ. Z."}
-{"name": "Zein El Dine", "given": "Zein", "middle": "El", "family": "Dine", "initials": "Z. E. D."}
+{"name": "Zein El Dine", "given": "Zein", "family": "El Dine", "initials": "Z. D."}
 {"name": "Zelda Hamish Støver", "given": "Zelda", "middle": "Hamish", "family": "Støver", "initials": "Z. H. S."}
 {"name": "Zelda Herman Stander", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Zendaya", "given": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
@@ -5816,6 +5821,8 @@
 {"name": "אריק איינשטיין", "given": "אריק", "family": "איינשטיין", "initials": "א. א."}
 {"name": "אשר דורי", "given": "אשר", "family": "דורי", "initials": "א. ד."}
 {"name": "בלה קאופמן", "given": "בלה", "family": "קאופמן", "initials": "ב. ק."}
+{"name": "בן חיים יעל", "given": "בן", "middle": "חיים", "family": "יעל", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "ב. ח. י."}
+{"name": "בן חיים, יעל", "given": "יעל", "family": "בן חיים", "initials": "י. ח."}
 {"name": "ברוך אורן", "given": "ברוך", "family": "אורן", "initials": "ב. א."}
 {"name": "ברוך מודן", "given": "ברוך", "family": "מודן", "initials": "ב. מ."}
 {"name": "ברכה רוזנפלד", "given": "ברכה", "family": "רוזנפלד", "initials": "ב. ר."}
@@ -5853,6 +5860,7 @@
 {"name": "משה בן-שאול", "given": "משה", "family": "בן-שאול", "initials": "מ. ב."}
 {"name": "משה חלוץ", "given": "משה", "family": "חלוץ", "initials": "מ. ח."}
 {"name": "משה מזור", "given": "משה", "family": "מזור", "initials": "מ. מ."}
+{"name": "סאמר בן חליל", "given": "סאמר", "family": "בן חליל", "initials": "ס. ח."}
 {"name": "סטובר זזיליה חמיש", "order": "FAMILY_FIRST", "given": "זזיליה", "middle": "חמיש", "family": "סטובר", "initials": "ז. ח. ס."}
 {"name": "סינבד", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
 {"name": "סינבד", "order": "FAMILY_FIRST", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}

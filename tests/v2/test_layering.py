@@ -732,13 +732,16 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `changed_words`, which compares two lexicons set by set), which
 #: with one of the loads moved the count from 16; the 18th load is
 #: tools/vocab/order_names.py reading `locales.ZH.lexicon._sets.surnames`
-#: (group suggestions). 4i-a's own count was 114 (on
+#: (group suggestions); order_names.py's `listed_titles` adds four,
+#: its `sets =` binding and the three title sets it reads through it
+#: (the given names refusing a listed title, 2026-11-12), 20 -> 24.
+#: 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 203, "tools": 20}
+_UNGUARDED_READS = {"library": 203, "tools": 24}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

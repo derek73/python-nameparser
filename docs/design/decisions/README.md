@@ -179,6 +179,7 @@ Entry conventions:
 - [salutation-titles — salutations, offices and ranks for the languages TITLES had none for (2026-10-04, #606)](salutation-titles.md)
 - [script-properties — one private table of what a script's writing does (#1256)](script-properties.md)
 - [script-table-placement — a recorded reversal](script-table-placement.md)
+- [shipped-data-licences — the licences of the data the package ships](shipped-data-licences.md)
 - [suffix-acronym-collisions — the trailing-position collision class, decided (2026-09-07, #342/#454)](suffix-acronym-collisions.md)
 - [suffix-field-composition — three kinds of thing in one field](suffix-field-composition.md)
 - [two-input-invariants — checking a rule against something that is not the code](two-input-invariants.md)
