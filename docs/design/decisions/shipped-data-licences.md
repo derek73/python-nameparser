@@ -2,12 +2,12 @@
 
 ## Standing
 
-- `pyproject.toml`'s `license` is an SPDX expression naming the package's own licence AND the licence of each third-party dataset the wheel ships a derivative of; a dataset whose licence asks its text or notice to travel with copies has a `LICENSE-<source>` file at the root, named in `license-files` and saying which files hold the data, and one asking only for attribution is credited in the module that holds it. README.rst's License section lists every source. `tests/v2/test_licensing.py` holds each licence file and each attribution-only source to the expression, `license-files`, the README and the module crediting it — 2026-11-12.
-- A dataset under CC0, a corpus the package measured counts on without copying its words, and a source that states no terms for reuse add nothing to the expression; the last kind is listed in this file's Log as left out, by name, so the next source of its kind is weighed against it — 2026-11-12.
+- `pyproject.toml`'s `license` is an SPDX expression naming the package's own licence AND the licence of each third-party dataset the wheel ships a derivative of; a dataset whose licence asks its text or notice to travel with copies has a `LICENSE-<source>` file at the root, named in `license-files` and saying which files hold the data, and one asking only for attribution is credited in the module that holds it. README.rst's License section lists every source. `tests/v2/test_licensing.py` holds each licence file and each attribution-only source to the expression, `license-files`, the README and the module crediting it — 2026-11-12 #1370.
+- A dataset under CC0, a corpus the package measured counts on without copying its words, and a source that states no terms for reuse add nothing to the expression; the last kind is listed in this file's Log as left out, by name, so the next source of its kind is weighed against it — 2026-11-12 #1370.
 
 ## Log
 
-- **2026-11-12 THE LICENCE EXPRESSION NAMES EVERY DATASET THE WHEEL SHIPS, AND NAM_DICT AND UNIHAN GET THE LICENCE FILES THEIR TERMS ASK FOR.** Until this entry `license` read `LGPL-2.1-or-later` alone and `license-files` held `LICENSE`, `AUTHORS` and `LICENSE-nicknames` (decisions/name-matching's 2026-11-09 THE NICKNAMES LIST). Five third-party datasets under stated terms reach the package, read from each module's provenance docstring and the tools that write the generated blocks, on master at bda4a632:
+- **2026-11-12 #1370 THE LICENCE EXPRESSION NAMES EVERY DATASET THE WHEEL SHIPS, AND NAM_DICT AND UNIHAN GET THE LICENCE FILES THEIR TERMS ASK FOR.** Until this entry `license` read `LGPL-2.1-or-later` alone and `license-files` held `LICENSE`, `AUTHORS` and `LICENSE-nicknames` (decisions/name-matching's 2026-11-09 THE NICKNAMES LIST). Five third-party datasets under stated terms reach the package, read from each module's provenance docstring and the tools that write the generated blocks, on master at bda4a632:
 
   | Source | Shipped in | First release | Licence (SPDX) | What it asks | How it is met |
   |---|---|---|---|---|---|
