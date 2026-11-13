@@ -76,6 +76,7 @@ class Outcome(StrEnum):
     ONE_SIDE = "one-side"
     GENERATION_ONE_SIDE = "generation-one-side"
     NOTED = "noted"
+    ALTERNATE_SPELLING = "alternate-spelling"
     FAMILIAR_FORM = "familiar-form"
     FAMILY_INITIAL = "family-initial"
     GIVEN_ONE_SIDE = "given-one-side"
@@ -598,6 +599,12 @@ class Matching:
             # each other's keys
             initials |= {_letter(g) for g in _paired_forms(
                 _spellings(given[0], given_rule.group, lexicon), lexicon)} - {""}
+        if given and Outcome.ALTERNATE_SPELLING in self.accept:
+            # and as an alternate spelling, so `Yuliya` and `Iuliia`
+            # share each other's keys
+            initials |= {_letter(g) for g in _paired_forms(
+                _spellings(given[0], given_rule.group, lexicon), lexicon,
+                lexicon._alternate_spellings)} - {""}
         # no given letter, a name with no given name or one of hyphens
         # alone, keys the empty letter, as the cross-role letters below
         # stand beside it rather than for it
@@ -837,12 +844,14 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
-def _paired_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
+def _paired_forms(spellings: frozenset[str], lexicon: Lexicon,
+                  pairs: Callable[[str], frozenset[str]] | None = None,
+                  ) -> set[str]:
     """The given names any member of a spelling set is paired with
-    directly as a familiar form, in either direction, each folded and
-    as normalized."""
-    paired = {name for word in spellings
-              for name in lexicon._familiar_forms(word)}
+    directly as a familiar form (or by `pairs`, the alternate
+    spellings), in either direction, each folded and as normalized."""
+    pairs = pairs or lexicon._familiar_forms
+    paired = {name for word in spellings for name in pairs(word)}
     return paired | {_fold(name) for name in paired}
 
 
@@ -863,21 +872,36 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     return not _paired_forms(sa, lexicon).isdisjoint(sb)
 
 
+def _alternate(a: str, b: str, lexicon: Lexicon) -> bool:
+    """One given-name word and the other are a listed alternate
+    spelling (`Yuliya` / `Iuliia`), read as `_familiar` reads a
+    familiar form: either way, never chained."""
+    sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
+    return not _paired_forms(
+        sa, lexicon, lexicon._alternate_spellings).isdisjoint(sb)
+
+
 def _familiar_outcome(wa: list[str], wb: list[str],
                       lexicon: Lexicon) -> Outcome | None:
     """Two given texts' words, pair by pair, each the same once folded,
-    a listed spelling or a familiar form, and at least one a familiar
-    form: `familiar-form`, else `None`."""
+    a listed spelling, an alternate spelling or a familiar form, and at
+    least one of the last two: `familiar-form` where a pair needed a
+    familiar form, else `alternate-spelling`; `None` where no pair
+    needed either or one is neither (decisions/name-matching,
+    2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN)."""
     if len(wa) != len(wb):
         return None
-    found = False
+    found: Outcome | None = None
     for x, y in zip(wa, wb):
         if _fold(x) == _fold(y) or _listed(x, y, "given", lexicon):
             continue
-        if not _familiar(x, y, lexicon):
+        if _alternate(x, y, lexicon):
+            found = found or Outcome.ALTERNATE_SPELLING
+        elif _familiar(x, y, lexicon):
+            found = Outcome.FAMILIAR_FORM
+        else:
             return None
-        found = True
-    return Outcome.FAMILIAR_FORM if found else None
+    return found
 
 
 def _lettered_words(text: str) -> list[str]:

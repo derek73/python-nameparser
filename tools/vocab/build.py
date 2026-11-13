@@ -294,9 +294,9 @@ MATCHING = frozenset({"short_for", "spelling_of"})
 FAMILIAR_KEYS = frozenset({"short_for", "default", "note", "issue",
                            "decided"})
 #: What a `spelling` reading may carry: `spelling_of`, the given names
-#: the word is another spelling of, which compiles into SAME_AS's
-#: `given` group alone (decisions/name-matching, 2026-11-12 SPELLINGS
-#: ARE A KIND OF THEIR OWN), `default`, and its evidence.
+#: the word is another spelling of, which compiles into
+#: ALTERNATE_SPELLINGS alone (decisions/name-matching, 2026-11-12
+#: ALTERNATE SPELLINGS ARE OPT-IN), `default`, and its evidence.
 SPELLING_KEYS = frozenset({"spelling_of", "default", "note", "issue",
                            "decided"})
 #: Each matching-only category's keys and list property.
@@ -1489,6 +1489,7 @@ CONSTANTS = (
     "SAME_AS",
     "SAME_AS_NAMED",
     "FAMILIAR",
+    "ALTERNATE_SPELLINGS",
 )
 
 
@@ -1584,7 +1585,7 @@ def render(compiled: Compiled) -> str:
     for name in CONSTANTS:
         v = values[name]
         out.append("")
-        if name == "FAMILIAR":
+        if name in ("FAMILIAR", "ALTERNATE_SPELLINGS"):
             # a familiar form -> the given names it stands for
             assert isinstance(v, dict), (name, type(v))
             out.append(f"{name}: dict[str, tuple[str, ...]] = {{")

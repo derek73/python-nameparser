@@ -735,7 +735,8 @@ def _fold(text: str) -> str:
 Familiar = Mapping[str, frozenset[str]]
 
 
-def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
+def _familiar_of(compiled: Mapping[str, Any],
+                 key: str = "FAMILIAR") -> Familiar:
     """The compile's `FAMILIAR`, a familiar form -> the longer names its
     `short_for` lists, read both ways: each word with every name it is
     paired with directly, as the shorter name or the longer. The
@@ -745,9 +746,12 @@ def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
     two pairs (decisions/name-matching, 2026-11-08
     FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
     the match's own), so a pair written accented (`józsi`, `józsef`)
-    is found from either name written without its accents."""
+    is found from either name written without its accents. With
+    `key="ALTERNATE_SPELLINGS"` the same index of the alternate
+    spellings, which pair alike (decisions/name-matching, 2026-11-12
+    ALTERNATE SPELLINGS ARE OPT-IN)."""
     paired: dict[str, set[str]] = {}
-    for short, longs in compiled["FAMILIAR"].items():
+    for short, longs in compiled[key].items():
         for long in longs:
             for key in {short, _fold(short)}:
                 paired.setdefault(key, set()).add(long)
@@ -758,15 +762,17 @@ def _familiar_of(compiled: Mapping[str, Any]) -> Familiar:
 
 #: What a lexicon's readings compile to: the vocabulary sets by
 #: `_LexiconSets` name, the listed-spelling map, the words in it that
-#: are a name of their own as well, and the familiar forms.
+#: are a name of their own as well, the familiar forms and the alternate
+#: spellings.
 _Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed,
-                  Familiar]
+                  Familiar, Familiar]
 
 
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
     return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
             MappingProxyType(dict(compiled["SAME_AS_NAMED"])),
-            _familiar_of(compiled))
+            _familiar_of(compiled),
+            _familiar_of(compiled, "ALTERNATE_SPELLINGS"))
 
 
 @functools.cache
@@ -785,7 +791,7 @@ _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
 _NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
     {g: MappingProxyType({}) for g in sorted(_SAME_AS_GROUPS)}),
     MappingProxyType({g: frozenset() for g in sorted(_SAME_AS_GROUPS)}),
-    MappingProxyType({}))
+    MappingProxyType({}), MappingProxyType({}))
 
 
 # -- readings ------------------------------------------------------------
@@ -1211,7 +1217,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
            strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
-                                  SameAs, SameAsNamed, Familiar]:
+                                  SameAs, SameAsNamed, Familiar, Familiar]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1260,8 +1266,9 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
         return _NOTHING_COMPILED
-    _, sets, same_as, named, familiar = _built(base, edits, chosen, strict)
-    return sets, same_as, named, familiar
+    _, sets, same_as, named, familiar, alternate = _built(
+        base, edits, chosen, strict)
+    return sets, same_as, named, familiar, alternate
 
 
 @functools.lru_cache(maxsize=32)
@@ -1771,6 +1778,12 @@ class Lexicon:
     # built like `_same_as`
     _familiar: Familiar = field(
         init=False, repr=False, compare=False, hash=False)
+    # a given name -> every name it is paired with as an alternate
+    # spelling, either way, from every `spelling` reading's
+    # `spelling_of`, read by the name match alone (`_alternate_spellings`);
+    # built like `_familiar`
+    _alternate: Familiar = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -1814,12 +1827,13 @@ class Lexicon:
         put("_languages", languages)
         put("_strict", _strict)
         put("_chosen", chosen)
-        compiled, same_as, named, familiar = _compiled_for(
+        compiled, same_as, named, familiar, alternate = _compiled_for(
             self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
         put("_same_as", same_as)
         put("_same_as_named", named)
         put("_familiar", familiar)
+        put("_alternate", alternate)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -2266,6 +2280,15 @@ class Lexicon:
         one shorter one (`maximilian`, `maxim`) do not reach each
         other. Read by the name match alone, never by a parse."""
         return self._familiar.get(_normalize(word), frozenset())
+
+    def _alternate_spellings(self, word: str) -> frozenset[str]:
+        """The given names `word`, normalized, is paired with directly
+        as an alternate spelling, in either direction (`olha` ->
+        {`olga`}, `olga` -> {`olha`}), empty for a word in no pair.
+        Never chained, as familiar forms are not: `yurii` and `yury`,
+        each paired with `yuri`, do not reach each other. Read by the
+        name match alone, never by a parse."""
+        return self._alternate.get(_normalize(word), frozenset())
 
     def _deltas_from(self, other: Lexicon) -> tuple[
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:

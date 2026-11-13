@@ -84,8 +84,28 @@ text = "andriy"
 spelling = { spelling_of = ["andrii"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "anzhela"
+spelling = { spelling_of = ["angela"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "bohdan"
+spelling = { spelling_of = ["bogdan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "borys"
+spelling = { spelling_of = ["boris"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "galyna"
+spelling = { spelling_of = ["galina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "halyna"
 spelling = { spelling_of = ["galyna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "hanna"
+spelling = { spelling_of = ["ganna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "kateryna"
@@ -94,6 +114,10 @@ spelling = { spelling_of = ["katerina"], note = "found in ORCID's public data fi
 [[word]]
 text = "kseniya"
 spelling = { spelling_of = ["kseniia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "larysa"
+spelling = { spelling_of = ["larisa"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lesya"
@@ -124,8 +148,16 @@ text = "mariya"
 spelling = { spelling_of = ["mariia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "maryna"
+spelling = { spelling_of = ["marina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mykhaylo"
 spelling = { spelling_of = ["mykhailo"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "nadiia"
+spelling = { spelling_of = ["nadia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nadiya"
@@ -138,6 +170,10 @@ spelling = { spelling_of = ["natalia"], note = "found in ORCID's public data fil
 [[word]]
 text = "nataliya"
 spelling = { spelling_of = ["nataliia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "oleh"
+spelling = { spelling_of = ["oleg"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "oleksandr"
@@ -164,6 +200,10 @@ text = "olexiy"
 spelling = { spelling_of = ["oleksii"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "olha"
+spelling = { spelling_of = ["olga"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sergiy"
 spelling = { spelling_of = ["sergii"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -180,6 +220,18 @@ text = "tetyana"
 spelling = { spelling_of = ["tetiana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "vadym"
+spelling = { spelling_of = ["vadim"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "valentyn"
+spelling = { spelling_of = ["valentin"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "valentyna"
+spelling = { spelling_of = ["valentina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "valeriy"
 spelling = { spelling_of = ["valerii"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -194,6 +246,10 @@ spelling = { spelling_of = ["viktoriia"], note = "found in ORCID's public data f
 [[word]]
 text = "vitaliy"
 spelling = { spelling_of = ["vitalii"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "vladyslav"
+spelling = { spelling_of = ["vladislav"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yaroslav"

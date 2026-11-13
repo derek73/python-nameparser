@@ -92,8 +92,8 @@ PATENTSVIEW_LINES = 400_000
 #: the size `local_patentsview.PV_FILES` pins.
 PATENTSVIEW_RAW = Path("patentsview-probe") / "g_inventor_not_disambiguated.tsv.zip"
 PATENTSVIEW_MEMBER = "g_inventor_not_disambiguated.tsv"
-OPT_INS = ("familiar-form", "family-initial", "given-one-side",
-           "hyphenated-part", "across-roles")
+OPT_INS = ("alternate-spelling", "familiar-form", "family-initial",
+           "given-one-side", "hyphenated-part", "across-roles")
 Setting = tuple[str, tuple[str, ...], tuple[str, ...], bool, "str | None"]
 #: Each setting: its label, the outcomes added to and taken from the
 #: default, whether other readings are searched, and the locale pack.
@@ -245,10 +245,14 @@ def draw_pairs(tests: Path) -> tuple[list[tuple[str, str, str]], list[str]]:
 # -- one side's results ------------------------------------------------------
 
 def _matcher(setting: Setting) -> Matching:
-    from nameparser import Parser, locales, parser_for
+    from nameparser import Outcome, Parser, locales, parser_for
     _, added, removed, other, pack = setting
     parser = Parser() if pack is None else parser_for(getattr(locales, pack))
-    accept = (parser.matching().accept | set(added)) - set(removed)
+    # an outcome the tree does not know adds nothing there, as one it
+    # does not know subtracts nothing: a base older than the outcome
+    # reads the setting as the default
+    known = {o.value for o in Outcome}
+    accept = (parser.matching().accept | (set(added) & known)) - set(removed)
     return parser.matching(accept, other_readings=other)
 
 

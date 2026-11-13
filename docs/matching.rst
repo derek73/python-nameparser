@@ -324,21 +324,27 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms are English alone for now, 2,180 pairs
-(counted 2026-11-12) from Old Dominion University's nicknames list
-(Apache License 2.0), a lookup of English given names' nicknames and
-diminutives (``Ricky`` / ``Richard``, ``Peggy`` / ``Margaret``), less
-the pairs a review refused as spellings of one name (``Allan`` /
-``Allen``), another language's form (``Ivan`` / ``John``), another
-name (``Erin`` / ``Aaron``) or two forms of one name neither made from
-the other (``Lisa`` / ``Liz``). Other languages' familiar forms
-(``Sepp`` / ``Josef``, ``Kasia`` / ``Katarzyna``) are not shipped
-yet. A plain choice of languages keeps the English pairs, and a strict
-one keeps them only where it chooses English. A pair whose short name
+The shipped familiar forms, 2,845 pairs (counted 2026-11-12), come
+from two sources. Old Dominion University's nicknames list (Apache
+License 2.0), a lookup of English given names' nicknames and
+diminutives (``Ricky`` / ``Richard``, ``Peggy`` / ``Margaret``), is in
+the English file, less the pairs a review refused as another
+language's form (``Ivan`` / ``John``), another name (``Erin`` /
+``Aaron``) or two forms of one name neither made from the other
+(``Lisa`` / ``Liz``). The rest, in many languages (``Kasia`` /
+``Katarzyna``, ``Kostas`` / ``Konstantinos``, ``Seun`` /
+``Oluwaseun``), are pairs ORCID's researchers wrote for themselves both
+ways, in the given-name box and in a published name, each read by two
+reviewers, in the file of the languages written where their holders
+work. The same review gives the given names' listed spellings
+(``Łukasz`` / ``Lukasz``, ``Aleksey`` / ``Alexey``, ``Saeed`` /
+``Saeid``), which read ``listed-spelling`` and so are accepted by
+default. A plain choice of languages keeps every file's pairs, and a
+strict one keeps its own files' and the shared ones. A pair whose short name
 reads as a title in front of a name (``Ab``, ``Nanny``) is never
 compared as a given name, so it stays inert while the title reading
 stands. It is a selection and has gaps (``Rickie`` /
-``Richard`` and ``Pepe`` / ``José`` are not in it); add your own with a
+``Richard`` and ``Sepp`` / ``Josef`` are not in it); add your own with a
 ``familiar`` reading,
 which extends the names the word's shipped readings list (to replace
 them, ``remove(word, kind="familiar")`` first):

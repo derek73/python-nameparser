@@ -173,6 +173,9 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         # a familiar form -> the given names it stands for, read once
         # into each Lexicon's `_familiar` beside them, by the match alone
         "_compiled.FAMILIAR",
+        # a given name -> the given names it is another spelling of,
+        # read once into each Lexicon's `_alternate` beside them
+        "_compiled.ALTERNATE_SPELLINGS",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent

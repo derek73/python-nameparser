@@ -1,4 +1,4 @@
-"""Write the vocabulary's familiar forms from the nicknames list.
+"""Write the vocabulary's familiar forms and spellings from the nicknames list and the review.
 
 WHY THIS IS IN THE TREE. A familiar form is a short given name that
 stands for longer ones without being a spelling of them: `Max` for
@@ -21,19 +21,30 @@ their reasons in nicknames_excluded.tsv beside this file
 (decisions/name-matching, 2026-11-09 THE NICKNAMES LIST). The rest go
 in NICKNAMES_TAG's file, English usage, with a note naming the list
 alone, as the list gives no evidence per pair. The pairs nam_dict gave
-until 2026-11-12, every other language's and English ones the list
-does not hold, are no longer written: a
-compiler's list copied whole keeps its licence, and nam_dict's is the
-GFDL (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE
-MEASURE; decisions/name-matching, 2026-11-12 ENGLISH ONLY UNTIL REBUILT).
+until 2026-11-12 are no longer written: a compiler's list copied whole
+keeps its licence, and nam_dict's is the GFDL
+(decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE).
+
+THE REVIEWED PAIRS. familiar_reviewed.tsv beside this file holds the
+pairs tools/vocab/familiar_candidates.py finds in ORCID's public data
+file (CC0), each as two readers categorized it (decisions/name-matching,
+2026-11-12 SPELLINGS ARE A KIND OF THEIR OWN). A pair both called a
+familiar form is written as a `familiar` reading on its shorter name; a
+pair both called a spelling as a `spelling` reading (`spelling_of`,
+compiled into ALTERNATE_SPELLINGS, read as the opt-in
+`alternate-spelling`) on the second name in order; a pair they split
+that the maintainer decided, as its decided category; each in the file of
+every language its row names, with REVIEWED_SOURCE as its note. Every
+other category is recorded there and written nowhere.
 
 In the file, a word already holding an entry gains a `familiar` line
 under its `text`, and every other word an entry of its own in one
 generated block at the file's end, in the build's word order (check
-10). The tool owns every `familiar` reading whose note is
-NICKNAMES_SOURCE, in every vocabulary file, and rewrites nothing else; a
-`familiar` reading written by hand on a word the tool would write is
-refused rather than merged.
+10). A word both sources pair takes one reading naming both. The tool
+owns every `familiar` and `spelling` reading whose note names its
+sources and nothing else, in every vocabulary file, and rewrites
+nothing else; such a reading written by hand on a word the tool would
+write is refused rather than merged.
 
     uv run python tools/vocab/familiar.py           # the pairs
     uv run python tools/vocab/familiar.py --fetch   # cache the list
@@ -96,11 +107,18 @@ REVIEWED_SOURCE = ("found in ORCID's public data file (CC0) and reviewed, "
 REVIEWED_HEADER = ["a", "b", "category", "status", "opus", "sonnet",
                    "reason", "languages", "source", "holders"]
 #: A reviewed pair's categories: the two that ship (`familiar` and
-#: `spelling`), those recorded and not shipped, and `split`, a pair the
-#: two readers read differently, which ships nowhere.
+#: `spelling`), those recorded and not shipped, `split`, a pair the two
+#: readers read differently and nobody settled, and `refused`, one the
+#: maintainer refused; none of the last two ships.
 REVIEW_CATEGORIES = frozenset({
     "familiar", "spelling", "translation", "transliteration",
-    "different-name", "sibling", "unclear", "abbreviation", "split"})
+    "different-name", "sibling", "unclear", "abbreviation", "split",
+    "refused"})
+#: A row's status: empty where the two readers agreed, `decided` where
+#: the maintainer settled a pair they split or one the review held, its
+#: category the maintainer's, and `pending` for a split awaiting that
+#: decision, which ships nowhere.
+REVIEW_STATUSES = frozenset({"", "decided", "pending"})
 #: Every source a reading's note may name, in the order a note names them.
 SOURCES = (NICKNAMES_SOURCE, REVIEWED_SOURCE)
 EXCLUSION_CATEGORIES = frozenset({
@@ -398,8 +416,8 @@ def read_reviewed(text: str) -> list[dict[str, str]]:
     """The reviewed pairs' rows. Raises ValueError for another header, a
     row of another width, an unknown category or status, a pair listed
     twice or written out of order, a pair whose two names normalize
-    alike or are not normalized, a held pair that is no spelling, and a
-    shipping pair placed in no file."""
+    alike or are not normalized, a status that does not fit its
+    category, and a shipping pair placed in no file."""
     rows = list(csv.reader(io.StringIO(text), delimiter="\t"))
     if not rows or rows[0] != REVIEWED_HEADER:
         raise ValueError(f"{REVIEWED.name}: the header is "
@@ -416,10 +434,15 @@ def read_reviewed(text: str) -> list[dict[str, str]]:
             raise ValueError(f"{REVIEWED.name} line {number}: "
                              f"{r['category']!r} is not one of "
                              f"{sorted(REVIEW_CATEGORIES)}")
-        if r["status"] not in ("", "held") or (
-                r["status"] and r["category"] != "spelling"):
+        if r["status"] not in REVIEW_STATUSES or (
+                r["status"] == "pending" and r["category"] != "split") or (
+                not r["status"] and r["category"] == "refused") or (
+                r["status"] == "decided" and r["category"] == "split"):
             raise ValueError(f"{REVIEWED.name} line {number}: status "
-                             f"{r['status']!r}; only a spelling is held")
+                             f"{r['status']!r} on a {r['category']!r} pair; "
+                             f"a pending pair is a split, a decided one "
+                             f"no longer is, and only a decided one is "
+                             f"refused")
         if not (r["a"] < r["b"]) or any(
                 build._normalize(w) != w for w in pair):
             raise ValueError(f"{REVIEWED.name} line {number}: a pair is "
@@ -447,8 +470,8 @@ def place(nicknames: Nicknames,
           reviewed: Iterable[Mapping[str, str]] = ()) -> Placements:
     """Every reading the tool writes, by file: the nicknames list's
     familiar forms in NICKNAMES_TAG's file, and each reviewed pair the
-    two readers agreed on in the file of each language its row names,
-    held pairs left out. A familiar pair is written on its shorter name,
+    two readers agreed on or the maintainer decided, in the file of each
+    language its row names. A familiar pair is written on its shorter name,
     the familiar form, then the first in order; a spelling on the second
     in order, listing the first, a link the match reads either way."""
     out: Placements = {}
@@ -461,7 +484,7 @@ def place(nicknames: Nicknames,
         for long in longs:
             put(NICKNAMES_TAG, short, "familiar", NICKNAMES_SOURCE, long)
     for r in reviewed:
-        if r["category"] not in KINDS or r["status"] == "held":
+        if r["category"] not in KINDS:
             continue
         a, b = r["a"], r["b"]
         if r["category"] == "familiar":

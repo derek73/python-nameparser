@@ -11307,6 +11307,10 @@ text = "zolly"
 familiar = { short_for = ["solomon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "aleksandr"
+spelling = { spelling_of = ["aleksander"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "amro"
 spelling = { spelling_of = ["amr"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

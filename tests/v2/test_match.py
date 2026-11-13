@@ -78,6 +78,7 @@ NAMES: tuple[str, ...] = (
     "Bill Smith", "BILL SMITH", "Sepp Huber", "Josef Huber", "Bob Smith",
     "Robert Smith", "John Bill Smith", "John William Smith",
     'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
+    "Aleksey Ivanov", "Alexey Ivanov",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
     "Ann Smith\u2010Jones", "Ann Smith\u2013Jones", "Jean\u2010Pierre Dupont",
     "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
@@ -90,7 +91,8 @@ PARSED: tuple[ParsedName, ...] = tuple(Parser().parse(n) for n in NAMES)
 
 #: The opt-in outcomes this module's settings sweep adds to the default.
 OPT_INS: tuple[Outcome, ...] = (
-    Outcome.FAMILIAR_FORM, Outcome.FAMILY_INITIAL, Outcome.GIVEN_ONE_SIDE,
+    Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM, Outcome.FAMILY_INITIAL,
+    Outcome.GIVEN_ONE_SIDE,
     Outcome.HYPHENATED_PART, Outcome.ACROSS_ROLES,
 )
 
@@ -182,7 +184,7 @@ def test_the_default_accepts_what_the_spec_lists() -> None:
 def test_outcomes_are_declared_strongest_first() -> None:
     names = [o.value for o in Outcome]
     assert names[0] == "same" and names[-1] == "conflict"
-    assert len(names) == 17
+    assert len(names) == 18
 
 
 def test_match_types_round_trip_through_pickle() -> None:
@@ -779,7 +781,8 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "María López", "José Luis Pérez", "José Pérez", "Pérez, José Luis",
     "Wang Xiaoming", "Xiaoming Wang", "김민준", "Kim Min-jun",
     "Min-jun Kim", "Nguyễn Văn An", "Nguyen An", "Bill Smith",
-    "William Smith", "Smith Bill", "Smith William", "Mr. Smith",
+    "William Smith", "Smith Bill", "Smith William", "Aleksey Smith",
+    "Alexey Smith", "Smith Aleksey", "Smith Alexey", "Mr. Smith",
     "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
     "Guo Hong-Yi",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
@@ -1695,10 +1698,92 @@ def test_a_familiar_form_meets_a_listed_spelling_of_its_longer_name() -> None:
 
 
 def test_a_familiar_form_ranks_below_every_default_outcome() -> None:
+    # and below an alternate spelling alone, the one opt-in stronger:
+    # a spelling of the name says more than a familiar form of it
     assert all(o.strength > Outcome.FAMILIAR_FORM.strength
                for o in DEFAULT_ACCEPT)
     assert all(o.strength < Outcome.FAMILIAR_FORM.strength
-               for o in OPT_INS if o is not Outcome.FAMILIAR_FORM)
+               for o in OPT_INS if o not in (Outcome.FAMILIAR_FORM,
+                                             Outcome.ALTERNATE_SPELLING))
+    assert all(o.strength > Outcome.ALTERNATE_SPELLING.strength
+               for o in DEFAULT_ACCEPT)
+    assert Outcome.ALTERNATE_SPELLING.strength > Outcome.FAMILIAR_FORM.strength
+
+
+# -- alternate spellings (decisions/name-matching, 2026-11-12 ALTERNATE
+# SPELLINGS ARE OPT-IN) --------------------------------------------------------
+
+_alternate = _with(Outcome.ALTERNATE_SPELLING)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Yuliya Ivanova", "Iuliia Ivanova"),
+    ("Aleksey Ivanov", "Alexey Ivanov"),
+    ("Smith, Mohammad", "Muhammad Smith"),
+])
+def test_an_alternate_spelling_is_consistent_only_where_accepted(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = _alternate.check(x, y)
+        assert r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.ALTERNATE_SPELLING
+        assert _alternate.keys(x) & _alternate.keys(y)
+        # people spell a name differently on purpose, to be told apart:
+        # not accepted by default, reported in the table all the same
+        r = m.check(x, y)
+        assert not r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.ALTERNATE_SPELLING
+
+
+def test_an_alternate_spelling_is_never_chained() -> None:
+    # each is paired with `aleksei` and `aleksey` with `aleksej` by no
+    # row of the review: a chain through the third spelling would ship
+    # a pair nobody read
+    lexicon = Lexicon.default()
+    assert "aleksei" in lexicon._alternate_spellings("aleksej")
+    assert "aleksei" in lexicon._alternate_spellings("aleksey")
+    assert "aleksey" not in lexicon._alternate_spellings("aleksej")
+    r = _alternate.check("Aleksej Petrov", "Aleksey Petrov")
+    assert not r.consistent
+
+
+def test_an_alternate_spelling_is_no_familiar_form_and_no_listed_spelling() -> None:
+    # the familiar forms' opt-in does not reach it, and the default's
+    # listed spellings never hold it
+    assert not _familiar.check("Aleksey Ivanov", "Alexey Ivanov").consistent
+    assert not Lexicon.default()._headwords("aleksey", "given") & (
+        Lexicon.default()._headwords("alexey", "given"))
+
+
+def test_a_name_needing_both_reads_the_weaker_familiar_form() -> None:
+    # one word an alternate spelling, the other a familiar form: the
+    # pair needed the familiar form, so it reads that and only both
+    # opt-ins together accept it
+    lexicon = Lexicon.default().add("zzr", kind="spelling", spelling_of=["zzs"]).add(
+        "zzq", kind="familiar", short_for=["zzt"])
+    both = Matching(Parser(lexicon=lexicon), DEFAULT_ACCEPT | {
+        Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM})
+    alone = Matching(Parser(lexicon=lexicon),
+                     DEFAULT_ACCEPT | {Outcome.ALTERNATE_SPELLING})
+    r = both.check("Zzq Zzr Smith", "Zzt Zzs Smith")
+    assert r.consistent
+    assert {role(r, x).outcome for x in (Role.GIVEN, Role.MIDDLE)} == {
+        Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING}
+    assert not alone.check("Zzq Zzr Smith", "Zzt Zzs Smith").consistent
+
+
+def test_a_callers_spelling_extends_the_shipped_ones() -> None:
+    shipped = Lexicon.default()._alternate_spellings("aleksey")
+    lexicon = Lexicon.default().add("aleksey", kind="spelling",
+                                    spelling_of=["Aleksiy"])
+    assert lexicon._alternate_spellings("aleksey") == shipped | {"aleksiy"}
+    assert lexicon._alternate_spellings("aleksiy") == {"aleksey"}
+    assert Lexicon.empty().add("zzq", kind="spelling", spelling_of=["zzr"]
+                               ).words(kind="spelling") == ("zzq",)
+    with pytest.raises(ValueError, match="needs spelling_of"):
+        Lexicon.default().add("zzq", kind="spelling")
+    with pytest.raises(ValueError, match="names the word itself"):
+        Lexicon.default().add("zzq", kind="spelling", spelling_of=["zzq"])
 
 
 def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:

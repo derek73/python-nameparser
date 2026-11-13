@@ -63,6 +63,10 @@ text = "dimitris"
 familiar = { short_for = ["dimitrios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "dionysis"
+familiar = { short_for = ["dionysios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "efi"
 familiar = { short_for = ["efthymia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -77,6 +81,10 @@ familiar = { short_for = ["fotios"], note = "found in ORCID's public data file (
 [[word]]
 text = "giannis"
 familiar = { short_for = ["ioannis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "giorgos"
+familiar = { short_for = ["georgios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "grigoris"

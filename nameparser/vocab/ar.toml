@@ -801,6 +801,10 @@ text = "misha"
 familiar = { short_for = ["michael"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "sayed"
+familiar = { short_for = ["elsayed"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "abdullah"
 spelling = { spelling_of = ["abdallah"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

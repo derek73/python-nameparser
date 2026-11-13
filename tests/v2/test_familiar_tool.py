@@ -386,9 +386,11 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
     rows = tool.read_reviewed(_reviewed(
         _row("george", "georgios", "translation", languages="el"),
         _row("george", "jorge", "split", languages="es"),
-        _row("john", "jon", "spelling", "held", "en"),
+        _row("john", "jon", "split", "pending", "en"),
         _row("kasia", "katarzyna", "familiar", languages="pl en"),
+        _row("kasia", "kaśka", "refused", "decided"),
         _row("lukasz", "łukasz", "spelling"),
+        _row("olga", "olha", "spelling", "decided", "uk"),
     ))
     placed = tool.place({"bill": {"william"}}, rows)
     src = tool.REVIEWED_SOURCE
@@ -397,8 +399,11 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
     assert placed["en"]["kasia"] == {"familiar": {src: {"katarzyna"}}}
     # a spelling on the second name in order, listing the first
     assert placed["pl"]["łukasz"] == {"spelling": {src: {"lukasz"}}}
-    # held, split and recorded pairs ship nowhere
+    # a split the maintainer decided ships as decided
+    assert placed["uk"]["olha"] == {"spelling": {src: {"olga"}}}
+    # pending, refused, split and recorded pairs ship nowhere
     assert "jon" not in placed["en"] and "john" not in placed["en"]
+    assert "kaśka" not in placed["pl"]
     assert "es" not in placed and "el" not in placed
     # the nicknames list's own pair beside them
     assert placed["en"]["bill"] == {"familiar": {tool.NICKNAMES_SOURCE: {"william"}}}
@@ -434,7 +439,10 @@ def test_a_spelling_written_by_hand_is_refused() -> None:
 @pytest.mark.parametrize(("rows", "match"), [
     ((("a",),), "fields"),
     ((_row("kasia", "katarzyna", "nickname"),), "'nickname' is not one of"),
-    ((_row("kasia", "katarzyna", "familiar", "held"),), "only a spelling is held"),
+    ((_row("kasia", "katarzyna", "familiar", "held"),), "status 'held'"),
+    ((_row("kasia", "katarzyna", "familiar", "pending"),), "a pending pair is a split"),
+    ((_row("kasia", "katarzyna", "split", "decided"),), "no longer is"),
+    ((_row("kasia", "katarzyna", "refused"),), "only a decided one is refused"),
     ((_row("katarzyna", "kasia", "familiar"),), "in order"),
     ((_row("Kasia", "katarzyna", "familiar"),), "normalized"),
     ((_row("kasia", "katarzyna", "familiar"),
@@ -449,38 +457,21 @@ def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
         tool.read_reviewed(_reviewed(*rows))
 
 
-#: The reviewed pairs the review did not ship that the given names'
-#: listed spellings link all the same: written short by a `given`
-#: reading's `same_as` before this review (`moh`, `mohd`), or
-#: reached through a third spelling both words were agreed to be, as
-#: listed spellings chain (`yuri`, `natalia`, `viktoria`).
-_LINKED_WITHOUT_SHIPPING = {
-    ("moh", "mohammad"), ("mohammad", "mohd"),
-    ("mohammed", "mohd"), ("nataliia", "natalya"), ("victoria", "viktoriia"),
-    ("yurii", "yury")}
-
-
-def test_the_committed_review_ships_what_both_readers_agreed_and_no_more() -> None:
-    # offline: every agreed familiar pair is a familiar form, every
-    # agreed spelling not held a listed spelling, and no other pair is
-    # linked but those _LINKED_WITHOUT_SHIPPING names
+def test_the_committed_review_ships_what_was_agreed_or_decided_and_no_more() -> None:
+    # offline: every familiar pair agreed or decided is a familiar form
+    # and every spelling an alternate spelling, read pair by pair, and
+    # no other pair of the review is either
     from nameparser import Lexicon
     rows = tool.load_reviewed()
     assert len(rows) >= 1600
     lexicon = Lexicon.default()
-    linked = set()
     for r in rows:
         a, b = r["a"], r["b"]
         familiar = b in lexicon._familiar_forms(a)
-        spelling = bool(lexicon._headwords(a, "given")
-                        & lexicon._headwords(b, "given"))
-        if r["category"] == "familiar":
-            assert familiar, (a, b)
-        elif r["category"] == "spelling" and not r["status"]:
-            assert spelling, (a, b)
-        elif spelling:
-            linked.add((a, b))
-    assert linked == _LINKED_WITHOUT_SHIPPING
-    # the held pairs stay apart
-    held = [(r["a"], r["b"]) for r in rows if r["status"] == "held"]
-    assert held and not linked & set(held)
+        alternate = b in lexicon._alternate_spellings(a)
+        assert familiar == (r["category"] == "familiar"), (a, b)
+        assert alternate == (r["category"] == "spelling"), (a, b)
+    # the spellings stay out of the default's listed spellings
+    assert not any(lexicon._headwords(r["a"], "given")
+                   & lexicon._headwords(r["b"], "given")
+                   for r in rows if r["category"] == "spelling")
