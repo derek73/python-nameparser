@@ -75,7 +75,7 @@ MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
-#: (2026-11-12: 200 pinyin surnames, 6,407 given names; nam_dict's
+#: (2026-11-12: 200 pinyin surnames, 6,409 given names; nam_dict's
 #: ranking gave 4,262, under a floor of 3,000).
 MIN_PINYIN = 150
 MIN_GIVEN = 5_000

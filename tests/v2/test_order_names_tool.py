@@ -354,7 +354,8 @@ def test_an_orcid_corpus_without_its_meta_is_refused(
 @needs_checkout
 @pytest.mark.parametrize("typed, key", [
     ("Ala'", "ala"), ("“Anna”", "anna"), ("(Anna)", "anna"), ("Anna.", "anna"),
-    ("Anna,", "anna"), ("Łukasz", "lukasz"),
+    ("Anna,", "anna"), ("Łukasz", "lukasz"), ("«Anna»", "anna"),
+    ("[Anna.]", "anna"), ("Jose\u0301", "jose"), ("Ｊｏｓé", "jose"),
     # the suggester strips the quotes, then the full stop, so a quote
     # before a full stop stays: the tool keys it as the suggester does
     ("'Anna'.", "anna'"),
@@ -362,12 +363,15 @@ def test_an_orcid_corpus_without_its_meta_is_refused(
 def test_a_word_is_counted_under_the_spelling_the_suggester_looks_up(
         tool: ModuleType, typed: str, key: str) -> None:
     from nameparser import Parser
-    from nameparser._suggest import Signal, name_votes
+    from nameparser._suggest import Signal, _name_words, fold, name_votes
     assert tool.spelling(typed) == key
-    from nameparser._suggest import _EDGES, fold
-    assert fold(typed.rstrip(",").strip(_EDGES).strip(".")) == key
-    # and the suggester meets that key: a listed given name written so
-    # at the head votes given-first
+    # the suggester's own path: the words it reads (quotes and brackets
+    # stripped, composed), then its lookup's full stops and fold; a
+    # comma divides a name there, so the tool's comma strip is its own
+    words, _ = _name_words(f"{typed.rstrip(',')} Zzyzx", Parser().lexicon)
+    assert fold(words[0].strip(".")) == key
+    # and it meets that key: a listed given name written so at the head
+    # votes given-first
     if key in _order_names.COMMON_GIVEN_NAMES:
         votes = name_votes(f"{typed.rstrip(',')} Zzyzx", Parser().lexicon)
         assert Signal.GIVEN_NAME in votes
