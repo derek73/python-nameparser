@@ -1719,6 +1719,7 @@
 {"name": "Jack Ma.", "given": "Jack", "family": "Ma.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M."}
 {"name": "Jack PHARM D", "given": "Jack", "middle": "PHARM", "family": "D", "initials": "J. P. D.", "capitalized_force": "Jack Pharm D"}
 {"name": "Jack PhD", "given": "Jack", "suffix": "PhD", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
+{"name": "Jack Smith MA Mr", "given": "Jack", "middle": "Smith MA", "family": "Mr", "initials": "J. S. M. M.", "capitalized_force": "Jack Smith Ma Mr"}
 {"name": "Jack Wei Ma", "given": "Jack", "middle": "Wei", "family": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. W. M."}
 {"name": "Jack X.Y.I.", "given": "Jack", "family": "X.Y.I.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. X. Y. I."}
 {"name": "Jack X.Y.Z.", "given": "Jack", "family": "X.Y.Z.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. X. Y. Z."}
@@ -6858,6 +6859,9 @@
 {"name": "მიხეილ ჯოჯუა", "given": "მიხეილ", "family": "ჯოჯუა", "initials": "მ. ჯ."}
 {"name": "მონიკა ბელუჩი", "given": "მონიკა", "family": "ბელუჩი", "initials": "მ. ბ."}
 {"name": "მუხრან ვახტანგაძე", "given": "მუხრან", "family": "ვახტანგაძე", "initials": "მ. ვ."}
+{"name": "ნ.ბ. MA", "given": "ნ.ბ.", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "ნ. M.", "capitalized": "ნ.ბ. Ma"}
+{"name": "ნ.ბ. בן ბერიძე", "given": "ნ.ბ.", "family": "בן ბერიძე", "initials": "ნ. ბ."}
+{"name": "ნ.ბ. ბერიძე Jr. ნინო", "given": "ნ.ბ.", "middle": "ბერიძე Jr.", "family": "ნინო", "initials": "ნ. ბ. J. ნ."}
 {"name": "ნაკაშიძე თეკლა მარიამ", "order": "FAMILY_FIRST", "given": "თეკლა", "middle": "მარიამ", "family": "ნაკაშიძე", "initials": "თ. მ. ნ."}
 {"name": "ნელი მგალობლიშვილი", "given": "ნელი", "family": "მგალობლიშვილი", "initials": "ნ. მ."}
 {"name": "ნიკო ფიროსმანი", "given": "ნიკო", "family": "ფიროსმანი", "initials": "ნ. ფ."}
@@ -6885,6 +6889,8 @@
 {"name": "ცეცილია ჰეიმიშ შტიობერი", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ხვიჩა კვარაცხელია", "given": "ხვიჩა", "family": "კვარაცხელია", "initials": "ხ. კ."}
 {"name": "ჯეკ MA", "given": "ჯეკ", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "ჯ. M.", "capitalized": "ჯეკ Ma"}
+{"name": "ჯეკ ბერიძე Jr. ბატონი", "title": "ბატონი", "given": "ჯეკ", "family": "ბერიძე", "suffix": "Jr.", "initials": "ჯ. ბ.", "generation": "Jr."}
+{"name": "ჯეკ ბერიძე MA ბატონი", "given": "ჯეკ", "middle": "ბერიძე MA", "family": "ბატონი", "initials": "ჯ. ბ. M. ბ.", "capitalized": "ჯეკ ბერიძე Ma ბატონი"}
 {"name": "김. 민준", "given": "민준", "family": "김."}
 {"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
 {"name": "이서연·김민준", "given": "이서연", "family": "김민준"}

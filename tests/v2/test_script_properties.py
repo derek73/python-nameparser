@@ -322,7 +322,12 @@ def test_a_georgian_run_of_initials_reads_as_initials(
     name = parse(text)
     assert (name.given, name.middle, name.initials()) == (
         given, middle, initials), text
-    # its letters in R3's run of initials, as initials() reads them
+
+
+def test_a_georgian_run_ending_the_name_gives_an_initial_per_letter() -> None:
+    """rules/R3's run of initials reads a Georgian dotted run in its one
+    case as it reads a run in a name written wholly in lower case."""
+    from nameparser import parse
     assert parse("ნინო ბერიძე ა.ბ.").initials() == "ნ. ბ. ა. ბ."
 
 
@@ -365,6 +370,10 @@ def _letters(row: _ScriptRow) -> list[str]:
 @pytest.mark.parametrize(("key", "row"), _ROWS, ids=[k for k, _ in _ROWS])
 def test_every_span_of_a_row_answers_at_both_ends(key: str,
                                                   row: _ScriptRow) -> None:
+    """A span with no initial-shaped character pins nothing here:
+    Myanmar Extended-C (U+116D0-116FF) holds only digits (Unicode 16 and 17),
+    and is kept in the row so that a letter later assigned there reads
+    as the script's other letters do; it moves no reading today."""
     for c in _letters(row):
         assert is_initial(c + ".") is row.writes_initials, (key, hex(ord(c)))
 
@@ -440,3 +449,11 @@ def test_every_letter_of_a_row_script_is_in_the_row(key: str) -> None:
                if not any(lo <= cp <= hi for lo, hi in row.ranges)
                and cp not in _OUTSIDE_A_ROW]
     assert not outside, (key, outside[:5])
+
+
+def test_the_table_and_the_caseless_map_are_read_only() -> None:
+    from nameparser._policy import _CASELESS_LETTERS
+    with pytest.raises(TypeError):
+        _SCRIPT_PROPERTIES["thai"] = _SCRIPT_PROPERTIES["han"]  # type: ignore[index]
+    with pytest.raises(TypeError):
+        _CASELESS_LETTERS[0x41] = None  # type: ignore[index]
