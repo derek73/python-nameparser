@@ -423,11 +423,6 @@ expands = "the, after a case ending: \"Zia ul-Haq\""
 same_as = "al-"
 
 [[word]]
-text = "ben"
-[word.excluded.patronymic]
-reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage); a caller who needs the patronymic reading adds it to their own Lexicon. The pressure to re-add is real and recurring: 'Ahmad ben Husain' wants family 'ben Husain', the v1 suite carried that as an xfail for years, and a sweep of Arabic and Hebrew patronymic particles is exactly how it comes back"
-
-[[word]]
 text = "bin"
 given = { us_ssa = 11, wikidata = 541, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 8 in China, 6 in Korea, 1 in Japan" }
 [word.patronymic]
@@ -503,6 +498,17 @@ note = "left ambiguous as أبو is, both spellings vetted together (#269)"
 [word.bound_given]
 issue = 269
 same_as = "أبو"
+
+[[word]]
+text = "ben"
+[word.clan]
+default = false
+cased = "Ben"
+issue = [1248, 1257]
+expands = "son of, become a family name: \"Ben Salah\", \"Ben Ammar\""
+note = "Off by default, on under an Arabic or Hebrew choice (locales.AR, locales.HE): ORCID's Tunisian records gain 964 to 3 broken, Israeli 161 to 1, PSC's Tunisian filers 46 to 4, while the given name Ben, also a British middle name, breaks 148 PSC British, French and Tunisian filers by default (Mr Adam Ben Robertson), measured 2026-11-12 (#1257). A clan particle, not a patronymic: in the names it joins it starts the family name, and the patronymic view stays empty. Its case mask keeps the capital family boxes write (Ben 1,294, ben 1)"
+[word.excluded.patronymic]
+reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage). Since 2026-11-12 (#1257) the word carries a clan reading off by default instead, which an Arabic or Hebrew choice turns on, so 'Ahmad ben Husain' reads family 'ben Husain' there; the patronymic kind stays refused, because the Maghrebi and Israeli names it joins are family names, not a father's name (decisions/vocabulary-collisions)"
 
 [[word]]
 text = "آل"
