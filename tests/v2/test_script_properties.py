@@ -260,22 +260,43 @@ def test_georgian_reads_as_its_arabic_twin(text: str) -> None:
 _UNGUARDED_EFFECT = 11
 
 
-def test_the_twin_test_fails_with_the_table_off() -> None:
+def test_the_twin_test_fails_with_the_table_off(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Each reader's own binding of the caseless-letter map is replaced
+    by an empty one for this test alone (monkeypatch restores them
+    whatever happens), the shared map being read-only."""
     from nameparser import FAMILY_FIRST, GIVEN_FIRST
-    from nameparser import _policy
-    saved = dict(_policy._CASELESS_LETTERS)
-    _policy._CASELESS_LETTERS.clear()    # the readers hold this object
-    try:
-        apart = 0
-        for text in _TWIN_SHAPES:
-            twin = text
-            for ka, ar in _GEORGIAN.items():
-                twin = twin.replace(ka, ar)
-            apart += any(_shape(text, o) != _shape(twin, o)
-                         for o in (GIVEN_FIRST, FAMILY_FIRST))
-    finally:
-        _policy._CASELESS_LETTERS.update(saved)
+    from nameparser._pipeline import _pieces
+    for module in (_vocab, _pieces, _render):
+        assert hasattr(module, "_CASELESS_LETTERS"), module
+        monkeypatch.setattr(module, "_CASELESS_LETTERS", {})
+    apart = 0
+    for text in _TWIN_SHAPES:
+        twin = text
+        for ka, ar in _GEORGIAN.items():
+            twin = twin.replace(ka, ar)
+        apart += any(_shape(text, o) != _shape(twin, o)
+                     for o in (GIVEN_FIRST, FAMILY_FIRST))
     assert apart == _UNGUARDED_EFFECT
+
+
+def test_every_reader_of_the_caseless_map_is_patched_above() -> None:
+    """The control above empties the map in the modules it names, so a
+    new module reading it must join them, or the control would measure
+    a table only partly off."""
+    root = Path(nameparser.__file__).parent
+    readers = sorted(p.relative_to(root).as_posix()
+                     for p in root.rglob("*.py")
+                     if "_CASELESS_LETTERS" in p.read_text(encoding="utf-8")
+                     and p.name != "_policy.py")
+    assert readers == ["_pipeline/_pieces.py", "_pipeline/_vocab.py",
+                       "_render.py"], readers
+
+
+def test_a_column_with_no_row_fails_the_import_by_name() -> None:
+    from nameparser._policy import _read_spans
+    with pytest.raises(ValueError, match="has_case=True.*add the row"):
+        _read_spans("has_case", True)
 
 
 def test_a_reader_selecting_no_span_is_refused() -> None:
@@ -303,3 +324,119 @@ def test_a_georgian_run_of_initials_reads_as_initials(
         given, middle, initials), text
     # its letters in R3's run of initials, as initials() reads them
     assert parse("ნინო ბერიძე ა.ბ.").initials() == "ნ. ბ. ა. ბ."
+
+
+# Each row's values pinned by a reading, so a wrong value fails here and
+# not only a reader that stopped reading the row (the per-column tests
+# above compare a reader with the row's own value, which a wrong value
+# passes).
+@pytest.mark.parametrize(("text", "field", "value"), [
+    # brahmic writes period abbreviations: S3's joined shape reads a
+    # dotted run of bare letters as a credential, as on master
+    ("राम शर्मा क.ख.", "suffix", "क.ख."),
+    # myanmar writes period abbreviations, not decided otherwise: H2's
+    # shape reads an unlisted run of consonants with a period as a title
+    ("ကက. ဌေး", "title", "ကက."),
+    # georgian has no case for the contrast (#1222)
+    ("ჯეკ MA", "family", "MA"),
+    # thai and myanmar write no initials (#1256's amendment)
+    ("สมชาย ใจดี", "initials", ""),
+    ("ကြည် ကြည် ဌေး", "initials", ""),
+])
+def test_each_row_is_pinned_by_a_reading(text: str, field: str,
+                                         value: str) -> None:
+    from nameparser import parse
+    name = parse(text)
+    got = name.initials() if field == "initials" else getattr(name, field)
+    assert got == value, (text, name)
+
+
+def _letters(row: _ScriptRow) -> list[str]:
+    """The first and last initial-shaped letter of every span of the
+    row, so a span dropped or cut short fails."""
+    out = []
+    for lo, hi in row.ranges:
+        shaped = [chr(cp) for cp in range(lo, hi + 1)
+                  if is_initial_shaped(chr(cp) + ".")]
+        out += shaped[:1] + shaped[-1:]
+    return out
+
+
+@pytest.mark.parametrize(("key", "row"), _ROWS, ids=[k for k, _ in _ROWS])
+def test_every_span_of_a_row_answers_at_both_ends(key: str,
+                                                  row: _ScriptRow) -> None:
+    for c in _letters(row):
+        assert is_initial(c + ".") is row.writes_initials, (key, hex(ord(c)))
+
+
+def test_every_mtavruli_letter_repairs_to_mkhedruli() -> None:
+    """rules/R4 over the whole Mtavruli block: every one of its letters
+    that Unicode cases opens a word written in Mkhedruli (#1223)."""
+    letters = [chr(cp) for cp in range(0x1C90, 0x1CC0)
+               if chr(cp).upper() != chr(cp).lower()]
+    assert len(letters) == 46
+    for c in letters:
+        assert _render._capitalize(c + "ა") == c.lower() + "ა", hex(ord(c))
+
+
+#: Script members whose spans no row holds, each answering every
+#: column by default (has case where Unicode gives it, writes initials
+#: and period abbreviations), with the reason that is right.
+_SCRIPTS_WITH_NO_ROW = {
+    "cyrillic": "Cyrillic names abbreviate: А. С. Пушкин",
+}
+
+
+def test_every_script_member_has_a_row_or_a_stated_default() -> None:
+    """A Script member must not inherit the table's answers in silence:
+    its spans fall in a row, or it is named above with its reason. The
+    rows are keyed privately, so this binds the enum to the table by
+    span, as the test this replaced bound it to _NO_INITIALS (#1256)."""
+    from nameparser import Script
+    from nameparser._policy import _SCRIPT_RANGES
+    covered = [span for _, row in _ROWS for span in row.ranges]
+    for script in Script:
+        inside = all(any(a <= lo and hi <= b for a, b in covered)
+                     for lo, hi in _SCRIPT_RANGES[script])
+        assert inside or script.value in _SCRIPTS_WITH_NO_ROW, (
+            f"{script} has no row in _policy._SCRIPT_PROPERTIES: decide "
+            "its answers and add a row, or name it in "
+            "_SCRIPTS_WITH_NO_ROW with the reason the defaults are right")
+    # the Cyrillic control: a default script's letter is an initial
+    assert is_initial("А.") and is_initial("Й.")
+
+
+#: Each row's script by the Unicode character names of its letters,
+#: independent of the row's own spans, so a span dropped or cut short
+#: leaves a letter of the script outside the row.
+_ROW_LETTER_NAMES = {
+    "myanmar": ("MYANMAR LETTER",),
+    "thai": ("THAI CHARACTER",),
+    "georgian": ("GEORGIAN LETTER", "GEORGIAN MTAVRULI CAPITAL LETTER"),
+    "brahmic": tuple(f"{s} LETTER" for s in (
+        "DEVANAGARI", "BENGALI", "GURMUKHI", "GUJARATI", "ORIYA", "TAMIL",
+        "TELUGU", "KANNADA", "MALAYALAM", "SINHALA")),
+}
+
+
+#: Letters of a row's script its spans leave out, each with its reason.
+_OUTSIDE_A_ROW = {
+    0xA8FE: "DEVANAGARI LETTER AY, in Devanagari Extended, outside the ten "
+            "main blocks rules/H2's Except names (#1191)",
+}
+
+
+@pytest.mark.parametrize("key", sorted(_ROW_LETTER_NAMES))
+def test_every_letter_of_a_row_script_is_in_the_row(key: str) -> None:
+    import sys
+    import unicodedata
+    row = _SCRIPT_PROPERTIES[key]
+    letters = [cp for cp in range(sys.maxunicode + 1)
+               if unicodedata.name(chr(cp), "").startswith(
+                   _ROW_LETTER_NAMES[key])
+               and unicodedata.category(chr(cp)).startswith("L")]
+    assert letters
+    outside = [hex(cp) for cp in letters
+               if not any(lo <= cp <= hi for lo, hi in row.ranges)
+               and cp not in _OUTSIDE_A_ROW]
+    assert not outside, (key, outside[:5])

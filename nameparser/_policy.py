@@ -11,7 +11,8 @@ import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Literal
 
 from nameparser._types import (
     ADDED_IN, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Role,
@@ -386,7 +387,7 @@ class _ScriptRow:
     say why, in one line each."""
 
     ranges: tuple[tuple[int, int], ...]
-    has_case: bool | None
+    has_case: Literal[False] | None
     writes_initials: bool
     period_abbreviations: bool
     spells_initials: bool
@@ -397,7 +398,7 @@ class _ScriptRow:
     __setstate__ = _guarded_setstate
 
 
-_SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
+_SCRIPT_PROPERTIES: Mapping[str, _ScriptRow] = MappingProxyType({
     "han": _ScriptRow(
         _SCRIPT_RANGES[Script.HAN], None, False, False, False,
         "no Chinese or Japanese writer shortens a name to one character "
@@ -457,7 +458,7 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "CLDR th uses an initial in 0 of 20 authored patterns, a block of "
         "its own (12 of 20 equal to en's by the copy test; 2026-08-02 "
         "#320, re-run 2026-11-12, #1256)"),
-}
+})
 
 
 def _ranges_where(column: str, value: object) -> tuple[tuple[int, int], ...]:
@@ -467,15 +468,28 @@ def _ranges_where(column: str, value: object) -> tuple[tuple[int, int], ...]:
                  if getattr(row, column) == value for span in row.ranges)
 
 
+def _read_spans(column: str, value: object) -> tuple[tuple[int, int], ...]:
+    """`_ranges_where`, for a column a reader is built from at import:
+    no row selected would build a reader that matches nothing, so the
+    import fails naming the column and the fix."""
+    spans = _ranges_where(column, value)
+    if not spans:
+        raise ValueError(
+            f"no row of _policy._SCRIPT_PROPERTIES has {column}={value!r}, "
+            f"so the readers of that column would match nothing: add the "
+            f"row that answers it, or drop the readers")
+    return spans
+
+
 #: The scripts that write no initials (rules/T5, R7), as spans: read
 #: by _vocab's initial veto, _render's initials() and the name match.
-_NO_INITIAL_RANGES = _ranges_where("writes_initials", False)
+_NO_INITIAL_RANGES = _read_spans("writes_initials", False)
 #: The scripts that write no period abbreviation, so a word of theirs
 #: wearing a period is never a title by shape (rules/H2, #323).
-_NO_ABBREVIATION_RANGES = _ranges_where("period_abbreviations", False)
+_NO_ABBREVIATION_RANGES = _read_spans("period_abbreviations", False)
 #: The scripts in which a bare run of letters with a period is a
 #: spelled Latin initial (rules/H2's Brahmic Except, #1191).
-_SPELLED_INITIAL_RANGES = _ranges_where("spells_initials", True)
+_SPELLED_INITIAL_RANGES = _read_spans("spells_initials", True)
 #: The letters the name-case contrast reads no case in (rules/S6's "a
 #: script with no case to write in"), mapped to None so that
 #: `str.translate` drops them at C level before a contrast is read:
@@ -483,12 +497,13 @@ _SPELLED_INITIAL_RANGES = _ranges_where("spells_initials", True)
 #: S8's name word behind a credential (two predicates in _pieces); and
 #: _render._capitalize writes a first letter in it in its lower case (R4).
 #: Only the letters Unicode gives a case are listed, the others being
-#: caseless to the comparison already.
-_CASELESS_LETTERS: dict[int, None] = {
+#: caseless to the comparison already. Read-only, as the table is: the
+#: one sanctioned mutable global is the default parser (AGENTS.md).
+_CASELESS_LETTERS: Mapping[int, None] = MappingProxyType({
     cp: None
-    for lo, hi in _ranges_where("has_case", False)
+    for lo, hi in _read_spans("has_case", False)
     for cp in range(lo, hi + 1)
-    if chr(cp).upper() != chr(cp).lower()}
+    if chr(cp).upper() != chr(cp).lower()})
 
 
 # Order-spec constants (#270), defined in _types beside Role since
