@@ -391,6 +391,7 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
         _row("kasia", "katarzyna", "familiar", languages="pl en"),
         _row("kasia", "kaśka", "refused", "decided"),
         _row("lukasz", "łukasz", "spelling"),
+        _row("natalia", "natalya", "spelling"),
         _row("olga", "olha", "spelling", "decided", "uk"),
     ))
     placed = tool.place({"bill": {"william"}}, rows)
@@ -398,8 +399,10 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
     # a familiar pair on its shorter name, in each file its row names
     assert placed["pl"]["kasia"] == {"familiar": {src: {"katarzyna"}}}
     assert placed["en"]["kasia"] == {"familiar": {src: {"katarzyna"}}}
-    # a spelling on the second name in order, listing the first
-    assert placed["pl"]["łukasz"] == {"spelling": {src: {"lukasz"}}}
+    # a spelling on the second name in order, listing the first, save
+    # one the match's fold reads `folded` already
+    assert placed["pl"]["natalya"] == {"spelling": {src: {"natalia"}}}
+    assert "łukasz" not in placed["pl"] and "lukasz" not in placed["pl"]
     # a split the maintainer decided ships as decided
     assert placed["uk"]["olha"] == {"spelling": {src: {"olga"}}}
     # pending, refused, split and recorded pairs ship nowhere
@@ -462,7 +465,8 @@ def test_the_committed_review_ships_what_was_agreed_or_decided_and_no_more() -> 
     # offline: every familiar pair agreed or decided is a familiar form
     # and every spelling an alternate spelling, read pair by pair, and
     # no other pair of the review is either
-    from nameparser import Lexicon
+    from nameparser import Lexicon, Parser
+    from nameparser._match import _forms
     rows = tool.load_reviewed()
     assert len(rows) >= 1600
     lexicon = Lexicon.default()
@@ -470,8 +474,12 @@ def test_the_committed_review_ships_what_was_agreed_or_decided_and_no_more() -> 
         a, b = r["a"], r["b"]
         familiar = b in lexicon._familiar_forms(a)
         alternate = b in lexicon._alternate_spellings(a)
+        folded = not _forms(a).isdisjoint(_forms(b))
         assert familiar == (r["category"] == "familiar"), (a, b)
-        assert alternate == (r["category"] == "spelling"), (a, b)
+        assert alternate == (r["category"] == "spelling" and not folded), (a, b)
+        if r["category"] == "spelling" and folded:
+            # a keyboard's spelling, read `folded` by default instead
+            assert Parser().matching().check(f"{a} Smith", f"{b} Smith").consistent
     # the spellings stay out of the default's listed spellings
     assert not any(lexicon._headwords(r["a"], "given")
                    & lexicon._headwords(r["b"], "given")

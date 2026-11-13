@@ -471,7 +471,9 @@ def place(nicknames: Nicknames,
     """Every reading the tool writes, by file: the nicknames list's
     familiar forms in NICKNAMES_TAG's file, and each reviewed pair the
     two readers agreed on or the maintainer decided, in the file of each
-    language its row names. A familiar pair is written on its shorter name,
+    language its row names, save a spelling the match's fold already
+    reads `folded` (`Łukasz` / `Lukasz`, `Jürgen` / `Juergen`). A
+    familiar pair is written on its shorter name,
     the familiar form, then the first in order; a spelling on the second
     in order, listing the first, a link the match reads either way."""
     out: Placements = {}
@@ -483,8 +485,15 @@ def place(nicknames: Nicknames,
     for short, longs in nicknames.items():
         for long in longs:
             put(NICKNAMES_TAG, short, "familiar", NICKNAMES_SOURCE, long)
+    from nameparser._match import _forms
     for r in reviewed:
         if r["category"] not in KINDS:
+            continue
+        if r["category"] == "spelling" and not _forms(r["a"]).isdisjoint(
+                _forms(r["b"])):
+            # a spelling no one chooses, which the match's fold reads
+            # `folded` by default: no reading needed (decisions/
+            # name-matching, 2026-11-12 A KEYBOARD'S SPELLING IS FOLDED)
             continue
         a, b = r["a"], r["b"]
         if r["category"] == "familiar":

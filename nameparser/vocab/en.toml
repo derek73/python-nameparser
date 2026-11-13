@@ -11387,16 +11387,8 @@ text = "sofiia"
 spelling = { spelling_of = ["sofia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "srđan"
-spelling = { spelling_of = ["srdan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "steven"
 spelling = { spelling_of = ["stephen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "søren"
-spelling = { spelling_of = ["soren"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "vasilios"

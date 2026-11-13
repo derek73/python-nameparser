@@ -288,26 +288,6 @@ text = "uli"
 familiar = { short_for = ["ulrich"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "björn"
-spelling = { spelling_of = ["bjoern"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "bärbel"
-spelling = { spelling_of = ["baerbel"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "götz"
-spelling = { spelling_of = ["goetz"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "günter"
-spelling = { spelling_of = ["guenter"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "günther"
-spelling = { spelling_of = ["guenther"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "jorg"
 spelling = { spelling_of = ["joerg"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -316,32 +296,8 @@ text = "jurgen"
 spelling = { spelling_of = ["juergen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "jörg"
-spelling = { spelling_of = ["joerg"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "jörn"
-spelling = { spelling_of = ["joern"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "jürgen"
-spelling = { spelling_of = ["juergen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "matthäus"
-spelling = { spelling_of = ["matthaeus"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "rüdiger"
-spelling = { spelling_of = ["ruediger"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "sergey"
 spelling = { spelling_of = ["sergej"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "sören"
-spelling = { spelling_of = ["soeren"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tatjana"

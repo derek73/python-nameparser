@@ -57,27 +57,7 @@ text = "tanja"
 familiar = { short_for = ["tatjana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "anđela"
-spelling = { spelling_of = ["andela", "andjela"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "dorde"
 spelling = { spelling_of = ["djordje"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "nađa"
-spelling = { spelling_of = ["nadja"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "slađana"
-spelling = { spelling_of = ["sladjana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "srđan"
-spelling = { spelling_of = ["srdjan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "đorđe"
-spelling = { spelling_of = ["djordje", "dorde"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --
