@@ -15,7 +15,7 @@ adena	adina	spelling		spelling	spelling	vowel variant spellings	mul	nicknames-sp
 adewale	wale	familiar		familiar	familiar	Yoruba short form of Adewale	en	orcid	5
 adi	aditya	familiar		familiar	familiar	short form of Aditya	en	orcid	7
 adi	adrian	familiar		familiar	familiar	short form of Adrian	en	orcid	3
-adolph	adolphus	split	pending	translation	spelling	Latinized form of Adolph	mul	nicknames-spelling	0
+adolph	adolphus	translation	decided	translation	spelling	Latinized form of Adolph	mul	nicknames-spelling	0
 aga	agnieszka	familiar		familiar	familiar	Polish familiar form	en pl	orcid	9
 aggeliki	angeliki	spelling		spelling	spelling	romanization variant of Greek gg	el	orcid	6
 aggelos	angelos	spelling		spelling	spelling	Greek Άγγελος romanized gg or ng	mul	orcid	6
@@ -64,7 +64,7 @@ aleksei	alexey	spelling		spelling	spelling	romanization variant	ru	orcid	51
 aleksey	alexei	spelling		spelling	spelling	romanization variants	ru	orcid	7
 aleksey	alexey	spelling		spelling	spelling	romanization variants	ru	orcid	47
 aleksey	oleksii	translation		translation	translation	Russian Aleksey vs Ukrainian Oleksii	ru uk	orcid	15
-alena	alona	split	pending	translation	spelling	Belarusian/Russian Alena vs Ukrainian Alona	mul	orcid	3
+alena	alona	translation	decided	translation	spelling	Belarusian/Russian Alena vs Ukrainian Alona	mul	orcid	3
 alena	alyona	spelling		spelling	spelling	romanization of Алёна	ru	orcid	9
 alena	elena	translation		translation	translation	Belarusian and Russian forms	ru	orcid	4
 alessandra	alex	familiar		familiar	familiar	short form of Alessandra	en	orcid	3
@@ -184,7 +184,7 @@ anil	anıl	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	12
 anindita	dita	familiar		familiar	familiar	short form of Anindita	en	orcid	3
 ann	anna	split		translation	different-name	English Ann vs Anna	ru	nicknames-spelling	2
 ann	anne	spelling		spelling	spelling	spelling variant	en	nicknames-spelling	3
-anna	anne	split	pending	translation	spelling	Ukrainian Hanna/Anna vs French/English Anne	en	nicknames-spelling	3
+anna	anne	translation	decided	translation	spelling	Ukrainian Hanna/Anna vs French/English Anne	en	nicknames-spelling	3
 anna	anya	familiar		familiar	familiar	Russian familiar of Anna	en	orcid	15
 anna	ganna	translation		translation	translation	Ukrainian Hanna/Ganna vs Anna	ru uk	orcid	22
 anna	hanna	translation		translation	translation	Ukrainian Hanna vs Anna	ru uk	orcid	27
@@ -350,7 +350,7 @@ chris	krzysztof	split		familiar	translation	Chris used for Krzysztof	en	orcid	7
 chris	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 chrissie	christine	familiar		familiar	familiar	pet form of Christine	en	orcid	4
 christie	christine	familiar		familiar	familiar	Christie pet form of Christine	en	orcid	5
-christina	kristina	split	pending	translation	spelling	Russian Kristina vs Christina	ru	nicknames-spelling	4
+christina	kristina	spelling	decided	translation	spelling	Russian Kristina vs Christina	ru	nicknames-spelling	4
 christine	cris	familiar		familiar	familiar	short form of Christine	en	orcid	3
 christopher	kitt	familiar		familiar	familiar	Kit for Christopher	en	orcid	3
 christopher	topher	familiar		familiar	familiar	short form of Christopher	en	orcid	3
@@ -545,7 +545,7 @@ evgeniy	yevgen	translation		translation	translation	Russian Evgeniy vs Ukrainian
 evi	paraskevi	familiar		familiar	familiar	Greek familiar form	el	orcid	9
 fallon	falon	spelling		spelling	spelling	Fallon/Falon variant spelling	mul	nicknames-spelling	0
 fateme	fatemeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	15
-fatemeh	fatima	split	pending	translation	spelling	Persian vs Arabic form	en fa	orcid	7
+fatemeh	fatima	spelling	decided	translation	spelling	Persian vs Arabic form	en fa	orcid	7
 fedor	feodor	spelling		spelling	spelling	romanization variants	mul	orcid	3
 feltie	felty	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
 femi	olufemi	familiar		familiar	familiar	Yoruba short form	en	orcid	7
@@ -690,7 +690,7 @@ ian	robert	different-name		different-name	different-name	Ian is not a form of Ro
 ian	yan	refused	decided	spelling	translation	two romanizations of Ян	ru	orcid	4
 iana	yana	spelling		spelling	spelling	romanization variant	ru	orcid	9
 iaroslav	yaroslav	spelling		spelling	spelling	romanization variant	ru uk	orcid	14
-iason	jason	split	pending	translation	spelling	Greek vs English form	el	orcid	3
+iason	jason	translation	decided	translation	spelling	Greek vs English form	el	orcid	3
 ievgen	yevgen	spelling		spelling	spelling	romanization variants	ru uk	orcid	5
 ievgen	yevhen	spelling		spelling	spelling	Ukrainian romanization variants	ru uk	orcid	5
 ievgeniia	yevheniia	spelling		spelling	spelling	Ukrainian romanization variants	mul	orcid	3
@@ -1167,7 +1167,7 @@ natalia	natasha	familiar		familiar	familiar	Natasha pet form of Natalia	en ru	or
 natalie	nataliia	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	4
 natalie	nataliya	translation		translation	translation	English vs Russian form	en	orcid	3
 nataliia	nataliya	spelling		spelling	spelling	romanizations of Ukrainian Nataliia	ru uk	orcid	42
-nataliia	natalya	split	pending	translation	spelling	Ukrainian and Russian forms	ru uk	orcid	14
+nataliia	natalya	spelling	decided	translation	spelling	Ukrainian and Russian forms	ru uk	orcid	14
 natalya	natasha	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 natasha	tash	familiar		familiar	familiar	short form of Natasha	en	orcid	3
 nate	nathanael	familiar		familiar	familiar	short form of Nathanael	en fr	orcid	6
@@ -1574,7 +1574,7 @@ yang	young	split		unclear	different-name	Chinese and Korean romanizations, may d
 yaser	yasser	spelling		spelling	spelling	Arabic Yasser romanized two ways	ar	orcid	4
 yash	yashkumar	familiar		familiar	familiar	Yash is how a Yashkumar is called	mul	orcid	3
 yevgen	yevhen	spelling		spelling	spelling	romanization variants	mul	orcid	3
-yevgenia	yevheniia	split	pending	translation	spelling	Russian Yevgenia vs Ukrainian Yevheniia	mul	orcid	3
+yevgenia	yevheniia	spelling	decided	translation	spelling	Russian Yevgenia vs Ukrainian Yevheniia	mul	orcid	3
 yildiz	yıldız	spelling		spelling	spelling	with and without Turkish ı	tr	orcid	3
 yilmaz	yılmaz	spelling		spelling	spelling	Turkish dotless ı dropped	tr	orcid	6
 yohei	youhei	spelling		spelling	spelling	Japanese long vowel romanized two ways	ja	orcid	3

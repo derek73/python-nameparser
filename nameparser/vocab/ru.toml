@@ -290,6 +290,10 @@ text = "kateryna"
 spelling = { spelling_of = ["katerina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "kristina"
+spelling = { spelling_of = ["christina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "kseniia"
 spelling = { spelling_of = ["ksenia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -399,7 +403,7 @@ spelling = { spelling_of = ["natalia"], note = "found in ORCID's public data fil
 
 [[word]]
 text = "natalya"
-spelling = { spelling_of = ["natalia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+spelling = { spelling_of = ["natalia", "nataliia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nikolai"

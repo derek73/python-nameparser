@@ -1100,7 +1100,7 @@ spelling = { spelling_of = ["yevgen"], note = "found in ORCID's public data file
 
 [[word]]
 text = "yevheniia"
-spelling = { spelling_of = ["ievgeniia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+spelling = { spelling_of = ["ievgeniia", "yevgenia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yury"

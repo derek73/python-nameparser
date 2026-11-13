@@ -172,6 +172,10 @@ text = "nataliya"
 spelling = { spelling_of = ["nataliia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "natalya"
+spelling = { spelling_of = ["nataliia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "oleh"
 spelling = { spelling_of = ["oleg"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

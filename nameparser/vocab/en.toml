@@ -11327,6 +11327,10 @@ text = "dmitry"
 spelling = { spelling_of = ["dmitri"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "fatima"
+spelling = { spelling_of = ["fatemeh"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ilya"
 spelling = { spelling_of = ["ilja"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

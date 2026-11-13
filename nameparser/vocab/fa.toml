@@ -160,6 +160,10 @@ text = "fatemeh"
 spelling = { spelling_of = ["fateme"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "fatima"
+spelling = { spelling_of = ["fatemeh"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "hassan"
 spelling = { spelling_of = ["hasan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
