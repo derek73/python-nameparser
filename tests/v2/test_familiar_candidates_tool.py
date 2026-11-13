@@ -75,8 +75,6 @@ def test_a_holder_writing_the_given_name_two_ways_evidences_a_pair() -> None:
     # one word written with and without its accent, which the match
     # already reads as one
     _record("José", "García", "Jose García"),
-    # another script: a transliteration
-    _record("Igor", "Petrenko", "Игорь Petrenko"),
     # the same word
     _record("Anna", "Berg", "Anna Berg"),
     # nothing to compare
@@ -86,6 +84,15 @@ def test_a_holder_writing_the_given_name_two_ways_evidences_a_pair() -> None:
 def test_what_is_not_one_person_writing_one_given_name_two_ways_is_dropped(
         record: dict[str, object]) -> None:
     assert tool.pairs_of(record, _TITLES) == set()
+
+
+def test_a_pair_in_two_scripts_is_kept_and_shaped_as_one() -> None:
+    # a transliteration is recorded for the review, not dropped
+    pair = tool.pairs_of(_record("Igor", "Petrenko", "Игорь Petrenko"), _TITLES)
+    assert pair == {("igor", "игорь")}
+    assert tool.shape("igor", "игорь") == "two-scripts"
+    assert tool.shape("olga", "olha") == "spelling"
+    assert tool.shape("kasia", "katarzyna") == ""
 
 
 def test_a_holder_counts_once_whichever_names_they_wrote_it_in() -> None:
@@ -117,15 +124,32 @@ def test_the_rows_leave_out_the_known_pairs_and_the_thin_ones() -> None:
         _TITLES)
     known = {frozenset(("bill", "william"))}
     rows = tool.rows(found, 3, known, {"PL": ("pl",), "UA": ("uk",)},
-                     {("kasia", "katarzyna"): 2})
+                     {("kasia", "katarzyna"): 2},
+                     spellings=[("allan", "allen"), ("olga", "olha")])
     assert rows == [
-        ["kasia", "katarzyna", "4", "", "pl", "PL 4", "2"],
-        ["olga", "olha", "3", "yes", "uk", "UA 3", "0"],
+        ["kasia", "katarzyna", "orcid", "4", "", "pl", "PL 4", "2"],
+        ["olga", "olha", "orcid", "3", "spelling", "uk", "UA 3", "0"],
+        # a refused spelling comes back once, with whatever ORCID gives it
+        ["allan", "allen", "nicknames-spelling", "0", "spelling", "mul", "", "0"],
     ]
     text = tool.write_tsv(rows)
     assert [list(r.values()) for r in tool.read_tsv(text)] == rows
     with pytest.raises(ValueError, match="header"):
         tool.read_tsv(text.replace("holders", "people", 1))
+
+
+def test_a_refusal_as_a_spelling_is_no_reviewed_pair(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the nicknames list's review read its pairs as familiar forms only,
+    # so a pair it refused as a spelling is reviewed again for the
+    # spelling bar; one refused as anything else is not
+    monkeypatch.setattr(tool.familiar, "load_nicknames",
+                        lambda: [("william", "bill")])
+    monkeypatch.setattr(tool.familiar, "load_exclusions", lambda: {
+        ("allen", "allan"): "spelling", ("aaron", "erin"): "different-name"})
+    assert tool.known_pairs() == {frozenset(("bill", "william")),
+                                  frozenset(("aaron", "erin"))}
+    assert tool.refused_spellings() == {("allan", "allen")}
 
 
 def test_gnd_is_asked_both_ways_once_and_kept(tmp_path: Path) -> None:
