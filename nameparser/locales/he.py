@@ -10,6 +10,10 @@ where the particle claim acts; a ``Ben`` opening a name stays the given
 name under the pack and reports the fork (``Ben Affleck``). The Hebrew
 spelling, ``בן``, is read by default.
 
+The pack is for family names written with ``Ben``, not for a civil
+register's chain of fathers' names: ``Karim ben Ali ben Salah Haddad``
+gives family ``ben Salah Haddad``, as under ``locales.AR`` (#1248).
+
 Data sources: the readings' own entries in nameparser/vocab/he.toml,
 each with its issue and the vetting on its note; nothing is listed
 here.

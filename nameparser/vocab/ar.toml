@@ -455,7 +455,7 @@ cased = "Ould"
 issue = [1249, 1257]
 expands = "son of, Hassaniya walad: \"Ahmed Ould Salem\""
 gender = "m"
-note = "Mauritanian names still form the father's name with it (Mohamed Ould Abdel Aziz, son of Abdel Aziz), so it is a patronymic and fills the patronymic view (rules/R9); in Algeria and Morocco it has become a fixed family name (Karim Ould Haddou), whose view it fills too, the accepted cost of the kind (#1257). Never a given name where it opens a name: of ORCID's 24,990,909 people, 3 given boxes open with it, against 168 family boxes holding it (DZ 29, MR 20); no US Census or SSA listing; Wikidata 21 family (2026-11-12). Read as a never-given particle it moves ORCID's MA, DZ, MR and FR records 48 fixed to 2 broken (2026-11-12); family boxes write it Ould 36 times"
+note = "Mauritanian names still form the father's name with it (Mohamed Ould Abdel Aziz, son of Abdel Aziz); in Algeria and Morocco it has become a fixed family name (Karim Ould Haddou), which ORCID's family boxes hold more often (DZ 29, MA 8, FR 9 against MR 20), so #1257's test reads clan, and it is a patronymic by a choice decided on 2026-11-12 for the Mauritanian use, filling the patronymic view (rules/R9) in the Algerian family names too, the accepted cost (#1257). Never a given name where it opens a name: of ORCID's 24,990,909 people, 3 given boxes open with it, against 168 family boxes holding it (DZ 29, MR 20); no US Census or SSA listing; Wikidata 21 family (2026-11-12). Read as a never-given particle it moves ORCID's MA, DZ, MR and FR records 48 fixed to 2 broken (2026-11-12); family boxes write it Ould 36 times"
 
 [[word]]
 text = "ابن"

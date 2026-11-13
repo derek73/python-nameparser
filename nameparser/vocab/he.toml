@@ -130,7 +130,7 @@ may_be_given = false
 issue = 269
 expands = "daughter of: bat"
 gender = "f"
-note = "no Latin-script collision, and not a standalone given name in Hebrew usage; בן, which is one (the given name Ben), took a given reading and became a clan particle in #1257, while בת stays a patronymic, its standalone use as a given name unmeasured"
+note = "no Latin-script collision; its standalone use as a given name is unmeasured, unchanged by #1257 (#1209 found 6 Israelis named בת-שבע, written with a hyphen), while בן, the given name Ben, took a given reading and became a clan particle there"
 
 [[word]]
 text = "אבו"

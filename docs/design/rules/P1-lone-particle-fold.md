@@ -51,15 +51,16 @@
 **Accepted:**
 
 - The default-order reach has two faces, and the second is a real cost. A surname-only string is read right, which is what the reach is for; a family-first listing read under the default order is read wrong, all of it landing in the family. The remedy is the declaration or the comma — declare a family-first order, which gives family `de la Cruz`, given `Juan`, middle `Carlos`, or write the family comma. What NEITHER order settles is the comma's alone: `de la Family Family Given` and `de la Family Given Given` are the same string shape, and no reading of the words tells them apart.
-  The Amazigh and Hassaniya particles pay it as `de` does: every ORCID or PSC record a never-given `ait` broke was such a listing, its family name typed in the given box, and one of the two `ould` broke (decisions/vocabulary-collisions, 2026-11-12 #1257).
+  The Amazigh and Hassaniya particles pay it as `de` does: every ORCID or PSC record a never-given `ait` broke was such a listing, its family name typed in the given box (16 ORCID records at head), and one of the two `ould` broke (decisions/vocabulary-collisions, 2026-11-12 #1257).
   ```
   "de la Torre Vega"          →  family="de la Torre Vega"
   "de la Cruz Juan Carlos"    →  family="de la Cruz Juan Carlos"
   "Ait Haddou Karim"          →  family="Ait Haddou Karim"
   ```
-- A particle that may be a given name, written in a script with no case, is outside the fold, P11 having no writing to read: under a family-first order it stays where the order puts it. So a family name written with Hebrew `בן` first and no comma gives `בן` alone to the family, reported as `particle-or-given`, and the next word to the given name, where it read whole while `בן` was never given: a cost of `בן`'s given reading, accepted on 2026-11-12 (#1209 counted 8 Knesset family names that read so if written family first; decisions/vocabulary-collisions, 2026-11-12 #1257). A family comma keeps the family whole.
+- A particle that may be a given name, written in a script with no case, is outside the fold, P11 having no writing to read: under a family-first order it stays where the order puts it. So a family name written with Hebrew `בן` first and no comma gives `בן` alone to the family, reported as `particle-or-given`, and the words after it to the positions the order lays out (under FAMILY_FIRST the next word is the given name), where it read whole while `בן` was never given: a cost of `בן`'s given reading, accepted on 2026-11-12 (#1209 counted 8 Knesset family names that read so if written family first; decisions/vocabulary-collisions, 2026-11-12 #1257). A family comma keeps the family whole.
   ```
   "בן חיים יעל"  family-first  →  family="בן"
+  "בן חיים יעל"  family-first-given-last  →  given="יעל"
   "בן חיים, יעל"  family-first  →  family="בן חיים"
   ```
 - A bare "de" has nothing to fold into, so it is a lone name word and reads as O5 reads one, by the caller's lone-word setting: the given name by default under every order, the family name where the caller names it.

@@ -532,7 +532,9 @@ Shipped packs
      - Hebrew — chooses ``he``, which turns on ``Ben`` as the particle
        opening an Israeli family name written in Latin letters (``Yael
        Ben Arieh`` → family ``Ben Arieh``); the Hebrew ``בן`` is read
-       by default. See
+       by default. It is for surnames, not a register's chain of
+       fathers' names (``Karim ben Ali ben Salah Haddad`` → family
+       ``ben Salah Haddad``). See
        :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``hi``
      - Hindi — chooses ``hi``, which turns on the romanized salutations

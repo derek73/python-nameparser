@@ -454,7 +454,8 @@ Maghrebi, Amazigh and Hebrew particles
 Family names in Morocco, Algeria, Tunisia and Mauritania, written in
 French spelling, often open with a word that joins the next one: the
 Amazigh ``Ait`` and ``Nait`` ("the people of"), the Hassaniya ``Ould``
-("son of"), the Algerian ``Ouled``, and ``El``, the article ``al`` as
+("son of"), ``Ouled`` ("children of", in Algerian and Moroccan family
+names), and ``El``, the article ``al`` as
 Morocco, Algeria and Egypt spell it. The default reads each as part of the
 family name, and ``Ould``, with which a Mauritanian name still forms the
 father's name, fills ``patronymic`` too. ``El``, like ``Al``, is also a
