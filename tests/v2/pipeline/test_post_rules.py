@@ -2523,6 +2523,44 @@ def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
     assert not kept, kept[:5]
 
 
+#: rules/O9's accepted shapes found after the rule was frozen (decisions/O9,
+#: 2026-11-12 RECORDED SHAPES): each row states the reading kept, so a
+#: change that moves one is seen. (pack, text, expected fields); the
+#: switch on beside the pack's patronymic rule.
+_CAPITALS_ACCEPTED = [
+    # a marker spelling with a credential ending the name: the credential
+    # counts as a capitals word left before the peel takes it
+    (locales.RU, "ABRAMOVICH Roman MBA",
+     {"given": "ABRAMOVICH", "middle": "Roman", "family": "MBA",
+      "suffix": ""}),
+    # the boundary: a comma before it, or a surname no rule reads
+    (locales.RU, "ABRAMOVICH Roman, MBA",
+     {"given": "Roman", "family": "ABRAMOVICH", "suffix": "MBA"}),
+    (locales.RU, "IVANOV Roman MBA",
+     {"given": "Roman", "family": "IVANOV", "suffix": "MBA"}),
+    # O2's three-word reading yields to the capitals
+    (locales.TR_AZ, "Aidai MEDERBEK kyzy",
+     {"given": "Aidai", "middle": "kyzy", "family": "MEDERBEK",
+      "patronymic": "MEDERBEK kyzy"}),
+    (locales.TR_AZ, "Aidai Mederbek KYZY",
+     {"given": "Aidai", "middle": "Mederbek", "family": "KYZY",
+      "patronymic": "Mederbek KYZY"}),
+    # the four-word shape the parliaments write is unchanged
+    (locales.TR_AZ, "ALIYEV Ali Ahmad oglu",
+     {"given": "Ali", "middle": "Ahmad oglu", "family": "ALIYEV",
+      "patronymic": "Ahmad oglu"}),
+]
+
+
+@pytest.mark.parametrize("pack, text, fields", _CAPITALS_ACCEPTED)
+def test_the_capitals_switch_keeps_its_accepted_readings(
+        pack: Locale, text: str, fields: dict[str, str]) -> None:
+    on = Locale(code="capitals", lexicon=Lexicon.empty(),
+                policy=PolicyPatch(capitals_as_family=True))
+    got = parser_for(pack, on).parse(text)
+    assert {f: getattr(got, f) for f in fields} == fields
+
+
 #: rules/O2's three-word reading (#1187): each condition of the rule
 #: with a row that reads the father's name and the marker as the family
 #: where it holds and a row it fails on, so dropping any condition from

@@ -160,11 +160,13 @@
   "Juan Carlos GARCÍA"  capitals_as_family+two_given_names  →  given="Juan Carlos"
   "Mary Ann DUPONT"  capitals_as_family+middle_as_family  →  family="Ann DUPONT"
   ```
-- **Against a suffix word that is also a name, and a trailing numeral** (S11, S10): their counts read such a word ending the name as the suffix, reporting it; under the switch the word written in capitals is the family where it is the only capitals word before the first comma that is no particle, conjunction or marker, and the report goes; with another such word before the comma it comes off as the suffix.
+- **Against a suffix word that is also a name, and a trailing numeral** (S11, S10): their counts read such a word ending the name as the suffix, reporting it; under the switch the word written in capitals ending the name is the family where no other capitals word before it and before the first comma can be, a particle, conjunction, numeral or marker being none, the listed credentials and numerals after it coming off first, and the report goes; with such a word before it it comes off as the suffix.
   ```
   "John Paul JUNIOR"  capitals_as_family  →  family="JUNIOR"
   "Jean Pierre FILS"  capitals_as_family  →  family="FILS"
   "DUPONT Jean FILS"  capitals_as_family  →  suffix="FILS"
+  "Jean Pierre FILS III"  capitals_as_family  →  family="FILS"
+  "Marie MA MBA"  capitals_as_family  →  family="MA"
   ```
 - **Against a patronymic** (R9): the patronymic view is read over the words in their written order, whatever field this rule gives them, under the rules a policy turns on.
   ```
@@ -247,6 +249,28 @@
 - A conjunction in capitals trimmed off the front of a run keeps the field it was read in, a title where it opened the name.
   ```
   "THE ROCK Mary"  capitals_as_family  →  title="THE"
+  ```
+- A surname a patronymic rule reads as its marker, written in capitals with a credential in capitals ending the name, is no capitals word: the credential is another capitals word left to be the family before the peel takes it, so the marker is left out, the credential is the family and the surname the given name. With a comma before the credential, or a surname no rule reads as a marker, the name reads right; the shape is unwritten.
+  ```
+  "ABRAMOVICH Roman MBA"  capitals_as_family+east-slavic  →  given="ABRAMOVICH"
+  "ABRAMOVICH Roman MBA"  capitals_as_family+east-slavic  →  family="MBA"
+  "ABRAMOVICH Roman, MBA"  capitals_as_family+east-slavic  →  family="ABRAMOVICH"
+  "IVANOV Roman MBA"  capitals_as_family+east-slavic  →  family="IVANOV"
+  ```
+- A three-word name ending in a marker, which the Turkic rule reads as the father's name and the marker in the family (O2), loses that reading where one of the two is written in capitals and the other is not: the capitals word is the family and the other word the middle name, the patronymic view unchanged. The four-word shape the parliaments write (`ALIYEV Ali Ahmad oglu`) reads as without the switch; the three-word one is unwritten.
+  ```
+  "Aidai MEDERBEK kyzy"  capitals_as_family+turkic  →  family="MEDERBEK"
+  "Aidai MEDERBEK kyzy"  capitals_as_family+turkic  →  middle="kyzy"
+  "Aidai Mederbek KYZY"  capitals_as_family+turkic  →  family="KYZY"
+  "ALIYEV Ali Ahmad oglu"  capitals_as_family+turkic  →  family="ALIYEV"
+  ```
+- A conjunction in capitals the run trims off its front joins the given name before it; two words a patronymic rule reads as markers, with no other capitals word, are both the family, and the patronymic view reads none; and a bare `DR` before a surname read as a marker is the family under that rule, the surname the given name, where without the rule both are the family. All three shapes are unwritten.
+  ```
+  "Hugo AND LAC"  capitals_as_family  →  given="Hugo AND"
+  "Ivan PETROVICH IVANOVICH"  capitals_as_family+east-slavic  →  family="PETROVICH IVANOVICH"
+  "Ivan PETROVICH IVANOVICH"  capitals_as_family+east-slavic  →  patronymic=""
+  "DR ABRAMOVICH Roman"  capitals_as_family+east-slavic  →  family="DR"
+  "DR ABRAMOVICH Roman"  capitals_as_family  →  family="DR ABRAMOVICH"
   ```
 - The rule reports nothing of its own: the caller declared the convention.
 

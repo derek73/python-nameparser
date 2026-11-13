@@ -860,10 +860,13 @@ class Policy:
     #: capitals outrank a credential or title reading ("Hugo LAC",
     #: "DOYEN Hugo" give family ``LAC`` and ``DOYEN``), while a listed
     #: credential or numeral in capitals ending the name still comes off
-    #: where another capitals word that is no particle or conjunction
-    #: is left ("Marie GRAJALES III",
-    #: "DUPONT Marie MBA"), and a marker the patronymic rule in force
-    #: reads is no capitals word.
+    #: where a capitals word before it, no particle, conjunction,
+    #: numeral or marker, is left to be the family ("Marie GRAJALES
+    #: III", "DUPONT Marie MBA", but "Marie MA MBA" gives family
+    #: ``MA``), and a marker the patronymic rule in force reads is no
+    #: capitals word where another capitals word is left to be the
+    #: family ("ALIYEV Ilham Heydar OGLU"), though one that is the only
+    #: capitals word is the family ("ABRAMOVICH Roman").
     #:
     #: Only a name in mixed case is read, one where a word no run took,
     #: other than a title, a suffix, or a particle or conjunction

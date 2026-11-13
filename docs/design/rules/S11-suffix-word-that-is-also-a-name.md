@@ -83,11 +83,12 @@
   "Pedro Alves NETO"          →  suffix="NETO"
   ```
 
-- **A name read under capitals-as-family handling** ("Ram Bahadur KC" with that switch on): the caller has said the capitals write the family name, so a word of this class written in capitals that is the only capitals word before the first comma that is no particle, conjunction or marker is the family name, the count yielding, and the fork is not reported (O9); with another such word before the comma it comes off as the suffix.
+- **A name read under capitals-as-family handling** ("Ram Bahadur KC" with that switch on): the caller has said the capitals write the family name, so a word of this class written in capitals ending the name is the family name where no other capitals word before it and before the first comma can be, a particle, conjunction, numeral or marker being none, the listed credentials and numerals after it coming off first ('Jean Pierre FILS III' reads family 'FILS', suffix 'III'), the count yielding, and the fork is not reported (O9); with such a word before it it comes off as the suffix.
   ```
   "Ram Bahadur KC"  capitals_as_family  →  family="KC"
   "John Paul JUNIOR"  capitals_as_family  →  family="JUNIOR"
   "DUPONT Marie KC"  capitals_as_family  →  suffix="KC"
+  "Jean Pierre FILS III"  capitals_as_family  →  family="FILS"
   ```
 
 **Accepted:**

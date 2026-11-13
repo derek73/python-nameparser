@@ -685,12 +685,13 @@ What it reads:
 - **The capitals outrank a credential or title reading**, so
   ``Hugo LAC`` gives family ``LAC`` and ``DOYEN Hugo`` family
   ``DOYEN``. A listed credential or numeral in capitals ending the
-  name still comes off where another capitals word that is no particle
-  or conjunction is left, before the
+  name still comes off where a capitals word before it, no particle,
+  conjunction, numeral or marker, is left to be the family, before the
   family is chosen (``Marie GRAJALES III`` and ``DUPONT Marie MBA`` give
-  suffix ``III`` and ``MBA``), and a roman numeral alone stays the
-  suffix (``John Smith III``). Under a patronymic rule its marker is no
-  capitals word where another one is left (``OGLU``).
+  suffix ``III`` and ``MBA``, ``Marie MA MBA`` family ``MA``), and a
+  roman numeral alone stays the suffix (``John Smith III``). Under a
+  patronymic rule its marker is no capitals word where another one is
+  left (``OGLU``).
 
 What it leaves alone: a name with no lowercase letter outside its
 titles, its suffixes and the particles and conjunctions written in
