@@ -78,7 +78,7 @@ NAMES: tuple[str, ...] = (
     "Bill Smith", "BILL SMITH", "Sepp Huber", "Josef Huber", "Bob Smith",
     "Robert Smith", "John Bill Smith", "John William Smith",
     'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
-    "Aleksey Ivanov", "Alexey Ivanov",
+    "Yuliya Ivanova", "Iuliia Ivanova",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
     "Ann Smith\u2010Jones", "Ann Smith\u2013Jones", "Jean\u2010Pierre Dupont",
     "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
@@ -781,8 +781,8 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "María López", "José Luis Pérez", "José Pérez", "Pérez, José Luis",
     "Wang Xiaoming", "Xiaoming Wang", "김민준", "Kim Min-jun",
     "Min-jun Kim", "Nguyễn Văn An", "Nguyen An", "Bill Smith",
-    "William Smith", "Smith Bill", "Smith William", "Aleksey Smith",
-    "Alexey Smith", "Smith Aleksey", "Smith Alexey", "Mr. Smith",
+    "William Smith", "Smith Bill", "Smith William", "Yuliya Smith",
+    "Iuliia Smith", "Smith Yuliya", "Smith Iuliia", "Mr. Smith",
     "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
     "Guo Hong-Yi",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
