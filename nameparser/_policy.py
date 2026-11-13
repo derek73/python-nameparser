@@ -358,17 +358,19 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 # is the inheritance marker ↑↑↑ is not authored) that produce an
 # initial ("-initial" in the pattern). ja and ko author 29 and 32 and
 # use one in none; ru uses one in 7 of 39 ("{given-initial}
-# {given2-initial} {surname}"); zh abbreviates but overrides
-# initialPattern to "{0}", no period. Do NOT read initialPattern alone:
-# root defaults it to "{0}." and nearly every locale inherits it. And
-# before counting, check that the block is the locale's own: compare
-# each pattern with en.xml's for the same order, length, usage and
-# formality, with en's comma written as the locale's and spaces
-# removed; a block that matches en's in every pattern is a copy, and
-# states nothing about the locale (my's, measured 2026-11-12: 42 of
-# 42). A block matching in most is not: ru's matches in 36 of 39 and
-# is Russian's own, short patterns being written alike in most
-# locales (decisions/script-properties).
+# {given2-initial} {surname}"). Then read the locale's own
+# initialPattern: zh counts 6 of 40 but overrides it to "{0}", no
+# period, so its "initial" is the whole character and Han writes none.
+# Do NOT read initialPattern alone: root defaults it to "{0}." and
+# nearly every locale inherits it. And before counting, check that the
+# block is the locale's own: compare each authored pattern with
+# en.xml's for the same order, length, usage and formality, after
+# removing spaces and every comma (",", "၊", "、", "，") from both; a
+# block equal to en's in every pattern is a copy, and states nothing
+# about the locale (my's, 42 of 42 on 2026-11-12). A block equal in
+# most is not: ru's is equal in 36 of 39 and is Russian's own, short
+# patterns being written alike in most locales (counts measured
+# 2026-11-12 on cldr main c0b65ae3; decisions/script-properties).
 
 @dataclass(frozen=True, slots=True)
 class _ScriptRow:
@@ -398,25 +400,30 @@ class _ScriptRow:
 _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
     "han": _ScriptRow(
         _SCRIPT_RANGES[Script.HAN], None, False, False, False,
-        "an ideograph is a morpheme: no writer abbreviates a name to one "
-        "character and a period, and the script writes no abbreviation "
-        "with a period",
-        "CLDR zh: initialPattern overridden to {0}, no period; ja 0 of 29 "
-        "(#320, #323)"),
+        "no Chinese or Japanese writer shortens a name to one character "
+        "and a period, nor any word to a run of characters with one",
+        "CLDR zh's initialPattern is {0}, no period, and ja uses an "
+        "initial in 0 of 29 patterns (2026-08-02 and 2026-11-12; #320, "
+        "#323)"),
     "hangul": _ScriptRow(
         _SCRIPT_RANGES[Script.HANGUL], None, False, False, False,
-        "a syllable block, never abbreviated with a period; the "
-        "conjoining jamo a decomposed syllable is written in are Hangul "
-        "too",
-        "CLDR ko 0 of 32 (#320, #1087)"),
+        "no Korean writer shortens a name or a word to a letter and a "
+        "period; the conjoining jamo a decomposed syllable is written in "
+        "are Hangul too",
+        "CLDR ko uses an initial in 0 of 32 patterns (2026-08-02 and "
+        "2026-11-12; #320, #1087)"),
     "hiragana": _ScriptRow(
         _SCRIPT_RANGES[Script.HIRAGANA], None, False, False, False,
-        "a syllable, never abbreviated with a period",
-        "CLDR ja 0 of 29 (#320)"),
+        "no Japanese writer shortens a name or a word to a kana and a "
+        "period",
+        "CLDR ja uses an initial in 0 of 29 patterns (2026-08-02 and "
+        "2026-11-12; #320)"),
     "katakana": _ScriptRow(
         _SCRIPT_RANGES[Script.KATAKANA], None, False, False, False,
-        "a syllable, never abbreviated with a period",
-        "CLDR ja 0 of 29 (#320)"),
+        "no Japanese writer shortens a name or a word to a kana and a "
+        "period",
+        "CLDR ja uses an initial in 0 of 29 patterns (2026-08-02 and "
+        "2026-11-12; #320)"),
     "brahmic": _ScriptRow(
         ((0x0900, 0x0DFF),), None, True, True, True,
         "the ten Brahmic scripts from Devanagari to Sinhala write "
@@ -431,25 +438,25 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "a name in Mtavruli repairs to Mkhedruli (rules/R4). The "
         "ecclesiastical Asomtavruli and Nuskhuri, a pair that does write "
         "initial capitals, are not in the row",
-        "#1222 (the contrast), #1223 (case repair); CLDR ka writes "
-        "initials, 1 of 15 authored patterns"),
+        "#1222 (the contrast), #1223 (case repair); CLDR ka uses an "
+        "initial in 1 of 15 authored patterns (2026-11-12)"),
     "myanmar": _ScriptRow(
         ((0x1000, 0x109F), (0xA9E0, 0xA9FF), (0xAA60, 0xAA7F),
          (0x116D0, 0x116FF)), None, False, True, False,
-        "no Burmese name is abbreviated to a letter and a period in Burmese "
-        "script, a name being a run of syllables with no surname; whether "
+        "no Burmese writer shortens a name to a letter and a period in "
+        "Burmese script (none in 2,604 Wikidata labels, #1234); whether "
         "it writes period abbreviations is not decided, and reads as before",
-        "decided on #1234 from the convention; CLDR my's patterns are en's "
-        "copied (36 of 42 identical once the comma is ၊, all 42 with "
-        "spaces removed, cldr main c0b65ae3, 2026-11-12), so the recipe "
-        "does not answer"),
+        "decided 2026-11-12 on #1256, by amendment, from the convention; "
+        "CLDR my's patterns are en's, equal in 42 of 42 by the copy test "
+        "(cldr main c0b65ae3, 2026-11-12), so the recipe does not answer"),
     "thai": _ScriptRow(
         ((0x0E00, 0x0E7F),), None, False, True, False,
         "no Thai name is abbreviated to a letter and a period, but a title "
         "is written short with periods between its consonants (ดร., "
         "ร.ต.อ.), so it writes period abbreviations",
-        "CLDR th: 0 of 20 authored patterns use an initial, not a copy of "
-        "en's (2026-08-02 #320, re-run 2026-11-12, #1256)"),
+        "CLDR th uses an initial in 0 of 20 authored patterns, a block of "
+        "its own (12 of 20 equal to en's by the copy test; 2026-08-02 "
+        "#320, re-run 2026-11-12, #1256)"),
 }
 
 
@@ -472,8 +479,7 @@ _SPELLED_INITIAL_RANGES = _ranges_where("spells_initials", True)
 #: The letters the name-case contrast reads no case in (rules/S6's "a
 #: script with no case to write in"), mapped to None so that
 #: `str.translate` drops them at C level before a contrast is read:
-#: _vocab.is_one_case, _vocab.ambiguous_lean, _render's R5 gate, the
-#: lower-case run of initials (rules/T7 in _assemble, R3 in _render) and
+#: _vocab.is_one_case, _vocab.ambiguous_lean, _render's R5 gate and
 #: S8's name word behind a credential (two predicates in _pieces); and
 #: _render._capitalize writes a first letter in it in its lower case (R4).
 #: Only the letters Unicode gives a case are listed, the others being

@@ -124,6 +124,11 @@
 
 **Accepted:**
 
+- A letter with a full stop in a script that writes no initials is a name word, not a middle initial (T5), so it joins the family as any third name word does: Thai and Burmese since 3.1, as Han before.
+  ```
+  "สมชาย ส. ใจดี"  two_family_names  →  family="ส. ใจดี"
+  "John 王. Smith"  two_family_names  →  family="王. Smith"
+  ```
 - A name with one family name behind two given names loses its second given name to the family, which is the shape the switch cannot tell from the one it is for: most Argentine and English names of three words or more read wrong under it, and so do Portuguese and Brazilian names whose writer gave the last family name alone as the family. That is why it is off by default and a caller turns it on only for data written this way.
   ```
   "Juan Carlos Pérez"  two_family_names  →  family="Carlos Pérez"

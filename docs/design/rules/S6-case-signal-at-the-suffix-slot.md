@@ -67,5 +67,5 @@
   ```
 
 ---
-**Signal:** case contrast: capitals on a word of the ambiguous class in a name written in more than one case
+**Signal:** case contrast: capitals on a word of the ambiguous class in a name written in more than one case, a Georgian letter carrying none
 **history:** decisions/S6 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py, nameparser/_render.py

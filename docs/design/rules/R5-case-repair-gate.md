@@ -23,7 +23,7 @@
   "john smith EdD"            →  capitalized_forced="John Smith EDD"
   ```
 
-- **A script whose case no writer chooses against the rest of the name makes no contrast**: Georgian writes its capitals only for a whole word set in them, so a name mixing them with its lower case, or beside a Latin word, is in one case as one in Arabic is, and is repaired.
+- **A script whose case no writer chooses against the rest of the name makes no contrast**: Georgian writes its capitals only for a whole word set in them, so a Georgian name mixing them with its lower case, or Georgian beside a Latin word in capitals, is in one case as an Arabic name is, and is repaired; a Latin word in Title case beside it keeps the contrast its own letters make.
   ```
   "ჯეკ MA"                    →  capitalized="ჯეკ Ma"
   "ნინო Smith"                →  capitalized="ნინო Smith"  · boundary
@@ -48,5 +48,5 @@
   ```
 
 ---
-**Signal:** case contrast: whether the words outside the suffix are written in one case
+**Signal:** case contrast: whether the words outside the suffix are written in one case, a Georgian letter carrying none
 **history:** decisions/R5 · **implemented:** nameparser/_render.py

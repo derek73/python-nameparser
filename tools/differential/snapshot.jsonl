@@ -2391,6 +2391,7 @@
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
 {"name": "John “Jack” Kennedy", "given": "John", "family": "Kennedy", "nickname": "Jack", "initials": "J. K."}
 {"name": "John 王", "given": "John", "family": "王", "initials": "J."}
+{"name": "John 王. Smith", "given": "John", "middle": "王.", "family": "Smith", "initials": "J. S."}
 {"name": "John 田中さん, XYZ", "given": "John", "family": "田中", "suffix": "さん, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J.", "honorifics": "さん"}
 {"name": "John ｢Jack｣ Smith", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "John, Smith, Dr.", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
@@ -6711,6 +6712,7 @@
 {"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี"}
 {"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี"}
 {"name": "สมชาย พ.ต.ส.", "given": "สมชาย", "family": "พ.ต.ส.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"]}
+{"name": "สมชาย ส. ใจดี", "given": "สมชาย", "middle": "ส.", "family": "ใจดี"}
 {"name": "สมชาย ใจดี", "given": "สมชาย", "family": "ใจดี"}
 {"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"]}
 {"name": "สุดา ใจดี (ดร.)", "title": "ดร.", "given": "สุดา", "family": "ใจดี"}
@@ -6725,6 +6727,7 @@
 {"name": "เดชาพล พัววรานุเคราะห์", "given": "เดชาพล", "family": "พัววรานุเคราะห์"}
 {"name": "แสงระวี คุณ ปรีชา กล้าหาญ", "order": "FAMILY_FIRST", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี"}
 {"name": "แสงระวี, ปรีชา กล้าหาญ", "given": "ปรีชา", "middle": "กล้าหาญ", "family": "แสงระวี"}
+{"name": "ใจดี ส. ก.", "given": "ใจดี", "middle": "ส.", "family": "ก."}
 {"name": "ใจดี, นายสมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี"}
 {"name": "ใจดี, พ.อ.หญิงวาสนา", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "ใจดี"}
 {"name": "ใจดี, พล.ต.ต.สุรศักดิ์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "ใจดี"}
@@ -6762,6 +6765,7 @@
 {"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "ဌေး က. ခ.", "given": "ဌေး", "middle": "က.", "family": "ခ."}
 {"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
 {"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
 {"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ"}

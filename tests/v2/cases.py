@@ -18526,8 +18526,9 @@ CASES: tuple[Case, ...] = (
          {"given": "ﾏｲｹﾙ."}, ambiguities=("given-or-family",),
          classification="fix(#594)",
          notes="the halfwidth twin of the row above: katakana has no "
-               "initials (_NO_INITIALS), and halfwidth kana is katakana "
-               "now, so H2's opening-abbreviation shape declines it. "
+               "initials nor period abbreviations (_SCRIPT_PROPERTIES), "
+               "and halfwidth kana is katakana now, so H2's "
+               "opening-abbreviation shape declines it. "
                "2.3.0 read title ﾏｲｹﾙ., the halfwidth limit "
                "decisions/cjk-full-stops recorded",
          tolerated=True),
@@ -18552,8 +18553,8 @@ CASES: tuple[Case, ...] = (
          "Проф. Иванов",
          {"title": "Проф.", "family": "Иванов"},
          classification="parity",
-         notes="the alphabet _policy._NO_INITIALS's own comment names "
-               "as the one it would be wrong to add: Cyrillic has "
+         notes="the alphabet _policy's script table names as a "
+               "writing convention, not a typology: Cyrillic has "
                "initials and abbreviations, so H2's shape fires and "
                "the #323 veto stays out of its way. Pins the veto's "
                "repertoire at the four CJK scripts from the other "

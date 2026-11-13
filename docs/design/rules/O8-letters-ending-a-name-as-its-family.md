@@ -119,6 +119,11 @@
   "राम बहादुर वि क"  initials_as_family  →  family="क"
   "झलक बहादुर आ. म."  initials_as_family  →  family="आ. म."
   ```
+- A letter of a script that writes no initials is no initial to T5, Thai and Burmese among them since 3.1 as Han and Hangul were before, so letters of theirs ending a name are no run and keep their middle and family roles.
+  ```
+  "ใจดี ส. ก."  initials_as_family  →  family="ก."
+  "ဌေး က. ခ."  initials_as_family  →  middle="က."
+  ```
 - The rule reports nothing: the caller declared the convention, as O6's switch reports nothing.
 
 ---

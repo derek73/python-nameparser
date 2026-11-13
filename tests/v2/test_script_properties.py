@@ -216,15 +216,19 @@ def test_a_script_with_no_initials_may_still_write_abbreviations(
 
 #: Georgian beside its Arabic twin: a script the table gives no case
 #: reads as a script Unicode gives none, at every name-level case
-#: question (#1222). Master (161ebd28) failed ten of these rows; the
-#: other five agreed there too (MA, ჯეკ; the MD and III rows; ნინო
-#: SMITH; the Latin control).
+#: question that reads the name's case (#1222). Master (161ebd28) reads
+#: eleven of these sixteen rows apart; the other five agreed there too
+#: (MA, ჯეკ; the MD and III rows; ნინო SMITH; the Latin control). Not
+#: an oracle where the two scripts differ in another column: Georgian
+#: writes initials and Arabic's dotted runs read otherwise, so a
+#: dotted run is held by its own test below, not by its twin.
 _GEORGIAN = {"ჯეკ": "محمد", "ბერიძე": "علي", "ნინო": "حسن",
              "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ": "فاطمة"}
 _TWIN_SHAPES = (
     "ჯეკ MA", "ჯეკ, MA", ", ჯეკ MA", "MA, ჯეკ", "ჯეკ ბერიძე MA",
-    "ბერიძე, ჯეკ MA", "ჯეკ DO", "j.r. ბერიძე", "ბერიძე, j.r.",
+    "ბერიძე, ჯეკ MA", "ჯეკ DO",
     "ჯეკ ბერიძე Jr. ნინო", "ჯეკ ბერიძე MD ნინო", "ჯეკ ბერიძე III ნინო",
+    "ჯეკ ბერიძე MA ნინო", "ჯეკ ბერიძე Phd ნინო",   # S8's name behind
     "ნინო SMITH", "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ MA", "ჯეკ, ნინო MA",
     "ნინო Smith MA",                       # control: Latin case speaks
 )
@@ -281,3 +285,21 @@ def test_a_reader_selecting_no_span_is_refused() -> None:
     assert _ranges_where("has_case", True) == ()
     with pytest.raises(ValueError, match="at least one range"):
         _ranges_pattern(_ranges_where("has_case", True))
+
+
+@pytest.mark.parametrize(("text", "given", "middle", "initials"), [
+    # a Georgian dotted run is initials, as on master: the run asks
+    # Unicode's case, Georgian writing initials in its one case (#1256)
+    ("ნ.ბ. ბერიძე", "ნ.", "ბ.", "ნ. ბ. ბ."),
+    ("ბერიძე, ა.ბ.", "ა.", "ბ.", "ა. ბ. ბ."),
+    ("ა.ბ. ბერიძე ნინო", "ა.", "ბ. ბერიძე", "ა. ბ. ბ. ნ."),
+    ("j.r. ბერიძე", "j.", "r.", "j. r. ბ."),
+])
+def test_a_georgian_run_of_initials_reads_as_initials(
+        text: str, given: str, middle: str, initials: str) -> None:
+    from nameparser import parse
+    name = parse(text)
+    assert (name.given, name.middle, name.initials()) == (
+        given, middle, initials), text
+    # its letters in R3's run of initials, as initials() reads them
+    assert parse("ნინო ბერიძე ა.ბ.").initials() == "ნ. ბ. ა. ბ."

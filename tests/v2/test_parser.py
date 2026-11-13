@@ -2315,7 +2315,7 @@ _NFD_ROWS = [
     "Smith, John й Jones",
     # ... and the veto on scripts that write no initials (#320), asked
     # of the composed spelling too: decomposed hangul is conjoining
-    # jamo, outside every _NO_INITIALS range until #1087, so composing the initial
+    # jamo, outside every no-initials range until #1087, so composing the initial
     # shape alone made a decomposed '씨.' an initial (a title or a
     # given name). Spaced or after a comma, since an UNSPACED
     # decomposed hangul name is not split (docs/east-asian.rst) and so has
