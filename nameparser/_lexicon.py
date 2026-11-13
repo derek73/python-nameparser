@@ -696,8 +696,8 @@ _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
 #: casefolding already), so `Łukasz` / `Lukasz` and `Pınar` / `Pinar`
 #: read `folded`: a spelling no one chooses (decisions/name-matching,
 #: 2026-11-12 A KEYBOARD'S SPELLING IS FOLDED). `_suggest.fold`'s table
-#: less its pinyin `ü` as `v`; lower case only, as the fold casefolds
-#: first.
+#: less its pinyin `ü` as `v`, and with Icelandic `ð` and `þ`; lower case
+#: only, as the fold casefolds first.
 _KEYBOARD = str.maketrans({"ł": "l", "ı": "i", "ø": "o", "đ": "d",
                            "ð": "d", "þ": "th", "æ": "ae", "œ": "oe"})
 

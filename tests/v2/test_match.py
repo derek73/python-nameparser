@@ -1839,6 +1839,12 @@ def test_an_accepted_middle_word_never_hides_an_unaccepted_one(
     ("Hans Müller", "Hans Mueller"), ("Jürgen Weber", "Juergen Weber"),
     ("Søren Hansen", "Soeren Hansen"), ("Ola Ågård", "Ola Aagaard"),
     ("Srđan Petrović", "Srdjan Petrovic"), ("Mueller, Hans", "Hans Müller"),
+    # letter by letter: a word or a text mixing the two writings (review
+    # of #1379)
+    ("Martin Ødegård", "Martin Odegaard"),
+    ("Jørgen Søndergård", "Joergen Sondergaard"),
+    ("Hans Göthe-Müller", "Hans Goethe-Muller"),
+    ("Müller Lüdenscheidt, Hans", "Mueller Ludenscheidt, Hans"),
 ])
 def test_a_keyboards_spelling_reads_folded_by_default(a: str, b: str) -> None:
     for x, y in ((a, b), (b, a)):
@@ -1860,6 +1866,30 @@ def test_a_transcription_reaches_a_family_base_and_the_birth_name() -> None:
     a, b = "Ann Smith (née Müller)", "Ann Mueller"
     assert across.check(a, b).consistent
     assert across.keys(a) & across.keys(b)
+
+
+def test_a_transcription_reaches_a_hyphen_half_and_the_vocabulary() -> None:
+    # every side of a comparison reads the forms, not one of them (#1293):
+    # a hyphenated part, a caller's listed spelling, familiar form and
+    # alternate spelling, each asked from either side
+    hyphen = _with(Outcome.HYPHENATED_PART)
+    assert hyphen.check("Jürgen Smith", "Juergen-Paul Smith").consistent
+    lexicon = (Lexicon.default()
+               .add("günni", kind="familiar", short_for=["günther"])
+               .add("jöran", kind="spelling", spelling_of=["göran"])
+               .add("jürg", kind="given", same_as="jürgen"))
+    matching = Matching(Parser(lexicon=lexicon), DEFAULT_ACCEPT | {
+        Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING})
+    for a, b in (("Günni Smith", "Guenther Smith"),
+                 ("Guenni Smith", "Günther Smith"),
+                 ("Jöran Smith", "Goeran Smith"),
+                 ("Joeran Smith", "Göran Smith"),
+                 ("Jürg Smith", "Juergen Smith")):
+        for x, y in ((a, b), (b, a)):
+            r = matching.check(x, y)
+            assert r.consistent, (x, y)
+            assert matching.check(y, x) == r.mirrored()
+            assert matching.keys(x) & matching.keys(y)
 
 
 def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
