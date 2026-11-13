@@ -375,8 +375,9 @@ class Parser:
         kept their given-first order in 96% of groups of two and 0% of
         groups of fifty, before this gate as after it, and ORCID holders
         who typed their given name in capitals (``ANNA Smith``) kept it
-        in 27% of groups of two and none of five (decisions/
-        group-suggestion's 2026-11-12 CAPITALS entry). Moving the base takes more names, and
+        in 30% of groups of two and none of five (decisions/
+        group-suggestion's 2026-11-12 CAPITALS entry, re-taken in its
+        GIVEN NAMES FROM ORCID entry). Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups

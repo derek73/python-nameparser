@@ -31,8 +31,11 @@ holders most often typed first in the given-name box, each typed so at
 least ``MIN_COUNTRY_USES`` times there, that pass the filter, which
 keeps a name of two letters or more holding no full stop, written in
 ORCID's own family box at most ``MAX_FAMILY_SHARE`` of the
-``MIN_USES`` or more times its holders wrote it, and no romanized
-surname this run writes. Only the first word is ranked: the words after
+``MIN_USES`` or more times its holders wrote it, no romanized
+surname this run writes and no word the default lexicon compiles into
+its title sets outside ``titles_ambiguous`` (``prof``, typed before the
+name). Each word is spelled as the suggester looks it up
+(:func:`spelling`). Only the first word is ranked: the words after
 it are middle names, an East Slavic patronymic (``Анна Викторовна``) or
 a second given name. Before 2026-11-12, and in no release, the ranking
 was nam_dict's (Jörg Michael, GNU FDL 1.2), its 55 country columns by
@@ -63,7 +66,7 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
 import zh_surnames  # noqa: E402  (a sibling script; its ask and batched)
 
-from nameparser._suggest import fold  # noqa: E402  (the one fold)
+from nameparser._suggest import _EDGES, fold  # noqa: E402  (the one fold)
 
 TOP = 500
 MIN_COUNTRY_USES = 3
@@ -72,9 +75,10 @@ MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
-#: (2026-11-12: 200 pinyin surnames, over 4,000 given names).
+#: (2026-11-12: 200 pinyin surnames, 6,407 given names; nam_dict's
+#: ranking gave 4,262, under a floor of 3,000).
 MIN_PINYIN = 150
-MIN_GIVEN = 3_000
+MIN_GIVEN = 5_000
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
 PINYIN_FILE = "wikidata_chinese_surname_pinyin.json"
@@ -183,6 +187,18 @@ def load_pinyin(chars: list[str], refresh: bool) -> dict[str, set[str]]:
     return read_pinyin(cached["items"], cached["pinyin"])
 
 
+def spelling(word: str) -> str:
+    """The key a word typed into a box is counted under: the spelling
+    the suggester looks it up by, which strips the quotes and brackets
+    a word is written inside (``_suggest._EDGES``), then its full stops,
+    and folds it, so a table entry is one the suggester can meet
+    (``Ala'`` counts as ``ala``, as the suggester reads it; #1293's
+    lesson, fold both sides of a match alike). A comma ending the word
+    goes first: the suggester divides a name at a comma, so never meets
+    one."""
+    return fold(word.rstrip(",").strip(_EDGES).strip("."))
+
+
 def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str],
                                           dict[str, Counter[str]]]:
     """Folded word counts of ORCID's given-name and family-name boxes,
@@ -213,11 +229,11 @@ def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str],
             record = json.loads(line)
             for box, counts in (("given", given), ("family", family)):
                 for word in (record.get(box) or "").split():
-                    counts[fold(word.strip(".,"))] += 1
+                    counts[spelling(word)] += 1
             words = (record.get("given") or "").split()
             if words and record.get("country"):
                 first_given.setdefault(record["country"], Counter())[
-                    fold(words[0].strip(".,"))] += 1
+                    spelling(words[0])] += 1
     if records != want_records:
         raise ValueError(f"{path} holds {records} records, not the "
                          f"{want_records} its meta.json counts; fetch it again")
@@ -265,14 +281,19 @@ def surname_exclusions(pinyin: set[str]) -> set[str]:
 
 
 def listed_titles() -> set[str]:
-    """The words the default lexicon reads only as a title, folded:
-    ORCID holders type one into the given-name box (``Prof. Ann``,
-    ``Dra. Ana``, ``Lady``), and the suggester reads a name past its
-    listed titles, so a title in the table would vote where the name
-    does not (2026-11-12: ``prof``, ``dra``, ``lic``, ``engr``,
-    ``assoc``, ``asst`` and ``lady``). A title that may also be a given
-    name is in ``titles_ambiguous`` and is not refused here (``grace``,
-    ``king``, ``princess``), whatever other set lists it."""
+    """The words the default lexicon compiles into its title sets
+    (``titles``, ``given_name_titles``) less those in
+    ``titles_ambiguous``, folded. ORCID holders type a title into the
+    given-name box (``Prof. Ann``, ``Dra. Ana``, ``Lady``), and the
+    suggester reads a name past its listed titles, so a title in the
+    table would vote where the name does not (2026-11-12: ``prof``,
+    ``dra``, ``lic``, ``engr``, ``assoc``, ``asst`` and ``lady``). A
+    title in ``titles_ambiguous`` (``grace``, ``king``, ``princess``)
+    stays a candidate. The set also holds words with a given reading
+    that compile into ``titles`` rather than ``titles_ambiguous``: the
+    title-particles (``st``, ``graf``, ``freiherr``) and the
+    title/suffix duals (``sr``, ``ms``); none of them is in the table
+    either way (2026-11-12)."""
     from nameparser import Lexicon
     sets = Lexicon.default()._sets
     return {fold(w) for w in (sets.titles | sets.given_name_titles)

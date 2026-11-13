@@ -245,7 +245,7 @@ def test_a_group_without_evidence_keeps_the_base() -> None:
 _BYLINES = ["Huntley R P", "Hoy A M", "Khalaf T. A.", "Kessler H A",
             "Armitage J."]
 _PLAIN = ["Xyzzy Plugh", "Qwrt Zxcv", "Blorp Fnord", "Grault Garply",
-          "Waldo Fred"]
+          "Thud Corge"]
 
 
 @pytest.mark.parametrize(("initialed", "plain", "votes"), [

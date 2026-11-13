@@ -352,6 +352,28 @@ def test_an_orcid_corpus_without_its_meta_is_refused(
 
 
 @needs_checkout
+@pytest.mark.parametrize("typed, key", [
+    ("Ala'", "ala"), ("“Anna”", "anna"), ("(Anna)", "anna"), ("Anna.", "anna"),
+    ("Anna,", "anna"), ("Łukasz", "lukasz"),
+    # the suggester strips the quotes, then the full stop, so a quote
+    # before a full stop stays: the tool keys it as the suggester does
+    ("'Anna'.", "anna'"),
+])
+def test_a_word_is_counted_under_the_spelling_the_suggester_looks_up(
+        tool: ModuleType, typed: str, key: str) -> None:
+    from nameparser import Parser
+    from nameparser._suggest import Signal, name_votes
+    assert tool.spelling(typed) == key
+    from nameparser._suggest import _EDGES, fold
+    assert fold(typed.rstrip(",").strip(_EDGES).strip(".")) == key
+    # and the suggester meets that key: a listed given name written so
+    # at the head votes given-first
+    if key in _order_names.COMMON_GIVEN_NAMES:
+        votes = name_votes(f"{typed.rstrip(',')} Zzyzx", Parser().lexicon)
+        assert Signal.GIVEN_NAME in votes
+
+
+@needs_checkout
 def test_a_listed_title_is_refused_and_an_ambiguous_one_is_not(
         tool: ModuleType) -> None:
     titles = tool.listed_titles()
@@ -370,11 +392,11 @@ def test_the_given_names_exclude_this_runs_surnames(tool: ModuleType) -> None:
 
 @needs_checkout
 @pytest.mark.parametrize("pinyin, given, fragment", [
-    ({f"p{i}" for i in range(149)}, {f"g{i}" for i in range(3000)},
+    ({f"p{i}" for i in range(149)}, {f"g{i}" for i in range(5000)},
      "149 pinyin surnames, below the floor of 150"),
-    ({f"p{i}" for i in range(150)}, {f"g{i}" for i in range(2999)},
-     "2999 given names, below the floor of 3000"),
-    ({f"p{i}" for i in range(150)}, {"p1"} | {f"g{i}" for i in range(3000)},
+    ({f"p{i}" for i in range(150)}, {f"g{i}" for i in range(4999)},
+     "4999 given names, below the floor of 5000"),
+    ({f"p{i}" for i in range(150)}, {"p1"} | {f"g{i}" for i in range(5000)},
      "both tables: p1"),
 ])
 def test_a_table_below_its_floor_or_overlapping_is_refused(
@@ -383,4 +405,4 @@ def test_a_table_below_its_floor_or_overlapping_is_refused(
     with pytest.raises(ValueError, match=fragment):
         tool.check_tables(pinyin, given)
     tool.check_tables({f"p{i}" for i in range(150)},
-                      {f"g{i}" for i in range(3000)})
+                      {f"g{i}" for i in range(5000)})
