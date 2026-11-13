@@ -305,9 +305,6 @@ under other licences, which apply to those parts:
 - the familiar forms and the group suggester's common given names from
   Jörg Michael's nam_dict: GNU Free Documentation License 1.2 or later,
   in ``LICENSE-nam_dict``;
-- ``locales.ZH``'s simplified surname forms and the group suggester's
-  pinyin surnames from the Unicode Consortium's Unihan database: Unicode
-  License v3, in ``LICENSE-unicode``;
 - ``locales.ES`` and ``locales.ES_AR``'s given names from Spain's
   Instituto Nacional de Estadística: Creative Commons Attribution 4.0,
   credited in ``nameparser/locales/_es_given_names.py`` and
@@ -317,7 +314,7 @@ under other licences, which apply to those parts:
   ``nameparser/locales/zh.py``.
 
 The package's licence expression is
-``LGPL-2.1-or-later AND Apache-2.0 AND GFDL-1.2-no-invariants-or-later AND CC-BY-4.0 AND OGDL-Taiwan-1.0 AND Unicode-3.0``.
+``LGPL-2.1-or-later AND Apache-2.0 AND GFDL-1.2-no-invariants-or-later AND CC-BY-4.0 AND OGDL-Taiwan-1.0``.
 
 .. |Build Status| image:: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml

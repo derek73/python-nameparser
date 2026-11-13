@@ -111,19 +111,56 @@ def test_a_traditional_form_gains_its_one_simplified_variant() -> None:
     assert _forms(tool.select(["關"], [], {"關": {"关"}})) == [{"關", "关"}]
 
 
+def _label(qid: str, lab: str, lang: str) -> dict[str, str]:
+    return {"item": f"http://www.wikidata.org/entity/{qid}", "lab": lab,
+            "lang": lang}
+
+
+def test_a_form_gains_the_simplified_labels_of_the_items_labelled_with_it() -> None:
+    variants = tool.read_scripts([
+        _label("Q1", "關", "zh-hant"), _label("Q1", "關", "zh"),
+        _label("Q1", "关", "zh-hans"), _label("Q1", "关", "zh-cn"),
+        # a label written "surname X" names the character
+        _label("Q2", "顏姓", "zh-tw"), _label("Q2", "颜姓", "zh-hans")])
+    assert variants == {"關": {"关"}, "顏": {"颜"}}
+    assert _forms(tool.select(["關"], [], variants)) == [{"關", "关"}]
+
+
 def test_a_supplementary_plane_variant_does_not_count_against_the_bmp_one() -> None:
-    # Unihan gives 蘭 both 兰 and a GB 18030 extension form; a name is
-    # typed with 兰, so 兰 is the one variant.
-    variants = tool.read_unihan("U+862D\tkSimplifiedVariant\tU+5170 U+2C795\n")
+    # A label may give 蘭 both 兰 and a GB 18030 extension form; a name
+    # is typed with 兰, so 兰 is the one variant.
+    variants = tool.read_scripts([
+        _label("Q1", "蘭", "zh-hant"), _label("Q1", "兰", "zh-hans"),
+        _label("Q1", "\U0002C795", "zh-cn")])
     assert _forms(tool.select(["蘭"], [], variants)) == [{"蘭", "兰"}]
 
 
+def test_two_simplified_forms_leave_a_form_as_ranked() -> None:
+    variants = tool.read_scripts([
+        _label("Q1", "乾", "zh-hant"), _label("Q1", "干", "zh-hans"),
+        _label("Q2", "乾", "zh-hant"), _label("Q2", "乾", "zh-hans")])
+    assert variants == {"乾": {"干"}}
+    variants = tool.read_scripts([
+        _label("Q1", "乾", "zh-hant"), _label("Q1", "干", "zh-hans"),
+        _label("Q2", "乾", "zh-tw"), _label("Q2", "亁", "zh-cn")])
+    assert _forms(tool.select(["乾"], [], variants)) == [{"乾"}]
+
+
 def test_a_simplified_form_never_gains_an_unattested_traditional_one() -> None:
-    # 余's traditional variants include 餘, which is no one's surname;
-    # only the simplified direction is read from Unihan.
-    variants = tool.read_unihan("U+4F59\tkTraditionalVariant\tU+4F59 U+9918\n"
-                                "U+9918\tkSimplifiedVariant\tU+4F59\n")
+    # 余's traditional forms include 餘, which is no one's surname; only
+    # the simplified labels are read, so a form written only in
+    # simplified labels gains nothing.
+    variants = tool.read_scripts([
+        _label("Q1", "余", "zh-hans"), _label("Q1", "余", "zh-cn")])
+    assert variants == {}
     assert _forms(tool.select(["余"], [], variants)) == [{"余"}]
+
+
+def test_the_script_query_asks_each_form_in_each_label_language() -> None:
+    query = tool.scripts_query(["關", "王"])
+    assert all(f'"{form}"@{lang}' in query for form in "關王"
+               for lang in tool.SCRIPT_LANGUAGES)
+    assert "wd:Q101352" in query and "wd:Q1093580" in query
 
 
 def test_each_ranking_contributes_only_its_top() -> None:

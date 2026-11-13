@@ -3,14 +3,14 @@ surname table the group suggester reads (``config/_order_names.py``).
 
 The table is read by the suggester only, never by a parse. The tool's
 reading and folding are pinned on hand-built input; the shipped block is
-held to what the tool writes from the cached Unihan, skipped where the
-cache is absent.
+held to what the tool writes from its cached Wikidata answer, skipped
+where the cache is absent.
 """
 from __future__ import annotations
 
 import importlib.util
 import sys
-import zipfile
+import json
 from pathlib import Path
 from types import ModuleType
 
@@ -49,14 +49,25 @@ def test_fold_strips_tones_and_vietnamese_marks(tool: ModuleType) -> None:
 
 
 @needs_checkout
-def test_mandarin_takes_the_first_reading_without_tone(tool: ModuleType) -> None:
-    assert tool.read_mandarin("U+912D\tkMandarin\tzhèng\n")["鄭"] == "zheng"
-    assert tool.read_mandarin("U+4E50\tkMandarin\tlè yuè\n")["乐"] == "le"
+def test_pinyin_is_every_reading_of_every_item_labelled_with_the_character(
+        tool: ModuleType) -> None:
+    w = "http://www.wikidata.org/entity/"
+    items = [{"label": "鄭", "item": w + "Q1"}, {"label": "郑", "item": w + "Q1"},
+             {"label": "乐", "item": w + "Q2"}, {"label": "乐", "item": w + "Q3"},
+             {"label": "田", "item": w + "Q4"}]
+    pinyin = [{"item": w + "Q1", "py": "Zhèng"}, {"item": w + "Q2", "py": "Lè"},
+              {"item": w + "Q3", "py": "Yuè"}, {"item": w + "Q3", "py": "Yuè"},
+              # a P460 target's native label written in Han, and a phrase
+              {"item": w + "Q4", "py": "田"}, {"item": w + "Q4", "py": "Tián Jiā"}]
+    assert tool.read_pinyin(items, pinyin) == {
+        "鄭": {"zheng"}, "郑": {"zheng"}, "乐": {"le", "yue"}}
 
 
 @needs_checkout
-def test_pinyin_surnames_drop_one_letter_readings(tool: ModuleType) -> None:
-    assert tool.pinyin_surnames(["阿", "鄭"], {"阿": "a", "鄭": "zheng"}) == {"zheng"}
+def test_pinyin_surnames_drop_one_letter_readings_and_unread_characters(
+        tool: ModuleType) -> None:
+    assert tool.pinyin_surnames(["阿", "鄭", "刁"],
+                                {"阿": {"a"}, "鄭": {"zheng"}}) == {"zheng"}
 
 
 @needs_checkout
@@ -83,19 +94,25 @@ def test_the_hand_lists_are_folded_and_the_table_has_no_one_letter_entry() -> No
     assert {"zheng", "nguyen", "kim", "wong"} <= table
 
 
+def _cached_pinyin(tool: ModuleType) -> dict[str, set[str]]:
+    """The readings from the tool's cached Wikidata answer, read
+    without the network; skipped where it is absent."""
+    path = tool.name_usage.cache_dir() / tool.PINYIN_FILE
+    if not path.exists():
+        pytest.skip("the Wikidata pinyin cache is absent "
+                    "(tools/vocab/order_names.py fetches it)")
+    cached = json.loads(path.read_text(encoding="utf-8"))
+    return tool.read_pinyin(cached["items"], cached["pinyin"])
+
+
 @needs_checkout
 def test_the_shipped_surname_block_is_what_the_tool_writes(
         tool: ModuleType) -> None:
     from nameparser import locales
-    path = tool.name_usage.cache_dir() / tool.UNIHAN_FILE
-    if not path.exists():
-        pytest.skip("the Unihan cache is absent (tools/zh_surnames.py fetches it)")
-    with zipfile.ZipFile(path) as zf:
-        mandarin = tool.read_mandarin(
-            zf.read(tool.UNIHAN_MEMBER).decode("utf-8"))
+    readings = _cached_pinyin(tool)
     singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
     block = tool.render_block("PINYIN", sorted(
-        tool.pinyin_surnames(singles, mandarin)))
+        tool.pinyin_surnames(singles, readings)))
     text = Path(_order_names.__file__).read_text(encoding="utf-8")
     assert tool.rewrite(text, "PINYIN", block) == text
 
@@ -150,14 +167,11 @@ def test_the_shipped_given_block_is_what_the_tool_writes(
     cache = tool.name_usage.cache_dir()
     namdict = cache / "nam_dict.txt"
     orcid = cache / "local" / "orcid-researchers" / "raw.jsonl"
-    unihan = cache / tool.UNIHAN_FILE
-    if not (namdict.exists() and orcid.exists() and unihan.exists()):
-        pytest.skip("nam_dict, Unihan or the ORCID local corpus is not cached")
-    with zipfile.ZipFile(unihan) as zf:
-        mandarin = tool.read_mandarin(
-            zf.read(tool.UNIHAN_MEMBER).decode("utf-8"))
+    if not (namdict.exists() and orcid.exists()):
+        pytest.skip("nam_dict or the ORCID local corpus is not cached")
+    readings = _cached_pinyin(tool)
     singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
-    pinyin = tool.pinyin_surnames(singles, mandarin)
+    pinyin = tool.pinyin_surnames(singles, readings)
     words = tool.load_common_given(tool.surname_exclusions(pinyin))
     tool.check_tables(pinyin, words)
     block = tool.render_block("COMMON_GIVEN", words)
@@ -250,11 +264,11 @@ def test_the_given_names_exclude_this_runs_surnames(tool: ModuleType) -> None:
 
 @needs_checkout
 @pytest.mark.parametrize("pinyin, given, fragment", [
-    ({f"p{i}" for i in range(199)}, {f"g{i}" for i in range(3000)},
-     "199 pinyin surnames, below the floor of 200"),
-    ({f"p{i}" for i in range(200)}, {f"g{i}" for i in range(2999)},
+    ({f"p{i}" for i in range(149)}, {f"g{i}" for i in range(3000)},
+     "149 pinyin surnames, below the floor of 150"),
+    ({f"p{i}" for i in range(150)}, {f"g{i}" for i in range(2999)},
      "2999 given names, below the floor of 3000"),
-    ({f"p{i}" for i in range(200)}, {"p1"} | {f"g{i}" for i in range(3000)},
+    ({f"p{i}" for i in range(150)}, {"p1"} | {f"g{i}" for i in range(3000)},
      "both tables: p1"),
 ])
 def test_a_table_below_its_floor_or_overlapping_is_refused(
@@ -262,5 +276,5 @@ def test_a_table_below_its_floor_or_overlapping_is_refused(
         fragment: str) -> None:
     with pytest.raises(ValueError, match=fragment):
         tool.check_tables(pinyin, given)
-    tool.check_tables({f"p{i}" for i in range(200)},
+    tool.check_tables({f"p{i}" for i in range(150)},
                       {f"g{i}" for i in range(3000)})
