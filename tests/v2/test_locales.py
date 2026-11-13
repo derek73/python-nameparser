@@ -150,11 +150,12 @@ def test_ne_pack_contents() -> None:
 
 
 def test_ar_and_he_packs_are_their_choice_alone() -> None:
-    # #1257: each turns on `ben`'s clan reading, written default = false;
-    # ar's choice also drops en's credential ABD for abd's bound given name
+    # #1257: each turns on `ben`'s clan reading, written default = false,
+    # and ar `el`'s article; ar's choice also drops en's credential ABD
+    # for abd's bound given name
     import pickle
     from nameparser._reading_index import changed_words, selected
-    for code, pack, words in (("ar", locales.AR, {"abd", "ben"}),
+    for code, pack, words in (("ar", locales.AR, {"abd", "ben", "el"}),
                               ("he", locales.HE, {"ben"})):
         assert pack == Locale(code=code, lexicon=Lexicon.empty(),
                               languages=frozenset({code}))
@@ -184,6 +185,9 @@ def test_ar_and_he_packs_are_their_choice_alone() -> None:
     ("he", "YAEL BEN ARIEH", "Yael Ben Arieh"),
     ("he", "yael ben arieh", "Yael Ben Arieh"),
     ("ar", "youssef ait haddou", "Youssef Ait Haddou"),
+    (None, "SARA EL HADDOU", "Sara El Haddou"),
+    ("ar", "SARA EL HADDOU", "Sara El Haddou"),
+    ("ar", "sara el haddou", "Sara El Haddou"),
 ])
 def test_a_maghrebi_particle_keeps_its_capital(
         code: str | None, text: str, repaired: str) -> None:
@@ -1871,6 +1875,9 @@ _ROTATORS["ar"] = [
     "Haddad, Karim Ben",             # ben ending the given part
     "Jane Smith, ABD",               # abd, the credential leaving
     "Jane Smith ABD",                # abd ending the name
+    "Sara El Haddou",                # el
+    "SARA EL HADDOU",                # el, in one case
+    "Haddou, Sara El",               # el ending the given part
 ]
 _ROTATORS["he"] = [
     "Yael Ben Arieh",                # ben

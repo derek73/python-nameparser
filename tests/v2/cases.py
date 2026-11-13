@@ -1022,6 +1022,18 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          notes="the given name Ben where the particle opens a name, the "
                "fork reported; 1.4.0 reads the same fields"),
+    Case("el_stays_a_middle_name_by_default",
+         "Sara El Haddou",
+         {"given": "Sara", "middle": "El", "family": "Haddou"},
+         classification="parity",
+         notes="the negative control for #1240: the given names El opens "
+               "and completes keep the default from reading the article "
+               "(ar.toml, default = false); 1.4.0 reads the same"),
+    Case("the_arabic_pack_reads_el_as_the_family",
+         "Sara El Haddou",
+         {"given": "Sara", "family": "El Haddou"},
+         locale="ar", classification="feat(#1240)",
+         notes="1.4.0 through master read middle 'El'"),
     Case("hebrew_ben_opening_a_name_is_the_given_name",
          "בן כהן",
          {"given": "בן", "family": "כהן"},

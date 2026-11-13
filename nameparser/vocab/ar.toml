@@ -423,6 +423,16 @@ expands = "the, after a case ending: \"Zia ul-Haq\""
 same_as = "al-"
 
 [[word]]
+text = "el"
+given = { us_ssa = 284, wikidata = 13, as_of = 2026-11-12, note = "#1240: US SSA births summed over both sexes (F 38, M 246); Wikidata is a lower bound; nam_dict band 1 in the Netherlands. ORCID's given boxes open with it 462 times (MA, DZ, EG: El Mehdi) and hold it later 356 times, 139 of them Algerian, the article inside a compound given name (Nour El Houda, Seif El Islam), the clash that keeps the article reading off by default (#1257)" }
+[word.article]
+default = false
+cased = "El"
+issue = [1240, 1257]
+expands = "the, the Maghrebi and Egyptian spelling of al: \"El Idrissi\""
+note = "Off by default, on under an Arabic choice (locales.AR), where it reads as al does, an article that may be a given name. Measured 2026-11-12 (#1257) as an ambiguous article read by default: ORCID Morocco 2,002 fixed to 26 broken, Egypt 286 to 20, Lebanon 432 to 6, PSC's Moroccan filers 389 to 13, but ORCID Algeria 37 to 135 and PSC's Algerian filers 3 to 10, every Algerian break the article inside a compound given name (Nour el houda Faleh read family 'el houda Faleh'). Family boxes write it El 2,849 times, el 13"
+
+[[word]]
 text = "bin"
 given = { us_ssa = 11, wikidata = 541, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 8 in China, 6 in Korea, 1 in Japan" }
 [word.patronymic]

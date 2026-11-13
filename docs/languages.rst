@@ -469,10 +469,14 @@ forms the father's name, fills ``patronymic`` too:
 ``Ben`` ("son of") opens Tunisian and Israeli family names the same way
 (``Ben Haddad``), but it is also the given name Ben, and a British
 middle name, standing where the particle would claim it, so the default
-leaves it to position. The Arabic and Hebrew packs, ``locales.AR`` and
-``locales.HE``, each choose their one language and read it as the
-family name; a ``Ben`` opening a name stays the given name and reports
-the fork:
+leaves it to position. ``El``, the Maghrebi and Egyptian spelling of the
+article ``al``, opens Moroccan and Egyptian family names (``El
+Haddou``), but Algerian given names hold it in their middle (``Nour El
+Houda``), so the default leaves it to position too. The Arabic and
+Hebrew packs, ``locales.AR`` and ``locales.HE``, each choose their one
+language and read ``Ben`` as the family name, and ``locales.AR`` reads
+``El`` as ``al`` is read; a word opening a name stays the given name
+and reports the fork:
 
 .. doctest::
 
@@ -483,6 +487,8 @@ the fork:
     'Ben Haddad'
     >>> arabic.parse("Ben Haddad").given
     'Ben'
+    >>> arabic.parse("Sara El Haddou").family
+    'El Haddou'
 
 Among ORCID's researchers, who split their own names into a given and a
 family box, the names agreeing in both boxes rise from 86.9% to 95.5%
@@ -490,7 +496,11 @@ in Tunisia and from 92.7% to 93.5% in Israel under either pack, and
 the default's other particles raise Morocco from 84.1% to 85.4%
 (measured 2026-11-12). A listing written family name first without a
 comma reads whole as the family name (``Ait Haddou Karim``), as one
-opening with ``de`` does; write the comma or declare the order.
+opening with ``de`` does; write the comma or declare the order. Under
+``locales.AR`` a compound given name written with ``El`` inside it
+gives the article and the rest to the family name (``Nour El Houda
+Haddou`` gives family ``El Houda Haddou``), so for Algerian data leave
+the pack off.
 
 Choosing Arabic also costs English's reading of ``abd``, which Arabic
 reads as a given name (``Abd Rahman``), so the credential ABD (All But
