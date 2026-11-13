@@ -200,6 +200,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [O6 — two family names](O6-two-family-names.md)
 - [O7 — two given names](O7-two-given-names.md)
 - [O8 — letters ending a name as its family](O8-letters-ending-a-name-as-its-family.md)
+- [O9 — words in capitals as the family](O9-words-in-capitals-as-the-family.md)
 
 ## [Scripts & writing systems (W)](W-scripts-and-writing-systems.md)
 

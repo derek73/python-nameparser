@@ -52,7 +52,9 @@ class CapsSuffixes(StrEnum):
     #: After a comma and ending a name with no comma ("John Smith XYZ"
     #: gives suffix ``XYZ``), where the all-caps surname convention
     #: does write them -- "Jean Pierre DUPONT" then gives family
-    #: ``Pierre``, suffix ``DUPONT``.
+    #: ``Pierre``, suffix ``DUPONT``. Cannot be set with
+    #: ``Policy.capitals_as_family``, which reads that word as the
+    #: family.
     EVERYWHERE = "everywhere"
 
 
@@ -867,6 +869,46 @@ class Policy:
     #: Added in 3.1.
     initials_as_family: bool = field(
         default=False, metadata={ADDED_IN: "3.1.0"})
+    #: Reads the words a name writes in capitals as its family name,
+    #: for data whose source writes every family name in capitals
+    #: (rules/O9): "DUPONT Marie" gives given ``Marie``, family
+    #: ``DUPONT``, "Ayla BURSALI AKSOY" gives family ``BURSALI AKSOY``,
+    #: and "Jeffrey LAM Kin-fung" gives given ``Jeffrey``, middle
+    #: ``Kin-fung``, family ``LAM``, wherever the capitals stand. The
+    #: other words keep their written order, the first that may be a
+    #: given name being the given name.
+    #:
+    #: A capitals word has two or more capital letters and nothing but
+    #: letters, apostrophes and hyphens ("O'BRIEN" and "McDONALD"
+    #: count, "DR.", "N/A" and "J-P" do not). Particles and
+    #: conjunctions join a run, a run of particles alone is none, and
+    #: where a name word divides two runs the last is the family. The
+    #: capitals outrank a credential or title reading ("Hugo LAC",
+    #: "DOYEN Hugo" give family ``LAC`` and ``DOYEN``), while a listed
+    #: credential or numeral in capitals ending the name still comes off
+    #: where a capitals word before it, no particle, conjunction,
+    #: numeral or marker, is left to be the family ("Marie GRAJALES
+    #: III", "DUPONT Marie MBA", but "Marie MA MBA" gives family
+    #: ``MA``), and a marker the patronymic rule in force reads is no
+    #: capitals word where another capitals word is left to be the
+    #: family ("ALIYEV Ilham Heydar OGLU"), though one that is the only
+    #: capitals word is the family ("ABRAMOVICH Roman").
+    #:
+    #: Only a name in mixed case is read, one where a word no run took,
+    #: other than a title, a suffix, or a particle or conjunction
+    #: written in lowercase, holds a lowercase letter ("MORRISON Van" is
+    #: read, "MARIE de DUPONT" is not), and only the part before its
+    #: first comma: after a family comma the comma, not the capitals,
+    #: names the family.
+    #:
+    #: Off by default: in data that does not write the convention,
+    #: capitals also write a given name ("ANNA Smith") or a credential
+    #: ("John Smith MD"); where one of ORCID's two boxes is wholly in
+    #: capitals it is the given box about one time in ten. Cannot be set with
+    #: ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads
+    #: the same unlisted word as a credential. Added in 3.1.
+    capitals_as_family: bool = field(
+        default=False, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -983,6 +1025,20 @@ class Policy:
         object.__setattr__(self, "unlisted_caps_suffixes", _coerce_enum(
             caps, CapsSuffixes, "unlisted_caps_suffixes value",
             "values"))
+        # rules/O9: "the switch cannot be set with an unlisted capitals
+        # word read as a credential everywhere" -- the two read the same
+        # word ending a name with no comma opposite ways (#659)
+        if (self.capitals_as_family
+                and self.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE):
+            raise ValueError(
+                "capitals_as_family=True cannot be set with "
+                "unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE: the first "
+                "reads an unlisted word in capitals ending a name as the "
+                "family, the second reads it as a credential. Keep one: "
+                "leave capitals_as_family False, or set "
+                "unlisted_caps_suffixes to CapsSuffixes.AFTER_COMMA or "
+                "CapsSuffixes.OFF, e.g. Policy(capitals_as_family=True, "
+                "unlisted_caps_suffixes=CapsSuffixes.AFTER_COMMA)")
         lone = self.lone_name_word
         if not isinstance(lone, str):
             raise TypeError(
@@ -1108,6 +1164,10 @@ class PolicyPatch:
     #: Patches :attr:`Policy.initials_as_family`, a scalar (later
     #: wins). Added in 3.1.
     initials_as_family: bool | _Unset = field(
+        default=UNSET, metadata={ADDED_IN: "3.1.0"})
+    #: Patches :attr:`Policy.capitals_as_family`, a scalar (later
+    #: wins). Added in 3.1.
+    capitals_as_family: bool | _Unset = field(
         default=UNSET, metadata={ADDED_IN: "3.1.0"})
 
     # in the class body so @dataclass(slots=True) keeps them

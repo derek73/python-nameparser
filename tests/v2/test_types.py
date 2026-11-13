@@ -832,6 +832,21 @@ _REFUSED_SKEWS = [
         "initials_family"),
                  "unexpected fields: initials_family",
                  id="patch-renamed-initials-as-family"),
+    # Policy.capitals_as_family and PolicyPatch's (3.1, rules/O9)
+    pytest.param(Policy, lambda: _without(dict(Policy().__getstate__()),
+                                          "capitals_as_family", "strip_bidi"),
+                 "missing fields: strip_bidi;",
+                 id="policy-missing-shipped-field-beside-missing-capitals"),
+    pytest.param(Policy, lambda: _renamed(dict(Policy().__getstate__()),
+                                          "capitals_as_family",
+                                          "caps_family"),
+                 "unexpected fields: caps_family",
+                 id="policy-renamed-capitals-as-family"),
+    pytest.param(PolicyPatch, lambda: _renamed(
+        dict(PolicyPatch().__getstate__()), "capitals_as_family",
+        "caps_family"),
+                 "unexpected fields: caps_family",
+                 id="patch-renamed-capitals-as-family"),
     # and Reading.first_surname (3.0, rules/R11)
     pytest.param(Reading, lambda: _renamed(_reading_state(),
                                            "first_surname", "surname1"),

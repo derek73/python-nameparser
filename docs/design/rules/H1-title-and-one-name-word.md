@@ -48,6 +48,13 @@
   "Sir de Mesnil"  family-first  →  family="de Mesnil"
   ```
 
+**Precedence:**
+
+- **A title written in capitals under capitals-as-family handling** ("DOYEN Hugo" with that switch on): the caller has said the capitals write the family name, so the title is the family name and the word beside it the given name (O9).
+  ```
+  "DOYEN Hugo"  capitals_as_family  →  family="DOYEN"
+  ```
+
 **Accepted:**
 
 - A given-name title plus one name word leaves the family empty — the input names no family, and inventing one would be worse. A run whose last title is a given-name title reads the same way, `queen` doing the addressing where `her majesty` only ranks.

@@ -20,6 +20,15 @@
 "John Doctor Smith"         →  middle="Doctor"  · boundary
 ```
 
+**Precedence:**
+
+- **A title written in capitals under capitals-as-family handling** ("SIR John Smith" with that switch on): where the title is the name's last or only run in capitals, the caller has said the capitals write the family name, so the word is the family name and the run of titles does not take it; where a later run is the family it stays the title (O9).
+  ```
+  "SIR John Smith"  capitals_as_family  →  family="SIR"
+  "SIR John SMITH"  capitals_as_family  →  title="SIR"
+  "SIR John MD"  capitals_as_family  →  family="SIR"
+  ```
+
 **Accepted:**
 
 - Before a family comma the run is H6's, which stops where nothing but post-nominals follows for the reason this one gives a word back, and always leaves the family one word, whatever that word is.

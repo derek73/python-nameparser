@@ -1675,6 +1675,7 @@ _BASE_FIELDS: dict[str, dict[str, object]] = {
     "two_given_names": {"two_given_names": True},
     "lone_name_word": {"lone_name_word": Role.FAMILY},
     "initials_as_family": {"initials_as_family": True},
+    "capitals_as_family": {"capitals_as_family": True},
 }
 
 

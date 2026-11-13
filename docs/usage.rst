@@ -664,6 +664,7 @@ field a name of one name word reads as under every order
 The ``Policy`` switches that turn a reading on or off have a flag each,
 spelled as the field: ``--two-given-names``, ``--two-family-names``,
 ``--middle-as-family``, ``--initials-as-family``,
+``--capitals-as-family``,
 ``--lenient-comma-suffixes`` and ``--unlisted-dotted-suffixes``, each
 with a ``--no-`` form, and
 ``--unlisted-caps-suffixes`` taking ``off``, ``after-comma`` or

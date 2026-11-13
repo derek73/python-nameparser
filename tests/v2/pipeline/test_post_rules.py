@@ -2225,6 +2225,342 @@ def test_a_surname_pair_tag_post_rules_cannot_read_is_inert(
     assert out.ambiguities == state.ambiguities
 
 
+# rules/O9, the capitals_as_family switch (#659). One row per condition
+# of `_post_rules._family_in_capitals`: the reading with the condition in
+# place, and the recorded negative control, the reading with it removed
+# (measured 2026-11-12 by deleting each condition alone on this branch),
+# so a row whose two readings agreed could not show its condition does
+# anything. Each reading names the fields, the reports and, where the
+# condition is what sets it, each word's reading source.
+_CAPITALS_GUARDS: list[tuple[str, str, dict[str, object],
+                             dict[str, object], dict[str, object]]] = [
+    ("a family comma names the family", "DUPONT Mary, Ann", {},
+     {"given": "Ann", "family": "DUPONT Mary"},
+     {"given": "Mary Ann", "family": "DUPONT"}),
+    ("only the part before the first comma", "Mary Dupont, MA", {},
+     {"given": "Mary", "family": "Dupont", "suffix": "MA"},
+     {"given": "Mary", "middle": "Dupont", "family": "MA"}),
+    ("only a name in mixed case", "MARY DUPONT", {},
+     {"given": "MARY", "family": "DUPONT"},
+     {"family": "MARY DUPONT"}),
+    ("a run of particles alone is no run", "Karim AL Haddadi", {},
+     {"given": "Karim", "family": "AL Haddadi"},
+     {"given": "Karim", "middle": "Haddadi", "family": "AL"}),
+    ("a lone numeral is no run", "John Smith III", {},
+     {"given": "John", "family": "Smith", "suffix": "III"},
+     {"raises": "StopIteration"}),
+    ("the last of two runs", "PETER Okello MUWANGA", {},
+     {"given": "PETER", "middle": "Okello", "family": "MUWANGA"},
+     {"given": "Okello", "middle": "MUWANGA", "family": "PETER"}),
+    ("the peel only at the end of the name", "Ann DUPONT MBA Lee", {},
+     {"given": "Ann", "middle": "Lee", "family": "DUPONT MBA"},
+     {"given": "Ann", "middle": "Lee", "family": "DUPONT", "suffix": "MBA"}),
+    ("the peel never leaves only particles", "Anna DE CARO", {},
+     {"given": "Anna", "family": "DE CARO"},
+     {"given": "Anna", "family": "DE", "suffix": "CARO"}),
+    ("a lowercase particle before the run joins it",
+     "Jean de LA FONTAINE", {},
+     {"given": "Jean", "family": "de LA FONTAINE"},
+     {"given": "Jean", "middle": "de", "family": "LA FONTAINE"}),
+    ("runs join across a particle", "Aude BROSSARD de VILLEMONT", {},
+     {"given": "Aude", "family": "BROSSARD de VILLEMONT"},
+     {"given": "Aude", "middle": "BROSSARD", "family": "de VILLEMONT"}),
+    ("the other words keep their units", "Abdul Rahman DUPONT", {},
+     {"given": "Abdul Rahman", "family": "DUPONT"},
+     {"given": "Abdul", "middle": "Rahman", "family": "DUPONT"}),
+    ("a lone word's fork is settled", "Hugo LAC", {},
+     {"given": "Hugo", "family": "LAC", "reports": ()},
+     {"given": "Hugo", "family": "LAC", "reports": ("given-or-family",)}),
+    ("a fork on a word of the run is settled", "LE GRAND Hugo", {},
+     {"given": "Hugo", "family": "LE GRAND", "reports": ()},
+     {"given": "Hugo", "family": "LE GRAND",
+      "reports": ("particle-or-given",)}),
+    ("a fork on a word outside the run stands", "Dean Mary DUPONT", {},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT",
+      "reports": ("title-or-name",)},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT",
+      "reports": ()}),
+    ("a one-letter conjunction joins two runs", "Ana LOPEZ Y GARCIA", {},
+     {"given": "Ana", "family": "LOPEZ Y GARCIA"},
+     {"given": "Ana", "middle": "LOPEZ Y", "family": "GARCIA"}),
+    ("a run does not end in a conjunction", "Mary SMITH AND Jones", {},
+     {"given": "Mary", "middle": "AND Jones", "family": "SMITH"},
+     {"given": "Mary", "middle": "Jones", "family": "SMITH AND"}),
+    ("a run does not open with a conjunction", "Mary Ann AND SMITH", {},
+     {"given": "Mary", "middle": "Ann AND", "family": "SMITH"},
+     {"given": "Mary", "middle": "Ann", "family": "AND SMITH"}),
+    ("a particle in Title case is a name word", "MORRISON Van", {},
+     {"given": "Van", "family": "MORRISON"},
+     {"given": "MORRISON", "family": "Van"}),
+    ("a lowercase particle stays with its word", "de Mesnil JEAN Paul", {},
+     {"given": "de Mesnil", "middle": "Paul", "family": "JEAN"},
+     {"given": "Mesnil", "middle": "de Paul", "family": "JEAN"}),
+    ("a joining word left by the peel leaves the run",
+     "Marie DUPONT y MBA", {},
+     {"given": "Marie", "middle": "y", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "Marie", "family": "DUPONT y", "suffix": "MBA"}),
+    ("a joining word is no given name", "JEAN y Perez", {},
+     {"given": "Perez", "middle": "y", "family": "JEAN"},
+     {"given": "y", "middle": "Perez", "family": "JEAN"}),
+    ("a particle written with a capital may be the given name",
+     "De Marie DUPONT", {},
+     {"given": "De", "middle": "Marie", "family": "DUPONT"},
+     {"given": "Marie", "middle": "De", "family": "DUPONT"}),
+    ("words a run joined are no case evidence", "JAN Van DER BERG", {},
+     {"given": "JAN", "family": "Van DER BERG"},
+     {"family": "JAN Van DER BERG"}),
+    ("a letter with its full stop is no conjunction",
+     "Ana LOPEZ Y. GARCIA", {},
+     {"given": "Ana", "middle": "LOPEZ Y.", "family": "GARCIA"},
+     {"given": "Ana", "family": "LOPEZ Y. GARCIA"}),
+    ("a particle fork is settled for every word", "Van Mary DUPONT", {},
+     {"given": "Van", "middle": "Mary", "family": "DUPONT", "reports": ()},
+     {"given": "Van", "middle": "Mary", "family": "DUPONT",
+      "reports": ("particle-or-given",)}),
+    ("the peel comes before the run is chosen", "DUPONT Marie MBA", {},
+     {"given": "Marie", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "DUPONT", "middle": "Marie", "family": "MBA"}),
+    ("the peel passes a suffix written otherwise",
+     "Marie DUPONT MBA Jr. PHD", {},
+     {"given": "Marie", "family": "DUPONT", "suffix": "MBA Jr. PHD"},
+     {"given": "Marie", "family": "DUPONT MBA", "suffix": "Jr. PHD"}),
+    ("a joining word ends the peel", "Marie DUPONT MBA i PHD", {},
+     {"given": "Marie", "middle": "i", "family": "DUPONT MBA",
+      "suffix": "PHD"},
+     {"given": "Marie", "middle": "i", "family": "DUPONT",
+      "suffix": "MBA, PHD"}),
+    ("a Turkic marker in capitals is no capitals word",
+     "ALIYEV Ilham Heydar OGLU",
+     {"patronymic_rules": frozenset({PatronymicRule.TURKIC})},
+     {"given": "Ilham", "middle": "Heydar OGLU", "family": "ALIYEV",
+      "patronymic": "Heydar OGLU"},
+     {"given": "ALIYEV", "middle": "Ilham Heydar", "family": "OGLU",
+      "patronymic": "Heydar OGLU"}),
+    ("an East Slavic patronymic in capitals is no capitals word",
+     "ИВАНОВ Иван ИВАНОВИЧ",
+     {"patronymic_rules": frozenset({PatronymicRule.EAST_SLAVIC})},
+     {"given": "Иван", "middle": "ИВАНОВИЧ", "family": "ИВАНОВ",
+      "patronymic": "ИВАНОВИЧ"},
+     {"given": "ИВАНОВ", "middle": "Иван", "family": "ИВАНОВИЧ",
+      "patronymic": ""}),
+    ("a marker-spelled surname with no other capitals word stays the family",
+     "ABRAMOVICH Roman",
+     {"patronymic_rules": frozenset({PatronymicRule.EAST_SLAVIC})},
+     {"given": "Roman", "family": "ABRAMOVICH"},
+     {"given": "ABRAMOVICH", "family": "Roman"}),
+    ("a capitals conjunction is no word the peel must leave", "Hugo AND LAC",
+     {},
+     {"given": "Hugo AND", "family": "LAC"},
+     {"given": "Hugo AND LAC"}),
+    ("an order report after initials is settled", "Anna Q. MD", {},
+     {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ()},
+     {"given": "Anna", "middle": "Q.", "family": "MD", "reports": ("order",)}),
+    ("an order report is settled", "Kavitha S MA", {},
+     {"given": "Kavitha", "middle": "S", "family": "MA", "reports": ()},
+     {"given": "Kavitha", "middle": "S", "family": "MA",
+      "reports": ("order",)}),
+    ("a fork outside the run stands under every order", "Dean DUPONT Mary",
+     {"name_order": FAMILY_FIRST},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT",
+      "reports": ("title-or-name",)},
+     {"given": "Dean", "middle": "Mary", "family": "DUPONT", "reports": ()}),
+    ("P6's patronymic attachment is cleared", "Siti AMINAH BINTI",
+     {"name_order": FAMILY_FIRST},
+     {"given": "Siti", "family": "AMINAH BINTI", "patronymic": ""},
+     {"given": "Siti", "family": "AMINAH BINTI",
+      "patronymic": "AMINAH BINTI"}),
+    ("the peel takes only a word in capitals", "Marie DUPONT do MBA", {},
+     {"given": "Marie", "middle": "do", "family": "DUPONT", "suffix": "MBA",
+      "reports": ("suffix-or-name",)},
+     {"given": "Marie", "family": "DUPONT", "suffix": "do MBA",
+      "reports": ()}),
+    ("a joining word the peel returns is laid out", "Marie DUPONT do MBA",
+     {},
+     {"given": "Marie", "middle": "do", "family": "DUPONT", "suffix": "MBA",
+      "reports": ("suffix-or-name",)},
+     {"given": "Marie", "family": "DUPONT", "suffix": "do MBA",
+      "reports": ("suffix-or-name",)}),
+    ("mixed case is read after the peel", "DUPONT Van MBA", {},
+     {"given": "Van", "family": "DUPONT", "suffix": "MBA"},
+     {"given": "DUPONT", "family": "Van", "suffix": "MBA"}),
+    ("a title fork on a word of the run is settled", "DEAN Hugo", {},
+     {"given": "Hugo", "family": "DEAN", "reports": ()},
+     {"given": "Hugo", "family": "DEAN", "reports": ("title-or-name",)}),
+    ("a suffix fork on a word of the run is settled", "Hugo JUNIOR", {},
+     {"given": "Hugo", "family": "JUNIOR", "reports": ()},
+     {"given": "Hugo", "family": "JUNIOR", "reports": ("suffix-or-name",)}),
+    ("a particle in capitals is a word of the run", "Ann ROSS de LA", {},
+     {"given": "Ann", "family": "ROSS de LA"},
+     {"given": "Ann", "middle": "de LA", "family": "ROSS"}),
+    ("a listed suffix word peels", "Mary DUPONT JR", {},
+     {"given": "Mary", "family": "DUPONT", "suffix": "JR"},
+     {"given": "Mary", "family": "DUPONT JR"}),
+    ("a numeral peels by its shape", "Mary DUPONT VI", {},
+     {"given": "Mary", "family": "DUPONT", "suffix": "VI"},
+     {"given": "Mary", "family": "DUPONT VI"}),
+    ("a particle after the run ends no run", "Mary DUPONT de", {},
+     {"given": "Mary", "middle": "de", "family": "DUPONT"},
+     {"raises": "IndexError"}),
+    ("the capitals are the family's source", "Mary DUPONT", {},
+     {"given": "Mary", "family": "DUPONT",
+      "sources": ("position", "shape")},
+     {"given": "Mary", "family": "DUPONT",
+      "sources": ("position", "position")}),
+    ("P6's fold mark is cleared", "Mary DUPONT LA",
+     {"name_order": FAMILY_FIRST},
+     {"given": "Mary", "family": "DUPONT LA", "str": "DUPONT LA Mary"},
+     {"given": "Mary", "family": "LA DUPONT", "str": "LA DUPONT Mary"}),
+    ("two family names stand down", "Lucie Anne MARTIN",
+     {"two_family_names": True},
+     {"given": "Lucie", "middle": "Anne", "family": "MARTIN"},
+     {"given": "Lucie", "family": "Anne MARTIN"}),
+]
+
+
+def _capitals_reading(text: str, extra: dict[str, object],
+                      keys: set[str]) -> dict[str, object]:
+    name = Parser(policy=Policy(capitals_as_family=True, **extra)).parse(text)  # type: ignore[arg-type]
+    got: dict[str, object] = {k: v for k, v in name.as_dict().items() if v}
+    if "reports" in keys:
+        got["reports"] = tuple(a.kind.value for a in name.ambiguities)
+    if "sources" in keys:
+        got["sources"] = tuple(t.reading.source.value for t in name.tokens
+                               if t.reading is not None)
+    if "str" in keys:
+        got["str"] = str(name)
+    if "patronymic" in keys:
+        got["patronymic"] = name.patronymic
+    return got
+
+
+@pytest.mark.parametrize("guard,text,extra,guarded,unguarded",
+                         _CAPITALS_GUARDS,
+                         ids=[row[0] for row in _CAPITALS_GUARDS])
+def test_each_capitals_condition_decides_a_recorded_name(
+        guard: str, text: str, extra: dict[str, object],
+        guarded: dict[str, object], unguarded: dict[str, object]) -> None:
+    assert guarded != unguarded, guard
+    assert _capitals_reading(text, extra, set(guarded)) == guarded
+
+
+def test_the_capitals_switch_is_off_by_default() -> None:
+    assert parse("DUPONT Mary").given == "DUPONT"
+    assert parse("Hugo LAC").suffix == "LAC"
+
+
+def test_a_conjunction_in_capitals_alone_is_no_run() -> None:
+    # rules/O9's trim leaves nothing of a run that is one conjunction, so
+    # the name reads as it does with the switch off
+    text = "Mary AND Smith"
+    on = Parser(policy=Policy(capitals_as_family=True)).parse(text)
+    assert on.as_dict() == parse(text).as_dict()
+
+
+
+def test_the_switch_moves_no_patronymic_marker_into_the_family() -> None:
+    # rules/O9's marker exclusion as an invariant over a grid rather than
+    # one row (#659), both ways: under every patronymic rule and order,
+    # where another capitals word could be the family, a word the rule
+    # in force reads as a marker or a patronymic is in the family with
+    # the switch on only where it is there with the switch off; and where
+    # it is the only capitals word, it is the family.
+    # Not "the family and the patronymic view share no word": R9 reads a
+    # Turkic marker with the word before it whatever field that word is
+    # in, so they share one with the switch off too (5,648 of this
+    # grid's three-word rows, measured 2026-11-12), which is R9's, not
+    # this switch's
+    import itertools
+    from nameparser._pipeline._vocab import (has_patronymic_ending,
+                                             is_capitals_word,
+                                             is_patronymic_marker)
+    words = ["ALIYEV", "Ilham", "Heydar", "OGLU", "oglu", "QIZI", "OĞLU",
+             "ИВАНОВ", "Иван", "ИВАНОВИЧ", "Иванович", "bin", "BIN",
+             "ABRAMOVICH", "АБРАМОВИЧ", "Roman"]
+    rule_sets = [frozenset({PatronymicRule.TURKIC}),
+                 frozenset({PatronymicRule.EAST_SLAVIC}),
+                 frozenset(PatronymicRule)]
+
+    def markers(family: str, rules: frozenset[PatronymicRule]) -> set[str]:
+        return {w for w in family.split()
+                if PatronymicRule.TURKIC in rules and is_patronymic_marker(w)
+                or PatronymicRule.EAST_SLAVIC in rules
+                and has_patronymic_ending(w)}
+
+    pairs = [(Parser(policy=Policy(capitals_as_family=True,
+                                   patronymic_rules=rules, name_order=order)),
+              Parser(policy=Policy(patronymic_rules=rules,
+                                   name_order=order)), rules)
+             for rules in rule_sets
+             for order in (GIVEN_FIRST, FAMILY_FIRST,
+                           FAMILY_FIRST_GIVEN_LAST)]
+    moved = []
+    kept = []
+    for n in (2, 3):
+        for combo in itertools.permutations(words, n):
+            text = " ".join(combo)
+            capitals = [w for w in combo if is_capitals_word(w)]
+            # mixed as the rule reads it: a lowercase particle is none
+            mixed = any(any(c.islower() for c in w)
+                        for w in combo if w != "bin")
+            for on, off, rules in pairs:
+                family = on.parse(text).family
+                # where another capitals word, no marker and no particle,
+                # is left to be the family, no marker enters it
+                others = [w for w in capitals
+                          if not markers(w, rules) and w != "BIN"]
+                if others and not (markers(family, rules)
+                                   <= markers(off.parse(text).family,
+                                              rules)):
+                    moved.append((text, on.policy))
+                # the other direction: a name whose only capitals word is
+                # spelled as a marker keeps it as the family, nothing
+                # else being left to be one
+                if (mixed and len(capitals) == 1
+                        and markers(capitals[0], rules)
+                        and capitals[0] not in family.split()):
+                    kept.append((text, on.policy))
+    assert not moved, moved[:5]
+    assert not kept, kept[:5]
+
+
+#: rules/O9's accepted shapes found after the rule was frozen (decisions/O9,
+#: 2026-11-12 RECORDED SHAPES): each row states the reading kept, so a
+#: change that moves one is seen. (pack, text, expected fields); the
+#: switch on beside the pack's patronymic rule.
+_CAPITALS_ACCEPTED = [
+    # a marker spelling with a credential ending the name: the credential
+    # counts as a capitals word left before the peel takes it
+    (locales.RU, "ABRAMOVICH Roman MBA",
+     {"given": "ABRAMOVICH", "middle": "Roman", "family": "MBA",
+      "suffix": ""}),
+    # the boundary: a comma before it, or a surname no rule reads
+    (locales.RU, "ABRAMOVICH Roman, MBA",
+     {"given": "Roman", "family": "ABRAMOVICH", "suffix": "MBA"}),
+    (locales.RU, "IVANOV Roman MBA",
+     {"given": "Roman", "family": "IVANOV", "suffix": "MBA"}),
+    # O2's three-word reading yields to the capitals
+    (locales.TR_AZ, "Aidai MEDERBEK kyzy",
+     {"given": "Aidai", "middle": "kyzy", "family": "MEDERBEK",
+      "patronymic": "MEDERBEK kyzy"}),
+    (locales.TR_AZ, "Aidai Mederbek KYZY",
+     {"given": "Aidai", "middle": "Mederbek", "family": "KYZY",
+      "patronymic": "Mederbek KYZY"}),
+    # the four-word shape the parliaments write is unchanged
+    (locales.TR_AZ, "ALIYEV Ali Ahmad oglu",
+     {"given": "Ali", "middle": "Ahmad oglu", "family": "ALIYEV",
+      "patronymic": "Ahmad oglu"}),
+]
+
+
+@pytest.mark.parametrize("pack, text, fields", _CAPITALS_ACCEPTED)
+def test_the_capitals_switch_keeps_its_accepted_readings(
+        pack: Locale, text: str, fields: dict[str, str]) -> None:
+    on = Locale(code="capitals", lexicon=Lexicon.empty(),
+                policy=PolicyPatch(capitals_as_family=True))
+    got = parser_for(pack, on).parse(text)
+    assert {f: getattr(got, f) for f in fields} == fields
+
+
 #: rules/O2's three-word reading (#1187): each condition of the rule
 #: with a row that reads the father's name and the marker as the family
 #: where it holds and a row it fails on, so dropping any condition from

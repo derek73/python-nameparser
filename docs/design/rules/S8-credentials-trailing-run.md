@@ -77,6 +77,10 @@
   "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   ```
 - **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run, as its capitals in a name of mixed case make it start it (S6).
+- **Capitals between two name words under capitals-as-family handling** ("Maria Ana MA Silva" with that switch on): the caller has said the capitals write the family name, so the word is the family name rather than the writer's initials or a credential (O9).
+  ```
+  "Maria Ana MA Silva"  capitals_as_family  →  family="MA"
+  ```
 
 **Accepted:**
 

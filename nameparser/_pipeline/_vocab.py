@@ -61,7 +61,8 @@ from nameparser._policy import (CapsSuffixes, Policy, Script, _EAST_ASIAN_SCRIPT
                                 _JA_SCRIPTS, _NO_INITIALS, _SCRIPT_RANGES,
                                 _script_matcher)
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS, COMMA_STRIP,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CAPITALS_FAMILY_TAG,
+    COMMA_CHARS, COMMA_STRIP,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     TITLE_AMBIGUOUS_TAG, PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
@@ -2107,6 +2108,60 @@ _NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
 
+#: What a word written in capitals may hold besides its letters: the
+#: apostrophes and hyphens a surname writes inside it (`O'BRIEN`,
+#: `ALLIOT-MARIE`). Anything else -- a full stop, a slash, a digit, a
+#: bracket or quotation mark -- says the word is no name written in
+#: capitals (`DR.`, `N/A`, `GS.TS.`), rules/O9.
+_CAPITALS_JOINERS = frozenset("'’ʼ-‐‑")
+
+
+def is_capitals_word(text: str) -> bool:
+    """Whether TEXT is a name written in capitals, as rules/O9 reads
+    one: two or more letters in capitals ending the word, after any
+    lowercase prefix glued in front (`DUPONT`, `O'BRIEN`, `McDONALD`,
+    `d'ESTAING`), with nothing in it but letters, their combining marks
+    and `_CAPITALS_JOINERS`. Single letters joined by a hyphen are
+    initials (`J-P`), and a word whose capitals are one letter is a
+    name in mixed case (`PhD`, `McD`). A combining mark is passed over
+    in the letter's run, so a capital typed as its base and an accent
+    (NFD) reads as its composed spelling does (#652). A
+    lowercase letter whose capital is not one character (`ß`) counts as
+    written in capitals, as `written_as_a_name` reads it."""
+    word = text
+    # a joiner at either end is a quotation mark or a dash, not a name
+    # written with one inside it ('MBA', -AB)
+    if not word or word[0] in _CAPITALS_JOINERS or word[-1] in _CAPITALS_JOINERS:
+        return False
+    capitals = 0
+    chunk = longest = 0
+    i = len(word)
+    while i:
+        i -= 1
+        ch = word[i]
+        if ch.isupper() or ch.islower() and len(ch.upper()) != 1:
+            capitals += 1
+            chunk += 1
+            continue
+        if ch.islower():
+            break  # the prefix glued in front: McDONALD, d'ESTAING
+        if ch in _CAPITALS_JOINERS:
+            longest = max(longest, chunk)
+            chunk = 0
+            continue
+        if unicodedata.category(ch) in ("Mn", "Mc", "Me"):
+            continue
+        return False  # a full stop, slash, digit, bracket or caseless letter
+    else:
+        i = -1
+    if i >= 0 and not all(c.isalpha() or c in _CAPITALS_JOINERS
+                          or unicodedata.category(c) in ("Mn", "Mc", "Me")
+                          for c in word[:i]):
+        return False
+    longest = max(longest, chunk)
+    return capitals >= 2 and longest >= 2
+
+
 def written_as_a_name(text: str) -> bool:
     """Whether TEXT is written the way a name is written in mixed case:
     it holds a capital (or titlecase letter) and its last LETTER is
@@ -3252,6 +3307,10 @@ def name_source(tags: Set[str]) -> ReadingSource:
     where a derived marker says so, and by position where nothing
     does. `name_reading`'s source, which assemble also asks of a word
     the parse read as a name (`Token.reading`)."""
+    # rules/O9: "the capitals settle the field" -- read by the word's
+    # shape, the reading taken being the family its capitals named
+    if CAPITALS_FAMILY_TAG in tags:
+        return ReadingSource.SHAPE
     # classify writes the ambiguous class's tag on a word admitted by
     # its shape too, so the shape tag says no list declared it
     if (not tags.isdisjoint(_DECLARED_NAME_TAGS)
