@@ -449,7 +449,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -471,6 +471,15 @@ Shipped packs
 
    * - Code
      - Turns on
+   * - ``ar``
+     - Arabic — chooses ``ar``, which turns on ``Ben`` as the particle
+       opening a Tunisian family name (``Karim Ben Haddad`` → family
+       ``Ben Haddad``); a ``Ben`` opening a name stays the given name,
+       reported, save under ``strict=True``. It is for surnames, not a
+       register's chain of fathers' names (``Karim ben Ali ben Salah
+       Haddad`` → family ``ben Salah Haddad``). Choosing it drops English's credential ``ABD`` for
+       Arabic's given name ``abd``. See
+       :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``bn``
      - Bengali — chooses ``bn``, which turns on the romanized
        salutations ``Smt`` and ``Shrimati`` (Mrs.) and the academic
@@ -519,6 +528,14 @@ Shipped packs
    * - ``gd``
      - Scottish Gaelic — chooses ``gd``, which turns on ``Nic``
        (``Màiri Nic Leòid`` → family ``Nic Leòid``).
+   * - ``he``
+     - Hebrew — chooses ``he``, which turns on ``Ben`` as the particle
+       opening an Israeli family name written in Latin letters (``Yael
+       Ben Arieh`` → family ``Ben Arieh``); the Hebrew ``בן`` is read
+       by default. It is for surnames, not a register's chain of
+       fathers' names (``Karim ben Ali ben Salah Haddad`` → family
+       ``ben Salah Haddad``). See
+       :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``hi``
      - Hindi — chooses ``hi``, which turns on the romanized salutations
        ``Smt`` and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.), read as

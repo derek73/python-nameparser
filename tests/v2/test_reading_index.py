@@ -379,7 +379,7 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
-    "ar": {"cheikh"},
+    "ar": {"ben", "cheikh"},
     "ca": {"del", "la"},
     "cs": {"st"},
     "fil": {"del", "la", "san"},

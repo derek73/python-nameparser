@@ -201,7 +201,10 @@ class TitleTestCase(ParsedNameTestBase):
         # decisions/v1-xfail-triage): the question was already settled in
         # v0.2.5, when 'ben' was removed from the prefixes. 'ben' collides with
         # the given name Ben, which is the same criterion
-        # (decisions/vocabulary-collisions) that keeps it out today.
+        # (decisions/vocabulary-collisions) that keeps it out of the
+        # default today; since #1257 an Arabic or Hebrew choice reads it
+        # as a clan particle (locales.AR, locales.HE), where this name
+        # gives family 'ben Husain'.
         # test_ben_as_first_name below is the collision it protects.
         hn = parse("Ahmad ben Husain")
         self.m(hn.title, "", hn)

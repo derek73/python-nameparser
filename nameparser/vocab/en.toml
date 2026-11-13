@@ -5737,6 +5737,11 @@ text = "nee"
 birth_marker = { issue = 274, same_as = "née", gender = "f", note = "née typed without its accent" }
 
 [[word]]
+text = "ben"
+familiar = { short_for = ["benedict", "benjamin", "bennett"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+given = { us_ssa = 85816, wikidata = 6037, as_of = 2026-11-12, note = "#1248. US Census 2010 surnames 3,386. US SSA births summed over both sexes (F 467, M 85,349); Wikidata is a lower bound; nam_dict band 7, the Netherlands 7, Belgium 4, Great Britain 3; ORCID given boxes 7,556 (opening the box or alone 476), PSC middle-name boxes 189, 142 of them British. The clash that keeps ar.toml's and he.toml's particle reading off by default (#1257)" }
+
+[[word]]
 text = "benj"
 given = { wikidata = 2, as_of = 2026-10-26, same_as = "benjamin", note = "Benjamin written short; no US SSA year reaches 5 births; Wikidata is a lower bound" }
 
@@ -6275,10 +6280,6 @@ familiar = { short_for = ["arabella", "arabelle", "isabel", "isabella", "isabell
 [[word]]
 text = "belle"
 familiar = { short_for = ["arabella", "arabelle", "belinda", "isabel", "isabella", "isabelle", "rosabel", "rosabella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
-
-[[word]]
-text = "ben"
-familiar = { short_for = ["benedict", "benjamin", "bennett"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "benjamin"
