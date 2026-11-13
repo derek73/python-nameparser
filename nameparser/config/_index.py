@@ -1015,7 +1015,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('ei', (('en', 'credential', ()), ('en', 'given', ()), ('en', 'family', ()))),
     ('eit', (('en', 'credential', ()),)),
     ('ekegbian', (('bin', 'nobility', ()),)),
-    ('el', (('ar', 'article', (('cased', 'El'), ('default', False))), ('ar', 'given', ()), ('en', 'familiar', (('short_for', ('ella',)),)))),
+    ('el', (('ar', 'article', (('cased', 'El'),)), ('ar', 'given', ()), ('en', 'familiar', (('short_for', ('ella',)),)))),
     ('el-', (('ar', 'article', (('same_as', 'al-'),)),)),
     ('elbert', (('en', 'familiar', (('short_for', ('elbertson',)),)),)),
     ('eldri', (('is', 'generation', ()),)),

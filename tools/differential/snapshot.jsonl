@@ -1099,7 +1099,7 @@
 {"name": "Einar Jónsson", "given": "Einar", "family": "Jónsson", "initials": "E. J."}
 {"name": "Eitel Friedrich II.", "given": "Eitel", "family": "Friedrich", "suffix": "II.", "initials": "E. F.", "generation": "II."}
 {"name": "Eiður Gunnarsson", "given": "Eiður", "family": "Gunnarsson", "initials": "E. G."}
-{"name": "El Dine", "given": "El", "family": "Dine", "initials": "E. D."}
+{"name": "El Dine", "given": "El", "family": "Dine", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "E. D."}
 {"name": "Eladio Andino y del Solar", "given": "Eladio", "middle": "Andino y del", "family": "Solar", "initials": "E. A. S."}
 {"name": "Elard von Oldenburg-Januschau", "given": "Elard", "family": "von Oldenburg-Januschau", "initials": "E. O."}
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
@@ -3210,7 +3210,7 @@
 {"name": "Mohamad Asri Muda", "given": "Mohamad", "middle": "Asri", "family": "Muda", "initials": "M. A. M."}
 {"name": "Mohamad X", "given": "Mohamad", "family": "X", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "M. X."}
 {"name": "Mohamad X Surname", "given": "Mohamad", "middle": "X", "family": "Surname", "initials": "M. X. S."}
-{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein El", "family": "Dine", "initials": "M. Z. E. D."}
+{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein", "family": "El Dine", "initials": "M. Z. D."}
 {"name": "Mohamad Zeineddine", "given": "Mohamad", "family": "Zeineddine", "initials": "M. Z."}
 {"name": "Mohamad, Mahathir bin", "given": "Mahathir", "family": "bin Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "Mohamed Ali Abd Allah", "given": "Mohamed", "middle": "Ali Abd", "family": "Allah", "initials": "M. A. A. A."}
@@ -3376,6 +3376,7 @@
 {"name": "None John None Doe None (None)", "given": "None", "middle": "John None Doe", "family": "None", "nickname": "None", "initials": "N. J. N. D. N."}
 {"name": "None Smith", "given": "None", "family": "Smith", "initials": "N. S."}
 {"name": "Nonez Smith", "given": "Nonez", "family": "Smith", "initials": "N. S."}
+{"name": "Nour El Houda Haddou", "given": "Nour", "family": "El Houda Haddou", "initials": "N. H. H."}
 {"name": "Novak, Janez Peter", "given": "Janez", "middle": "Peter", "family": "Novak", "initials": "J. P. N."}
 {"name": "Nováková Jana", "order": "FAMILY_FIRST", "given": "Jana", "family": "Nováková", "initials": "J. N."}
 {"name": "Nováková, Jana", "given": "Jana", "family": "Nováková", "initials": "J. N."}
@@ -4546,7 +4547,7 @@
 {"name": "Zazilia Hamiş Ştöber", "given": "Zazilia", "middle": "Hamiş", "family": "Ştöber", "initials": "Z. H. Ş."}
 {"name": "Zaziliya Hemish Shtober", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
 {"name": "Zaʿīm, Ḥusnī az-", "given": "Ḥusnī", "family": "az- Zaʿīm", "initials": "Ḥ. Z."}
-{"name": "Zein El Dine", "given": "Zein", "middle": "El", "family": "Dine", "initials": "Z. E. D."}
+{"name": "Zein El Dine", "given": "Zein", "family": "El Dine", "initials": "Z. D."}
 {"name": "Zelda Hamish Støver", "given": "Zelda", "middle": "Hamish", "family": "Støver", "initials": "Z. H. S."}
 {"name": "Zelda Herman Stander", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Zendaya", "given": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}

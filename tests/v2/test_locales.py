@@ -150,12 +150,11 @@ def test_ne_pack_contents() -> None:
 
 
 def test_ar_and_he_packs_are_their_choice_alone() -> None:
-    # #1257: each turns on `ben`'s clan reading, written default = false,
-    # and ar `el`'s article; ar's choice also drops en's credential ABD
-    # for abd's bound given name
+    # #1257: each turns on `ben`'s clan reading, written default = false;
+    # ar's choice also drops en's credential ABD for abd's bound given name
     import pickle
     from nameparser._reading_index import changed_words, selected
-    for code, pack, words in (("ar", locales.AR, {"abd", "ben", "el"}),
+    for code, pack, words in (("ar", locales.AR, {"abd", "ben"}),
                               ("he", locales.HE, {"ben"})):
         assert pack == Locale(code=code, lexicon=Lexicon.empty(),
                               languages=frozenset({code}))
@@ -1875,9 +1874,6 @@ _ROTATORS["ar"] = [
     "Haddad, Karim Ben",             # ben ending the given part
     "Jane Smith, ABD",               # abd, the credential leaving
     "Jane Smith ABD",                # abd ending the name
-    "Sara El Haddou",                # el
-    "SARA EL HADDOU",                # el, in one case
-    "Haddou, Sara El",               # el ending the given part
 ]
 _ROTATORS["he"] = [
     "Yael Ben Arieh",                # ben

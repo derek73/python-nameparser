@@ -7,12 +7,7 @@ gives family ``Ben Salah`` where the default gives middle ``Ben``,
 family ``Salah``. The default leaves ``ben`` to position because the
 given name Ben, a British middle name too, stands where the particle
 claim acts (``Adam Ben Robertson``); a ``Ben`` opening a name stays the
-given name under the pack and reports the fork (``Ben Affleck``). It
-also turns on ``el``, the Maghrebi and Egyptian spelling of the article
-``al``, read as ``al`` is (``Sara El Haddou`` gives family ``El
-Haddou``); the default leaves it to position because Algerian given
-names hold it inside them (``Nour El Houda Haddou`` gives family ``El
-Houda Haddou`` under the pack).
+given name under the pack and reports the fork (``Ben Affleck``).
 
 On a word ar.toml holds a vocabulary reading of, other languages'
 vocabulary readings leave: ``abd`` is then Arabic's bound given name

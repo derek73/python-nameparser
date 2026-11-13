@@ -474,9 +474,8 @@ Shipped packs
    * - ``ar``
      - Arabic — chooses ``ar``, which turns on ``Ben`` as the particle
        opening a Tunisian family name (``Karim Ben Haddad`` → family
-       ``Ben Haddad``) and ``El`` as the article opening a Moroccan or
-       Egyptian one (``Sara El Haddou`` → family ``El Haddou``); either
-       opening a name stays the given name, reported. Choosing it drops English's credential ``ABD`` for
+       ``Ben Haddad``); a ``Ben`` opening a name stays the given name,
+       reported. Choosing it drops English's credential ``ABD`` for
        Arabic's given name ``abd``. See
        :ref:`Maghrebi, Amazigh and Hebrew particles <maghrebi-hebrew-particles>`.
    * - ``bn``

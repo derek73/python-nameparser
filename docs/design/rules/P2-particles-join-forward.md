@@ -79,6 +79,10 @@
   "Anh van Do"                →  family="van Do"  · boundary
   "Anh van Do"                →  ambiguities=()  · boundary
   ```
+- An Arabic compound given name whose second half the article opens joins the family with the article, the article being the particle that opens Moroccan and Egyptian family names: Algeria writes the article `El` inside such given names, and is the one population measured where reading `el` as a particle breaks more names than it fixes (ORCID Algeria 37 fixed to 135 broken, PSC's Algerian filers 3 to 10, 2026-11-12; decisions/vocabulary-collisions, #1257).
+  ```
+  "Nour El Houda Haddou"      →  family="El Houda Haddou"
+  ```
 - A caller wanting the combined double-surname reading (#132's ask) has it as the surnames view rather than the family field.
   ```
   "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
