@@ -439,6 +439,16 @@ text = "ibn"
 patronymic = { may_be_given = false, expands = "son of; native-script ابن", gender = "m" }
 
 [[word]]
+text = "ould"
+[word.patronymic]
+may_be_given = false
+cased = "Ould"
+issue = [1249, 1257]
+expands = "son of, Hassaniya walad: \"Ahmed Ould Salem\""
+gender = "m"
+note = "Mauritanian names still form the father's name with it (Mohamed Ould Abdel Aziz, son of Abdel Aziz), so it is a patronymic and fills the patronymic view (rules/R9); in Algeria and Morocco it has become a fixed family name (Oussama Ould Maamar), whose view it fills too, the accepted cost of the kind (#1257). Never a given name where it opens a name: of ORCID's 24,990,909 people, 3 given boxes open with it, against 168 family boxes holding it (DZ 29, MR 20); no US Census or SSA listing; Wikidata 21 family (2026-11-12). Read as a never-given particle it moves ORCID's MA, DZ, MR and FR records 48 fixed to 2 broken (2026-11-12); family boxes write it Ould 36 times"
+
+[[word]]
 text = "ابن"
 [word.patronymic]
 may_be_given = false
@@ -509,6 +519,15 @@ expands = "son of, become a family name: \"Ben Salah\", \"Ben Ammar\""
 note = "Off by default, on under an Arabic or Hebrew choice (locales.AR, locales.HE): ORCID's Tunisian records gain 964 to 3 broken, Israeli 161 to 1, PSC's Tunisian filers 46 to 4, while the given name Ben, also a British middle name, breaks 148 PSC British, French and Tunisian filers by default (Mr Adam Ben Robertson), measured 2026-11-12 (#1257). A clan particle, not a patronymic: in the names it joins it starts the family name, and the patronymic view stays empty. Its case mask keeps the capital family boxes write (Ben 1,294, ben 1)"
 [word.excluded.patronymic]
 reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage). Since 2026-11-12 (#1257) the word carries a clan reading off by default instead, which an Arabic or Hebrew choice turns on, so 'Ahmad ben Husain' reads family 'ben Husain' there; the patronymic kind stays refused, because the Maghrebi and Israeli names it joins are family names, not a father's name (decisions/vocabulary-collisions)"
+
+[[word]]
+text = "ouled"
+[word.clan]
+may_be_given = false
+cased = "Ouled"
+issue = [1249, 1257]
+expands = "children of, a fixed family name: \"Ouled Ali\""
+note = "Algerian and Moroccan family names only, so a clan particle rather than a patronymic: ORCID given boxes 2 (one opening it), family boxes 57 (MA 7, TN 5, DZ 3); no US Census, SSA or Wikidata listing (2026-11-12); family boxes write it Ouled 7 times"
 
 [[word]]
 text = "آل"
