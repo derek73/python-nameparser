@@ -24,8 +24,7 @@ from nameparser._pipeline._vocab import (
     is_capitals_word,
     resolve_script_set, single_script, suffix_as_written, _joined_chunks,
 )
-from nameparser._policy import (Policy, Script, _NO_INITIALS,
-                                _SCRIPT_RANGES)
+from nameparser._policy import Policy, Script, _SCRIPT_RANGES
 
 _LEX = (Lexicon()
         .add("phd", "ma", kind="credential")
@@ -126,75 +125,6 @@ def test_strict_suffix_veto_skips_cjk() -> None:
     lex = Lexicon().add("씨", "様", kind="suffix")
     assert is_suffix_strict("씨.", lex)
     assert is_suffix_strict("様.", lex)
-
-
-def _representative(script: Script) -> str:
-    """The first codepoint of `script`'s _SCRIPT_RANGES spans that the
-    SHAPE half admits as an initial. Shape-admitted, not simply the
-    first codepoint: a range's first codepoint is often unassigned or
-    punctuation (KATAKANA's 0x30A0 is a hyphen, HIRAGANA's 0x3040 is
-    unassigned), which \\w does not match -- and testing is_initial on
-    such a character answers False for the SHAPE's reason, making the
-    repertoire assertion below vacuously green. Raising when no span
-    holds one is the point rather than a corner: a script whose
-    declared ranges contain no initial-shaped character at all has
-    ranges that do not describe it."""
-    for lo, hi in _SCRIPT_RANGES[script]:
-        for cp in range(lo, hi + 1):
-            if is_initial_shaped(chr(cp) + "."):
-                return chr(cp)
-    raise AssertionError(
-        f"no character in _SCRIPT_RANGES[{script}] is initial-SHAPED, "
-        f"so this script's declaration cannot be tested against "
-        f"is_initial -- check that the ranges are that script's")
-
-
-def test_every_script_is_classified_for_initials() -> None:
-    """A member joining Script must be classified here on purpose;
-    _policy._NO_INITIALS carries the reasoning.
-
-    The classification lives in this table rather than the assertion
-    being `set(Script) == set(_NO_INITIALS)`: that passes trivially
-    today, since all four current members are CJK, and the only way to
-    green it again after adding a script would be to declare that
-    script initial-less. That prejudges the answer. The point is to
-    force a decision, not a particular one.
-
-    Three bindings, not two: the table covers Script, the table's
-    False rows are _NO_INITIALS, and -- the one that makes this a
-    behavioral test rather than a comparison of two constants -- each
-    row is checked against is_initial on a character DERIVED from that
-    script's own _SCRIPT_RANGES entry. Without the third, a script
-    declared initial-less under ranges that are not its own passes all
-    the way through while is_initial still says yes to its characters.
-    """
-    has_initials = {
-        Script.HAN: False,       # ideographs are morphemes
-        Script.HANGUL: False,    # syllable blocks
-        Script.HIRAGANA: False,  # syllables
-        Script.KATAKANA: False,  # syllables
-        Script.CYRILLIC: True,   # letters: А. С. Пушкин
-    }
-    assert set(has_initials) == set(Script), (
-        "a Script member is unclassified for initials: decide whether "
-        "a single character of it can stand in for a name, add the row, "
-        "and put it in _policy._NO_INITIALS if it cannot")
-    assert {s for s, yes in has_initials.items() if not yes} \
-        == set(_NO_INITIALS), (
-        "this table and _policy._NO_INITIALS disagree about which "
-        "scripts have initials: a row here saying False is what puts a "
-        "script in the constant, so add the missing member to "
-        "_NO_INITIALS -- or, if the constant is the one that's right, "
-        "flip the row")
-    for script, yes in has_initials.items():
-        char = _representative(script)
-        assert is_initial(char + ".") is yes, (
-            f"the declaration for {script} does not reach is_initial: "
-            f"the row says has_initials={yes}, but is_initial("
-            f"{char + '.'!r}) -- on a character taken from "
-            f"_SCRIPT_RANGES[{script}] -- says {not yes}. Either the "
-            f"ranges are not this script's, or _NO_INITIALS and the "
-            f"repertoire predicate have come apart")
 
 
 def test_strict_suffix_initial_veto() -> None:

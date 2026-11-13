@@ -71,8 +71,9 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_PERIOD_ABBREV"): None,
     # rules/H2's Brahmic veto (#1191), and the SAME object imported for
     # is_leading_title's inline copy of the shape test
-    ("_vocab", "_INDIC_BRAHMIC"): None,
-    ("_pieces", "_INDIC_BRAHMIC"): ("_vocab", "_INDIC_BRAHMIC"),
+    # (derived from _policy._SCRIPT_PROPERTIES' spells_initials, #1256)
+    ("_vocab", "_SPELLED_INITIAL"): None,
+    ("_pieces", "_SPELLED_INITIAL"): ("_vocab", "_SPELLED_INITIAL"),
     # rules/H5's trailing shape, _PERIOD_ABBREV widened to an
     # abbreviation written joined or hyphenated (#1116)
     ("_vocab", "_TRAILING_TITLE_SHAPE"): None,

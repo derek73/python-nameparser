@@ -38,7 +38,7 @@ from typing import TYPE_CHECKING
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._lexicon import _fold as _lexicon_fold
 from nameparser._pipeline._vocab import _HYPHEN_CHARS, _HYPHENS
-from nameparser._policy import _NO_INITIALS, Policy, _script_matcher
+from nameparser._policy import _NO_INITIAL_RANGES, Policy, _ranges_matcher
 from nameparser._types import (
     UNJOINED_TAG,
     Ambiguity,
@@ -670,9 +670,9 @@ _TO_HYPHEN_MINUS = str.maketrans(dict.fromkeys(_HYPHEN_CHARS, "-"))
 #: Spaces and hyphens in a FOLDED text, where every hyphen of
 #: `_HYPHEN_CHARS` is the hyphen-minus already.
 _WORDS = re.compile(r"[\s-]+")
-#: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
+#: rules/R7's scripts that write no initials (_policy._SCRIPT_PROPERTIES): a
 #: single character in one of them is a whole word, never an initial.
-_initialless = _script_matcher(*_NO_INITIALS, whole=True)
+_initialless = _ranges_matcher(_NO_INITIAL_RANGES, whole=True)
 _RANK_ROLE = {r: i for i, r in enumerate(Role)}
 #: `FULL_STOPS` as the tuple `str.endswith` takes, one test for the
 #: period `_spellings` reads off a word as written.

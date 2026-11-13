@@ -2,7 +2,7 @@
 
 ## Standing
 
-- A word whose first letter is in Han, Hangul or kana (`_policy._NO_INITIALS`, the scripts the parse's initial veto reads, #320) contributes nothing to `initials()`, the test asked of the letter's composed spelling — 2026-10-28 #754 (Derek).
+- A word whose first letter is in Han, Hangul or kana (the rows of `_policy._SCRIPT_PROPERTIES` that write no initials, which the parse's initial veto reads, #320, decisions/script-properties) contributes nothing to `initials()`, the test asked of the letter's composed spelling — 2026-10-28 #754 (Derek).
 - A word opening with conjoining jamo that compose to no syllable gives no initial, the jamo being hangul: `ᄒᆞᆫ 김` gives '' — 2026-11-05 #1087
 
 Open: none in this file.

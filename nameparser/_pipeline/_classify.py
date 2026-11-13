@@ -36,7 +36,7 @@ Policy.extra_suffix_delimiters, with the built-in semicolon
 (_vocab.glued_cores), so a word after the first comma with a
 delimiter glued to it is tagged as the word without it (rules/C10).
 is_initial also consults
-the _policy module's _NO_INITIALS constant. It is named apart from the
+the _policy module's _SCRIPT_PROPERTIES table. It is named apart from the
 fields above because it is not CONFIGURATION -- no Lexicon or Policy
 carries it and no caller can change it -- and not because it decides
 nothing: the tags this stage writes do vary by it ('씨.' is not tagged

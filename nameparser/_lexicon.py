@@ -50,7 +50,7 @@ _ADDED_IN = "nameparser.added_in"
 #: tail match -- so that "which characters are a period" is answered
 #: once; the bundle's fifth site, _pieces' opening-abbreviation shape,
 #: reads no stop set at all but the no-initials repertoire
-#: (_policy._NO_INITIALS) that licenses every reader here. NFKC is
+#: (_policy._SCRIPT_PROPERTIES) that licenses every reader here. NFKC is
 #: NOT a substitute for listing them: it folds U+FF0E to '.' and
 #: U+FF61 to U+3002, and leaves U+3002 as it is.
 #: Not every period test reads this set, and the ones that do not are

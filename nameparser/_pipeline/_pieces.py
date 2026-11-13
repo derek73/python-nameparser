@@ -64,9 +64,9 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _DIGRAPH_INITIALS, _INDIC_BRAHMIC, _PERIOD_ABBREV, _ROMAN,
+    _DIGRAPH_INITIALS, _PERIOD_ABBREV, _ROMAN, _SPELLED_INITIAL,
     Lean, ambiguous_lean,
-    in_initialless_script,
+    in_unabbreviating_script,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
     numeral_settled_by_case, reads_as_generation, tag_marker_runs,
 )
@@ -449,8 +449,8 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # own test file) checks it over the union of both predicates'
     # example tables rather than leaving it to a sentence.
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
-                                        or in_initialless_script(text)))
+            and (text.isascii() or not (_SPELLED_INITIAL.search(text)
+                                        or in_unabbreviating_script(text)))
             # rules/H2's transliteration-digraph Except (#1136) -- a
             # C-level membership test
             and text[:-1].lower() not in _DIGRAPH_INITIALS

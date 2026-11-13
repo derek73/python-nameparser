@@ -19,7 +19,9 @@ from collections.abc import Callable, Sequence
 
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
-from nameparser._policy import _NO_INITIALS, _script_matcher
+from nameparser._policy import (
+    _CASELESS_LETTERS, _NO_INITIAL_RANGES, _ranges_matcher,
+)
 from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
                                SHAPE_ACRONYM_TAG,
                                SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
@@ -362,7 +364,7 @@ def _first_letter(text: str) -> str:
 #: asked of the composed letter (#665), the spelling the veto in
 #: _vocab reads; the conjoining jamo a decomposed syllable is written
 #: in are HANGUL too since #1087.
-_initialless = _script_matcher(*_NO_INITIALS, whole=True)
+_initialless = _ranges_matcher(_NO_INITIAL_RANGES, whole=True)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
@@ -1069,6 +1071,7 @@ def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
 def _in_one_case(text: str) -> bool:
     """R5's test: `text` is written all upper or all lower (a caseless
     text is both, and so passes)."""
+    text = text.translate(_CASELESS_LETTERS)
     return text in (text.upper(), text.lower())
 
 
