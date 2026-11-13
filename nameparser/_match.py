@@ -848,7 +848,7 @@ def _paired_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
 
 def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     """One given-name word and the other are a listed familiar-form
-    pair (`Bill` / `William`, `Masha` / `Maria`): a name one word's
+    pair (`Bill` / `William`, `Babs` / `Barbara`): a name one word's
     spelling set is paired with directly meets the other's spelling
     set. Read whichever way the source wrote the pair, since the
     sources do not always write the shorter name first, and never
@@ -858,7 +858,7 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     fold as well (`Lexicon._familiar_forms`), and a spelling set holds
     each member's fold, so asking from the second side finds nothing the
     first does not (measured over every pair of the 1,034 familiar
-    names nam_dict shipped and their folds, 2026-11-08)."""
+    names the default shipped and their folds, 2026-11-08)."""
     sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
     return not _paired_forms(sa, lexicon).isdisjoint(sb)
 

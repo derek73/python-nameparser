@@ -233,18 +233,17 @@ a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 into one word agree with the same letters written apart as ``joined``
-(``J.P. Smith`` / ``J.-P. Smith``). Typos (``Slvatore`` / ``Salvatore``) are conflicts, and so are
-transliterations unless the vocabulary lists the pair as a familiar
-form (``Igor`` / ``Ihor`` is one, below). A familiar form you have not
-accepted keeps the pair inconsistent though its row reads
-``familiar-form``. The rows that kept a pair inconsistent are the
+(``J.P. Smith`` / ``J.-P. Smith``). Typos (``Slvatore`` / ``Salvatore``) and
+transliterations (``Igor`` / ``Ihor``) are conflicts. A familiar form
+(``Peggy`` / ``Margaret``, below) you have not accepted keeps the pair
+inconsistent though its row reads ``familiar-form``. The rows that kept a pair inconsistent are the
 ones whose outcome you did not accept, and the table names their
 roles, so you can run your own fuzzy comparison on those alone:
 
 .. doctest::
 
-    >>> igor = matcher.check("Igor Petrov", "Ihor Petrov")
-    >>> [(r.role.value, r.outcome.value) for r in igor.roles if r.outcome not in matcher.accept]
+    >>> peggy = matcher.check("Peggy Smith", "Margaret Smith")
+    >>> [(r.role.value, r.outcome.value) for r in peggy.roles if r.outcome not in matcher.accept]
     [('given', 'familiar-form')]
 
 Accepting more
@@ -302,11 +301,11 @@ not tried, so a given name cannot vanish into one of them to agree
 with another.
 
 ``familiar-form`` reads a short given name as standing for the longer
-ones the vocabulary lists it under: ``Max`` for Maximilian, Maxim and
-Maksim, ``Bill`` for William, ``Sepp`` for Josef. It is read in the
+ones the vocabulary lists it under: ``Max`` for Maximilian and
+Maxwell, ``Bill`` for William, ``Peggy`` for Margaret. It is read in the
 given name, middle name and nickname, never the family name. A pair
 is read whichever way the vocabulary wrote it, since its sources do
-not always write the shorter name first (``Maria`` / ``Masha``), but
+not always write the shorter name first (``Barbara`` / ``Babs``), but
 never chained, so two longer names paired with one short name do not
 agree with each other. The keys follow: a name is keyed by the first
 letters of the names it is paired with too, so ``Bill Smith`` meets
@@ -325,22 +324,20 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms come from two sources, 2,743 pairs in all
-(counted 2026-11-09). The pairs of Jörg Michael's nam_dict (2008, GNU
-Free Documentation License 1.2) are each in the vocabulary file of the
-languages whose countries it lists them for. The pairs of Old Dominion
-University's nicknames list (Apache License 2.0), a lookup of English
-given names' nicknames and diminutives (``Ricky`` / ``Richard``,
-``Peggy`` / ``Margaret``), are in the English file, less the pairs a
-review refused as spellings of one name (``Allan`` / ``Allen``),
-another language's form (``Ivan`` / ``John``), another name (``Erin`` /
-``Aaron``) or two forms of one name neither made from the other
-(``Lisa`` / ``Liz``). A plain choice of languages
-keeps every file's, and a strict one only its own files' (strict
-``es`` holds five pairs: ``Cesc``, ``Koldo``, ``Xabi`` and ``Xavi``). A
-pair whose short name reads as a title in front of a name (``Timi``,
-``Nanny``) is never compared as a given name, so it stays inert while
-the title reading stands. It is a selection and has gaps (``Rickie`` /
+The shipped familiar forms are English alone for now, 2,180 pairs
+(counted 2026-11-12) from Old Dominion University's nicknames list
+(Apache License 2.0), a lookup of English given names' nicknames and
+diminutives (``Ricky`` / ``Richard``, ``Peggy`` / ``Margaret``), less
+the pairs a review refused as spellings of one name (``Allan`` /
+``Allen``), another language's form (``Ivan`` / ``John``), another
+name (``Erin`` / ``Aaron``) or two forms of one name neither made from
+the other (``Lisa`` / ``Liz``). Other languages' familiar forms
+(``Sepp`` / ``Josef``, ``Kasia`` / ``Katarzyna``) are not shipped
+yet. A plain choice of languages keeps the English pairs, and a strict
+one keeps them only where it chooses English. A pair whose short name
+reads as a title in front of a name (``Ab``, ``Nanny``) is never
+compared as a given name, so it stays inert while the title reading
+stands. It is a selection and has gaps (``Rickie`` /
 ``Richard`` and ``Pepe`` / ``José`` are not in it); add your own with a
 ``familiar`` reading,
 which extends the names the word's shipped readings list (to replace
@@ -355,7 +352,7 @@ them, ``remove(word, kind="familiar")`` first):
 
 A familiar form is outside the default because it is many-valued and
 often a name of its own: ``Max`` is a given name in its own right, as
-``Bill`` and ``Sepp`` are.
+``Bill`` and ``Peggy`` are.
 
 ``across-roles`` compares a given name with each word of the other
 name's middle name and with its nickname, and a family name with the
