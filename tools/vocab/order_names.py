@@ -25,14 +25,25 @@ nameparser/config/_order_names.py).
     uv run python tools/vocab/order_names.py --refresh # ask Wikidata again
 
 The second generated block, ``COMMON_GIVEN``, is the given names the
-suggester looks up at both ends of a name: per nam_dict country column
-the ``TOP`` highest-band names that pass the filter, which keeps a name
-of two letters or more written in ORCID's own family box at most
-``MAX_FAMILY_SHARE`` of the ``MIN_USES`` or more times its holders wrote
-it (a population the suggester is not tested on), and no romanized
-surname this run writes. It needs nam_dict and the ORCID local corpus
-cached (tools/name_usage.py and tools/differential/local_corpora.py),
-each checked whole against its pinned or recorded sha256, and it writes
+suggester looks up at both ends of a name, from ORCID's public data
+file (CC0): per country an ORCID holder states, the ``TOP`` words its
+holders most often typed first in the given-name box, each typed so at
+least ``MIN_COUNTRY_USES`` times there, that pass the filter, which
+keeps a name of two letters or more holding no full stop, written in
+ORCID's own family box at most ``MAX_FAMILY_SHARE`` of the
+``MIN_USES`` or more times its holders wrote it, no romanized
+surname this run writes and no word the default lexicon compiles into
+its title sets outside ``titles_ambiguous`` (``prof``, typed before the
+name). Each word is spelled as the suggester looks it up
+(:func:`spelling`). Only the first word is ranked: the words after
+it are middle names, an East Slavic patronymic (``Анна Викторовна``) or
+a second given name. Before 2026-11-12, and in no release, the ranking
+was nam_dict's (Jörg Michael, GNU FDL 1.2), its 55 country columns by
+frequency band, with the same filter; the table is the project's own
+measurement over a CC0 file (decisions/shipped-data-licences, FACTS WE
+MEASURE). It needs the ORCID local corpus cached
+(tools/differential/local_corpora.py), checked whole against its
+recorded sha256, and it writes
 nothing where a block falls below its floor (``MIN_PINYIN``,
 ``MIN_GIVEN``) or a word lands in both tables.
 
@@ -55,17 +66,19 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
 import zh_surnames  # noqa: E402  (a sibling script; its ask and batched)
 
-from nameparser._suggest import fold  # noqa: E402  (the one fold)
+from nameparser._suggest import _EDGES, fold  # noqa: E402  (the one fold)
 
 TOP = 500
+MIN_COUNTRY_USES = 3
 MAX_FAMILY_SHARE = 0.05
 MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
-#: (2026-11-12: 200 pinyin surnames, over 4,000 given names).
+#: (2026-11-12: 200 pinyin surnames, 6,409 given names; nam_dict's
+#: ranking gave 4,262, under a floor of 3,000).
 MIN_PINYIN = 150
-MIN_GIVEN = 3_000
+MIN_GIVEN = 5_000
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
 PINYIN_FILE = "wikidata_chinese_surname_pinyin.json"
@@ -174,11 +187,25 @@ def load_pinyin(chars: list[str], refresh: bool) -> dict[str, set[str]]:
     return read_pinyin(cached["items"], cached["pinyin"])
 
 
-def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
+def spelling(word: str) -> str:
+    """The key a word typed into a box is counted under: the spelling
+    the suggester looks it up by, which strips the quotes and brackets
+    a word is written inside (``_suggest._EDGES``), then its full stops,
+    and folds it, so a table entry is one the suggester can meet
+    (``Ala'`` counts as ``ala``, as the suggester reads it; #1293's
+    lesson, fold both sides of a match alike). A comma ending the word
+    goes first: the suggester divides a name at a comma, so never meets
+    one."""
+    return fold(word.rstrip(",").strip(_EDGES).strip("."))
+
+
+def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str],
+                                          dict[str, Counter[str]]]:
     """Folded word counts of ORCID's given-name and family-name boxes,
-    streamed (the file is about 1.8M lines). The file is refused unless
-    it is whole: its sha256 and its record count are the ones the
-    corpus's meta.json, written by the fetch, gives it."""
+    and per stated country the counts of the given-name box's first
+    word, streamed (the file is about 1.8M lines). The file is refused
+    unless it is whole: its sha256 and its record count are the ones
+    the corpus's meta.json, written by the fetch, gives it."""
     meta_path = path.parent / "meta.json"
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
@@ -188,6 +215,7 @@ def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
                          "fetch the orcid-researchers corpus again") from exc
     given: Counter[str] = Counter()
     family: Counter[str] = Counter()
+    first_given: dict[str, Counter[str]] = {}
     digest = hashlib.sha256()
     records = 0
     with open(path, "rb") as fh:
@@ -201,55 +229,45 @@ def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
             record = json.loads(line)
             for box, counts in (("given", given), ("family", family)):
                 for word in (record.get(box) or "").split():
-                    counts[fold(word.strip(".,"))] += 1
+                    counts[spelling(word)] += 1
+            words = (record.get("given") or "").split()
+            if words and record.get("country"):
+                first_given.setdefault(record["country"], Counter())[
+                    spelling(words[0])] += 1
     if records != want_records:
         raise ValueError(f"{path} holds {records} records, not the "
                          f"{want_records} its meta.json counts; fetch it again")
     if digest.hexdigest() != want_sha:
         raise ValueError(f"{path} does not match the sha256 in its "
                          "meta.json; fetch it again")
-    return given, family
+    return given, family, first_given
 
 
-def common_given(namdict: name_usage.NamDict, given: Counter[str],
-                 family: Counter[str], *, top: int, max_family_share: float,
+def common_given(first_given: Mapping[str, Counter[str]],
+                 given: Counter[str], family: Counter[str], *, top: int,
+                 min_country_uses: int, max_family_share: float,
                  min_uses: int, exclude: set[str]) -> set[str]:
-    """Per nam_dict country, the ``top`` folded single-word names of
-    highest band that pass the filter, unioned over the countries.
+    """Per country, the ``top`` commonest first words of the given-name
+    box, each counted ``min_country_uses`` times or more there, that
+    pass the filter, unioned over the countries; a tie is broken by
+    the word, so a run is reproducible.
 
-    A name passes with two or more letters, not in ``exclude``, at least
+    A name passes with two or more letters, no full stop (``dr.ahmed``,
+    an abbreviation typed with its title), not in ``exclude``, at least
     ``min_uses`` uses across ORCID's two boxes and no more than
     ``max_family_share`` of them in the family box."""
     def passes(word: str) -> bool:
         total = given[word] + family[word]
-        return (len(word) > 1 and word not in exclude and total >= min_uses
+        return (len(word) > 1 and "." not in word and word not in exclude
+                and total >= min_uses
                 and family[word] / total <= max_family_share)
 
-    bands: dict[str, dict[str, int]] = {c: {} for c in namdict.countries}
-    for entries in namdict.names.values():
-        for listed, listed_bands in entries:
-            if " " in listed or "+" in listed:
-                continue
-            word = fold(listed)
-            for country, band in listed_bands.items():
-                if band > bands[country].get(word, -1):
-                    bands[country][word] = band
     chosen: set[str] = set()
-    for ranked in bands.values():
-        ordered = sorted(ranked.items(), key=lambda kv: (-kv[1], kv[0]))
-        chosen.update([w for w, _ in ordered if passes(w)][:top])
+    for counts in first_given.values():
+        ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        chosen.update([w for w, n in ordered
+                       if n >= min_country_uses and passes(w)][:top])
     return chosen
-
-
-def load_namdict() -> name_usage.NamDict:
-    """nam_dict, read through name_usage, which checks the cached file
-    against its pinned sha256; refused where it is not cached."""
-    namdict = name_usage.load_namdict(download=False)
-    if namdict is None:
-        raise ValueError(
-            f"{name_usage.cache_dir() / name_usage.NAMDICT_FILE} is not "
-            "cached; uv run python tools/name_usage.py <word> fetches it")
-    return namdict
 
 
 def surname_exclusions(pinyin: set[str]) -> set[str]:
@@ -262,12 +280,36 @@ def surname_exclusions(pinyin: set[str]) -> set[str]:
                         + _order_names._VI_SURNAMES)
 
 
+def listed_titles() -> set[str]:
+    """The words the default lexicon compiles into its title sets
+    (``titles``, ``given_name_titles``) less those in
+    ``titles_ambiguous``, folded. ORCID holders type a title into the
+    given-name box (``Prof. Ann``, ``Dra. Ana``, ``Lady``), and the
+    suggester reads a name past its listed titles, so a title in the
+    table would vote where the name does not (2026-11-12: ``prof``,
+    ``dra``, ``lic``, ``engr``, ``assoc``, ``asst`` and ``lady``). A
+    title in ``titles_ambiguous`` (``grace``, ``king``, ``princess``)
+    stays a candidate. The set also holds words with a given reading
+    that compile into ``titles`` rather than ``titles_ambiguous``: the
+    title-particles (``st``, ``graf``, ``freiherr``) and the
+    title/suffix duals (``sr``, ``ms``); none of them is in the table
+    either way (2026-11-12)."""
+    from nameparser import Lexicon
+    sets = Lexicon.default()._sets
+    return {fold(w) for w in (sets.titles | sets.given_name_titles)
+            - sets.titles_ambiguous if " " not in w}
+
+
 def load_common_given(exclude: set[str]) -> set[str]:
-    given, family = orcid_box_counts(name_usage.cache_dir().joinpath(*ORCID_RAW))
+    """The given-name table, refusing ``exclude`` and every word
+    :func:`listed_titles` names."""
+    given, family, first_given = orcid_box_counts(
+        name_usage.cache_dir().joinpath(*ORCID_RAW))
     return common_given(
-        load_namdict(), given, family, top=TOP,
+        first_given, given, family, top=TOP,
+        min_country_uses=MIN_COUNTRY_USES,
         max_family_share=MAX_FAMILY_SHARE, min_uses=MIN_USES,
-        exclude=exclude)
+        exclude=exclude | listed_titles())
 
 
 def check_tables(pinyin: set[str], given: set[str]) -> None:

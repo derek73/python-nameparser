@@ -216,47 +216,50 @@ def test_the_shipped_surname_block_is_what_the_tool_writes(
     assert tool.rewrite(text, "PINYIN", block) == text
 
 
-def _namdict(tool: ModuleType, countries: dict[str, dict[str, int]]) -> object:
-    """A NamDict whose only entries are ``{country: {name: band}}``."""
-    names: dict[str, list[tuple[str, dict[str, int]]]] = {}
-    for country, bands in countries.items():
-        for name, band in bands.items():
-            names.setdefault(name, []).append((name, {country: band}))
-    return tool.name_usage.NamDict(
-        countries=list(countries), names=names, short_for={})
+def _common(tool: ModuleType, countries: dict[str, dict[str, int]],
+            given: dict[str, int], family: dict[str, int] | None = None, *,
+            top: int = 10, min_country_uses: int = 1,
+            exclude: frozenset[str] = frozenset()) -> set[str]:
+    from collections import Counter
+    return tool.common_given(  # type: ignore[no-any-return]
+        {c: Counter(words) for c, words in countries.items()},
+        Counter(given), Counter(family or {}), top=top,
+        min_country_uses=min_country_uses, max_family_share=0.05,
+        min_uses=20, exclude=set(exclude))
 
 
 @needs_checkout
 def test_a_name_mostly_written_as_a_family_name_is_dropped(
         tool: ModuleType) -> None:
-    nd = _namdict(tool, {"X": {"thomas": 9, "kim": 9, "anna": 9}})
-    from collections import Counter
-    given = Counter({"thomas": 90, "kim": 50, "anna": 100})
-    family = Counter({"thomas": 10, "kim": 50, "anna": 1})
-    got = tool.common_given(nd, given, family, top=10, max_family_share=0.05,
-                            min_uses=20, exclude=set())
+    got = _common(tool, {"X": {"thomas": 9, "kim": 9, "anna": 9}},
+                  {"thomas": 90, "kim": 50, "anna": 100},
+                  {"thomas": 10, "kim": 50, "anna": 1})
     assert got == {"anna"}
 
 
 @needs_checkout
-def test_a_romanized_surname_and_a_one_letter_name_never_enter(
+def test_a_romanized_surname_a_one_letter_name_and_a_dotted_word_never_enter(
         tool: ModuleType) -> None:
-    from collections import Counter
-    nd = _namdict(tool, {"X": {"lee": 9, "a": 9, "anna": 9}})
-    given = Counter({"lee": 100, "a": 100, "anna": 100})
-    got = tool.common_given(nd, given, Counter(), top=10, max_family_share=0.05,
-                            min_uses=20, exclude={"lee"})
+    got = _common(tool, {"X": {"lee": 9, "a": 9, "dr.ahmed": 9, "anna": 9}},
+                  {"lee": 100, "a": 100, "dr.ahmed": 100, "anna": 100},
+                  exclude=frozenset({"lee"}))
     assert got == {"anna"}
 
 
 @needs_checkout
 def test_top_is_per_country_then_unioned(tool: ModuleType) -> None:
-    from collections import Counter
-    nd = _namdict(tool, {"X": {"anna": 9, "bea": 5}, "Y": {"carl": 9, "dan": 5}})
-    given = Counter({"anna": 99, "bea": 99, "carl": 99, "dan": 99})
-    got = tool.common_given(nd, given, Counter(), top=1, max_family_share=0.05,
-                            min_uses=20, exclude=set())
+    got = _common(tool, {"X": {"anna": 9, "bea": 5}, "Y": {"carl": 9, "dan": 5}},
+                  {"anna": 99, "bea": 99, "carl": 99, "dan": 99}, top=1)
     assert got == {"anna", "carl"}
+
+
+@needs_checkout
+def test_a_tie_is_broken_by_the_word_and_a_rare_word_is_not_ranked(
+        tool: ModuleType) -> None:
+    uses = {"anna": 99, "bea": 99, "carl": 99}
+    assert _common(tool, {"X": {"bea": 5, "anna": 5}}, uses, top=1) == {"anna"}
+    assert _common(tool, {"X": {"anna": 2, "carl": 3}}, uses,
+                   min_country_uses=3) == {"carl"}
 
 
 @needs_checkout
@@ -264,10 +267,9 @@ def test_the_shipped_given_block_is_what_the_tool_writes(
         tool: ModuleType) -> None:
     from nameparser import locales
     cache = tool.name_usage.cache_dir()
-    namdict = cache / "nam_dict.txt"
     orcid = cache / "local" / "orcid-researchers" / "raw.jsonl"
-    if not (namdict.exists() and orcid.exists()):
-        pytest.skip("nam_dict or the ORCID local corpus is not cached")
+    if not orcid.exists():
+        pytest.skip("the ORCID local corpus is not cached")
     readings = _cached_pinyin(tool)
     singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
     pinyin = tool.pinyin_surnames(singles, readings)
@@ -304,11 +306,19 @@ def test_whole_orcid_boxes_are_counted(
         tmp_path_factory: pytest.TempPathFactory) -> None:
     from ._differential_fixtures import own_cache
     cache = own_cache(monkeypatch, tmp_path_factory)
-    path = _plant_orcid(cache, [{"given": "Anna", "family": "Kim"},
-                                {"given": "Łukasz", "family": "Nowak"}])
-    given, family = tool.orcid_box_counts(path)
-    assert given == {"anna": 1, "lukasz": 1}
-    assert family == {"kim": 1, "nowak": 1}
+    path = _plant_orcid(cache, [
+        {"given": "Anna", "family": "Kim", "country": "KR"},
+        {"given": "Łukasz", "family": "Nowak"},
+        {"given": "Marie Anne", "family": "Curie", "country": "FR"},
+        {"given": "Ivan Petrovich", "family": "Ivanov", "country": "RU"}])
+    given, family, first_given = tool.orcid_box_counts(path)
+    assert given == {"anna": 1, "lukasz": 1, "marie": 1, "anne": 1,
+                     "ivan": 1, "petrovich": 1}
+    assert family == {"kim": 1, "nowak": 1, "curie": 1, "ivanov": 1}
+    # only the given box's first word is ranked, by the stated country:
+    # a second given name or a patronymic typed after it is not
+    assert first_given == {"KR": {"anna": 1}, "FR": {"marie": 1},
+                           "RU": {"ivan": 1}}
 
 
 @needs_checkout
@@ -342,16 +352,39 @@ def test_an_orcid_corpus_without_its_meta_is_refused(
 
 
 @needs_checkout
-def test_nam_dict_is_read_checked_and_refused_when_absent_or_cut(
-        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
-        tmp_path_factory: pytest.TempPathFactory) -> None:
-    from ._differential_fixtures import own_cache
-    cache = own_cache(monkeypatch, tmp_path_factory)
-    with pytest.raises(ValueError, match="nam_dict.txt is not cached"):
-        tool.load_namdict()
-    (cache / "nam_dict.txt").write_text("cut\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="sha256"):
-        tool.load_namdict()
+@pytest.mark.parametrize("typed, key", [
+    ("Ala'", "ala"), ("“Anna”", "anna"), ("(Anna)", "anna"), ("Anna.", "anna"),
+    ("Anna,", "anna"), ("Łukasz", "lukasz"), ("«Anna»", "anna"),
+    ("[Anna.]", "anna"), ("Jose\u0301", "jose"), ("Ｊｏｓé", "jose"),
+    # the suggester strips the quotes, then the full stop, so a quote
+    # before a full stop stays: the tool keys it as the suggester does
+    ("'Anna'.", "anna'"),
+])
+def test_a_word_is_counted_under_the_spelling_the_suggester_looks_up(
+        tool: ModuleType, typed: str, key: str) -> None:
+    from nameparser import Parser
+    from nameparser._suggest import Signal, _name_words, fold, name_votes
+    assert tool.spelling(typed) == key
+    # the suggester's own path: the words it reads (quotes and brackets
+    # stripped, composed), then its lookup's full stops and fold; a
+    # comma divides a name there, so the tool's comma strip is its own
+    words, _ = _name_words(f"{typed.rstrip(',')} Zzyzx", Parser().lexicon)
+    assert fold(words[0].strip(".")) == key
+    # and it meets that key: a listed given name written so at the head
+    # votes given-first
+    if key in _order_names.COMMON_GIVEN_NAMES:
+        votes = name_votes(f"{typed.rstrip(',')} Zzyzx", Parser().lexicon)
+        assert Signal.GIVEN_NAME in votes
+
+
+@needs_checkout
+def test_a_listed_title_is_refused_and_an_ambiguous_one_is_not(
+        tool: ModuleType) -> None:
+    titles = tool.listed_titles()
+    assert {"prof", "dr", "dra", "lady", "sir"} <= titles
+    # a title that may also be a given name stays a candidate
+    assert not {"grace", "king", "dean", "princess"} & titles
+    assert not titles & _order_names.COMMON_GIVEN_NAMES
 
 
 @needs_checkout
@@ -363,11 +396,11 @@ def test_the_given_names_exclude_this_runs_surnames(tool: ModuleType) -> None:
 
 @needs_checkout
 @pytest.mark.parametrize("pinyin, given, fragment", [
-    ({f"p{i}" for i in range(149)}, {f"g{i}" for i in range(3000)},
+    ({f"p{i}" for i in range(149)}, {f"g{i}" for i in range(5000)},
      "149 pinyin surnames, below the floor of 150"),
-    ({f"p{i}" for i in range(150)}, {f"g{i}" for i in range(2999)},
-     "2999 given names, below the floor of 3000"),
-    ({f"p{i}" for i in range(150)}, {"p1"} | {f"g{i}" for i in range(3000)},
+    ({f"p{i}" for i in range(150)}, {f"g{i}" for i in range(4999)},
+     "4999 given names, below the floor of 5000"),
+    ({f"p{i}" for i in range(150)}, {"p1"} | {f"g{i}" for i in range(5000)},
      "both tables: p1"),
 ])
 def test_a_table_below_its_floor_or_overlapping_is_refused(
@@ -376,4 +409,4 @@ def test_a_table_below_its_floor_or_overlapping_is_refused(
     with pytest.raises(ValueError, match=fragment):
         tool.check_tables(pinyin, given)
     tool.check_tables({f"p{i}" for i in range(150)},
-                      {f"g{i}" for i in range(3000)})
+                      {f"g{i}" for i in range(5000)})
