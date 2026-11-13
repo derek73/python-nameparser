@@ -785,10 +785,9 @@ def _capitalize(text: str) -> str:
     title-casing to itself reached). The one-letter guard keeps the
     word's length should a later Unicode give a longer lower case."""
     out = text.capitalize()
-    if text and ord(text[0]) in _CASELESS_LETTERS:
-        low = text[0].lower()
-        if len(low) == 1:
-            return low + out[1:]
+    if (text and ord(text[0]) in _CASELESS_LETTERS
+            and len(low := text[0].lower()) == 1):
+        return low + out[1:]
     return out
 
 

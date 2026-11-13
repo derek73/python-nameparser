@@ -272,3 +272,12 @@ def test_the_twin_test_fails_with_the_table_off() -> None:
     finally:
         _policy._CASELESS_LETTERS.update(saved)
     assert apart == _UNGUARDED_EFFECT
+
+
+def test_a_reader_selecting_no_span_is_refused() -> None:
+    """A column no row holds the selected value of compiles to an empty
+    class, which would match nothing in silence."""
+    from nameparser._policy import _ranges_pattern, _ranges_where
+    assert _ranges_where("has_case", True) == ()
+    with pytest.raises(ValueError, match="at least one range"):
+        _ranges_pattern(_ranges_where("has_case", True))
