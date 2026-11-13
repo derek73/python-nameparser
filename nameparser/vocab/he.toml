@@ -165,10 +165,10 @@ note = "A clan particle, as Latin ben is, not a patronymic (#1210): every one of
 
 [[word]]
 text = "avi"
-familiar = { short_for = ["abraham", "avraham"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["abraham", "avraham"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "misha"
-familiar = { short_for = ["michael"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["michael"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

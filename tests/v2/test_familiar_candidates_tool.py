@@ -127,13 +127,10 @@ def test_the_rows_leave_out_the_known_pairs_and_the_thin_ones() -> None:
         _TITLES)
     known = {frozenset(("bill", "william"))}
     rows = tool.rows(found, 3, known, {"PL": ("pl",), "UA": ("uk",)},
-                     {("kasia", "katarzyna"): 2},
-                     spellings=[("allan", "allen"), ("olga", "olha")])
+                     {("kasia", "katarzyna"): 2})
     assert rows == [
         ["kasia", "katarzyna", "orcid", "4", "", "pl", "PL 4", "2"],
         ["olga", "olha", "orcid", "3", "spelling", "uk", "UA 3", "0"],
-        # a refused spelling comes back once, with whatever ORCID gives it
-        ["allan", "allen", "nicknames-spelling", "0", "spelling", "mul", "", "0"],
     ]
     text = tool.write_tsv(rows)
     assert [list(r.values()) for r in tool.read_tsv(text)] == rows
@@ -141,18 +138,14 @@ def test_the_rows_leave_out_the_known_pairs_and_the_thin_ones() -> None:
         tool.read_tsv(text.replace("holders", "people", 1))
 
 
-def test_a_refusal_as_a_spelling_is_no_reviewed_pair(
+def test_a_reviewed_pair_is_known_whatever_its_category(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    # the nicknames list's review read its pairs as familiar forms only,
-    # so a pair it refused as a spelling is reviewed again for the
-    # spelling bar; one refused as anything else is not
-    monkeypatch.setattr(tool.familiar, "load_nicknames",
-                        lambda: [("william", "bill")])
-    monkeypatch.setattr(tool.familiar, "load_exclusions", lambda: {
-        ("allen", "allan"): "spelling", ("aaron", "erin"): "different-name"})
+    # a pair the review shipped or refused is not proposed again
+    monkeypatch.setattr(tool.familiar, "load_reviewed", lambda: [
+        {"a": "bill", "b": "william", "category": "familiar"},
+        {"a": "aaron", "b": "erin", "category": "different-name"}])
     assert tool.known_pairs() == {frozenset(("bill", "william")),
                                   frozenset(("aaron", "erin"))}
-    assert tool.refused_spellings() == {("allan", "allen")}
 
 
 def test_gnd_is_asked_both_ways_once_and_kept(tmp_path: Path) -> None:
@@ -181,14 +174,15 @@ def test_the_pilot_draw_is_seeded_and_stratified_by_holders() -> None:
 def test_the_tool_reads_no_list_of_familiar_forms() -> None:
     # a candidate is found in data, never selected from a compiled list
     # (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE
-    # MEASURE): the tool may read the nicknames list and its refusals,
-    # to leave out what was already reviewed, and nothing else that
-    # names familiar forms; nam_dict least of all
+    # MEASURE, 2026-11-13 THE NICKNAMES LIST LEAVES): the tool may read
+    # the project's own review, to leave out what was already reviewed,
+    # and nothing else that names familiar forms
     tree = ast.parse(_PATH.read_text(encoding="utf-8"))
     names = {n.attr if isinstance(n, ast.Attribute) else n.id
              for n in ast.walk(tree) if isinstance(n, (ast.Attribute, ast.Name))}
     assert not names & {"NAMDICT_FILE", "NAMDICT_FILE_SHA256", "NamDict",
-                        "load_pairs", "FAMILIAR", "_familiar_forms"}
+                        "load_pairs", "FAMILIAR", "_familiar_forms",
+                        "load_nicknames", "load_exclusions"}
     used = {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)
             and isinstance(n.value, ast.Name) and n.value.id == "familiar"}
-    assert used == {"load_nicknames", "load_exclusions"}
+    assert used == {"load_reviewed"}

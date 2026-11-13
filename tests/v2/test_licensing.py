@@ -7,6 +7,7 @@ README's License section, the PyPI page. A new file without a row in
 ``_THIRD_PARTY`` fails here, naming the three places to update. A list
 the project measured on a dataset names no licence in the expression;
 ``_CREDITED`` holds its credit in its module and the README instead."""
+import re
 import tomllib
 from pathlib import Path
 
@@ -16,9 +17,13 @@ from packaging.licenses import canonicalize_license_expression
 from tests.checkout import ROOT, needs_checkout
 
 #: Each third-party licence file and the SPDX identifier it stands for.
-_THIRD_PARTY = {
-    "LICENSE-nicknames": "Apache-2.0",
-}
+#: Empty since the nicknames list's familiar forms left the vocabulary
+#: (decisions/shipped-data-licences, 2026-11-13 THE NICKNAMES LIST
+#: LEAVES): test_every_third_party_licence_file_has_a_row keeps it
+#: honest, failing on any root LICENSE-* file without a row, and the
+#: per-file checks below loop rather than parametrize, so an empty table
+#: is not read as a skip.
+_THIRD_PARTY: dict[str, str] = {}
 
 #: Each source the project measured its own list on, credited as a
 #: courtesy rather than named in the expression (decisions/
@@ -64,12 +69,12 @@ def test_license_files_lists_every_licence_file_and_nothing_missing() -> None:
 
 
 @needs_checkout
-@pytest.mark.parametrize("name", sorted(_THIRD_PARTY))
-def test_licence_expression_names_each_file_s_licence(name: str) -> None:
+def test_licence_expression_names_each_file_s_licence() -> None:
     expression = _project()["license"]
     assert canonicalize_license_expression(expression) == expression
-    assert _THIRD_PARTY[name] in expression.split(" AND "), (
-        f"{name}'s {_THIRD_PARTY[name]} is not in license = {expression!r}")
+    for name, spdx in _THIRD_PARTY.items():
+        assert spdx in expression.split(" AND "), (
+            f"{name}'s {spdx} is not in license = {expression!r}")
 
 
 @needs_checkout
@@ -99,8 +104,13 @@ def test_each_measured_source_is_credited(spdx: str) -> None:
 
 
 @needs_checkout
-@pytest.mark.parametrize("name", sorted(_THIRD_PARTY))
-def test_readme_names_each_licence_file(name: str) -> None:
+def test_readme_names_each_licence_file_and_the_expression() -> None:
+    # the expression as a whole literal, so a stale longer one in the
+    # README (``LGPL-2.1-or-later AND Apache-2.0``) does not pass on the
+    # shorter one it opens with, and no licence file the table lacks
     section = _license_section()
-    assert f"``{name}``" in section
-    assert _project()["license"] in section
+    assert f"``{_project()['license']}``" in section
+    named = set(re.findall(r"``(LICENSE-[^`]+)``", section))
+    assert named == set(_THIRD_PARTY), (
+        f"README.rst's License section names {sorted(named)}, "
+        f"_THIRD_PARTY {sorted(_THIRD_PARTY)}")

@@ -3,11 +3,11 @@
 WHY THIS IS IN THE TREE. nam_dict's familiar forms left the vocabulary
 because a compiler's list copied whole keeps its licence
 (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE),
-so other languages' pairs are rebuilt from pairs the project FINDS in
-data it may use and then reviews (decisions/name-matching, 2026-11-12
-ALTERNATE SPELLINGS ARE OPT-IN), as the nicknames
-list was reviewed. This tool finds them; it never reads nam_dict or any
-other list of familiar forms, so what it proposes is a measurement of
+and the nicknames list's after it (2026-11-13 THE NICKNAMES LIST
+LEAVES), so the shipped pairs are pairs the project FINDS in data it
+may use and then reviews (decisions/name-matching, 2026-11-12
+ALTERNATE SPELLINGS ARE OPT-IN). This tool finds them; it never reads
+any list of familiar forms, so what it proposes is a measurement of
 usage, not a selection copied from a compiler.
 
 THE EVIDENCE: ONE PERSON WRITING THEIR NAME BOTH WAYS. ORCID's public
@@ -30,18 +30,18 @@ letter or with a digit; a word of two or three capitals (`MD`, `JJ`,
 initials written without stops); and two words the name match already
 reads as one, equal under its fold (`_match._fold`: `José` / `Jose`).
 
-What stays for the review to sort, by the nicknames list's categories
-(tools/vocab/nicknames_excluded.tsv) and a transliteration: two
+What stays for the review to sort, by the review's categories
+(tools/vocab/familiar.py's REVIEW_CATEGORIES): two
 spellings of one name (`Olga` / `Olha`, shape `spelling` here by a
 similarity a reviewer may overrule), which ship as alternate spellings,
 the opt-in `alternate-spelling`, rather than familiar forms; a transliteration (`Ігор` / `Igor`, shape
 `two-scripts`) and another language's form (`Jorge` / `George`),
 recorded and not shipped; and another name used beside the given one
-(`Scott` / `Robert`). The pairs the nicknames list's review refused as
-spellings come back as candidates of their own (source
-`nicknames-spelling`): they were read only as familiar forms. Measured on the 2025 file (2026-11-12): of the
-pairs at three or more holders in neither the shipped list nor its
-refusals, about four fifths of a hand-read sample were familiar forms.
+(`Scott` / `Robert`). A pair already in tools/vocab/familiar_reviewed.tsv
+is not proposed again. Measured on the 2025 file (2026-11-12): of the
+pairs at three or more holders then in neither the nicknames list nor
+its refusals, about four fifths of a hand-read sample were familiar
+forms.
 
 THE SECOND ATTESTATION. GND's authority records (CC0, read through the
 lobid API, `--gnd`) name a person's preferred forename and the
@@ -113,11 +113,8 @@ GND_URL = "https://lobid.org/gnd/search"
 
 HEADER = ["a", "b", "source", "holders", "shape", "languages",
           "countries", "gnd"]
-#: Where a candidate comes from: found in ORCID, or a pair the
-#: nicknames list's review refused as a spelling, which was read only as
-#: a familiar form and so comes back for the spelling bar.
+#: Where a candidate comes from, as the review records it.
 ORCID_SOURCE = "orcid"
-REFUSED_SPELLING_SOURCE = "nicknames-spelling"
 
 _WORD = re.compile(r"^[^\W\d_]+$")
 
@@ -242,23 +239,9 @@ def shape(a: str, b: str) -> str:
 
 
 def known_pairs() -> set[frozenset[str]]:
-    """The pairs the nicknames list already gives or its review refused
-    as anything but a spelling, either way round: nothing to review
-    again. A pair it refused as a spelling was read only as a familiar
-    form, so it comes back (refused_spellings)."""
-    rows = familiar.load_nicknames()
-    refused = familiar.load_exclusions()
-    return {frozenset((build._normalize(f), build._normalize(n)))
-            for f, n in [*rows, *(p for p, c in refused.items()
-                                  if c != "spelling")]}
-
-
-def refused_spellings() -> set[tuple[str, str]]:
-    """The pairs the nicknames list's review refused as a spelling, each
-    sorted, normalized."""
-    return {tuple(sorted((build._normalize(f), build._normalize(n))))
-            for (f, n), c in familiar.load_exclusions().items()
-            if c == "spelling"}
+    """The pairs already reviewed, whatever their category: nothing to
+    review again."""
+    return {frozenset((r["a"], r["b"])) for r in familiar.load_reviewed()}
 
 
 def orcid_records(path: Path) -> Iterator[dict[str, object]]:
@@ -305,13 +288,11 @@ def rows(found: Mapping[tuple[str, str], Evidence], minimum: int,
          known: set[frozenset[str]],
          languages_of: Mapping[str, tuple[str, ...]],
          gnd: Mapping[tuple[str, str], int] | None = None,
-         spellings: Iterable[tuple[str, str]] = ()) -> list[list[str]]:
+         ) -> list[list[str]]:
     """The candidate rows: pairs at `minimum` holders or more, less the
-    known ones, most holders first, then by text; then each of
-    `spellings` (the nicknames list's refused spellings) not among them,
-    with whatever holders ORCID gives it."""
+    known ones, most holders first, then by text."""
     out = []
-    listed = set()
+
     def row(pair: tuple[str, str], source: str, ev: Evidence) -> list[str]:
         top = ", ".join(f"{c or '-'} {n}"
                         for c, n in ev.countries.most_common(5))
@@ -323,11 +304,6 @@ def rows(found: Mapping[tuple[str, str], Evidence], minimum: int,
         if ev.holders < minimum or frozenset(pair) in known:
             continue
         out.append(row(pair, ORCID_SOURCE, ev))
-        listed.add(pair)
-    for pair in sorted(spellings):
-        if pair not in listed:
-            out.append(row(pair, REFUSED_SPELLING_SOURCE,
-                           found.get(pair, Evidence())))
     return out
 
 
@@ -401,12 +377,10 @@ def main(argv: list[str] | None = None) -> int:
     kept = [p for p, ev in found.items()
             if ev.holders >= args.min and frozenset(p) not in known]
     gnd = gnd_attest(sorted(kept), cache / GND_FILE) if args.gnd else None
-    out = rows(found, args.min, known, _languages_of(), gnd,
-               refused_spellings())
+    out = rows(found, args.min, known, _languages_of(), gnd)
     path.write_text(write_tsv(out), encoding="utf-8")
     print(f"{len(found):,} pairs mined, {len(out):,} candidates: those at "
-          f"{args.min}+ holders the list neither gives nor refused but as "
-          f"a spelling, and its refused spellings; wrote {path}",
+          f"{args.min}+ holders not yet reviewed; wrote {path}",
           file=sys.stderr)
     return 0
 

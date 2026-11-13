@@ -1455,7 +1455,7 @@ def test_a_listed_spelling_with_its_period_or_of_no_name_of_its_own(
 @pytest.mark.parametrize("a, b, outcome", [
     ("Jo Garcia", "José Garcia", Outcome.CONFLICT),
     ("Jo Garcia", "Jose Garcia", Outcome.CONFLICT),
-    # the nicknames list pairs `jo` with Joanne: a familiar form, which
+    # the review pairs `jo` with Joanne: a familiar form, which
     # the table reports and the default does not accept
     ("Jo Garcia", "Joanne Garcia", Outcome.FAMILIAR_FORM),
     ("Ma Santos", "María Santos", Outcome.CONFLICT),
@@ -1690,10 +1690,11 @@ def test_the_default_keys_a_familiar_form_by_its_own_letter_alone() -> None:
                                          ("masha", "maria")])
 def test_a_pair_reads_whichever_way_the_source_wrote_it(
         short: str, long: str) -> None:
-    # a source may write a pair long first (the nicknames list's
-    # `barbara` / `babs`), so a pair is read either way: written either
-    # way round here, on a lexicon holding no other familiar reading, it
-    # matches and keys alike
+    # a pair may be written on its long name (the tool writes it on
+    # the shorter, which can be the full one: `charles` / `charlie`, and
+    # a caller may write either), so a pair is read either way: written
+    # either way round here, on a lexicon holding no other familiar
+    # reading, it matches and keys alike
     lexicon = Lexicon.default().remove(kind="familiar", every=True).add(
         short, kind="familiar", short_for=[long])
     matching = Matching(Parser(lexicon=lexicon),
@@ -2051,9 +2052,11 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
 
 def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
     # a pair lives on its short side: cutting Max / Maximilian is
-    # removing max's readings and adding back the names to keep; Maxie's
-    # own reading, which pairs it with Max, stays
-    cut = Lexicon.default().remove("max", kind="familiar").add(
+    # removing max's readings and adding back the names to keep; a
+    # reading on Maxie pairing it with Max (added here; none ships) stays
+    cut = Lexicon.default().add(
+        "maxie", kind="familiar", short_for=["max"]).remove(
+        "max", kind="familiar").add(
         "max", kind="familiar", short_for=["maxim", "maksim"])
     assert cut._familiar_forms("max") == {"maksim", "maxim", "maxie"}
     matching = Matching(Parser(lexicon=cut),
@@ -2114,9 +2117,11 @@ def test_a_callers_pair_under_a_strict_choice_reaches_no_other_file() -> None:
     assert lexicon._familiar_forms("bill") == {"william"}
     assert [r.languages for r in lexicon.readings_of("bill")
             if r.kind == "familiar"] == [()]
-    # de.toml holds no familiar reading, and en.toml's do not come back
-    assert not lexicon._familiar_forms("max")
+    # en.toml's readings do not come back, and de.toml's own pair of
+    # max does
     assert not lexicon._familiar_forms("bob")
+    assert not lexicon._familiar_forms("peggy")
+    assert lexicon._familiar_forms("max") == {"maximilian"}
     assert Parser(lexicon=lexicon).parse("Bill Smith").tokens == strict.parse(
         "Bill Smith").tokens
 
@@ -2146,8 +2151,8 @@ def test_no_parse_reads_a_familiar_form() -> None:
 def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     # a plain choice drops no familiar reading (a choice prefers by none);
     # a strict one keeps its own files' and mul.toml's alone: German's
-    # `aleks`, every language's `ajay`, and not English's `bill` nor the
-    # `max` of en.toml, it.toml, ru.toml and es.toml
+    # `aleks` and `max` of Maximilian, every language's `ajay`, and not
+    # English's `bill` nor any other file's `max`
     plain = Lexicon(_base="default", _languages={"de"})
     assert plain._familiar == Lexicon.default()._familiar
     assert plain._familiar_forms("max") == (
@@ -2156,12 +2161,13 @@ def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     assert german._familiar_forms("aleks") == {"aleksandra"}
     assert german._familiar_forms("ajay") == {"ajaykumar"}
     assert not german._familiar_forms("bill")
-    assert not german._familiar_forms("max")
+    assert german._familiar_forms("max") == {"maximilian"}
 
 
-#: Accented pairs as a caller writes them, the shipped ones being English
-#: alone: Hungarian `józsi` of `józsef`, `klára` written long first of
-#: `klári`, and `mari` of `mária`.
+#: Accented pairs as a caller writes them, none of them shipped (the
+#: shipped accented pairs are others: `gosia` of `małgorzata`): Hungarian
+#: `józsi` of `józsef`, `klára` written long first of `klári`, and `mari`
+#: of `mária`.
 _ACCENTED = Matching(
     Parser(lexicon=Lexicon.default()
            .add("józsi", kind="familiar", short_for=["józsef"])
@@ -2187,24 +2193,28 @@ def test_a_familiar_form_holds_whatever_the_accents(a: str, b: str) -> None:
 
 
 #: The shipped pairs whose short name reads as a title in front of a
-#: name (and Governor, a title itself), so the pair is never compared as
-#: two given names: a pair is inert while a name of it reads as a title.
-_TITLE_SHORT_FORMS = {
-    ("ab", "abel"), ("ab", "abiel"), ("ab", "abijah"), ("ab", "abner"),
-    ("ab", "abraham"), ("ab", "abram"), ("ab", "absalom"),
-    ("govie", "governor"), ("nanny", "hannah"), ("nanny", "nancy"),
-    ("pres", "prescott")}
+#: name, so the pair is never compared as two given names: a pair is
+#: inert while a name of it reads as a title. None since the nicknames
+#: list's pairs left (`Ab` / Abraham, `Pres` / Prescott; decisions/
+#: shipped-data-licences, 2026-11-13 THE NICKNAMES LIST LEAVES); a new
+#: one is a pair to weigh before it ships.
+_TITLE_SHORT_FORMS: set[tuple[str, str]] = set()
 
 
-def test_every_shipped_pair_is_consistent_in_every_spelling() -> None:
-    # every FAMILIAR pair, each name as written and folded, as given
-    # names before one family name: consistent under the opt-in, with
-    # a shared key; the pairs whose short name parses as a title are
-    # the ones listed, and none else is skipped
-    from nameparser.config._compiled import FAMILIAR
-    parser = _familiar.parser
+@pytest.mark.parametrize("table", ["FAMILIAR", "ALTERNATE_SPELLINGS"])
+def test_every_shipped_pair_is_consistent_in_every_spelling(table: str) -> None:
+    # every shipped pair, familiar form or alternate spelling, each name
+    # as written and folded, as given names before one family name:
+    # consistent under its opt-in, with a shared key; the pairs whose
+    # name parses as a title are the ones listed, and none else is
+    # skipped, so a pair shipping inert is a failure here
+    from nameparser.config import _compiled
+    pairs = getattr(_compiled, table)
+    matching = _familiar if table == "FAMILIAR" else _alternate
+    assert len(pairs) >= 100, table
+    parser = matching.parser
     skipped = set()
-    for short, longs in FAMILIAR.items():
+    for short, longs in pairs.items():
         for long in longs:
             for a in dict.fromkeys((short, _fold(short))):
                 for b in dict.fromkeys((long, _fold(long))):
@@ -2213,9 +2223,36 @@ def test_every_shipped_pair_is_consistent_in_every_spelling() -> None:
                     if (x.given.casefold(), y.given.casefold()) != (a, b):
                         skipped.add((short, long))
                         continue
-                    assert _familiar.check(x, y).consistent, (a, b)
-                    assert _familiar.keys(x) & _familiar.keys(y), (a, b)
-    assert skipped == _TITLE_SHORT_FORMS
+                    assert matching.check(x, y).consistent, (a, b)
+                    assert matching.keys(x) & matching.keys(y), (a, b)
+    assert skipped == (_TITLE_SHORT_FORMS if table == "FAMILIAR" else set())
+
+
+def test_a_familiar_form_that_reads_as_a_title_is_never_compared() -> None:
+    # a pair whose short name reads as a title in front of a name stays
+    # inert while that reading stands: no shipped pair is one any more
+    # (_TITLE_SHORT_FORMS), so one is planted, as the nicknames list
+    # shipped `pres` of Prescott
+    lexicon = Lexicon.default().add("pres", kind="familiar",
+                                    short_for=["prescott"])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    pres = matching.parser.parse("Pres Kovacs")
+    assert (pres.title, pres.given) == ("Pres", "")
+    result = matching.check(pres, "Prescott Kovacs")
+    assert not result.consistent
+    assert Outcome.FAMILIAR_FORM not in {row.outcome for row in result.roles}
+    # the control: the same pair with Pres's title reading taken away
+    # reads `familiar-form`, so the title reading alone keeps it inert
+    # (without the pair, `Pres Kovacs` / `Prescott Kovacs` would read
+    # `given-one-side` either way)
+    bare = lexicon.remove("pres", kind="office")
+    control = Matching(Parser(lexicon=bare),
+                       DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    assert control.parser.parse("Pres Kovacs").given == "Pres"
+    paired = control.check("Pres Kovacs", "Prescott Kovacs")
+    assert paired.consistent
+    assert paired[Role.GIVEN].outcome is Outcome.FAMILIAR_FORM
 
 
 def test_a_planted_accented_pair_is_found_from_either_name() -> None:

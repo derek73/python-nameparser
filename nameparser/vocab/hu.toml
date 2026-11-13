@@ -20,6 +20,6 @@ issue = 661
 
 [[word]]
 text = "zsuzsa"
-familiar = { short_for = ["zsuzsanna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["zsuzsanna"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

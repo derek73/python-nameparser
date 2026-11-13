@@ -1,4 +1,4 @@
-"""Write the vocabulary's familiar forms and spellings from the nicknames list and the review.
+"""Write the vocabulary's familiar forms and spellings from the review.
 
 WHY THIS IS IN THE TREE. A familiar form is a short given name that
 stands for longer ones without being a spelling of them: `Max` for
@@ -6,103 +6,68 @@ Maximilian, `Bill` for William, `Peggy` for Margaret. The name match
 reads one as the opt-in outcome `familiar-form`
 (decisions/name-matching, 2026-11-08 FAMILIAR FORMS), from `familiar`
 readings, whose `short_for` lists the longer names and which no parse
-reads. The default set is re-derived here rather than transcribed by
-hand, from names.csv of the nicknames list by Old Dominion University's
-Web Science and Digital Libraries Research Group (Apache License 2.0;
-github.com/carltonnorthern/nicknames, pinned to one commit by
-NICKNAMES_URL and NICKNAMES_SHA256), a lookup of English given names'
-nicknames and diminutives as rows of (name, "has_nickname", nickname),
-with no country or band, some pairs written both ways round (`babs` /
-`barbara` and `barbara` / `babs`), each imported as written. It is
-noisy, mixing familiar forms with spellings of one name (Allan, Allen),
-other languages' forms (John, Ivan) and other names (Aaron, Erin), so
-each pair it holds was reviewed, and the pairs refused are listed with
-their reasons in nicknames_excluded.tsv beside this file
-(decisions/name-matching, 2026-11-09 THE NICKNAMES LIST). The rest go
-in NICKNAMES_TAG's file, English usage, with a note naming the list
-alone, as the list gives no evidence per pair. The pairs nam_dict gave
-until 2026-11-12 are no longer written: a compiler's list copied whole
-keeps its licence, and nam_dict's is the GFDL
-(decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE).
+reads; and an alternate spelling (`Olha` / `Olga`) as the opt-in
+`alternate-spelling`, from `spelling` readings, whose `spelling_of`
+lists the names it spells (2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN).
 
-THE REVIEWED PAIRS. familiar_reviewed.tsv beside this file holds the
-pairs tools/vocab/familiar_candidates.py finds in ORCID's public data
-file (CC0), each as two readers categorized it (decisions/name-matching,
-2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN). A pair both called a
-familiar form is written as a `familiar` reading on its shorter name; a
-pair both called a spelling as a `spelling` reading (`spelling_of`,
-compiled into ALTERNATE_SPELLINGS, read as the opt-in
-`alternate-spelling`) on the second name in order; a pair they split
-that the maintainer decided, as its decided category; each in the file of
-every language its row names, with REVIEWED_SOURCE as its note. Every
-other category is recorded there and written nowhere.
+THE REVIEWED PAIRS. familiar_reviewed.tsv beside this file holds every
+pair the project found in data it may use and two readers then
+categorized, with the source that evidenced it: ORCID's public data
+file (CC0), read by tools/vocab/familiar_candidates.py; for a few
+common familiar forms researchers rarely publish under, the nicknames
+donors write in brackets in the FEC's filings and the nicknames of
+Congress's members (both in the public domain), counted by recipes in
+decisions/name-matching, 2026-11-13 THE FAMILIAR FORMS FROM DATA
+ALONE. No pair is copied from
+a list of familiar forms: a compiler's list copied whole keeps its licence
+(decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE and
+2026-11-13 THE NICKNAMES LIST LEAVES). A pair both readers called a
+familiar form is written as a `familiar` reading on its shorter name
+(`place`); a
+pair both called a spelling as a `spelling` reading on the second name
+in order; a pair they split that the maintainer decided, as its decided
+category; each in the file of every language its row names, with
+REVIEWED_SOURCE as its note. Every other category is recorded there and
+written nowhere.
 
-In the file, a word already holding an entry gains a `familiar` line
-under its `text`, and every other word an entry of its own in one
-generated block at the file's end, in the build's word order (check
-10). A word both sources pair takes one reading naming both. The tool
-owns every `familiar` and `spelling` reading whose note names its
-sources and nothing else, in every vocabulary file, and rewrites
-nothing else; such a reading written by hand on a word the tool would
-write is refused rather than merged.
+In the file, a word already holding an entry gains a line under its
+`text`, and every other word an entry of its own in one generated block
+at the file's end, in the build's word order (check 10). The tool owns
+every `familiar` and `spelling` reading whose note is REVIEWED_SOURCE,
+in every vocabulary file, and rewrites nothing else; such a reading
+written by hand on a word the tool would write is refused rather than
+merged.
 
-    uv run python tools/vocab/familiar.py           # the pairs
-    uv run python tools/vocab/familiar.py --fetch   # cache the list
+    uv run python tools/vocab/familiar.py           # the readings per file
     uv run python tools/vocab/familiar.py --write   # rewrite the TOML
     uv run python tools/vocab/familiar.py --check   # exit 1 if stale
     uv run python tools/vocab/build.py              # then rebuild
-
-The list is read from the cache only, $NAMEPARSER_TOOLS_CACHE or
-~/.cache/nameparser-tools, where `--fetch` puts it; a missing file is
-an error naming that command.
 """
 from __future__ import annotations
 
 import argparse
 import collections
 import csv
-import hashlib
 import io
 import sys
 import tomllib
-import urllib.request
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parents[1]))
 sys.path.insert(0, str(Path(__file__).parent))
 import build  # noqa: E402  (a sibling script, not a package)
-import name_usage  # noqa: E402
 
 VOCAB = build.VOCAB
 
 BEGIN = "# -- BEGIN generated by tools/vocab/familiar.py; edit the tool, not this block --"
 END = "# -- END generated --"
 
-#: The nicknames list, pinned to one commit and its file's hash, and the
-#: note of every reading it gives: the mark of the readings the tool
-#: owns.
-NICKNAMES_COMMIT = "ed160b3af2d17e1af8ebd570f10a10e4dade4ff4"
-NICKNAMES_URL = ("https://raw.githubusercontent.com/carltonnorthern/"
-                 f"nicknames/{NICKNAMES_COMMIT}/names.csv")
-NICKNAMES_SHA256 = ("e6a4e5a55ca5b47a4146dbc118f26c71c63053d4b79ca9659de8e74efb65847e")
-NICKNAMES_FILE = "nicknames-names.csv"
-NICKNAMES_SOURCE = ("nicknames list (Old Dominion University WS-DL; "
-                    "Apache License 2.0)")
-#: The file the list's pairs go in: English usage.
-NICKNAMES_TAG = "en"
-#: The list's pairs refused on review, each with its reason.
-NICKNAMES_EXCLUDED = Path(__file__).with_name("nicknames_excluded.tsv")
-#: Why a pair was refused: two spellings of one name, a form of another
-#: language, a name of its own, two forms of one name neither made from
-#: the other (which would reach each other through that name, as pairs
-#: never chain), or a pair the review could not settle.
-#: The pairs found in ORCID's public data file (CC0) by
-#: tools/vocab/familiar_candidates.py, as two readers reviewed them, and
-#: the note of every reading drawn from it (decisions/name-matching,
-#: 2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN).
+#: The reviewed pairs, as two readers categorized them, and the note of
+#: every reading drawn from them (decisions/name-matching, 2026-11-12
+#: ALTERNATE SPELLINGS ARE OPT-IN and 2026-11-13 THE FAMILIAR FORMS FROM
+#: DATA ALONE).
 REVIEWED = Path(__file__).with_name("familiar_reviewed.tsv")
-REVIEWED_SOURCE = ("found in ORCID's public data file (CC0) and reviewed, "
+REVIEWED_SOURCE = ("found in CC0 or public-domain data and reviewed, "
                    "tools/vocab/familiar_reviewed.tsv")
 REVIEWED_HEADER = ["a", "b", "category", "status", "opus", "sonnet",
                    "reason", "languages", "source", "holders"]
@@ -114,165 +79,17 @@ REVIEW_CATEGORIES = frozenset({
     "familiar", "spelling", "translation", "transliteration",
     "different-name", "sibling", "unclear", "abbreviation", "split",
     "refused"})
-#: A row's status: empty where the two readers agreed, `decided` where
-#: the maintainer settled a pair they split or one the review held, its
-#: category the maintainer's, and `pending` for a split awaiting that
-#: decision, which ships nowhere.
+#: A row's status: empty where the two readers agreed or on a `split`
+#: nobody has settled, `decided` where the maintainer settled a pair
+#: they split or one the review held, its category the maintainer's,
+#: and `pending` marking a split queued for that decision; no split
+#: ships.
 REVIEW_STATUSES = frozenset({"", "decided", "pending"})
-#: Every source a reading's note may name, in the order a note names them.
-SOURCES = (NICKNAMES_SOURCE, REVIEWED_SOURCE)
-EXCLUSION_CATEGORIES = frozenset({
-    "spelling", "translation", "different-name", "sibling", "unclear"})
-
-def read_nicknames(text: str) -> list[tuple[str, str]]:
-    """The list's (name, nickname) rows, in file order, as written.
-    Raises ValueError unless the header is name1,relationship,name2,
-    every row three fields whose relationship is has_nickname, no row
-    repeats, and the body ends with a line break: Python's csv reads a
-    body cut inside a row as a short last row without raising."""
-    if not text.endswith("\n"):
-        raise ValueError("the nicknames list does not end with a line "
-                         "break; the file is cut")
-    rows = list(csv.reader(io.StringIO(text, newline="")))
-    if not rows or rows[0] != ["name1", "relationship", "name2"]:
-        raise ValueError(f"the nicknames list's header is "
-                         f"{rows[0] if rows else None}, not "
-                         f"name1,relationship,name2")
-    out = []
-    for number, row in enumerate(rows[1:], 2):
-        if len(row) != 3 or row[1] != "has_nickname":
-            raise ValueError(f"nicknames list line {number} is not "
-                             f"'name,has_nickname,nickname': {row!r}")
-        if not row[0] or not row[2]:
-            raise ValueError(f"nicknames list line {number} has an empty "
-                             f"name: {row!r}")
-        out.append((row[0], row[2]))
-    if len(set(out)) != len(out):
-        raise ValueError("the nicknames list repeats a row")
-    if not out:
-        raise ValueError("the nicknames list holds no row")
-    return out
-
-
-def _nicknames_path() -> Path:
-    return name_usage.cache_dir() / NICKNAMES_FILE
-
-
-def fetch_nicknames() -> Path:
-    """Download the pinned list into the cache, checked against
-    NICKNAMES_SHA256 before it is written."""
-    request = urllib.request.Request(
-        NICKNAMES_URL, headers={"User-Agent": name_usage.USER_AGENT})
-    with urllib.request.urlopen(request, timeout=120) as response:
-        data = response.read()
-    digest = hashlib.sha256(data).hexdigest()
-    if digest != NICKNAMES_SHA256:
-        raise SystemExit(f"{NICKNAMES_URL} has sha256 {digest}, not the "
-                         f"pinned {NICKNAMES_SHA256}")
-    path = _nicknames_path()
-    path.write_bytes(data)
-    return path
-
-
-def load_nicknames() -> list[tuple[str, str]]:
-    """The cached list's rows, its sha256 checked. Raises SystemExit
-    naming the command that caches it."""
-    path = _nicknames_path()
-    if not path.exists():
-        raise SystemExit(f"{path} is not cached; run `uv run python "
-                         f"tools/vocab/familiar.py --fetch`")
-    data = path.read_bytes()
-    digest = hashlib.sha256(data).hexdigest()
-    if digest != NICKNAMES_SHA256:
-        raise SystemExit(f"{path} has sha256 {digest}, not the pinned "
-                         f"{NICKNAMES_SHA256}; delete it and run "
-                         f"tools/vocab/familiar.py --fetch")
-    return read_nicknames(data.decode("utf-8"))
-
-
-def read_exclusions(text: str) -> dict[tuple[str, str], str]:
-    """The reviewed refusals, (full, nickname) -> category, from the
-    TSV's full, nickname, category and reason columns. Raises
-    ValueError for a header other than those four, a row of another
-    width, an unknown category, an empty reason, or a pair listed
-    twice."""
-    lines = text.split("\n")
-    if lines[0] != "full\tnickname\tcategory\treason":
-        raise ValueError(f"{NICKNAMES_EXCLUDED.name}: the header is "
-                         f"{lines[0]!r}, not full, nickname, category, "
-                         f"reason")
-    out: dict[tuple[str, str], str] = {}
-    for number, line in enumerate(lines[1:], 2):
-        if not line:
-            continue
-        fields = line.split("\t")
-        if len(fields) != 4:
-            raise ValueError(f"{NICKNAMES_EXCLUDED.name} line {number}: "
-                             f"not four tab-separated fields: {line!r}")
-        full, nickname, category, reason = fields
-        if category not in EXCLUSION_CATEGORIES:
-            raise ValueError(f"{NICKNAMES_EXCLUDED.name} line {number}: "
-                             f"{category!r} is not one of "
-                             f"{sorted(EXCLUSION_CATEGORIES)}")
-        if not reason.strip():
-            raise ValueError(f"{NICKNAMES_EXCLUDED.name} line {number}: "
-                             f"a refusal needs its reason")
-        if (full, nickname) in out:
-            raise ValueError(f"{NICKNAMES_EXCLUDED.name} line {number}: "
-                             f"{full} = {nickname} is listed twice")
-        out[(full, nickname)] = category
-    return out
-
-
-def load_exclusions() -> dict[tuple[str, str], str]:
-    return read_exclusions(NICKNAMES_EXCLUDED.read_text(encoding="utf-8"))
-
-
-#: familiar form -> the names the list pairs it with, every word
-#: normalized.
-Nicknames = dict[str, set[str]]
-
-
-def keep_nicknames(rows: Iterable[tuple[str, str]],
-                   excluded: Mapping[tuple[str, str], str]) -> Nicknames:
-    """The list's pairs less the refused ones, keyed by the nickname. A
-    refusal is of the pair, whichever way round, as the match reads a
-    pair either way. Raises ValueError for a refusal naming no row of
-    the list, which a new commit of the list would leave stale; for a
-    pair the list holds both ways round with one row refused and the
-    other not, which the review must settle; for a kept name that is
-    not letters alone (an initial, `k.c.`); and for a pair whose two
-    names normalize alike."""
-    rows = list(rows)
-    listed = set(rows)
-    stale_refusals = sorted(set(excluded) - listed)
-    if stale_refusals:
-        shown = ", ".join(f"{f} = {n}" for f, n in stale_refusals[:5])
-        raise ValueError(f"{NICKNAMES_EXCLUDED.name} refuses "
-                         f"{len(stale_refusals)} pairs the list does not "
-                         f"hold: {shown}")
-    halves = sorted((f, n) for f, n in excluded
-                    if (n, f) in listed and (n, f) not in excluded)
-    if halves:
-        shown = ", ".join(f"{f} = {n}" for f, n in halves[:5])
-        raise ValueError(f"{NICKNAMES_EXCLUDED.name} refuses {shown} but "
-                         f"not the list's row the other way round, which "
-                         f"the match reads as the same pair; refuse both "
-                         f"rows or neither")
-    out: Nicknames = {}
-    for full, nickname in rows:
-        if (full, nickname) in excluded:
-            continue
-        if not (full.isalpha() and nickname.isalpha()):
-            raise ValueError(f"{nickname} = {full}: a name of the list "
-                             f"that is not letters alone; refuse it in "
-                             f"{NICKNAMES_EXCLUDED.name}")
-        short, long = build._normalize(nickname), build._normalize(full)
-        if short == long:
-            raise ValueError(f"{nickname} = {full}: the two names "
-                             f"normalize alike")
-        out.setdefault(short, set()).add(long)
-    return out
+#: Where a reviewed pair was found, each a source the project may use:
+#: ORCID's public data file (CC0), the FEC's filings and Congress's
+#: legislators (public domain). Wikidata joins with its fetch tool
+#: (#1387).
+REVIEW_SOURCES = frozenset({"orcid", "fec", "congress"})
 
 
 def _toml_str(text: str) -> str:
@@ -281,39 +98,22 @@ def _toml_str(text: str) -> str:
 
 #: Each kind the tool writes and its list property.
 KINDS = {"familiar": "short_for", "spelling": "spelling_of"}
-#: word -> kind -> source note -> the names, as the tool writes a file.
-Words = Mapping[str, Mapping[str, Mapping[str, Iterable[str]]]]
+#: word -> kind -> the names, as the tool writes a file.
+Words = Mapping[str, Mapping[str, Iterable[str]]]
 
 
-def _note(sources: Iterable[str]) -> str:
-    """A note naming each source, in SOURCES' order."""
-    named = set(sources)
-    return "; ".join(s for s in SOURCES if s in named)
-
-
-def reading_line(names: Iterable[str] | Mapping[str, Iterable[str]],
-                 kind: str = "familiar") -> str:
-    """One reading: the union of `names` (by source, or the nicknames
-    list's alone), its note naming every source that gave a name."""
-    by_source = (names if isinstance(names, Mapping)
-                 else {NICKNAMES_SOURCE: names})
-    union = sorted({w for ws in by_source.values() for w in ws})
-    listed = ", ".join(_toml_str(w) for w in union)
+def reading_line(names: Iterable[str], kind: str = "familiar") -> str:
+    """One reading of `kind` listing `names`, its note REVIEWED_SOURCE."""
+    listed = ", ".join(_toml_str(w) for w in sorted(set(names)))
     return (f"{kind} = {{ {KINDS[kind]} = [{listed}], "
-            f"note = {_toml_str(_note(by_source))} }}")
-
-
-#: The notes the tool writes: each non-empty run of SOURCES in order.
-_OWNED_NOTES = frozenset(
-    "; ".join(s for i, s in enumerate(SOURCES) if mask >> i & 1)
-    for mask in range(1, 2 ** len(SOURCES)))
+            f"note = {_toml_str(REVIEWED_SOURCE)} }}")
 
 
 def _owned(line: str) -> bool:
-    """A familiar or spelling line the tool wrote: its note one it
-    writes, naming its sources and nothing else."""
-    return any(line.startswith(f"{kind} = {{") for kind in KINDS) and any(
-        line.endswith(f"note = {_toml_str(n)} }}") for n in _OWNED_NOTES)
+    """A familiar or spelling line the tool wrote: its note
+    REVIEWED_SOURCE and nothing else."""
+    return any(line.startswith(f"{kind} = {{") for kind in KINDS) and (
+        line.endswith(f"note = {_toml_str(REVIEWED_SOURCE)} }}"))
 
 
 def strip(text: str, name: str = "the file") -> str:
@@ -353,27 +153,14 @@ def _entry_lines(lines: list[str]) -> dict[str, int]:
     return out
 
 
-def _readings(value: Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]],
-              ) -> Mapping[str, Mapping[str, Iterable[str]]]:
-    """A word's readings, kind -> source -> names: a bare iterable of
-    names being the nicknames list's familiar form."""
-    if isinstance(value, Mapping):
-        return value
-    return {"familiar": {NICKNAMES_SOURCE: value}}
-
-
-def _lines(value: Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]],
-           ) -> list[str]:
-    readings = _readings(value)
+def _lines(readings: Mapping[str, Iterable[str]]) -> list[str]:
     return [reading_line(readings[k], k) for k in KINDS if k in readings]
 
 
 def rewrite(text: str | None,
-            words: Mapping[str, Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]]],
-            name: str) -> str | None:
+            words: Words, name: str) -> str | None:
     """`text` (None for a file that does not exist) with the readings of
-    `words` written in (each word -> kind -> source -> its names; a bare
-    iterable of names is the nicknames list's familiar form), or None
+    `words` written in (each word -> kind -> its names), or None
     where the file would hold nothing. Raises ValueError where a word
     holds a familiar or spelling reading the tool does not own."""
     base = strip(text, name) if text is not None else "schema = 1\n"
@@ -385,7 +172,7 @@ def rewrite(text: str | None,
     held = {e["text"]: e for e in tomllib.loads(base).get("word", [])}
     at = _entry_lines(lines)
     for word in sorted(words):
-        for kind in _readings(words[word]):
+        for kind in words[word]:
             if word in held and kind in held[word]:
                 raise ValueError(f"{name}: {word!r} holds a {kind} reading "
                                  f"tools/vocab/familiar.py does not own; "
@@ -397,7 +184,7 @@ def rewrite(text: str | None,
     # the build's word order (check 10): by kind, then by text, the
     # kinds the tool writes carrying no same_as
     new = sorted((w for w in words if w not in at), key=lambda w: (
-        min(build.KIND_ORDER[k] for k in _readings(words[w])), w))
+        min(build.KIND_ORDER[k] for k in words[w]), w))
     if new:
         lines += ["", BEGIN]
         for word in new:
@@ -414,7 +201,7 @@ def _read(path: Path) -> str | None:
 
 def read_reviewed(text: str) -> list[dict[str, str]]:
     """The reviewed pairs' rows. Raises ValueError for another header, a
-    row of another width, an unknown category or status, a pair listed
+    row of another width, an unknown category, status or source, a pair listed
     twice or written out of order, a pair whose two names normalize
     alike or are not normalized, a status that does not fit its
     category, and a shipping pair placed in no file."""
@@ -450,6 +237,10 @@ def read_reviewed(text: str) -> list[dict[str, str]]:
         if pair in seen or (out and (out[-1]["a"], out[-1]["b"]) > pair):
             raise ValueError(f"{REVIEWED.name} line {number}: {pair} is "
                              f"listed twice or out of order")
+        if r["source"] not in REVIEW_SOURCES:
+            raise ValueError(f"{REVIEWED.name} line {number}: source "
+                             f"{r['source']!r} is not one of "
+                             f"{sorted(REVIEW_SOURCES)}")
         if r["category"] in KINDS and not r["languages"].split():
             raise ValueError(f"{REVIEWED.name} line {number}: a "
                              f"{r['category']} pair needs a file")
@@ -463,28 +254,24 @@ def load_reviewed() -> list[dict[str, str]]:
 
 
 #: tag -> the words its file holds, as the tool writes them.
-Placements = dict[str, dict[str, dict[str, dict[str, set[str]]]]]
+Placements = dict[str, dict[str, dict[str, set[str]]]]
 
 
-def place(nicknames: Nicknames,
-          reviewed: Iterable[Mapping[str, str]] = ()) -> Placements:
-    """Every reading the tool writes, by file: the nicknames list's
-    familiar forms in NICKNAMES_TAG's file, and each reviewed pair the
+def place(reviewed: Iterable[Mapping[str, str]]) -> Placements:
+    """Every reading the tool writes, by file: each reviewed pair the
     two readers agreed on or the maintainer decided, in the file of each
     language its row names, save a spelling the match's fold already
     reads `folded` (`Łukasz` / `Lukasz`, `Jürgen` / `Juergen`). A
-    familiar pair is written on its shorter name,
-    the familiar form, then the first in order; a spelling on the second
-    in order, listing the first, a link the match reads either way."""
+    familiar pair is written on its shorter name by length, then the
+    first in order, which is not always the familiar form (`charles` /
+    `charlie`, `josé` / `pepe`); a spelling on the second in order,
+    listing the first. The match reads either link both ways."""
     out: Placements = {}
 
-    def put(tag: str, word: str, kind: str, src: str, name: str) -> None:
-        (out.setdefault(tag, {}).setdefault(word, {}).setdefault(kind, {})
-            .setdefault(src, set()).add(name))
+    def put(tag: str, word: str, kind: str, name: str) -> None:
+        (out.setdefault(tag, {}).setdefault(word, {})
+            .setdefault(kind, set()).add(name))
 
-    for short, longs in nicknames.items():
-        for long in longs:
-            put(NICKNAMES_TAG, short, "familiar", NICKNAMES_SOURCE, long)
     from nameparser._match import _forms
     for r in reviewed:
         if r["category"] not in KINDS:
@@ -501,7 +288,7 @@ def place(nicknames: Nicknames,
         else:
             word, name = b, a
         for tag in r["languages"].split():
-            put(tag, word, r["category"], REVIEWED_SOURCE, name)
+            put(tag, word, r["category"], name)
     return out
 
 
@@ -525,11 +312,8 @@ def stale(placements: Placements, vocab: Path = VOCAB) -> list[Path]:
 
 
 def source() -> Placements:
-    """Both sources' readings, by file: the nicknames list's pairs kept,
-    read from the cache, and the reviewed pairs committed beside this
-    tool."""
-    return place(keep_nicknames(load_nicknames(), load_exclusions()),
-                 load_reviewed())
+    """The reviewed pairs' readings, by file."""
+    return place(load_reviewed())
 
 
 def _shown(path: Path) -> str:
@@ -540,18 +324,12 @@ def _shown(path: Path) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--fetch", action="store_true",
-                      help="download the pinned nicknames list into the "
-                           "cache")
     mode.add_argument("--write", action="store_true",
                       help="rewrite the vocabulary files")
     mode.add_argument("--check", action="store_true",
                       help="exit 1 if a file differs from what the tool "
                            "writes")
     args = parser.parse_args(argv)
-    if args.fetch:
-        print(f"cached {fetch_nicknames()}", file=sys.stderr)
-        return 0
     placements = source()
     if args.check:
         files = stale(placements, VOCAB)

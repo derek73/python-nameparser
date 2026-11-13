@@ -310,9 +310,10 @@ with another.
 ones the vocabulary lists it under: ``Max`` for Maximilian and
 Maxwell, ``Bill`` for William, ``Peggy`` for Margaret. It is read in the
 given name, middle name and nickname, never the family name. A pair
-is read whichever way the vocabulary wrote it, since its sources do
-not always write the shorter name first (``Barbara`` / ``Babs``), but
-never chained, so two longer names paired with one short name do not
+is read whichever way the vocabulary wrote it, since the vocabulary
+writes a pair on its shorter name, which is not always the familiar
+form (``Charles`` / ``Charlie``), and a caller may write one either
+way round, but never chained, so two longer names paired with one short name do not
 agree with each other. The keys follow: a name is keyed by the first
 letters of the names it is paired with too, so ``Bill Smith`` meets
 ``William Smith`` in a group:
@@ -330,33 +331,30 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms, 2,845 pairs (counted 2026-11-12), come
-from two sources. Old Dominion University's nicknames list (Apache
-License 2.0), a lookup of English given names' nicknames and
-diminutives (``Ricky`` / ``Richard``, ``Peggy`` / ``Margaret``), is in
-the English file, less the pairs a review refused as another
-language's form (``Ivan`` / ``John``), another name (``Erin`` /
-``Aaron``) or two forms of one name neither made from the other
-(``Lisa`` / ``Liz``). The rest, in many languages (``Kasia`` /
-``Katarzyna``, ``Kostas`` / ``Konstantinos``, ``Seun`` /
-``Oluwaseun``), are pairs ORCID's researchers wrote for themselves both
-ways, in the given-name box and in a published name, each read by two
-reviewers, in the file of the languages written where their holders
-work. A plain choice of languages keeps every file's pairs, and a
-strict one keeps its own files' and the shared ones. A pair whose short name
-reads as a title in front of a name (``Ab``, ``Nanny``) is never
-compared as a given name, so it stays inert while the title reading
-stands. It is a selection and has gaps (``Rickie`` /
-``Richard`` and ``Sepp`` / ``Josef`` are not in it); add your own with a
-``familiar`` reading,
-which extends the names the word's shipped readings list (to replace
-them, ``remove(word, kind="familiar")`` first):
+The shipped familiar forms, 1,059 pairs (counted 2026-11-13), are
+pairs people wrote both ways for themselves, each read by two
+reviewers: mostly ORCID's researchers, who wrote one in the given-name
+box and the other in a published name, in many languages (``Peggy`` /
+``Margaret``, ``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``,
+``Kostas`` / ``Konstantinos``, ``Seun`` / ``Oluwaseun``), and a few
+common English ones that US political donors and members of Congress
+gave as their nicknames (``Betty`` / ``Elizabeth``). Each is in the
+file of the languages written where its holders work. A plain choice of
+languages keeps every file's pairs, and a strict one keeps its own
+files' and the shared ones. A pair whose short name reads as a title in
+front of a name is never compared as a given name, so it stays inert
+while the title reading stands. It is a selection and has gaps, among
+them common English pairs researchers rarely publish under (``Kathy`` /
+``Catherine``, ``Lisa`` / ``Melissa``, ``Jeff`` / ``Geoffrey``) and
+``Sepp`` / ``Josef``; add your own with a ``familiar`` reading, which
+extends the names the word's shipped readings list (to replace them,
+``remove(word, kind="familiar")`` first):
 
 .. doctest::
 
-    >>> rickie = Lexicon.default().add("rickie", kind="familiar", short_for=["richard"])
-    >>> mine = Parser(lexicon=rickie).matching(accept=matcher.accept | {"familiar-form"})
-    >>> mine.check("Rickie Smith", "Richard Smith").consistent, mine.check("Rickie Smith", "Roderick Smith").consistent
+    >>> kathy = Lexicon.default().add("kathy", kind="familiar", short_for=["catherine"])
+    >>> mine = Parser(lexicon=kathy).matching(accept=matcher.accept | {"familiar-form"})
+    >>> mine.check("Kathy Smith", "Catherine Smith").consistent, mine.check("Kathy Smith", "Katherine Smith").consistent
     (True, True)
 
 ``alternate-spelling`` reads two given names as one name spelled two
@@ -364,7 +362,7 @@ ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
 ``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. It
 is read as a familiar form is, in the same roles, either way round and
 never chained, and the keys follow it where it is accepted. The same
-review as the familiar forms gives its 429 pairs (counted 2026-11-12),
+review as the familiar forms gives its 320 pairs (counted 2026-11-13),
 each called a spelling of one name by both reviewers or by the
 maintainer where they split, less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``
