@@ -84,6 +84,12 @@
 
 **Accepted:**
 
+- A listed salutation behind a credential is a name word behind it, so it reads as the family name, not as a title, in a name of a script with no case as in a Title-case Latin one; behind a generation word written with its period it stays the title.
+  ```
+  "ჯეკ ბერიძე MA ბატონი"  →  family="ბატონი"
+  "Jack Smith MA Mr"      →  family="Mr"
+  "ჯეკ ბერიძე Jr. ბატონი"  →  title="ბატონი"  · boundary
+  ```
 - Under the family-first orders the clause holds as written, so the word behind the generation word reads as a middle or given name, where the same name after a family comma reads it as the suffix; the filers' boxes that ground the clause are given-first, and no order is asked.
   ```
   "Smith John Jr. Jones"  family-first  →  middle="Jr. Jones"

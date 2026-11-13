@@ -177,6 +177,7 @@ Entry conventions:
 - [review-agent-single-source — the review axes live in one file](review-agent-single-source.md)
 - [rules-size-record — rule sizes are a report, not a record](rules-size-record.md)
 - [salutation-titles — salutations, offices and ranks for the languages TITLES had none for (2026-10-04, #606)](salutation-titles.md)
+- [script-properties — one private table of what a script's writing does (#1256)](script-properties.md)
 - [script-table-placement — a recorded reversal](script-table-placement.md)
 - [shipped-data-licences — the licences of the data the package ships](shipped-data-licences.md)
 - [suffix-acronym-collisions — the trailing-position collision class, decided (2026-09-07, #342/#454)](suffix-acronym-collisions.md)

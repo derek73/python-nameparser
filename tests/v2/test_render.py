@@ -996,10 +996,26 @@ def test_georgian_in_mtavruli_repairs_to_mkhedruli() -> None:
             assert _repairs(text, force) == repaired, (text, force)
     assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").initials() == "Ნ. Ბ."
     assert parse("ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ").capitalized().initials() == "ნ. ბ."
-    # a Mtavruli first letter on Mkhedruli is mixed case: kept as
-    # written on the default path (rules/R5), repaired under force
-    assert _repairs("Ნინო Ბურჯანაძე", False) == "Ნინო Ბურჯანაძე"
-    assert _repairs("Ნინო Ბურჯანაძე", True) == "ნინო ბურჯანაძე"
+    # MOVED deliberately by #1222 (decisions/R4's 2026-11-12 entry):
+    # this test pinned the first row as kept on the default path. A
+    # Mtavruli first letter on Mkhedruli (the Latin habit), and a
+    # Mtavruli surname beside a Mkhedruli given name (emphasis), are no
+    # case contrast, Georgian having no case (rules/R5's Accepted
+    # bullet): written in Mkhedruli on the default path as under force,
+    # where 1.4.0 through 3.0.1 kept both as written. A Latin surname in
+    # capitals in a name of mixed case is kept (the last line)
+    for text, repaired in (("Ნინო Ბურჯანაძე", "ნინო ბურჯანაძე"),
+                           ("ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "ნინო ბურჯანაძე")):
+        for force in (False, True):
+            assert _repairs(text, force) == repaired, (text, force)
+    # beside a Latin word in capitals the name is in one case, as an
+    # Arabic one is, so the Latin word repairs; a Latin Title-case word
+    # keeps the contrast its own letters make
+    assert _repairs("محمد MA", False) == "محمد Ma"
+    assert _repairs("ჯეკ MA", False) == "ჯეკ Ma"
+    assert _repairs("ნინო SMITH", False) == "ნინო Smith"
+    assert _repairs("Jean DUPONT", False) == "Jean DUPONT"
+    assert _repairs("ნინო Smith", False) == "ნინო Smith"
     assert _repairs("İSTANBUL SMITH", False) == "İstanbul Smith"
     # the other cased scripts the repair reaches keep their title case
     assert _repairs("ΟΔΥΣΣΕΑΣ ΕΛΥΤΗΣ", False) == "Οδυσσεας Ελυτης"

@@ -164,7 +164,7 @@ LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ga": "GA", "gd": "GD", "pt": "PT_BR", "es": "ES",
                 # hi_Latn is the romanized Hindi the pack's Latin readings are for
                 "hi": "HI", "hi_Latn": "HI", "bn": "BN", "vi": "VI",
-                "mn": "MN"}
+                "mn": "MN", "ar": "AR", "he": "HE"}
 #: Packs with no CLDR file to measure them on. CLDR's pt is Brazilian,
 #: read with PT_BR, which chooses PT's language and more; CLDR 48 has no
 #: pt_PT names file, and no es_AR one (its es is read with ES).

@@ -11,7 +11,8 @@ import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Literal
 
 from nameparser._types import (
     ADDED_IN, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Role,
@@ -98,7 +99,8 @@ class Script(StrEnum):
     #: caller's or a pack's script_orders entry can, as locales.MN's
     #: does, licensed by the caller's choice of that pack (#1237). Not
     #: among the scripts the interpunct and the two-family-names count
-    #: read (_EAST_ASIAN_SCRIPTS), and no initial veto (_NO_INITIALS):
+    #: read (_EAST_ASIAN_SCRIPTS), and has no row in _SCRIPT_PROPERTIES, so
+    #: writes initials:
     #: Cyrillic names abbreviate.
     CYRILLIC = "cyrillic"
 
@@ -235,40 +237,6 @@ _EAST_ASIAN_SCRIPTS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
 #: quantify over this one union (HANGUL simply omitted).
 _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 
-#: Scripts whose characters cannot BE an initial. The criterion is
-#: orthographic CONVENTION, not what a character is: does the writing
-#: tradition abbreviate a given name to ONE character plus a period,
-#: the way "J." stands in for "John"? Han, hangul and kana have no
-#: such convention, so a lone punctuated 씨/様/김 is not a shortened
-#: name and the veto has nothing to veto there. Do not restate that
-#: phonologically ("letters, not syllables") -- Devanagari is an
-#: abugida and Arabic an abjad, neither has letters in that sense, and
-#: both abbreviate, so should Script.CYRILLIC or Script.DEVANAGARI
-#: ever be added neither belongs here; their initials are real and
-#: pinned as such ("А. С. Пушкин", "م. الفارسي").
-#:
-#: Enumerated rather than derived from _SCRIPT_RANGES' keys: the
-#: Script enum admits a member so that SOME behavior may key on it
-#: (see Script), on assorted grounds -- KATAKANA is in it so the
-#: classifier can name what it deliberately declines, and neither
-#: DEFAULT_SCRIPT_ORDERS nor segment_scripts' default mentions it.
-#: Membership therefore settles nothing about abbreviation: the four
-#: coinciding today is what has been implemented, not a property of
-#: the enum, and a new member must not inherit this answer.
-#:
-#: Decide it from CLDR rather than from the script's typology: count
-#: the LOCALE-AUTHORED namePattern entries in common/main/<locale>.xml's
-#: personNames block that produce an initial. ja and ko author 29 and
-#: 32 patterns and use one in none of them; ru uses initials in 7 of 39
-#: ("{given-initial} {given2-initial} {surname}"); zh abbreviates but
-#: overrides initialPattern to "{0}", no period, which is why the
-#: period is part of the test above. Do NOT read initialPattern alone
-#: -- root defaults it to "{0}." and nearly every locale inherits it,
-#: so it reports a period convention for locales that have none.
-#: Measured 2026-08-02: th is 0 of 20, so Thai (#317) belongs here
-#: once it earns a member.
-_NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
-                Script.KATAKANA)
 
 
 def _letter_units(text: str) -> list[int]:
@@ -329,12 +297,30 @@ def _script_matcher(*scripts: Script,
     patterns)."""
     if not scripts:
         raise ValueError("_script_matcher needs at least one Script")
-    cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
-                  for script in scripts
-                  for lo, hi in _SCRIPT_RANGES[script])
+    return _ranges_matcher(tuple(span for script in scripts
+                                 for span in _SCRIPT_RANGES[script]),
+                           whole=whole)
+
+
+def _ranges_pattern(ranges: Iterable[tuple[int, int]]) -> re.Pattern[str]:
+    """One or more characters of the union of `ranges`, compiled: the
+    pattern _ranges_matcher wraps, and the one a caller searches at C
+    level where a frame per call matters (_vocab's spelled-initial
+    veto)."""
+    cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}" for lo, hi in ranges)
+    if not cls:
+        raise ValueError("_ranges_pattern needs at least one range")
+    return re.compile(f"[{cls}]+")
+
+
+def _ranges_matcher(ranges: Iterable[tuple[int, int]],
+                    whole: bool = False) -> Callable[[str], bool]:
+    """_script_matcher over codepoint spans rather than Script members:
+    the form the script-property table (_SCRIPT_PROPERTIES) is read
+    in, its rows not being keyed by Script."""
     # one pattern serves both modes: fullmatch of [cls]+ is wholly-of,
     # and search over [cls]+ is exactly contains-any
-    pattern = re.compile(f"[{cls}]+")
+    pattern = _ranges_pattern(ranges)
     match = pattern.fullmatch if whole else pattern.search
 
     def matcher(text: str) -> bool:
@@ -347,6 +333,177 @@ def _script_matcher(*scripts: Script,
 #: two-family-names declaration's run count (_locale) both ask, defined
 #: once here because _locale may not import the pipeline (#1087).
 _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
+
+
+# ---------------------------------------------------------------------
+# The script-property table (#1256). Every rule that asks one of four
+# questions about a script's writing -- whether it has case for the
+# name-case contrast, whether it writes initials, whether it writes
+# period abbreviations, whether a bare run of its letters with a period
+# is a Latin initial spelled out -- reads its answer here, and nowhere
+# else (other script facts, the order a script settles or the marks a
+# Thai name writes, live with their rules), so that adding a script is one
+# row and a misjudged answer sits in one place. Private, and keyed by
+# a private name rather than by Script: that enum holds what a caller
+# can key a setting on, and membership there settles nothing about
+# case or initials. mechanisms.md#SCRIPT-PROPERTY-TABLE ("a reader selects the spans of the column that is ITS question")
+# names the pattern. Each answer is a writing CONVENTION, never the
+# script's typology: Devanagari is an abugida and Arabic an abjad,
+# and both abbreviate a name to a letter and a period ("म. गांधी",
+# "م. الفارسي"), as Cyrillic does ("А. С. Пушкин"). decisions/script-properties holds each row's
+# history and the recompute recipes.
+#
+# The CLDR recipe, how "writes initials" is decided where a locale
+# states it: count the LOCALE-AUTHORED namePattern entries in
+# common/main/<locale>.xml's personNames block (a pattern whose text
+# is the inheritance marker ↑↑↑ is not authored) that produce an
+# initial ("-initial" in the pattern). ja and ko author 29 and 32 and
+# use one in none; ru uses one in 7 of 39 ("{given-initial}
+# {given2-initial} {surname}"). Then read the locale's own
+# initialPattern: zh counts 6 of 40 but overrides it to "{0}", no
+# period, so its "initial" is the whole character and Han writes none.
+# Do NOT read initialPattern alone: root defaults it to "{0}." and
+# nearly every locale inherits it. And before counting, check that the
+# block is the locale's own: compare each authored pattern with
+# en.xml's for the same order, length, usage and formality, after
+# removing spaces and every comma (",", "၊", "、", "，") from both; a
+# block equal to en's in every pattern is a copy, and states nothing
+# about the locale (my's, 42 of 42 on 2026-11-12). A block equal in
+# most is not: ru's is equal in 36 of 39 and is Russian's own, short
+# patterns being written alike in most locales (counts measured
+# 2026-11-12 on cldr main c0b65ae3; decisions/script-properties).
+
+@dataclass(frozen=True, slots=True)
+class _ScriptRow:
+    """One script's answers. `has_case` False: the name-case contrast
+    reads no case in it, though Unicode gives it one; None: Unicode's
+    case properties answer (a letter whose upper and lower case differ
+    has case). `writes_initials`: a letter of it with a period can
+    stand in for a name (rules/T5, R7). `period_abbreviations`: a run
+    of its letters with a period may be an abbreviation, and so a title
+    by shape (rules/H2). `spells_initials`: a bare run of its letters
+    with a period is a Latin initial spelled out (एम. for M.), never a
+    title by shape (rules/H2's Brahmic Except). `reason` and `source`
+    say why, in one line each."""
+
+    ranges: tuple[tuple[int, int], ...]
+    has_case: Literal[False] | None
+    writes_initials: bool
+    period_abbreviations: bool
+    spells_initials: bool
+    reason: str
+    source: str
+
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+
+_SCRIPT_PROPERTIES: Mapping[str, _ScriptRow] = MappingProxyType({
+    "han": _ScriptRow(
+        _SCRIPT_RANGES[Script.HAN], None, False, False, False,
+        "no Chinese or Japanese writer shortens a name to one character "
+        "and a period, nor any word to a run of characters with one",
+        "CLDR zh's initialPattern is {0}, no period, and ja uses an "
+        "initial in 0 of 29 patterns (2026-08-02 and 2026-11-12; #320, "
+        "#323)"),
+    "hangul": _ScriptRow(
+        _SCRIPT_RANGES[Script.HANGUL], None, False, False, False,
+        "no Korean writer shortens a name or a word to a letter and a "
+        "period; the conjoining jamo a decomposed syllable is written in "
+        "are Hangul too",
+        "CLDR ko uses an initial in 0 of 32 patterns (2026-08-02 and "
+        "2026-11-12; #320, #1087)"),
+    "hiragana": _ScriptRow(
+        _SCRIPT_RANGES[Script.HIRAGANA], None, False, False, False,
+        "no Japanese writer shortens a name or a word to a kana and a "
+        "period",
+        "CLDR ja uses an initial in 0 of 29 patterns (2026-08-02 and "
+        "2026-11-12; #320)"),
+    "katakana": _ScriptRow(
+        _SCRIPT_RANGES[Script.KATAKANA], None, False, False, False,
+        "no Japanese writer shortens a name or a word to a kana and a "
+        "period",
+        "CLDR ja uses an initial in 0 of 29 patterns (2026-08-02 and "
+        "2026-11-12; #320)"),
+    "brahmic": _ScriptRow(
+        ((0x0900, 0x0DFF),), None, True, True, True,
+        "the ten Brahmic scripts from Devanagari to Sinhala write "
+        "initials, and spell a Latin one out by its sound with no vowel "
+        "sign (एम. for M.), a run of letters the title shape misreads",
+        "rules/H2's Brahmic Except, decisions/H2 (#1191)"),
+    "georgian": _ScriptRow(
+        ((0x10D0, 0x10FF), (0x1C90, 0x1CBF)), False, True, True, False,
+        "Mkhedruli has no capitals in use; Mtavruli, its upper case since "
+        "Unicode 11, is written only for a whole word in capitals, so no "
+        "letter's case is a choice made against the rest of the name, and "
+        "a name in Mtavruli repairs to Mkhedruli (rules/R4). The "
+        "ecclesiastical Asomtavruli and Nuskhuri, a pair that does write "
+        "initial capitals, are not in the row",
+        "#1222 (the contrast), #1223 (case repair); CLDR ka uses an "
+        "initial in 1 of 15 authored patterns (2026-11-12)"),
+    "myanmar": _ScriptRow(
+        ((0x1000, 0x109F), (0xA9E0, 0xA9FF), (0xAA60, 0xAA7F),
+         (0x116D0, 0x116FF)), None, False, True, False,
+        "no Burmese writer shortens a name to a letter and a period in "
+        "Burmese script (none in 2,604 Wikidata labels, #1234); whether "
+        "it writes period abbreviations is not decided, and reads as before",
+        "decided 2026-11-12 on #1256, by amendment, from the convention; "
+        "CLDR my's patterns are en's, equal in 42 of 42 by the copy test "
+        "(cldr main c0b65ae3, 2026-11-12), so the recipe does not answer"),
+    "thai": _ScriptRow(
+        ((0x0E00, 0x0E7F),), None, False, True, False,
+        "no Thai name is abbreviated to a letter and a period, but a title "
+        "is written short with periods between its consonants (ดร., "
+        "ร.ต.อ.), so it writes period abbreviations",
+        "CLDR th uses an initial in 0 of 20 authored patterns, a block of "
+        "its own (12 of 20 equal to en's by the copy test; 2026-08-02 "
+        "#320, re-run 2026-11-12, #1256)"),
+})
+
+
+def _ranges_where(column: str, value: object) -> tuple[tuple[int, int], ...]:
+    """Every span of the rows whose `column` holds `value`, in table
+    order: the one way a reader selects rows."""
+    return tuple(span for row in _SCRIPT_PROPERTIES.values()
+                 if getattr(row, column) == value for span in row.ranges)
+
+
+def _read_spans(column: str, value: object) -> tuple[tuple[int, int], ...]:
+    """`_ranges_where`, for a column a reader is built from at import:
+    no row selected would build a reader that matches nothing, so the
+    import fails naming the column and the fix."""
+    spans = _ranges_where(column, value)
+    if not spans:
+        raise ValueError(
+            f"no row of _policy._SCRIPT_PROPERTIES has {column}={value!r}, "
+            f"so the readers of that column would match nothing: add the "
+            f"row that answers it, or drop the readers")
+    return spans
+
+
+#: The scripts that write no initials (rules/T5, R7), as spans: read
+#: by _vocab's initial veto, _render's initials() and the name match.
+_NO_INITIAL_RANGES = _read_spans("writes_initials", False)
+#: The scripts that write no period abbreviation, so a word of theirs
+#: wearing a period is never a title by shape (rules/H2, #323).
+_NO_ABBREVIATION_RANGES = _read_spans("period_abbreviations", False)
+#: The scripts in which a bare run of letters with a period is a
+#: spelled Latin initial (rules/H2's Brahmic Except, #1191).
+_SPELLED_INITIAL_RANGES = _read_spans("spells_initials", True)
+#: The letters the name-case contrast reads no case in (rules/S6's "a
+#: script with no case to write in"), mapped to None so that
+#: `str.translate` drops them at C level before a contrast is read:
+#: _vocab.is_one_case, _vocab.ambiguous_lean, _render's R5 gate and
+#: S8's name word behind a credential (two predicates in _pieces); and
+#: _render._capitalize writes a first letter in it in its lower case (R4).
+#: Only the letters Unicode gives a case are listed, the others being
+#: caseless to the comparison already. Read-only, as the table is: the
+#: one sanctioned mutable global is the default parser (AGENTS.md).
+_CASELESS_LETTERS: Mapping[int, None] = MappingProxyType({
+    cp: None
+    for lo, hi in _read_spans("has_case", False)
+    for cp in range(lo, hi + 1)
+    if chr(cp).upper() != chr(cp).lower()})
 
 
 # Order-spec constants (#270), defined in _types beside Role since

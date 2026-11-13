@@ -117,11 +117,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "mn", "ne", "pt",
-        "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
+        "ne", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -147,6 +147,87 @@ def test_ne_pack_contents() -> None:
                                 languages=frozenset({"ne"}))
     assert changed_words(selected(locales.NE.languages)) == {
         "guru", "गुरु", "श्री"}
+
+
+def test_ar_and_he_packs_are_their_choice_alone() -> None:
+    # #1257: each turns on `ben`'s clan reading, written default = false;
+    # ar's choice also drops en's credential ABD for abd's bound given name
+    import pickle
+    from nameparser._reading_index import changed_words, selected
+    for code, pack, words in (("ar", locales.AR, {"abd", "ben"}),
+                              ("he", locales.HE, {"ben"})):
+        assert pack == Locale(code=code, lexicon=Lexicon.empty(),
+                              languages=frozenset({code}))
+        assert changed_words(selected(pack.languages)) == words
+        assert pickle.loads(pickle.dumps(pack)) == pack
+        parser = parser_for(pack)
+        name = pickle.loads(pickle.dumps(parser)).parse("Karim Ben Haddad")
+        assert (name.middle, name.family) == ("", "Ben Haddad")
+
+
+@pytest.mark.parametrize("code, text, repaired", [
+    # #1257: each particle keeps the capital its family names are written
+    # with (its `cased` mask), where without one case repair would
+    # lowercase it as a particle: lower case, Title case and capitals,
+    # by default and under the packs that turn ben on
+    (None, "youssef ait haddou", "Youssef Ait Haddou"),
+    (None, "YOUSSEF AIT HADDOU", "Youssef Ait Haddou"),
+    (None, "Youssef Ait Haddou", "Youssef Ait Haddou"),
+    (None, "KARIM AÏT HADDOU", "Karim Aït Haddou"),
+    (None, "leila nait haddou", "Leila Nait Haddou"),
+    (None, "AHMED OULD HADDOU", "Ahmed Ould Haddou"),
+    (None, "karim ouled haddou", "Karim Ouled Haddou"),
+    (None, "karim ben haddad", "Karim Ben Haddad"),
+    ("ar", "karim ben haddad", "Karim Ben Haddad"),
+    ("ar", "KARIM BEN HADDAD", "Karim Ben Haddad"),
+    ("ar", "Karim Ben Haddad", "Karim Ben Haddad"),
+    ("he", "YAEL BEN ARIEH", "Yael Ben Arieh"),
+    ("he", "yael ben arieh", "Yael Ben Arieh"),
+    ("ar", "youssef ait haddou", "Youssef Ait Haddou"),
+    (None, "SARA EL HADDOU", "Sara El Haddou"),
+    ("ar", "SARA EL HADDOU", "Sara El Haddou"),
+    ("ar", "sara el haddou", "Sara El Haddou"),
+])
+def test_a_maghrebi_particle_keeps_its_capital(
+        code: str | None, text: str, repaired: str) -> None:
+    parser = parser_for(locales.get(code)) if code else Parser()
+    name = parser.parse(text)
+    assert str(parser.capitalized(name)) == repaired
+    assert str(name.capitalized(parser.lexicon, force=True)) == repaired
+
+
+def test_ould_fills_the_patronymic_view_and_hebrew_ben_does_not() -> None:
+    # #1257, the patronymic view: `ould` is a patronymic, filling it even in
+    # an Algerian fixed surname (the accepted cost of the kind); Hebrew
+    # `בן` is a clan particle, which fills none where an Arab name
+    # transcribed in Hebrew uses it for the father (the other one)
+    assert parse("Ahmed Ould Haddou").patronymic == "Ould Haddou"
+    assert parse("Karim Ould Haddou").patronymic == "Ould Haddou"
+    assert parse("Karim Ouled Haddou").patronymic == ""
+    assert parse("יעל בן חיים").family == "בן חיים"
+    assert parse("יעל בן חיים").patronymic == ""
+    assert parse("סאמר בן חליל אל חלבי").patronymic == ""
+    # the Latin ben, the same kind, fills none under either pack
+    for pack in (locales.AR, locales.HE):
+        assert parser_for(pack).parse("Karim Ben Haddad").patronymic == ""
+
+
+@pytest.mark.parametrize("code, a, b", [
+    (None, "Youssef Ait Haddou", "Haddou, Youssef Ait"),
+    (None, "Youssef Ait Haddou", "AIT HADDOU, YOUSSEF"),
+    (None, "Ahmed Ould Haddou", "Ould Haddou, Ahmed"),
+    (None, "סאמי אבו חליל", "אבו חליל, סאמי"),
+    (None, "בן כהן", "כהן, בן"),
+    ("ar", "Karim Ben Haddad", "Ben Haddad, Karim"),
+    ("he", "Yael Ben Arieh", "Ben Arieh, Yael"),
+])
+def test_a_maghrebi_or_hebrew_particle_matches_its_comma_form(
+        code: str | None, a: str, b: str) -> None:
+    parser = parser_for(locales.get(code)) if code else Parser()
+    matching = parser.matching()
+    for left, right in ((a, b), (b, a)):
+        result = matching.check(left, right)
+        assert result.consistent and result.weakest in ("same", "folded")
 
 
 @pytest.mark.parametrize("text", [
@@ -1784,6 +1865,21 @@ _ROTATORS["hr"] = [
     "Ivan Horvat ml.",               # ml
     "Ivan Horvat st.",               # st
 ]
+# ar and he (#1257): ben mid-name, in each case and after a family comma;
+# ar also the credential ABD its choice drops for abd's bound given name
+_ROTATORS["ar"] = [
+    "Karim Ben Haddad",              # ben
+    "KARIM BEN HADDAD",              # ben, in one case
+    "karim ben haddad",              # ben, lower case
+    "Haddad, Karim Ben",             # ben ending the given part
+    "Jane Smith, ABD",               # abd, the credential leaving
+    "Jane Smith ABD",                # abd ending the name
+]
+_ROTATORS["he"] = [
+    "Yael Ben Arieh",                # ben
+    "YAEL BEN ARIEH",                # ben, in one case
+    "Arieh, Yael Ben",               # ben ending the given part
+]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
 # one where it ends the given part after a family comma (rules/H8) or
@@ -2953,8 +3049,8 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     # conjunctions need the same single-letter carve-out headroom (enough
     # rootname pieces), so pinned with the 6-piece shape the и row uses
     ("الأستاذ و الدكتور طارق حسن السيد", "title", "الأستاذ و الدكتور"),
-    # Hebrew patronymic prefixes: same non-leading chain-onto-family
-    # behavior.
+    # Hebrew particles: same non-leading chain-onto-family behavior,
+    # בת a patronymic, בן a clan particle since #1257.
     ("דוד בן גוריון", "family", "בן גוריון"),
     ("שרה בת אברהם", "family", "בת אברהם"),
     # Hebrew "מר" title (plain title, not GIVEN_NAME_TITLES -- like

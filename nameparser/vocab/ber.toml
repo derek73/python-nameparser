@@ -1,0 +1,34 @@
+schema = 1
+
+# Berber (Amazigh) languages, ISO 639-5 `ber`: the words of Amazigh
+# family names as Moroccan and Algerian records write them in Latin
+# script, whichever of Tachelhit, Tamazight, Tarifit or Kabyle the name
+# comes from (#1249, #1257).
+
+[[word]]
+text = "ait"
+[word.clan]
+may_be_given = false
+cased = "Ait"
+issue = [1249, 1257]
+expands = "the people of: \"Ait Taleb\", \"Ait Ahmed\""
+note = "A family-name prefix, never a given name where it opens a name: of ORCID's 24,990,909 people, 17 given boxes open with it and 2 hold it alone, against 1,194 family boxes holding it (MA 322, DZ 114); no US Census or SSA listing; Wikidata 5 given, 10 family (2026-11-12). Read as a never-given particle it moves ORCID's MA, DZ and FR records 349 fixed to 16 broken at #1257's head (15 before el) and PSC's Moroccan, Algerian and French filers 73 to 5, every ORCID break a name its filer typed family first in the given box, which rules/P1's fold reads whole (AIT HADDOU Karim). Family boxes write it Ait 203 times, ait once"
+
+[[word]]
+text = "aït"
+[word.clan]
+may_be_given = false
+cased = "Aït"
+issue = [1249, 1257]
+same_as = "ait"
+expands = "the people of, written with the diaeresis: \"Aït Ahmed\""
+note = "as ait; ORCID given boxes 2, family boxes 21, Wikidata 6 family (2026-11-12)"
+
+[[word]]
+text = "nait"
+[word.clan]
+may_be_given = false
+cased = "Nait"
+issue = [1249, 1257]
+expands = "of the people of, n + ait: \"Nait Ali\""
+note = "as ait; ORCID given boxes 13 (one opening it), family boxes 96 (DZ 19, MA 15), no US Census, SSA or Wikidata listing (2026-11-12)"

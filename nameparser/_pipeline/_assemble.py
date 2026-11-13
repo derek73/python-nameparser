@@ -592,7 +592,7 @@ def assemble(state: ParseState) -> ParsedName:
                     # rules/H2: "an abbreviation the vocabulary reads as
                     # a given name written short", "word in one of the
                     # ten Brahmic scripts from Devanagari to Sinhala" and
-                    # "has no period abbreviations either" -- H2's shape,
+                    # "write no period abbreviations" -- H2's shape,
                     # asked through its own predicate; a word it refuses
                     # is a title only by where it stands (decisions/A1,
                     # 2026-11-09)
@@ -852,6 +852,10 @@ def assemble(state: ParseState) -> ParsedName:
                       else j)
         elif tok.role is Role.FAMILY:
             has_family = True
+        # Unicode's case, not the script table's: the run asks whether a
+        # dotted run of single letters is initials, which a script that
+        # writes initials answers yes in its only case, as Georgian's
+        # Mkhedruli is (decisions/script-properties, #1256)
         if tok.role in NAME_ROLES and not tok.text.islower():
             capitals = True
     out = tuple(final.values())

@@ -957,6 +957,122 @@ CASES: tuple[Case, ...] = (
          notes="a word before the father's name (a clan name, not read "
                "as one) leaves the given name last, the reason the pack "
                "declares FAMILY_FIRST_GIVEN_LAST rather than FAMILY_FIRST"),
+    # #1257: the Maghrebi and Hebrew particles, each row checked against
+    # the 1.4.0 wheel and master 161ebd28 on 2026-11-12
+    Case("an_amazigh_ait_starts_the_family_name",
+         "Youssef Ait Haddou",
+         {"given": "Youssef", "family": "Ait Haddou"},
+         classification="fix(#1249)",
+         notes="1.4.0 through master read middle 'Ait', family 'Haddou'"),
+    Case("an_amazigh_ait_with_its_diaeresis_starts_the_family_name",
+         "Karim Aït Haddou",
+         {"given": "Karim", "family": "Aït Haddou"},
+         classification="fix(#1249)",
+         notes="1.4.0 through master read middle 'Aït'"),
+    Case("an_amazigh_nait_starts_the_family_name",
+         "Leila Nait Haddou",
+         {"given": "Leila", "family": "Nait Haddou"},
+         classification="fix(#1249)",
+         notes="1.4.0 through master read middle 'Nait'"),
+    Case("an_amazigh_ait_ending_the_given_part_joins_the_family",
+         "Haddou, Youssef Ait",
+         {"given": "Youssef", "family": "Ait Haddou"},
+         classification="fix(#1249)",
+         notes="rules/P6's trailing attachment; 1.4.0 through master read "
+               "middle 'Ait'"),
+    Case("an_amazigh_ait_opening_the_name_folds_it_whole",
+         "Ait Haddou Karim",
+         {"family": "Ait Haddou Karim"},
+         classification="fix(#1249)",
+         notes="rules/P1's default-order reach, its Accepted cost: a "
+               "listing written family first without a comma; 1.4.0 "
+               "through master read given 'Ait', middle 'Haddou'"),
+    Case("a_hassaniya_ould_starts_the_family_name",
+         "Ahmed Ould Haddou",
+         {"given": "Ahmed", "family": "Ould Haddou"},
+         classification="fix(#1249)",
+         notes="a patronymic (rules/R9's view reads 'Ould Haddou'); 1.4.0 "
+               "through master read middle 'Ould'"),
+    Case("an_algerian_ouled_starts_the_family_name",
+         "Karim Ouled Haddou",
+         {"given": "Karim", "family": "Ouled Haddou"},
+         classification="fix(#1249)",
+         notes="1.4.0 through master read middle 'Ouled'"),
+    Case("ben_stays_a_middle_name_by_default",
+         "Karim Ben Haddad",
+         {"given": "Karim", "middle": "Ben", "family": "Haddad"},
+         classification="parity",
+         notes="the negative control for #1248: the given name Ben keeps "
+               "the default from reading the particle (ar.toml, default "
+               "= false); 1.4.0 reads the same"),
+    Case("the_arabic_pack_reads_ben_as_the_family",
+         "Karim Ben Haddad",
+         {"given": "Karim", "family": "Ben Haddad"},
+         locale="ar", classification="feat(#1248)",
+         notes="1.4.0 through master read middle 'Ben'"),
+    Case("the_hebrew_pack_reads_ben_as_the_family",
+         "Yael Ben Arieh",
+         {"given": "Yael", "family": "Ben Arieh"},
+         locale="he", classification="feat(#1248)",
+         notes="1.4.0 through master read middle 'Ben'"),
+    Case("the_arabic_pack_keeps_ben_opening_a_name_given",
+         "Ben Haddad",
+         {"given": "Ben", "family": "Haddad"},
+         locale="ar", classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="the given name Ben where the particle opens a name, the "
+               "fork reported; 1.4.0 reads the same fields"),
+    Case("a_maghrebi_el_starts_the_family_name",
+         "Sara El Haddou",
+         {"given": "Sara", "family": "El Haddou"},
+         classification="fix(#1240)",
+         notes="the article al is spelled in Morocco and Egypt; 1.4.0 "
+               "through master read middle 'El'"),
+    Case("a_maghrebi_el_opening_a_name_is_the_given_name",
+         "El Mehdi Haddou",
+         {"given": "El", "middle": "Mehdi", "family": "Haddou"},
+         classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="an article that may be a given name, as al is: El Mehdi "
+               "is a Moroccan given name; 1.4.0 reads the same fields"),
+    Case("an_algerian_compound_given_name_gives_its_half_to_the_family",
+         "Nour El Houda Haddou",
+         {"given": "Nour", "family": "El Houda Haddou"},
+         classification="fix(#1240)",
+         notes="the accepted cost (rules/P2, decisions/vocabulary-"
+               "collisions 2026-11-12 #1257): the given name is 'Nour El "
+               "Houda'; 1.4.0 through master read middle 'El Houda'"),
+    Case("hebrew_ben_opening_a_name_is_the_given_name",
+         "בן כהן",
+         {"given": "בן", "family": "כהן"},
+         classification="fix(#1209)",
+         ambiguities=("particle-or-given",),
+         notes="1.4.0 read these fields too; 2.x and master read family "
+               "'בן כהן' (a never-given patronymic, rules/P1)"),
+    Case("hebrew_ben_inside_a_name_starts_the_family_name",
+         "יעל בן חיים",
+         {"given": "יעל", "family": "בן חיים"},
+         classification="fix(#1210)",
+         notes="what #1210 changes is the view: 2.0.0 through master read "
+               "these fields, 3.0 with the patronymic view filled, which it "
+               "no longer is; 1.4.0 read middle 'בן', last 'חיים'"),
+    Case("hebrew_abu_starts_the_family_name",
+         "סאמי אבו חליל",
+         {"given": "סאמי", "family": "אבו חליל"},
+         classification="fix(#1211)",
+         notes="1.4.0 through master read middle 'אבו'"),
+    Case("hebrew_al_starts_the_family_name",
+         "נאדר אל חלבי",
+         {"given": "נאדר", "family": "אל חלבי"},
+         classification="fix(#1211)",
+         notes="1.4.0 through master read middle 'אל'"),
+    Case("hebrew_al_opening_a_name_is_the_given_name",
+         "אל כהן",
+         {"given": "אל", "family": "כהן"},
+         classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="the English given name Al written in Hebrew, the fork "
+               "reported; 1.4.0 reads the same fields"),
     Case("a_turkic_marker_ending_three_words_reads_with_the_fathers_name",
          "Жылдыз Таалайбек кызы",
          {"given": "Жылдыз", "family": "Таалайбек кызы"},
@@ -5485,9 +5601,11 @@ CASES: tuple[Case, ...] = (
     Case("thai_trailing_run_of_initials_opening_like_a_rank",
          "สมชาย พ.ต.ส.",
          {"given": "สมชาย", "family": "พ.ต.ส."},
-         ambiguities=("order", "suffix-or-name"),
+         ambiguities=("suffix-or-name",),
          notes="the boundary: a run of single letters running past the "
-               "rank is T7's run of initials (the fix-commit review)"),
+               "rank is T7's run of initials (the fix-commit review); "
+               "no order report since #1256, Thai writing no initials, "
+               "so no byline writes a Thai name before them"),
     Case("thai_acting_before_a_short_title_not_marked_to_peel",
          "ว่าที่ดร.สมชาย ใจดี",
          {"title": "ว่าที่ดร.", "given": "สมชาย", "family": "ใจดี"},
@@ -18452,6 +18570,14 @@ CASES: tuple[Case, ...] = (
          {'given': 'এম.', 'middle': 'আবদুল', 'family': 'লতিফ'},
          classification="fix(#1191)",
          notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 1.4.0 through 3.0.1 read title 'এম.'."),
+    Case('georgian_beside_an_ambiguous_credential_is_one_case', 'ჯეკ MA',
+         {'given': 'ჯეკ', 'family': 'MA'},
+         classification="fix(#1222)", ambiguities=("suffix-or-name",),
+         notes="rules/S6's caseless script (#1222): Georgian writes no case a writer chooses, so the name is in one case and the count decides, as for 'محمد MA'; 1.4.0 through 2.3.0 read family 'MA', 2.4.0 through 3.0.1 suffix 'MA', Python counting Mkhedruli as lower case."),
+    Case('georgian_beside_an_ambiguous_credential_after_a_comma', 'ჯეკ, MA',
+         {'given': 'MA', 'family': 'ჯეკ'},
+         classification="fix(#1222)", ambiguities=("suffix-or-name",),
+         notes="rules/S6's caseless script (#1222): Georgian writes no case a writer chooses, so the name is in one case and the count decides, as for 'محمد MA'; 1.4.0 through 2.3.0 read given 'MA', 2.4.0 through 3.0.1 suffix 'MA', Python counting Mkhedruli as lower case."),
     Case('gurmukhi_spelled_initial_is_not_a_title', 'ਐਮ. ਸਿੰਘ',
          {'given': 'ਐਮ.', 'family': 'ਸਿੰਘ'},
          classification="fix(#1191)",
@@ -18516,8 +18642,9 @@ CASES: tuple[Case, ...] = (
          {"given": "ﾏｲｹﾙ."}, ambiguities=("given-or-family",),
          classification="fix(#594)",
          notes="the halfwidth twin of the row above: katakana has no "
-               "initials (_NO_INITIALS), and halfwidth kana is katakana "
-               "now, so H2's opening-abbreviation shape declines it. "
+               "initials nor period abbreviations (_SCRIPT_PROPERTIES), "
+               "and halfwidth kana is katakana now, so H2's "
+               "opening-abbreviation shape declines it. "
                "2.3.0 read title ﾏｲｹﾙ., the halfwidth limit "
                "decisions/cjk-full-stops recorded",
          tolerated=True),
@@ -18542,8 +18669,8 @@ CASES: tuple[Case, ...] = (
          "Проф. Иванов",
          {"title": "Проф.", "family": "Иванов"},
          classification="parity",
-         notes="the alphabet _policy._NO_INITIALS's own comment names "
-               "as the one it would be wrong to add: Cyrillic has "
+         notes="the alphabet _policy's script table names as a "
+               "writing convention, not a typology: Cyrillic has "
                "initials and abbreviations, so H2's shape fires and "
                "the #323 veto stays out of its way. Pins the veto's "
                "repertoire at the four CJK scripts from the other "

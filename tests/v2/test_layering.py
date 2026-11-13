@@ -99,7 +99,7 @@ ALLOWED = {
                    "nameparser._policy", "nameparser.config._rules"),
     # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
     # to Lexicon.default(); _policy for the scripts that write no
-    # initials (_NO_INITIALS), which initials() skips (#754)
+    # initials (_SCRIPT_PROPERTIES), which initials() skips (#754)
     "_render.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy"),
     # every stage module: state + the three config/type modules

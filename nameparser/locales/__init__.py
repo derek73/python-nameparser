@@ -23,12 +23,14 @@ if TYPE_CHECKING:
 #: attribute name -> (module name, module attribute). Codes are the
 #: lowercase module names; attribute constants are uppercase.
 _REGISTRY = {
+    "AR": ("nameparser.locales.ar", "AR"),
     "BN": ("nameparser.locales.bn", "BN"),
     "CS": ("nameparser.locales.cs", "CS"),
     "ES": ("nameparser.locales.es", "ES"),
     "ES_AR": ("nameparser.locales.es_ar", "ES_AR"),
     "GA": ("nameparser.locales.ga", "GA"),
     "GD": ("nameparser.locales.gd", "GD"),
+    "HE": ("nameparser.locales.he", "HE"),
     "HI": ("nameparser.locales.hi", "HI"),
     "HR": ("nameparser.locales.hr", "HR"),
     "JA": ("nameparser.locales.ja", "JA"),

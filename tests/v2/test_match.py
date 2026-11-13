@@ -564,6 +564,18 @@ def test_a_single_han_character_is_never_an_initial() -> None:
     assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
 
 
+def test_a_burmese_letter_is_never_an_initial() -> None:
+    """rules/R7 (#1234): Burmese writes no initials, so a Burmese letter
+    with or without its period is a whole name, on either side: Kyaw
+    (က) and Kyi (ကြည်) conflict, where 3.0.1 read the one as the
+    other's initial."""
+    for a, b in (("က. Smith", "ကြည် Smith"), ("က ဇော ဦး", "ကြည် ဇော ဦး")):
+        for x, y in ((a, b), (b, a)):
+            assert role(m.check(x, y), Role.GIVEN).outcome is Outcome.CONFLICT
+    assert role(m.check("J. Smith", "John Smith"), Role.GIVEN).outcome \
+        is Outcome.INITIAL
+
+
 def test_initials_written_apart_agree_with_the_same_initials_joined() -> None:
     base = parse("John Smith")
     r = m.check(base.replace(given="J.-P."), base.replace(given="J. P."))

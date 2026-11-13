@@ -162,9 +162,9 @@ The particle kinds say what the word does in the names of the file's language:
 
 - `preposition`: "of", "from", "at", alone or contracted with the article after it (`de`, `van`, `von`, `du`, `del`, `vom`, `ter`);
 - `article`: a definite article standing alone or elided (`la`, `der`, `het`, `'t`, `l'`, the Arabic `al-` and its assimilated spellings);
-- `patronymic`: "son of" or "daughter of", where the word after it is a parent's name (`bin`, `binti`, `ibn`, `بن`, `בן`);
+- `patronymic`: "son of" or "daughter of", where the word after it is a parent's name (`bin`, `binti`, `ibn`, `بن`, `בת`, `ould`);
 - `teknonymic`: "father of", naming the bearer by a child (`abu`, `أبو`);
-- `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`);
+- `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`, and `ben` and `בן`, whose family names no longer name a father);
 - `rank`: a former rank written inside the surname (`freiherr`, `freiherrin`, `graf`, `gräfin`, `fürst`, `prinz`);
 - `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`, `sta`, `sto`);
 - `alias`: a word joining two surnames of one person (`vel`).

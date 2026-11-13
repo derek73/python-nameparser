@@ -19,7 +19,9 @@ from collections.abc import Callable, Sequence
 
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
-from nameparser._policy import _NO_INITIALS, _script_matcher
+from nameparser._policy import (
+    _CASELESS_LETTERS, _NO_INITIAL_RANGES, _ranges_matcher,
+)
 from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
                                SHAPE_ACRONYM_TAG,
                                SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
@@ -362,7 +364,7 @@ def _first_letter(text: str) -> str:
 #: asked of the composed letter (#665), the spelling the veto in
 #: _vocab reads; the conjoining jamo a decomposed syllable is written
 #: in are HANGUL too since #1087.
-_initialless = _script_matcher(*_NO_INITIALS, whole=True)
+_initialless = _ranges_matcher(_NO_INITIAL_RANGES, whole=True)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
@@ -398,6 +400,7 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     # a loop, not a generator, which would resume a frame per word
     all_lower = True
     for t in name.tokens:
+        # Unicode's case, as the parse's T7 reads it (#1256)
         if t.role in _NAME_WORD_ROLES and not t.text.islower():
             all_lower = False
             break
@@ -767,23 +770,23 @@ def _title_chunk(chunk: str) -> str:
 
 # rules/R4: "A script that writes no initial capital is written in its
 # lower case throughout" -- the title case of a word's first letter,
-# where Georgian's is its Mkhedruli lower case. decisions/R4 (#1223).
+# where Georgian's is its Mkhedruli lower case: the script-property
+# table's rows with no case (_policy._SCRIPT_PROPERTIES).
+# decisions/R4 (#1223), decisions/script-properties (#1256).
 def _capitalize(text: str) -> str:
-    """str.capitalize(), except that a first letter whose lower case is
-    one letter that title-cases to itself, and is not the letter's own
-    title case, is written in that lower case: str.capitalize()
-    title-cases the letter as it stands, and a Mtavruli letter's title
-    case is itself, so 'ᲜᲘᲜᲝ' gave 'Ნინო'. The 46 Mtavruli letters are
-    the only ones the test reaches (measured over every codepoint,
-    2026-11-08); 'İ' is not among them, its lower case 'i' plus U+0307
-    title-casing to 'I' plus U+0307, not to itself. The one-letter guard keeps the word's
-    length should a later Unicode give a longer lower case that
-    title-cases to itself; no codepoint does today."""
+    """str.capitalize(), except that a first letter in a script with no
+    case (`_CASELESS_LETTERS`) is written in its lower case:
+    str.capitalize() title-cases the letter as it stands, and a
+    Mtavruli letter's title case is itself, so 'ᲜᲘᲜᲝ' gave 'Ნინო'. The
+    46 Mtavruli letters are the only ones it changes, a Mkhedruli
+    letter being its own lower case (measured over every codepoint,
+    2026-11-12, the same 46 that #1223's test of a lower case
+    title-casing to itself reached). The one-letter guard keeps the
+    word's length should a later Unicode give a longer lower case."""
     out = text.capitalize()
-    if text:
-        low = text[0].lower()
-        if len(low) == 1 and low.title() == low != text[0].title():
-            return low + out[1:]
+    if (text and ord(text[0]) in _CASELESS_LETTERS
+            and len(low := text[0].lower()) == 1):
+        return low + out[1:]
     return out
 
 
@@ -1069,6 +1072,7 @@ def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
 def _in_one_case(text: str) -> bool:
     """R5's test: `text` is written all upper or all lower (a caseless
     text is both, and so passes)."""
+    text = text.translate(_CASELESS_LETTERS)
     return text in (text.upper(), text.lower())
 
 

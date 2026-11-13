@@ -1288,6 +1288,26 @@ capitalizes a particle that opens a hyphenated word, save Dutch 's and
     ...     "WILLEM 'S-GRAVESANDE")]
     ["Безугла Мар'яна", 'ნინო ბურჯანაძე', 'Levon Ter-Petrosyan', "Willem 's-Gravesande"]
 
+A Georgian name mixing Mtavruli with Mkhedruli is written in Mkhedruli
+too, Georgian having no case that a capital sets against the rest of
+the name, where 1.4 through 3.0 kept it as written; a Latin surname in
+capitals in a name of mixed case is still kept:
+
+.. doctest::
+
+    >>> [str(parse(n).capitalized()) for n in ("ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ",
+    ...     "Უჩა გოგოლაძე", "Jean DUPONT")]
+    ['ნინო ბურჯანაძე', 'უჩა გოგოლაძე', 'Jean DUPONT']
+
+:meth:`~nameparser.ParsedName.initials` gives nothing for a word in
+Thai or Burmese, scripts that shorten no name to a letter, as for Han,
+Hangul and kana, where 1.4 through 3.0 gave its first character:
+
+.. doctest::
+
+    >>> [parse(n).initials() for n in ("สมชาย ใจดี", "ကြည် ကြည် ဌေး")]
+    ['', '']
+
 A transliteration digraph opening a name, the Latin spelling of one
 Cyrillic letter (``Yu.``, ``Ya.``, ``Ye.``, ``Yo.``, ``Zh.``, ``Kh.``,
 ``Shch.``, ``Dzh.``), is a given name where 1.4 through 3.0 read it as a
@@ -1302,3 +1322,20 @@ of Congress ``Iu.``) are unchanged:
     ('', 'Yu.', 'A.')
     >>> parse("Ts. Sandag-Ochir").title
     'Ts.'
+
+``El``, ``Ait``, ``Aït``, ``Nait``, ``Ould`` and ``Ouled`` start the
+family name they open, where 1.4 through 3.0 left them in the middle
+name (``El`` opening a name stays the given name), and
+``Ould`` fills ``patronymic``. So do Hebrew-script ``אבו`` and ``אל``;
+``בן`` opening a name is the given name again, as in 1.4, where 2.0
+through 3.0 read the name whole as the family, and inside a name it no
+longer fills ``patronymic``:
+
+.. doctest::
+
+    >>> [parse(n).family for n in ("Youssef Ait Haddou",
+    ...     "Ahmed Ould Haddou", "Sara El Haddou", "סאמי אבו חליל")]
+    ['Ait Haddou', 'Ould Haddou', 'El Haddou', 'אבו חליל']
+    >>> hebrew_ben = parse("בן כהן")
+    >>> hebrew_ben.given, hebrew_ben.family
+    ('בן', 'כהן')

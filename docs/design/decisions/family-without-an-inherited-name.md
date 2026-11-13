@@ -6,7 +6,7 @@
 - The patronymic view keeps rules/R9's basis, filled only by a word or a rule that says patronymic, never by a position; it may overlap the family or be a part of it, and a father's name nothing in the text marks (Ethiopia) fills no view — 2026-11-12 #1253.
 - An Ethiopian or Eritrean name stays positional, its family under the default given-first order the grandfather's name where it is written and the father's where it is not; a caller matching such a list builds the matcher from a parser with `middle_as_family`, keeping the default parser for the fields (docs/matching.rst) — 2026-11-12 #1253.
 
-Open: #1188 (Kazakh), #1155 (`بن` chain), #1231 (Burma), each a value question under the two statements; #1210 (Hebrew `בן`), decided with #1257; #1165 (`S/O`, `W/O`), a decision of its own.
+Open: #1188 (Kazakh), #1155 (`بن` chain), #1231 (Burma), each a value question under the two statements; #1165 (`S/O`, `W/O`), a decision of its own.
 
 ## Log
 
@@ -19,7 +19,7 @@ Open: #1188 (Kazakh), #1155 (`بن` chain), #1231 (Burma), each a value question
     - #1187 Kyrgyz: with no surname, the father's name and its marker are the `family` and the patronymic view alike (the reading lands with #1187, in rules/O2).
     - #1188 Kazakh: an ending rule fills the view, as the East Slavic one does; which choice turns it on is a value question.
     - #1155 a family name after a `بن` chain: the view may be a part of the family, stopping before a family name a closed signal marks; which signal is a value question.
-    - #1210 Hebrew `בן`: decided with #1257.
+    - #1210 Hebrew `בן`: decided with #1257, a clan particle filling no view (decisions/vocabulary-collisions' 2026-11-12 #1257 entry).
     - #1231 Burma: a pack, the last word the `family` by position, the honorifics titles.
     - #1165 `S/O`, `W/O`: out of this decision; the words after the marker are another person's name, which the model has no place for. Malaysian `a/l` and `a/p`, where the father's name is part of the legal name, read as `bin` does and are a vocabulary question.
   - **Measured for #1203** (dated snapshots):

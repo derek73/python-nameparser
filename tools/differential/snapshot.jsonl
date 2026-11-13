@@ -101,6 +101,7 @@
 {"name": "Aarón Padilla Gutiérrez", "given": "Aarón", "middle": "Padilla", "family": "Gutiérrez", "initials": "A. P. G."}
 {"name": "Abd Berg", "given": "Abd", "family": "Berg", "initials": "A. B."}
 {"name": "Abd Berg née Jones", "given": "Abd", "family": "Berg", "maiden": "Jones", "initials": "A. B."}
+{"name": "Abd El Kader Haddou", "given": "Abd", "family": "El Kader Haddou", "initials": "A. K. H."}
 {"name": "Abd al-Aziz ibn Muhammad", "given": "Abd al-Aziz", "family": "ibn Muhammad", "initials": "A. a. M.", "capitalized_force": "Abd Al-Aziz ibn Muhammad", "patronymic": "ibn Muhammad"}
 {"name": "Abd van der Berg", "given": "Abd", "family": "van der Berg", "initials": "A. B."}
 {"name": "Abd van der Berg née Jones", "given": "Abd", "family": "van der Berg", "maiden": "Jones", "initials": "A. B."}
@@ -123,6 +124,7 @@
 {"name": "Abu Bakr Al Baghdadi, MD", "given": "Abu Bakr", "family": "Al Baghdadi", "suffix": "MD", "initials": "A. B. B.", "capitalized_force": "Abu Bakr al Baghdadi, MD"}
 {"name": "Abu Bakr Carlos García", "given": "Abu Bakr", "middle": "Carlos", "family": "García", "initials": "A. B. C. G."}
 {"name": "Abu Bakr del Carmen García", "given": "Abu Bakr", "family": "del Carmen García", "initials": "A. B. C. G."}
+{"name": "Abu El Hassan Haddou", "given": "Abu", "family": "El Hassan Haddou", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. H. H."}
 {"name": "Abu Karim", "given": "Abu", "family": "Karim", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. K."}
 {"name": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī", "given": "Abu-'l-Fidāʾ", "middle": "Ismāʿīl", "family": "Ibn-ʿAlī", "initials": "A. I. I.", "capitalized_force": "Abu-'L-Fidāʾ Ismāʿīl Ibn-ʿAlī"}
 {"name": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-Maǧrīṭī", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al-Maǧrīṭī", "initials": "A. M. I. a.", "capitalized_force": "Abu-'L-Qāsim Maslama Ibn-Aḥmad Al-Maǧrīṭī"}
@@ -190,6 +192,7 @@
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}
+{"name": "Ait Haddou Karim", "family": "Ait Haddou Karim", "initials": "H. K."}
 {"name": "Aita Caduff", "given": "Aita", "family": "Caduff", "initials": "A. C."}
 {"name": "Aitken, Robert", "given": "Robert", "family": "Aitken", "initials": "R. A."}
 {"name": "Ajay Reddy B", "given": "Ajay", "middle": "Reddy", "family": "B", "initials": "A. R. B."}
@@ -1098,7 +1101,7 @@
 {"name": "Einar Jónsson", "given": "Einar", "family": "Jónsson", "initials": "E. J."}
 {"name": "Eitel Friedrich II.", "given": "Eitel", "family": "Friedrich", "suffix": "II.", "initials": "E. F.", "generation": "II."}
 {"name": "Eiður Gunnarsson", "given": "Eiður", "family": "Gunnarsson", "initials": "E. G."}
-{"name": "El Dine", "given": "El", "family": "Dine", "initials": "E. D."}
+{"name": "El Dine", "given": "El", "family": "Dine", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "E. D."}
 {"name": "Eladio Andino y del Solar", "given": "Eladio", "middle": "Andino y del", "family": "Solar", "initials": "E. A. S."}
 {"name": "Elard von Oldenburg-Januschau", "given": "Elard", "family": "von Oldenburg-Januschau", "initials": "E. O."}
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
@@ -1716,6 +1719,7 @@
 {"name": "Jack Ma.", "given": "Jack", "family": "Ma.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M."}
 {"name": "Jack PHARM D", "given": "Jack", "middle": "PHARM", "family": "D", "initials": "J. P. D.", "capitalized_force": "Jack Pharm D"}
 {"name": "Jack PhD", "given": "Jack", "suffix": "PhD", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
+{"name": "Jack Smith MA Mr", "given": "Jack", "middle": "Smith MA", "family": "Mr", "initials": "J. S. M. M.", "capitalized_force": "Jack Smith Ma Mr"}
 {"name": "Jack Wei Ma", "given": "Jack", "middle": "Wei", "family": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. W. M."}
 {"name": "Jack X.Y.I.", "given": "Jack", "family": "X.Y.I.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. X. Y. I."}
 {"name": "Jack X.Y.Z.", "given": "Jack", "family": "X.Y.Z.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. X. Y. Z."}
@@ -2391,6 +2395,7 @@
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
 {"name": "John “Jack” Kennedy", "given": "John", "family": "Kennedy", "nickname": "Jack", "initials": "J. K."}
 {"name": "John 王", "given": "John", "family": "王", "initials": "J."}
+{"name": "John 王. Smith", "given": "John", "middle": "王.", "family": "Smith", "initials": "J. S."}
 {"name": "John 田中さん, XYZ", "given": "John", "family": "田中", "suffix": "さん, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J.", "honorifics": "さん"}
 {"name": "John ｢Jack｣ Smith", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "John, Smith, Dr.", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
@@ -2620,6 +2625,7 @@
 {"name": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)", "given": "Anna", "middle": "Karolína Eva Kristína von Mgr. Ing.", "family": "Kant", "suffix": "CSc.", "initials": "A. K. E. K. M. I. K.", "capitalized_force": "Anna Karolína Eva Kristína von Mgr. Ing. Kant CSC."}
 {"name": "Kar, Ida", "given": "Ida", "family": "Kar", "initials": "I. K."}
 {"name": "Karim AL Haddadi", "given": "Karim", "family": "AL Haddadi", "initials": "K. H.", "capitalized_force": "Karim al Haddadi"}
+{"name": "Karim Ould Haddou", "given": "Karim", "family": "Ould Haddou", "initials": "K. H.", "patronymic": "Ould Haddou"}
 {"name": "Karima", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima", "order": "FAMILY_FIRST", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima Balóch", "given": "Karima", "family": "Balóch", "initials": "K. B."}
@@ -3208,7 +3214,7 @@
 {"name": "Mohamad Asri Muda", "given": "Mohamad", "middle": "Asri", "family": "Muda", "initials": "M. A. M."}
 {"name": "Mohamad X", "given": "Mohamad", "family": "X", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "M. X."}
 {"name": "Mohamad X Surname", "given": "Mohamad", "middle": "X", "family": "Surname", "initials": "M. X. S."}
-{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein El", "family": "Dine", "initials": "M. Z. E. D."}
+{"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein", "family": "El Dine", "initials": "M. Z. D."}
 {"name": "Mohamad Zeineddine", "given": "Mohamad", "family": "Zeineddine", "initials": "M. Z."}
 {"name": "Mohamad, Mahathir bin", "given": "Mahathir", "family": "bin Mohamad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "Mohamed Ali Abd Allah", "given": "Mohamed", "middle": "Ali Abd", "family": "Allah", "initials": "M. A. A. A."}
@@ -3374,6 +3380,7 @@
 {"name": "None John None Doe None (None)", "given": "None", "middle": "John None Doe", "family": "None", "nickname": "None", "initials": "N. J. N. D. N."}
 {"name": "None Smith", "given": "None", "family": "Smith", "initials": "N. S."}
 {"name": "Nonez Smith", "given": "Nonez", "family": "Smith", "initials": "N. S."}
+{"name": "Nour El Houda Haddou", "given": "Nour", "family": "El Houda Haddou", "initials": "N. H. H."}
 {"name": "Novak, Janez Peter", "given": "Janez", "middle": "Peter", "family": "Novak", "initials": "J. P. N."}
 {"name": "Nováková Jana", "order": "FAMILY_FIRST", "given": "Jana", "family": "Nováková", "initials": "J. N."}
 {"name": "Nováková, Jana", "given": "Jana", "family": "Nováková", "initials": "J. N."}
@@ -4544,7 +4551,7 @@
 {"name": "Zazilia Hamiş Ştöber", "given": "Zazilia", "middle": "Hamiş", "family": "Ştöber", "initials": "Z. H. Ş."}
 {"name": "Zaziliya Hemish Shtober", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
 {"name": "Zaʿīm, Ḥusnī az-", "given": "Ḥusnī", "family": "az- Zaʿīm", "initials": "Ḥ. Z."}
-{"name": "Zein El Dine", "given": "Zein", "middle": "El", "family": "Dine", "initials": "Z. E. D."}
+{"name": "Zein El Dine", "given": "Zein", "family": "El Dine", "initials": "Z. D."}
 {"name": "Zelda Hamish Støver", "given": "Zelda", "middle": "Hamish", "family": "Støver", "initials": "Z. H. S."}
 {"name": "Zelda Herman Stander", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Zendaya", "given": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
@@ -5815,6 +5822,8 @@
 {"name": "אריק איינשטיין", "given": "אריק", "family": "איינשטיין", "initials": "א. א."}
 {"name": "אשר דורי", "given": "אשר", "family": "דורי", "initials": "א. ד."}
 {"name": "בלה קאופמן", "given": "בלה", "family": "קאופמן", "initials": "ב. ק."}
+{"name": "בן חיים יעל", "given": "בן", "middle": "חיים", "family": "יעל", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "ב. ח. י."}
+{"name": "בן חיים, יעל", "given": "יעל", "family": "בן חיים", "initials": "י. ח."}
 {"name": "ברוך אורן", "given": "ברוך", "family": "אורן", "initials": "ב. א."}
 {"name": "ברוך מודן", "given": "ברוך", "family": "מודן", "initials": "ב. מ."}
 {"name": "ברכה רוזנפלד", "given": "ברכה", "family": "רוזנפלד", "initials": "ב. ר."}
@@ -5852,6 +5861,7 @@
 {"name": "משה בן-שאול", "given": "משה", "family": "בן-שאול", "initials": "מ. ב."}
 {"name": "משה חלוץ", "given": "משה", "family": "חלוץ", "initials": "מ. ח."}
 {"name": "משה מזור", "given": "משה", "family": "מזור", "initials": "מ. מ."}
+{"name": "סאמר בן חליל", "given": "סאמר", "family": "בן חליל", "initials": "ס. ח."}
 {"name": "סטובר זזיליה חמיש", "order": "FAMILY_FIRST", "given": "זזיליה", "middle": "חמיש", "family": "סטובר", "initials": "ז. ח. ס."}
 {"name": "סינבד", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
 {"name": "סינבד", "order": "FAMILY_FIRST", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
@@ -6656,79 +6666,82 @@
 {"name": "සින්බෑඩ්", "order": "FAMILY_FIRST", "given": "සින්බෑඩ්", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
 {"name": "සෙන්ඩයා", "given": "සෙන්ඩයා", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
 {"name": "සෙන්ඩයා", "order": "FAMILY_FIRST", "given": "සෙන්ඩයා", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
-{"name": "กล้าหาญ ไอริณ", "order": "FAMILY_FIRST", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
-{"name": "กล้าหาญ, ไอริณ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
-{"name": "กุลวุฒิ วิทิตศานต์", "given": "กุลวุฒิ", "family": "วิทิตศานต์", "initials": "ก. ว."}
-{"name": "คุณ ปรีชา กล้าหาญ แสงระวี", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี", "initials": "ค. ป. ก. แ."}
-{"name": "คุณ. สมชาย", "given": "คุณ.", "family": "สมชาย", "initials": "ค. ส."}
-{"name": "ชวเลิศ ชุ่มคำ", "given": "ชวเลิศ", "family": "ชุ่มคำ", "initials": "ช. ช."}
-{"name": "ชัชวาลย์ แท่งทอง", "given": "ชัชวาลย์", "family": "แท่งทอง", "initials": "ช. แ."}
-{"name": "ซาซิเลีย ฮามิช สโตเบอร์", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
-{"name": "ซินแบด", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
-{"name": "ซินแบด", "order": "FAMILY_FIRST", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
-{"name": "ดร. สมชาย ใจดี", "title": "ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
-{"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
-{"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
-{"name": "นพพร ใจดี", "given": "นพพร", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "นางพ.อ.หญิงวาสนา แสงสวย", "title": "นางพ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย", "initials": "ว. แ."}
-{"name": "นางรศ.ดร.สมชาย ใจดี", "title": "นางรศ.ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นางสาว-สุดา ใจดี", "given": "นางสาว-สุดา", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "นางสาวสุดา ใจดี", "title": "นางสาว", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นางสาวิตรี ใจดี", "title": "นาง", "given": "สาวิตรี", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ", "initials": "น. โ."}
-{"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ", "initials": "น. ย."}
-{"name": "นาย-สมชาย ใจดี", "given": "นาย-สมชาย", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "นายสมชาย", "title": "นาย", "given": "สมชาย", "initials": "ส."}
-{"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D.", "initials": "ส. ใ."}
-{"name": "นายแพทย์ สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นายแพทย์สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "นายใจดี, สมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "บรืล, เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "initials": "เ. ค. เ. ม. ว. บ."}
-{"name": "บุญศักดิ์ พลสนะ", "given": "บุญศักดิ์", "family": "พลสนะ", "initials": "บ. พ."}
-{"name": "บุศนันทน์ อึ๊งบำรุงพันธุ์", "given": "บุศนันทน์", "family": "อึ๊งบำรุงพันธุ์", "initials": "บ. อ."}
-{"name": "ประวัติ ปัตตพงศ์", "given": "ประวัติ", "family": "ปัตตพงศ์", "initials": "ป. ป."}
-{"name": "พ.ต.อนุชา ใจดี", "title": "พ.ต.", "given": "อนุชา", "family": "ใจดี", "initials": "อ. ใ."}
-{"name": "พ.อ.หญิง วาสนา แสงสวย", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย", "initials": "ว. แ."}
-{"name": "พ.อ.หญิงวาสนา แสงสวย", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย", "initials": "ว. แ."}
-{"name": "พรทิพย์ บูรณะประเสริฐสุข", "given": "พรทิพย์", "family": "บูรณะประเสริฐสุข", "initials": "พ. บ."}
-{"name": "พล.ต.ต.สุรศักดิ์ รมยานนท์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "รมยานนท์", "initials": "ส. ร."}
-{"name": "พิชิตชัย มานี ชัยยศ", "order": "FAMILY_FIRST", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย", "initials": "ม. ช. พ."}
-{"name": "พิชิตชัย, มานี ชัยยศ", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย", "initials": "ม. ช. พ."}
-{"name": "มานี ชัยยศ พิชิตชัย", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย", "initials": "ม. ช. พ."}
-{"name": "มึลเลอร์ เคเทอ", "order": "FAMILY_FIRST", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
-{"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
-{"name": "รศ.ดร. นายแพทย์สมชาย ใจดี", "title": "รศ.ดร. นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "รศ.ดร.สุดา ใจดี", "title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์ นายแพทย์", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "รองศาสตราจารย์นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์", "given": "นายแพทย์สมชาย", "family": "ใจดี", "initials": "น. ใ."}
-{"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "SUFFIX_OR_NAME: name as middle (position)"], "initials": "บ. ก. โ. ศ. เ. ค. เ. ม. ว."}
-{"name": "ว่าที่จ่าสิบตรีสมชาย ใจดี", "title": "ว่าที่จ่าสิบตรี", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "ว่าที่ร.ท.วินัย พืชพิสุทธิ์", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "พืชพิสุทธิ์", "initials": "ว. พ."}
-{"name": "ว่าที่สมชาย ใจดี", "given": "ว่าที่สมชาย", "family": "ใจดี", "initials": "ว. ใ."}
-{"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "title": "ศ.ดร.", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "เ. ค. เ. ม. ว. บ."}
-{"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี", "initials": "ส. น."}
-{"name": "สมชาย พ.ต.ส.", "given": "สมชาย", "family": "พ.ต.ส.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "ส. พ."}
-{"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "ส. ใ."}
-{"name": "สุดา ใจดี (ดร.)", "title": "ดร.", "given": "สุดา", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "สุดา ใจดี (นาย)", "given": "สุดา", "family": "ใจดี", "nickname": "นาย", "initials": "ส. ใ."}
-{"name": "สุดา ใจดี (ศ.)", "given": "สุดา", "middle": "ใจดี", "family": "ศ.", "initials": "ส. ใ. ศ."}
-{"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
-{"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
-{"name": "อาจารย์ดร.สมชาย ใจดี", "title": "อาจารย์ดร.", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "อาจารย์สรศักดิ์ ใจดี", "title": "อาจารย์", "given": "สรศักดิ์", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "เกรียงศักดิ์ โกวิทวาณิช", "given": "เกรียงศักดิ์", "family": "โกวิทวาณิช", "initials": "เ. โ."}
-{"name": "เคเทอ มึลเลอร์", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
-{"name": "เดชาพล พัววรานุเคราะห์", "given": "เดชาพล", "family": "พัววรานุเคราะห์", "initials": "เ. พ."}
-{"name": "แสงระวี คุณ ปรีชา กล้าหาญ", "order": "FAMILY_FIRST", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี", "initials": "ค. ป. ก. แ."}
-{"name": "แสงระวี, ปรีชา กล้าหาญ", "given": "ปรีชา", "middle": "กล้าหาญ", "family": "แสงระวี", "initials": "ป. ก. แ."}
-{"name": "ใจดี, นายสมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "ใจดี, พ.อ.หญิงวาสนา", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "ใจดี", "initials": "ว. ใ."}
-{"name": "ใจดี, พล.ต.ต.สุรศักดิ์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "ใจดี", "initials": "ส. ใ."}
-{"name": "ใจดี, ว่าที่ร.ท.วินัย", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "ใจดี", "initials": "ว. ใ."}
-{"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
+{"name": "กล้าหาญ ไอริณ", "order": "FAMILY_FIRST", "given": "ไอริณ", "family": "กล้าหาญ"}
+{"name": "กล้าหาญ, ไอริณ", "given": "ไอริณ", "family": "กล้าหาญ"}
+{"name": "กุลวุฒิ วิทิตศานต์", "given": "กุลวุฒิ", "family": "วิทิตศานต์"}
+{"name": "คุณ ปรีชา กล้าหาญ แสงระวี", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี"}
+{"name": "คุณ. สมชาย", "given": "คุณ.", "family": "สมชาย"}
+{"name": "ชวเลิศ ชุ่มคำ", "given": "ชวเลิศ", "family": "ชุ่มคำ"}
+{"name": "ชัชวาลย์ แท่งทอง", "given": "ชัชวาลย์", "family": "แท่งทอง"}
+{"name": "ซาซิเลีย ฮามิช สโตเบอร์", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์"}
+{"name": "ซินแบด", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ซินแบด", "order": "FAMILY_FIRST", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ดร. สมชาย ใจดี", "title": "ดร.", "given": "สมชาย", "family": "ใจดี"}
+{"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย"}
+{"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "นพพร ใจดี", "given": "นพพร", "family": "ใจดี"}
+{"name": "นางพ.อ.หญิงวาสนา แสงสวย", "title": "นางพ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย"}
+{"name": "นางรศ.ดร.สมชาย ใจดี", "title": "นางรศ.ดร.", "given": "สมชาย", "family": "ใจดี"}
+{"name": "นางสาว-สุดา ใจดี", "given": "นางสาว-สุดา", "family": "ใจดี"}
+{"name": "นางสาวสุดา ใจดี", "title": "นางสาว", "given": "สุดา", "family": "ใจดี"}
+{"name": "นางสาวิตรี ใจดี", "title": "นาง", "given": "สาวิตรี", "family": "ใจดี"}
+{"name": "นางาเซะ โทโมยะ", "given": "นางาเซะ", "family": "โทโมยะ"}
+{"name": "นางิ ยานางิ", "given": "นางิ", "family": "ยานางิ"}
+{"name": "นาย-สมชาย ใจดี", "given": "นาย-สมชาย", "family": "ใจดี"}
+{"name": "นายสมชาย", "title": "นาย", "given": "สมชาย"}
+{"name": "นายสมชาย ใจดี", "title": "นาย", "given": "สมชาย", "family": "ใจดี"}
+{"name": "นายสมชาย ใจดี, Ph.D.", "title": "นาย", "given": "สมชาย", "family": "ใจดี", "suffix": "Ph.D."}
+{"name": "นายแพทย์ สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี"}
+{"name": "นายแพทย์สมชาย ใจดี", "title": "นายแพทย์", "given": "สมชาย", "family": "ใจดี"}
+{"name": "นายใจดี, สมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี"}
+{"name": "บรืล, เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล"}
+{"name": "บุญศักดิ์ พลสนะ", "given": "บุญศักดิ์", "family": "พลสนะ"}
+{"name": "บุศนันทน์ อึ๊งบำรุงพันธุ์", "given": "บุศนันทน์", "family": "อึ๊งบำรุงพันธุ์"}
+{"name": "ประวัติ ปัตตพงศ์", "given": "ประวัติ", "family": "ปัตตพงศ์"}
+{"name": "พ.ต.อนุชา ใจดี", "title": "พ.ต.", "given": "อนุชา", "family": "ใจดี"}
+{"name": "พ.อ.หญิง วาสนา แสงสวย", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย"}
+{"name": "พ.อ.หญิงวาสนา แสงสวย", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "แสงสวย"}
+{"name": "พรทิพย์ บูรณะประเสริฐสุข", "given": "พรทิพย์", "family": "บูรณะประเสริฐสุข"}
+{"name": "พล.ต.ต.สุรศักดิ์ รมยานนท์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "รมยานนท์"}
+{"name": "พิชิตชัย มานี ชัยยศ", "order": "FAMILY_FIRST", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย"}
+{"name": "พิชิตชัย, มานี ชัยยศ", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย"}
+{"name": "มานี ชัยยศ พิชิตชัย", "given": "มานี", "middle": "ชัยยศ", "family": "พิชิตชัย"}
+{"name": "มึลเลอร์ เคเทอ", "order": "FAMILY_FIRST", "given": "เคเทอ", "family": "มึลเลอร์"}
+{"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์"}
+{"name": "รศ.ดร. นายแพทย์สมชาย ใจดี", "title": "รศ.ดร. นายแพทย์", "given": "สมชาย", "family": "ใจดี"}
+{"name": "รศ.ดร.สุดา ใจดี", "title": "รศ.ดร.", "given": "สุดา", "family": "ใจดี"}
+{"name": "รองศาสตราจารย์ นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์ นายแพทย์", "given": "สมชาย", "family": "ใจดี"}
+{"name": "รองศาสตราจารย์นายแพทย์สมชาย ใจดี", "title": "รองศาสตราจารย์", "given": "นายแพทย์สมชาย", "family": "ใจดี"}
+{"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)", "SUFFIX_OR_NAME: name as middle (position)"]}
+{"name": "ว่าที่จ่าสิบตรีสมชาย ใจดี", "title": "ว่าที่จ่าสิบตรี", "given": "สมชาย", "family": "ใจดี"}
+{"name": "ว่าที่ร.ท.วินัย พืชพิสุทธิ์", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "พืชพิสุทธิ์"}
+{"name": "ว่าที่สมชาย ใจดี", "given": "ว่าที่สมชาย", "family": "ใจดี"}
+{"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "title": "ศ.ดร.", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"]}
+{"name": "ศ.ดร.สุดา ใจดี", "title": "ศ.ดร.", "given": "สุดา", "family": "ใจดี"}
+{"name": "สมชาย นายใจดี", "given": "สมชาย", "family": "นายใจดี"}
+{"name": "สมชาย พ.ต.ส.", "given": "สมชาย", "family": "พ.ต.ส.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"]}
+{"name": "สมชาย ส. ใจดี", "given": "สมชาย", "middle": "ส.", "family": "ใจดี"}
+{"name": "สมชาย ใจดี", "given": "สมชาย", "family": "ใจดี"}
+{"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"]}
+{"name": "สุดา ใจดี (ดร.)", "title": "ดร.", "given": "สุดา", "family": "ใจดี"}
+{"name": "สุดา ใจดี (นาย)", "given": "สุดา", "family": "ใจดี", "nickname": "นาย"}
+{"name": "สุดา ใจดี (ศ.)", "given": "สุดา", "middle": "ใจดี", "family": "ศ."}
+{"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์"}
+{"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์"}
+{"name": "อาจารย์ดร.สมชาย ใจดี", "title": "อาจารย์ดร.", "given": "สมชาย", "family": "ใจดี"}
+{"name": "อาจารย์สรศักดิ์ ใจดี", "title": "อาจารย์", "given": "สรศักดิ์", "family": "ใจดี"}
+{"name": "เกรียงศักดิ์ โกวิทวาณิช", "given": "เกรียงศักดิ์", "family": "โกวิทวาณิช"}
+{"name": "เคเทอ มึลเลอร์", "given": "เคเทอ", "family": "มึลเลอร์"}
+{"name": "เดชาพล พัววรานุเคราะห์", "given": "เดชาพล", "family": "พัววรานุเคราะห์"}
+{"name": "แสงระวี คุณ ปรีชา กล้าหาญ", "order": "FAMILY_FIRST", "given": "คุณ", "middle": "ปรีชา กล้าหาญ", "family": "แสงระวี"}
+{"name": "แสงระวี, ปรีชา กล้าหาญ", "given": "ปรีชา", "middle": "กล้าหาญ", "family": "แสงระวี"}
+{"name": "ใจดี ส. ก.", "given": "ใจดี", "middle": "ส.", "family": "ก."}
+{"name": "ใจดี, นายสมชาย", "title": "นาย", "given": "สมชาย", "family": "ใจดี"}
+{"name": "ใจดี, พ.อ.หญิงวาสนา", "title": "พ.อ.หญิง", "given": "วาสนา", "family": "ใจดี"}
+{"name": "ใจดี, พล.ต.ต.สุรศักดิ์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "ใจดี"}
+{"name": "ใจดี, ว่าที่ร.ท.วินัย", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "ใจดี"}
+{"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ"}
 {"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
 {"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
 {"name": "ຊາຊິເລຍ ຮາມີສ ສໂຕເບີ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ", "initials": "ຊ. ຮ. ສ."}
@@ -6752,45 +6765,47 @@
 {"name": "ເຄທີ ມູລເລີ", "given": "ເຄທີ", "family": "ມູລເລີ", "initials": "ເ. ມ."}
 {"name": "ເອກະພົນ ນາລິນ", "order": "FAMILY_FIRST", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
 {"name": "ເອກະພົນ, ນາລິນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
-{"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
-{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
-{"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
-{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
-{"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "initials": "ဒ. ပ. ဒ. အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ.", "generation": "ဂျူနီယာ"}
-{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "initials": "ဒ. မ. ဘ. ဝ. ဟ. ရ. ဝ.", "generation": "ဂျူနီယာ"}
-{"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ", "initials": "မ. ပ. ဝ. ႁ. ရ. ဝ. မ."}
-{"name": "မူလာ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "မူးလႃႇ ၶေးတႃႇ", "order": "FAMILY_FIRST", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
-{"name": "မေရီ စူး ဟာမစ်ရှ် ဝပ်ဆင်", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "မေႇရီႇသူး ႁေးမိသျ် ဝတ်ႉသၼ်ႇ", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
-{"name": "ဝတ်ႉသၼ်ႇ မေႇရီႇသူး ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
-{"name": "ဝပ်ဆင် မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "ဝုတ်ႉသ်တႃႇ မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "order": "FAMILY_FIRST", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "family": "ဝုတ်ႉသ်တႃႇ", "initials": "မ. ပ. ဝ. ႁ. ရ. မ. ဝ."}
-{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. ဗ. ဝ. ဘ. ပ. ဒ. အ. က. ဆ. မ.", "generation": "ဂျူနီယာ"}
-{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "အာဒါ", "middle": "ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ ဘရူ", "initials": "အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ."}
-{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. မ. ဘ. ဝ. ဟ. ရ.", "generation": "ဂျူနီယာ"}
-{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ", "initials": "ဘ. ဝ. ဟ. ရ. ဝ."}
-{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "order": "FAMILY_FIRST", "given": "ပရူဝ်ႇလ်", "middle": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း", "initials": "ပ. ၵ. တ. ၶ. ဢ. ၶ. သ. မ. မ. ဝ."}
-{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "initials": "ၶ. ဢ. ၶ. သ. မ. မ. ဝ. ပ. ၵ. တ."}
-{"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
-{"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
-{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
-{"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "ဢၢႆႇရိၼ်း ဢႅတ်ႉလႃႇ", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
-{"name": "ဢႅတ်ႉလႃႇ ဢၢႆႇရိၼ်း", "order": "FAMILY_FIRST", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
-{"name": "ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "family": "မေႃယႃ", "initials": "ၶ. ဢ. ၶ. သ. မ. ဝ. ပ. ၵ. တ. မ."}
-{"name": "ၶေးတႃႇ မူးလႃႇ", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
-{"name": "ၸၸီးလီႇယႃႇ ႁေးမိသျ် သတူႇပႃႇ", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
-{"name": "ၸႅၼ်ႇတေႇယႃႇ", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
-{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
+{"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "ကြည် ကြည် ဌေး", "given": "ကြည်", "middle": "ကြည်", "family": "ဌေး"}
+{"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "ဌေး က. ခ.", "given": "ဌေး", "middle": "က.", "family": "ခ."}
+{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ"}
+{"name": "မူလာ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "မူးလႃႇ ၶေးတႃႇ", "order": "FAMILY_FIRST", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ"}
+{"name": "မေရီ စူး ဟာမစ်ရှ် ဝပ်ဆင်", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "မေႇရီႇသူး ႁေးမိသျ် ဝတ်ႉသၼ်ႇ", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ"}
+{"name": "ဝတ်ႉသၼ်ႇ မေႇရီႇသူး ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ"}
+{"name": "ဝပ်ဆင် မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "ဝုတ်ႉသ်တႃႇ မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "order": "FAMILY_FIRST", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "family": "ဝုတ်ႉသ်တႃႇ"}
+{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင်", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "အာဒါ", "middle": "ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ ဘရူ"}
+{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ"}
+{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "order": "FAMILY_FIRST", "given": "ပရူဝ်ႇလ်", "middle": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း"}
+{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်"}
+{"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ"}
+{"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "ဢၢႆႇရိၼ်း ဢႅတ်ႉလႃႇ", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ"}
+{"name": "ဢႅတ်ႉလႃႇ ဢၢႆႇရိၼ်း", "order": "FAMILY_FIRST", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ"}
+{"name": "ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "family": "မေႃယႃ"}
+{"name": "ၶေးတႃႇ မူးလႃႇ", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ"}
+{"name": "ၸၸီးလီႇယႃႇ ႁေးမိသျ် သတူႇပႃႇ", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ"}
+{"name": "ၸႅၼ်ႇတေႇယႃႇ", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "აბაშიძე მარიამ მართა", "order": "FAMILY_FIRST", "given": "მარიამ", "middle": "მართა", "family": "აბაშიძე", "initials": "მ. მ. ა."}
 {"name": "აბელ მამარდაშვილი", "given": "აბელ", "family": "მამარდაშვილი", "initials": "ა. მ."}
 {"name": "ალექსანდრე იაშვილი", "given": "ალექსანდრე", "family": "იაშვილი", "initials": "ა. ი."}
@@ -6844,6 +6859,9 @@
 {"name": "მიხეილ ჯოჯუა", "given": "მიხეილ", "family": "ჯოჯუა", "initials": "მ. ჯ."}
 {"name": "მონიკა ბელუჩი", "given": "მონიკა", "family": "ბელუჩი", "initials": "მ. ბ."}
 {"name": "მუხრან ვახტანგაძე", "given": "მუხრან", "family": "ვახტანგაძე", "initials": "მ. ვ."}
+{"name": "ნ.ბ. MA", "given": "ნ.ბ.", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "ნ. M.", "capitalized": "ნ.ბ. Ma"}
+{"name": "ნ.ბ. בן ბერიძე", "given": "ნ.ბ.", "family": "בן ბერიძე", "initials": "ნ. ბ."}
+{"name": "ნ.ბ. ბერიძე Jr. ნინო", "given": "ნ.ბ.", "middle": "ბერიძე Jr.", "family": "ნინო", "initials": "ნ. ბ. J. ნ."}
 {"name": "ნაკაშიძე თეკლა მარიამ", "order": "FAMILY_FIRST", "given": "თეკლა", "middle": "მარიამ", "family": "ნაკაშიძე", "initials": "თ. მ. ნ."}
 {"name": "ნელი მგალობლიშვილი", "given": "ნელი", "family": "მგალობლიშვილი", "initials": "ნ. მ."}
 {"name": "ნიკო ფიროსმანი", "given": "ნიკო", "family": "ფიროსმანი", "initials": "ნ. ფ."}
@@ -6851,6 +6869,8 @@
 {"name": "ნიკოლოზ სანიშვილი", "given": "ნიკოლოზ", "family": "სანიშვილი", "initials": "ნ. ს."}
 {"name": "ნინო", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
 {"name": "ნინო", "order": "FAMILY_FIRST", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
+{"name": "ნინო Smith", "given": "ნინო", "family": "Smith", "initials": "ნ. S."}
+{"name": "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "given": "ნინო", "family": "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "initials": "ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "ნოდარ ღვალაძე", "given": "ნოდარ", "family": "ღვალაძე", "initials": "ნ. ღ."}
 {"name": "ნოდარ ცინცაძე", "given": "ნოდარ", "family": "ცინცაძე", "initials": "ნ. ც."}
 {"name": "ნოდარ ჯობავა", "given": "ნოდარ", "family": "ჯობავა", "initials": "ნ. ჯ."}
@@ -6868,6 +6888,9 @@
 {"name": "შტიობერი ცეცილია ჰეიმიშ", "order": "FAMILY_FIRST", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ცეცილია ჰეიმიშ შტიობერი", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ხვიჩა კვარაცხელია", "given": "ხვიჩა", "family": "კვარაცხელია", "initials": "ხ. კ."}
+{"name": "ჯეკ MA", "given": "ჯეკ", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "ჯ. M.", "capitalized": "ჯეკ Ma"}
+{"name": "ჯეკ ბერიძე Jr. ბატონი", "title": "ბატონი", "given": "ჯეკ", "family": "ბერიძე", "suffix": "Jr.", "initials": "ჯ. ბ.", "generation": "Jr."}
+{"name": "ჯეკ ბერიძე MA ბატონი", "given": "ჯეკ", "middle": "ბერიძე MA", "family": "ბატონი", "initials": "ჯ. ბ. M. ბ.", "capitalized": "ჯეკ ბერიძე Ma ბატონი"}
 {"name": "김. 민준", "given": "민준", "family": "김."}
 {"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
 {"name": "이서연·김민준", "given": "이서연", "family": "김민준"}
@@ -6950,8 +6973,9 @@
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ", "middle": "ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠶ. ᠴ."}
 {"name": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "given": "ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ", "family": "ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ", "initials": "ᠬ. ᠴ."}
-{"name": "Ნინო Ბურჯანაძე", "given": "Ნინო", "family": "Ბურჯანაძე", "initials": "Ნ. Ბ.", "capitalized_force": "ნინო ბურჯანაძე"}
+{"name": "Ნინო Ბურჯანაძე", "given": "Ნინო", "family": "Ბურჯანაძე", "initials": "Ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
 {"name": "ᲜᲘᲜᲝ ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "given": "ᲜᲘᲜᲝ", "family": "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ", "initials": "Ნ. Ბ.", "capitalized": "ნინო ბურჯანაძე"}
+{"name": "Უჩა გოგოლაძე", "given": "Უჩა", "family": "გოგოლაძე", "initials": "Უ. გ.", "capitalized": "უჩა გოგოლაძე"}
 {"name": "Ḥabīballāh Kalakānī", "given": "Ḥabīballāh", "family": "Kalakānī", "initials": "Ḥ. K."}
 {"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "family": "al- Ḥakīm", "initials": "T. Ḥ."}
 {"name": "Ḥamza Fanṣūrī", "given": "Ḥamza", "family": "Fanṣūrī", "initials": "Ḥ. F."}
