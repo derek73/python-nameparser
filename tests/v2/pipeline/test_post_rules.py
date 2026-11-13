@@ -2251,6 +2251,8 @@ _TURKIC_THREE = [
     ("Aidai Mederbek kyzy, PhD", None, "kyzy"),
     ("Mederbek, Aidai Asel kyzy", None, "Mederbek"),
     ("kyzy, Aidai Mederbek", None, "kyzy"),
+    ("Asanov Bekov, Aidai Mederbek kyzy", None, "Asanov Bekov"),
+    (", Aidai Mederbek kyzy", None, ""),
     # the given-first order: a declared family-first one stands (O1's scope)
     ("Aidai Mederbek kyzy", PolicyPatch(name_order=FAMILY_FIRST), "Aidai"),
     ("Aidai Mederbek kyzy", PolicyPatch(name_order=FAMILY_FIRST_GIVEN_LAST),

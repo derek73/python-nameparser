@@ -125,6 +125,51 @@ def test_a_name_with_both_patronymic_shapes_reports_turkic() -> None:
     assert votes[Signal.PATRONYMIC] == PatronymicRule.TURKIC
 
 
+#: recorded behavior, not intent: both Turkic shapes count the words
+#: `_name_words` keeps, not rules/O2's name words, so each of these
+#: votes TURKIC where the rule reads nothing (decisions/group-suggestion,
+#: 2026-11-12 #1187). A change to either side moves a row.
+_TURKIC_VOTES_THE_RULE_DOES_NOT_READ = [
+    # a nickname counted as a word, a bracketed marker among them
+    'Aichurok "Aika" kyzy',
+    "Aichurok (Aika) kyzy",
+    "Ali Ahmad (oglu)",
+    # a given name P5 binds from two words
+    "Abdul Rahman oglu",
+    "Abu Bakr uulu",
+    "Abdul Rahman Ahmad oglu",
+    # a name before a suffix comma
+    "Aichurok Ergeshali kyzy, PhD",
+    "Aliyev Ilham Heydar oglu, PhD",
+    # a marker with a final full stop
+    "Aichurok Ergeshali Kyzy.",
+    "Aliyev Ilham Heydar oglu.",
+]
+
+
+@pytest.mark.parametrize("text", _TURKIC_VOTES_THE_RULE_DOES_NOT_READ)
+def test_a_turkic_vote_the_rule_does_not_read_changes_nothing(
+        text: str) -> None:
+    assert name_votes(text, L)[Signal.PATRONYMIC] == PatronymicRule.TURKIC
+    assert parser_for(locales.TR_AZ).parse(text) == Parser().parse(text)
+
+
+def test_a_four_word_name_holding_a_nickname_votes_where_the_rule_reads() -> None:
+    # its three name words are the shape rules/O2 reads (#1187)
+    text = 'Aliyev Ilham "Ali" oglu'
+    assert name_votes(text, L)[Signal.PATRONYMIC] == PatronymicRule.TURKIC
+    assert parser_for(locales.TR_AZ).parse(text).family == "Ilham oglu"
+
+
+def test_a_group_the_rule_does_not_read_gets_a_rule_that_moves_nothing() -> None:
+    group = ['Aichurok "Aika" kyzy', 'Gulnara "Gula" kyzy',
+             'Bakyt "Baka" uulu', 'Nurlan "Nuka" uulu', 'Aida "Ai" kyzy']
+    s = Parser().suggest(group)
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.TURKIC})
+    applied = Parser(policy=Policy().patched(s.patch))
+    assert [applied.parse(t) for t in group] == [Parser().parse(t) for t in group]
+
+
 @pytest.mark.parametrize("text", ["Smith, Mary", "", "   ", "Madonna"])
 def test_a_name_with_nothing_to_read_casts_nothing(text: str) -> None:
     assert name_votes(text, L) == {}
