@@ -110,8 +110,11 @@ def test_a_pair_goes_in_each_language_its_countries_hold_enough_of() -> None:
     languages_of = {"PL": ("pl",), "GB": ("en",), "US": ("en",), "CH": ("de", "fr")}
     assert tool.languages({"PL": 6, "GB": 1, "": 9}, languages_of) == ("pl",)
     assert tool.languages({"PL": 3, "GB": 2, "US": 1}, languages_of) == ("en", "pl")
-    # one holder is never enough, whatever its share
+    # one holder is never enough, whatever its share, and a country of
+    # several languages shares its holders among them
     assert tool.languages({"CH": 1}, languages_of) == (tool.SHARED,)
+    assert tool.languages({"CH": 4}, languages_of) == ("de", "fr")
+    assert tool.languages({"CH": 3}, languages_of) == (tool.SHARED,)
     assert tool.languages({}, languages_of) == (tool.SHARED,)
 
 

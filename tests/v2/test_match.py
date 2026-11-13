@@ -1664,9 +1664,9 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
     # pairs no source lists: Rickie is paired with Rick and Roderick,
-    # Pepe with nothing
+    # Pancho with nothing
     ("Rickie Smith", "Richard Smith"),
-    ("Pepe Smith", "José Smith"),
+    ("Pancho Smith", "Francisco Smith"),
 ])
 def test_a_familiar_form_reaches_only_its_listed_longer_names(
         a: str, b: str) -> None:
@@ -1710,7 +1710,8 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
                                     short_for=["Maxence"])
     assert lexicon._familiar_forms("Max") == shipped | {"maxence"}
     readings = [r for r in lexicon.readings_of("max") if r.kind == "familiar"]
-    assert sorted(r.languages for r in readings) == [(), ("en",)]
+    files = [r for r in readings if r.languages]
+    assert files and len(readings) == len(files) + 1
     assert next(r for r in readings if not r.languages).properties == (
         ("short_for", ("maxence",)),)
     matching = Matching(Parser(lexicon=lexicon),
@@ -1722,7 +1723,7 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
     again = lexicon.add("max", kind="familiar", short_for=["maxi"])
     assert again._familiar_forms("max") == shipped | {"maxence", "maxi"}
     assert len([r for r in again.readings_of("max")
-                if r.kind == "familiar"]) == 2
+                if r.kind == "familiar"]) == len(files) + 1
     added = Lexicon.empty().add("zzq", kind="familiar", short_for=["zzr"])
     assert added._familiar_forms("zzq") == {"zzr"}
     assert added._familiar_forms("zzr") == {"zzq"}
@@ -1799,19 +1800,18 @@ def test_no_parse_reads_a_familiar_form() -> None:
 
 def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     # a plain choice drops no familiar reading (a choice prefers by none);
-    # a strict one keeps its own files' alone: en.toml's for a strict
-    # choice of English, and none for one of German, whose file holds no
-    # familiar reading (decisions/name-matching, 2026-11-12 ENGLISH ONLY
-    # UNTIL REBUILT)
+    # a strict one keeps its own files' and mul.toml's alone: German's
+    # `aleks`, every language's `ajay`, and not English's `bill` nor the
+    # `max` of en.toml, it.toml, ru.toml and es.toml
     plain = Lexicon(_base="default", _languages={"de"})
     assert plain._familiar == Lexicon.default()._familiar
     assert plain._familiar_forms("max") == (
         Lexicon.default()._familiar_forms("max"))
-    english = Lexicon(_base="default", _languages={"en"}, _strict=True)
-    assert english._familiar == Lexicon.default()._familiar
     german = Lexicon(_base="default", _languages={"de"}, _strict=True)
+    assert german._familiar_forms("aleks") == {"aleksandra"}
+    assert german._familiar_forms("ajay") == {"ajaykumar"}
+    assert not german._familiar_forms("bill")
     assert not german._familiar_forms("max")
-    assert not german._familiar
 
 
 #: Accented pairs as a caller writes them, the shipped ones being English

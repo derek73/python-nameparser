@@ -87,21 +87,24 @@ def test_a_familiar_reading_written_by_hand_is_refused() -> None:
         tool.rewrite(hand, {"ed": {"edward"}}, "en.toml")
 
 
-def test_every_shipped_familiar_reading_is_the_lists_in_english() -> None:
+def test_every_shipped_reading_is_one_the_tool_writes() -> None:
     # nam_dict's pairs are not shipped: a compiler's list copied whole
     # keeps its licence, and nam_dict's is the GFDL
     # (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE
-    # MEASURE), so every familiar reading is the nicknames list's, in
-    # NICKNAMES_TAG's file
-    readings = {path.name: [e["familiar"] for e in
-                            tomllib.loads(path.read_text())["word"]
-                            if "familiar" in e]
-                for path in sorted(_VOCAB.glob("*.toml"))}
-    held = {name for name, found in readings.items() if found}
-    assert held == {f"{tool.NICKNAMES_TAG}.toml"}
-    assert len(readings[f"{tool.NICKNAMES_TAG}.toml"]) >= 1000
-    assert {r["note"] for found in readings.values() for r in found} == {
-        tool.NICKNAMES_SOURCE}
+    # MEASURE), so every familiar and spelling reading is the nicknames
+    # list's, in NICKNAMES_TAG's file, or the reviewed file's
+    by_kind: dict[str, list[tuple[str, str]]] = {k: [] for k in tool.KINDS}
+    for path in sorted(_VOCAB.glob("*.toml")):
+        for e in tomllib.loads(path.read_text())["word"]:
+            for kind in tool.KINDS:
+                if kind in e:
+                    by_kind[kind].append((path.name, e[kind]["note"]))
+    assert len(by_kind["familiar"]) >= 1000 and len(by_kind["spelling"]) >= 300
+    notes = {note for found in by_kind.values() for _, note in found}
+    assert notes <= tool._OWNED_NOTES
+    assert not any("nam_dict" in note for note in notes)
+    assert {name for found in by_kind.values() for name, note in found
+            if tool.NICKNAMES_SOURCE in note} == {f"{tool.NICKNAMES_TAG}.toml"}
 
 
 def test_stripping_the_tree_leaves_no_familiar_reading() -> None:
@@ -154,6 +157,7 @@ _PLANTED_LIST = ("name1,relationship,name2\r\n"
                  "william,has_nickname,will\r\n"
                  "william,has_nickname,bill\r\n"
                  "aaron,has_nickname,erin\r\n")
+_PLANTED_REVIEWED = "\t".join(tool.REVIEWED_HEADER) + "\n"
 _PLANTED_REFUSED = ("full\tnickname\tcategory\treason\n"
                     "aaron\terin\tdifferent-name\tresemblance only\n")
 
@@ -174,6 +178,9 @@ def planted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     refused = tmp_path / "refused.tsv"
     refused.write_text(_PLANTED_REFUSED, encoding="utf-8")
     monkeypatch.setattr(tool, "NICKNAMES_EXCLUDED", refused)
+    reviewed = tmp_path / "reviewed.tsv"
+    reviewed.write_text(_PLANTED_REVIEWED, encoding="utf-8")
+    monkeypatch.setattr(tool, "REVIEWED", reviewed)
     vocab = tmp_path / "vocab"
     vocab.mkdir()
     (vocab / "en.toml").write_text(_FILE, encoding="utf-8")
@@ -359,3 +366,121 @@ def test_no_refused_pair_is_shipped() -> None:
                if tool.build._normalize(full)
                in lexicon._familiar_forms(tool.build._normalize(nickname))]
     assert shipped == []
+
+
+# -- the reviewed pairs (decisions/name-matching, 2026-11-12 SPELLINGS ARE
+# A KIND OF THEIR OWN) --------------------------------------------------------
+
+def _reviewed(*rows: tuple[str, ...]) -> str:
+    return "\n".join(["\t".join(tool.REVIEWED_HEADER),
+                      *("\t".join(r) for r in rows)]) + "\n"
+
+
+def _row(a: str, b: str, category: str, status: str = "",
+         languages: str = "pl") -> tuple[str, ...]:
+    return (a, b, category, status, category, category, "why", languages,
+            "orcid", "3")
+
+
+def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
+    rows = tool.read_reviewed(_reviewed(
+        _row("george", "georgios", "translation", languages="el"),
+        _row("george", "jorge", "split", languages="es"),
+        _row("john", "jon", "spelling", "held", "en"),
+        _row("kasia", "katarzyna", "familiar", languages="pl en"),
+        _row("lukasz", "łukasz", "spelling"),
+    ))
+    placed = tool.place({"bill": {"william"}}, rows)
+    src = tool.REVIEWED_SOURCE
+    # a familiar pair on its shorter name, in each file its row names
+    assert placed["pl"]["kasia"] == {"familiar": {src: {"katarzyna"}}}
+    assert placed["en"]["kasia"] == {"familiar": {src: {"katarzyna"}}}
+    # a spelling on the second name in order, listing the first
+    assert placed["pl"]["łukasz"] == {"spelling": {src: {"lukasz"}}}
+    # held, split and recorded pairs ship nowhere
+    assert "jon" not in placed["en"] and "john" not in placed["en"]
+    assert "es" not in placed and "el" not in placed
+    # the nicknames list's own pair beside them
+    assert placed["en"]["bill"] == {"familiar": {tool.NICKNAMES_SOURCE: {"william"}}}
+
+
+def test_a_word_both_sources_pair_takes_one_reading_naming_both() -> None:
+    words = {"ed": {"familiar": {tool.NICKNAMES_SOURCE: {"edward"},
+                                 tool.REVIEWED_SOURCE: {"edwin"}}},
+             "zzs": {"spelling": {tool.REVIEWED_SOURCE: {"zzr"}}}}
+    out = tool.rewrite(_FILE, words, "en.toml")
+    assert out is not None
+    by_text = {e["text"]: e for e in tomllib.loads(out)["word"]}
+    assert by_text["ed"]["familiar"] == {
+        "short_for": ["edward", "edwin"],
+        "note": f"{tool.NICKNAMES_SOURCE}; {tool.REVIEWED_SOURCE}"}
+    assert by_text["zzs"]["spelling"] == {
+        "spelling_of": ["zzr"], "note": tool.REVIEWED_SOURCE}
+    # the tool owns both notes: regenerating is idempotent, and
+    # stripping gives the file back
+    assert tool.rewrite(out, words, "en.toml") == out
+    assert tool.strip(out) == _FILE
+    tool.build.compile_files({"en.toml": out})
+
+
+def test_a_spelling_written_by_hand_is_refused() -> None:
+    hand = _FILE.replace('given = { note = "x" }',
+                         'spelling = { spelling_of = ["edd"], note = "mine" }')
+    with pytest.raises(ValueError, match="holds a spelling reading"):
+        tool.rewrite(hand, {"ed": {"spelling": {tool.REVIEWED_SOURCE: {"edd"}}}},
+                     "en.toml")
+
+
+@pytest.mark.parametrize(("rows", "match"), [
+    ((("a",),), "fields"),
+    ((_row("kasia", "katarzyna", "nickname"),), "'nickname' is not one of"),
+    ((_row("kasia", "katarzyna", "familiar", "held"),), "only a spelling is held"),
+    ((_row("katarzyna", "kasia", "familiar"),), "in order"),
+    ((_row("Kasia", "katarzyna", "familiar"),), "normalized"),
+    ((_row("kasia", "katarzyna", "familiar"),
+      _row("kasia", "katarzyna", "familiar")), "listed twice or out of order"),
+    ((_row("lukasz", "łukasz", "spelling"),
+      _row("kasia", "katarzyna", "familiar")), "listed twice or out of order"),
+    ((_row("kasia", "katarzyna", "familiar", languages=""),), "needs a file"),
+])
+def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
+                                       match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        tool.read_reviewed(_reviewed(*rows))
+
+
+#: The reviewed pairs the review did not ship that the given names'
+#: listed spellings link all the same: written short by a `given`
+#: reading's `same_as` before this review (`moh`, `mohd`), or
+#: reached through a third spelling both words were agreed to be, as
+#: listed spellings chain (`yuri`, `natalia`, `viktoria`).
+_LINKED_WITHOUT_SHIPPING = {
+    ("moh", "mohammad"), ("mohammad", "mohd"),
+    ("mohammed", "mohd"), ("nataliia", "natalya"), ("victoria", "viktoriia"),
+    ("yurii", "yury")}
+
+
+def test_the_committed_review_ships_what_both_readers_agreed_and_no_more() -> None:
+    # offline: every agreed familiar pair is a familiar form, every
+    # agreed spelling not held a listed spelling, and no other pair is
+    # linked but those _LINKED_WITHOUT_SHIPPING names
+    from nameparser import Lexicon
+    rows = tool.load_reviewed()
+    assert len(rows) >= 1600
+    lexicon = Lexicon.default()
+    linked = set()
+    for r in rows:
+        a, b = r["a"], r["b"]
+        familiar = b in lexicon._familiar_forms(a)
+        spelling = bool(lexicon._headwords(a, "given")
+                        & lexicon._headwords(b, "given"))
+        if r["category"] == "familiar":
+            assert familiar, (a, b)
+        elif r["category"] == "spelling" and not r["status"]:
+            assert spelling, (a, b)
+        elif spelling:
+            linked.add((a, b))
+    assert linked == _LINKED_WITHOUT_SHIPPING
+    # the held pairs stay apart
+    held = [(r["a"], r["b"]) for r in rows if r["status"] == "held"]
+    assert held and not linked & set(held)

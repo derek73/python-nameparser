@@ -48,6 +48,7 @@ an error naming that command.
 from __future__ import annotations
 
 import argparse
+import collections
 import csv
 import hashlib
 import io
@@ -85,6 +86,23 @@ NICKNAMES_EXCLUDED = Path(__file__).with_name("nicknames_excluded.tsv")
 #: language, a name of its own, two forms of one name neither made from
 #: the other (which would reach each other through that name, as pairs
 #: never chain), or a pair the review could not settle.
+#: The pairs found in ORCID's public data file (CC0) by
+#: tools/vocab/familiar_candidates.py, as two readers reviewed them, and
+#: the note of every reading drawn from it (decisions/name-matching,
+#: 2026-11-12 SPELLINGS ARE A KIND OF THEIR OWN).
+REVIEWED = Path(__file__).with_name("familiar_reviewed.tsv")
+REVIEWED_SOURCE = ("found in ORCID's public data file (CC0) and reviewed, "
+                   "tools/vocab/familiar_reviewed.tsv")
+REVIEWED_HEADER = ["a", "b", "category", "status", "opus", "sonnet",
+                   "reason", "languages", "source", "holders"]
+#: A reviewed pair's categories: the two that ship (`familiar` and
+#: `spelling`), those recorded and not shipped, and `split`, a pair the
+#: two readers read differently, which ships nowhere.
+REVIEW_CATEGORIES = frozenset({
+    "familiar", "spelling", "translation", "transliteration",
+    "different-name", "sibling", "unclear", "abbreviation", "split"})
+#: Every source a reading's note may name, in the order a note names them.
+SOURCES = (NICKNAMES_SOURCE, REVIEWED_SOURCE)
 EXCLUSION_CATEGORIES = frozenset({
     "spelling", "translation", "different-name", "sibling", "unclear"})
 
@@ -243,16 +261,41 @@ def _toml_str(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def reading_line(longs: Iterable[str]) -> str:
-    short_for = ", ".join(_toml_str(w) for w in sorted(set(longs)))
-    return (f"familiar = {{ short_for = [{short_for}], "
-            f"note = {_toml_str(NICKNAMES_SOURCE)} }}")
+#: Each kind the tool writes and its list property.
+KINDS = {"familiar": "short_for", "spelling": "spelling_of"}
+#: word -> kind -> source note -> the names, as the tool writes a file.
+Words = Mapping[str, Mapping[str, Mapping[str, Iterable[str]]]]
+
+
+def _note(sources: Iterable[str]) -> str:
+    """A note naming each source, in SOURCES' order."""
+    named = set(sources)
+    return "; ".join(s for s in SOURCES if s in named)
+
+
+def reading_line(names: Iterable[str] | Mapping[str, Iterable[str]],
+                 kind: str = "familiar") -> str:
+    """One reading: the union of `names` (by source, or the nicknames
+    list's alone), its note naming every source that gave a name."""
+    by_source = (names if isinstance(names, Mapping)
+                 else {NICKNAMES_SOURCE: names})
+    union = sorted({w for ws in by_source.values() for w in ws})
+    listed = ", ".join(_toml_str(w) for w in union)
+    return (f"{kind} = {{ {KINDS[kind]} = [{listed}], "
+            f"note = {_toml_str(_note(by_source))} }}")
+
+
+#: The notes the tool writes: each non-empty run of SOURCES in order.
+_OWNED_NOTES = frozenset(
+    "; ".join(s for i, s in enumerate(SOURCES) if mask >> i & 1)
+    for mask in range(1, 2 ** len(SOURCES)))
 
 
 def _owned(line: str) -> bool:
-    """A familiar line the tool wrote: its note the nicknames list's."""
-    return line.startswith("familiar = {") and line.endswith(
-        f"note = {_toml_str(NICKNAMES_SOURCE)} }}")
+    """A familiar or spelling line the tool wrote: its note one it
+    writes, naming its sources and nothing else."""
+    return any(line.startswith(f"{kind} = {{") for kind in KINDS) and any(
+        line.endswith(f"note = {_toml_str(n)} }}") for n in _OWNED_NOTES)
 
 
 def strip(text: str, name: str = "the file") -> str:
@@ -292,13 +335,29 @@ def _entry_lines(lines: list[str]) -> dict[str, int]:
     return out
 
 
-def rewrite(text: str | None, words: Mapping[str, Iterable[str]],
+def _readings(value: Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]],
+              ) -> Mapping[str, Mapping[str, Iterable[str]]]:
+    """A word's readings, kind -> source -> names: a bare iterable of
+    names being the nicknames list's familiar form."""
+    if isinstance(value, Mapping):
+        return value
+    return {"familiar": {NICKNAMES_SOURCE: value}}
+
+
+def _lines(value: Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]],
+           ) -> list[str]:
+    readings = _readings(value)
+    return [reading_line(readings[k], k) for k in KINDS if k in readings]
+
+
+def rewrite(text: str | None,
+            words: Mapping[str, Iterable[str] | Mapping[str, Mapping[str, Iterable[str]]]],
             name: str) -> str | None:
-    """`text` (None for a file that does not exist) with the familiar
-    readings of `words` (each familiar form -> the names it stands for)
-    written in, or None where the file would hold nothing. Raises
-    ValueError where a word holds a familiar reading the tool does not
-    own."""
+    """`text` (None for a file that does not exist) with the readings of
+    `words` written in (each word -> kind -> source -> its names; a bare
+    iterable of names is the nicknames list's familiar form), or None
+    where the file would hold nothing. Raises ValueError where a word
+    holds a familiar or spelling reading the tool does not own."""
     base = strip(text, name) if text is not None else "schema = 1\n"
     if not words:
         # untouched but for what the tool wrote; a file only the tool
@@ -308,20 +367,24 @@ def rewrite(text: str | None, words: Mapping[str, Iterable[str]],
     held = {e["text"]: e for e in tomllib.loads(base).get("word", [])}
     at = _entry_lines(lines)
     for word in sorted(words):
-        if word in held and "familiar" in held[word]:
-            raise ValueError(f"{name}: {word!r} holds a familiar reading "
-                             f"tools/vocab/familiar.py does not own; merge "
-                             f"it by hand or remove it")
+        for kind in _readings(words[word]):
+            if word in held and kind in held[word]:
+                raise ValueError(f"{name}: {word!r} holds a {kind} reading "
+                                 f"tools/vocab/familiar.py does not own; "
+                                 f"merge it by hand or remove it")
     # insert from the bottom, so the indexes above stay put
     for word in sorted((w for w in words if w in at), key=at.__getitem__,
                        reverse=True):
-        lines.insert(at[word] + 1, reading_line(words[word]))
-    new = sorted(w for w in words if w not in at)
+        lines[at[word] + 1:at[word] + 1] = _lines(words[word])
+    # the build's word order (check 10): by kind, then by text, the
+    # kinds the tool writes carrying no same_as
+    new = sorted((w for w in words if w not in at), key=lambda w: (
+        min(build.KIND_ORDER[k] for k in _readings(words[w])), w))
     if new:
         lines += ["", BEGIN]
         for word in new:
             lines += ["", "[[word]]", f"text = {_toml_str(word)}",
-                      reading_line(words[word])]
+                      *_lines(words[word])]
         lines += ["", END]
     return "\n".join(lines) + "\n"
 
@@ -331,31 +394,110 @@ def _read(path: Path) -> str | None:
     return path.read_text(encoding="utf-8") if path.exists() else None
 
 
-def expected(nicknames: Nicknames,
-             vocab: Path = VOCAB) -> dict[Path, str | None]:
-    """Every vocabulary file the tool writes or would remove, with the
-    text it should hold (None: no file): the nicknames list's pairs in
-    NICKNAMES_TAG's, and every other file without a reading the tool
-    owns."""
-    out: dict[Path, str | None] = {}
-    tags = {p.name[:-5] for p in vocab.glob("*.toml")} | {NICKNAMES_TAG}
-    for tag in sorted(tags):
-        path = vocab / f"{tag}.toml"
-        out[path] = rewrite(_read(path),
-                            nicknames if tag == NICKNAMES_TAG else {},
-                            path.name)
+def read_reviewed(text: str) -> list[dict[str, str]]:
+    """The reviewed pairs' rows. Raises ValueError for another header, a
+    row of another width, an unknown category or status, a pair listed
+    twice or written out of order, a pair whose two names normalize
+    alike or are not normalized, a held pair that is no spelling, and a
+    shipping pair placed in no file."""
+    rows = list(csv.reader(io.StringIO(text), delimiter="\t"))
+    if not rows or rows[0] != REVIEWED_HEADER:
+        raise ValueError(f"{REVIEWED.name}: the header is "
+                         f"{rows[0] if rows else None}, not {REVIEWED_HEADER}")
+    out = []
+    seen: set[tuple[str, str]] = set()
+    for number, row in enumerate(rows[1:], 2):
+        if len(row) != len(REVIEWED_HEADER):
+            raise ValueError(f"{REVIEWED.name} line {number}: not "
+                             f"{len(REVIEWED_HEADER)} fields: {row!r}")
+        r = dict(zip(REVIEWED_HEADER, row))
+        pair = (r["a"], r["b"])
+        if r["category"] not in REVIEW_CATEGORIES:
+            raise ValueError(f"{REVIEWED.name} line {number}: "
+                             f"{r['category']!r} is not one of "
+                             f"{sorted(REVIEW_CATEGORIES)}")
+        if r["status"] not in ("", "held") or (
+                r["status"] and r["category"] != "spelling"):
+            raise ValueError(f"{REVIEWED.name} line {number}: status "
+                             f"{r['status']!r}; only a spelling is held")
+        if not (r["a"] < r["b"]) or any(
+                build._normalize(w) != w for w in pair):
+            raise ValueError(f"{REVIEWED.name} line {number}: a pair is "
+                             f"two different names, normalized, in order")
+        if pair in seen or (out and (out[-1]["a"], out[-1]["b"]) > pair):
+            raise ValueError(f"{REVIEWED.name} line {number}: {pair} is "
+                             f"listed twice or out of order")
+        if r["category"] in KINDS and not r["languages"].split():
+            raise ValueError(f"{REVIEWED.name} line {number}: a "
+                             f"{r['category']} pair needs a file")
+        seen.add(pair)
+        out.append(r)
     return out
 
 
-def stale(nicknames: Nicknames, vocab: Path = VOCAB) -> list[Path]:
+def load_reviewed() -> list[dict[str, str]]:
+    return read_reviewed(REVIEWED.read_text(encoding="utf-8"))
+
+
+#: tag -> the words its file holds, as the tool writes them.
+Placements = dict[str, dict[str, dict[str, dict[str, set[str]]]]]
+
+
+def place(nicknames: Nicknames,
+          reviewed: Iterable[Mapping[str, str]] = ()) -> Placements:
+    """Every reading the tool writes, by file: the nicknames list's
+    familiar forms in NICKNAMES_TAG's file, and each reviewed pair the
+    two readers agreed on in the file of each language its row names,
+    held pairs left out. A familiar pair is written on its shorter name,
+    the familiar form, then the first in order; a spelling on the second
+    in order, listing the first, a link the match reads either way."""
+    out: Placements = {}
+
+    def put(tag: str, word: str, kind: str, src: str, name: str) -> None:
+        (out.setdefault(tag, {}).setdefault(word, {}).setdefault(kind, {})
+            .setdefault(src, set()).add(name))
+
+    for short, longs in nicknames.items():
+        for long in longs:
+            put(NICKNAMES_TAG, short, "familiar", NICKNAMES_SOURCE, long)
+    for r in reviewed:
+        if r["category"] not in KINDS or r["status"] == "held":
+            continue
+        a, b = r["a"], r["b"]
+        if r["category"] == "familiar":
+            word, name = (b, a) if len(b) < len(a) else (a, b)
+        else:
+            word, name = b, a
+        for tag in r["languages"].split():
+            put(tag, word, r["category"], REVIEWED_SOURCE, name)
+    return out
+
+
+def expected(placements: Placements,
+             vocab: Path = VOCAB) -> dict[Path, str | None]:
+    """Every vocabulary file the tool writes or would remove, with the
+    text it should hold (None: no file): each file's placements (place),
+    and every other file without a reading the tool owns."""
+    out: dict[Path, str | None] = {}
+    tags = {p.name[:-5] for p in vocab.glob("*.toml")} | set(placements)
+    for tag in sorted(tags):
+        path = vocab / f"{tag}.toml"
+        out[path] = rewrite(_read(path), placements.get(tag, {}), path.name)
+    return out
+
+
+def stale(placements: Placements, vocab: Path = VOCAB) -> list[Path]:
     """The files whose text differs from what the tool writes."""
-    return [path for path, text in expected(nicknames, vocab).items()
+    return [path for path, text in expected(placements, vocab).items()
             if _read(path) != text]
 
 
-def source() -> Nicknames:
-    """The nicknames list's pairs kept, read from the cache."""
-    return keep_nicknames(load_nicknames(), load_exclusions())
+def source() -> Placements:
+    """Both sources' readings, by file: the nicknames list's pairs kept,
+    read from the cache, and the reviewed pairs committed beside this
+    tool."""
+    return place(keep_nicknames(load_nicknames(), load_exclusions()),
+                 load_reviewed())
 
 
 def _shown(path: Path) -> str:
@@ -378,19 +520,21 @@ def main(argv: list[str] | None = None) -> int:
     if args.fetch:
         print(f"cached {fetch_nicknames()}", file=sys.stderr)
         return 0
-    nicknames = source()
+    placements = source()
     if args.check:
-        files = stale(nicknames, VOCAB)
+        files = stale(placements, VOCAB)
         for path in files:
             print(f"{_shown(path)} is stale; run "
                   f"uv run python tools/vocab/familiar.py --write",
                   file=sys.stderr)
         return 1 if files else 0
-    print(f"{NICKNAMES_TAG}.toml: {len(nicknames)} familiar forms, "
-          f"{sum(len(v) for v in nicknames.values())} pairs from the "
-          f"nicknames list")
+    for tag in sorted(placements):
+        kinds = collections.Counter(k for rs in placements[tag].values()
+                                    for k in rs)
+        print(f"{tag}.toml: " + ", ".join(
+            f"{n} {k} readings" for k, n in sorted(kinds.items())))
     if args.write:
-        for path, text in expected(nicknames, VOCAB).items():
+        for path, text in expected(placements, VOCAB).items():
             if _read(path) == text:
                 continue
             if text is None:

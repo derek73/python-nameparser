@@ -463,6 +463,12 @@ MUTATIONS = [
     ("familiar-short-for-twice", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr", "zzr"], note = "x" }')}, "each once"),
     ("familiar-short-for-two-words", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zz r"], note = "x" }')}, "one word"),
     ("familiar-unknown-key", {"en.toml": _w('[[word]]\ntext = "zzq"\nfamiliar = { short_for = ["zzr"], note = "x", expands = "y" }')}, "unknown key 'expands'"),
+    ("spelling-without-spelling-of", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { note = "x" }')}, "spelling_of must be a non-empty list"),
+    ("spelling-of-itself", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { spelling_of = ["zzq"], note = "x" }')}, "never the word itself"),
+    ("spelling-of-not-normalized", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { spelling_of = ["Zzr"], note = "x" }')}, "written normalized"),
+    ("spelling-without-note", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { spelling_of = ["zzr"] }')}, "a spelling reading needs a `note`"),
+    ("spelling-with-same-as", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { spelling_of = ["zzr"], note = "x", same_as = "zzr" }')}, "unknown key 'same_as'"),
+    ("spelling-with-short-for", {"en.toml": _w('[[word]]\ntext = "zzq"\nspelling = { spelling_of = ["zzr"], note = "x", short_for = ["zzr"] }')}, "unknown key 'short_for'"),
     # check 13 is not suppressed by a familiar reading beside the
     # mul.toml vocabulary reading
     ("mul-word-with-a-familiar-reading-and-a-name-elsewhere", {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\nfamiliar = { short_for = ["zzr"], note = "x" }'), "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }')}, "en.toml: 'zzq' given: .* a strict choice reads where it drops"),
@@ -1121,6 +1127,8 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
         props = '{ note = "probe" }'
     if build.CATEGORY.get(kind) == "familiar" and props == "{}":
         props = '{ short_for = ["zzr"], note = "probe" }'
+    if build.CATEGORY.get(kind) == "spelling" and props == "{}":
+        props = '{ spelling_of = ["zzr"], note = "probe" }'
     entry = f'{kind} = {props}'
     if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
         entry = 'given = { note = "probe" }\n' + entry
@@ -1130,10 +1138,13 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
         compiled = build.compile_files(files)
-    # a word is in a set of phrases where it opens one (TITLE_PHRASES)
+    # a word is in a set of phrases where it opens one (TITLE_PHRASES),
+    # and in SAME_AS where a group of it holds the word
     return {name for name, value in compiled.items()
             if text in value or any(isinstance(v, str) and v.startswith(text + " ")
-                                    for v in value)}
+                                    for v in value)
+            or (isinstance(value, dict) and any(
+                isinstance(g, dict) and text in g for g in value.values()))}
 
 
 #: For each behavioral property, a reading that sets it away from its
@@ -1199,13 +1210,17 @@ def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
     for prop, kind_of, applies, *_ in rows:
         name = _code(prop)[0]
         if kind_of == "matching":
-            # a matching property is a familiar reading's alone
-            assert set(_code(applies)) == {"familiar"}, name
+            # a matching property is one matching-only category's alone
+            assert set(_code(applies)) == {
+                c for c, (_, prop) in build._MATCHING_CATEGORIES.items()
+                if prop == name}, name
             continue
-        # a familiar reading takes only the descriptive keys in FAMILIAR_KEYS
+        # a familiar or spelling reading takes only the descriptive keys
+        # its table allows
         if kind_of == "descriptive":
-            assert ("`familiar`" in applies) == (
-                name not in build.FAMILIAR_KEYS), name
+            for category, (keys, _) in build._MATCHING_CATEGORIES.items():
+                assert (f"`{category}`" in applies) == (
+                    name not in keys), (name, category)
         if kind_of in ("behavioral", "stated"):
             table = build.BEHAVIORAL if kind_of == "behavioral" else build.STATED
             assert set(_code(applies)) == {

@@ -3835,6 +3835,7 @@ credential = { expands = "Doctor of Education" }
 
 [[word]]
 text = "edd"
+familiar = { short_for = ["edward"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 [word.credential]
 [word.credential.excluded]
 cased = { reason = "a mask applies in every role, and Edd is borne as a given name: 'edd smith' would render 'EdD Smith' and 'EDD KIMBER' 'EdD Kimber' (measured 2026-09-24)", issue = 459 }
@@ -5759,7 +5760,7 @@ given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", not
 
 [[word]]
 text = "jo"
-familiar = { short_for = ["joan", "joann", "joanna", "joanne", "jocelyn", "jody", "johanna", "johannah", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["joan", "joann", "joanna", "joanne", "jocelyn", "jody", "johanna", "johannah", "joseph", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 given = { us_ssa = 180911, wikidata = 975, as_of = 2026-11-08, note = "Jo, a given name of its own: US SSA births summed over both sexes (F 179,057, M 1,854); nam_dict band 6 in the Netherlands and Korea, 5 in the U.S.A.; Wikidata (a lower bound) United States 143, United Kingdom 118, the Netherlands 106; also a Korean surname (US Census 2010 3,588 bearers, Wikidata 1,322, South Korea 1,116). Beside fil.toml's José written short, it makes the name match read Jo as José only written Jo. (decisions/name-matching, 2026-11-08)" }
 
 [[word]]
@@ -5977,6 +5978,14 @@ text = "abe"
 familiar = { short_for = ["abel", "abraham", "abram"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "abhi"
+familiar = { short_for = ["abhishek"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "abi"
+familiar = { short_for = ["abigail"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ada"
 familiar = { short_for = ["adaline", "adeline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -5997,6 +6006,10 @@ text = "adelaide"
 familiar = { short_for = ["della"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "adi"
+familiar = { short_for = ["aditya", "adrian"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "adie"
 familiar = { short_for = ["ada", "adaline", "adela", "adelaide"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -6010,7 +6023,7 @@ familiar = { short_for = ["andriane"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "aga"
-familiar = { short_for = ["agatha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["agatha", "agnieszka"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "aggy"
@@ -6019,6 +6032,10 @@ familiar = { short_for = ["agatha", "agnes", "augusta", "augustina"], note = "ni
 [[word]]
 text = "al"
 familiar = { short_for = ["alan", "alanson", "alastair", "albert", "aldo", "alex", "alexander", "alfonse", "alfred", "allan", "allen", "alonzo", "alyssa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "ale"
+familiar = { short_for = ["alejandro"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "alec"
@@ -6030,7 +6047,11 @@ familiar = { short_for = ["aleksandr"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "alex"
-familiar = { short_for = ["aleksandr", "alexa", "alexander", "alexandra", "alexandria", "alexis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alejandra", "alejandro", "aleksandar", "aleksandr", "aleksei", "alessandra", "alessandro", "alexa", "alexander", "alexandr", "alexandra", "alexandre", "alexandria", "alexandros", "alexandru", "alexis", "oleksandr"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "alexa"
+familiar = { short_for = ["alexandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "alfy"
@@ -6042,19 +6063,23 @@ familiar = { short_for = ["algernon"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "ali"
-familiar = { short_for = ["alazama", "alison", "allisandra", "allison", "allyson", "allyssa", "almena"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alazama", "alexandra", "aliakbar", "alireza", "alison", "allisandra", "allison", "allyson", "allyssa", "almena", "seyedali"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "alix"
 familiar = { short_for = ["alixandra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "alli"
+familiar = { short_for = ["allison"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "allie"
-familiar = { short_for = ["aileen", "alberta", "alice", "alicia", "alison", "allisandra", "allison", "allyson", "allyssa", "almena"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["aileen", "alberta", "alexandra", "alexandria", "alice", "alicia", "alison", "allisandra", "allison", "allyson", "allyssa", "almena"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ally"
-familiar = { short_for = ["allisandra", "allison", "allyson", "allyssa", "almena", "althea", "alyssa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alexandra", "allisandra", "allison", "allyson", "allyssa", "almena", "althea", "alyssa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "alphus"
@@ -6069,6 +6094,14 @@ text = "amanda"
 familiar = { short_for = ["mandie", "mandy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "amin"
+familiar = { short_for = ["mohammadamin"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "amir"
+familiar = { short_for = ["amirhossein", "amirmohammad"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ance"
 familiar = { short_for = ["anselm"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -6077,16 +6110,32 @@ text = "andi"
 familiar = { short_for = ["andrea"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "andie"
+familiar = { short_for = ["andrea"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "andy"
-familiar = { short_for = ["anderson", "andrea", "andrew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["anderson", "andrea", "andreas", "andrew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "ange"
+familiar = { short_for = ["angela"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "angel"
 familiar = { short_for = ["angela", "angelica", "angelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "angi"
+familiar = { short_for = ["angela"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "angie"
 familiar = { short_for = ["angela", "angelica", "angelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "ania"
+familiar = { short_for = ["anna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ann"
@@ -6094,7 +6143,7 @@ familiar = { short_for = ["annie", "nancy", "rosaenn", "rosaenna", "roseann", "r
 
 [[word]]
 text = "anna"
-familiar = { short_for = ["annie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["annie", "anya"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "annie"
@@ -6115,6 +6164,14 @@ familiar = { short_for = ["anthony", "antonio"], note = "nicknames list (Old Dom
 [[word]]
 text = "anthony"
 familiar = { short_for = ["tony"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "antonis"
+familiar = { short_for = ["antonios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "anu"
+familiar = { short_for = ["anupama", "anuradha"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "app"
@@ -6142,7 +6199,7 @@ familiar = { short_for = ["archibald"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "ari"
-familiar = { short_for = ["ariadne", "ariana", "arianna", "ariel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["ariadne", "ariana", "arianna", "ariel", "aryeh"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "arie"
@@ -6170,7 +6227,7 @@ familiar = { short_for = ["artemus", "arthur"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "ash"
-familiar = { short_for = ["ashley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["ashleigh", "ashley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "assene"
@@ -6179,6 +6236,10 @@ familiar = { short_for = ["asenath"], note = "nicknames list (Old Dominion Unive
 [[word]]
 text = "athy"
 familiar = { short_for = ["eighta"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "avi"
+familiar = { short_for = ["abraham", "avinash", "avraham"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ax"
@@ -6193,8 +6254,16 @@ text = "bab"
 familiar = { short_for = ["babs", "barbara"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "babis"
+familiar = { short_for = ["charalampos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "babs"
 familiar = { short_for = ["barbara"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "barb"
+familiar = { short_for = ["barbara"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "barbara"
@@ -6229,24 +6298,48 @@ text = "bartholomew"
 familiar = { short_for = ["bart"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "bas"
+familiar = { short_for = ["sebastiaan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "basia"
+familiar = { short_for = ["barbara"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "bat"
 familiar = { short_for = ["bartholomew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "bea"
-familiar = { short_for = ["beatrice"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["beatrice", "beatriz"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "beatrice"
 familiar = { short_for = ["bea"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "bec"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "becca"
 familiar = { short_for = ["rebecca"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "becci"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "beck"
 familiar = { short_for = ["becca", "rebecca"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "becki"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "beckie"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "becky"
@@ -6263,6 +6356,10 @@ familiar = { short_for = ["abednego"], note = "nicknames list (Old Dominion Univ
 [[word]]
 text = "beedy"
 familiar = { short_for = ["obedience"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "beki"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "bell"
@@ -6286,7 +6383,7 @@ familiar = { short_for = ["benjy"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "benji"
-familiar = { short_for = ["ben"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["ben", "benjamin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "benjy"
@@ -6306,7 +6403,7 @@ familiar = { short_for = ["bernard"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "bernie"
-familiar = { short_for = ["bernard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["bernadette", "bernard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "berny"
@@ -6334,7 +6431,7 @@ familiar = { short_for = ["bess", "elizabeth"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "beth"
-familiar = { short_for = ["bethena", "elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["bethany", "bethena", "elisabeth", "elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "betsy"
@@ -6346,7 +6443,11 @@ familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "bev"
-familiar = { short_for = ["beverly"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["beverley", "beverly"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "bex"
+familiar = { short_for = ["rebecca"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "bias"
@@ -6421,8 +6522,16 @@ text = "bridie"
 familiar = { short_for = ["bridget"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "brie"
+familiar = { short_for = ["brianne"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "brina"
 familiar = { short_for = ["sabrina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "brit"
+familiar = { short_for = ["brittany"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "britt"
@@ -6502,7 +6611,7 @@ familiar = { short_for = ["carlton"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "carly"
-familiar = { short_for = ["carla", "karla"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["carla", "carolyn", "karla"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "carm"
@@ -6534,19 +6643,39 @@ familiar = { short_for = ["carol", "caroline", "carolyn"], note = "nicknames lis
 
 [[word]]
 text = "casey"
-familiar = { short_for = ["catherine", "cathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["cassandra", "catherine", "cathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "cass"
-familiar = { short_for = ["cassidy", "cassie", "caswell"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["cassandra", "cassidy", "cassie", "caswell"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "cassie"
-familiar = { short_for = ["cassandra", "cassidy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["cassandra", "cassidy", "cassondra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "cassy"
+familiar = { short_for = ["cassandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "cat"
+familiar = { short_for = ["catherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "cate"
+familiar = { short_for = ["catherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "cath"
+familiar = { short_for = ["catherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "catherine"
 familiar = { short_for = ["cathy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "cathie"
+familiar = { short_for = ["catherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "cathleen"
@@ -6555,6 +6684,14 @@ familiar = { short_for = ["cathy"], note = "nicknames list (Old Dominion Univers
 [[word]]
 text = "cathy"
 familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "catie"
+familiar = { short_for = ["catherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "caz"
+familiar = { short_for = ["caroline"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ced"
@@ -6586,7 +6723,7 @@ familiar = { short_for = ["charlie"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "charlie"
-familiar = { short_for = ["charles"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["charles", "charlotte"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "charlotte"
@@ -6633,12 +6770,24 @@ text = "chick"
 familiar = { short_for = ["charles"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "chip"
+familiar = { short_for = ["charles"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "chris"
-familiar = { short_for = ["christa", "christian", "christiana", "christiano", "christina", "christine", "christoffer", "christoph", "christopher", "crystal", "kristen", "kristin", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["christa", "christiaan", "christian", "christiana", "christiano", "christina", "christine", "christoffer", "christoph", "christopher", "christos", "crystal", "kristen", "kristin", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "chrissie"
+familiar = { short_for = ["christine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "chrissy"
 familiar = { short_for = ["christina", "christine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "christie"
+familiar = { short_for = ["christine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "christina"
@@ -6689,6 +6838,10 @@ text = "claud"
 familiar = { short_for = ["claudia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "clay"
+familiar = { short_for = ["clayton"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "cleat"
 familiar = { short_for = ["cleatus"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -6703,6 +6856,10 @@ familiar = { short_for = ["clifford", "clifton"], note = "nicknames list (Old Do
 [[word]]
 text = "clifford"
 familiar = { short_for = ["cliff"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "clint"
+familiar = { short_for = ["clinton"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "clo"
@@ -6761,6 +6918,14 @@ text = "corny"
 familiar = { short_for = ["cornelia", "cornelius"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "cory"
+familiar = { short_for = ["corinne"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "costas"
+familiar = { short_for = ["constantinos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "court"
 familiar = { short_for = ["courtney"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -6771,6 +6936,10 @@ familiar = { short_for = ["socrates"], note = "nicknames list (Old Dominion Univ
 [[word]]
 text = "creasey"
 familiar = { short_for = ["lucretia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "cris"
+familiar = { short_for = ["christine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "crissy"
@@ -6793,8 +6962,16 @@ text = "cy"
 familiar = { short_for = ["cyrenius", "cyrus", "onicyphorous"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "cyndi"
+familiar = { short_for = ["cynthia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "cyphorus"
 familiar = { short_for = ["onicyphorous"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "daan"
+familiar = { short_for = ["daniel"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "dacey"
@@ -6877,12 +7054,20 @@ text = "debby"
 familiar = { short_for = ["debbie", "debora", "deborah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "debi"
+familiar = { short_for = ["deborah"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "deborah"
 familiar = { short_for = ["debbie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "debra"
 familiar = { short_for = ["debbie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "debs"
+familiar = { short_for = ["deborah"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "dee"
@@ -6945,8 +7130,12 @@ text = "denny"
 familiar = { short_for = ["dennis", "dennison"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "des"
+familiar = { short_for = ["desmond"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "di"
-familiar = { short_for = ["diana", "diane"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["diana", "diane", "dianne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "diah"
@@ -6985,8 +7174,16 @@ text = "dilly"
 familiar = { short_for = ["deliverance"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "dima"
+familiar = { short_for = ["dmitriy", "dmitry"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "dina"
 familiar = { short_for = ["adena", "geraldine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "dita"
+familiar = { short_for = ["anindita"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "dite"
@@ -7149,6 +7346,10 @@ text = "effy"
 familiar = { short_for = ["euphemia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "ehsan"
+familiar = { short_for = ["seyedehsan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "el"
 familiar = { short_for = ["ella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7158,7 +7359,7 @@ familiar = { short_for = ["elbertson"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "eli"
-familiar = { short_for = ["elias", "elijah", "elisha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elias", "eliezer", "elijah", "elisha", "elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "eliza"
@@ -7170,19 +7371,23 @@ familiar = { short_for = ["beth", "eliza"], note = "nicknames list (Old Dominion
 
 [[word]]
 text = "ella"
-familiar = { short_for = ["eliana", "gabriella", "gabrielle", "luella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["eleanor", "eliana", "gabriella", "gabrielle", "luella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "elle"
 familiar = { short_for = ["eliana"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "ellen"
+familiar = { short_for = ["ellie"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ellie"
-familiar = { short_for = ["danielle", "eleanor", "eliana", "elmira", "helen", "helene"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["danielle", "eleanor", "eliana", "elizabeth", "elmira", "helen", "helene"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "elly"
-familiar = { short_for = ["elmira"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["eleanor", "elmira"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "elsey"
@@ -7195,6 +7400,10 @@ familiar = { short_for = ["elvira"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "em"
 familiar = { short_for = ["emeline", "emil", "emilia", "emily", "emma"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "emma"
+familiar = { short_for = ["emmanuelle"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "emmy"
@@ -7250,11 +7459,15 @@ familiar = { short_for = ["evangeline", "evelyn"], note = "nicknames list (Old D
 
 [[word]]
 text = "eva"
-familiar = { short_for = ["evaline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["evaline", "evangelia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "eve"
 familiar = { short_for = ["evaline", "evelyn", "genevieve"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "evie"
+familiar = { short_for = ["evangeline", "evelyn"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "exie"
@@ -7305,6 +7518,10 @@ text = "felty"
 familiar = { short_for = ["valentina", "valentine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "femi"
+familiar = { short_for = ["olufemi", "oluwafemi"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ferbie"
 familiar = { short_for = ["pheriba"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7345,8 +7562,12 @@ text = "ford"
 familiar = { short_for = ["bradford", "clifford"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "fotis"
+familiar = { short_for = ["fotios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "fran"
-familiar = { short_for = ["frances", "francine", "francis", "franklin", "franklind"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["frances", "francesca", "francine", "francis", "franklin", "franklind"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "francie"
@@ -7366,7 +7587,7 @@ familiar = { short_for = ["francis", "frankie", "franklin", "franklind"], note =
 
 [[word]]
 text = "frankie"
-familiar = { short_for = ["frances", "francis", "frank"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["frances", "francesca", "francis", "frank"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "franky"
@@ -7386,7 +7607,7 @@ familiar = { short_for = ["frances", "francine"], note = "nicknames list (Old Do
 
 [[word]]
 text = "fred"
-familiar = { short_for = ["alfred", "ferdinand", "ferdinando", "frederick", "frieda", "wilfred", "winnifred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alfred", "ferdinand", "ferdinando", "frederic", "frederick", "frieda", "wilfred", "winnifred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "freda"
@@ -7425,6 +7646,14 @@ text = "gabe"
 familiar = { short_for = ["gabriel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "gabi"
+familiar = { short_for = ["gabriele", "gabriella", "gabrielle"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "gaby"
+familiar = { short_for = ["gabriel", "gabriela", "gabriella"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "gail"
 familiar = { short_for = ["abbigail", "abbigale", "abigail", "abigale"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7453,6 +7682,10 @@ text = "gay"
 familiar = { short_for = ["gerhardt"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "ged"
+familiar = { short_for = ["gerard"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "gee"
 familiar = { short_for = ["jehu"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7470,7 +7703,7 @@ familiar = { short_for = ["georgiana"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "georgie"
-familiar = { short_for = ["george", "georgia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["george", "georgia", "georgina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "geraldine"
@@ -7478,7 +7711,7 @@ familiar = { short_for = ["jerry"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "geri"
-familiar = { short_for = ["jerry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["geraldine", "jerry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "gerri"
@@ -7490,7 +7723,7 @@ familiar = { short_for = ["geraldine"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "gerry"
-familiar = { short_for = ["gerald", "geraldine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["gerald", "geraldine", "gerard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "gert"
@@ -7505,12 +7738,24 @@ text = "gertrude"
 familiar = { short_for = ["gertie", "trudy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "giannis"
+familiar = { short_for = ["ioannis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "gil"
 familiar = { short_for = ["gilbert"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "gill"
+familiar = { short_for = ["gillian"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "gilly"
+familiar = { short_for = ["gillian"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "gina"
-familiar = { short_for = ["regina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["georgina", "regina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ginger"
@@ -7531,6 +7776,10 @@ familiar = { short_for = ["gloria"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "gory"
 familiar = { short_for = ["gregory"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "gosia"
+familiar = { short_for = ["malgorzata", "małgorzata"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "govie"
@@ -7574,7 +7823,7 @@ familiar = { short_for = ["montgomery"], note = "nicknames list (Old Dominion Un
 
 [[word]]
 text = "gus"
-familiar = { short_for = ["august", "augustine", "augustus", "gustavus"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["august", "augustine", "augustus", "gustavo", "gustavus"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "gussie"
@@ -7597,8 +7846,16 @@ text = "ham"
 familiar = { short_for = ["hamilton"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "hamid"
+familiar = { short_for = ["hamidreza"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "hank"
 familiar = { short_for = ["henrietta", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "hanna"
+familiar = { short_for = ["johanna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "hap"
@@ -7609,12 +7866,20 @@ text = "haps"
 familiar = { short_for = ["harold", "harrison", "harry", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "hari"
+familiar = { short_for = ["harikrishnan", "srihari"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "harold"
 familiar = { short_for = ["harry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "harris"
+familiar = { short_for = ["charalampos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "harry"
-familiar = { short_for = ["harold", "harrison", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["charalampos", "harold", "harrison", "henry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "harty"
@@ -7667,6 +7932,10 @@ familiar = { short_for = ["jehiel"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "hipsie"
 familiar = { short_for = ["hephsibah", "hepsibah", "hipsbibah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "hiro"
+familiar = { short_for = ["hiroyuki"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "hitty"
@@ -7761,6 +8030,14 @@ text = "indy"
 familiar = { short_for = ["india"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "ioannis"
+familiar = { short_for = ["yiannis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "ira"
+familiar = { short_for = ["irina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "irv"
 familiar = { short_for = ["irving"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7774,19 +8051,31 @@ familiar = { short_for = ["isabel", "isabella", "isabelle", "isadora"], note = "
 
 [[word]]
 text = "izzy"
-familiar = { short_for = ["isadore", "isidore"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["isabel", "isabelle", "isadore", "isidore", "isobel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jack"
-familiar = { short_for = ["jackson", "jacqueline", "john"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["jackson", "jacob", "jacqueline", "john"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jacki"
+familiar = { short_for = ["jacqueline"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jackie"
-familiar = { short_for = ["jack", "jacqueline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["jack", "jaclyn", "jacqueline", "jacquelyn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jacky"
+familiar = { short_for = ["jacqueline"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jacqui"
 familiar = { short_for = ["jacqueline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "jacquie"
+familiar = { short_for = ["jacqueline", "jacquelyn"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jake"
@@ -7819,6 +8108,10 @@ familiar = { short_for = ["jane"], note = "nicknames list (Old Dominion Universi
 [[word]]
 text = "jap"
 familiar = { short_for = ["jasper"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "jarek"
+familiar = { short_for = ["jaroslaw"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jase"
@@ -7854,7 +8147,7 @@ familiar = { short_for = ["jedediah", "jedidiah"], note = "nicknames list (Old D
 
 [[word]]
 text = "jeff"
-familiar = { short_for = ["geoffrey", "jefferey", "jefferson", "jeffery", "jeffrey"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["geoffrey", "jefferey", "jefferson", "jeffery", "jeffrey", "jeffry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jem"
@@ -7862,11 +8155,19 @@ familiar = { short_for = ["james"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "jen"
-familiar = { short_for = ["jennie", "jennifer"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["jenifer", "jennie", "jennifer"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jeni"
+familiar = { short_for = ["jennifer"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jenn"
 familiar = { short_for = ["jennet", "jennifer"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "jenna"
+familiar = { short_for = ["jennifer"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jenni"
@@ -7886,11 +8187,23 @@ familiar = { short_for = ["jeremiah", "jerry"], note = "nicknames list (Old Domi
 
 [[word]]
 text = "jerry"
-familiar = { short_for = ["garrett", "gerald", "geraldine", "jeremiah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["garrett", "gerald", "geraldine", "jeremiah", "jeremy", "jerome"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jerzy"
+familiar = { short_for = ["jurek"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jes"
+familiar = { short_for = ["jessica"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jess"
 familiar = { short_for = ["jesse", "jessica", "jessie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "jessi"
+familiar = { short_for = ["jessica"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jessie"
@@ -7925,6 +8238,10 @@ text = "jimmy"
 familiar = { short_for = ["james", "jimmie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "joan"
+familiar = { short_for = ["joanie"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "jock"
 familiar = { short_for = ["john"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -7942,11 +8259,11 @@ familiar = { short_for = ["joey", "joseph", "joshua"], note = "nicknames list (O
 
 [[word]]
 text = "joey"
-familiar = { short_for = ["joe", "joseph", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["joanna", "joe", "joseph", "josephine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "johnny"
-familiar = { short_for = ["john", "jon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["john", "jon", "jonathan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "johny"
@@ -8029,6 +8346,10 @@ text = "jules"
 familiar = { short_for = ["julia", "julian", "julias", "julie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "juli"
+familiar = { short_for = ["juliana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "julia"
 familiar = { short_for = ["julie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -8045,6 +8366,10 @@ text = "junie"
 familiar = { short_for = ["junior"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "kadir"
+familiar = { short_for = ["abdulkadir"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "kait"
 familiar = { short_for = ["kaitlin", "kaitlyn", "kaitlynn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -8057,20 +8382,52 @@ text = "kam"
 familiar = { short_for = ["kameron"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "kasia"
+familiar = { short_for = ["katarzyna"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kat"
+familiar = { short_for = ["katerina", "katharine", "katherine", "kathleen", "kathryn"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "kate"
-familiar = { short_for = ["katelin", "katelyn", "katherine", "kathryn", "katy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["catherine", "kaitlyn", "katarzyna", "katelin", "katelyn", "katharine", "katherine", "kathleen", "kathryn", "katrina", "katy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "katerina"
+familiar = { short_for = ["aikaterina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kath"
+familiar = { short_for = ["katherine", "kathleen", "kathryn"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kathie"
+familiar = { short_for = ["kathleen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "kathy"
-familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["catherine", "cathleen", "katharine", "katherine", "kathleen", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kati"
+familiar = { short_for = ["katherine"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "katia"
+familiar = { short_for = ["ekaterina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "katie"
-familiar = { short_for = ["katherine", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["catherine", "kaitlin", "kaitlyn", "katelin", "katelyn", "katharine", "katherine", "kathleen", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "katy"
-familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["catherine", "cathleen", "katharine", "katherine", "kathleen", "kathryn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "katya"
+familiar = { short_for = ["ekaterina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "kay"
@@ -8083,6 +8440,18 @@ familiar = { short_for = ["katelin", "katelyn", "katherine"], note = "nicknames 
 [[word]]
 text = "kayla"
 familiar = { short_for = ["makayla"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "kayode"
+familiar = { short_for = ["olukayode"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kees"
+familiar = { short_for = ["cornelis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kel"
+familiar = { short_for = ["kelly"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ken"
@@ -8137,8 +8506,16 @@ text = "kit"
 familiar = { short_for = ["catherine", "cathleen", "christian", "christopher", "katherine", "kathleen"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "kitt"
+familiar = { short_for = ["christopher"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "kittie"
 familiar = { short_for = ["catherine", "cathleen", "katherine", "kathleen", "kit"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "kitty"
+familiar = { short_for = ["kathleen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "kizza"
@@ -8149,8 +8526,16 @@ text = "kizzie"
 familiar = { short_for = ["keziah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "kostas"
+familiar = { short_for = ["konstantinos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kostis"
+familiar = { short_for = ["konstantinos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "kris"
-familiar = { short_for = ["christiana", "christina", "christine", "kristel", "kristina", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["christiana", "christina", "christine", "kristel", "kristen", "kristin", "kristina", "kristine", "kristofer", "kristoffer", "kristopher"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "krissy"
@@ -8158,11 +8543,19 @@ familiar = { short_for = ["kristina"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "kristy"
-familiar = { short_for = ["christiana", "christina", "christine", "kristine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["christiana", "christina", "christine", "kristen", "kristine"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kuba"
+familiar = { short_for = ["jakub"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "kym"
 familiar = { short_for = ["kymberly"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "lachie"
+familiar = { short_for = ["lachlan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "laffie"
@@ -8179,6 +8572,10 @@ familiar = { short_for = ["monty"], note = "nicknames list (Old Dominion Univers
 [[word]]
 text = "lan"
 familiar = { short_for = ["yulan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "lana"
+familiar = { short_for = ["svetlana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lani"
@@ -8210,7 +8607,7 @@ familiar = { short_for = ["larry"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "laurie"
-familiar = { short_for = ["laura", "laurel", "lauren", "lauryn", "lorelei"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["laura", "laurel", "lauren", "laurence", "lauryn", "lorelei"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lawrence"
@@ -8230,7 +8627,7 @@ familiar = { short_for = ["relief"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "lee"
-familiar = { short_for = ["ashley", "elias", "lenora", "leonidas", "leroy", "levi"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["ashley", "elias", "leland", "lenora", "leonidas", "leroy", "levi"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "leet"
@@ -8239,6 +8636,10 @@ familiar = { short_for = ["philetus"], note = "nicknames list (Old Dominion Univ
 [[word]]
 text = "left"
 familiar = { short_for = ["eliphalet"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "lefteris"
+familiar = { short_for = ["eleftherios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lem"
@@ -8250,7 +8651,7 @@ familiar = { short_for = ["leonard"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "lena"
-familiar = { short_for = ["adaline", "adeline", "aileen", "arlene", "darlene", "evaline", "helen", "helena", "helene", "madeline", "magdalena", "magdelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["adaline", "adeline", "aileen", "arlene", "darlene", "elena", "eleni", "evaline", "helen", "helena", "helene", "madeline", "magdalena", "magdelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lenny"
@@ -8258,7 +8659,7 @@ familiar = { short_for = ["leonard"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "leo"
-familiar = { short_for = ["leonard"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["leonard", "leonid", "leonidas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "leon"
@@ -8285,12 +8686,24 @@ text = "levy"
 familiar = { short_for = ["aleva"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "lew"
+familiar = { short_for = ["lewis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "lex"
-familiar = { short_for = ["lexi"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alexander", "lexi"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "lexa"
+familiar = { short_for = ["alexandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lexi"
-familiar = { short_for = ["alexa", "alexis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["alexa", "alexandra", "alexis"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "lexie"
+familiar = { short_for = ["alexandra", "alexandria"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lias"
@@ -8330,7 +8743,7 @@ familiar = { short_for = ["lil", "liliana", "lillah", "lillian"], note = "nickna
 
 [[word]]
 text = "lily"
-familiar = { short_for = ["lil", "liliana", "lillah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elizabeth", "lil", "lilian", "liliana", "lillah", "lillian"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lina"
@@ -8349,8 +8762,12 @@ text = "link"
 familiar = { short_for = ["lincoln"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "lis"
+familiar = { short_for = ["elisabeth"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "lisa"
-familiar = { short_for = ["elisa", "elizabeth", "elysia", "melissa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elisa", "elisabeth", "elizabeth", "elysia", "melissa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lish"
@@ -8358,7 +8775,7 @@ familiar = { short_for = ["elisha"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "lissa"
-familiar = { short_for = ["elysia", "melissa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elizabeth", "elysia", "melissa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lissia"
@@ -8369,16 +8786,24 @@ text = "little"
 familiar = { short_for = ["littleberry"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "liv"
+familiar = { short_for = ["olivia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "livia"
 familiar = { short_for = ["olivia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "liz"
-familiar = { short_for = ["elizabeth", "lizzie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elisabeth", "elizabeth", "lizbeth", "lizzie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "liza"
-familiar = { short_for = ["elizabeth"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["elizabeth", "elizaveta"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "lizz"
+familiar = { short_for = ["elizabeth"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lizzie"
@@ -8394,7 +8819,7 @@ familiar = { short_for = ["melody"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "lola"
-familiar = { short_for = ["delores"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["delores", "omolola"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lolly"
@@ -8481,12 +8906,20 @@ text = "lula"
 familiar = { short_for = ["luella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "lupita"
+familiar = { short_for = ["guadalupe"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "lura"
 familiar = { short_for = ["lurana"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "lyddy"
 familiar = { short_for = ["lidia", "lydia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "lyn"
+familiar = { short_for = ["lynette"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lynn"
@@ -8506,11 +8939,11 @@ familiar = { short_for = ["maddison", "madeline"], note = "nicknames list (Old D
 
 [[word]]
 text = "maddie"
-familiar = { short_for = ["maddison", "madeline"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["maddison", "madeleine", "madeline", "madelyn", "madison"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "maddy"
-familiar = { short_for = ["madeline", "madelyn", "madison"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["madeleine", "madeline", "madelyn", "madison"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "madeline"
@@ -8525,6 +8958,10 @@ text = "madge"
 familiar = { short_for = ["magdelina", "margaret", "margaretta", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "madi"
+familiar = { short_for = ["madison"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "madie"
 familiar = { short_for = ["madeline", "madelyn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -8534,15 +8971,19 @@ familiar = { short_for = ["marie", "marietta", "mary"], note = "nicknames list (
 
 [[word]]
 text = "magda"
-familiar = { short_for = ["magdelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["magdalena", "magdelina"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "maggie"
-familiar = { short_for = ["magdalena", "magdelina", "margaret", "margaretta", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["magdalena", "magdalene", "magdelina", "margaret", "margaretta", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "maggy"
 familiar = { short_for = ["margaret"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "mags"
+familiar = { short_for = ["margaret"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "maisie"
@@ -8569,12 +9010,24 @@ text = "manda"
 familiar = { short_for = ["amanda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "mandi"
+familiar = { short_for = ["amanda"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mandy"
 familiar = { short_for = ["amanda", "armanda", "manda", "miranda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "manny"
 familiar = { short_for = ["emanuel", "emmanuel", "manuel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "manolis"
+familiar = { short_for = ["emmanouil"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "manos"
+familiar = { short_for = ["emmanouil", "emmanuel"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "mantha"
@@ -8610,7 +9063,7 @@ familiar = { short_for = ["margaret", "margaretta", "marjorie"], note = "nicknam
 
 [[word]]
 text = "margo"
-familiar = { short_for = ["margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["margaret", "margarita"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "margy"
@@ -8645,8 +9098,12 @@ text = "masa"
 familiar = { short_for = ["masayuki"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "masha"
+familiar = { short_for = ["mariya"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mat"
-familiar = { short_for = ["martha", "mathew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["martha", "mathew", "matthew"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "matt"
@@ -8674,7 +9131,7 @@ familiar = { short_for = ["mavery", "mavine"], note = "nicknames list (Old Domin
 
 [[word]]
 text = "max"
-familiar = { short_for = ["maximilian", "maximillian", "maxine", "maxwell"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["maksim", "maksym", "massimiliano", "maximilian", "maximiliano", "maximillian", "maxine", "maxwell"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "maxie"
@@ -8689,12 +9146,16 @@ text = "meg"
 familiar = { short_for = ["maegen", "margaret", "margaretta", "margarita", "megan", "meghan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "mehdi"
+familiar = { short_for = ["mohammadmehdi"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mehitabel"
 familiar = { short_for = ["mabel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "mel"
-familiar = { short_for = ["amelia", "emily", "melinda", "melissa", "melvin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["amelia", "emily", "melanie", "melinda", "melissa", "melvin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "melia"
@@ -8746,7 +9207,7 @@ familiar = { short_for = ["margarita"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "mia"
-familiar = { short_for = ["maria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["amelia", "maria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "michael"
@@ -8782,7 +9243,7 @@ familiar = { short_for = ["miguel"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "mike"
-familiar = { short_for = ["michael", "micheal", "miguel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["michael", "micheal", "miguel", "mikhail"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "mikey"
@@ -8798,7 +9259,7 @@ familiar = { short_for = ["camila"], note = "nicknames list (Old Dominion Univer
 
 [[word]]
 text = "millie"
-familiar = { short_for = ["amelia", "camille", "emilia", "emily"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["amelia", "camilla", "camille", "emilia", "emily", "mildred"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "milly"
@@ -8841,6 +9302,14 @@ text = "mira"
 familiar = { short_for = ["elmira", "miranda"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "mirek"
+familiar = { short_for = ["miroslav", "miroslaw"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "misha"
+familiar = { short_for = ["michael", "mikhail"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "missy"
 familiar = { short_for = ["melissa", "millicent"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -8865,8 +9334,16 @@ text = "mitzie"
 familiar = { short_for = ["miriam"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "mo"
+familiar = { short_for = ["maureen", "mohamad", "mohamed", "mohammad", "mohammed"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mock"
 familiar = { short_for = ["democrates"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "moe"
+familiar = { short_for = ["mohamed", "mohammad", "mohammed"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "mollie"
@@ -8937,12 +9414,16 @@ text = "nace"
 familiar = { short_for = ["ignatius", "ignatzio"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "nadia"
+familiar = { short_for = ["nadezda"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "naldo"
 familiar = { short_for = ["reginald", "ronald"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "nan"
-familiar = { short_for = ["ann", "anna", "anne", "hannah", "nancy"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["ann", "anna", "anne", "hannah", "nancy", "nanette"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nando"
@@ -8957,12 +9438,24 @@ text = "nappy"
 familiar = { short_for = ["napoleon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "nassos"
+familiar = { short_for = ["athanasios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "nat"
-familiar = { short_for = ["natalia", "natasha", "nathan", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["natalia", "natalie", "natasha", "nathan", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "natalia"
+familiar = { short_for = ["natasha"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "natalya"
+familiar = { short_for = ["natasha"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nate"
-familiar = { short_for = ["nathan", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["nathan", "nathanael", "nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nathan"
@@ -9046,7 +9539,7 @@ familiar = { short_for = ["isabel", "isabella", "isabelle"], note = "nicknames l
 
 [[word]]
 text = "nic"
-familiar = { short_for = ["domenic", "dominic", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["domenic", "dominic", "nicholas", "nicodemus", "nicola", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nicey"
@@ -9058,7 +9551,7 @@ familiar = { short_for = ["eunice", "unice"], note = "nicknames list (Old Domini
 
 [[word]]
 text = "nick"
-familiar = { short_for = ["dominick", "nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["dominick", "nicholas", "nicholaus", "nickolas", "nicodemus", "nicolas", "nikola", "nikolaos", "nikolas", "nikolay"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nickey"
@@ -9066,23 +9559,39 @@ familiar = { short_for = ["nicholette"], note = "nicknames list (Old Dominion Un
 
 [[word]]
 text = "nicki"
-familiar = { short_for = ["nichole", "nicholette", "nicole"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["nichole", "nicholette", "nicola", "nicole"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nickie"
 familiar = { short_for = ["nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "nicko"
+familiar = { short_for = ["nicholas"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "nicky"
-familiar = { short_for = ["dominick", "nicholas", "nichole", "nicholette", "nicodemus", "nicolas", "nicole", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["dominick", "nicholas", "nichole", "nicholette", "nicodemus", "nicola", "nicolas", "nicole", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nico"
-familiar = { short_for = ["nicholas", "nicodemus", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["nicholas", "nicodemus", "nicolaas", "nicolas", "nikolas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "nik"
+familiar = { short_for = ["nicholas", "nikhil", "niklas", "nikolas"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "niki"
+familiar = { short_for = ["nicola", "nicole"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nikki"
-familiar = { short_for = ["nichole", "nicholette", "nicole", "nikole"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["nichole", "nicholette", "nicola", "nicole", "nikole"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "niko"
+familiar = { short_for = ["nicholas"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "nita"
@@ -9142,7 +9651,15 @@ familiar = { short_for = ["otis"], note = "nicknames list (Old Dominion Universi
 
 [[word]]
 text = "ola"
-familiar = { short_for = ["viola"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["aleksandra", "alexandra", "viola"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "olga"
+familiar = { short_for = ["olya"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "oli"
+familiar = { short_for = ["oliver"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "oliver"
@@ -9151,6 +9668,10 @@ familiar = { short_for = ["ollie"], note = "nicknames list (Old Dominion Univers
 [[word]]
 text = "ollie"
 familiar = { short_for = ["olive", "oliver", "olivia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "olly"
+familiar = { short_for = ["oliver"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "olph"
@@ -9207,6 +9728,10 @@ familiar = { short_for = ["patrick"], note = "nicknames list (Old Dominion Unive
 [[word]]
 text = "pam"
 familiar = { short_for = ["pamela"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "panos"
+familiar = { short_for = ["panagiotis", "panayiotis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "parsuny"
@@ -9290,7 +9815,7 @@ familiar = { short_for = ["parthenia"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "phil"
-familiar = { short_for = ["philetus", "philip", "phillip"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["philetus", "philip", "philippe", "phillip"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "philadelphia"
@@ -9310,7 +9835,11 @@ familiar = { short_for = ["pinckney"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "pip"
-familiar = { short_for = ["philip", "philipina", "phillip"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["philip", "philipina", "philippa", "phillip"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "pippa"
+familiar = { short_for = ["philippa"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ples"
@@ -9361,8 +9890,20 @@ text = "rach"
 familiar = { short_for = ["rachael"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "rae"
+familiar = { short_for = ["rachel"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "rafa"
 familiar = { short_for = ["rafaela"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "raj"
+familiar = { short_for = ["rajesh"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "ram"
+familiar = { short_for = ["ramakrishnan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "randi"
@@ -9371,6 +9912,10 @@ familiar = { short_for = ["miranda"], note = "nicknames list (Old Dominion Unive
 [[word]]
 text = "randy"
 familiar = { short_for = ["miranda", "randall", "randolf", "randolph"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "ravi"
+familiar = { short_for = ["ravindra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ray"
@@ -9413,6 +9958,10 @@ text = "rella"
 familiar = { short_for = ["cinderella"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "remi"
+familiar = { short_for = ["oluremi"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "ren"
 familiar = { short_for = ["lauren"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9431,6 +9980,10 @@ familiar = { short_for = ["reginald"], note = "nicknames list (Old Dominion Univ
 [[word]]
 text = "retta"
 familiar = { short_for = ["henrietta", "loretta"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "reza"
+familiar = { short_for = ["gholamreza", "mohammadreza"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "rhett"
@@ -9455,6 +10008,10 @@ familiar = { short_for = ["adrian"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "riane"
 familiar = { short_for = ["adriane"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "ric"
+familiar = { short_for = ["richard"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "rich"
@@ -9497,6 +10054,14 @@ text = "rienne"
 familiar = { short_for = ["adrienne", "andriane"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "rigo"
+familiar = { short_for = ["rigoberto"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "rik"
+familiar = { short_for = ["richard"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "rilla"
 familiar = { short_for = ["avarilla", "cinderella", "serilla"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9517,8 +10082,12 @@ text = "rob"
 familiar = { short_for = ["bob", "bobby", "robert", "roberto", "robin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "robb"
+familiar = { short_for = ["robert"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "robbie"
-familiar = { short_for = ["roberta", "robin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["robert", "roberta", "robin"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "robby"
@@ -9534,7 +10103,7 @@ familiar = { short_for = ["roberta"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "rod"
-familiar = { short_for = ["broderick", "roderick", "rodger", "rodney", "roger"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["broderick", "roderick", "rodger", "rodney", "rodrigo", "roger"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "roddy"
@@ -9585,6 +10154,10 @@ text = "rory"
 familiar = { short_for = ["aurora"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "ros"
+familiar = { short_for = ["rosalind", "roslyn"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "rosa"
 familiar = { short_for = ["rosabel", "rosabella", "rosalinda", "rosalyn"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9598,7 +10171,7 @@ familiar = { short_for = ["rosemary"], note = "nicknames list (Old Dominion Univ
 
 [[word]]
 text = "rosie"
-familiar = { short_for = ["rose", "roseann", "roseanna", "rosemarie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["rosalie", "rosalind", "rosanna", "rose", "roseann", "roseanna", "rosemarie", "rosemary"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ross"
@@ -9618,7 +10191,7 @@ familiar = { short_for = ["leroy"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "roz"
-familiar = { short_for = ["rosabel", "rosabella", "rosalinda", "rosalyn", "roseann", "roseanna"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["rosabel", "rosabella", "rosalind", "rosalinda", "rosalyn", "roseann", "roseanna"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "rube"
@@ -9649,6 +10222,10 @@ text = "ry"
 familiar = { short_for = ["ryan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "sadegh"
+familiar = { short_for = ["mohammadsadegh"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sadie"
 familiar = { short_for = ["mercedes", "sarah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9658,7 +10235,7 @@ familiar = { short_for = ["safieel"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "sal"
-familiar = { short_for = ["salvador", "solomon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["salvador", "salvatore", "solomon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sally"
@@ -9669,8 +10246,20 @@ text = "sam"
 familiar = { short_for = ["samantha", "sampson", "samson", "samuel", "samyra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "sami"
+familiar = { short_for = ["samantha"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sammy"
 familiar = { short_for = ["sam", "samantha", "sampson", "samson", "samuel", "samyra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "sandi"
+familiar = { short_for = ["sandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "sandie"
+familiar = { short_for = ["sandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sandra"
@@ -9679,6 +10268,14 @@ familiar = { short_for = ["sandy"], note = "nicknames list (Old Dominion Univers
 [[word]]
 text = "sandy"
 familiar = { short_for = ["alexander", "alexandra", "cassandra", "sandra", "sanford"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "sasha"
+familiar = { short_for = ["aleksandra", "alexander", "alexandra", "oleksandr", "oleksandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "satya"
+familiar = { short_for = ["satyanarayana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "scott"
@@ -9723,6 +10320,10 @@ familiar = { short_for = ["persephone"], note = "nicknames list (Old Dominion Un
 [[word]]
 text = "serene"
 familiar = { short_for = ["cyrenius"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "seun"
+familiar = { short_for = ["oluwaseun"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sha"
@@ -9773,12 +10374,20 @@ text = "shirl"
 familiar = { short_for = ["shirley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "sia"
+familiar = { short_for = ["siavash"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sibbie"
 familiar = { short_for = ["sibbilla", "sybill"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sid"
-familiar = { short_for = ["sidney", "sigfired", "sigfrid", "sydney"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["siddhant", "siddharth", "siddhartha", "sidney", "sigfired", "sigfrid", "sydney"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "sidd"
+familiar = { short_for = ["siddharth"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sig"
@@ -9801,12 +10410,20 @@ text = "sis"
 familiar = { short_for = ["frances"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "slava"
+familiar = { short_for = ["vyacheslav"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sly"
 familiar = { short_for = ["silvester", "sylvanus", "sylvester"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "smitty"
 familiar = { short_for = ["smith"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "sofia"
+familiar = { short_for = ["sonia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sofie"
@@ -9833,6 +10450,14 @@ text = "sophie"
 familiar = { short_for = ["sofia", "sophia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "spiros"
+familiar = { short_for = ["spyridon"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "spyros"
+familiar = { short_for = ["spyridon"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "stacia"
 familiar = { short_for = ["eustacia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -9846,7 +10471,15 @@ familiar = { short_for = ["crystal"], note = "nicknames list (Old Dominion Unive
 
 [[word]]
 text = "stan"
-familiar = { short_for = ["stanley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["stanislav", "stanley"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "stathis"
+familiar = { short_for = ["efstathios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "stef"
+familiar = { short_for = ["stefanie"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "steffi"
@@ -9877,12 +10510,16 @@ text = "stevie"
 familiar = { short_for = ["stephanie", "steve", "steven"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "stratos"
+familiar = { short_for = ["efstratios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "stu"
 familiar = { short_for = ["stuart"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
 text = "sue"
-familiar = { short_for = ["susan", "susannah", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["susan", "susannah", "susanne", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "sukey"
@@ -9913,8 +10550,16 @@ text = "susie"
 familiar = { short_for = ["sue", "susan", "susannah", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "suzi"
+familiar = { short_for = ["suzanne"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "suzie"
-familiar = { short_for = ["susan"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["susan", "suzanne"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "suzy"
+familiar = { short_for = ["susan", "suzanne"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "swene"
@@ -9926,7 +10571,7 @@ familiar = { short_for = ["sylvester"], note = "nicknames list (Old Dominion Uni
 
 [[word]]
 text = "syd"
-familiar = { short_for = ["sidney"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["sidney", "sydney"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "syl"
@@ -9973,12 +10618,20 @@ text = "tamzine"
 familiar = { short_for = ["thomasa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "tania"
+familiar = { short_for = ["tatiana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "tanny"
 familiar = { short_for = ["tanafra"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "tanya"
+familiar = { short_for = ["tatyana", "tetyana"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "tash"
-familiar = { short_for = ["tasha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["natasha", "tasha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tasha"
@@ -9987,6 +10640,10 @@ familiar = { short_for = ["natasha"], note = "nicknames list (Old Dominion Unive
 [[word]]
 text = "tashie"
 familiar = { short_for = ["tasha"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "tassos"
+familiar = { short_for = ["anastasios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tave"
@@ -10013,6 +10670,10 @@ text = "telly"
 familiar = { short_for = ["aristotle"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "temi"
+familiar = { short_for = ["temitope"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "tempy"
 familiar = { short_for = ["temperance"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -10029,12 +10690,20 @@ text = "teresa"
 familiar = { short_for = ["tess", "tessa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "teri"
+familiar = { short_for = ["teresa", "theresa"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "terri"
+familiar = { short_for = ["teresa", "theresa"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "terry"
-familiar = { short_for = ["terence", "teresa", "theresa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["terence", "teresa", "terrance", "terrence", "theresa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tess"
-familiar = { short_for = ["teresa", "theresa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["teresa", "tessa", "theresa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tessa"
@@ -10057,12 +10726,24 @@ text = "than"
 familiar = { short_for = ["nathaniel"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "thanasis"
+familiar = { short_for = ["athanasios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "thaney"
 familiar = { short_for = ["bethena"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "thanos"
+familiar = { short_for = ["athanassios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "thea"
+familiar = { short_for = ["theodora"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "theo"
-familiar = { short_for = ["theodore", "theodosia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["theodore", "theodoros", "theodosia", "theodosios"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "theodore"
@@ -10071,6 +10752,7 @@ familiar = { short_for = ["theo"], note = "nicknames list (Old Dominion Universi
 [[word]]
 text = "theresa"
 familiar = { short_for = ["tess", "tessa"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+spelling = { spelling_of = ["teresa"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "thias"
@@ -10153,8 +10835,12 @@ text = "toby"
 familiar = { short_for = ["tobias"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "tolu"
+familiar = { short_for = ["tolulope"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "tom"
-familiar = { short_for = ["thomas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["thomas", "tomas"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tommy"
@@ -10162,11 +10848,19 @@ familiar = { short_for = ["thom", "thomas", "tom"], note = "nicknames list (Old 
 
 [[word]]
 text = "toni"
-familiar = { short_for = ["tonya"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["antoinette", "antonia", "tonya"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tony"
-familiar = { short_for = ["anthony", "antoinette", "antonia", "antonio"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["anthony", "antoine", "antoinette", "antonia", "antonio", "antony"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "tonya"
+familiar = { short_for = ["antonina"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "topher"
+familiar = { short_for = ["christopher"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tori"
@@ -10249,6 +10943,14 @@ text = "ty"
 familiar = { short_for = ["tyler"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "uli"
+familiar = { short_for = ["ulrich"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "vahid"
+familiar = { short_for = ["seyedvahid"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "val"
 familiar = { short_for = ["valentina", "valeri", "valeria", "valerie"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -10271,6 +10973,10 @@ familiar = { short_for = ["vanessa"], note = "nicknames list (Old Dominion Unive
 [[word]]
 text = "vannie"
 familiar = { short_for = ["savannah", "vandalia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "vasilis"
+familiar = { short_for = ["vasilios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "veda"
@@ -10318,7 +11024,7 @@ familiar = { short_for = ["vic", "victoria"], note = "nicknames list (Old Domini
 
 [[word]]
 text = "vicky"
-familiar = { short_for = ["vic", "victoria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["vasiliki", "vic", "victoria"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "victor"
@@ -10335,6 +11041,18 @@ familiar = { short_for = ["levicy"], note = "nicknames list (Old Dominion Univer
 [[word]]
 text = "vij"
 familiar = { short_for = ["vijay"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "vijay"
+familiar = { short_for = ["vijayakumar"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "viji"
+familiar = { short_for = ["vijayalakshmi"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "vikki"
+familiar = { short_for = ["victoria"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "vin"
@@ -10373,6 +11091,10 @@ text = "viv"
 familiar = { short_for = ["vivian"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "vlad"
+familiar = { short_for = ["vladimir", "vladislav"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "von"
 familiar = { short_for = ["lavonne", "levone"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -10387,6 +11109,10 @@ familiar = { short_for = ["lavonia", "louvinia", "veronica"], note = "nicknames 
 [[word]]
 text = "waldo"
 familiar = { short_for = ["oswald"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "wale"
+familiar = { short_for = ["adewale"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "wally"
@@ -10477,6 +11203,10 @@ text = "wint"
 familiar = { short_for = ["winton"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "wlodek"
+familiar = { short_for = ["wlodzimierz"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "wood"
 familiar = { short_for = ["woodrow"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -10489,8 +11219,20 @@ text = "wyncha"
 familiar = { short_for = ["lavonia", "louvinia"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "xan"
+familiar = { short_for = ["alexandra"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "xander"
+familiar = { short_for = ["alexander"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "yorgos"
+familiar = { short_for = ["georgios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "yoshi"
-familiar = { short_for = ["yoshihiko"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["yoshihiko", "yoshitaka"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yul"
@@ -10498,7 +11240,7 @@ familiar = { short_for = ["yulan"], note = "nicknames list (Old Dominion Univers
 
 [[word]]
 text = "zac"
-familiar = { short_for = ["zachariah", "zachary", "zachery"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+familiar = { short_for = ["zacariah", "zachariah", "zachary", "zachery"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0); found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "zach"
@@ -10533,6 +11275,10 @@ text = "zakk"
 familiar = { short_for = ["zachariah", "zachary", "zachery"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
 [[word]]
+text = "zander"
+familiar = { short_for = ["alexander"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "zay"
 familiar = { short_for = ["isaiah"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
 
@@ -10559,5 +11305,101 @@ familiar = { short_for = ["zephaniah"], note = "nicknames list (Old Dominion Uni
 [[word]]
 text = "zolly"
 familiar = { short_for = ["solomon"], note = "nicknames list (Old Dominion University WS-DL; Apache License 2.0)" }
+
+[[word]]
+text = "amro"
+spelling = { spelling_of = ["amr"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "anne"
+spelling = { spelling_of = ["ann"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "athina"
+spelling = { spelling_of = ["athena"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "dmitry"
+spelling = { spelling_of = ["dmitri"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "ilya"
+spelling = { spelling_of = ["ilja"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jeffrey"
+spelling = { spelling_of = ["jeffery"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "jonathon"
+spelling = { spelling_of = ["jonathan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "kimberly"
+spelling = { spelling_of = ["kimberley"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "mahmoud"
+spelling = { spelling_of = ["mahmood"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "matthew"
+spelling = { spelling_of = ["mathew"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "mohammad"
+spelling = { spelling_of = ["mohamad"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "nikolas"
+spelling = { spelling_of = ["nikolaos"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "nour"
+spelling = { spelling_of = ["noor"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "panayiotis"
+spelling = { spelling_of = ["panagiotis"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "phillip"
+spelling = { spelling_of = ["philip"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "rachel"
+spelling = { spelling_of = ["rachael"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "russell"
+spelling = { spelling_of = ["russel"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "sofiia"
+spelling = { spelling_of = ["sofia"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "srđan"
+spelling = { spelling_of = ["srdan"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "steven"
+spelling = { spelling_of = ["stephen"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "søren"
+spelling = { spelling_of = ["soren"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "vasilios"
+spelling = { spelling_of = ["vasileios"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "yegor"
+spelling = { spelling_of = ["egor"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "yelena"
+spelling = { spelling_of = ["elena"], note = "found in ORCID's public data file (CC0) and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

@@ -216,12 +216,16 @@ def languages(countries: Mapping[str, int],
               languages_of: Mapping[str, tuple[str, ...]]) -> tuple[str, ...]:
     """The tags of the files a pair goes in: each language whose
     countries' holders are LANGUAGE_MIN_SHARE of the holders with a
-    country and at least LANGUAGE_MIN_HOLDERS; SHARED where none is."""
+    country and at least LANGUAGE_MIN_HOLDERS; SHARED where none is. A
+    country writing several languages shares its holders among them
+    equally, as the country cannot say which of its languages a name is
+    (India's sixteen tags each take a sixteenth)."""
     placed = sum(n for c, n in countries.items() if c)
     by_tag: collections.Counter[str] = collections.Counter()
     for country, n in countries.items():
-        for tag in languages_of.get(country, ()):
-            by_tag[tag] += n
+        tags = languages_of.get(country, ())
+        for tag in tags:
+            by_tag[tag] += n / len(tags)
     out = tuple(sorted(t for t, n in by_tag.items()
                        if n >= LANGUAGE_MIN_HOLDERS
                        and n >= LANGUAGE_MIN_SHARE * placed))

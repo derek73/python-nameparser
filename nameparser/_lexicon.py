@@ -1088,7 +1088,8 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
     for w in words:
         rs = pool.get(w, ())
-        if edit.op == "add" and edit.kind in _MATCHING_LISTS:
+        if (edit.op == "add" and edit.kind is not None
+                and edit.kind in _MATCHING_LISTS):
             # EXTENDS: the caller's names go in a reading of the caller's
             # own, attributed to the edit and to no file, and the compile
             # unions it with each file's, which stay as they are
