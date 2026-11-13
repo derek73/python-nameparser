@@ -107,28 +107,80 @@ def test_has_case_reaches_every_contrast(key: str, row: _ScriptRow) -> None:
         # the credential's, a Mtavruli one none
         assert (ambiguous_lean(letter.upper(), False) is None) \
             is not contrast, (key, letter)
+    # case repair (R4) writes the first letter of a row with no case in
+    # its lower case, and title-cases a cased script's
+    assert _render._capitalize(c.upper() + c) == c.lower() + c, key
+    assert _render._capitalize("jj") == "Jj"
+
+
+#: A character range written in source: two escapes, a pair of hex
+#: literals (a tuple or `range(...)`), a chained comparison, or two
+#: non-ASCII characters inside a bracketed class.
+_RANGE_IN_SOURCE = re.compile(
+    r"\\u([0-9a-fA-F]{4})-\\u([0-9a-fA-F]{4})"
+    r"|\\U([0-9a-fA-F]{8})-\\U([0-9a-fA-F]{8})"
+    r"|\(0x([0-9a-fA-F]+),\s*0x([0-9a-fA-F]+)\)"
+    r"|0x([0-9a-fA-F]+)\s*<=\s*\w+\s*<=\s*0x([0-9a-fA-F]+)"
+    r"|\[[^\]]*?([^\x00-\x7f])-([^\x00-\x7f])")
+
+#: Ranges inside a row that answer some other question than the
+#: table's, by the name they are bound to, each with its reason.
+_OTHER_QUESTIONS = {
+    "_THAI_MARKS": "the marks a Thai name writes after a stop (T8)",
+    "_AFTER_A_CONSONANT": "the Thai vowel signs written after a "
+                          "consonant, which the segmenter reads",
+}
+
+
+def _restated_rows(text: str) -> list[str]:
+    """The rows a line of source restates a range of."""
+    if any(f"{name} =" in text for name in _OTHER_QUESTIONS):
+        return []
+    found = []
+    for m in _RANGE_IN_SOURCE.finditer(text):
+        lo, hi = (int(x, 16) if len(x) > 1 else ord(x)
+                  for x in [g for g in m.groups() if g][:2])
+        found += [key for key, row in _ROWS
+                  if any(lo <= b and a <= hi for a, b in row.ranges)]
+    return found
+
+
+@pytest.mark.parametrize(("planted", "rows"), [
+    # the recorded control: what the scan sees and what it lets pass
+    ("_X = re.compile('[\\u0e01-\\u0e5b]')", ["thai"]),
+    ("_X = re.compile('[ก-๛]')", ["thai"]),
+    ("_X = '[\\u10a0-\\u10ff]'", ["georgian"]),
+    ("_X = ((0x0E00, 0x0E7F),)", ["thai"]),
+    ("if 0x1000 <= cp <= 0x109f:", ["myanmar"]),
+    ("_X = '[\\U00020000-\\U000323af]'", ["han"]),
+    ("_X = '[\\u0300-\\u036f]'", []),         # outside every row
+    ("_X = frozenset({'\\u30fb', '\\uff65'})", []),  # lone codepoints
+    ("_THAI_MARKS = '[\\u0e31\\u0e34-\\u0e3a]'", []),  # named other question
+])
+def test_the_source_scan_sees_a_restated_range(planted: str,
+                                               rows: list[str]) -> None:
+    assert _restated_rows(planted) == rows
 
 
 def test_a_reader_never_restates_a_row() -> None:
     """The questions the table answers are asked through it alone: no
-    module but _policy names the constants the table replaced or opens a
-    character range at a row's first codepoint, which is how a second
-    copy of a row would start (#1256). A lone codepoint is not a range:
-    the halfwidth nakaguro U+FF65, which opens the katakana row, is a
-    word separator in tokenize and render."""
+    module but _policy names the constants the table replaced or writes
+    a character range overlapping a row, which is how a second copy of
+    a row would start (#1256), save the ranges `_OTHER_QUESTIONS` names.
+    A lone codepoint is not a range: the halfwidth nakaguro U+FF65,
+    which opens the katakana row, is a word separator in tokenize and
+    render. A copy spelled some other way (a reader rebuilt from
+    `_script_matcher`) is the behavior tests' to catch."""
     root = Path(nameparser.__file__).parent
-    starts = {lo for _, row in _ROWS for lo, _ in row.ranges}
-    escapes = re.compile("|".join(
-        rf"\\u{lo:04x}-|\\U{lo:08x}-|\(0x{lo:04x},"
-        for lo in sorted(starts)), re.IGNORECASE)
     stale = re.compile(r"\b_NO_INITIALS\b|\b_INDIC_BRAHMIC\b")
     found = []
     for path in sorted(root.rglob("*.py")):
         if path.name == "_policy.py" or path.parent.name == "config":
             continue
-        text = path.read_text(encoding="utf-8")
-        if stale.search(text) or escapes.search(text):
-            found.append(path.relative_to(root).as_posix())
+        for n, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), 1):
+            if stale.search(line) or _restated_rows(line):
+                found.append(f"{path.relative_to(root).as_posix()}:{n}")
     assert not found, found
 
 
@@ -173,7 +225,7 @@ _TWIN_SHAPES = (
     "ჯეკ MA", "ჯეკ, MA", ", ჯეკ MA", "MA, ჯეკ", "ჯეკ ბერიძე MA",
     "ბერიძე, ჯეკ MA", "ჯეკ DO", "j.r. ბერიძე", "ბერიძე, j.r.",
     "ჯეკ ბერიძე Jr. ნინო", "ჯეკ ბერიძე MD ნინო", "ჯეკ ბერიძე III ნინო",
-    "ნინო SMITH", "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ MA",
+    "ნინო SMITH", "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ MA", "ჯეკ, ნინო MA",
     "ნინო Smith MA",                       # control: Latin case speaks
 )
 
@@ -195,3 +247,28 @@ def test_georgian_reads_as_its_arabic_twin(text: str) -> None:
         twin = twin.replace(ka, ar)
     for order in (GIVEN_FIRST, FAMILY_FIRST):
         assert _shape(text, order) == _shape(twin, order), (text, twin)
+
+
+#: The twin test's recorded negative control (AGENTS.md's guard tests):
+#: how many of `_TWIN_SHAPES` read apart from their Arabic twin under
+#: either order with the caseless table emptied, which is master's
+#: answer at every site that reads it. Re-take it when a shape is added.
+_UNGUARDED_EFFECT = 11
+
+
+def test_the_twin_test_fails_with_the_table_off() -> None:
+    from nameparser import FAMILY_FIRST, GIVEN_FIRST
+    from nameparser import _policy
+    saved = dict(_policy._CASELESS_LETTERS)
+    _policy._CASELESS_LETTERS.clear()    # the readers hold this object
+    try:
+        apart = 0
+        for text in _TWIN_SHAPES:
+            twin = text
+            for ka, ar in _GEORGIAN.items():
+                twin = twin.replace(ka, ar)
+            apart += any(_shape(text, o) != _shape(twin, o)
+                         for o in (GIVEN_FIRST, FAMILY_FIRST))
+    finally:
+        _policy._CASELESS_LETTERS.update(saved)
+    assert apart == _UNGUARDED_EFFECT

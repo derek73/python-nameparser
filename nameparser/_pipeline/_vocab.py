@@ -888,6 +888,9 @@ def ambiguous_lean(text: str, one_case: bool,
     """
     if one_case or cue == "none":
         return None
+    # a script the table gives no case is caseless here too (#1222); no
+    # default vocabulary member is written in one, so only a caller's
+    # lexicon reaches this with a Georgian word
     if (cased := text.translate(_CASELESS_LETTERS)).upper() == cased.lower():
         return None                      # caseless: no contrast to read
     if text.isupper():

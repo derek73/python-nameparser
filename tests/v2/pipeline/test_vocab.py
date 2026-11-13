@@ -1164,6 +1164,8 @@ def test_two_dotted_letters_merge_only_outside_a_cased_script() -> None:
     lex = Lexicon.default().remove("jr", kind="generation").add(
         "jr", "พบ", kind="credential")
     assert split_pair("J.", "R.", lex) is None
+    # Thai writes no initials but writes abbreviations, so the pair
+    # merges: split_pair asks the abbreviation column (#1256)
     assert split_pair("พ.", "บ.", lex) == "split"
     assert split_pair("พ.", "บ.", Lexicon.default()) is None
     assert split_pair("พ", "บ", lex) is None
