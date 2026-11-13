@@ -690,6 +690,16 @@ SameAsNamed = Mapping[str, frozenset[str]]
 _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
+#: The Latin letters NFD leaves whole that a keyboard lacks, written as
+#: one types them: `ł` as `l`, `ı` as `i`, `ø` as `o`, `đ` and `ð` as
+#: `d`, `þ` as `th`, `æ` as `ae`, `œ` as `oe` (`ß` is `ss` through
+#: casefolding already), so `Łukasz` / `Lukasz` and `Pınar` / `Pinar`
+#: read `folded`: a spelling no one chooses (decisions/name-matching,
+#: 2026-11-12 A KEYBOARD'S SPELLING IS FOLDED). `_suggest.fold`'s table
+#: less its pinyin `ü` as `v`; lower case only, as the fold casefolds
+#: first.
+_KEYBOARD = str.maketrans({"ł": "l", "ı": "i", "ø": "o", "đ": "d",
+                           "ð": "d", "þ": "th", "æ": "ae", "œ": "oe"})
 
 def _fold(text: str) -> str:
     """The text with case, accents, full stops and apostrophes folded
@@ -707,7 +717,8 @@ def _fold(text: str) -> str:
     the marks are read, a mark after one then attaching to the letter
     before it, and again after casefolding, which can write one (U+0149
     `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
-    other, so `ᾳ` folds to `α`."""
+    other, so `ᾳ` folds to `α`. Last, the letters a keyboard lacks
+    are written as one types them (`_KEYBOARD`)."""
     if text.isascii():
         # no accent, no composition, and no apostrophe but the typed
         # one and the backtick
@@ -727,7 +738,8 @@ def _fold(text: str) -> str:
         kept.append(c)
     # again after casefolding, which can write an apostrophe (U+0149)
     return unicodedata.normalize(
-        "NFC", "".join(kept).casefold().translate(_DROPPED))
+        "NFC", "".join(kept).casefold().translate(_DROPPED)).translate(
+            _KEYBOARD)
 
 
 #: A given name -> every name it is paired with as a familiar form, in
