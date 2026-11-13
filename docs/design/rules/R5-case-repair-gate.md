@@ -25,7 +25,6 @@
 
 - **A script whose case no writer chooses against the rest of the name makes no contrast**: Georgian writes its capitals only for a whole word set in them, so a name mixing them with its lower case, or beside a Latin word, is in one case as one in Arabic is, and is repaired.
   ```
-  "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ"             →  capitalized="ნინო ბურჯანაძე"
   "ჯეკ MA"                    →  capitalized="ჯეკ Ma"
   "ნინო Smith"                →  capitalized="ნინო Smith"  · boundary
   ```
@@ -38,6 +37,15 @@
 "Ronald Macdonald"          →  capitalized="Ronald Macdonald"
 "Ronald Macdonald"          →  capitalized_forced="Ronald MacDonald"  · boundary
 ```
+
+**Accepted:**
+
+- **A Georgian surname written in Mtavruli beside a Mkhedruli given name is written in Mkhedruli**, where a Latin surname written in capitals in a name of mixed case is kept as written: Latin's capitals are case, which a writer chooses against the rest of the name, while Mtavruli is a style of a script with no case, so the name is in one case to the gate and the writer's emphasis is not kept. A Mtavruli first letter on Mkhedruli, written in the Latin habit, is written in Mkhedruli the same way.
+  ```
+  "ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ"             →  capitalized="ნინო ბურჯანაძე"
+  "Უჩა გოგოლაძე"               →  capitalized="უჩა გოგოლაძე"
+  "Jean DUPONT"               →  capitalized="Jean DUPONT"  · boundary
+  ```
 
 ---
 **Signal:** case contrast: whether the words outside the suffix are written in one case
