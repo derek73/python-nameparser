@@ -1,4 +1,9 @@
 a	b	category	status	opus	sonnet	reason	languages	source	holders
+abbey	abigail	familiar		familiar	familiar	pet form of Abigail	en	orcid	8
+abbi	abigail	familiar		familiar	familiar	pet form of Abigail	en	orcid	5
+abbie	abigail	familiar		familiar	familiar	pet form of Abigail	en	orcid	11
+abby	abigail	familiar		familiar	familiar	pet form of Abigail	en	orcid	62
+abby	abigale	familiar		familiar	familiar	pet form of Abigale	mul	orcid	3
 abdallah	abdullah	spelling		spelling	spelling	romanization variant	ar	orcid	3
 abdelaziz	aziz	familiar		familiar	familiar	compound called by its part	mul	orcid	3
 abdelhakim	hakim	familiar		familiar	familiar	Hakim is how Abdelhakim is called	mul	orcid	3
@@ -7,15 +12,14 @@ abdolali	ali	familiar		familiar	familiar	Ali is how Abdolali is called (compound
 abdulhakim	hakim	familiar		familiar	familiar	compound part Hakim used as call name	ar	orcid	3
 abdulkadir	kadir	familiar		familiar	familiar	compound called by its part	en	orcid	5
 abdullah	al	split		different-name	unclear	loose, Al not a form of Abdullah	ar	orcid	3
+abe	abraham	familiar		familiar	familiar	clipped form of Abraham	en	orcid	14
 abhi	abhishek	familiar		familiar	familiar	Abhi short form of Abhishek	en	orcid	5
 abi	abigail	familiar		familiar	familiar	short form of Abigail	en	orcid	19
 abraham	avi	familiar		familiar	familiar	Hebrew familiar of Avraham	ar en he	orcid	7
 abraham	bram	familiar		familiar	familiar	Dutch short form of Abraham	nl	orcid	3
-adena	adina	spelling		spelling	spelling	vowel variant spellings	mul	nicknames-spelling	0
 adewale	wale	familiar		familiar	familiar	Yoruba short form of Adewale	en	orcid	5
 adi	aditya	familiar		familiar	familiar	short form of Aditya	en	orcid	7
 adi	adrian	familiar		familiar	familiar	short form of Adrian	en	orcid	3
-adolph	adolphus	translation	decided	translation	spelling	Latinized form of Adolph	mul	nicknames-spelling	0
 aga	agnieszka	familiar		familiar	familiar	Polish familiar form	en pl	orcid	9
 aggeliki	angeliki	spelling		spelling	spelling	romanization variant of Greek gg	el	orcid	6
 aggelos	angelos	spelling		spelling	spelling	Greek Άγγελος romanized gg or ng	mul	orcid	6
@@ -29,13 +33,17 @@ aikaterini	katia	familiar		familiar	familiar	Katia familiar form of Aikaterini	e
 ajay	ajaykumar	familiar		familiar	familiar	Ajay is how an Ajaykumar is called	mul	orcid	3
 akin	akinwumi	familiar		familiar	familiar	Yoruba short form	mul	orcid	3
 akin	akın	spelling		spelling	spelling	Turkish dotless ı dropped	tr	orcid	3
-alan	allan	spelling		spelling	spelling	single vs double l	mul	nicknames-spelling	0
-alan	allen	spelling		spelling	spelling	Alan/Allen variant spelling	mul	nicknames-spelling	0
+al	alan	familiar		familiar	familiar	clipped form of Alan	en	orcid	6
+al	alastair	familiar		familiar	familiar	clipped form of Alastair	en	orcid	4
+al	albert	familiar		familiar	familiar	clipped form of Albert	en	orcid	4
+al	alexander	familiar		familiar	familiar	Al used as clipped form of Alexander	en	orcid	3
+al	alfred	familiar		familiar	familiar	clipped form of Alfred	en	orcid	4
 albert	alberto	translation		translation	translation	Catalan vs Spanish form	ca en es	orcid	7
 alberto	beto	familiar		familiar	familiar	short form of Alberto	pt-BR	orcid	4
 ale	alejandro	familiar		familiar	familiar	short form of Alejandro	en	orcid	3
 ale	alessandra	familiar		familiar	familiar	short form of Alessandra	pt-BR	orcid	5
 ale	alessandro	familiar		familiar	familiar	short form of Alessandro	mul	orcid	4
+alec	alexander	familiar		familiar	familiar	Scottish/English short form of Alexander	en	orcid	15
 alejandra	alex	familiar		familiar	familiar	Alex short form of Alejandra	en	orcid	5
 alejandro	alex	familiar		familiar	familiar	short form of Alejandro	en es	orcid	31
 alejandro	álex	familiar		familiar	familiar	short form of Alejandro	mul	orcid	3
@@ -47,6 +55,7 @@ aleksander	aleksandr	spelling	decided	spelling	translation	romanizations of Alek
 aleksander	alex	familiar		familiar	familiar	short form of Aleksander	mul	orcid	3
 aleksander	alexander	spelling		spelling	spelling	romanization of Александр	ru	orcid	14
 aleksander	oleksandr	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
+aleksandr	alex	familiar		familiar	familiar	Alex used for Aleksandr	en	orcid	5
 aleksandr	alexander	spelling		spelling	spelling	romanization variant	ru	orcid	106
 aleksandr	alexandr	spelling		spelling	spelling	romanization variants of Александр	ru	orcid	25
 aleksandr	oleksandr	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	44
@@ -70,12 +79,16 @@ alena	elena	translation		translation	translation	Belarusian and Russian forms	ru
 alessandra	alex	familiar		familiar	familiar	short form of Alessandra	en	orcid	3
 alessandro	alex	familiar		familiar	familiar	short form of Alessandro	en	orcid	11
 alessandro	sandro	familiar		familiar	familiar	short form of Alessandro	it	orcid	4
+alex	alexander	familiar		familiar	familiar	clipped form of Alexander	en	orcid	529
 alex	alexandr	familiar		familiar	familiar	short form of Alexandr	en	orcid	4
+alex	alexandra	familiar		familiar	familiar	clipped form of Alexandra	en	orcid	125
 alex	alexandre	familiar		familiar	familiar	Alex short form of Alexandre	en	orcid	33
+alex	alexandria	familiar		familiar	familiar	clipped form of Alexandria	en	orcid	17
 alex	alexandro	familiar		familiar	familiar	short form of Alexandro	pt-BR	orcid	6
 alex	alexandros	familiar		familiar	familiar	short form of Alexandros	en	orcid	19
 alex	alexandru	familiar		familiar	familiar	short form of Alexandru	en	orcid	11
 alex	alexey	familiar		familiar	familiar	Alex short form of Alexey	ru	orcid	13
+alex	alexis	familiar		familiar	familiar	clipped form of Alexis	en	orcid	8
 alex	alexsandro	familiar		familiar	familiar	short form of Alexsandro	pt-BR	orcid	5
 alex	christian	different-name		different-name	different-name	unrelated names	en	orcid	3
 alex	david	different-name		different-name	different-name	two unrelated names	en	orcid	4
@@ -93,6 +106,7 @@ alexander	oleksandr	translation		translation	translation	English and Ukrainian f
 alexander	olexander	translation		translation	translation	English vs Ukrainian form	ru uk	orcid	4
 alexander	olexandr	translation		translation	translation	English vs Ukrainian form	ru uk	orcid	7
 alexander	sander	familiar		familiar	familiar	Dutch short form of Alexander	mul	orcid	3
+alexander	sandy	familiar		familiar	familiar	Scottish pet form of Alexander	en	orcid	11
 alexander	sasha	familiar		familiar	familiar	Russian familiar of Alexander	en	orcid	24
 alexander	xander	familiar		familiar	familiar	Xander short form of Alexander	en	orcid	17
 alexander	zander	familiar		familiar	familiar	short form of Alexander	en	orcid	4
@@ -106,6 +120,7 @@ alexandra	lexi	familiar		familiar	familiar	short form of Alexandra	en	orcid	7
 alexandra	lexie	familiar		familiar	familiar	pet form of Alexandra	en	orcid	6
 alexandra	ola	familiar		familiar	familiar	Ola Polish pet form of Aleksandra	en	orcid	3
 alexandra	oleksandra	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	11
+alexandra	sandra	familiar		familiar	familiar	Sandra from the end of Alexandra	en	orcid	6
 alexandra	sasha	familiar		familiar	familiar	Russian familiar of Alexandra	en	orcid	24
 alexandra	xan	familiar		familiar	familiar	Xan short form of Alexandra	en	orcid	3
 alexandria	allie	familiar		familiar	familiar	pet form of Alexandria	en	orcid	3
@@ -114,28 +129,38 @@ alexei	alexey	spelling		spelling	spelling	romanization variant	ru	orcid	23
 alexey	oleksii	translation		translation	translation	Russian and Ukrainian forms	ru uk	orcid	15
 alexey	oleksiy	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	6
 alexey	olexiy	translation		translation	translation	Russian and Ukrainian forms	mul	orcid	4
+alexis	lexi	familiar		familiar	familiar	pet form from the middle of Alexis	en	orcid	7
+alfred	fred	familiar		familiar	familiar	Fred clipped from Alfred	mul	orcid	4
 ali	aliakbar	familiar		familiar	familiar	Ali is the called part of Aliakbar	en	orcid	3
 ali	alicia	split		familiar	different-name	short form of Alicia	en	orcid	4
 ali	alireza	familiar		familiar	familiar	Persian compound called by its part	en fa	orcid	11
+ali	alison	familiar		familiar	familiar	clipped form of Alison	en	orcid	27
+ali	allison	familiar		familiar	familiar	clipped form of Allison	en	orcid	3
 ali	alı	spelling		spelling	spelling	Turkish dotless i variant	tr	orcid	5
 ali	mohammadali	familiar		familiar	familiar	Ali is how Mohammadali is called	mul	orcid	4
 ali	seyedali	familiar		familiar	familiar	Ali is how Seyedali is called (Seyed prefix)	en	orcid	6
 alia	aliaa	spelling		spelling	spelling	romanization variants	mul	orcid	3
 alice	alisa	translation		translation	translation	English and Russian forms	ru	orcid	4
 alkis	alkiviadis	familiar		familiar	familiar	Alkis familiar form of Alkiviadis	el	orcid	4
-allan	allen	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	1
+allan	allen	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 alli	allison	familiar		familiar	familiar	short form of Allison	en	orcid	6
+allie	allison	familiar		familiar	familiar	pet form of Allison	en	orcid	11
+allison	ally	familiar		familiar	familiar	pet form of Allison	en	orcid	6
+ally	allyson	familiar		familiar	familiar	pet form of Allyson	en	orcid	11
 alona	alyona	spelling		spelling	spelling	romanization variants	mul	orcid	3
 alyona	olena	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
 amaia	amaya	spelling		spelling	spelling	Basque name spelled two ways	mul	orcid	3
 amanda	amy	different-name		different-name	different-name	loose; Amy not formed from Amanda	mul	orcid	3
 amanda	mandi	familiar		familiar	familiar	Mandi pet form of Amanda	en	orcid	7
+amanda	mandy	familiar		familiar	familiar	pet form of Amanda	en	orcid	38
+amelia	amy	split		unclear	familiar	opus: Amy is its own name, only sometimes used for Amelia; sonnet: Amy as pet form of Amelia	en	orcid	10
 amelia	mia	familiar		familiar	familiar	Mia short form of Amelia	en	orcid	6
 amin	mohammadamin	familiar		familiar	familiar	compound part Amin used as call name	en fa	orcid	8
 amir	amirhossein	familiar		familiar	familiar	compound part Amir used as call name	en	orcid	20
 amir	amirmohammad	familiar		familiar	familiar	Persian compound called by its part	en fa	orcid	8
 amir	amirreza	familiar		familiar	familiar	Amir is the called part of Amirreza	fa	orcid	4
 amr	amro	spelling		spelling	spelling	romanization variant	en	orcid	4
+ana	anastasia	familiar		familiar	familiar	clipped form of Anastasia	en	orcid	5
 ana	anna	translation		translation	translation	Spanish Ana vs Anna	mul	orcid	7
 ana	paula	different-name		different-name	different-name	two names, likely a compound Ana Paula	mul	orcid	3
 anand	andy	different-name		different-name	different-name	loose resemblance	en	orcid	4
@@ -153,9 +178,12 @@ anatolii	anatoliy	spelling		spelling	spelling	romanization variants	ru uk	orcid	
 anatolii	anatoly	spelling		spelling	spelling	romanization variants	ru	orcid	11
 anatoliy	anatoly	spelling		spelling	spelling	romanization variants of Анатолий	ru	orcid	10
 andela	anđela	spelling		spelling	spelling	d for Serbian d-stroke	sr	orcid	8
+anderson	andy	familiar		familiar	familiar	Andy used for Anderson	en	orcid	4
+andi	andrea	familiar		familiar	familiar	pet form of Andrea	en	orcid	10
 andi	andreas	familiar		familiar	familiar	Andi short form of Andreas	de	orcid	7
 andie	andrea	familiar		familiar	familiar	pet form of Andrea	en	orcid	10
 andjela	anđela	spelling		spelling	spelling	dj vs đ	sr	orcid	5
+andrea	andy	familiar		familiar	familiar	Andy as short form of Andrea	en	orcid	8
 andreas	andy	familiar		familiar	familiar	short form of Andreas	de en	orcid	10
 andrei	andrej	spelling		spelling	spelling	romanization variant	ru	orcid	4
 andrei	andrew	translation		translation	translation	Russian and English forms	lv ru	orcid	9
@@ -165,6 +193,8 @@ andrej	andrey	spelling		spelling	spelling	romanization variants of Андрей	
 andrew	andrey	translation		translation	translation	Russian and English forms	ru	orcid	17
 andrew	andrii	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	14
 andrew	andrzej	translation		translation	translation	English and Polish forms	pl	orcid	4
+andrew	andy	familiar		familiar	familiar	standard pet form of Andrew	en	orcid	311
+andrew	drew	familiar		familiar	familiar	clipped from the end of Andrew	en	orcid	77
 andrew	james	different-name		different-name	different-name	two unrelated names	en	orcid	3
 andrew	john	different-name		different-name	different-name	two unrelated names	en	orcid	3
 andrew	robert	different-name		different-name	different-name	unrelated names	en	orcid	3
@@ -177,20 +207,27 @@ andrzej	andy	split		familiar	translation	English familiar used for Andrzej	en	or
 andy	james	different-name		different-name	different-name	unrelated names	en	orcid	7
 ange	angela	familiar		familiar	familiar	short form of Angela	en	orcid	5
 angela	angi	familiar		familiar	familiar	pet form of Angela	en	orcid	3
+angela	angie	familiar		familiar	familiar	pet form of Angela	en	orcid	27
 angela	anzhela	spelling	decided	spelling	translation	romanization of Анжела	ru uk	orcid	7
-angelica	angelika	spelling		spelling	spelling	c vs k variant	mul	nicknames-spelling	0
+angelica	angelika	spelling		spelling	spelling	c vs k variant	mul	wikidata	4
+angelina	angie	familiar		familiar	familiar	pet form of Angelina	en	orcid	5
 ania	anna	familiar		familiar	familiar	Polish familiar form	en pl	orcid	21
 anil	anıl	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	12
 anindita	dita	familiar		familiar	familiar	short form of Anindita	en	orcid	3
-ann	anna	split		translation	different-name	English Ann vs Anna	ru	nicknames-spelling	2
-ann	anne	spelling		spelling	spelling	spelling variant	en	nicknames-spelling	3
-anna	anne	translation	decided	translation	spelling	Ukrainian Hanna/Anna vs French/English Anne	en	nicknames-spelling	3
+ann	anna	split		translation	different-name	English Ann vs Anna	ru	wikidata	20
+ann	anne	spelling		spelling	spelling	spelling variant	en	orcid	3
+ann	annie	familiar		familiar	familiar	diminutive of Ann	en	orcid	19
+anna	anne	translation	decided	translation	spelling	Ukrainian Hanna/Anna vs French/English Anne	en	orcid	3
+anna	annie	familiar		familiar	familiar	English diminutive of Anna	en	orcid	9
 anna	anya	familiar		familiar	familiar	Russian familiar of Anna	en	orcid	15
 anna	ganna	translation		translation	translation	Ukrainian Hanna/Ganna vs Anna	ru uk	orcid	22
 anna	hanna	translation		translation	translation	Ukrainian Hanna vs Anna	ru uk	orcid	27
 anna	аnna	unclear		unclear	unclear	corrupt, Cyrillic homoglyph	mul	orcid	3
+anne	annie	familiar		familiar	familiar	diminutive of Anne	en	orcid	36
 anne	elizabeth	different-name		different-name	different-name	two unrelated names	en	orcid	4
+ant	anthony	familiar		familiar	familiar	British clipped form of Anthony	en	orcid	5
 anthony	antony	spelling		spelling	spelling	variant spellings	mul	orcid	5
+anthony	tony	familiar		familiar	familiar	standard pet form of Anthony	en	orcid	233
 antoine	tony	familiar		familiar	familiar	English familiar for Antoine	en	orcid	3
 antoinette	toni	familiar		familiar	familiar	short form of Antoinette	en	orcid	3
 anton	toni	familiar		familiar	familiar	short form of Anton	mul	orcid	4
@@ -202,19 +239,23 @@ antonina	tonya	familiar		familiar	familiar	Tonya pet form of Antonina	en	orcid	3
 antonino	antonio	different-name		different-name	different-name	diminutive-derived name in own right	it	orcid	6
 antonino	nino	familiar		familiar	familiar	Italian short form of Antonino	it	orcid	6
 antonio	toni	familiar		familiar	familiar	Toni short form of Antonio	es pt-BR	orcid	11
+antonio	tony	familiar		familiar	familiar	Tony used for Antonio	en	orcid	16
 antonios	antonis	familiar		familiar	familiar	Greek everyday form	el en	orcid	27
 antony	tony	familiar		familiar	familiar	short form of Antony	en	orcid	17
 anu	anupama	familiar		familiar	familiar	Anu short form of Anupama	en	orcid	6
 anu	anuradha	familiar		familiar	familiar	short form of Anuradha	en	orcid	5
 arek	arkadiusz	familiar		familiar	familiar	Arek Polish pet form of Arkadiusz	pl	orcid	4
 argyro	iro	split		familiar	different-name	Greek short form of Argyro	mul	orcid	3
+ari	ariana	familiar		familiar	familiar	clipped form of Ariana	en	orcid	3
+ari	ariel	split		familiar	different-name	opus: clipped form of Ariel; sonnet: loose: Ari is also Hebrew and Greek in its own right	mul	orcid	3
 ari	aryeh	familiar		familiar	familiar	short form of Aryeh	en	orcid	3
 aris	aristeidis	familiar		familiar	familiar	Greek short form of Aristeidis	el	orcid	9
 arsenii	arseniy	spelling		spelling	spelling	romanization variant	mul	orcid	3
+art	arthur	familiar		familiar	familiar	clipped form of Arthur	en	orcid	11
 artem	artyom	spelling	decided	spelling	translation	romanization variant	ru	orcid	15
 arthur	artur	spelling	decided	spelling	translation	romanization of Артур	ru	orcid	12
 ash	ashleigh	familiar		familiar	familiar	short form of Ashleigh	en	orcid	3
-ashley	ashly	spelling		spelling	spelling	Ashley/Ashly variant spelling	mul	nicknames-spelling	0
+ash	ashley	familiar		familiar	familiar	clipped form of Ashley	en	orcid	24
 asimina	mina	familiar		familiar	familiar	Mina short form of Asimina	el	orcid	3
 asli	aslı	spelling		spelling	spelling	Turkish dotless ı dropped	tr	orcid	14
 aslihan	aslıhan	spelling		spelling	spelling	with and without Turkish ı	tr	orcid	10
@@ -226,9 +267,8 @@ athanasios	thanasis	familiar		familiar	familiar	Greek short form of Athanasios	e
 athanasios	thanos	familiar		familiar	familiar	Greek short form of Athanasios	el	orcid	50
 athanassios	thanos	familiar		familiar	familiar	Greek short form of Athanasios	en	orcid	4
 athena	athina	spelling		spelling	spelling	romanization variant	en	orcid	7
-audree	audrey	spelling		spelling	spelling	variant of Audrey	mul	nicknames-spelling	0
+august	gus	familiar		familiar	familiar	clipped from the end of August	en	orcid	3
 augusto	gus	familiar		familiar	familiar	short form of Augusto	mul	orcid	3
-aurelia	aurilla	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
 avi	avinash	familiar		familiar	familiar	short form of Avinash	en	orcid	5
 avi	avraham	familiar		familiar	familiar	Hebrew short form of Avraham	ar en he	orcid	8
 aydin	aydın	spelling		spelling	spelling	Turkish with and without ı	tr	orcid	10
@@ -237,8 +277,9 @@ babis	charalampos	familiar		familiar	familiar	Greek pet form of Charalampos	el e
 baerbel	bärbel	spelling		spelling	spelling	ä written ae	de	orcid	3
 bahadir	bahadır	spelling		spelling	spelling	Turkish dotless ı dropped	tr	orcid	5
 barb	barbara	familiar		familiar	familiar	short form of Barbara	en	orcid	11
-barbara	barbery	unclear		unclear	unclear	unfamiliar form	mul	nicknames-spelling	0
+barbara	barbie	familiar		familiar	familiar	pet form of Barbara	en	orcid	3
 barbara	basia	familiar		familiar	familiar	Polish familiar of Barbara	en	orcid	5
+barbara	bobbie	familiar		familiar	familiar	pet form of Barbara	en	orcid	3
 baris	barış	spelling		spelling	spelling	dropped Turkish letters	tr	orcid	21
 bart	bartosz	split		familiar	translation	Bart short form of Bartosz	en	orcid	3
 bart	bartłomiej	familiar		familiar	familiar	short form of Bartlomiej	pl	orcid	3
@@ -249,71 +290,92 @@ bartlomiej	bartłomiej	spelling		spelling	spelling	Polish with and without ł	pl
 bas	bastiaan	familiar		familiar	familiar	Dutch short form of Bastiaan	nl	orcid	6
 bas	sebastiaan	familiar		familiar	familiar	Bas Dutch short form of Sebastiaan	en	orcid	4
 basil	vasileios	translation		translation	translation	English and Greek forms	mul	orcid	3
+bea	beatrice	familiar		familiar	familiar	clipped form of Beatrice	en	orcid	6
 bea	beatriz	familiar		familiar	familiar	Bea short form of Beatriz	en	orcid	7
 beatriz	bia	familiar		familiar	familiar	Portuguese familiar form	pt-BR	orcid	7
 bec	rebecca	familiar		familiar	familiar	short form of Rebecca	en	orcid	11
+becca	rebecca	familiar		familiar	familiar	clipped form of Rebecca	en	orcid	36
 becci	rebecca	familiar		familiar	familiar	Becci pet form of Rebecca	en	orcid	3
+beck	rebecca	familiar		familiar	familiar	clipped from the middle of Rebecca	en	orcid	8
 becki	rebecca	familiar		familiar	familiar	pet form of Rebecca	en	orcid	5
 beckie	rebecca	familiar		familiar	familiar	pet form of Rebecca	en	orcid	4
+becky	rebecca	familiar		familiar	familiar	traditional pet form of Rebecca	en	orcid	98
 behnam	ben	split		different-name	familiar	loose, English Ben adopted for Persian Behnam	en	orcid	3
 behrooz	behrouz	spelling		spelling	spelling	Persian romanization variants	fa	orcid	5
 beki	rebecca	familiar		familiar	familiar	pet form of Rebecca	en	orcid	4
 bel	isabel	familiar		familiar	familiar	Bel short form of Isabel	pt-BR	orcid	4
-bella	belle	split		sibling	different-name	both short forms of Isabella	mul	nicknames-spelling	0
+bella	isabella	familiar		familiar	familiar	clipped from the end of Isabella	en	orcid	14
+ben	benedict	familiar		familiar	familiar	clipped form of Benedict	en	orcid	10
+ben	benjamin	familiar		familiar	familiar	clipped form of Benjamin	en	orcid	433
+ben	benny	split		sibling	familiar	opus: both pet forms of Benjamin; sonnet: Benny is a diminutive of Ben	en	orcid	3
 ben	bernard	different-name		different-name	different-name	loose, Ben is not a usual form of Bernard	mul	orcid	3
 ben	michael	different-name		different-name	different-name	unrelated names	en	orcid	4
 ben	william	different-name		different-name	different-name	Ben is not a form of William	en	orcid	3
 benjamin	benji	familiar		familiar	familiar	pet form of Benjamin	en	orcid	3
+benjamin	benny	familiar		familiar	familiar	diminutive of Benjamin	en	orcid	5
 benjamin	benyamin	translation		translation	translation	English vs Hebrew/Persian form	en	orcid	3
 beppe	giuseppe	familiar		familiar	familiar	Italian familiar of Giuseppe	mul	orcid	3
 bernadette	bernie	familiar		familiar	familiar	pet form of Bernadette	en	orcid	5
+bernard	bernie	familiar		familiar	familiar	pet form of Bernard	en	orcid	10
 bernd	bernhard	familiar		familiar	familiar	short form of Bernhard	de	orcid	4
-berney	bernie	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+bess	elizabeth	familiar		familiar	familiar	traditional pet form of Elizabeth	en	orcid	3
 beth	bethan	split		sibling	familiar	Beth and Bethan both pet forms of Elizabeth	en	orcid	4
 beth	bethany	familiar		familiar	familiar	short form of Bethany	en	orcid	24
 beth	elisabeth	familiar		familiar	familiar	short form of Elisabeth	en pt-BR	orcid	5
+beth	elizabeth	familiar		familiar	familiar	clipped from the end of Elizabeth	en	orcid	98
 beto	roberto	familiar		familiar	familiar	familiar form of Roberto	pt-BR	orcid	3
+betsy	elizabeth	familiar		familiar	familiar	traditional pet form of Elizabeth	en	orcid	27
+betty	elizabeth	familiar		familiar	familiar	English pet form of Elizabeth	en	fec	3
 bev	beverley	familiar		familiar	familiar	short form of Beverley	en	orcid	6
 bex	rebecca	familiar		familiar	familiar	familiar form of Rebecca	en	orcid	11
-biddie	biddy	spelling		spelling	spelling	ie vs y	mul	nicknames-spelling	0
 bill	john	different-name		different-name	different-name	Bill is William's form, not John's	en	orcid	3
 bill	vasileios	split		familiar	different-name	English familiar used for Vasileios	en	orcid	3
+bill	william	familiar		familiar	familiar	traditional pet form of William	en	orcid	270
+billy	william	familiar		familiar	familiar	traditional pet form of William	en	orcid	28
 bjoern	björn	spelling		spelling	spelling	umlaut written oe	de	orcid	28
 blazej	błażej	spelling		spelling	spelling	Polish with and without ł	pl	orcid	10
+bob	robert	familiar		familiar	familiar	traditional pet form of Robert	en	orcid	225
+bobby	robert	familiar		familiar	familiar	traditional pet form of Robert	en	orcid	30
 bogdan	bohdan	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	ru uk	orcid	11
 bogumila	bogumiła	spelling		spelling	spelling	Polish with and without ł	pl	orcid	5
 boguslaw	bogusław	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	5
 boris	borys	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	ru uk	orcid	11
+brad	bradford	familiar		familiar	familiar	clipped form of Bradford	en	orcid	7
+brad	bradley	familiar		familiar	familiar	clipped form of Bradley	en	orcid	62
 brad	james	different-name		different-name	different-name	unrelated names	en	orcid	3
 brad	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 braden	brady	different-name		different-name	different-name	two names in their own right	en	orcid	4
 brent	brenton	split		familiar	different-name	short form of Brenton	en	orcid	3
-brian	bryan	spelling		spelling	spelling	i/y variant	mul	nicknames-spelling	2
-briana	bryanna	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-brianna	bryanna	spelling		spelling	spelling	i/y variant	mul	nicknames-spelling	0
+bri	brianna	familiar		familiar	familiar	clipped form of Brianna	en	orcid	8
+brian	bryan	spelling		spelling	spelling	i/y variant	mul	wikidata	10
 brianne	brie	familiar		familiar	familiar	short form of Brianne	en	orcid	3
 brit	brittany	familiar		familiar	familiar	short form of Brittany	en	orcid	3
-brittany	brittnie	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
-brittney	brittnie	spelling		spelling	spelling	Brittney/Brittnie variant spelling	mul	nicknames-spelling	0
+britt	brittany	familiar		familiar	familiar	clipped form of Brittany	mul	orcid	3
 bruce	robert	different-name		different-name	different-name	Bruce is not a form of Robert	mul	orcid	3
 cagri	çağrı	spelling		spelling	spelling	Turkish letters dropped	tr	orcid	11
+cait	caitlin	familiar		familiar	familiar	clipped form of Caitlin	en	orcid	11
+caitlin	caity	familiar		familiar	familiar	pet form of Caitlin	en	orcid	3
 caitlin	katie	familiar		familiar	familiar	Katie pet form of Caitlin	mul	orcid	3
-cali	kalli	refused	decided	spelling	different-name	same short name spelled two ways	mul	nicknames-spelling	0
+cal	calvin	familiar		familiar	familiar	clipped form of Calvin	en	orcid	3
+cam	cameron	familiar		familiar	familiar	clipped form of Cameron	en	orcid	10
 camilla	millie	familiar		familiar	familiar	pet form of Camilla	en	orcid	3
-carla	karla	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
 carles	carlos	translation		translation	translation	Catalan and Spanish forms	ca es	orcid	12
 carlos	jose	different-name		different-name	different-name	unrelated names	en	orcid	3
 carly	carolyn	familiar		familiar	familiar	pet form of Carolyn	en	orcid	3
 carme	carmen	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	5
 carmela	carmen	different-name		different-name	different-name	two names in their own right	it	orcid	4
 caro	caroline	familiar		familiar	familiar	short form of Caroline	mul	orcid	3
-carol	carole	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	1
+carol	carole	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 carol	carolina	split		familiar	different-name	Brazilian short form of Carolina	pt-BR	orcid	18
+carol	caroline	familiar		familiar	familiar	Carol as short for Caroline, common in Brazil	en pt-BR	orcid	11
 carola	carolina	different-name		different-name	different-name	Carola and Carolina distinct names	mul	orcid	3
+caroline	carrie	familiar		familiar	familiar	pet form of Caroline	en	orcid	9
 caroline	caz	familiar		familiar	familiar	Caz British pet form of Caroline	en	orcid	4
+carolyn	carrie	familiar		familiar	familiar	pet form of Carolyn	en	orcid	10
 casey	cassandra	familiar		familiar	familiar	short form of Cassandra	en	orcid	5
-casey	k.c	different-name		different-name	different-name	initials vs a name	mul	nicknames-spelling	0
 cass	cassandra	familiar		familiar	familiar	short form of Cassandra	en	orcid	6
+cass	cassidy	familiar		familiar	familiar	clipped form of Cassidy	en	orcid	4
+cassandra	cassie	familiar		familiar	familiar	pet form of Cassandra	en	orcid	21
 cassandra	cassy	familiar		familiar	familiar	short form of Cassandra	en	orcid	3
 cassie	cassondra	familiar		familiar	familiar	pet form of Cassondra	en	orcid	3
 cat	catherine	familiar		familiar	familiar	short form of Catherine	en	orcid	32
@@ -321,47 +383,62 @@ cate	catherine	familiar		familiar	familiar	short form of Catherine	en	orcid	12
 caterina	katia	familiar		familiar	familiar	Katia pet form of Caterina	it	orcid	4
 cath	catherine	familiar		familiar	familiar	short form of Catherine	en	orcid	13
 catherine	cathie	familiar		familiar	familiar	pet form of Catherine	en	orcid	7
+catherine	cathy	familiar		familiar	familiar	pet form of Catherine	en	orcid	73
 catherine	catie	familiar		familiar	familiar	pet form of Catherine	en	orcid	13
 catherine	caty	familiar		familiar	familiar	pet form of Catherine	mul	orcid	3
 catherine	ekaterina	translation		translation	translation	English Catherine vs Russian Ekaterina	ru	orcid	5
 catherine	kate	familiar		familiar	familiar	short form of Catherine	en	orcid	32
 catherine	katie	familiar		familiar	familiar	pet form of Catherine	en	orcid	27
-cathy	kathy	spelling		spelling	spelling	one familiar form spelled two ways	mul	nicknames-spelling	0
+catherine	katy	familiar		familiar	familiar	pet form of Catherine	en	orcid	5
 chad	charles	different-name		different-name	different-name	loose, Chad a name of its own	en	orcid	5
 charalambos	charalampos	spelling		spelling	spelling	Greek romanization variants	el	orcid	4
 charalambos	harry	familiar		familiar	familiar	anglicized familiar used by Charalambos	mul	orcid	3
 charalampos	haris	familiar		familiar	familiar	Haris familiar form of Charalampos	mul	orcid	6
 charalampos	harris	familiar		familiar	familiar	Harris familiar form of Charalampos	en	orcid	7
 charalampos	harry	familiar		familiar	familiar	anglicized familiar used by Greek Charalampos	el en	orcid	6
+charles	charlie	familiar		familiar	familiar	pet form of Charles	en	orcid	76
 charles	chas	familiar		familiar	familiar	short form of Charles	mul	orcid	4
 charles	chip	familiar		familiar	familiar	familiar nickname of Charles	en	orcid	6
+charles	chuck	familiar		familiar	familiar	traditional American pet form of Charles	en	orcid	58
 charlie	charlotte	familiar		familiar	familiar	pet form of Charlotte	en	orcid	21
+charlotte	lottie	familiar		familiar	familiar	pet form from the end of Charlotte	en	orcid	6
 charo	rosario	familiar		familiar	familiar	Spanish familiar form of Rosario	mul	orcid	3
-chelsea	chelsie	spelling		spelling	spelling	Chelsea/Chelsie variant spelling	mul	nicknames-spelling	0
-chelsey	chelsie	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
+chester	chet	familiar		familiar	familiar	pet form of Chester	en	orcid	3
 chico	francisco	familiar		familiar	familiar	Portuguese familiar of Francisco	pt-BR	orcid	10
 chip	robert	different-name		different-name	different-name	loose nickname	en	orcid	3
 chris	christiaan	familiar		familiar	familiar	short form of Christiaan	en nl	orcid	9
+chris	christian	familiar		familiar	familiar	clipped form of Christian	en	orcid	34
 chris	christiane	familiar		familiar	familiar	short form of Christiane	pt-BR	orcid	11
+chris	christina	familiar		familiar	familiar	clipped form of Christina	en	orcid	13
+chris	christine	familiar		familiar	familiar	clipped form of Christine	en	orcid	36
+chris	christoph	familiar		familiar	familiar	clipped form of Christoph	de en	orcid	13
+chris	christopher	familiar		familiar	familiar	clipped form of Christopher	en	orcid	803
 chris	christos	familiar		familiar	familiar	short form of Christos	el en	orcid	15
 chris	john	different-name		different-name	different-name	unrelated names	mul	orcid	3
-chris	kris	spelling	decided	spelling	spelling	ch vs k	mul	nicknames-spelling	0
 chris	krzysztof	split		familiar	translation	Chris used for Krzysztof	en	orcid	7
 chris	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 chrissie	christine	familiar		familiar	familiar	pet form of Christine	en	orcid	4
+chrissy	christina	familiar		familiar	familiar	pet form of Christina	en	orcid	6
+chrissy	christine	familiar		familiar	familiar	pet form of Christine	en	orcid	6
 christie	christine	familiar		familiar	familiar	Christie pet form of Christine	en	orcid	5
-christina	kristina	spelling	decided	translation	spelling	Russian Kristina vs Christina	ru	nicknames-spelling	4
+christina	christy	familiar		familiar	familiar	pet form of Christina	en	orcid	12
+christina	kristina	spelling	decided	translation	spelling	Russian Kristina vs Christina	ru	orcid	4
+christina	tina	familiar		familiar	familiar	clipped from the end of Christina	en	orcid	17
+christine	christy	familiar		familiar	familiar	pet form of Christine	en	orcid	7
 christine	cris	familiar		familiar	familiar	short form of Christine	en	orcid	3
+christopher	kit	familiar		familiar	familiar	traditional pet form of Christopher	en	orcid	13
 christopher	kitt	familiar		familiar	familiar	Kit for Christopher	en	orcid	3
 christopher	topher	familiar		familiar	familiar	short form of Christopher	en	orcid	3
 ciccio	francesco	familiar		familiar	familiar	Ciccio Italian pet form of Francesco	it	orcid	3
+cindy	cynthia	familiar		familiar	familiar	pet form of Cynthia	en	orcid	40
 cindy	hsin	different-name		different-name	different-name	adopted English name	mul	orcid	3
 cindy	xinyi	different-name		different-name	different-name	English name adopted by a Chinese holder	zh	orcid	3
-clair	claire	spelling		spelling	spelling	Clair/Claire variant spelling	mul	nicknames-spelling	0
-claire	clare	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	1
 clay	clayton	familiar		familiar	familiar	short form of Clayton	en	orcid	5
+clem	clement	familiar		familiar	familiar	clipped form of Clement	en	orcid	3
+cliff	clifford	familiar		familiar	familiar	clipped form of Clifford	en	orcid	22
 clint	clinton	familiar		familiar	familiar	short form of Clinton	en	orcid	10
 conceição	maria	different-name		different-name	different-name	second name of Maria da Conceição	pt	orcid	3
+connie	constance	familiar		familiar	familiar	pet form of Constance	en	orcid	11
 conny	cornelia	familiar		familiar	familiar	pet form of Cornelia	fr	orcid	4
 constantine	costas	split		familiar	translation	Costas familiar form of Constantine/Konstantinos	el	orcid	3
 constantine	konstantin	translation		translation	translation	English vs Russian form	ru	orcid	4
@@ -373,43 +450,53 @@ cornelis	kees	familiar		familiar	familiar	Dutch pet form of Cornelis	en nl	orcid
 costas	konstantinos	familiar		familiar	familiar	Greek short form of Konstantinos	el	orcid	19
 cris	cristiane	familiar		familiar	familiar	Cris short form of Cristiane	pt-BR	orcid	11
 cris	cristina	familiar		familiar	familiar	Cris short form of Cristina	es pt-BR	orcid	9
+curt	curtis	familiar		familiar	familiar	clipped form of Curtis	en	orcid	4
 cyndi	cynthia	familiar		familiar	familiar	pet form of Cynthia	en	orcid	3
 da	josé	unclear		unclear	unclear	corrupt row, da is a particle	pt-BR	orcid	3
 daan	daniel	familiar		familiar	familiar	Dutch short form of Daniel	en nl	orcid	4
-dacia	daycia	refused	decided	spelling	spelling	Dacia/Daycia variant spelling	mul	nicknames-spelling	0
-dahl	dal	unclear		unclear	unclear	cannot tell	mul	nicknames-spelling	0
-daisha	daycia	refused	decided	spelling	spelling	variant spellings of one name	mul	nicknames-spelling	0
+dan	daniel	familiar		familiar	familiar	clipped form of Daniel	en	orcid	317
 dan	danielle	split		familiar	different-name	short form of Danielle	en	orcid	3
 dan	danilo	familiar		familiar	familiar	Dan short form of Danilo	mul	orcid	3
+dan	danny	split		sibling	familiar	opus: both pet forms of Daniel; sonnet: Danny is a diminutive of Dan	mul	orcid	6
 dana	daniela	split		familiar	different-name	short form of Daniela	en ro	orcid	7
 danae	danai	spelling		spelling	spelling	romanization variant	el	orcid	5
 dani	daniel	familiar		familiar	familiar	short form of Daniel	ca es	orcid	9
 dani	daniela	familiar		familiar	familiar	short form of Daniela	pt-BR	orcid	20
 dani	daniele	familiar		familiar	familiar	short form of Daniele	mul	orcid	3
+dani	danielle	familiar		familiar	familiar	pet form of Danielle	en	orcid	29
 danial	daniel	spelling	decided	spelling	translation	Persian Daniel romanized Danial	fa	orcid	4
 daniel	daniele	translation		translation	translation	English vs Italian male form	en it	orcid	7
 daniel	daniil	translation		translation	translation	English and Russian forms	ru	orcid	7
+daniel	dann	familiar		familiar	familiar	Dan written with a double n	en	orcid	3
+daniel	danny	familiar		familiar	familiar	diminutive of Daniel	en	orcid	57
 danielle	danni	split		familiar	translation	short form of Danielle	mul	orcid	3
 darek	dariusz	familiar		familiar	familiar	Polish short form of Dariusz	pl	orcid	8
 daria	darya	spelling		spelling	spelling	romanization variant	ru	orcid	13
 daria	dasha	familiar		familiar	familiar	Russian familiar of Daria	mul	orcid	5
+dave	david	familiar		familiar	familiar	standard pet form of David	en	orcid	215
 david	dawei	different-name		different-name	different-name	Chinese name and adopted English name	en zh	orcid	5
 david	james	different-name		different-name	different-name	unrelated names	en	orcid	3
 david	kyle	different-name		different-name	different-name	unrelated names	mul	orcid	3
 david	mike	different-name		different-name	different-name	unrelated names	en	orcid	3
+david	ret	unclear		unclear	unclear	"corrupt: RET is likely ""retired"" from an occupation field, not a name"	en	fec	3
 david	william	different-name		different-name	different-name	unrelated names	en	orcid	4
+deb	debbie	split		sibling	familiar	opus: both pet forms of Deborah; sonnet: pet form of Deborah, two diminutives; Debbie extends Deb	en	orcid	3
+deb	deborah	familiar		familiar	familiar	clipped form of Deborah	en	orcid	18
+deb	debra	familiar		familiar	familiar	clipped form of Debra	en	orcid	10
+debbie	deborah	familiar		familiar	familiar	pet form of Deborah	en	orcid	45
+debbie	debra	familiar		familiar	familiar	pet form of Debra	en	orcid	7
 debi	deborah	familiar		familiar	familiar	short form of Deborah	en	orcid	6
 deborah	debs	familiar		familiar	familiar	short form of Deborah	en	orcid	3
 demetra	dimitra	spelling		spelling	spelling	romanization of Dimitra	mul	orcid	3
 denis	denys	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	13
-derek	derrek	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+dennis	denny	familiar		familiar	familiar	English diminutive of Dennis	en	congress	2
 des	desmond	familiar		familiar	familiar	short form of Desmond	en	orcid	3
 desi	desiree	familiar		familiar	familiar	short form of Desiree	mul	orcid	3
 despina	despoina	spelling		spelling	spelling	Greek romanization variants	el	orcid	10
+di	diana	familiar		familiar	familiar	clipped form of Diana	en	orcid	3
+di	diane	familiar		familiar	familiar	clipped form of Diane	en	orcid	5
 di	dianne	familiar		familiar	familiar	short form of Dianne	en	orcid	5
-dian	diane	spelling		spelling	spelling	variant of Diane	mul	nicknames-spelling	0
-diane	dianne	spelling		spelling	spelling	single vs double n	mul	nicknames-spelling	0
-dicey	dicie	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
+dick	richard	familiar		familiar	familiar	traditional pet form of Richard	en	orcid	18
 dima	dmitri	familiar		familiar	familiar	Russian familiar of Dmitri	mul	orcid	3
 dima	dmitriy	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 dima	dmitry	familiar		familiar	familiar	Russian familiar form	en	orcid	5
@@ -432,17 +519,29 @@ dmitriy	dmytro	translation		translation	translation	Russian and Ukrainian forms	
 dmitry	dmytro	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	21
 dmitry	dzmitry	translation		translation	translation	Russian Dmitry vs Belarusian Dzmitry	mul	orcid	4
 dolores	lola	familiar		familiar	familiar	Spanish pet form of Dolores	mul	orcid	4
+dom	dominic	familiar		familiar	familiar	clipped form of Dominic	en	orcid	12
 domenico	mimmo	familiar		familiar	familiar	Italian familiar of Domenico	it	orcid	3
-dona	donna	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+don	donald	familiar		familiar	familiar	clipped form of Donald	en	orcid	52
+don	william	different-name		different-name	different-name	Don is not formed from William; a second name the person goes by	en	congress	2
+dora	theodora	familiar		familiar	familiar	clipped from the end of Theodora	el en	orcid	6
 dorde	đorđe	spelling		spelling	spelling	Serbian with and without đ	sr	orcid	6
-dorothy	dortha	spelling		spelling	spelling	variant spelling of Dorothy	mul	nicknames-spelling	0
+doug	douglas	familiar		familiar	familiar	clipped form of Douglas	en	orcid	95
 drew	robert	different-name		different-name	different-name	unrelated names	en	orcid	3
 drew	william	different-name		different-name	different-name	unrelated names	en	orcid	4
 dudu	duduzile	familiar		familiar	familiar	Zulu short form of Duduzile	mul	orcid	3
+ed	edmund	familiar		familiar	familiar	clipped form of Edmund	en	orcid	9
+ed	eduardo	familiar		familiar	familiar	Ed used for Eduardo	en	orcid	4
+ed	edward	familiar		familiar	familiar	clipped form of Edward	en	orcid	67
+ed	edwin	familiar		familiar	familiar	clipped form of Edwin	en	orcid	7
 edd	edward	familiar		familiar	familiar	short form of Edward	en	orcid	6
+eddie	edward	familiar		familiar	familiar	diminutive of Edward	en	orcid	30
+eddy	edward	familiar		familiar	familiar	diminutive of Edward	mul	orcid	3
+edie	edith	familiar		familiar	familiar	pet form of Edith	en	orcid	6
 edu	eduardo	familiar		familiar	familiar	short form of Eduardo	pt-BR	orcid	9
 eduard	eduardo	translation		translation	translation	Catalan vs Spanish form	mul	orcid	3
 eduard	edward	translation		translation	translation	Eduard vs English Edward	ru	orcid	3
+edward	ned	familiar		familiar	familiar	traditional pet form of Edward	en	orcid	18
+edward	ted	familiar		familiar	familiar	traditional pet form of Edward	en	orcid	38
 efi	efthymia	familiar		familiar	familiar	Greek short form of Efthymia	el	orcid	3
 efstathios	stathis	familiar		familiar	familiar	Greek familiar of Efstathios	el en	orcid	10
 efstratios	stratos	familiar		familiar	familiar	Greek familiar form	el en	orcid	8
@@ -460,11 +559,13 @@ ekaterini	katerina	familiar		familiar	familiar	Greek usual short form	el	orcid	3
 el	mohamed	unclear		unclear	unclear	El is an article, not a form of Mohamed	fr	orcid	5
 ela	elzbieta	familiar		familiar	familiar	Polish familiar of Elzbieta	pl	orcid	8
 eleanor	ella	familiar		familiar	familiar	short form of Eleanor	en	orcid	6
+eleanor	ellie	familiar		familiar	familiar	pet form of Eleanor	en	orcid	32
 eleanor	elly	familiar		familiar	familiar	pet form of Eleanor	en	orcid	5
 eleanor	nell	familiar		familiar	familiar	traditional familiar of Eleanor	mul	orcid	3
 eleftherios	lefteris	familiar		familiar	familiar	Lefteris familiar form of Eleftherios	el en	orcid	18
 elena	eleni	translation		translation	translation	Greek Eleni and Elena	el en	orcid	26
 elena	ellie	split		familiar	different-name	English pet form of Elena	en	orcid	4
+elena	helen	translation		translation	translation	Russian Elena vs English Helen	ru	orcid	3
 elena	helena	translation		translation	translation	Elena vs Helena forms in different languages	ru	orcid	6
 elena	jelena	translation		translation	translation	Russian and Serbian/Czech forms	mul	orcid	3
 elena	lena	familiar		familiar	familiar	short form of Elena	en	orcid	6
@@ -472,7 +573,9 @@ elena	olena	translation		translation	translation	Russian and Ukrainian forms	ru 
 elena	yelena	spelling		spelling	spelling	romanization variant	en ru	orcid	11
 eleni	helen	translation		translation	translation	Greek Eleni vs English Helen	el	orcid	9
 eleni	lena	familiar		familiar	familiar	short form of Eleni	en	orcid	3
+eli	elias	familiar		familiar	familiar	clipped form of Elias	en	orcid	4
 eli	eliezer	familiar		familiar	familiar	short form of Eliezer	en	orcid	3
+eli	elijah	familiar		familiar	familiar	clipped form of Elijah	en	orcid	9
 eli	elizabeth	familiar		familiar	familiar	Eli short form of Elizabeth	en	orcid	3
 elias	ilias	spelling		spelling	spelling	romanization variants of Greek Ilias	el	orcid	10
 elisabeth	elizabeth	spelling		spelling	spelling	Elisabeth/Elizabeth one name spelled with s or z	mul	orcid	8
@@ -480,41 +583,44 @@ elisabeth	lis	familiar		familiar	familiar	short form of Elisabeth	en	orcid	6
 elisabeth	lisa	familiar		familiar	familiar	short form of Elisabeth	en	orcid	16
 elisabeth	liz	familiar		familiar	familiar	short form of Elisabeth	en	orcid	9
 elise	ellie	split		different-name	sibling	Elise and Ellie distinct names	en	orcid	3
+eliza	elizabeth	familiar		familiar	familiar	Eliza is a short form of Elizabeth	en	orcid	3
 elizabeth	elizaveta	translation		translation	translation	English vs Russian form	en ru	orcid	7
 elizabeth	ellie	familiar		familiar	familiar	Ellie pet form of Elizabeth	en	orcid	14
+elizabeth	libby	familiar		familiar	familiar	traditional pet form of Elizabeth	en	orcid	47
 elizabeth	lily	familiar		familiar	familiar	Lily pet form of Elizabeth	en	orcid	3
+elizabeth	lisa	familiar		familiar	familiar	Lisa from Elisabeth, used for Elizabeth	en	orcid	22
 elizabeth	lissa	familiar		familiar	familiar	pet form of Elizabeth	en	orcid	3
+elizabeth	liz	familiar		familiar	familiar	clipped form of Elizabeth	en	orcid	290
+elizabeth	liza	familiar		familiar	familiar	short form of Elizabeth	en	orcid	10
 elizabeth	lizz	familiar		familiar	familiar	pet form of Elizabeth	en	orcid	4
+elizabeth	lizzie	familiar		familiar	familiar	pet form of Elizabeth	en	orcid	37
+elizabeth	lizzy	familiar		familiar	familiar	pet form of Elizabeth	en	orcid	20
 elizaveta	lisa	familiar		familiar	familiar	familiar form of Elizaveta	mul	orcid	4
 elizaveta	liza	familiar		familiar	familiar	Russian short form of Elizaveta	en	orcid	4
 ellen	ellie	familiar		familiar	familiar	pet form of Ellen	en	orcid	11
-ellie	elly	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
-eloise	heloise	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-elouise	heloise	spelling		spelling	spelling	variant spelling of Heloise	mul	nicknames-spelling	0
 elsayed	sayed	familiar	decided	spelling	familiar	with and without article el	ar	orcid	3
-elsey	elsie	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
+em	emily	familiar		familiar	familiar	clipped form of Emily	en	orcid	6
 eman	iman	refused	decided	spelling	different-name	Arabic romanization variants	ar	orcid	3
+emily	emma	different-name		different-name	different-name	two distinct names	en	orcid	3
 emine	emıne	spelling		spelling	spelling	Turkish dotless i variant	tr	orcid	3
 emma	emmanuelle	familiar		familiar	familiar	short form of Emmanuelle	en	orcid	3
 emmanouil	emmanuel	translation		translation	translation	Greek vs English form	el	orcid	9
 emmanouil	manolis	familiar		familiar	familiar	Greek familiar of Emmanouil	el en	orcid	27
 emmanouil	manos	familiar		familiar	familiar	Manos familiar form of Emmanouil	el en	orcid	28
-emmanuel	immanuel	spelling		spelling	spelling	variant spellings of one name	mul	nicknames-spelling	0
 emmanuel	manolis	familiar		familiar	familiar	Greek familiar form of Emmanouil	el	orcid	4
 emmanuel	manos	familiar		familiar	familiar	Greek familiar form of Emmanouil	el en	orcid	7
 emmanuela	emmanuella	spelling		spelling	spelling	doubled letter	mul	orcid	3
 enric	enrique	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	4
 enrique	henry	translation		translation	translation	Spanish and English forms	mul	orcid	3
 enzo	vincenzo	familiar		familiar	familiar	Italian short form of Vincenzo	it	orcid	8
-eric	erick	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-eric	erik	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	3
+eric	erik	spelling		spelling	spelling	variant spellings	mul	orcid	3
+eric	rick	split		familiar	different-name	opus: Rick clipped from Eric; sonnet: loose: Rick is normally from Richard	en	orcid	3
 ernest	ernesto	translation		translation	translation	English and Spanish forms	mul	orcid	3
-erwin	irwin	refused	decided	spelling	different-name	variant spellings	mul	nicknames-spelling	0
 ester	esther	spelling		spelling	spelling	spelling variant	mul	orcid	3
-esther	hester	refused	decided	spelling	spelling	variant of Esther	mul	nicknames-spelling	0
 eugene	evgenii	translation		translation	translation	English and Russian forms	ru	orcid	4
 eugene	evgeniy	translation		translation	translation	English and Russian forms	ru	orcid	10
 eugene	evgeny	translation		translation	translation	English and Russian forms	en ru	orcid	18
+eugene	gene	familiar		familiar	familiar	clipped from the end of Eugene	en	orcid	13
 eugene	ievgen	translation		translation	translation	English and Ukrainian forms	mul	orcid	7
 eugene	yevgen	translation		translation	translation	English and Ukrainian forms	mul	orcid	4
 eugene	yevgeniy	translation		translation	translation	English and Russian forms	en	orcid	4
@@ -523,14 +629,12 @@ eugene	yevhenii	translation		translation	translation	English and Ukrainian forms
 eugenia	evgenia	translation		translation	translation	Latin and Greek/Russian forms	mul	orcid	5
 eugenia	evgeniia	translation		translation	translation	Latin and Russian forms	ru	orcid	3
 eugenia	evgeniya	translation		translation	translation	Latin vs Russian form	ru	orcid	4
-eunice	unice	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
 eva	evangelia	familiar		familiar	familiar	short form of Evangelia	en	orcid	11
-eva	eve	translation		translation	translation	Latin vs English form	mul	nicknames-spelling	1
+eva	eve	translation		translation	translation	Latin vs English form	mul	wikidata	5
 evangelia	lia	familiar		familiar	familiar	Greek short form of Evangelia	el	orcid	4
 evangeline	evie	familiar		familiar	familiar	Evie short form of Evangeline	en	orcid	3
 evangelos	vaggelis	familiar		familiar	familiar	Greek familiar of Evangelos	el	orcid	5
 evangelos	vangelis	familiar		familiar	familiar	Greek everyday short form of Evangelos	el	orcid	19
-evelina	evelyn	different-name		different-name	different-name	Evelina and Evelyn are distinct names	mul	nicknames-spelling	0
 evelyn	evie	familiar		familiar	familiar	pet form of Evelyn	en	orcid	6
 evgen	ievgen	spelling		spelling	spelling	romanization variants	mul	orcid	4
 evgen	yevhen	spelling		spelling	spelling	Ukrainian Євген romanized two ways	ru uk	orcid	4
@@ -543,38 +647,44 @@ evgeniia	evgeniya	spelling		spelling	spelling	romanization variant	ru	orcid	3
 evgeniy	evgeny	spelling		spelling	spelling	romanization variant	ru	orcid	19
 evgeniy	yevgen	translation		translation	translation	Russian Evgeniy vs Ukrainian Yevhen	mul	orcid	4
 evi	paraskevi	familiar		familiar	familiar	Greek familiar form	el	orcid	9
-fallon	falon	spelling		spelling	spelling	Fallon/Falon variant spelling	mul	nicknames-spelling	0
 fateme	fatemeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	15
 fatemeh	fatima	spelling	decided	translation	spelling	Persian vs Arabic form	en fa	orcid	7
 fedor	feodor	spelling		spelling	spelling	romanization variants	mul	orcid	3
-feltie	felty	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
 femi	olufemi	familiar		familiar	familiar	Yoruba short form	en	orcid	7
 femi	oluwafemi	familiar		familiar	familiar	Yoruba short form	en	orcid	6
 fer	fernanda	familiar		familiar	familiar	short form of Fernanda	mul	orcid	3
 fer	fernando	familiar		familiar	familiar	Fer short form of Fernando	es	orcid	3
 fernanda	nanda	familiar		familiar	familiar	Nanda pet form of Fernanda	pt-BR	orcid	3
 filip	philip	translation		translation	translation	Slavic Filip vs English Philip	mul	orcid	3
-fiona	fionna	spelling		spelling	spelling	doubled letter	mul	nicknames-spelling	0
 firat	fırat	spelling		spelling	spelling	with and without Turkish ı	tr	orcid	9
-floyd	lloyd	different-name		different-name	different-name	related names in their own right	mul	nicknames-spelling	0
 fotios	fotis	familiar		familiar	familiar	Greek short form of Fotios	el en	orcid	11
+fran	frances	familiar		familiar	familiar	clipped form of Frances	en	orcid	12
 fran	francesca	familiar		familiar	familiar	short form of Francesca	en	orcid	6
 fran	francisco	familiar		familiar	familiar	short form of Francisco	ca es	orcid	7
 francesca	frankie	familiar		familiar	familiar	Frankie pet form of Francesca	en	orcid	4
 francesco	franco	familiar		familiar	familiar	Franco short form of Francesco	it	orcid	7
 francesco	frank	split		familiar	translation	English Frank used for Francesco	en	orcid	3
+francis	frank	familiar		familiar	familiar	traditional short form of Francis	en	orcid	35
+francis	frankie	familiar		familiar	familiar	pet form of Francis	en	orcid	4
 francisco	frank	translation		translation	translation	English Frank for Spanish Francisco	en	orcid	5
 francisco	javier	different-name		different-name	different-name	second name of Francisco Javier	es	orcid	5
 francisco	paco	familiar		familiar	familiar	Paco Spanish pet form of Francisco	ca es	orcid	22
 francisco	patxi	familiar		familiar	familiar	Basque familiar form of Francisco	mul	orcid	3
+frank	franklin	familiar		familiar	familiar	clipped form of Franklin	en	orcid	4
 fred	frederic	familiar		familiar	familiar	Fred short form of Frederic	en fr	orcid	13
+fred	frederick	familiar		familiar	familiar	clipped form of Frederick	en	orcid	25
 fred	frederico	familiar		familiar	familiar	Fred short form of Frederico	pt-BR	orcid	13
 fred	frédéric	familiar		familiar	familiar	short form of Frederic	fr	orcid	10
-freda	frieda	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+freddie	frederick	familiar		familiar	familiar	diminutive of Frederick	en	orcid	3
+freddy	frederick	familiar		familiar	familiar	diminutive of Frederick	en	orcid	3
 frederick	frikkie	familiar		familiar	familiar	Frikkie Afrikaans pet form of Frederick	mul	orcid	3
+frederick	fritz	familiar		familiar	familiar	Fritz is the German pet form of Friedrich/Frederick	en	orcid	3
+frederick	rick	familiar		familiar	familiar	clipped from the middle of Frederick	en	orcid	5
 frederik	freek	familiar		familiar	familiar	Dutch familiar of Frederik	mul	orcid	3
 friedrich	fritz	familiar		familiar	familiar	German pet form of Friedrich	de	orcid	8
 fátima	maria	different-name		different-name	different-name	second name of Maria de Fátima	mul	orcid	3
+gabby	gabrielle	familiar		familiar	familiar	pet form of Gabrielle	en	orcid	12
+gabe	gabriel	familiar		familiar	familiar	clipped form of Gabriel	en	orcid	27
 gabi	gabriel	familiar		familiar	familiar	short form of Gabriel	mul	orcid	3
 gabi	gabriela	familiar		familiar	familiar	short form of Gabriela	pt-BR	orcid	13
 gabi	gabriele	familiar		familiar	familiar	short form of Gabriele	en	orcid	3
@@ -587,12 +697,11 @@ galina	galyna	spelling	decided	spelling	translation	Ukrainian romanization of on
 galina	halyna	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	15
 galyna	halyna	spelling		spelling	spelling	romanizations of Галина	ru uk	orcid	22
 ganna	hanna	spelling	decided	spelling	translation	romanization variants of Ганна	ru uk	orcid	18
-garratt	garrett	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-garret	garrett	spelling		spelling	spelling	doubled letter	mul	nicknames-spelling	0
 gaya	gayathri	familiar		familiar	familiar	short form of Gayathri	mul	orcid	3
 gbenga	oluwagbenga	familiar		familiar	familiar	Yoruba short form	mul	orcid	3
 ged	gerard	familiar		familiar	familiar	Ged British familiar form of Gerard	en	orcid	4
 gennaro	rino	familiar		familiar	familiar	Italian pet form via Gennarino	it	orcid	3
+geoff	geoffrey	familiar		familiar	familiar	clipped form of Geoffrey	en	orcid	73
 george	georges	translation		translation	translation	English George vs French Georges	mul	orcid	3
 george	georgi	translation		translation	translation	English George vs Bulgarian Georgi	bg	orcid	6
 george	georgii	translation		translation	translation	English and Russian forms of George	mul	orcid	3
@@ -617,27 +726,35 @@ georgios	yiorgos	familiar		familiar	familiar	vernacular Giorgos of Georgios	el	o
 georgios	yorgos	familiar		familiar	familiar	vernacular Giorgos of Georgios	el en	orcid	8
 georgiy	georgy	spelling		spelling	spelling	romanization variants	ru	orcid	8
 georgiy	heorhii	translation		translation	translation	Russian Georgiy vs Ukrainian Heorhii	mul	orcid	4
+gerald	gerry	familiar		familiar	familiar	pet form of Gerald	en	orcid	17
+gerald	jerry	familiar		familiar	familiar	pet form of Gerald	en	orcid	12
 geraldine	geri	familiar		familiar	familiar	short form of Geraldine	en	orcid	3
 gerard	gerry	familiar		familiar	familiar	short form of Gerard	en	orcid	10
 gergely	greg	split		familiar	translation	English familiar for Gergely (Gregory)	en	orcid	3
 german	herman	spelling	decided	spelling	translation	Герман romanized G or H	ru	orcid	3
-gerry	jerry	refused	decided	spelling	different-name	spelling variant	mul	nicknames-spelling	0
 gholamreza	reza	familiar		familiar	familiar	part of Persian compound used as call name	en fa	orcid	7
 gianni	giovanni	familiar		familiar	familiar	Italian familiar of Giovanni	it	orcid	14
 giannis	ioannis	familiar		familiar	familiar	Giannis familiar form of Ioannis	el en	orcid	26
 giannis	john	translation		translation	translation	Greek Giannis vs English John	el	orcid	3
 gigi	luigi	familiar		familiar	familiar	Italian pet form of Luigi	it	orcid	4
+gil	gilbert	familiar		familiar	familiar	clipped form of Gilbert	en	orcid	7
 gill	gillian	familiar		familiar	familiar	short form of Gillian	en	orcid	20
 gillian	gilly	familiar		familiar	familiar	pet form of Gillian	en	orcid	3
+gina	regina	familiar		familiar	familiar	clipped from the end of Regina	en	orcid	6
+ginger	virginia	familiar		familiar	familiar	traditional pet form of Virginia	en	orcid	9
+ginny	virginia	familiar		familiar	familiar	pet form of Virginia	en	orcid	19
+gio	giovanni	familiar		familiar	familiar	Italian clipped form of Giovanni	mul	orcid	3
 giri	giridhar	familiar		familiar	familiar	short form of Giridhar	mul	orcid	3
 giuseppe	joe	split		familiar	different-name	Joe used for Giuseppe (Joseph)	mul	orcid	3
 giuseppe	pino	familiar		familiar	familiar	Italian familiar form	it	orcid	7
 giuseppina	giusi	familiar		familiar	familiar	Italian pet form of Giuseppina	it	orcid	3
-glen	glenn	spelling		spelling	spelling	single vs double n	mul	nicknames-spelling	1
+glen	glenn	spelling		spelling	spelling	single vs double n	mul	wikidata	7
 goetz	götz	spelling		spelling	spelling	umlaut written oe	de	orcid	3
 gosia	malgorzata	familiar		familiar	familiar	Polish pet form of Malgorzata	en pl	orcid	13
 gosia	małgorzata	familiar		familiar	familiar	Polish familiar form	en	orcid	5
+grace	gracie	familiar		familiar	familiar	diminutive of Grace	en	orcid	6
 graça	maria	different-name		different-name	different-name	second name of Maria da Graça	pt	orcid	3
+greg	gregory	familiar		familiar	familiar	clipped form of Gregory	en	orcid	227
 greg	grzegorz	split		familiar	translation	English Greg for Polish Grzegorz	en pl	orcid	9
 greg	john	different-name		different-name	different-name	unrelated names	en	orcid	5
 gregory	grigory	split		translation	familiar	English vs Russian form	mul	orcid	3
@@ -651,13 +768,14 @@ guenther	günther	spelling		spelling	spelling	ü written ue	de	orcid	5
 gui	guilherme	familiar		familiar	familiar	short form of Guilherme	pt-BR	orcid	14
 guillem	guillermo	translation		translation	translation	Catalan and Spanish forms	mul	orcid	3
 gus	gustavo	familiar		familiar	familiar	short form of Gustavo	en	orcid	8
-hailey	haylee	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-hailey	hayley	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
+gwen	gwendolyn	familiar		familiar	familiar	clipped form of Gwendolyn	en	orcid	7
+hal	harold	familiar		familiar	familiar	traditional pet form of Harold	en	orcid	9
 halina	halyna	spelling	decided	spelling	translation	romanizations of Галина	mul	orcid	3
 hamid	hamidreza	familiar		familiar	familiar	Persian compound called by its part	en	orcid	11
 han	hannah	split		familiar	different-name	short form of Hannah	en	orcid	5
 han	johannes	familiar		familiar	familiar	Dutch short form of Johannes	nl	orcid	4
 hani	hany	spelling		spelling	spelling	Arabic Hani romanized two ways	ar	orcid	4
+hank	henry	familiar		familiar	familiar	traditional pet form of Henry	en	orcid	13
 hanna	johanna	familiar		familiar	familiar	short form of Johanna	en	orcid	3
 hanneke	johanna	familiar		familiar	familiar	Dutch pet form of Johanna	nl	orcid	5
 hannes	johannes	familiar		familiar	familiar	short form of Johannes	de	orcid	4
@@ -666,15 +784,15 @@ hans	johannes	familiar		familiar	familiar	short form of Johannes	nl	orcid	21
 hari	harikrishnan	familiar		familiar	familiar	short form of Harikrishnan	en	orcid	5
 hari	srihari	familiar		familiar	familiar	Hari as the called part of Srihari	en	orcid	4
 haris	theocharis	familiar		familiar	familiar	Haris familiar form of Theocharis	el	orcid	3
-harman	herman	refused	decided	spelling	different-name	variant spellings	mul	nicknames-spelling	0
+harold	harry	familiar		familiar	familiar	pet form of Harold	en	orcid	7
+harry	henry	familiar		familiar	familiar	traditional pet form of Henry	en	orcid	12
 hasan	hassan	spelling		spelling	spelling	Hasan/Hassan romanization	fa	orcid	11
-haylee	hayley	spelling		spelling	spelling	ee vs ey	mul	nicknames-spelling	0
 helen	helena	translation		translation	translation	English Helen vs Helena	mul	orcid	4
 helen	olena	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	11
 helena	olena	translation		translation	translation	Ukrainian form of Helena	ru uk	orcid	5
+herb	herbert	familiar		familiar	familiar	clipped form of Herbert	en	orcid	4
 hesham	hisham	spelling		spelling	spelling	Arabic romanization variants	ar	orcid	4
 hide	hideyuki	familiar		familiar	familiar	Japanese short form of Hideyuki	ja	orcid	3
-hilary	hillary	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
 hiren	hirenkumar	familiar		familiar	familiar	called by base name without -kumar	mul	orcid	3
 hiro	hiroaki	familiar		familiar	familiar	Japanese short form	ja	orcid	3
 hiro	hiroyuki	familiar		familiar	familiar	Hiro short form of Hiroyuki	en	orcid	5
@@ -683,6 +801,7 @@ hojat	hojjat	spelling		spelling	spelling	Persian Hojjat romanized with or withou
 honza	jan	familiar		familiar	familiar	Czech familiar form of Jan	cs	orcid	8
 hooman	houman	spelling		spelling	spelling	romanization variant	fa	orcid	3
 hosein	hossein	spelling		spelling	spelling	Persian romanization variants	fa	orcid	11
+howard	howie	familiar		familiar	familiar	pet form of Howard	en	orcid	3
 hunter	james	different-name		different-name	different-name	unrelated names	en	orcid	3
 husam	hussam	spelling		spelling	spelling	romanization variant	ar	orcid	3
 iakov	yakov	spelling		spelling	spelling	romanization variant	ru	orcid	7
@@ -698,6 +817,7 @@ ife	ifeoluwa	familiar		familiar	familiar	Yoruba short form	mul	orcid	3
 ignacio	iñaki	translation		translation	translation	Basque form of Ignacio	ca es	orcid	5
 ignacio	nacho	familiar		familiar	familiar	Spanish familiar of Ignacio	ca es	orcid	12
 igor	ihor	translation		translation	translation	Russian Igor vs Ukrainian Ihor	ru uk	orcid	57
+ike	isaac	familiar		familiar	familiar	traditional pet form of Isaac	en	orcid	4
 ilia	ilya	spelling		spelling	spelling	romanization variants of Илья	ru	orcid	28
 ilias	mohammad	different-name		different-name	different-name	unrelated names	en	orcid	3
 iliya	ilya	spelling		spelling	spelling	Iliya variant romanization of Ilya	ru	orcid	3
@@ -713,7 +833,6 @@ iouri	yury	spelling		spelling	spelling	romanization variants of Юрий	mul	orc
 ira	irina	familiar		familiar	familiar	Russian short form of Irina	en	orcid	7
 irek	ireneusz	familiar		familiar	familiar	Irek Polish pet form of Ireneusz	mul	orcid	3
 irina	iryna	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	55
-irvin	irving	spelling		spelling	spelling	variant spellings of one name	mul	nicknames-spelling	0
 isa	isabel	familiar		familiar	familiar	short form of Isabel	es	orcid	5
 isa	isabella	familiar		familiar	familiar	Isa short form of Isabella	mul	orcid	3
 isabel	izzy	familiar		familiar	familiar	pet form of Isabel	en	orcid	4
@@ -729,26 +848,32 @@ iurii	yuri	spelling		spelling	spelling	romanization variants of Yuri	ru	orcid	10
 iurii	yurii	spelling		spelling	spelling	romanization variant	ru uk	orcid	15
 iurii	yuriy	spelling		spelling	spelling	romanization variant	ru uk	orcid	16
 iurii	yury	spelling		spelling	spelling	romanization variants	ru	orcid	8
+jaap	jacob	familiar		familiar	familiar	Dutch pet form of Jacob	nl	orcid	7
+jack	jackson	familiar		familiar	familiar	clipped form of Jackson	en	orcid	6
 jack	jacob	familiar		familiar	familiar	Jack used for Jacob	en	orcid	4
+jack	jacqueline	split		familiar	different-name	opus: Jack as short form of Jacqueline; sonnet: loose: Jack is John's pet form, rarely Jacqueline	en	orcid	3
 jack	jacques	split		familiar	translation	English familiar for Jacques	mul	orcid	3
+jack	john	familiar		familiar	familiar	traditional pet form of John	en	orcid	122
 jack	jonathan	different-name		different-name	different-name	loose, Jack not from Jonathan	en	orcid	5
 jacki	jacqueline	familiar		familiar	familiar	pet form of Jacqueline	en	orcid	3
 jackie	jaclyn	familiar		familiar	familiar	Jackie short form of Jaclyn	en	orcid	4
+jackie	jacqueline	familiar		familiar	familiar	pet form of Jacqueline	en	orcid	89
 jackie	jacquelyn	familiar		familiar	familiar	pet form of Jacquelyn	en	orcid	12
 jacky	jacqueline	familiar		familiar	familiar	pet form of Jacqueline	en	orcid	9
+jacob	jake	familiar		familiar	familiar	standard pet form of Jacob	en	orcid	106
 jacobus	kobus	familiar		familiar	familiar	Afrikaans pet form of Jacobus	mul	orcid	3
+jacqueline	jacqui	familiar		familiar	familiar	clipped form of Jacqueline	en	orcid	23
 jacqueline	jacquie	familiar		familiar	familiar	pet form of Jacqueline	en	orcid	13
 jacquelyn	jacquie	familiar		familiar	familiar	short form of Jacquelyn	en	orcid	3
-jaelin	jalen	refused	decided	spelling	different-name	modern spelling variant	mul	nicknames-spelling	0
-jaelyn	jalen	different-name		different-name	different-name	different names and genders	mul	nicknames-spelling	0
-jailyn	jalen	different-name		different-name	different-name	different names and genders	mul	nicknames-spelling	0
 jaime	jaume	translation		translation	translation	Spanish vs Catalan form	ca es	orcid	8
+jake	jakob	familiar		familiar	familiar	English pet form used for Jakob	en	orcid	3
 jake	james	different-name		different-name	different-name	loose	en	orcid	6
 jake	john	different-name		different-name	different-name	loose	en	orcid	7
 jakub	kuba	familiar		familiar	familiar	Polish familiar form	en pl	orcid	6
-jalen	jaylin	refused	decided	spelling	different-name	spelling variant	mul	nicknames-spelling	0
-jalen	jaylyn	refused	decided	spelling	different-name	variant spellings of one name	mul	nicknames-spelling	0
+james	jamie	familiar		familiar	familiar	Scottish pet form of James	en	orcid	82
 james	jay	different-name		different-name	different-name	loose, first letter only	en	orcid	17
+james	jim	familiar		familiar	familiar	traditional pet form of James	en	orcid	296
+james	jimmy	familiar		familiar	familiar	traditional pet form of James	en	orcid	33
 james	keith	different-name		different-name	different-name	unrelated names	en	orcid	3
 james	mac	different-name		different-name	different-name	Mac loose, not from James	en	orcid	3
 james	matt	different-name		different-name	different-name	unrelated names	en	orcid	3
@@ -756,14 +881,16 @@ james	mike	different-name		different-name	different-name	unrelated names	en	orci
 james	ryan	different-name		different-name	different-name	unrelated names	mul	orcid	3
 james	thomas	different-name		different-name	different-name	unrelated names	en	orcid	4
 james	trey	different-name		different-name	different-name	loose, Trey a nickname for a third, not James	en	orcid	3
-jamey	jamie	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
 jamie	jim	sibling		sibling	sibling	both familiar forms of James	en	orcid	3
+jan	janet	familiar		familiar	familiar	clipped form of Janet	en	orcid	5
+jan	janice	familiar		familiar	familiar	clipped form of Janice	en	orcid	9
 jan	jean	translation		translation	translation	Dutch and French forms	mul	orcid	3
 jan	johannes	split		familiar	translation	Dutch short form of Johannes	mul	orcid	3
 jane	yevgeniya	different-name		different-name	different-name	adopted English name	en	orcid	3
 jarek	jaroslaw	familiar		familiar	familiar	Polish familiar of Jaroslaw	en pl	orcid	11
 jarek	jarosław	familiar		familiar	familiar	Polish short form of Jaroslaw	pl	orcid	3
 jaroslaw	jarosław	spelling		spelling	spelling	ł written l	pl	orcid	29
+jason	jay	different-name		different-name	different-name	loose: initial-letter nickname	en	orcid	10
 javi	javier	familiar		familiar	familiar	Spanish short form of Javier	mul	orcid	3
 javier	xavier	translation		translation	translation	Spanish Javier vs Catalan/other Xavier	ca es	orcid	9
 jay	jayanta	split		familiar	different-name	short form of Jayanta	en	orcid	3
@@ -774,55 +901,77 @@ jay	jonathan	different-name		different-name	different-name	loose, first letter o
 jay	joseph	different-name		different-name	different-name	loose nickname, not a form of Joseph	en	orcid	4
 jay	joshua	different-name		different-name	different-name	loose, first letter only	en	orcid	3
 jeanne	zhanna	translation		translation	translation	French and Russian forms	mul	orcid	3
+jeff	jefferson	familiar		familiar	familiar	clipped form of Jefferson	en	orcid	8
+jeff	jeffery	familiar		familiar	familiar	clipped form of Jeffery	en	orcid	26
+jeff	jeffrey	familiar		familiar	familiar	clipped form of Jeffrey	en	orcid	197
 jeff	jeffry	familiar		familiar	familiar	short form of Jeffry	en	orcid	3
 jeff	john	different-name		different-name	different-name	unrelated names	en	orcid	3
 jeffery	jeffrey	spelling		spelling	spelling	ery/rey variant	en	orcid	4
 jen	jenifer	familiar		familiar	familiar	short form of Jenifer	en	orcid	3
+jen	jennifer	familiar		familiar	familiar	clipped form of Jennifer	en	orcid	97
 jeni	jennifer	familiar		familiar	familiar	pet form of Jennifer	en	orcid	8
+jenn	jennifer	familiar		familiar	familiar	clipped form of Jennifer	en	orcid	25
 jenna	jennifer	familiar		familiar	familiar	short form of Jennifer	en	orcid	10
+jenni	jennifer	familiar		familiar	familiar	pet form of Jennifer	en	orcid	21
+jennie	jennifer	familiar		familiar	familiar	pet form of Jennifer	en	orcid	21
+jennifer	jenny	familiar		familiar	familiar	pet form of Jennifer	en	orcid	136
 jenny	jie	different-name		different-name	different-name	adopted English name	en	orcid	3
 jeremiah	jeremy	different-name		different-name	different-name	Jeremy and Jeremiah separate English names	en	orcid	6
 jeremy	jerry	familiar		familiar	familiar	pet form of Jeremy	en	orcid	8
+jeremy	jez	familiar		familiar	familiar	British pet form of Jeremy	en	orcid	5
 jerome	jerry	familiar		familiar	familiar	familiar form of Jerome	en	orcid	6
 jerzy	jurek	familiar		familiar	familiar	Polish familiar of Jerzy	en	orcid	5
 jes	jessica	familiar		familiar	familiar	short form of Jessica	en	orcid	3
+jess	jessica	familiar		familiar	familiar	clipped form of Jessica	en	orcid	80
 jesse	jessica	different-name		different-name	different-name	man's and woman's names	en	orcid	4
 jessi	jessica	familiar		familiar	familiar	short form of Jessica	en	orcid	8
+jessica	jessie	familiar		familiar	familiar	pet form of Jessica	en	orcid	24
+jill	jillian	familiar		familiar	familiar	clipped form of Jillian	en	orcid	15
 jiri	jirka	familiar		familiar	familiar	Czech familiar of Jiří	cs	orcid	4
 jirka	jiří	familiar		familiar	familiar	Czech familiar of Jiří	cs	orcid	4
+jo	joanna	familiar		familiar	familiar	clipped form of Joanna	en	orcid	42
+jo	joanne	familiar		familiar	familiar	clipped form of Joanne	en	orcid	79
+jo	johanna	familiar		familiar	familiar	clipped form of Johanna	en	orcid	9
 jo	joseph	familiar		familiar	familiar	short form of Joseph	en	orcid	4
+jo	josephine	familiar		familiar	familiar	clipped form of Josephine	en	orcid	19
 joachim	jochen	familiar		familiar	familiar	German familiar of Joachim	de	orcid	3
 joan	joanie	familiar		familiar	familiar	pet form of Joan	en	orcid	4
 joan	juan	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	12
 joanna	joey	familiar		familiar	familiar	pet form of Joanna	en	orcid	3
 joanna	yoanna	spelling	decided	spelling	translation	romanization variant	bg	orcid	3
 joaquim	quim	familiar		familiar	familiar	Catalan familiar of Joaquim	pt-BR	orcid	8
+jocelyn	joss	familiar		familiar	familiar	clipped form of Jocelyn	mul	orcid	3
 jochen	joe	different-name		different-name	different-name	loose	de	orcid	3
 joe	johannes	split		familiar	different-name	short form of Johannes	en	orcid	3
 joe	jose	split		familiar	translation	English familiar used for Jose	en	orcid	4
+joe	joseph	familiar		familiar	familiar	clipped form of Joseph	en	orcid	285
 joe	josip	split		familiar	translation	Joe used for Josip (Joseph)	en	orcid	3
 joe	robert	different-name		different-name	different-name	unrelated names	en	orcid	4
 joe	william	different-name		different-name	different-name	unrelated names	en	orcid	5
 joerg	jorg	spelling		spelling	spelling	oe for o-umlaut vs dropped umlaut	de	orcid	3
 joerg	jörg	spelling		spelling	spelling	oe for ö	de	orcid	39
 joern	jörn	spelling		spelling	spelling	ö written oe	de	orcid	12
+joey	joseph	familiar		familiar	familiar	pet form of Joseph	en	orcid	44
 johan	johannes	split		familiar	different-name	short form of Johannes	en zu	orcid	8
+johannes	john	translation		translation	translation	German/Dutch Johannes vs English John	en it	orcid	4
 johannes	joost	different-name		different-name	different-name	Joost is from Justus, not Johannes	mul	orcid	3
-john	jon	spelling	decided	spelling	spelling	John/Jon variant spelling	mul	nicknames-spelling	0
+john	johnathon	different-name		different-name	different-name	John and Jonathan are distinct names	en	orcid	4
+john	johnny	familiar		familiar	familiar	diminutive of John	en	orcid	18
+john	jon	spelling	decided	spelling	spelling	John/Jon variant spelling	mul	wikidata	13
+john	jonathan	different-name		different-name	different-name	John and Jonathan are distinct names	en	orcid	5
 john	mark	different-name		different-name	different-name	unrelated names	en	orcid	4
 john	matt	different-name		different-name	different-name	unrelated names	en	orcid	3
 john	michael	different-name		different-name	different-name	unrelated names	en	orcid	3
 john	mike	different-name		different-name	different-name	unrelated names	en	orcid	3
 john	robert	different-name		different-name	different-name	two unrelated names	en	orcid	4
 john	william	different-name		different-name	different-name	unrelated names	en	orcid	7
-johnathan	johnathon	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
-johnathan	jonathan	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-johnathan	jonathon	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-johnathon	jonathan	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-johnathon	jonathon	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+johnathan	jonathan	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 johnny	jonathan	familiar		familiar	familiar	familiar of Jonathan	en	orcid	4
+jon	jonathan	familiar		familiar	familiar	clipped form of Jonathan	en	orcid	210
+jon	jonathon	split		familiar	different-name	opus: clipped form of Jonathon; sonnet: Jonathon is a spelling of Jonathan; Jon is its short form, a different name	en	orcid	7
 jona	jonathan	familiar		familiar	familiar	short form of Jonathan	mul	orcid	3
-jonathan	jonathon	spelling		spelling	spelling	variant spelling	en	nicknames-spelling	4
+jonathan	jonathon	spelling		spelling	spelling	variant spelling	en	orcid	4
+jonathan	jonny	familiar		familiar	familiar	pet form of Jonathan	en	orcid	34
 jonathan	yonatan	translation		translation	translation	English and Hebrew forms	mul	orcid	4
 jonathan	yoni	familiar		familiar	familiar	Yoni Hebrew pet form of Jonathan	mul	orcid	4
 jordan	yordan	translation		translation	translation	English Jordan vs Bulgarian Yordan	bg	orcid	8
@@ -832,25 +981,31 @@ jose	josep	translation		translation	translation	Spanish and Catalan forms	ca es	
 jose	pepe	familiar		familiar	familiar	Spanish familiar of José	ca es	orcid	7
 josep	pep	familiar		familiar	familiar	Catalan familiar form of Josep	ca es	orcid	6
 joseph	yossi	familiar		familiar	familiar	Hebrew familiar of Yosef	mul	orcid	3
+josephine	josie	familiar		familiar	familiar	pet form of Josephine	en	orcid	21
+josh	joshua	familiar		familiar	familiar	clipped form of Joshua	en	orcid	212
 joshua	yehoshua	translation		translation	translation	English vs Hebrew form	mul	orcid	3
 josé	pepe	familiar		familiar	familiar	Pepe Spanish pet form of José	mul	orcid	4
 ju	juliana	familiar		familiar	familiar	short form of Juliana	pt-BR	orcid	3
 juan	sebastian	different-name		different-name	different-name	two names of one person	en	orcid	3
-judah	juder	refused	decided	spelling	unclear	dialect spelling of Judah	mul	nicknames-spelling	0
+jude	judith	familiar		familiar	familiar	short form of Judith	en	orcid	5
+judi	judith	familiar		familiar	familiar	pet form of Judith	en	orcid	4
+judith	judy	familiar		familiar	familiar	pet form of Judith	en	orcid	26
 juergen	jurgen	spelling		spelling	spelling	ue for ü dropped	de	orcid	5
 juergen	jürgen	spelling		spelling	spelling	ue vs ü	de	orcid	42
+jules	julia	familiar		familiar	familiar	Jules as pet form of Julia	en	orcid	7
+jules	julian	familiar		familiar	familiar	Jules used as short for Julian	en	orcid	6
+jules	julie	familiar		familiar	familiar	Jules used as pet form of Julie	en	orcid	5
 juli	juliana	familiar		familiar	familiar	Juli short form of Juliana	en pt-BR	orcid	5
+julia	julie	split		translation	different-name	opus: Latin Julia vs French Julie; sonnet: Latin vs French forms, separate names	en	orcid	21
 julia	yulia	spelling	decided	spelling	translation	Julia/Yulia romanization of Юлия	ru	orcid	53
 julia	yuliia	translation		translation	translation	English Julia vs Ukrainian Yuliia	ru uk	orcid	11
 julia	yuliya	translation		translation	translation	English Julia vs Slavic Yuliya	ru	orcid	23
 julianne	julie	split		familiar	different-name	short form of Julianne	en	orcid	5
 juliya	yuliya	spelling		spelling	spelling	romanization variant	ru	orcid	5
-justin	juston	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-k.c	kasey	different-name		different-name	different-name	initials vs a name	mul	nicknames-spelling	0
+kait	kaitlin	familiar		familiar	familiar	clipped form of Kaitlin	en	orcid	3
 kaitlin	katie	familiar		familiar	familiar	Katie familiar form of Kaitlin	en	orcid	8
 kaitlyn	kate	familiar		familiar	familiar	short form via Katherine family	en	orcid	3
 kaitlyn	katie	familiar		familiar	familiar	pet form of Kaitlyn	en	orcid	11
-kali	kalli	refused	decided	spelling	different-name	doubled letter	mul	nicknames-spelling	0
 kalliopi	kelly	familiar		familiar	familiar	English familiar used for Kalliopi	mul	orcid	3
 karol	karoline	split		familiar	different-name	Brazilian short form of Karoline	pt-BR	orcid	3
 karthik	karthikeyan	familiar		familiar	familiar	short form of Karthikeyan	mul	orcid	3
@@ -861,12 +1016,16 @@ kat	katherine	familiar		familiar	familiar	Kat short form of Katherine	en	orcid	2
 kat	kathleen	familiar		familiar	familiar	short form of Kathleen	en	orcid	7
 kat	kathryn	familiar		familiar	familiar	Kat short form of Kathryn	en	orcid	17
 katarzyna	kate	familiar		familiar	familiar	English familiar for Katarzyna	en pl	orcid	7
+kate	katelyn	familiar		familiar	familiar	clipped form of Katelyn	en	orcid	7
 kate	kateryna	split		familiar	translation	short form of Kateryna	en	orcid	5
 kate	katharine	familiar		familiar	familiar	short form of Katharine	en	orcid	29
+kate	katherine	familiar		familiar	familiar	standard short form of Katherine	en	orcid	177
 kate	kathleen	familiar		familiar	familiar	short form of Kathleen	en	orcid	30
+kate	kathryn	familiar		familiar	familiar	short form of Kathryn	en	orcid	74
 kate	katie	split		sibling	familiar	two familiar forms of Katherine	en	orcid	15
 kate	katrina	familiar		familiar	familiar	short form of Katrina	en	orcid	9
 kate	katsiaryna	familiar		familiar	familiar	English short form for Katsiaryna	mul	orcid	3
+kate	katy	sibling		sibling	sibling	both pet forms of Katherine	en	orcid	3
 katelin	katie	familiar		familiar	familiar	pet form of Katelin	en	orcid	4
 katelyn	katie	familiar		familiar	familiar	Katie pet form of Katelyn	en	orcid	12
 katerina	kateryna	spelling		spelling	spelling	romanizations of Ukrainian Kateryna	ru uk	orcid	10
@@ -876,27 +1035,31 @@ kath	kathryn	familiar		familiar	familiar	short form of Kathryn	en	orcid	3
 katharine	kathy	familiar		familiar	familiar	pet form of Katharine	en	orcid	4
 katharine	katie	familiar		familiar	familiar	pet form of Katharine	en	orcid	23
 katharine	katy	familiar		familiar	familiar	pet form of Katharine	en	orcid	4
+katherine	kathy	familiar		familiar	familiar	pet form of Katherine	en	orcid	24
 katherine	kati	familiar		familiar	familiar	pet form of Katherine	en	orcid	3
+katherine	katie	familiar		familiar	familiar	pet form of Katherine	en	orcid	180
+katherine	katy	familiar		familiar	familiar	pet form of Katherine	en	orcid	28
 katherine	katya	split		familiar	translation	Katya pet form used for Katherine	en	orcid	3
 kathie	kathleen	familiar		familiar	familiar	pet form of Kathleen	en	orcid	3
+kathleen	kathy	familiar		familiar	familiar	pet form of Kathleen	en	orcid	24
 kathleen	katie	familiar		familiar	familiar	pet form of Kathleen	en	orcid	49
+kathleen	katy	familiar		familiar	familiar	pet form of Kathleen	en	orcid	6
+kathleen	kay	familiar		familiar	familiar	Kay used for Kathleen	en	orcid	4
 kathleen	kitty	familiar		familiar	familiar	pet form of Kathleen	en	orcid	3
+kathryn	kathy	familiar		familiar	familiar	pet form of Kathryn	en	orcid	20
+kathryn	katie	familiar		familiar	familiar	pet form of Kathryn	en	orcid	78
 kathryn	katy	familiar		familiar	familiar	pet form of Kathryn	en	orcid	21
-katia	katie	split		sibling	different-name	Katia and Katie both pet forms of Katherine	mul	nicknames-spelling	0
-katie	katy	spelling		spelling	spelling	one familiar form spelled two ways	mul	nicknames-spelling	0
 kayode	olukayode	familiar		familiar	familiar	Yoruba short form	en	orcid	3
 keivan	keyvan	spelling		spelling	spelling	Persian romanization variants	fa	orcid	3
 kel	kelly	familiar		familiar	familiar	Kel short form of Kelly	en	orcid	3
-kelley	kelli	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-kelley	kellie	spelling		spelling	spelling	Kelley/Kellie same English name	mul	nicknames-spelling	0
-kelley	kelly	spelling		spelling	spelling	Kelley/Kelly variant spelling	mul	nicknames-spelling	0
-kerri	kerry	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
+ken	kenneth	familiar		familiar	familiar	clipped form of Kenneth	en	orcid	115
+kenneth	kenny	familiar		familiar	familiar	diminutive of Kenneth	en	orcid	27
 ketevan	keti	familiar		familiar	familiar	Keti Georgian pet form of Ketevan	mul	orcid	3
 khaled	khalid	spelling		spelling	spelling	Arabic Khalid romanized two ways	ar	orcid	9
 kiki	kyriaki	familiar		familiar	familiar	Greek pet form	mul	orcid	3
-kimberley	kimberli	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-kimberley	kimberly	spelling		spelling	spelling	ey/y variant	en	nicknames-spelling	4
-kimberli	kimberly	spelling		spelling	spelling	Kimberli/Kimberly variant spelling	mul	nicknames-spelling	0
+kim	kimberley	familiar		familiar	familiar	clipped form of Kimberley	en	orcid	19
+kim	kimberly	familiar		familiar	familiar	clipped form of Kimberly	en	orcid	59
+kimberley	kimberly	spelling		spelling	spelling	ey/y variant	en	orcid	4
 kirill	kyrylo	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	5
 kirsten	kirsty	split		sibling	familiar	Kirsty and Kirsten both from Christine forms	en	orcid	3
 kivanc	kıvanç	spelling		spelling	spelling	Turkish with and without diacritics	tr	orcid	5
@@ -914,17 +1077,20 @@ kosuke	kousuke	spelling		spelling	spelling	long vowel romanization	mul	orcid	3
 kris	kristen	familiar		familiar	familiar	Kris short form of Kristen	en	orcid	5
 kris	kristian	familiar		familiar	familiar	short form of Kristian	mul	orcid	3
 kris	kristin	familiar		familiar	familiar	short form of Kristin	en	orcid	7
+kris	kristina	familiar		familiar	familiar	clipped form of Kristina	en	orcid	6
+kris	kristine	familiar		familiar	familiar	clipped form of Kristine	en	orcid	10
+kris	kristofer	familiar		familiar	familiar	clipped form of Kristofer	en	orcid	3
+kris	kristopher	familiar		familiar	familiar	clipped form of Kristopher	en	orcid	14
 kris	krzysztof	familiar		familiar	familiar	English familiar used for Krzysztof	pl	orcid	5
 kristen	kristy	familiar		familiar	familiar	Kristy pet form of Kristen	en	orcid	3
 kristi	kristin	split		familiar	different-name	short form of Kristin	en	orcid	5
+kristina	tina	familiar		familiar	familiar	clipped from the end of Kristina	en	orcid	3
 ksenia	kseniia	spelling		spelling	spelling	romanization variant	ru	orcid	8
 ksenia	kseniya	spelling		spelling	spelling	romanization variants	ru	orcid	7
 ksenia	xenia	spelling		spelling	spelling	romanization variants	ru	orcid	8
 kseniia	kseniya	spelling		spelling	spelling	romanization variants of Ксения	ru uk	orcid	8
 kunle	olakunle	familiar		familiar	familiar	Yoruba short form of Olakunle	mul	orcid	3
 kyriacos	kyriakos	spelling		spelling	spelling	romanization variants	mul	orcid	3
-l.b	littleberry	abbreviation		abbreviation	abbreviation	initials for Littleberry	mul	nicknames-spelling	0
-l.r	leroy	split		unclear	abbreviation	L.R. for Leroy uncertain	mul	nicknames-spelling	0
 lachie	lachlan	familiar		familiar	familiar	Australian pet form of Lachlan	en	orcid	3
 lana	svetlana	familiar		familiar	familiar	Russian short form of Svetlana	en	orcid	5
 lanre	olanrewaju	familiar		familiar	familiar	Yoruba Lanre short for Olanrewaju	mul	orcid	4
@@ -932,22 +1098,31 @@ lara	larissa	familiar		familiar	familiar	short form of Larissa	mul	orcid	3
 larisa	larissa	spelling		spelling	spelling	single vs double s	ru	orcid	3
 larisa	larysa	spelling	decided	spelling	translation	Ukrainian Лариса romanized y or i	ru uk	orcid	14
 larissa	larysa	spelling	decided	spelling	translation	Лариса romanized two ways	mul	orcid	3
+larry	laurence	familiar		familiar	familiar	traditional pet form of Laurence	en	orcid	13
+larry	lawrence	familiar		familiar	familiar	traditional pet form of Lawrence	en	orcid	62
+laura	laurie	familiar		familiar	familiar	diminutive of Laura	en	orcid	4
 laura	marialaura	split		familiar	different-name	compound called by its part	mul	orcid	3
+lauren	ren	familiar		familiar	familiar	clipped from the end of Lauren	en	orcid	4
 laurence	laurie	familiar		familiar	familiar	short form of Laurence	en	orcid	6
 leandro	leo	familiar		familiar	familiar	Leo short form of Leandro	mul	orcid	3
 lee	leland	familiar		familiar	familiar	short form of Leland	en	orcid	3
+lee	leroy	familiar		familiar	familiar	Lee used for Leroy	en	orcid	3
 lee	thomas	different-name		different-name	different-name	Lee is not a form of Thomas	en	orcid	4
 leila	leyla	spelling		spelling	spelling	romanization variant	fa	orcid	4
+len	leonard	familiar		familiar	familiar	clipped form of Leonard	en	orcid	18
 lena	olena	familiar		familiar	familiar	Lena short form of Olena	mul	orcid	7
+lenny	leonard	familiar		familiar	familiar	pet form of Leonard	en	orcid	5
+leo	leonard	familiar		familiar	familiar	clipped form of Leonard	en	orcid	5
 leo	leonardo	familiar		familiar	familiar	Leo short form of Leonardo	pt-BR	orcid	41
 leo	leonhard	familiar		familiar	familiar	short form of Leonhard	de	orcid	4
 leo	leonid	familiar		familiar	familiar	short form of Leonid	en	orcid	5
 leo	leonidas	familiar		familiar	familiar	Leo short form of Leonidas	en	orcid	3
 leon	leonid	different-name		different-name	different-name	short form of Leonid would be Lyonya; Leon is its own name	en	orcid	5
 leonardo	léo	familiar		familiar	familiar	short form of Leonardo	pt-BR	orcid	8
+les	leslie	familiar		familiar	familiar	clipped form of Leslie	en	orcid	9
 lesia	lesya	spelling		spelling	spelling	romanization variants	ru uk	orcid	8
 lew	lewis	familiar		familiar	familiar	Lew short form of Lewis	en	orcid	3
-lewis	louis	translation		translation	translation	English vs French form	mul	nicknames-spelling	0
+lewis	louis	translation		translation	translation	English vs French form	mul	wikidata	4
 li	lily	different-name		different-name	different-name	Chinese name and English name	en	orcid	4
 liam	william	split		familiar	translation	Irish short form of William	en	orcid	9
 lidia	lidiya	spelling		spelling	spelling	romanization variants	ru	orcid	4
@@ -957,12 +1132,11 @@ lilia	liliia	spelling		spelling	spelling	romanization variant	ru uk	orcid	6
 lilia	liliya	spelling		spelling	spelling	romanization variants	ru	orcid	5
 lilian	lily	familiar		familiar	familiar	Lily short form of Lilian	en	orcid	5
 liliia	liliya	spelling		spelling	spelling	romanization variant	ru uk	orcid	10
+lillian	lilly	familiar		familiar	familiar	pet form of Lillian	en	orcid	4
 lillian	lily	familiar		familiar	familiar	short form of Lillian	en	orcid	11
-lilly	lily	spelling		spelling	spelling	double vs single l	mul	nicknames-spelling	0
+lilly	lily	spelling		spelling	spelling	double vs single l	mul	wikidata	5
 lin	lynn	different-name		different-name	different-name	Chinese name and English name	en	orcid	4
-lindsay	lindsey	spelling		spelling	spelling	ay/ey variant	mul	nicknames-spelling	0
-lindsay	lindsie	spelling		spelling	spelling	ay vs ie ending	mul	nicknames-spelling	0
-lindsay	lindsy	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
+lindsay	lindsey	spelling		spelling	spelling	ay/ey variant	mul	wikidata	3
 liubov	lubov	spelling		spelling	spelling	romanization variants	ru uk	orcid	6
 liubov	lyubov	spelling		spelling	spelling	romanization variants	ru	orcid	8
 liudmila	liudmyla	translation		translation	translation	Russian Liudmila vs Ukrainian Liudmyla	ru uk	orcid	4
@@ -976,30 +1150,38 @@ liz	lizbeth	familiar		familiar	familiar	Liz short form of Lizbeth	en	orcid	3
 lluis	luis	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	4
 lluís	luis	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	4
 lola	omolola	familiar		familiar	familiar	Yoruba short form	en	orcid	3
-lou	lu	refused	decided	spelling	different-name	variant spellings	mul	nicknames-spelling	0
+lou	louis	familiar		familiar	familiar	clipped form of Louis	en	orcid	7
+lou	louise	familiar		familiar	familiar	clipped form of Louise	en	orcid	13
 lu	luciana	familiar		familiar	familiar	short form of Luciana	pt-BR	orcid	5
 lu	lulu	split		sibling	unclear	Lulu a reduplication of the short form Lu	en	orcid	3
 lubov	lyubov	spelling		spelling	spelling	romanization variant	mul	orcid	3
 luc	lucas	translation		translation	translation	French form of Lucas	nl	orcid	4
+lucas	luke	translation		translation	translation	Lucas vs English Luke	en	orcid	16
+lucia	lucy	translation		translation	translation	Lucia vs its English form Lucy	en	orcid	5
+lucille	lucy	familiar		familiar	familiar	Lucy used as pet form of Lucille	en	orcid	6
+lucinda	lucy	familiar		familiar	familiar	Lucy used as short form of Lucinda	en	orcid	6
 ludmila	lyudmila	spelling		spelling	spelling	romanization variants	ru	orcid	8
 luis	luiz	spelling		spelling	spelling	Spanish vs Portuguese spelling	pt-BR	orcid	4
 lukas	łukasz	translation		translation	translation	German/Czech vs Polish form	mul	orcid	3
 lukasz	łukasz	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	65
 lyn	lynette	familiar		familiar	familiar	Lyn short form of Lynette	en	orcid	5
-mac	mack	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-mac	mc	abbreviation		abbreviation	abbreviation	written short form of Mac	mul	nicknames-spelling	0
+mac	mackenzie	familiar		familiar	familiar	clipped form of Mackenzie	en	orcid	3
 maciej	maciek	familiar		familiar	familiar	Polish pet form of Maciej	pl	orcid	10
-mack	mc	unclear		unclear	unclear	Mc is not a name	mul	nicknames-spelling	0
+mack	mackenzie	familiar		familiar	familiar	clipped form of Mackenzie	en	orcid	4
 maddie	madeleine	familiar		familiar	familiar	pet form of Madeleine	en	orcid	11
+maddie	madeline	familiar		familiar	familiar	pet form of Madeline	en	orcid	13
 maddie	madelyn	familiar		familiar	familiar	short form of Madelyn	en	orcid	3
 maddie	madison	familiar		familiar	familiar	pet form of Madison	en	orcid	9
 maddy	madeleine	familiar		familiar	familiar	pet form of Madeleine	en	orcid	8
+maddy	madeline	familiar		familiar	familiar	pet form of Madeline	en	orcid	9
+maddy	madison	familiar		familiar	familiar	pet form of Madison	en	orcid	5
 madhu	madhusudan	familiar		familiar	familiar	Indian short form	mul	orcid	3
 madi	madison	familiar		familiar	familiar	short form of Madison	en	orcid	5
-mae	may	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
 magda	magdalena	familiar		familiar	familiar	short form of Magdalena	en pl	orcid	16
 magda	magdalini	familiar		familiar	familiar	Magda short form of Magdalini	mul	orcid	5
+magdalena	maggie	familiar		familiar	familiar	Maggie used for Magdalena	en	orcid	5
 magdalene	maggie	familiar		familiar	familiar	pet form of Magdalene	en	orcid	4
+maggie	margaret	familiar		familiar	familiar	traditional pet form of Margaret	en	orcid	76
 maggie	mary	different-name		different-name	different-name	loose, Maggie is from Margaret	en	orcid	4
 mags	margaret	familiar		familiar	familiar	short form of Margaret	en	orcid	5
 mahdi	mehdi	spelling		spelling	spelling	Persian/Arabic romanization variants	fa	orcid	42
@@ -1012,24 +1194,30 @@ maksim	max	familiar		familiar	familiar	short form of Maksim	en	orcid	3
 maksim	maxim	spelling		spelling	spelling	romanization variants	ru	orcid	45
 maksym	max	familiar		familiar	familiar	short form of Maksym	en	orcid	4
 maksym	maxim	translation		translation	translation	Ukrainian vs Russian form	ru uk	orcid	19
+mal	malcolm	familiar		familiar	familiar	clipped form of Malcolm	en	orcid	5
 malgorzata	margaret	translation		translation	translation	Polish form of Margaret	en	orcid	3
 malgorzata	małgorzata	spelling		spelling	spelling	Polish with and without ł	pl	orcid	64
 manel	manuel	translation		translation	translation	Catalan and Spanish forms	ca es	orcid	7
-manerva	minerva	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
+manny	manuel	familiar		familiar	familiar	pet form of Manuel	en	orcid	4
 manolis	manos	sibling		sibling	sibling	two Greek familiar forms of Emmanouil	mul	orcid	4
 manu	manuel	familiar		familiar	familiar	short form of Manuel	mul	orcid	3
 manuela	maria	different-name		different-name	different-name	Manuela and Maria separate names (compound use)	pt	orcid	3
 mara	maria	different-name		different-name	different-name	distinct names	mul	orcid	3
 mara	martha	different-name		different-name	different-name	distinct names	en	orcid	3
-marcia	marsha	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+marc	marcus	translation		translation	translation	French Marc vs Latin Marcus	en	orcid	3
 marcin	martin	translation		translation	translation	Polish and English forms	mul	orcid	3
+marcus	mark	translation		translation	translation	Latin Marcus vs English Mark	mul	orcid	4
 marga	margarita	familiar		familiar	familiar	Spanish short form	ca es	orcid	7
+margaret	margie	familiar		familiar	familiar	pet form of Margaret	en	orcid	14
 margaret	margo	familiar		familiar	familiar	pet form of Margaret	en	orcid	3
+margaret	margy	familiar		familiar	familiar	pet form of Margaret	en	orcid	3
+margaret	meg	familiar		familiar	familiar	traditional pet form of Margaret	en	orcid	33
 margaret	megan	split		familiar	different-name	Megan Welsh pet form of Margaret	en	orcid	3
+margaret	peg	familiar		familiar	familiar	traditional pet form of Margaret	en	orcid	6
+margaret	peggy	familiar		familiar	familiar	traditional pet form of Margaret	en	orcid	17
 margarida	maria	different-name		different-name	different-name	Margarida and Maria are distinct names	pt	orcid	3
 margarita	marharyta	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	mul	orcid	3
 mari	mariana	familiar		familiar	familiar	short form of Mariana	pt-BR	orcid	5
-maria	mariah	refused	decided	spelling	different-name	spelling variant	mul	nicknames-spelling	0
 maria	mariella	familiar		familiar	familiar	Italian diminutive of Maria	it	orcid	5
 maria	mariia	spelling		spelling	spelling	romanization variant	ru	orcid	50
 maria	marija	translation		translation	translation	Maria and its Baltic/Slavic form	en	orcid	3
@@ -1037,16 +1225,20 @@ maria	mariona	split		familiar	different-name	Catalan diminutive of Maria	mul	orc
 maria	mariya	spelling		spelling	spelling	romanization variant	ru	orcid	21
 maria	mary	translation		translation	translation	Greek/Latin vs English form	el en	orcid	8
 maria	masha	split		familiar	translation	Masha Russian pet form of Maria	en fr	orcid	8
+maria	mia	split		familiar	different-name	opus: Mia as Scandinavian pet form of Maria; sonnet: Mia is a name in its own right	sv	orcid	6
 maria	rosario	different-name		different-name	different-name	Maria and Rosario separate names (Maria do Rosario)	mul	orcid	3
 mariam	maryam	spelling		spelling	spelling	romanization variant	fa	orcid	4
-marian	marion	refused	decided	spelling	different-name	variant spellings of one name	mul	nicknames-spelling	1
+marian	marion	refused	decided	spelling	different-name	variant spellings of one name	mul	wikidata	6
 mariana	maryana	spelling	decided	spelling	translation	Ukrainian romanization variants	mul	orcid	3
 mariia	marija	translation		translation	translation	Ukrainian Mariia vs Lithuanian Marija	mul	orcid	3
 mariia	mariya	spelling		spelling	spelling	romanization variant	ru uk	orcid	21
 marina	maryna	spelling	decided	spelling	translation	Ukrainian Марина romanized two ways	ru uk	orcid	27
 mariya	masha	familiar		familiar	familiar	Russian familiar of Mariya	en	orcid	3
-marni	marnie	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+martha	marty	familiar		familiar	familiar	pet form of Martha	en	orcid	3
+martin	marty	familiar		familiar	familiar	pet form of Martin	en	orcid	19
+martina	tina	familiar		familiar	familiar	clipped from the end of Martina	mul	orcid	3
 mary	marybeth	split		familiar	different-name	compound part Mary	en	orcid	6
+mary	molly	familiar		familiar	familiar	traditional pet form of Mary	en	orcid	13
 marzie	marzieh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	3
 marzieh	marziyeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	4
 masood	masoud	spelling		spelling	spelling	Persian Masoud romanized two ways	fa	orcid	4
@@ -1055,24 +1247,38 @@ masoud	massoud	spelling		spelling	spelling	romanization variant	fa	orcid	3
 massimiliano	max	familiar		familiar	familiar	short form of Massimiliano	en it	orcid	14
 massimo	max	familiar		familiar	familiar	short form of Massimo	it	orcid	5
 mat	mateusz	familiar		familiar	familiar	short form of Mateusz	pl	orcid	3
+mat	mathew	familiar		familiar	familiar	clipped form of Mathew	en	orcid	5
 mat	matthew	familiar		familiar	familiar	Mat short form of Matthew	en	orcid	5
 mateusz	matt	split		familiar	translation	English short form used for Mateusz	en pl	orcid	5
+mathew	matt	familiar		familiar	familiar	clipped form of Mathew	en	orcid	8
 mathew	matthew	spelling		spelling	spelling	Mathew/Matthew single or double t	en	orcid	5
 mathieu	matthieu	spelling		spelling	spelling	spelling variant	fr	orcid	5
+matt	matthew	familiar		familiar	familiar	clipped form of Matthew	en	orcid	480
+matt	matthias	familiar		familiar	familiar	clipped form of Matthias	mul	orcid	3
 matt	matthieu	split		familiar	translation	English short form for Matthieu	mul	orcid	3
 matthaeus	matthäus	spelling		spelling	spelling	ä written ae	de	orcid	3
+matthew	matty	familiar		familiar	familiar	diminutive of Matthew	en	orcid	3
 matvei	matvey	spelling		spelling	spelling	romanization variants of Матвей	ru	orcid	6
 maureen	mo	familiar		familiar	familiar	short form of Maureen	en	orcid	3
 max	maxim	familiar		familiar	familiar	short form of Maxim	ru	orcid	13
+max	maximilian	familiar		familiar	familiar	clipped form of Maximilian	de en	orcid	34
 max	maximiliano	familiar		familiar	familiar	short form of Maximiliano	en es pt-BR	orcid	7
+max	maximillian	familiar		familiar	familiar	clipped form of Maximillian	en	orcid	6
+max	maxwell	familiar		familiar	familiar	clipped form of Maxwell	en	orcid	38
 max	michael	different-name		different-name	different-name	loose	en	orcid	3
 max	robert	different-name		different-name	different-name	Max is not a form of Robert	en	orcid	3
 max	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 md	mohammad	abbreviation		abbreviation	abbreviation	written abbreviation	mul	orcid	6
+meg	megan	familiar		familiar	familiar	clipped form of Megan	en	orcid	27
+meg	meghan	familiar		familiar	familiar	clipped form of Meghan	en	orcid	7
 mehdi	mohammadmehdi	familiar		familiar	familiar	part of Persian compound used as call name	en	orcid	3
 mehdi	seyedmehdi	familiar		familiar	familiar	Mehdi is the called part after the Seyed prefix	fa	orcid	3
 meisam	meysam	spelling		spelling	spelling	Persian Meysam romanized two ways	fa	orcid	5
 mel	melanie	familiar		familiar	familiar	short form of Melanie	en	orcid	15
+mel	melissa	familiar		familiar	familiar	clipped form of Melissa	en	orcid	10
+mel	melvin	familiar		familiar	familiar	clipped form of Melvin	en	orcid	7
+melinda	mindy	familiar		familiar	familiar	pet form of Melinda	en	orcid	13
+melissa	missy	familiar		familiar	familiar	pet form of Melissa	en	orcid	10
 merce	mercedes	familiar		familiar	familiar	Catalan short form of Mercedes	mul	orcid	3
 mercedes	mercè	translation		translation	translation	Spanish vs Catalan form	mul	orcid	4
 michael	michail	translation		translation	translation	Greek form of Michael	el	orcid	20
@@ -1081,6 +1287,10 @@ michael	michalis	translation		translation	translation	Greek form vs English Mich
 michael	michał	translation		translation	translation	Polish form of Michael	pl	orcid	9
 michael	michel	translation		translation	translation	English vs French form	mul	orcid	4
 michael	michele	translation		translation	translation	English vs Italian form	it	orcid	3
+michael	mick	familiar		familiar	familiar	clipped form of Michael	en	orcid	27
+michael	mickey	familiar		familiar	familiar	pet form of Michael	en	orcid	6
+michael	mike	familiar		familiar	familiar	standard short form of Michael	en	orcid	527
+michael	mikey	familiar		familiar	familiar	diminutive of Michael	en	orcid	8
 michael	mikhail	translation		translation	translation	English and Russian forms	ru	orcid	39
 michael	misha	familiar		familiar	familiar	Russian familiar used for Michael	ar en he	orcid	7
 michael	mykhailo	translation		translation	translation	English Michael vs Ukrainian Mykhailo	de ru uk	orcid	9
@@ -1089,14 +1299,8 @@ michail	michalis	familiar		familiar	familiar	Greek vernacular of Michail	el	orci
 michail	mikhail	spelling		spelling	spelling	romanization variants of Михаил	ru	orcid	7
 michal	michał	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	100
 michel	mike	split		familiar	translation	English familiar used for Michel	en	orcid	3
+michelle	shelly	familiar		familiar	familiar	pet form from the end of Michelle	en	orcid	8
 mieczyslaw	mieczysław	spelling		spelling	spelling	ł written l	pl	orcid	4
-miguael	miguel	refused	decided	unclear	spelling	Miguael not a recognizable form	mul	nicknames-spelling	0
-miguaell	miguel	spelling		spelling	spelling	odd variant spelling of Miguel	mul	nicknames-spelling	0
-miguail	miguel	refused	decided	unclear	spelling	Miguail not a recognizable form	mul	nicknames-spelling	0
-miguaill	miguel	refused	decided	unclear	spelling	Miguaill not a recognizable name form	mul	nicknames-spelling	0
-miguayl	miguel	refused	decided	unclear	spelling	Miguayl not a recognizable form	mul	nicknames-spelling	0
-miguayll	miguel	refused	decided	unclear	spelling	Miguayll not a recognizable form	mul	nicknames-spelling	0
-miguel	miguell	refused	decided	unclear	spelling	Miguell not a recognizable form	mul	nicknames-spelling	0
 miguel	miquel	translation		translation	translation	Spanish and Catalan forms	mul	orcid	6
 mihail	mikhail	spelling		spelling	spelling	romanization variants	ru	orcid	6
 mike	mikhail	familiar		familiar	familiar	English short form of Mikhail	en	orcid	6
@@ -1108,16 +1312,14 @@ mikolaj	mikołaj	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	13
 mildred	millie	familiar		familiar	familiar	pet form of Mildred	en	orcid	3
 milosz	miłosz	spelling		spelling	spelling	ł written l	pl	orcid	3
 miltiadis	miltos	familiar		familiar	familiar	Greek short form of Miltiadis	mul	orcid	3
+mimi	miriam	familiar		familiar	familiar	pet form of Miriam	en	orcid	4
 mirek	miroslav	familiar		familiar	familiar	Czech familiar form	cs en	orcid	4
 mirek	miroslaw	familiar		familiar	familiar	Mirek pet form of Miroslaw	en	orcid	4
 miri	miriam	familiar		familiar	familiar	short form of Miriam	mul	orcid	4
 mirka	miroslava	familiar		familiar	familiar	Czech familiar of Miroslava	cs	orcid	6
 miroslav	myroslav	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	4
 miroslaw	mirosław	spelling		spelling	spelling	with and without ł	pl	orcid	10
-mittie	mitzi	split		different-name	sibling	Mittie and Mitzi distinct pet names	mul	nicknames-spelling	0
-mittie	mitzie	refused	decided	unclear	spelling	two pet forms, origin uncertain	mul	nicknames-spelling	0
-mitty	mitzi	split		unclear	sibling	cannot tell relation	mul	nicknames-spelling	0
-mitty	mitzie	refused	decided	unclear	spelling	two pet forms, origin uncertain	mul	nicknames-spelling	0
+mitch	mitchell	familiar		familiar	familiar	clipped form of Mitchell	en	orcid	23
 mo	mohamad	familiar		familiar	familiar	short form of Mohamad	en	orcid	4
 mo	mohamed	familiar		familiar	familiar	short form of Mohamed	en	orcid	6
 mo	mohammad	familiar		familiar	familiar	Mo short form of Mohammad	en	orcid	12
@@ -1141,7 +1343,6 @@ mohammed	mohd	abbreviation		abbreviation	abbreviation	written short form of Moha
 mohammed	muhammad	spelling		spelling	spelling	romanization variant	mul	orcid	3
 mojdeh	mozhdeh	spelling		spelling	spelling	romanization variant	fa	orcid	3
 mojgan	mozhgan	spelling		spelling	spelling	Persian romanization variants	fa	orcid	3
-monte	monty	spelling		spelling	spelling	e vs y variant	mul	nicknames-spelling	0
 montse	montserrat	familiar		familiar	familiar	Montse short form of Montserrat	ca es	orcid	31
 mostafa	mustapha	spelling		spelling	spelling	Arabic Mustafa romanized two ways	mul	orcid	3
 mykhailo	mykhaylo	spelling		spelling	spelling	romanization variants	ru uk	orcid	5
@@ -1155,9 +1356,11 @@ nadia	nadiia	spelling	decided	spelling	translation	romanizations of Надія	r
 nadiia	nadiya	spelling		spelling	spelling	romanization variants	ru uk	orcid	16
 nadja	nađa	spelling		spelling	spelling	dj/d for Serbian d-stroke	sr	orcid	5
 name	published	unclear		unclear	unclear	corrupt row, header words	mul	orcid	3
+nan	nancy	split		sibling	familiar	opus: both pet forms of Ann; sonnet: short form of Nancy	en	orcid	5
 nan	nanette	familiar		familiar	familiar	short form of Nanette	en	orcid	3
 naser	nasser	spelling		spelling	spelling	romanization variant	fa	orcid	3
 nat	natalie	familiar		familiar	familiar	short form of Natalie	en	orcid	5
+nat	nathaniel	familiar		familiar	familiar	clipped form of Nathaniel	en	orcid	15
 natalia	natalie	translation		translation	translation	Slavic vs French form	ru	orcid	7
 natalia	nataliia	spelling		spelling	spelling	romanization variant	ru uk	orcid	39
 natalia	nataliya	spelling		spelling	spelling	romanization variants of Наталия	ru	orcid	35
@@ -1170,17 +1373,26 @@ nataliia	nataliya	spelling		spelling	spelling	romanizations of Ukrainian Natalii
 nataliia	natalya	spelling	decided	translation	spelling	Ukrainian and Russian forms	ru uk	orcid	14
 natalya	natasha	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 natasha	tash	familiar		familiar	familiar	short form of Natasha	en	orcid	3
+natasha	tasha	familiar		familiar	familiar	clipped from the end of Natasha	en	orcid	4
+nate	nathan	familiar		familiar	familiar	pet form of Nathan	en	orcid	39
 nate	nathanael	familiar		familiar	familiar	short form of Nathanael	en fr	orcid	6
+nate	nathaniel	familiar		familiar	familiar	pet form of Nathaniel	en	orcid	44
 nathan	nathanael	split		familiar	different-name	short form of Nathanael	en	orcid	3
+nathan	nathaniel	split		familiar	different-name	opus: Nathan used as short form of Nathaniel; sonnet: Nathan is a name in its own right	en	orcid	31
 nazli	nazlı	spelling		spelling	spelling	Turkish with and without ı	tr	orcid	3
+nic	nicholas	familiar		familiar	familiar	clipped form of Nicholas	en	orcid	16
 nic	nicola	familiar		familiar	familiar	short form of Nicola	en	orcid	6
+nic	nicolas	familiar		familiar	familiar	clipped form of Nicolas	en	orcid	9
+nicholas	nick	familiar		familiar	familiar	standard short form of Nicholas	en	orcid	429
 nicholas	nicko	familiar		familiar	familiar	pet form of Nicholas	en	orcid	3
+nicholas	nico	familiar		familiar	familiar	Nico used for Nicholas	en	orcid	8
 nicholas	nicolas	translation		translation	translation	English and French/Spanish forms	en	orcid	4
 nicholas	nik	familiar		familiar	familiar	short form of Nicholas	en	orcid	6
 nicholas	niko	familiar		familiar	familiar	short form of Nicholas	en	orcid	3
 nicholas	nikolaos	translation		translation	translation	English Nicholas vs Greek Nikolaos	el en	orcid	13
 nicholaus	nick	familiar		familiar	familiar	short form of Nicholas	en	orcid	3
 nick	nickolas	familiar		familiar	familiar	Nick short form of Nickolas	en	orcid	4
+nick	nicolas	familiar		familiar	familiar	clipped form of Nicolas	en	orcid	13
 nick	nikita	split		familiar	different-name	English short form used for Nikita	ru	orcid	5
 nick	niklaus	familiar		familiar	familiar	short form of Niklaus	mul	orcid	3
 nick	nikola	familiar		familiar	familiar	short form of Nikola	en	orcid	3
@@ -1189,15 +1401,19 @@ nick	nikolay	familiar		familiar	familiar	short form of Nikolay	en ru	orcid	4
 nick	nikos	split		sibling	translation	English and Greek short forms of Nicholas	el	orcid	6
 nick	william	different-name		different-name	different-name	unrelated names	en	orcid	4
 nicki	nicola	familiar		familiar	familiar	pet form of Nicola	en	orcid	8
+nicki	nicole	familiar		familiar	familiar	pet form of Nicole	en	orcid	11
 nickolay	nikolay	spelling		spelling	spelling	romanization variants	mul	orcid	3
 nicky	nicola	familiar		familiar	familiar	pet form of Nicola	en	orcid	21
+nicky	nicole	familiar		familiar	familiar	pet form of Nicole	en	orcid	9
 nico	nicola	familiar		familiar	familiar	short form of Nicola	it	orcid	3
 nico	nicolaas	familiar		familiar	familiar	Dutch short form	en zu	orcid	5
+nico	nicolas	familiar		familiar	familiar	clipped form of Nicolas	en	orcid	9
 nicola	niki	familiar		familiar	familiar	short form of Nicola	en	orcid	3
 nicola	nikki	familiar		familiar	familiar	pet form of Nicola	en	orcid	19
 nicolas	nikolaos	translation		translation	translation	French vs Greek form	en	orcid	3
 nicolay	nikolai	spelling		spelling	spelling	romanization variant	ru	orcid	3
 nicole	niki	familiar		familiar	familiar	pet form of Nicole	en	orcid	8
+nicole	nikki	familiar		familiar	familiar	pet form of Nicole	en	orcid	40
 nik	nikhil	familiar		familiar	familiar	short form of Nikhil	en	orcid	4
 nik	nikita	familiar		familiar	familiar	short form of Nikita	mul	orcid	3
 nik	niklas	familiar		familiar	familiar	short form of Niklas	en	orcid	3
@@ -1210,8 +1426,8 @@ nikolaos	nikolas	spelling		spelling	spelling	Nikolas variant of Nikolaos	el en	o
 nikolaos	nikos	familiar		familiar	familiar	Greek familiar form	el	orcid	100
 nikolas	nikos	familiar		familiar	familiar	Nikos familiar form of Nikolas	el	orcid	3
 niloofar	niloufar	spelling		spelling	spelling	Persian romanization variants	mul	orcid	3
-noel	nowell	spelling		spelling	spelling	variant spellings of Noel	mul	nicknames-spelling	0
 noor	nour	spelling		spelling	spelling	Arabic romanization variants	en	orcid	3
+norm	norman	familiar		familiar	familiar	clipped form of Norman	en	orcid	3
 oksana	oxana	spelling		spelling	spelling	romanization variants	ru	orcid	15
 olayinka	yinka	familiar		familiar	familiar	Yoruba short form	mul	orcid	3
 oleg	oleh	spelling	decided	spelling	translation	Russian vs Ukrainian romanization of one Cyrillic form	ru uk	orcid	53
@@ -1230,6 +1446,7 @@ olga	olha	spelling	decided	spelling	translation	Ukrainian Ольга romanized O
 olga	olya	familiar		familiar	familiar	Olya pet form of Olga	en	orcid	6
 olga	volha	translation		translation	translation	Belarusian Volha for Russian Olga	be ru	orcid	9
 oli	oliver	familiar		familiar	familiar	short form of Oliver	en	orcid	9
+oliver	ollie	familiar		familiar	familiar	pet form of Oliver	en	orcid	6
 oliver	olly	familiar		familiar	familiar	pet form of Oliver	en	orcid	7
 oluremi	remi	familiar		familiar	familiar	Yoruba short form	en	orcid	3
 olusola	sola	familiar		familiar	familiar	Yoruba short form of Olusola	mul	orcid	3
@@ -1237,12 +1454,11 @@ oluwaseun	seun	familiar		familiar	familiar	Yoruba short form of Oluwaseun	en	orc
 oluwatobi	tobi	familiar		familiar	familiar	Yoruba short form of Oluwatobi	mul	orcid	3
 oluwatosin	tosin	familiar		familiar	familiar	Yoruba short form	mul	orcid	4
 ondra	ondřej	familiar		familiar	familiar	Czech familiar of Ondrej	cs	orcid	3
-onicyphorous	osaforum	unclear		unclear	unclear	unrecognizable pair	mul	nicknames-spelling	0
-onicyphorous	osaforus	refused	decided	spelling	unclear	variant of Onesiphorus	mul	nicknames-spelling	0
 orsi	orsolya	familiar		familiar	familiar	Hungarian pet form of Orsolya	mul	orcid	3
-ossy	ozzy	spelling		spelling	spelling	s vs z variant	mul	nicknames-spelling	0
 ourania	rania	familiar		familiar	familiar	Greek short form	el	orcid	6
 oyvind	øyvind	spelling		spelling	spelling	Norwegian with and without ø	nb nn	orcid	6
+paddy	patrick	familiar		familiar	familiar	Irish pet form of Patrick	en	orcid	17
+pam	pamela	familiar		familiar	familiar	clipped form of Pamela	en	orcid	35
 panagiota	penny	familiar		familiar	familiar	Penny familiar form of Panagiota	mul	orcid	4
 panagiotis	panayiotis	spelling		spelling	spelling	Greek romanization variants	en	orcid	3
 panagiotis	panayotis	spelling		spelling	spelling	Greek romanization variants	el	orcid	3
@@ -1253,30 +1469,43 @@ panayiotis	panos	familiar		familiar	familiar	Greek familiar form	en	orcid	4
 panteleimon	pantelis	familiar		familiar	familiar	Pantelis familiar form of Panteleimon	el	orcid	6
 paraskevas	paris	familiar		familiar	familiar	Greek short form of Paraskevas	el	orcid	6
 paraskevi	vivi	familiar		familiar	familiar	Vivi Greek pet form of Paraskevi	mul	orcid	3
+pat	patricia	familiar		familiar	familiar	clipped form of Patricia	en	orcid	20
+pat	patrick	familiar		familiar	familiar	clipped form of Patrick	en	orcid	34
+patricia	patsy	familiar		familiar	familiar	pet form of Patricia	en	orcid	4
+patricia	patti	familiar		familiar	familiar	pet form of Patricia	en	orcid	11
+patricia	patty	familiar		familiar	familiar	pet form of Patricia	en	orcid	19
 patricia	paty	familiar		familiar	familiar	short form of Patricia	es	orcid	5
+patricia	tricia	familiar		familiar	familiar	pet form from the middle of Patricia	en	orcid	18
+patricia	trish	familiar		familiar	familiar	pet form from the middle of Patricia	en	orcid	23
+patricia	trisha	familiar		familiar	familiar	pet form from the middle of Patricia	en	orcid	3
 pau	paulina	familiar		familiar	familiar	short form of Paulina	es	orcid	3
 paul	pavel	translation		translation	translation	English vs Slavic form	ru	orcid	10
+paul	ret	unclear		unclear	unclear	"corrupt: RET looks like a ""retired"" marker, not a name"	en	fec	3
 paul	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 pavel	pavlo	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	16
 pawel	paweł	spelling		spelling	spelling	ł written l	pl	orcid	89
 pedro	pere	translation		translation	translation	Catalan form of Pedro	ca es	orcid	4
 pedro	peter	translation		translation	translation	Spanish vs English form	en	orcid	3
+penelope	penny	familiar		familiar	familiar	pet form of Penelope	en	orcid	40
 petar	peter	translation		translation	translation	South Slavic and English/German forms	bg de	orcid	7
+pete	peter	familiar		familiar	familiar	clipped form of Peter	en	orcid	47
 peter	petr	translation		translation	translation	English Peter vs Czech/Russian Petr	ru	orcid	21
 peter	petros	translation		translation	translation	English vs Greek form	el	orcid	3
 peter	piotr	translation		translation	translation	English vs Polish form	en	orcid	12
-pherbia	pheriba	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
+phil	philip	familiar		familiar	familiar	clipped form of Philip	en	orcid	107
 phil	philippe	familiar		familiar	familiar	short form of Philippe	en	orcid	3
+phil	phillip	familiar		familiar	familiar	clipped form of Phillip	en	orcid	28
 philip	phillip	spelling		spelling	spelling	single vs double l	en	orcid	4
 philippa	pip	familiar		familiar	familiar	Pip familiar form of Philippa	en	orcid	13
 philippa	pippa	familiar		familiar	familiar	pet form of Philippa	en	orcid	13
 pinar	pınar	spelling		spelling	spelling	with and without Turkish ı	tr	orcid	25
 piotr	piotrek	familiar		familiar	familiar	Polish diminutive of Piotr	pl	orcid	3
 pooya	pouya	spelling		spelling	spelling	Persian romanization variants	fa	orcid	3
+prudence	prue	familiar		familiar	familiar	clipped form of Prudence	en	orcid	3
 przemek	przemyslaw	familiar		familiar	familiar	Przemek pet form of Przemyslaw	pl	orcid	8
 przemek	przemysław	familiar		familiar	familiar	Polish short form of Przemyslaw	pl	orcid	6
 przemyslaw	przemysław	spelling		spelling	spelling	Polish with and without ł	pl	orcid	33
-rachael	rachel	spelling		spelling	spelling	spelling variant	en	nicknames-spelling	2
+rachael	rachel	spelling		spelling	spelling	spelling variant	en	wikidata	7
 rachel	rae	familiar		familiar	familiar	short form of Rachel	en	orcid	10
 rachel	raquel	translation		translation	translation	English and Spanish/Portuguese forms	mul	orcid	3
 rachel	ray	split		familiar	different-name	short form of Rachel	en	orcid	3
@@ -1291,37 +1520,59 @@ raj	rajkumar	familiar		familiar	familiar	called by base name without -kumar	mul	
 ralf	ralph	translation		translation	translation	German vs English form	mul	orcid	3
 ram	ramakrishnan	familiar		familiar	familiar	short form of Ramakrishnan	en	orcid	3
 randal	randy	familiar		familiar	familiar	short form of Randal	mul	orcid	4
+randall	randy	familiar		familiar	familiar	pet form of Randall	en	orcid	18
 ravi	ravindra	familiar		familiar	familiar	Ravi short form of Ravindra	en	orcid	3
+ray	raymond	familiar		familiar	familiar	clipped form of Raymond	en	orcid	49
 ray	rui	different-name		different-name	different-name	English name for a Chinese name	en	orcid	5
+reggie	reginald	familiar		familiar	familiar	pet form of Reginald	en	orcid	5
+ret	robert	unclear		unclear	unclear	"corrupt: RET reads as ""retired"", not a form of Robert"	en	fec	6
 ric	richard	familiar		familiar	familiar	short form of Richard	en	orcid	4
+ricardo	rick	familiar		familiar	familiar	Rick used for Ricardo	en	orcid	3
+ricardo	ricky	familiar		familiar	familiar	Ricky used for Ricardo among English speakers	mul	orcid	3
 ricardo	rico	familiar		familiar	familiar	short form of Ricardo	pt-BR	orcid	4
+rich	richard	familiar		familiar	familiar	clipped form of Richard	en	orcid	61
+richard	richie	familiar		familiar	familiar	diminutive of Richard	en	orcid	11
+richard	rick	familiar		familiar	familiar	clipped form of Richard	en	orcid	99
+richard	ricky	familiar		familiar	familiar	English pet form of Richard	en	orcid	12
 richard	rik	familiar		familiar	familiar	short form of Richard	en	orcid	9
+rick	ricky	split		sibling	familiar	opus: both pet forms of Richard; sonnet: Ricky is a diminutive of Rick	en	orcid	3
 ridvan	rıdvan	spelling		spelling	spelling	dotless i dropped	tr	orcid	3
 rigo	rigoberto	familiar		familiar	familiar	short form of Rigoberto	en	orcid	3
 riza	rıza	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	4
+rob	robert	familiar		familiar	familiar	clipped form of Robert	en	orcid	238
+rob	roberto	familiar		familiar	familiar	clipped form of Roberto	en	orcid	4
+rob	robin	familiar		familiar	familiar	clipped form of Robin	en	orcid	8
 robb	robert	familiar		familiar	familiar	Robb short form of Robert	en	orcid	7
 robbie	robert	familiar		familiar	familiar	pet form of Robert	en	orcid	25
+robby	robert	familiar		familiar	familiar	diminutive of Robert	en	orcid	6
 robert	roberto	translation		translation	translation	English and Spanish/Italian forms	en fr	orcid	6
 robert	robin	split		familiar	different-name	Robin historically a pet form of Robert	en	orcid	6
 robert	scott	different-name		different-name	different-name	unrelated names	en	orcid	3
+rod	roderick	familiar		familiar	familiar	clipped form of Roderick	en	orcid	4
+rod	rodney	familiar		familiar	familiar	clipped form of Rodney	en	orcid	22
 rod	rodrigo	familiar		familiar	familiar	short form of Rodrigo	en	orcid	6
-rodger	roger	spelling		spelling	spelling	d variant spelling	mul	nicknames-spelling	0
+roddy	roderick	familiar		familiar	familiar	pet form of Roderick	en	orcid	4
 rodolfo	rudy	split		familiar	different-name	familiar form of Rodolfo	en	orcid	4
+ron	ronald	familiar		familiar	familiar	clipped form of Ronald	en	orcid	67
 ron	roni	split		familiar	different-name	Hebrew pet form of Ron	mul	orcid	3
 ros	rosalind	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
 ros	roslyn	familiar		familiar	familiar	short form of Roslyn	en	orcid	5
-rosa	rose	translation		translation	translation	Romance and English forms	mul	nicknames-spelling	1
+rosa	rose	translation		translation	translation	Romance and English forms	mul	wikidata	8
 rosalie	rosie	familiar		familiar	familiar	pet form of Rosalie	en	orcid	3
 rosalind	rosie	familiar		familiar	familiar	pet form of Rosalind	en	orcid	5
 rosalind	roz	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
 rosanna	rosie	familiar		familiar	familiar	pet form of Rosanna	en	orcid	4
-rosemarie	rosemary	spelling		spelling	spelling	variant of one name	mul	nicknames-spelling	0
+rose	rosemary	familiar		familiar	familiar	clipped form of Rosemary	en pt-BR	orcid	11
+rose	rosie	familiar		familiar	familiar	diminutive of Rose	mul	orcid	4
 rosemary	rosie	familiar		familiar	familiar	pet form of Rosemary	en	orcid	24
 roumen	rumen	spelling		spelling	spelling	French vs English romanization of Bulgarian Румен	bg	orcid	3
 rouslan	ruslan	spelling		spelling	spelling	romanization variants	ru	orcid	3
 rudi	rudolf	familiar		familiar	familiar	short form of Rudolf	de	orcid	6
+rudolph	rudy	familiar		familiar	familiar	pet form of Rudolph	en	orcid	3
 ruediger	rüdiger	spelling		spelling	spelling	ü written ue	de	orcid	10
+russ	russell	familiar		familiar	familiar	clipped form of Russell	en	orcid	15
 russel	russell	spelling		spelling	spelling	single vs double l	en	orcid	3
+russell	rusty	familiar		familiar	familiar	pet form of Russell	en	orcid	5
 ryan	timothy	different-name		different-name	different-name	unrelated names	en	orcid	3
 ryan	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 saeed	saeid	spelling		spelling	spelling	Persian romanization variants	fa	orcid	18
@@ -1329,18 +1580,26 @@ saeedeh	saeideh	spelling		spelling	spelling	Persian romanization variants	fa	orc
 saif	saifullah	familiar		familiar	familiar	compound part Saif used as call name	mul	orcid	3
 sajad	sajjad	spelling		spelling	spelling	Persian romanization variants	fa	orcid	7
 sal	sally	split		familiar	different-name	short form of Sally	en	orcid	6
+sal	salvador	familiar		familiar	familiar	clipped form of Salvador	en	orcid	3
 sal	salvatore	familiar		familiar	familiar	short form of Salvatore	en	orcid	5
+sally	sarah	familiar		familiar	familiar	traditional pet form of Sarah	en	orcid	10
 salvatore	salvo	familiar		familiar	familiar	Italian short form of Salvatore	it	orcid	16
 salvatore	sam	different-name		different-name	different-name	loose anglicized substitute	en	orcid	4
+sam	samantha	familiar		familiar	familiar	clipped form of Samantha	en	orcid	103
+sam	samuel	familiar		familiar	familiar	clipped form of Samuel	en	orcid	267
 samane	samaneh	spelling		spelling	spelling	Persian final h romanized or not	fa	orcid	3
 samantha	sami	familiar		familiar	familiar	short form of Samantha	en	orcid	6
+samantha	sammy	familiar		familiar	familiar	pet form of Samantha	en	orcid	6
+sammy	samuel	familiar		familiar	familiar	diminutive of Samuel	en	orcid	8
 sandi	sandra	familiar		familiar	familiar	pet form of Sandra	en	orcid	4
 sandie	sandra	familiar		familiar	familiar	pet form of Sandra	en	orcid	6
+sandra	sandy	familiar		familiar	familiar	pet form of Sandra	en	orcid	34
+sandy	sanford	familiar		familiar	familiar	pet form of Sanford	en	orcid	3
 santi	santiago	familiar		familiar	familiar	short form of Santiago	ca es	orcid	7
-sara	sarah	spelling		spelling	spelling	spelling variant	fa	nicknames-spelling	12
+sara	sarah	spelling		spelling	spelling	spelling variant	fa	orcid	12
 satya	satyanarayana	familiar		familiar	familiar	Satya short form of Satyanarayana	en	orcid	5
-savanna	savannah	spelling		spelling	spelling	h variant	mul	nicknames-spelling	0
 scott	thomas	different-name		different-name	different-name	unrelated names	en	orcid	3
+seb	sebastian	familiar		familiar	familiar	clipped form of Sebastian	en	orcid	8
 sebastian	sebastien	translation		translation	translation	English/German and French forms	en	orcid	3
 semen	semyon	spelling	decided	spelling	translation	romanization variant	mul	orcid	3
 sepide	sepideh	spelling		spelling	spelling	romanization variant	fa	orcid	4
@@ -1368,14 +1627,12 @@ sergiy	serhiy	spelling		spelling	spelling	romanization variant	ru uk	orcid	4
 serhii	serhiy	spelling		spelling	spelling	romanization variant	ru uk	orcid	15
 sevasti	sevi	familiar		familiar	familiar	Sevi pet form of Sevasti	mul	orcid	3
 seyedvahid	vahid	familiar		familiar	familiar	Vahid is the called part after the Seyed prefix	en	orcid	3
-shaun	shawn	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
-sherryl	sheryl	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
+si	simon	familiar		familiar	familiar	British clipped form of Simon	en	orcid	3
 sia	siavash	familiar		familiar	familiar	Persian short form of Siavash	en	orcid	3
-sibbell	sibbilla	refused	decided	spelling	different-name	spelling variant	mul	nicknames-spelling	0
-sibbilla	sybill	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
 sid	siddhant	familiar		familiar	familiar	short form of Siddhant	en	orcid	3
 sid	siddharth	familiar		familiar	familiar	short form of Siddharth	en	orcid	14
 sid	siddhartha	familiar		familiar	familiar	Sid short form of Siddhartha	en	orcid	4
+sid	sidney	familiar		familiar	familiar	clipped form of Sidney	en	orcid	8
 sidd	siddharth	familiar		familiar	familiar	short form of Siddharth	en	orcid	3
 sila	sıla	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	5
 silvia	sylvia	spelling		spelling	spelling	i/y variant	mul	orcid	4
@@ -1395,6 +1652,7 @@ sofiya	sophia	spelling		spelling	spelling	romanization variant	mul	orcid	3
 sofya	sonya	familiar		familiar	familiar	Russian familiar form of Sofya	mul	orcid	3
 somaye	somayeh	spelling		spelling	spelling	romanization variant	fa	orcid	4
 sonia	sonya	spelling		spelling	spelling	romanization variants	mul	orcid	3
+sophia	sophie	translation	decided	translation	spelling	opus: Sophia vs French form Sophie; sonnet: same name, Latin/French-style ending	en	orcid	23
 soren	søren	spelling		spelling	spelling	dropped Danish o-slash	da en	orcid	12
 sotirios	sotiris	familiar		familiar	familiar	Sotiris vernacular familiar form of Sotirios	el	orcid	12
 spiros	spyridon	familiar		familiar	familiar	Spiros familiar form of Spyridon	el en	orcid	6
@@ -1402,30 +1660,30 @@ spyridon	spyros	familiar		familiar	familiar	Greek short form of Spyridon	el en	o
 srdan	srdjan	spelling		spelling	spelling	Srđan romanized dj or d	mul	orcid	3
 srdan	srđan	spelling		spelling	spelling	with and without đ	en	orcid	4
 srdjan	srđan	spelling		spelling	spelling	dj for Serbian d-stroke	sr	orcid	15
-stacey	staci	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-stacey	stacie	spelling		spelling	spelling	ey vs ie	mul	nicknames-spelling	0
-stacey	stacy	spelling		spelling	spelling	ey vs y	mul	nicknames-spelling	2
-staci	stacie	spelling		spelling	spelling	Staci/Stacie variant spelling	mul	nicknames-spelling	0
-staci	stacy	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-stacie	stacy	spelling		spelling	spelling	ie/y variant	mul	nicknames-spelling	0
 stamatios	stamatis	familiar		familiar	familiar	Greek everyday form	el	orcid	3
 stan	stanislav	familiar		familiar	familiar	short form of Stanislav	en	orcid	3
 stan	stanislaw	familiar		familiar	familiar	Stan short form of Stanislaw	pl	orcid	3
+stan	stanley	familiar		familiar	familiar	clipped form of Stanley	en	orcid	15
 stanislav	stas	familiar		familiar	familiar	Stas pet form of Stanislav	mul	orcid	5
 stanislaw	stanisław	spelling		spelling	spelling	ł written l	pl	orcid	15
 stef	stefanie	familiar		familiar	familiar	short form of Stefanie	en	orcid	3
 stefanie	steffi	familiar		familiar	familiar	pet form of Stefanie	mul	orcid	3
 stelios	stylianos	familiar		familiar	familiar	Greek familiar of Stylianos	el	orcid	29
 stella	styliani	familiar		familiar	familiar	Greek familiar of Styliani	el	orcid	15
-stephani	stephanie	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	1
-stephanie	stephany	spelling		spelling	spelling	English spelling variant	mul	nicknames-spelling	0
-stephanie	stephine	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
+steph	stephanie	familiar		familiar	familiar	clipped form of Stephanie	en	orcid	29
+stephen	steve	familiar		familiar	familiar	clipped form of Stephen	en	orcid	229
 stephen	steven	spelling		spelling	spelling	Stephen/Steven variant spellings	en	orcid	3
+steve	steven	familiar		familiar	familiar	clipped form of Steven	en	orcid	151
+stu	stuart	familiar		familiar	familiar	clipped form of Stuart	en	orcid	9
+sue	susan	familiar		familiar	familiar	clipped form of Susan	en	orcid	111
 sue	susanne	familiar		familiar	familiar	Sue short form of Susanne	en	orcid	4
+sue	suzanne	familiar		familiar	familiar	clipped form of Suzanne	en	orcid	13
 susan	susanne	refused	decided	different-name	spelling	Susan and Susanne distinct forms	en	orcid	3
+susan	susie	familiar		familiar	familiar	pet form of Susan	en	orcid	13
+susan	suzie	familiar		familiar	familiar	pet form of Susan	en	orcid	3
 susan	suzy	familiar		familiar	familiar	pet form of Susan	en	orcid	3
+susannah	susie	familiar		familiar	familiar	pet form of Susannah	en	orcid	4
 susanne	susi	familiar		familiar	familiar	Susi pet form of Susanne	de	orcid	4
-susie	suzie	spelling		spelling	spelling	one familiar form spelled two ways	mul	nicknames-spelling	0
 suzanne	suzi	familiar		familiar	familiar	Suzi pet form of Suzanne	en	orcid	4
 suzanne	suzie	familiar		familiar	familiar	pet form of Suzanne	en	orcid	5
 suzanne	suzy	familiar		familiar	familiar	pet form of Suzanne	en	orcid	5
@@ -1436,9 +1694,8 @@ tahere	tahereh	spelling		spelling	spelling	Persian romanization variant	fa	orcid
 taisia	taisiia	spelling		spelling	spelling	romanization variant	ru	orcid	3
 taka	takahiro	familiar		familiar	familiar	Japanese short form	ja	orcid	3
 tamar	tami	familiar		familiar	familiar	Hebrew pet form of Tamar	mul	orcid	4
-tami	tammie	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
-tami	tammy	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	1
-tammie	tammy	spelling		spelling	spelling	ie/y variant	mul	nicknames-spelling	0
+tamara	tammy	familiar		familiar	familiar	pet form of Tamara	en	orcid	5
+tami	tammy	spelling		spelling	spelling	spelling variant	mul	wikidata	4
 tania	tanja	spelling		spelling	spelling	spelling variant	mul	orcid	3
 tania	tatiana	familiar		familiar	familiar	familiar form of Tatiana	en	orcid	3
 tania	tetiana	familiar		familiar	familiar	familiar form of Tetiana	ru uk	orcid	5
@@ -1454,33 +1711,43 @@ tatiana	tetiana	translation		translation	translation	Russian vs Ukrainian form	r
 tatiana	tetyana	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	8
 tatyana	tetiana	translation		translation	translation	Russian Tatyana vs Ukrainian Tetiana	ru uk	orcid	22
 tatyana	tetyana	translation		translation	translation	Russian and Ukrainian forms	ru uk	orcid	9
+ted	theodore	familiar		familiar	familiar	pet form of Theodore	en	orcid	44
+teddy	theodore	familiar		familiar	familiar	pet form of Theodore	en	orcid	4
 temi	temitope	familiar		familiar	familiar	Yoruba short form of Temitope	en	orcid	3
+terence	terry	familiar		familiar	familiar	pet form of Terence	en	orcid	23
 teresa	teri	familiar		familiar	familiar	short form of Teresa	en	orcid	4
 teresa	terri	familiar		familiar	familiar	pet form of Teresa	en	orcid	5
+teresa	terry	familiar		familiar	familiar	pet form of Teresa	mul	orcid	4
+teresa	tess	familiar		familiar	familiar	pet form of Teresa	en	orcid	5
 teresa	theresa	spelling		spelling	spelling	Teresa/Theresa variant spelling	en	orcid	3
-teri	terri	spelling		spelling	spelling	single vs double r	mul	nicknames-spelling	1
 teri	theresa	familiar		familiar	familiar	short form of Theresa	en	orcid	3
 terrance	terry	familiar		familiar	familiar	Terry familiar form of Terrance	en	orcid	3
 terrence	terry	familiar		familiar	familiar	short form of Terrence	en	orcid	10
-terri	terrie	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-terri	terry	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	1
 terri	theresa	familiar		familiar	familiar	pet form of Theresa	en	orcid	10
+terry	theresa	familiar		familiar	familiar	pet form of Theresa	en	orcid	4
 tess	tessa	familiar		familiar	familiar	short form of Tessa	en	orcid	3
+tess	theresa	familiar		familiar	familiar	pet form of Theresa	en	orcid	3
 tetiana	tetyana	spelling		spelling	spelling	romanization variant	ru uk	orcid	35
+thad	thaddeus	familiar		familiar	familiar	clipped form of Thaddeus	en	orcid	4
 thea	theodora	familiar		familiar	familiar	short form of Theodora	en	orcid	3
 themis	themistoklis	familiar		familiar	familiar	Greek short form of Themistoklis	el	orcid	6
 theo	theodor	familiar		familiar	familiar	short form of Theodor	de	orcid	4
+theo	theodore	familiar		familiar	familiar	clipped form of Theodore	en	orcid	16
 theo	theodoros	familiar		familiar	familiar	short form of Theodoros	de en	orcid	8
 theo	theodosios	familiar		familiar	familiar	short form of Theodosios	en	orcid	3
 theodore	theodoros	translation		translation	translation	English and Greek forms	el	orcid	10
-thom	tom	spelling		spelling	spelling	variant spellings of one short form	mul	nicknames-spelling	0
+thom	thomas	familiar		familiar	familiar	clipped form of Thomas	en	orcid	13
+thomas	tom	familiar		familiar	familiar	clipped form of Thomas	en	orcid	494
 thomas	tomasz	translation		translation	translation	English and Polish forms	pl	orcid	3
+thomas	tommy	familiar		familiar	familiar	diminutive of Thomas	en	orcid	23
 thomas	tomáš	translation		translation	translation	English and Czech forms	cs	orcid	3
 thorsteinn	þorsteinn	spelling		spelling	spelling	Icelandic thorn transcribed	is	orcid	3
 till	tillmann	familiar		familiar	familiar	short form of Tillmann	mul	orcid	3
+tim	timothy	familiar		familiar	familiar	clipped form of Timothy	en	orcid	322
 tim	timothée	split		familiar	translation	Tim short form of Timothée	mul	orcid	4
 timofei	timofey	spelling		spelling	spelling	romanization variants	ru	orcid	4
 tobi	tobias	familiar		familiar	familiar	short form of Tobias	de	orcid	3
+tobias	toby	familiar		familiar	familiar	English short form of Tobias	en	orcid	15
 tobin	toby	split		familiar	different-name	pet form of Tobin	en	orcid	4
 tohru	toru	spelling		spelling	spelling	romanization of long vowel	ja	orcid	3
 tolu	tolulope	familiar		familiar	familiar	Yoruba short form of Tolulope	en	orcid	4
@@ -1488,21 +1755,20 @@ tom	tomas	familiar		familiar	familiar	Tom short form of Tomas	en	orcid	6
 tom	tomasz	familiar		familiar	familiar	English short form for Tomasz	pl	orcid	4
 tom	tsutomu	different-name		different-name	different-name	loose adopted English name	ja	orcid	3
 tomasz	tomek	familiar		familiar	familiar	Polish familiar of Tomasz	pl	orcid	9
-tracey	traci	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	0
-tracey	tracie	spelling		spelling	spelling	Tracey/Tracie variant spelling	mul	nicknames-spelling	0
-tracey	tracy	spelling		spelling	spelling	ey vs y	mul	nicknames-spelling	0
+tori	victoria	familiar		familiar	familiar	pet form from the middle of Victoria	en	orcid	33
+tory	victoria	familiar		familiar	familiar	pet form from the middle of Victoria	en	orcid	3
 trey	william	different-name		different-name	different-name	Trey for the third, loose	en	orcid	4
-trish	trisha	sibling		sibling	sibling	both pet forms of Patricia	mul	nicknames-spelling	0
+ty	tyler	familiar		familiar	familiar	clipped form of Tyler	en	orcid	4
 tyler	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 ula	urszula	familiar		familiar	familiar	Ula Polish pet form of Urszula	pl	orcid	5
 uli	ulrich	familiar		familiar	familiar	German familiar form	de en	orcid	13
 uliana	ulyana	spelling		spelling	spelling	romanization variant	ru	orcid	4
 vadim	vadym	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	ru uk	orcid	10
+val	valerie	familiar		familiar	familiar	clipped form of Valerie	en	orcid	10
 vale	valeria	familiar		familiar	familiar	short form of Valeria	es	orcid	3
 valen	valentina	familiar		familiar	familiar	short form of Valentina	es	orcid	3
 valentin	valentyn	spelling	decided	spelling	translation	Валентин romanized i or y	ru uk	orcid	5
 valentina	valentyna	spelling	decided	spelling	translation	romanizations of Валентина	ru uk	orcid	6
-valeri	valerie	refused	decided	spelling	different-name	variant of Valerie	mul	nicknames-spelling	0
 valeri	valeriy	spelling		spelling	spelling	romanization variants	ru	orcid	4
 valeria	valeriia	spelling	decided	spelling	translation	Valeria/Valeriia romanization of Валерия	ru	orcid	6
 valeria	valeriya	spelling		spelling	spelling	romanization variants	bg ru	orcid	8
@@ -1531,11 +1797,14 @@ veronica	veronika	spelling		spelling	spelling	Veronica/Veronika c or k	ru	orcid	
 veselin	vesselin	spelling		spelling	spelling	doubled letter	bg	orcid	3
 viacheslav	vjacheslav	spelling		spelling	spelling	romanization variant	mul	orcid	3
 viacheslav	vyacheslav	spelling		spelling	spelling	romanization variants	ru	orcid	13
+vic	victor	familiar		familiar	familiar	clipped form of Victor	en	orcid	9
+vic	victoria	familiar		familiar	familiar	clipped form of Victoria	en	orcid	6
 vicent	vicente	translation		translation	translation	Catalan Vicent vs Spanish Vicente	mul	orcid	3
 vicente	vicenç	translation		translation	translation	Spanish Vicente vs Catalan Vicenç	mul	orcid	3
 vicente	vincent	translation		translation	translation	Spanish and English forms	mul	orcid	3
-vicki	vickie	spelling		spelling	spelling	variant spelling	mul	nicknames-spelling	0
-vicki	vicky	spelling		spelling	spelling	variant spellings	mul	nicknames-spelling	1
+vicki	victoria	familiar		familiar	familiar	pet form of Victoria	en	orcid	26
+vickie	victoria	familiar		familiar	familiar	pet form of Victoria	mul	orcid	3
+vicky	victoria	familiar		familiar	familiar	pet form of Victoria	en	orcid	36
 victor	viktor	spelling		spelling	spelling	Victor/Viktor romanization of Виктор	ru	orcid	64
 victoria	victoriya	spelling		spelling	spelling	romanization variants	ru	orcid	3
 victoria	viki	familiar		familiar	familiar	Viki short form of Victoria	mul	orcid	3
@@ -1549,6 +1818,7 @@ vijay	vijaykumar	familiar		familiar	familiar	Vijay is how a Vijaykumar is called
 vijayalakshmi	viji	familiar		familiar	familiar	Viji pet form of Vijayalakshmi	en	orcid	4
 viktoria	viktoriia	spelling		spelling	spelling	romanization variants	ru uk	orcid	9
 viktoriia	viktoriya	spelling		spelling	spelling	romanization variants of Вікторія	ru uk	orcid	8
+vince	vincent	familiar		familiar	familiar	clipped form of Vincent	en	orcid	22
 vitalii	vitaliy	spelling		spelling	spelling	romanization variants	ru uk	orcid	25
 vitalii	vitaly	spelling		spelling	spelling	romanization variants	ru	orcid	15
 vitaliy	vitaly	spelling		spelling	spelling	romanization variants of Виталий	ru	orcid	13
@@ -1559,10 +1829,16 @@ vlad	vladyslav	familiar		familiar	familiar	short form of Vladyslav	ru uk	orcid	7
 vladimir	volodymyr	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	58
 vladislav	vladyslav	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	ru uk	orcid	9
 waclaw	wacław	spelling		spelling	spelling	with and without ł	pl	orcid	3
+walt	walter	familiar		familiar	familiar	clipped form of Walter	en	orcid	5
 waseem	wasim	spelling		spelling	spelling	Arabic romanization variants	mul	orcid	3
 wendy	wenqing	different-name		different-name	different-name	adopted English name	mul	orcid	3
+wes	wesley	familiar		familiar	familiar	clipped form of Wesley	en	orcid	16
 wieslaw	wiesław	spelling		spelling	spelling	ł written l	pl	orcid	8
+wil	william	familiar		familiar	familiar	clipped form of William	en	orcid	5
+will	william	familiar		familiar	familiar	clipped form of William	en	orcid	221
 willem	wim	familiar		familiar	familiar	Dutch short form of Willem	nl	orcid	9
+william	willie	familiar		familiar	familiar	diminutive of William	en	orcid	4
+winifred	winnie	familiar		familiar	familiar	pet form of Winifred	mul	orcid	4
 wlodek	wlodzimierz	familiar		familiar	familiar	Polish pet form of Wlodzimierz	en	orcid	3
 wojciech	wojtek	familiar		familiar	familiar	Polish familiar form	pl	orcid	5
 włodek	włodzimierz	familiar		familiar	familiar	Włodek pet form of Włodzimierz	pl	orcid	3
@@ -1594,9 +1870,11 @@ yurii	yury	spelling	decided	spelling	translation	romanization variants of Юри
 yurij	yuriy	spelling		spelling	spelling	romanization variants	ru	orcid	4
 yuriy	yury	spelling		spelling	spelling	romanization variants	ru	orcid	7
 zac	zacariah	familiar		familiar	familiar	short form of Zacariah	en	orcid	3
-zach	zack	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	1
-zach	zak	spelling		spelling	spelling	one short form spelled two ways	mul	nicknames-spelling	0
-zack	zak	spelling		spelling	spelling	spelling variant	mul	nicknames-spelling	0
+zac	zachary	familiar		familiar	familiar	clipped form of Zachary	en	orcid	14
+zach	zachariah	familiar		familiar	familiar	clipped form of Zachariah	en	orcid	6
+zach	zachary	familiar		familiar	familiar	clipped form of Zachary	en	orcid	87
+zachary	zack	familiar		familiar	familiar	clipped form of Zachary	en	orcid	31
+zachary	zak	familiar		familiar	familiar	clipped form of Zachary	en	orcid	11
 zeinab	zeynab	spelling		spelling	spelling	romanization variant	fa	orcid	5
 zoe	zoi	spelling		spelling	spelling	romanization of Greek Zoi	el	orcid	4
 zohre	zohreh	spelling		spelling	spelling	romanization variant	fa	orcid	3

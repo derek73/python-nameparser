@@ -297,12 +297,9 @@ License
 LGPL licensed. See `LICENSE <https://github.com/derek73/python-nameparser/blob/master/LICENSE>`__
 for details.
 
-The familiar forms from Old Dominion University's nicknames list are a
-list copied whole, under the Apache License 2.0, in ``LICENSE-nicknames``.
-The package's licence expression is ``LGPL-2.1-or-later AND Apache-2.0``.
-
-Other word lists are the project's own measurements over public data,
-and their sources are credited:
+The package's licence expression is ``LGPL-2.1-or-later``. The word
+lists it ships are the project's own measurements over public data, and
+their sources are credited:
 
 - ``locales.ES`` and ``locales.ES_AR``'s given names, measured on Spain's
   Instituto Nacional de Estadística census tables (Creative Commons

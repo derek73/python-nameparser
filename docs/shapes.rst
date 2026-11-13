@@ -235,7 +235,7 @@ read it as is the token's, :attr:`Token.reading
 
     >>> from nameparser import Lexicon
     >>> [(r.kind, r.languages) for r in Lexicon.default().readings_of("van")]
-    [('preposition', ('nl',)), ('given', ('nl',)), ('familiar', ('en',))]
+    [('preposition', ('nl',)), ('given', ('nl',))]
     >>> parse("Ludwig van Beethoven").tokens[1].reading
     Reading('particle' as 'family', 'vocabulary', in nl)
 
