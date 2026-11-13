@@ -6,7 +6,7 @@
 - A patronymic particle and the words after it in its field all read `patronymic`, the particle by vocabulary and the rest by position, so the view is the tokens whose reading is `patronymic` — 2026-10-29 #754, sub-phase 4c.
 - The East Slavic and Turkic rules write the reading wherever a policy turns them on, not only where their rotations fire: a middle word carrying the ending, and a marker with the name word before it — 2026-10-29 #754, sub-phase 4c.
 
-Elsewhere: why the view leaves `family` and `middle` as they are, and the fielded-corpora measurements behind it, decisions/vocabulary-model's 2026-10-28 #754 entry, item 3; the rotations the two ending rules are named for, decisions/O1 and decisions/O2; the `clan`/`patronymic` line in the particle kinds, decisions/vocabulary-model's 2026-10-19 #749 entry.
+Elsewhere: why the view leaves `family` and `middle` as they are, and the fielded-corpora measurements behind it, decisions/vocabulary-model's 2026-10-28 #754 entry, item 3; the rotations the two ending rules are named for, decisions/O1 and decisions/O2; the `clan`/`patronymic` line in the particle kinds, decisions/vocabulary-model's 2026-10-19 #749 entry; a father's name nothing in the text marks, which fills no view, and a view that overlaps the family, decisions/family-without-an-inherited-name.
 
 Open: the Icelandic ending rule, which an `is` pack would turn on (the RFC's work order: 3b, 4c and 4f); whether the East Slavic endings should take the Ukrainian `-ivna`/`-ївна` and `-ovych`/`-ович` spellings, which would move O1's rotation too.
 

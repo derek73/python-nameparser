@@ -160,6 +160,7 @@ Entry conventions:
 - [comparison-surface — why value equality died, and what replaced it](comparison-surface.md)
 - [deviates-registry — packs stay pure data (option C)](deviates-registry.md)
 - [differential-ledger — the differential ledger's arcs](differential-ledger.md)
+- [family-without-an-inherited-name — what `family` and the patronymic view hold where a convention has no family name](family-without-an-inherited-name.md)
 - [generational-words — junior and senior in other languages (2026-10-14, #661)](generational-words.md)
 - [group-suggestion — settings suggested by a group of names](group-suggestion.md)
 - [indic-honorifics — the renunciate class and the Indic honorific vocabulary (2026-09-06, #346/#344/#343)](indic-honorifics.md)

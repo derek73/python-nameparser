@@ -8,6 +8,8 @@
 - `middle_as_family` is declined as the way to drop Vietnamese middles, giving family 'Thị Minh Nguyễn' for `Nguyễn Thị Minh Khai` under FAMILY_FIRST_GIVEN_LAST; `given_names` is the view that stays correct — 2026-08-07 #146.
 - One name word followed by nothing but initials reports `order`, the reserved kind, with no alternative, under the given-first order, default or declared, with no family comma and `initials_as_family` off; capitals written as one word with no full stops (`Armitage JO`) do not count as initials there — 2026-11-11 #1254.
 
+Elsewhere: a name with no inherited family name, read by position under this file's order, and its matching recipe, decisions/family-without-an-inherited-name.
+
 Open: none in this file.
 
 ## Log

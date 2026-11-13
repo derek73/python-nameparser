@@ -376,6 +376,99 @@ an initial, and records each match it made in ``across``:
 The middle word a match uses is taken out of the middle comparison,
 and the middle words left are compared role to role.
 
+.. _matching-without-an-inherited-family-name:
+
+Names with no inherited family name
+-----------------------------------
+
+Some conventions have no inherited family name. An Ethiopian or
+Eritrean name is the person's own name, then the father's, then often
+the grandfather's, and where only two are written abroad the father's
+name is filed as the surname. The parser reads by position, so the
+father's name is the ``family`` of ``Dawit Bekele`` and the ``middle``
+of ``Dawit Bekele Tesfaye``, whose family is the grandfather's. The
+default matcher therefore keeps the two spellings of one person apart:
+
+.. doctest::
+
+    >>> matcher.check("Dawit Bekele Tesfaye", "Dawit Bekele")["family"].outcome.value
+    'conflict'
+
+For a list known to follow this convention, build the matcher from a
+parser that folds the middle names into the family
+(``middle_as_family``). The father's name is then part of the family on
+both sides, so the two spellings are consistent and share a key, while a
+different father, or a different grandfather behind the same father,
+still conflicts:
+
+.. doctest::
+
+    >>> from nameparser import Policy
+    >>> ethiopian_matcher = Parser(policy=Policy(middle_as_family=True)).matching()
+    >>> dawit = ethiopian_matcher.check("Dawit Bekele Tesfaye", "Dawit Bekele")
+    >>> dawit.consistent, dawit["family"].outcome.value
+    (True, 'part-of-other')
+    >>> sorted(ethiopian_matcher.keys("Dawit Bekele Tesfaye")
+    ...        & ethiopian_matcher.keys("Dawit Bekele"))
+    ['bekele;d']
+    >>> ethiopian_matcher.check("Dawit Bekele", "Dawit Tesfaye").consistent
+    False
+    >>> ethiopian_matcher.check("Dawit Bekele Tesfaye", "Dawit Bekele Haile").consistent
+    False
+
+Keep the default parser for reading the fields: the fold reads the
+grandfather's name into the family too, and on ORCID's Ethiopian
+records, where holders filed their own names, it agrees with their
+boxes about 21.5 points less often than the default does (measured
+2026-11-12, #1203).
+
+The matcher compares a family of several words regardless of order, and
+the fold makes every such family several words, so two names consistent
+under it are not always one person. A name whose father and grandfather
+are written the other way round is consistent, and so, under either
+matcher, is a two-word name whose second word is the other name's
+grandfather:
+
+.. doctest::
+
+    >>> ethiopian_matcher.check("Dawit Bekele Tesfaye", "Dawit Tesfaye Bekele").consistent
+    True
+    >>> matcher.check("Dawit Bekele Tesfaye", "Dawit Tesfaye").consistent
+    True
+
+And use it only for such a list: it treats every middle name as part of
+the family, so it also calls ``John Paul Smith`` and ``John Paul``
+consistent, which the default matcher keeps apart:
+
+.. doctest::
+
+    >>> ethiopian_matcher.check("John Paul Smith", "John Paul").consistent
+    True
+    >>> matcher.check("John Paul Smith", "John Paul").consistent
+    False
+
+The fold has a cost the other way too. A father's name written as an
+initial becomes part of the family, so the pair conflicts as a family
+written with an initial (``family-initial``, which the default does not
+accept), where the default matcher reads a middle initial and calls it
+consistent. Accept ``family-initial`` on the folded matcher to restore
+it:
+
+.. doctest::
+
+    >>> matcher.check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye").consistent
+    True
+    >>> ethiopian_matcher.check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye")["family"].outcome.value
+    'family-initial'
+    >>> Parser(policy=Policy(middle_as_family=True)).matching(
+    ...     accept=ethiopian_matcher.accept | {"family-initial"}
+    ... ).check("Dawit B. Tesfaye", "Dawit Bekele Tesfaye").consistent
+    True
+
+Neither matcher removes a title the vocabulary does not list: ``Ato``
+reads as the given name, so ``Ato Dawit Bekele Tesfaye`` and
+``Dawit Bekele`` conflict under both.
+
 Consistency is not transitive
 -----------------------------
 

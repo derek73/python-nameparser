@@ -105,6 +105,8 @@
 {"name": "Abdul Salam, MD", "given": "Abdul", "family": "Salam", "suffix": "MD", "initials": "A. S."}
 {"name": "Abdullah bin Haji Ahmad Badawi", "given": "Abdullah", "family": "bin Haji Ahmad Badawi", "initials": "A. H. A. B.", "patronymic": "bin Haji Ahmad Badawi"}
 {"name": "Abe, Shinnosuke", "given": "Shinnosuke", "family": "Abe", "initials": "S. A."}
+{"name": "Abiy Ahmed", "given": "Abiy", "family": "Ahmed", "initials": "A. A."}
+{"name": "Abiy Ahmed Ali", "given": "Abiy", "middle": "Ahmed", "family": "Ali", "initials": "A. A. A."}
 {"name": "Abraham van den Hecken", "given": "Abraham", "family": "van den Hecken", "initials": "A. H."}
 {"name": "Abu Bakar", "given": "Abu", "family": "Bakar", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. B."}
 {"name": "Abu Bakar Salim", "given": "Abu Bakar", "family": "Salim", "initials": "A. B. S."}
