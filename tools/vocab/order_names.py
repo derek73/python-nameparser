@@ -6,15 +6,23 @@ surname at one end of the name and not at the other says the family name
 is written at that end, and a common given name at one end and not the
 other says the given name is. The tables, in
 ``nameparser/config/_order_names.py``, hold folded spellings: the generated block is the Hanyu Pinyin of every
-single-character surname ``locales.ZH`` lists, from Unihan's first
-``kMandarin`` reading (Unicode License v3), and the Wade-Giles, Korean and
+single-character surname ``locales.ZH`` lists, from Wikidata (CC0): of
+each family-name item labelled with the character, every reading a
+Hanyu Pinyin statement gives (a transliteration, P2440, qualified as
+Hanyu Pinyin; the pinyin qualifier, P1721, of its native label; and
+the native label of a Latin-script family name it is said to be the
+same as, P460, by the Hanyu Pinyin criterion). A character no item
+gives a reading for is left out, and the run names it. Until 3.1 the
+block read Unihan's first ``kMandarin`` reading (Unicode License v3),
+which is the character's commonest reading rather than its surname's
+(曾 ceng for the surname Zeng). The Wade-Giles, Korean and
 Vietnamese lists are kept by hand above the generated block, hand-curated
 and unchecked against any ranking (see the note in
 nameparser/config/_order_names.py).
 
     uv run python tools/vocab/order_names.py           # print the block
     uv run python tools/vocab/order_names.py --write   # rewrite it
-    uv run python tools/vocab/order_names.py --refresh # fetch Unihan again
+    uv run python tools/vocab/order_names.py --refresh # ask Wikidata again
 
 The second generated block, ``COMMON_GIVEN``, is the given names the
 suggester looks up at both ends of a name: per nam_dict country column
@@ -28,22 +36,24 @@ each checked whole against its pinned or recorded sha256, and it writes
 nothing where a block falls below its floor (``MIN_PINYIN``,
 ``MIN_GIVEN``) or a word lands in both tables.
 
-Unihan is cached outside the repository with ``tools/zh_surnames.py``'s
-copy ($NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools).
+Wikidata's answer is cached outside the repository
+($NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools), and asked again
+where the cache did not ask about every character the run reads.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import re
 import sys
-import zipfile
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import name_usage  # noqa: E402  (a sibling script, not a package)
+import zh_surnames  # noqa: E402  (a sibling script; its ask and batched)
 
 from nameparser._suggest import fold  # noqa: E402  (the one fold)
 
@@ -53,33 +63,68 @@ MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
-#: (2026-11-10: 329 pinyin surnames, over 4,000 given names).
-MIN_PINYIN = 200
+#: (2026-11-12: 200 pinyin surnames, over 4,000 given names).
+MIN_PINYIN = 150
 MIN_GIVEN = 3_000
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
-UNIHAN_URL = "https://www.unicode.org/Public/16.0.0/ucd/Unihan.zip"
-UNIHAN_FILE = "unihan_16.0.0.zip"
-UNIHAN_MEMBER = "Unihan_Readings.txt"
+PINYIN_FILE = "wikidata_chinese_surname_pinyin.json"
+#: The Chinese label languages a character is looked up in.
+LABEL_LANGUAGES = ("zh", "zh-hans", "zh-hant", "zh-cn", "zh-tw", "zh-hk")
 
 
-def read_mandarin(unihan_readings_text: str) -> dict[str, str]:
-    """Each character's first ``kMandarin`` reading, tones folded."""
-    out: dict[str, str] = {}
-    for line in unihan_readings_text.splitlines():
-        if line.startswith("#") or "\tkMandarin\t" not in line:
-            continue
-        source, _, readings = line.split("\t")
-        out[chr(int(source[2:], 16))] = fold(readings.split()[0])
-    return out
+def items_query(chars: Iterable[str]) -> str:
+    """Every item that is a family name (Q101352) or a Chinese family
+    name (Q1093580) labelled with one of ``chars``. The labels are
+    matched exactly, per language, from the query service's index."""
+    values = " ".join(f'"{c}"@{lang}' for c in chars for lang in LABEL_LANGUAGES)
+    return f"""
+SELECT DISTINCT ?label ?item WHERE {{
+  VALUES ?label {{ {values} }}
+  ?item rdfs:label ?label .
+  VALUES ?cls {{ wd:Q101352 wd:Q1093580 }}
+  ?item wdt:P31 ?cls .
+}}"""
+
+
+def pinyin_query(qids: Iterable[str]) -> str:
+    """The Hanyu Pinyin statements of the items ``qids`` (Q42222 is
+    Hanyu Pinyin). Asked apart from :func:`items_query`: one query
+    doing both times out."""
+    values = " ".join(f"wd:{q}" for q in qids)
+    return f"""
+SELECT ?item ?py WHERE {{
+  VALUES ?item {{ {values} }}
+  {{ ?item p:P2440 ?st . ?st ps:P2440 ?py ; pq:P459 wd:Q42222 . }}
+  UNION {{ ?item p:P1705 ?st . ?st pq:P1721 ?py . }}
+  UNION {{ ?item p:P460 ?st . ?st ps:P460 ?latin ; pq:P1013 wd:Q42222 .
+           ?latin wdt:P1705 ?py . }}
+}}"""
+
+
+def read_pinyin(items: list[dict[str, str]],
+                pinyin: list[dict[str, str]]) -> dict[str, set[str]]:
+    """Each character's folded readings, from every item labelled with
+    it. A value that folds to anything but Latin letters (a P460
+    target's native label written in Han) or to several words is not
+    a reading."""
+    by_item: dict[str, set[str]] = {}
+    for row in pinyin:
+        word = fold(row["py"])
+        if re.fullmatch(r"[a-z]+", word):
+            by_item.setdefault(row["item"], set()).add(word)
+    out: dict[str, set[str]] = {}
+    for row in items:
+        out.setdefault(row["label"], set()).update(by_item.get(row["item"], ()))
+    return {char: words for char, words in out.items() if words}
 
 
 def pinyin_surnames(surnames: Iterable[str],
-                    mandarin: Mapping[str, str]) -> set[str]:
-    """The pinyin of the surnames that have one of two or more letters
-    (a lone vowel such as 阿's ``a`` would match every initial)."""
-    return {mandarin[s] for s in surnames
-            if s in mandarin and len(mandarin[s]) >= 2}
+                    readings: Mapping[str, set[str]]) -> set[str]:
+    """Every reading of the surnames that has two or more letters (a
+    lone vowel such as 阿's ``a`` would match every initial)."""
+    return {word for s in surnames for word in readings.get(s, ())
+            if len(word) >= 2}
 
 
 def _markers(name: str) -> tuple[str, str]:
@@ -105,12 +150,28 @@ def rewrite(module_text: str, name: str, block: str) -> str:
     return module_text[:start] + block + module_text[stop + len(end):]
 
 
-def load_mandarin(refresh: bool) -> dict[str, str]:
-    path = name_usage.cache_dir() / UNIHAN_FILE
-    if refresh or not path.exists():
-        name_usage._download(UNIHAN_URL, path, UNIHAN_MEMBER)
-    with zipfile.ZipFile(path) as zf:
-        return read_mandarin(zf.read(UNIHAN_MEMBER).decode("utf-8"))
+def load_pinyin(chars: list[str], refresh: bool) -> dict[str, set[str]]:
+    """The readings of ``chars``, from the cache where it holds the
+    answer to these very queries, from Wikidata otherwise: an answer to
+    other characters, or to a query this code no longer writes, is
+    never reused."""
+    queries = [items_query(batch) for batch in zh_surnames.batched(chars)]
+    key = hashlib.sha256(("".join(queries) + pinyin_query(["Q"]))
+                         .encode("utf-8")).hexdigest()
+    path = name_usage.cache_dir() / PINYIN_FILE
+    cached = (json.loads(path.read_text(encoding="utf-8"))
+              if path.exists() and not refresh else None)
+    if cached is None or cached.get("query_sha256") != key:
+        items = zh_surnames.ask(queries, ("item", "label"))
+        qids = list({row["item"].rsplit("/", 1)[-1] for row in items})
+        # a batch of items may hold none with a reading: 8 of the 100 in
+        # one batch had one on 2026-11-12, so an empty batch is an answer
+        pinyin = zh_surnames.ask(
+            [pinyin_query(batch) for batch in zh_surnames.batched(qids)],
+            ("item", "py"), may_be_empty=True)
+        cached = {"query_sha256": key, "items": items, "pinyin": pinyin}
+        name_usage._write(path, cached)
+    return read_pinyin(cached["items"], cached["pinyin"])
 
 
 def orcid_box_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
@@ -227,11 +288,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write", action="store_true",
                         help="rewrite the generated block")
     parser.add_argument("--refresh", action="store_true",
-                        help="fetch Unihan again")
+                        help="ask Wikidata again")
     args = parser.parse_args(argv)
     from nameparser import locales
-    singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
-    words = pinyin_surnames(singles, load_mandarin(args.refresh))
+    singles = sorted(s for s in locales.ZH.lexicon._sets.surnames
+                     if len(s) == 1)
+    readings = load_pinyin(singles, args.refresh)
+    if unread := [s for s in singles if s not in readings]:
+        print(f"{len(unread)} of {len(singles)} surnames have no Hanyu "
+              f"Pinyin on Wikidata and are left out: {''.join(unread)}",
+              file=sys.stderr)
+    words = pinyin_surnames(singles, readings)
     given = load_common_given(surname_exclusions(words))
     check_tables(words, given)
     block = render_block("PINYIN", words)

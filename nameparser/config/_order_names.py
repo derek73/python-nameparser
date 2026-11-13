@@ -14,10 +14,11 @@ two or more letters.
 
 Provenance and licences:
 
-- ``_PINYIN`` (generated below): the Hanyu Pinyin of every
-  single-character surname ``locales.ZH`` lists, from the first
-  ``kMandarin`` reading in the Unicode Consortium's Unihan database
-  (Unicode License v3), tones dropped. See tools/vocab/order_names.py.
+- ``_PINYIN`` (generated below): the Hanyu Pinyin of the
+  single-character surnames ``locales.ZH`` lists, every reading
+  Wikidata's family-name items (CC0) give each, tones dropped; a
+  surname Wikidata gives no reading for is left out (35 of 463 on
+  2026-11-12). See tools/vocab/order_names.py.
 - ``_ZH_OTHER_SPELLINGS``, ``_KO_SPELLINGS`` and ``_VI_SURNAMES``:
   hand-curated common romanizations (Wade-Giles, Cantonese, Hokkien and
   Southeast Asian Chinese spellings; Korean spellings beside the Revised
@@ -74,32 +75,31 @@ _VI_SURNAMES = (
 
 # -- BEGIN generated: PINYIN; edit tools/vocab/order_names.py, not this block --
 _PINYIN = (
-    "ai", "an", "ao", "ba", "bai", "bao", "bi", "bian",
-    "bing", "bo", "cai", "cao", "cen", "ceng", "cha", "chai",
-    "chang", "chao", "che", "chen", "cheng", "chi", "chou", "chu",
-    "cong", "cui", "dai", "dan", "dang", "deng", "di", "diao",
-    "ding", "dong", "dou", "du", "duan", "fan", "fang", "fei",
-    "feng", "fu", "gai", "gan", "gao", "ge", "geng", "gong",
-    "gu", "guan", "gui", "guo", "han", "hao", "he", "hong",
-    "hou", "hu", "hua", "huan", "huang", "hui", "huo", "ji",
-    "jia", "jian", "jiang", "jiao", "jie", "jin", "jing", "ju",
-    "kang", "ke", "kong", "kou", "kuang", "lai", "lan", "lang",
-    "lao", "le", "lei", "leng", "li", "lian", "liang", "liao",
-    "lin", "ling", "liu", "long", "lou", "lu", "luan", "luo",
-    "lv", "ma", "mai", "mao", "mei", "meng", "mi", "miao",
-    "min", "ming", "mo", "mou", "mu", "nan", "ni", "nie",
-    "ning", "niu", "nong", "ou", "pan", "pang", "pei", "peng",
-    "ping", "pu", "qi", "qian", "qiang", "qiao", "qin", "qiu",
-    "qu", "quan", "que", "ran", "rao", "ren", "rong", "ru",
-    "ruan", "sang", "sha", "shang", "shao", "she", "shen", "sheng",
-    "shi", "shu", "si", "song", "su", "sui", "sun", "suo",
-    "tan", "tang", "tao", "teng", "tian", "tong", "tu", "wan",
-    "wang", "wei", "wen", "weng", "wu", "xi", "xia", "xiang",
-    "xiao", "xie", "xin", "xing", "xiong", "xu", "xuan", "xue",
-    "yan", "yang", "yao", "ye", "yi", "yin", "ying", "yong",
-    "you", "yu", "yuan", "yue", "yun", "zang", "zhan", "zhang",
-    "zhao", "zhen", "zheng", "zhi", "zhong", "zhou", "zhu", "zhuang",
-    "zhuo", "zi", "zong", "zou", "zu", "zuo",
+    "ai", "ao", "ba", "bai", "bao", "bi", "bian", "bu",
+    "cai", "cao", "cen", "chai", "chang", "chao", "che", "chen",
+    "cheng", "chi", "chu", "cong", "cui", "dai", "dang", "deng",
+    "di", "ding", "dong", "dou", "du", "duan", "fan", "fang",
+    "fei", "feng", "fu", "gai", "gan", "gao", "ge", "geng",
+    "gong", "gu", "guan", "gui", "guo", "han", "hao", "he",
+    "hong", "hou", "hu", "hua", "huan", "huang", "hui", "huo",
+    "ji", "jia", "jian", "jiang", "jiao", "jin", "jing", "ju",
+    "kang", "ke", "kong", "kuang", "lai", "lan", "lang", "lao",
+    "le", "lei", "leng", "li", "lian", "liang", "liao", "lin",
+    "ling", "liu", "long", "lou", "lu", "luan", "luo", "lv",
+    "ma", "mai", "mao", "mei", "meng", "mi", "miao", "min",
+    "ming", "mo", "mou", "mu", "nan", "ni", "nian", "nie",
+    "ning", "niu", "ou", "pan", "pang", "pei", "peng", "ping",
+    "pu", "qi", "qian", "qiang", "qiao", "qin", "qiu", "qu",
+    "quan", "ran", "rao", "ren", "rong", "ru", "ruan", "sang",
+    "sha", "shan", "shang", "shao", "she", "shen", "sheng", "shi",
+    "shu", "si", "song", "su", "sui", "sun", "suo", "tan",
+    "tang", "tao", "teng", "tian", "tong", "tu", "wan", "wang",
+    "wei", "wen", "weng", "wu", "xi", "xia", "xiang", "xiao",
+    "xie", "xin", "xing", "xiong", "xu", "xuan", "xue", "yan",
+    "yang", "yao", "ye", "yi", "yin", "ying", "yong", "you",
+    "yu", "yuan", "yue", "yun", "zang", "zeng", "zha", "zhai",
+    "zhan", "zhang", "zhao", "zhen", "zheng", "zhi", "zhong", "zhou",
+    "zhu", "zhuang", "zhuo", "zi", "zong", "zou", "zu", "zuo",
 )
 # -- END generated: PINYIN --
 

@@ -17,7 +17,6 @@ from tests.checkout import ROOT, needs_checkout
 _THIRD_PARTY = {
     "LICENSE-nicknames": "Apache-2.0",
     "LICENSE-nam_dict": "GFDL-1.2-no-invariants-or-later",
-    "LICENSE-unicode": "Unicode-3.0",
 }
 
 #: Each source licensed for attribution only: its SPDX identifier, the
