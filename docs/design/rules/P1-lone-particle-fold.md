@@ -57,7 +57,7 @@
   "de la Cruz Juan Carlos"    →  family="de la Cruz Juan Carlos"
   "Ait Haddou Karim"          →  family="Ait Haddou Karim"
   ```
-- A particle that may be a given name, written in a script with no case, is outside the fold, P11 having no writing to read: under a family-first order it stays where the order puts it. So a family name written with Hebrew `בן` first and no comma gives `בן` alone to the family and the next word to the given name, where it read whole while `בן` was never given (#1209 counted 8 Knesset family names written so; decisions/vocabulary-collisions, 2026-11-12 #1257). A family comma keeps the family whole.
+- A particle that may be a given name, written in a script with no case, is outside the fold, P11 having no writing to read: under a family-first order it stays where the order puts it. So a family name written with Hebrew `בן` first and no comma gives `בן` alone to the family, reported as `particle-or-given`, and the next word to the given name, where it read whole while `בן` was never given: a cost of `בן`'s given reading, accepted on 2026-11-12 (#1209 counted 8 Knesset family names that read so if written family first; decisions/vocabulary-collisions, 2026-11-12 #1257). A family comma keeps the family whole.
   ```
   "בן חיים יעל"  family-first  →  family="בן"
   "בן חיים, יעל"  family-first  →  family="בן חיים"

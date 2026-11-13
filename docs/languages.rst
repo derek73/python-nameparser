@@ -545,6 +545,11 @@ Hebrew script, read as their Latin spellings do:
     >>> parse("סאמי אבו חליל").family
     'אבו חליל'
 
+Under a family-first order (``Policy(name_order=FAMILY_FIRST)``), a
+family name written with ``בן`` first and no comma gives ``בן`` alone
+to the family and reports the fork (``בן חיים יעל`` gives family ``בן``,
+given ``חיים``): write the comma (``בן חיים, יעל``) to keep it whole.
+
 An Arab name written in Hebrew with ``בן`` for the father therefore
 leaves ``patronymic`` empty, and a given name written with ``אל``
 inside it (``עבד אל עזיז``, Abd al-Aziz) gives the article and the rest
