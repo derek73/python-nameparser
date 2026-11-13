@@ -46,7 +46,14 @@ from typing import Any, TypedDict
 #: familiar category's one kind, `familiar` (a short given name standing
 #: for longer ones, `max` of `maximilian`), compiles into FAMILIAR alone,
 #: which only the name match reads: no parse reads it (decisions/
-#: name-matching, 2026-11-08 FAMILIAR FORMS).
+#: name-matching, 2026-11-08 FAMILIAR FORMS). The spelling category's
+#: one kind, `spelling` (a given name written another way, by choice or
+#: by a romanization, `olha` of `olga`), compiles into
+#: ALTERNATE_SPELLINGS alone, which only the name match reads, as the
+#: opt-in `alternate-spelling`: unlike a `given` reading's `same_as`, it
+#: puts no word in GIVEN_NAME_ABBREVIATIONS and gives the word no name
+#: reading, so no parse reads it either (decisions/name-matching,
+#: 2026-11-12 ALTERNATE SPELLINGS ARE OPT-IN).
 CATEGORY: dict[str, str] = {
     "title": "title",
     "salutation": "title",
@@ -82,13 +89,17 @@ CATEGORY: dict[str, str] = {
     "given": "name",
     "family": "name",
     "familiar": "familiar",
+    "spelling": "spelling",
 }
 
 #: The categories a choice neither prefers nor drops by (`choose`): a
-#: name reading keeps a gate on and settles nothing, and a familiar
-#: reading moves no parse at all, so neither competes with another
+#: name reading keeps a gate on and settles nothing, and a familiar or a
+#: spelling reading moves no parse at all, so none competes with another
 #: file's reading of the word.
-UNPREFERRED = frozenset({"name", "familiar"})
+UNPREFERRED = frozenset({"name", "familiar", "spelling"})
+#: The categories only the name match reads: a file of these alone
+#: changes nothing a plain choice of it could (tags).
+MATCHING_ONLY = frozenset({"familiar", "spelling"})
 
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
@@ -110,6 +121,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
     "familiar": frozenset({"default"}),
+    "spelling": frozenset({"default"}),
 }
 
 #: The suffix word kinds a name reading gates (rules/S11): the third
@@ -164,10 +176,14 @@ def indexed(kind: str) -> frozenset[str]:
     SAME_AS (in the group of `same_as_group`) and on a `given` reading
     also into GIVEN_NAME_ABBREVIATIONS (#789); on a `familiar` reading
     `short_for`, the longer given names the word stands for, which
-    compiles into FAMILIAR. Everything else a reading carries is
+    compiles into FAMILIAR; on a `spelling` reading `spelling_of`, the
+    given names the word is another spelling of, which compiles into
+    ALTERNATE_SPELLINGS. Everything else a reading carries is
     evidence, compiled to nothing."""
     if CATEGORY[kind] == "familiar":
         return BEHAVIORAL["familiar"] | {"short_for"}
+    if CATEGORY[kind] == "spelling":
+        return BEHAVIORAL["spelling"] | {"spelling_of"}
     return BEHAVIORAL[CATEGORY[kind]] | {"same_as"}
 
 
@@ -316,14 +332,14 @@ UNCHOOSABLE = frozenset({"mul", "und"})
 @functools.cache
 def tags() -> frozenset[str]:
     """The tags of the shipped files that hold a reading a choice can
-    change: any but a familiar one. A plain choice never drops a
-    familiar reading, which no parse reads, so a file holding only
-    those would change nothing as a plain choice, and is refused as one
-    holding no reading (decisions/name-matching, 2026-11-08 FAMILIAR
-    FORMS; no shipped file has that shape since 2026-11-12 ENGLISH ONLY
-    UNTIL REBUILT)."""
+    change: any but a familiar or a spelling one (MATCHING_ONLY). A
+    plain choice never drops one of those, which no parse reads, so a
+    file holding only those would change nothing as a plain choice, and
+    is refused as one holding no reading (decisions/name-matching,
+    2026-11-08 FAMILIAR FORMS; no shipped file has that shape at
+    present)."""
     return frozenset(row[0] for rows in _by_text().values() for row in rows
-                     if CATEGORY[row[1]] != "familiar")
+                     if CATEGORY[row[1]] not in MATCHING_ONLY)
 
 
 @functools.cache
@@ -397,8 +413,8 @@ def choose(readings: Iterable[IndexReading],
       readings leave, save mul.toml's, which are every language's, and
       und.toml's, whose language is not known to be another's. Name
       readings never leave and never settle anything (decision 15):
-      they keep the gate on; nor do familiar readings, which no parse
-      reads (:data:`UNPREFERRED`);
+      they keep the gate on; nor do familiar or spelling readings,
+      which no parse reads (:data:`UNPREFERRED`);
     * **the shape clash**: a chosen file's conjunction reading drops
       ``may_be_initial``, the clash it records being with the initial
       the letter spells, a shape reading, which a preference outranks
@@ -510,7 +526,8 @@ def changed_words(chosen: frozenset[str]) -> frozenset[str]:
     default, choice = compile_choice(frozenset()), compile_choice(chosen)
     words: set[str] = set()
     for key in default:
-        if key in ("SAME_AS", "SAME_AS_NAMED", "FAMILIAR"):
+        if key in ("SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
+                   "ALTERNATE_SPELLINGS"):
             # a word's listed spelling moves no word between sets, so it
             # changes no parse: a choice's `sr` of `senhor`, not `señor`,
             # and whether the match reads the link written bare; nor does
@@ -614,6 +631,7 @@ class Compiled(TypedDict):
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
     FAMILIAR: dict[str, tuple[str, ...]]
+    ALTERNATE_SPELLINGS: dict[str, tuple[str, ...]]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -673,10 +691,17 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     own_names: dict[str, set[str]] = {}
     # a familiar form -> the given names it stands for, every file's
     familiar: dict[str, set[str]] = {}
+    # a given name -> the given names it is another spelling of
+    alternate: dict[str, set[str]] = {}
     for r, t in texts:
         p = r.props
         if r.category == "familiar":
             familiar.setdefault(t, set()).update(p.get("short_for", ()))
+            continue
+        if r.category == "spelling":
+            # another spelling of a given name, which only the match's
+            # opt-in `alternate-spelling` reads
+            alternate.setdefault(t, set()).update(p.get("spelling_of", ()))
             continue
         if "same_as" in p and (group := same_as_group(r.kind)) is not None:
             same_as[group].setdefault(t, set()).add(p["same_as"])
@@ -875,6 +900,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # (decisions/name-matching, 2026-11-08 FAMILIAR FORMS)
         FAMILIAR={w: tuple(sorted(longs))
                   for w, longs in sorted(familiar.items())},
+        # a given name and the given names it is another spelling of,
+        # one way, every file's together: read by the name match's
+        # opt-in `alternate-spelling` alone, never by a parse
+        # (decisions/name-matching, 2026-11-12 ALTERNATE SPELLINGS ARE
+        # OPT-IN)
+        ALTERNATE_SPELLINGS={w: tuple(sorted(names))
+                             for w, names in sorted(alternate.items())},
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

@@ -51,7 +51,8 @@ at fault:
    is declared, and no entry without a reading or an exclusion; a
    `familiar` reading's `short_for` a non-empty list of given names,
    each once, written normalized, one word each and never the word
-   itself, beside a `note` saying where it is attested;
+   itself, beside a `note` saying where it is attested, and a
+   `spelling` reading's `spelling_of` the same;
 4. one suffix kind per word, across files;
 5. the same category of the same word agrees on every behavioral
    property in every file, whatever kind each file gives it;
@@ -286,11 +287,21 @@ NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
 #: longer given names the word stands for (`max` of `maximilian`), which
 #: compiles into FAMILIAR (decisions/name-matching, 2026-11-08 FAMILIAR
 #: FORMS).
-MATCHING = frozenset({"short_for"})
+MATCHING = frozenset({"short_for", "spelling_of"})
 #: What a `familiar` reading may carry: its matching property, `default`,
 #: and its evidence. It takes no `same_as`: a familiar form is a name of
 #: its own, not a spelling of one.
-FAMILIAR_KEYS = MATCHING | {"default", "note", "issue", "decided"}
+FAMILIAR_KEYS = frozenset({"short_for", "default", "note", "issue",
+                           "decided"})
+#: What a `spelling` reading may carry: `spelling_of`, the given names
+#: the word is another spelling of, which compiles into
+#: ALTERNATE_SPELLINGS alone (decisions/name-matching, 2026-11-12
+#: ALTERNATE SPELLINGS ARE OPT-IN), `default`, and its evidence.
+SPELLING_KEYS = frozenset({"spelling_of", "default", "note", "issue",
+                           "decided"})
+#: Each matching-only category's keys and list property.
+_MATCHING_CATEGORIES = {"familiar": (FAMILIAR_KEYS, "short_for"),
+                        "spelling": (SPELLING_KEYS, "spelling_of")}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
@@ -884,25 +895,26 @@ def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> Non
 def _check_reading(r: Reading, pool: Pool) -> None:
     where = r.where()
     p = r.props
-    if r.category == "familiar":
+    if r.category in _MATCHING_CATEGORIES:
+        keys, prop = _MATCHING_CATEGORIES[r.category]
         for k in p:
-            if k not in FAMILIAR_KEYS:
-                raise _reserved_or_unknown(where, k, FAMILIAR_KEYS)
+            if k not in keys:
+                raise _reserved_or_unknown(where, k, keys)
         _check_default(where, p)
         _check_descriptive(where, p)
-        longs = p.get("short_for")
-        if (not isinstance(longs, list) or not longs
+        names = p.get(prop)
+        if (not isinstance(names, list) or not names
                 or not all(isinstance(w, str) and w and " " not in w
                            and _normalize(w) == w and w != r.text
-                           for w in longs)
-                or len(set(longs)) != len(longs)):
-            raise VocabError(f"{where}: short_for must be a non-empty list "
-                             f"of the given names the word stands for, "
-                             f"each once, one word, written normalized and "
-                             f"never the word itself")
+                           for w in names)
+                or len(set(names)) != len(names)):
+            raise VocabError(f"{where}: {prop} must be a non-empty list "
+                             f"of given names, each once, one word, "
+                             f"written normalized and never the word "
+                             f"itself")
         if "note" not in p:
-            raise VocabError(f"{where}: a familiar reading needs a `note` "
-                             f"saying where it is attested")
+            raise VocabError(f"{where}: a {r.category} reading needs a "
+                             f"`note` saying where it is attested")
         pool.readings.append(r)
         return
     if r.category == "name":
@@ -1367,7 +1379,7 @@ def check_pool(pool: Pool) -> None:
     # them, so a name reading in another file would leave under a strict
     # choice that drops it, ungating the word, and another file's
     # reading of the word could not be preferred against mul.toml's
-    # A familiar reading moves no parse, so it ungates nothing and
+    # A familiar or spelling reading moves no parse, so it ungates nothing and
     # competes with no reading: it neither triggers the check nor is held
     # to it
     for text, rs in by_text.items():
@@ -1375,7 +1387,7 @@ def check_pool(pool: Pool) -> None:
                    for r in rs):
             continue
         for r in rs:
-            if r.tag == "mul" or r.category == "familiar":
+            if r.tag == "mul" or r.category in _ri.MATCHING_ONLY:
                 continue
             # an off name reading is off under the plain and the strict
             # choice of every other tag alike, and on under both of its
@@ -1477,6 +1489,7 @@ CONSTANTS = (
     "SAME_AS",
     "SAME_AS_NAMED",
     "FAMILIAR",
+    "ALTERNATE_SPELLINGS",
 )
 
 
@@ -1572,7 +1585,7 @@ def render(compiled: Compiled) -> str:
     for name in CONSTANTS:
         v = values[name]
         out.append("")
-        if name == "FAMILIAR":
+        if name in ("FAMILIAR", "ALTERNATE_SPELLINGS"):
             # a familiar form -> the given names it stands for
             assert isinstance(v, dict), (name, type(v))
             out.append(f"{name}: dict[str, tuple[str, ...]] = {{")

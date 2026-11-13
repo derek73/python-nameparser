@@ -370,3 +370,16 @@ def test_a_head_changing_or_short_is_refused(
         f"{line}\n" for line in real_run(*a).splitlines()[1:]))
     with pytest.raises(SystemExit, match="rows, not the"):
         tool.main(argv)
+
+
+def test_an_outcome_the_tree_does_not_know_adds_nothing() -> None:
+    # a base older than an opt-in reads the setting adding it as the
+    # default rather than raising: without the filter, matching() would
+    # refuse the unknown name
+    from nameparser import Parser
+    default = Parser().matching().accept
+    setting = ("+no-such", ("no-such-outcome",), (), False, None)
+    assert tool._matcher(setting).accept == default
+    known = ("+alternate", ("alternate-spelling",), (), False, None)
+    assert {o.value for o in tool._matcher(known).accept - default} == {
+        "alternate-spelling"}

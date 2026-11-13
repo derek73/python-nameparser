@@ -349,9 +349,8 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
 
 def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    # no shipped file has this shape since nam_dict's familiar forms left
-    # (decisions/name-matching, 2026-11-12 ENGLISH ONLY UNTIL REBUILT), so
-    # a file is planted: a plain choice never drops a familiar reading,
+    # whatever shipped files have this shape now (hu.toml, zu.toml on
+    # 2026-11-12), a planted file holds the rule to its case: a plain choice never drops a familiar reading,
     # so a file of familiar readings alone would change nothing as one
     planted = dict(ri._by_text()) | {
         "zzq": (("xx", "familiar", (("short_for", ("zzr",)),)),),

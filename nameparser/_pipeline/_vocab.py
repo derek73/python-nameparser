@@ -54,6 +54,7 @@ import unicodedata
 from collections.abc import Callable, Iterable, Sequence, Set
 from typing import Literal
 
+from nameparser._lexicon import _HYPHEN_CHARS  # rules/O6's hyphens, one definition
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize, _spells_an_initial,
 )
@@ -271,7 +272,6 @@ _DIGRAPH_INITIALS = frozenset({"yu", "ya", "ye", "yo", "zh", "kh",
 #: processor's substitute), and the small and fullwidth hyphen-minus.
 #: The em dashes are punctuation between words, not joiners, and are
 #: left out. Hyphen-minus first, so it is literal inside a class.
-_HYPHEN_CHARS = "-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
 _HYPHENS = re.compile("[" + _HYPHEN_CHARS + "]")
 
 # rules/H5: "A word that ends in a period and is written with a

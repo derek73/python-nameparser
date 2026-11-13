@@ -9,7 +9,8 @@ Produces: `Outcome`, `Side`, `RoleMatch`, `CrossRoleMatch`, `MatchResult`,
 Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
 through `Lexicon._headwords`, each role in the group of its kind
 (its `_RULES` row), for the familiar forms (`short_for`) through
-`Lexicon._familiar_forms`, and for `Lexicon.particles`, a hyphen half
+`Lexicon._familiar_forms`, for the alternate spellings
+(`spelling_of`) through `Lexicon._alternate_spellings`, and for `Lexicon.particles`, a hyphen half
 that is a listed particle being set aside, and its `revise`, for a
 name's other readings (`Matching.other_readings`); no `Policy` field.
 
@@ -29,6 +30,7 @@ typing too.
 from __future__ import annotations
 
 import dataclasses
+import functools
 import re
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
@@ -37,6 +39,7 @@ from typing import TYPE_CHECKING
 
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._lexicon import _fold as _lexicon_fold
+from nameparser._lexicon import _forms as _lexicon_forms
 from nameparser._pipeline._vocab import _HYPHEN_CHARS, _HYPHENS
 from nameparser._policy import _NO_INITIAL_RANGES, Policy, _ranges_matcher
 from nameparser._types import (
@@ -76,6 +79,7 @@ class Outcome(StrEnum):
     ONE_SIDE = "one-side"
     GENERATION_ONE_SIDE = "generation-one-side"
     NOTED = "noted"
+    ALTERNATE_SPELLING = "alternate-spelling"
     FAMILIAR_FORM = "familiar-form"
     FAMILY_INITIAL = "family-initial"
     GIVEN_ONE_SIDE = "given-one-side"
@@ -374,7 +378,10 @@ class Matching:
         return min(candidates, key=_strength)
 
     def keys(self, name: str | ParsedName) -> frozenset[str]:
-        """Grouping keys: for each word of the folded family base, and
+        """Grouping keys, each folded with the transcription digraphs
+        written as their first letter (`_key`: `Doe` keys `do`, and
+        `Müller`, `Mueller` and `Muller` share `muller`): for each word
+        of the folded family base, and
         each half of a hyphenated one (cut at any of the pipeline's
         hyphens, each folded to the hyphen-minus) beside its joined and
         its whole form, a half that is a listed particle left out (`Al-Saud` keys
@@ -392,7 +399,9 @@ class Matching:
         and where `familiar-form` is accepted also by the first letter
         of every name a word of that set is paired with directly as a
         familiar form, in either direction (`Bill` and `William` each
-        key both `b` and `w`).
+        key both `b` and `w`), and where `alternate-spelling` is
+        accepted by that of every name it is paired with as an alternate
+        spelling (`Yuliya` and `Iuliia`).
         The guarantee rests on this: two words the check
         reads as listed spellings have sets that meet, so they share a
         member and with it a key; every family-base word the default
@@ -402,7 +411,8 @@ class Matching:
         name with no family has no key.
 
         Each accepted opt-in adds the keys its outcome needs:
-        `familiar-form` the given letters of the paired names (above),
+        `alternate-spelling` and `familiar-form` the given letters of
+        the paired names (above),
         `family-initial` a key `f;g` for the first letter `f` of the
         family's first word, `given-one-side` a bare key for every
         family part keyed and `across-roles` the maiden name's
@@ -582,7 +592,7 @@ class Matching:
         if across:
             texts += [t for other in family_rule.across
                       for t in _cross_texts(parsed, other)]
-        words |= {_joined(_fold(t)) for t in texts if t} - {""}
+        words |= {_key(_joined(_fold(t))) for t in texts if t} - {""}
         family = parsed.family.split()
         if family and words and Outcome.FAMILY_INITIAL in self.accept:
             words |= {f[:1] for f in _spelling_keys(
@@ -598,6 +608,12 @@ class Matching:
             # each other's keys
             initials |= {_letter(g) for g in _paired_forms(
                 _spellings(given[0], given_rule.group, lexicon), lexicon)} - {""}
+        if given and Outcome.ALTERNATE_SPELLING in self.accept:
+            # and as an alternate spelling, so `Yuliya` and `Iuliia`
+            # share each other's keys
+            initials |= {_letter(g) for g in _paired_forms(
+                _spellings(given[0], given_rule.group, lexicon), lexicon,
+                lexicon._alternate_spellings)} - {""}
         # no given letter, a name with no given name or one of hyphens
         # alone, keys the empty letter, as the cross-role letters below
         # stand beside it rather than for it
@@ -678,6 +694,16 @@ _RANK_ROLE = {r: i for i, r in enumerate(Role)}
 #: period `_spellings` reads off a word as written.
 _FULL_STOPS = tuple(FULL_STOPS)
 _MIDDLE = _RANK_ROLE[Role.MIDDLE]
+
+
+@functools.lru_cache(maxsize=4096)
+def _forms(text: str) -> frozenset[str]:
+    """The lexicon's forms of a text (`_lexicon._forms`: each letter a
+    keyboard lacks written as typed or as its transcription, letter by
+    letter), each with its hyphens written as the hyphen-minus, as
+    `_fold` writes them."""
+    return frozenset(f.translate(_TO_HYPHEN_MINUS)
+                     for f in _lexicon_forms(text))
 
 
 def _fold(text: str) -> str:
@@ -796,7 +822,28 @@ def _spellings(word: str, group: str, lexicon: Lexicon) -> frozenset[str]:
     period = word.endswith(_FULL_STOPS)
     heads = (lexicon._headwords(word, group, period=period)
              | lexicon._headwords(_fold(word), group, period=period))
-    return heads | {_fold(h) for h in heads}
+    # a written-out spelling of a letter a keyboard lacks meets the
+    # word written with it (`_forms`)
+    return heads | {f for h in heads | {word} for f in _forms(h)}
+
+
+#: The transcription digraphs a key writes as their first letter, so every
+#: form of a text (`_forms`) cuts one key: `muller` for `Müller`,
+#: `Mueller` and `Muller` alike. A key need only be shared by the texts
+#: the check matches, so a coarser key keeps the guarantee and gives a
+#: name one key where its forms number 2^k (review of #1379); the rules
+#: are confluent, so the result is one whatever order they apply in.
+_KEY_DIGRAPHS = re.compile(r"ae|oe|ue|aa|dj")
+
+
+def _key(folded: str) -> str:
+    """A folded text as a key: every transcription digraph written as its
+    first letter, until none is left (`aae` is `a`)."""
+    while True:
+        shorter = _KEY_DIGRAPHS.sub(lambda m: m.group(0)[0], folded)
+        if shorter == folded:
+            return folded
+        folded = shorter
 
 
 def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
@@ -806,7 +853,7 @@ def _spelling_keys(word: str, group: str, lexicon: Lexicon) -> set[str]:
     idempotent (test_match.py holds it over every assigned code point,
     alone and beside letters, hyphens and combining marks), so the
     folded members are the folds of `_spellings`' own."""
-    return {_fold(h) for h in _spellings(word, group, lexicon)}
+    return {_key(_fold(h)) for h in _spellings(word, group, lexicon)}
 
 
 def _listed(a: str, b: str, group: str, lexicon: Lexicon) -> bool:
@@ -837,13 +884,16 @@ def _part_agrees(a: str, b: str, lexicon: Lexicon,
     return None
 
 
-def _paired_forms(spellings: frozenset[str], lexicon: Lexicon) -> set[str]:
+def _paired_forms(spellings: frozenset[str], lexicon: Lexicon,
+                  pairs: Callable[[str], frozenset[str]] | None = None,
+                  ) -> set[str]:
     """The given names any member of a spelling set is paired with
-    directly as a familiar form, in either direction, each folded and
-    as normalized."""
-    paired = {name for word in spellings
-              for name in lexicon._familiar_forms(word)}
-    return paired | {_fold(name) for name in paired}
+    directly as a familiar form (or by `pairs`, the alternate
+    spellings), in either direction, each as normalized and in every
+    folded form (`_forms`)."""
+    pairs = pairs or lexicon._familiar_forms
+    paired = {name for word in spellings for name in pairs(word)}
+    return paired | {f for name in paired for f in _forms(name)}
 
 
 def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
@@ -863,21 +913,51 @@ def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     return not _paired_forms(sa, lexicon).isdisjoint(sb)
 
 
-def _familiar_outcome(wa: list[str], wb: list[str],
-                      lexicon: Lexicon) -> Outcome | None:
+def _alternate(a: str, b: str, lexicon: Lexicon) -> bool:
+    """One given-name word and the other are a listed alternate
+    spelling (`Yuliya` / `Iuliia`), read as `_familiar` reads a
+    familiar form: either way, never chained."""
+    sa, sb = _spellings(a, "given", lexicon), _spellings(b, "given", lexicon)
+    return not _paired_forms(
+        sa, lexicon, lexicon._alternate_spellings).isdisjoint(sb)
+
+
+def _familiar_outcome(wa: list[str], wb: list[str], lexicon: Lexicon,
+                      accept: frozenset[Outcome]) -> Outcome | None:
     """Two given texts' words, pair by pair, each the same once folded,
-    a listed spelling or a familiar form, and at least one a familiar
-    form: `familiar-form`, else `None`."""
+    a listed spelling, an alternate spelling or a familiar form, and at
+    least one of the last two: `alternate-spelling` where every such pair
+    is one, `familiar-form` where every one is a familiar form, and
+    where some need one and some the other, `familiar-form` where the
+    caller accepts both and otherwise the one they do not accept, so a
+    pair needing an unaccepted leniency is never accepted on the other
+    (decisions/name-matching, 2026-11-12 ALTERNATE SPELLINGS ARE
+    OPT-IN). `None` where no pair needed either or one is neither."""
     if len(wa) != len(wb):
         return None
-    found = False
+    alts: list[bool] = []
+    fams: list[bool] = []
     for x, y in zip(wa, wb):
         if _fold(x) == _fold(y) or _listed(x, y, "given", lexicon):
             continue
-        if not _familiar(x, y, lexicon):
+        alts.append(_alternate(x, y, lexicon))
+        fams.append(_familiar(x, y, lexicon))
+        if not (alts[-1] or fams[-1]):
             return None
-        found = True
-    return Outcome.FAMILIAR_FORM if found else None
+    if not alts:
+        return None
+    alt, fam = Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM
+    holding = [o for o, every in ((alt, all(alts)), (fam, all(fams)))
+               if every]
+    accepted = [o for o in holding if o in accept]
+    if accepted:
+        return accepted[0]
+    if holding:
+        return holding[0]
+    # some pairs need an alternate spelling, others a familiar form
+    if alt in accept and fam in accept:
+        return fam
+    return fam if alt in accept else alt
 
 
 def _lettered_words(text: str) -> list[str]:
@@ -920,9 +1000,11 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
     `group`), else `None`."""
     if a == b:
         return Outcome.SAME
-    if fa == fb:
+    forms_a, forms_b = _forms(a), _forms(b)
+    if fa == fb or not forms_a.isdisjoint(forms_b):
         return Outcome.FOLDED
-    if _joined(fa) == _joined(fb) and not (
+    if not {_joined(f) for f in forms_a}.isdisjoint(
+            {_joined(f) for f in forms_b}) and not (
             _initials_only(fa) and _initials_only(fb)):
         # two texts of initials alone are `initials-agree`'s to read
         return Outcome.JOINED
@@ -935,7 +1017,9 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
 
 def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
                    bases: tuple[str, str] | None = None,
-                   chain: bool = True) -> Iterator[Outcome]:
+                   chain: bool = True,
+                   accept: frozenset[Outcome] = frozenset(),
+                   ) -> Iterator[Outcome]:
     """The outcomes that hold for two non-empty texts of one role,
     strongest first, lazily, and last conflict, which always holds. An
     outcome holds only where the leniency it names was needed: none is
@@ -997,11 +1081,12 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
             initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
             if initials is not None:
                 yield initials
-            if group == "given" and (
-                    familiar := _familiar_outcome(wa, wb, lexicon)) is not None:
+            if group == "given" and (familiar := _familiar_outcome(
+                    wa, wb, lexicon, accept)) is not None:
                 yield familiar
             if len(wa) == len(wb) == 1 and (
-                    _first_half(fa, fb) or _first_half(fb, fa)):
+                    any(_first_half(x, y) or _first_half(y, x)
+                        for x in _forms(a) for y in _forms(b))):
                 yield Outcome.HYPHENATED_PART
     yield Outcome.CONFLICT
 
@@ -1081,7 +1166,8 @@ def _text_outcome(a: str, b: str, lexicon: Lexicon, group: str,
                   chain: bool = True) -> Outcome:
     """Two non-empty texts of one role, by `_pick` over the outcomes
     that hold (`_text_outcomes`)."""
-    return _pick(_text_outcomes(a, b, lexicon, group, bases, chain), accept)
+    return _pick(_text_outcomes(a, b, lexicon, group, bases, chain, accept),
+                 accept)
 
 
 def _particle_half(folded: str, lexicon: Lexicon) -> bool:
@@ -1193,8 +1279,8 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     outcomes = [_text_outcome(x, y, lexicon, group, accept)
                 for x, y in zip(wa, wb)]
     if len(wa) == len(wb):
-        return _weakest(outcomes)
-    left = _one_sided(_weakest(outcomes), accept)
+        return _combined(outcomes, accept)
+    left = _one_sided(_combined(outcomes, accept), accept)
     short, long = (wa, wb) if len(wa) < len(wb) else (wb, wa)
     aligned = _subsequence_outcome(short, long, lexicon, group, accept)
     if aligned is None:
@@ -1206,6 +1292,17 @@ def _middle_outcome(a: str, b: str, lexicon: Lexicon,
     if (aligned in accept) != (left in accept):
         return aligned if aligned in accept else left
     return aligned if _STRENGTH[aligned] > _STRENGTH[left] else left
+
+
+def _combined(outcomes: list[Outcome],
+              accept: frozenset[Outcome]) -> Outcome:
+    """The words' outcomes as one: the weakest, save where a word's
+    outcome is not accepted, when the weakest of those, so an accepted
+    weaker outcome (`familiar-form`) never hides a stronger one the
+    caller does not accept (`alternate-spelling`, `hyphenated-part`), as
+    `_one_sided` keeps it from hiding the one-sided word."""
+    refused = [o for o in outcomes if o not in accept]
+    return _weakest(refused or outcomes)
 
 
 def _one_sided(outcome: Outcome, accept: frozenset[Outcome]) -> Outcome:

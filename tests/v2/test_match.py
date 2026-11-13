@@ -7,6 +7,7 @@ import dataclasses
 import functools
 import itertools
 import pickle
+import re
 import unicodedata
 
 import pytest
@@ -78,6 +79,9 @@ NAMES: tuple[str, ...] = (
     "Bill Smith", "BILL SMITH", "Sepp Huber", "Josef Huber", "Bob Smith",
     "Robert Smith", "John Bill Smith", "John William Smith",
     'Robert "Bob" Smith', "Smith, Bill", "Masha Ivanova", "Maria Ivanova",
+    "Yuliya Ivanova", "Iuliia Ivanova",
+    # a keyboard's spelling (2026-11-12 A KEYBOARD'S SPELLING IS FOLDED)
+    "Łukasz Nowak", "Lukasz Nowak", "Hans Müller", "Hans Mueller",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
     "Ann Smith\u2010Jones", "Ann Smith\u2013Jones", "Jean\u2010Pierre Dupont",
     "Ana Ruiz (née de la Vega)", "Ana Ruiz (née Vega)",
@@ -90,7 +94,8 @@ PARSED: tuple[ParsedName, ...] = tuple(Parser().parse(n) for n in NAMES)
 
 #: The opt-in outcomes this module's settings sweep adds to the default.
 OPT_INS: tuple[Outcome, ...] = (
-    Outcome.FAMILIAR_FORM, Outcome.FAMILY_INITIAL, Outcome.GIVEN_ONE_SIDE,
+    Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM, Outcome.FAMILY_INITIAL,
+    Outcome.GIVEN_ONE_SIDE,
     Outcome.HYPHENATED_PART, Outcome.ACROSS_ROLES,
 )
 
@@ -182,7 +187,7 @@ def test_the_default_accepts_what_the_spec_lists() -> None:
 def test_outcomes_are_declared_strongest_first() -> None:
     names = [o.value for o in Outcome]
     assert names[0] == "same" and names[-1] == "conflict"
-    assert len(names) == 17
+    assert len(names) == 18
 
 
 def test_match_types_round_trip_through_pickle() -> None:
@@ -681,7 +686,11 @@ def _assert_the_key_guarantee(matching: Matching,
 #: re-run here: a mutation edits `_match` from inside, so a re-take is
 #: by hand, after any commit that moves NAMES, the keys or the check;
 #: re-taken 2026-11-11 for #1264's names and hyphen fold, every pair
-#: standing and the new mutation added. The maiden name's words, removed, once failed
+#: standing and the new mutation added. The alternate-spelling setting
+#: (2026-11-12) stands in each older row beside familiar-form, as it
+#: reads those mutations as familiar-form does: added, not re-taken, and
+#: held by test_a_recorded_control_still_reaches_what_it_mutated; its own
+#: mutation was taken. The maiden name's words, removed, once failed
 #: across-roles and all-opt-ins on ("J. Smith", "Jane Doe (née
 #: Smith)"), until #1261 keyed the maiden name whole, joined; those
 #: keys are held since by
@@ -690,15 +699,17 @@ def _assert_the_key_guarantee(matching: Matching,
 #: text cannot give.
 _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
     "only the joined form of a hyphenated word keyed": ("keys", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ann Smith-Jones", "Ann Smith")),
         **dict.fromkeys(("family-initial", "all"),
                         ("Ahmed Al-Saud", "Ahmed Saud")),
     }),
     "part-of-other keeping a hyphen half that is a particle the keys drop": ("check", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ahmed Al", "Ahmed Al-Saud")),
         # passed through the family-initial key
         "family-initial": None, "all": None,
@@ -707,6 +718,14 @@ _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
         # a listed spelling of the longer name; all passes it through
         # given-one-side's bare family keys
         "familiar-form": ("Wm. Smith", "Bill Smith"), "all": None,
+    }),
+    # taken 2026-11-12 with the alternate-spelling outcome, the keys'
+    # alternate block removed: the main grid's one witness, whose
+    # letters differ (an Aleksey / Alexey witness shared a key without
+    # the block and caught nothing); all passes it through
+    # given-one-side's bare family keys
+    "the alternate spellings' paired names left out of the given letters": ("keys", {
+        "alternate-spelling": ("Yuliya Ivanova", "Iuliia Ivanova"), "all": None,
     }),
     "the family-initial key removed": ("keys", {
         "family-initial": ("J. Smith", "Jane S"),
@@ -731,8 +750,9 @@ _RECORDED_CONTROLS: dict[str, tuple[str, dict[str, tuple[str, str] | None]]] = {
     # the keys alone cutting a family word at the hyphen-minus, the check
     # at every hyphen (#1264): the narrowing on one side the grids catch
     "the keys' family words cut at the hyphen-minus alone": ("keys", {
-        **dict.fromkeys(("default", "familiar-form", "given-one-side",
-                         "hyphenated-part", "other-readings", "across-roles"),
+        **dict.fromkeys(("default", "alternate-spelling", "familiar-form",
+                         "given-one-side", "hyphenated-part",
+                         "other-readings", "across-roles"),
                         ("Ann Smith", "Ann Smith\u2010Jones")),
         # passed through the family-initial key
         "family-initial": None, "all": None,
@@ -791,7 +811,9 @@ _SHAPE_NAMES: tuple[str, ...] = (
     "María López", "José Luis Pérez", "José Pérez", "Pérez, José Luis",
     "Wang Xiaoming", "Xiaoming Wang", "김민준", "Kim Min-jun",
     "Min-jun Kim", "Nguyễn Văn An", "Nguyen An", "Bill Smith",
-    "William Smith", "Smith Bill", "Smith William", "Mr. Smith",
+    "William Smith", "Smith Bill", "Smith William", "Yuliya Smith",
+    "Iuliia Smith", "Smith Yuliya", "Smith Iuliia", "Müller, Hans",
+    "Mueller, Hans", "Hans Mueller", "Mr. Smith",
     "Della Smith", "Smith", "Hong Guo", "Hong-Yi Guo", "Guo Hong",
     "Guo Hong-Yi",
     # any of the pipeline's hyphens, and a maiden name's particles (#1264)
@@ -831,8 +853,9 @@ _FOUR = ("default", "family-first", "es", "zh")
 _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     "only the joined form of a hyphenated word keyed": {
         parser_id: dict.fromkeys(
-            ("default", "familiar-form", "given-one-side", "hyphenated-part",
-             "across-roles", "other-readings"),
+            ("default", "alternate-spelling", "familiar-form",
+             "given-one-side", "hyphenated-part", "across-roles",
+             "other-readings"),
             ("Smith-Jones, Ann",
              "Smith Ann" if parser_id == "family-first" else "Ann Smith"))
         for parser_id in _FOUR
@@ -842,6 +865,14 @@ _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
         parser_id: {"familiar-form": (
             ("Smith Bill", "Smith William") if parser_id == "family-first"
             else ("Bill Smith", "William Smith"))}
+        for parser_id in _FOUR
+    },
+    "the alternate spellings' paired names left out of the given letters": {
+        # taken 2026-11-12; all passes it through given-one-side's bare
+        # family keys
+        parser_id: {"alternate-spelling": (
+            ("Smith Yuliya", "Smith Iuliia") if parser_id == "family-first"
+            else ("Yuliya Smith", "Iuliia Smith"))}
         for parser_id in _FOUR
     },
     "the family-initial key removed": {
@@ -870,8 +901,9 @@ _SHAPE_CONTROLS: dict[str, dict[str, dict[str, tuple[str, str]]]] = {
     },
     "the keys' family words cut at the hyphen-minus alone": {
         parser_id: dict.fromkeys(
-            ("default", "familiar-form", "given-one-side", "hyphenated-part",
-             "across-roles", "other-readings"),
+            ("default", "alternate-spelling", "familiar-form",
+             "given-one-side", "hyphenated-part", "across-roles",
+             "other-readings"),
             ("Smith Ann" if parser_id == "family-first" else "Ann Smith",
              "Smith\u2010Jones, Ann"))
         for parser_id in _FOUR
@@ -1243,8 +1275,10 @@ def test_across_roles_keys_add_the_middle_nickname_and_birth_name() -> None:
     assert "hoover;e" not in m.keys("J. Edgar Hoover")
     assert "clinton;b" in _across.keys('William "Bill" Clinton')
     assert "clinton;b" not in m.keys('William "Bill" Clinton')
-    assert _across.keys("Jane Doe (née Smith)") == {"doe;j", "smith;j"}
-    assert m.keys("Jane Doe (née Smith)") == {"doe;j"}
+    # `doe` keys as `do`: a key writes the transcription digraphs as
+    # their first letter (`_key`), so it is shared by every form
+    assert _across.keys("Jane Doe (née Smith)") == {"do;j", "smith;j"}
+    assert m.keys("Jane Doe (née Smith)") == {"do;j"}
 
 
 @pytest.mark.parametrize(("a", "b"), [
@@ -1676,9 +1710,9 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
     # pairs no source lists: Rickie is paired with Rick and Roderick,
-    # Pepe with nothing
+    # Pancho with nothing
     ("Rickie Smith", "Richard Smith"),
-    ("Pepe Smith", "José Smith"),
+    ("Pancho Smith", "Francisco Smith"),
 ])
 def test_a_familiar_form_reaches_only_its_listed_longer_names(
         a: str, b: str) -> None:
@@ -1707,10 +1741,283 @@ def test_a_familiar_form_meets_a_listed_spelling_of_its_longer_name() -> None:
 
 
 def test_a_familiar_form_ranks_below_every_default_outcome() -> None:
+    # and below an alternate spelling alone, the one opt-in stronger:
+    # a spelling of the name says more than a familiar form of it
     assert all(o.strength > Outcome.FAMILIAR_FORM.strength
                for o in DEFAULT_ACCEPT)
     assert all(o.strength < Outcome.FAMILIAR_FORM.strength
-               for o in OPT_INS if o is not Outcome.FAMILIAR_FORM)
+               for o in OPT_INS if o not in (Outcome.FAMILIAR_FORM,
+                                             Outcome.ALTERNATE_SPELLING))
+    assert all(o.strength > Outcome.ALTERNATE_SPELLING.strength
+               for o in DEFAULT_ACCEPT)
+    assert Outcome.ALTERNATE_SPELLING.strength > Outcome.FAMILIAR_FORM.strength
+
+
+# -- alternate spellings (decisions/name-matching, 2026-11-12 ALTERNATE
+# SPELLINGS ARE OPT-IN) --------------------------------------------------------
+
+_alternate = _with(Outcome.ALTERNATE_SPELLING)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Yuliya Ivanova", "Iuliia Ivanova"),
+    ("Aleksey Ivanov", "Alexey Ivanov"),
+    ("Smith, Mohammad", "Muhammad Smith"),
+])
+def test_an_alternate_spelling_is_consistent_only_where_accepted(
+        a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = _alternate.check(x, y)
+        assert r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.ALTERNATE_SPELLING
+        assert _alternate.keys(x) & _alternate.keys(y)
+        # people spell a name differently on purpose, to be told apart:
+        # not accepted by default, reported in the table all the same
+        r = m.check(x, y)
+        assert not r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.ALTERNATE_SPELLING
+
+
+def test_an_alternate_spelling_is_never_chained() -> None:
+    # each is paired with `aleksei` and `aleksey` with `aleksej` by no
+    # row of the review: a chain through the third spelling would ship
+    # a pair nobody read
+    lexicon = Lexicon.default()
+    assert "aleksei" in lexicon._alternate_spellings("aleksej")
+    assert "aleksei" in lexicon._alternate_spellings("aleksey")
+    assert "aleksey" not in lexicon._alternate_spellings("aleksej")
+    r = _alternate.check("Aleksej Petrov", "Aleksey Petrov")
+    assert not r.consistent
+
+
+def test_an_alternate_spelling_is_no_familiar_form_and_no_listed_spelling() -> None:
+    # the familiar forms' opt-in does not reach it, and the default's
+    # listed spellings never hold it
+    assert not _familiar.check("Aleksey Ivanov", "Alexey Ivanov").consistent
+    assert not Lexicon.default()._headwords("aleksey", "given") & (
+        Lexicon.default()._headwords("alexey", "given"))
+
+
+@pytest.mark.parametrize("accepted, consistent, outcome", [
+    ((Outcome.FAMILIAR_FORM,), False, Outcome.ALTERNATE_SPELLING),
+    ((Outcome.ALTERNATE_SPELLING,), False, Outcome.FAMILIAR_FORM),
+    ((Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM), True,
+     Outcome.FAMILIAR_FORM),
+])
+def test_a_given_name_needing_both_is_accepted_only_with_both(
+        accepted: tuple[Outcome, ...], consistent: bool,
+        outcome: Outcome) -> None:
+    # two given words, one an alternate spelling, the other a familiar
+    # form: accepted on neither alone, the row naming the one refused,
+    # and the keys shared wherever it is consistent (review of #1379:
+    # a familiar-form-only caller once accepted it with no shared key)
+    parser = Parser(policy=Policy(two_given_names=True))
+    matching = Matching(parser, DEFAULT_ACCEPT | set(accepted))
+    a, b = "Iuliia Liz Smith", "Yuliya Elizabeth Smith"
+    for x, y in ((a, b), (b, a)):
+        r = matching.check(x, y)
+        assert r.consistent is consistent
+        assert role(r, Role.GIVEN).outcome is outcome
+        if consistent:
+            assert matching.keys(x) & matching.keys(y)
+
+
+@pytest.mark.parametrize("a, b, accepted, hidden", [
+    # an alternate spelling, unaccepted, beside an accepted familiar form
+    ("John Iuliia Liz Smith", "John Yuliya Elizabeth Smith",
+     Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING),
+    # a familiar form, unaccepted, beside an accepted hyphenated part
+    ("John Liz Jean Smith", "John Elizabeth Jean-Paul Smith",
+     Outcome.HYPHENATED_PART, Outcome.FAMILIAR_FORM),
+])
+def test_an_accepted_middle_word_never_hides_an_unaccepted_one(
+        a: str, b: str, accepted: Outcome, hidden: Outcome) -> None:
+    matching = Matching(Parser(), DEFAULT_ACCEPT | {accepted})
+    r = matching.check(a, b)
+    assert not r.consistent
+    assert role(r, Role.MIDDLE).outcome is hidden
+    both = Matching(Parser(), DEFAULT_ACCEPT | {accepted, hidden})
+    assert both.check(a, b).consistent
+
+
+# -- a keyboard's spelling (decisions/name-matching, 2026-11-12 A KEYBOARD'S
+# SPELLING IS FOLDED) ---------------------------------------------------------
+
+@pytest.mark.parametrize("a, b", [
+    # (a) a letter a keyboard lacks, written as one types it
+    ("Łukasz Nowak", "Lukasz Nowak"), ("Anna Kowałski", "Anna Kowalski"),
+    ("Pınar Yılmaz", "Pinar Yilmaz"), ("Søren Hansen", "Soren Hansen"),
+    ("Đorđe Petrović", "Dorde Petrovic"), ("Ægir Olsen", "Aegir Olsen"),
+    ("Hrafn Þórsson", "Hrafn Thorsson"),
+    # (b) a standard transcription, read from either side
+    ("Hans Müller", "Hans Mueller"), ("Jürgen Weber", "Juergen Weber"),
+    ("Søren Hansen", "Soeren Hansen"), ("Ola Ågård", "Ola Aagaard"),
+    ("Srđan Petrović", "Srdjan Petrovic"), ("Mueller, Hans", "Hans Müller"),
+    # letter by letter: a word or a text mixing the two writings (review
+    # of #1379)
+    ("Martin Ødegård", "Martin Odegaard"),
+    ("Jørgen Søndergård", "Joergen Sondergaard"),
+    ("Hans Göthe-Müller", "Hans Goethe-Muller"),
+    ("Müller Lüdenscheidt, Hans", "Mueller Ludenscheidt, Hans"),
+])
+def test_a_keyboards_spelling_reads_folded_by_default(a: str, b: str) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent, (x, y)
+        assert {row.outcome for row in r.roles} <= {
+            Outcome.SAME, Outcome.FOLDED}, (x, y)
+        assert Outcome.FOLDED in {row.outcome for row in r.roles}
+        assert m.keys(x) & m.keys(y)
+
+
+def test_a_transcription_reaches_a_family_base_and_the_birth_name() -> None:
+    # word by word, through the spelling set: a particle surname compares
+    # by its base (taken 2026-11-12: the transcription left out of
+    # `_spellings` refuses the first pair, and left out of the keys as
+    # well, keeps the second consistent under across-roles with no key)
+    assert m.check("Hans von Müller", "Hans Mueller").consistent
+    across = _with(Outcome.ACROSS_ROLES)
+    a, b = "Ann Smith (née Müller)", "Ann Mueller"
+    assert across.check(a, b).consistent
+    assert across.keys(a) & across.keys(b)
+
+
+def test_a_transcription_reaches_a_hyphen_half_and_the_vocabulary() -> None:
+    # every side of a comparison reads the forms, not one of them (#1293):
+    # a hyphenated part, a caller's listed spelling, familiar form and
+    # alternate spelling, each asked from either side
+    hyphen = _with(Outcome.HYPHENATED_PART)
+    assert hyphen.check("Jürgen Smith", "Juergen-Paul Smith").consistent
+    lexicon = (Lexicon.default()
+               .add("günni", kind="familiar", short_for=["günther"])
+               .add("jöran", kind="spelling", spelling_of=["göran"])
+               .add("jürg", kind="given", same_as="jürgen"))
+    matching = Matching(Parser(lexicon=lexicon), DEFAULT_ACCEPT | {
+        Outcome.FAMILIAR_FORM, Outcome.ALTERNATE_SPELLING})
+    for a, b in (("Günni Smith", "Guenther Smith"),
+                 ("Guenni Smith", "Günther Smith"),
+                 # both written out, which asking each side alone missed
+                 ("Guenni Smith", "Guenther Smith"),
+                 # accepted: each side reaches its member of the listed
+                 # pair by a form of its own (review of #1379)
+                 ("Gunni Smith", "Guenther Smith"),
+                 ("Jöran Smith", "Goeran Smith"),
+                 ("Joeran Smith", "Göran Smith"),
+                 ("Joeran Smith", "Goeran Smith"),
+                 ("Jürg Smith", "Juergen Smith")):
+        for x, y in ((a, b), (b, a)):
+            r = matching.check(x, y)
+            assert r.consistent, (x, y)
+            assert matching.check(y, x) == r.mirrored()
+            assert matching.keys(x) & matching.keys(y)
+
+
+def test_a_callers_pair_written_with_another_hyphen_reads_both_ways() -> None:
+    # the lexicon's pair index reads the pipeline's hyphens as the match
+    # does (review of 87b1d5c3: a pair written with U+2010 was found
+    # from its own side alone)
+    lexicon = Lexicon.default().add("jöri", kind="familiar",
+                                    short_for=["jöran\u2010peter"])
+    matching = Matching(Parser(lexicon=lexicon),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for long in ("Jöran-Peter Smith", "Joeran-Peter Smith",
+                 "Jöran\u2010Peter Smith"):
+        r = matching.check("Jöri Smith", long)
+        assert r.consistent, long
+        assert matching.check(long, "Jöri Smith") == r.mirrored()
+
+
+def test_a_name_with_many_transcribable_letters_has_few_keys() -> None:
+    # the keys collapse the transcription digraphs, so a name's keys do
+    # not grow with its forms (2^k for k letters: 530 keys for this name
+    # before the review of #1379)
+    name = "Hans Ødegård-Søndergård-Bøgh-Åsøå"
+    assert len(m.keys(name)) <= 8
+    for other in ("Hans Odegaard-Sondergaard-Bogh-Aasoaa",
+                  "Hans Oedegard-Soendergard-Boegh-Asoa"):
+        assert m.check(name, other).consistent
+        assert m.keys(name) & m.keys(other)
+
+
+def test_past_eight_transcribable_letters_a_text_has_two_forms() -> None:
+    # 2^k forms for k letters, so a text holding more than eight is read
+    # all written-out or none, never letter by letter
+    from nameparser._lexicon import _MOST_TRANSCRIBED, _forms
+    name = "Hans Ødegård-Søndergård-Bøgh-Åsøåø"
+    assert sum(c in "øå" for c in name.casefold()) == _MOST_TRANSCRIBED + 1
+    assert len(_forms(name)) == 2
+    assert m.check(name, "Hans Oedegaard-Soendergaard-Boegh-Aasoeaaoe").consistent
+    assert m.check(name, "Hans Odegard-Sondergard-Bogh-Asoao").consistent
+
+
+def test_a_given_part_needing_no_pair_has_no_familiar_outcome() -> None:
+    # every word folds alike or is a listed spelling: no alternate or
+    # familiar reading is asked for, whatever the caller accepts
+    from nameparser._match import Outcome, _familiar_outcome
+    lexicon = Lexicon.default()
+    every = frozenset(Outcome)
+    assert _familiar_outcome(["anna"], ["Anna"], lexicon, every) is None
+    assert _familiar_outcome(["wm"], ["william"], lexicon, every) is None
+
+
+def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
+    # Muller and Mueller each meet Müller, and not each other: neither
+    # holds the letter, and the check is not transitive
+    assert not m.check("Hans Muller", "Hans Mueller").consistent
+    assert m.check("Hans Muller", "Hans Müller").consistent
+    assert m.check("Hans Mueller", "Hans Müller").consistent
+
+
+def test_no_parse_reads_an_alternate_spelling() -> None:
+    # every spelling reading taken out: every set a parse reads, and the
+    # parse of every spelling as a given name, are what they were
+    default = Lexicon.default()
+    without = default.remove(kind="spelling", every=True)
+    assert default._alternate and not without._alternate
+    assert all(getattr(default._sets, f) == getattr(without._sets, f)
+               for f in type(default._sets).__slots__)
+    assert default._same_as == without._same_as
+    bare, plain = Parser(), Parser(lexicon=without)
+    for w in sorted(default._alternate):
+        for text in (f"{w.title()} Smith", f"Smith, {w.title()}",
+                     f"{w.title()}. Smith"):
+            a, b = bare.parse(text), plain.parse(text)
+            assert a.tokens == b.tokens and a.ambiguities == b.ambiguities, text
+
+
+def test_a_choice_of_languages_keeps_its_own_alternate_spellings() -> None:
+    # a plain choice drops none (a choice prefers by none); a strict one
+    # keeps its own files' and mul.toml's, and no other's
+    from nameparser._reading_index import index
+    plain = Lexicon(_base="default", _languages={"uk"})
+    assert plain._alternate == Lexicon.default()._alternate
+    ukrainian = Lexicon(_base="default", _languages={"uk"}, _strict=True)
+    english = Lexicon(_base="default", _languages={"en"}, _strict=True)
+    # the pairs a spelling reading of uk.toml writes and none of en.toml's
+    # or mul.toml's does
+    def pairs(tags: set[str]) -> set[frozenset[str]]:
+        return {frozenset((r.text, n)) for r in index()
+                if r.kind == "spelling" and r.tag in tags
+                for n in r.props["spelling_of"]}
+    uk_only = pairs({"uk"}) - pairs({"en", "mul"})
+    assert uk_only
+    for a, b in map(sorted, uk_only):
+        assert b in ukrainian._alternate_spellings(a)
+        assert b not in english._alternate_spellings(a)
+
+
+def test_a_callers_spelling_extends_the_shipped_ones() -> None:
+    shipped = Lexicon.default()._alternate_spellings("aleksey")
+    lexicon = Lexicon.default().add("aleksey", kind="spelling",
+                                    spelling_of=["Aleksiy"])
+    assert lexicon._alternate_spellings("aleksey") == shipped | {"aleksiy"}
+    assert lexicon._alternate_spellings("aleksiy") == {"aleksey"}
+    assert Lexicon.empty().add("zzq", kind="spelling", spelling_of=["zzr"]
+                               ).words(kind="spelling") == ("zzq",)
+    with pytest.raises(ValueError, match="needs spelling_of"):
+        Lexicon.default().add("zzq", kind="spelling")
+    with pytest.raises(ValueError, match="names the word itself"):
+        Lexicon.default().add("zzq", kind="spelling", spelling_of=["zzq"])
 
 
 def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
@@ -1722,7 +2029,8 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
                                     short_for=["Maxence"])
     assert lexicon._familiar_forms("Max") == shipped | {"maxence"}
     readings = [r for r in lexicon.readings_of("max") if r.kind == "familiar"]
-    assert sorted(r.languages for r in readings) == [(), ("en",)]
+    files = [r for r in readings if r.languages]
+    assert files and len(readings) == len(files) + 1
     assert next(r for r in readings if not r.languages).properties == (
         ("short_for", ("maxence",)),)
     matching = Matching(Parser(lexicon=lexicon),
@@ -1734,7 +2042,7 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
     again = lexicon.add("max", kind="familiar", short_for=["maxi"])
     assert again._familiar_forms("max") == shipped | {"maxence", "maxi"}
     assert len([r for r in again.readings_of("max")
-                if r.kind == "familiar"]) == 2
+                if r.kind == "familiar"]) == len(files) + 1
     added = Lexicon.empty().add("zzq", kind="familiar", short_for=["zzr"])
     assert added._familiar_forms("zzq") == {"zzr"}
     assert added._familiar_forms("zzr") == {"zzq"}
@@ -1754,21 +2062,47 @@ def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
     assert matching.check("Max Smith", "Maxim Smith").consistent
 
 
-@pytest.mark.parametrize("props, error, match", [
-    ({}, ValueError, "needs short_for"),
-    ({"short_for": []}, ValueError, "non-empty list"),
-    ({"short_for": ["."]}, ValueError, "none normalizing to nothing"),
-    ({"short_for": [".", "maxwell"]}, ValueError, "none normalizing to nothing"),
-    ({"short_for": ["Max"]}, ValueError, "names the word itself"),
-    ({"short_for": "maxwell"}, TypeError, "short_for must be an iterable"),
-    ({"short_for": ["max well"]}, ValueError, "single given names"),
-    ({"short_for": ["maxwell"], "same_as": "maxwell"}, ValueError,
-     "takes short_for"),
+#: Each matching-only kind, its list property and the word it is added
+#: to, for the refusals every one of them shares.
+_MATCHING_KINDS = (("familiar", "short_for", "max"),
+                   ("spelling", "spelling_of", "olha"))
+
+
+@pytest.mark.parametrize("kind, prop, word", _MATCHING_KINDS)
+@pytest.mark.parametrize("value, other, error, match", [
+    (None, {}, ValueError, "needs {prop}"),
+    ([], {}, ValueError, "non-empty list"),
+    (["."], {}, ValueError, "none normalizing to nothing"),
+    ([".", "zzr"], {}, ValueError, "none normalizing to nothing"),
+    ("{Word}", {}, ValueError, "names the word itself"),
+    ("zzr", {}, TypeError, "{prop} must be an iterable"),
+    (["zz r"], {}, ValueError, "single given names"),
+    (["zzr"], {"same_as": "zzr"}, ValueError, "takes {prop}"),
 ])
-def test_a_callers_familiar_reading_is_refused_where_it_lists_no_name(
-        props: dict[str, object], error: type[Exception], match: str) -> None:
-    with pytest.raises(error, match=match):
-        Lexicon.default().add("max", kind="familiar", **props)
+def test_a_callers_matching_reading_is_refused_where_it_lists_no_name(
+        kind: str, prop: str, word: str, value: object, other: dict[str, object],
+        error: type[Exception], match: str) -> None:
+    # the guard, the hint and the refusal for the whole family: every
+    # matching-only kind refuses alike (AGENTS.md)
+    if value == "{Word}":
+        value = [word.title()]
+    props = dict(other) if value is None else {prop: value, **other}
+    with pytest.raises(error, match=match.format(prop=prop)):
+        Lexicon.default().add(word, kind=kind, **props)
+
+
+@pytest.mark.parametrize("kind, prop, word", _MATCHING_KINDS)
+def test_the_code_a_refusal_offers_runs(kind: str, prop: str, word: str) -> None:
+    for bad in ({}, {prop: ["."]}):
+        with pytest.raises(ValueError) as info:
+            Lexicon.default().add(word, kind=kind, **bad)
+        offered = re.search(r"e\.g\. (add\(.*\)|\w+=\[.*\])$", str(info.value))
+        assert offered is not None, str(info.value)
+        code = offered.group(1)
+        if not code.startswith("add("):
+            code = f"add({word!r}, kind={kind!r}, {code})"
+        lexicon = eval(f"Lexicon.default().{code}", {"Lexicon": Lexicon})
+        assert kind in {r.kind for r in lexicon.readings_of(eval(code[4:].split(",")[0]))}
 
 
 def test_a_callers_pair_under_a_strict_choice_reaches_no_other_file() -> None:
@@ -1811,19 +2145,18 @@ def test_no_parse_reads_a_familiar_form() -> None:
 
 def test_a_choice_of_languages_keeps_its_own_familiar_forms() -> None:
     # a plain choice drops no familiar reading (a choice prefers by none);
-    # a strict one keeps its own files' alone: en.toml's for a strict
-    # choice of English, and none for one of German, whose file holds no
-    # familiar reading (decisions/name-matching, 2026-11-12 ENGLISH ONLY
-    # UNTIL REBUILT)
+    # a strict one keeps its own files' and mul.toml's alone: German's
+    # `aleks`, every language's `ajay`, and not English's `bill` nor the
+    # `max` of en.toml, it.toml, ru.toml and es.toml
     plain = Lexicon(_base="default", _languages={"de"})
     assert plain._familiar == Lexicon.default()._familiar
     assert plain._familiar_forms("max") == (
         Lexicon.default()._familiar_forms("max"))
-    english = Lexicon(_base="default", _languages={"en"}, _strict=True)
-    assert english._familiar == Lexicon.default()._familiar
     german = Lexicon(_base="default", _languages={"de"}, _strict=True)
+    assert german._familiar_forms("aleks") == {"aleksandra"}
+    assert german._familiar_forms("ajay") == {"ajaykumar"}
+    assert not german._familiar_forms("bill")
     assert not german._familiar_forms("max")
-    assert not german._familiar
 
 
 #: Accented pairs as a caller writes them, the shipped ones being English
