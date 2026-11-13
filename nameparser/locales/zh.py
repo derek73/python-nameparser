@@ -15,7 +15,9 @@ Data sources: single-character surnames are the top-100 of the 2020
 PRC census, plus the union of two rankings' top 300 (#695): Taiwan's
 Ministry of the Interior surname ranking (內政部戶政司, 2023, used under
 the Open Government Data License, version 1) and Wikidata's Chinese
-family names ranked by bearers (CC0). tools/zh_surnames.py derives
+family names ranked by bearers (CC0), with the simplified form of a
+traditional surname from the Unicode Consortium's Unihan variant table
+(Unicode License v3, its notice in LICENSE-unicode). tools/zh_surnames.py derives
 that block and writes it below; do not edit it by hand. Five mainland
 surnames that neither ranking reaches are added by hand at the census
 block's tail (#952), each annotated there with its mainland rank.
