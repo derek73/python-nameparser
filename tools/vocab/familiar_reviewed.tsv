@@ -142,7 +142,6 @@ ali	seyedali	familiar		familiar	familiar	Ali is how Seyedali is called (Seyed pr
 alia	aliaa	spelling		spelling	spelling	romanization variants	mul	orcid	3
 alice	alisa	translation		translation	translation	English and Russian forms	ru	orcid	4
 alkis	alkiviadis	familiar		familiar	familiar	Alkis familiar form of Alkiviadis	el	orcid	4
-allan	allen	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 alli	allison	familiar		familiar	familiar	short form of Allison	en	orcid	6
 allie	allison	familiar		familiar	familiar	pet form of Allison	en	orcid	11
 allison	ally	familiar		familiar	familiar	pet form of Allison	en	orcid	6
@@ -209,12 +208,10 @@ ange	angela	familiar		familiar	familiar	short form of Angela	en	orcid	5
 angela	angi	familiar		familiar	familiar	pet form of Angela	en	orcid	3
 angela	angie	familiar		familiar	familiar	pet form of Angela	en	orcid	27
 angela	anzhela	spelling	decided	spelling	translation	romanization of Анжела	ru uk	orcid	7
-angelica	angelika	spelling		spelling	spelling	c vs k variant	mul	wikidata	4
 angelina	angie	familiar		familiar	familiar	pet form of Angelina	en	orcid	5
 ania	anna	familiar		familiar	familiar	Polish familiar form	en pl	orcid	21
 anil	anıl	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	12
 anindita	dita	familiar		familiar	familiar	short form of Anindita	en	orcid	3
-ann	anna	split		translation	different-name	English Ann vs Anna	ru	wikidata	20
 ann	anne	spelling		spelling	spelling	spelling variant	en	orcid	3
 ann	annie	familiar		familiar	familiar	diminutive of Ann	en	orcid	19
 anna	anne	translation	decided	translation	spelling	Ukrainian Hanna/Anna vs French/English Anne	en	orcid	3
@@ -347,7 +344,6 @@ brad	william	different-name		different-name	different-name	unrelated names	en	or
 braden	brady	different-name		different-name	different-name	two names in their own right	en	orcid	4
 brent	brenton	split		familiar	different-name	short form of Brenton	en	orcid	3
 bri	brianna	familiar		familiar	familiar	clipped form of Brianna	en	orcid	8
-brian	bryan	spelling		spelling	spelling	i/y variant	mul	wikidata	10
 brianne	brie	familiar		familiar	familiar	short form of Brianne	en	orcid	3
 brit	brittany	familiar		familiar	familiar	short form of Brittany	en	orcid	3
 britt	brittany	familiar		familiar	familiar	clipped form of Brittany	mul	orcid	3
@@ -365,7 +361,6 @@ carly	carolyn	familiar		familiar	familiar	pet form of Carolyn	en	orcid	3
 carme	carmen	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	5
 carmela	carmen	different-name		different-name	different-name	two names in their own right	it	orcid	4
 caro	caroline	familiar		familiar	familiar	short form of Caroline	mul	orcid	3
-carol	carole	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 carol	carolina	split		familiar	different-name	Brazilian short form of Carolina	pt-BR	orcid	18
 carol	caroline	familiar		familiar	familiar	Carol as short for Caroline, common in Brazil	en pt-BR	orcid	11
 carola	carolina	different-name		different-name	different-name	Carola and Carolina distinct names	mul	orcid	3
@@ -630,7 +625,6 @@ eugenia	evgenia	translation		translation	translation	Latin and Greek/Russian for
 eugenia	evgeniia	translation		translation	translation	Latin and Russian forms	ru	orcid	3
 eugenia	evgeniya	translation		translation	translation	Latin vs Russian form	ru	orcid	4
 eva	evangelia	familiar		familiar	familiar	short form of Evangelia	en	orcid	11
-eva	eve	translation		translation	translation	Latin vs English form	mul	wikidata	5
 evangelia	lia	familiar		familiar	familiar	Greek short form of Evangelia	el	orcid	4
 evangeline	evie	familiar		familiar	familiar	Evie short form of Evangeline	en	orcid	3
 evangelos	vaggelis	familiar		familiar	familiar	Greek familiar of Evangelos	el	orcid	5
@@ -748,7 +742,6 @@ giri	giridhar	familiar		familiar	familiar	short form of Giridhar	mul	orcid	3
 giuseppe	joe	split		familiar	different-name	Joe used for Giuseppe (Joseph)	mul	orcid	3
 giuseppe	pino	familiar		familiar	familiar	Italian familiar form	it	orcid	7
 giuseppina	giusi	familiar		familiar	familiar	Italian pet form of Giuseppina	it	orcid	3
-glen	glenn	spelling		spelling	spelling	single vs double n	mul	wikidata	7
 goetz	götz	spelling		spelling	spelling	umlaut written oe	de	orcid	3
 gosia	malgorzata	familiar		familiar	familiar	Polish pet form of Malgorzata	en pl	orcid	13
 gosia	małgorzata	familiar		familiar	familiar	Polish familiar form	en	orcid	5
@@ -957,7 +950,6 @@ johannes	john	translation		translation	translation	German/Dutch Johannes vs Engl
 johannes	joost	different-name		different-name	different-name	Joost is from Justus, not Johannes	mul	orcid	3
 john	johnathon	different-name		different-name	different-name	John and Jonathan are distinct names	en	orcid	4
 john	johnny	familiar		familiar	familiar	diminutive of John	en	orcid	18
-john	jon	spelling	decided	spelling	spelling	John/Jon variant spelling	mul	wikidata	13
 john	jonathan	different-name		different-name	different-name	John and Jonathan are distinct names	en	orcid	5
 john	mark	different-name		different-name	different-name	unrelated names	en	orcid	4
 john	matt	different-name		different-name	different-name	unrelated names	en	orcid	3
@@ -965,7 +957,6 @@ john	michael	different-name		different-name	different-name	unrelated names	en	or
 john	mike	different-name		different-name	different-name	unrelated names	en	orcid	3
 john	robert	different-name		different-name	different-name	two unrelated names	en	orcid	4
 john	william	different-name		different-name	different-name	unrelated names	en	orcid	7
-johnathan	jonathan	spelling		spelling	spelling	variant spellings	mul	wikidata	3
 johnny	jonathan	familiar		familiar	familiar	familiar of Jonathan	en	orcid	4
 jon	jonathan	familiar		familiar	familiar	clipped form of Jonathan	en	orcid	210
 jon	jonathon	split		familiar	different-name	opus: clipped form of Jonathon; sonnet: Jonathon is a spelling of Jonathan; Jon is its short form, a different name	en	orcid	7
@@ -1122,7 +1113,6 @@ leonardo	léo	familiar		familiar	familiar	short form of Leonardo	pt-BR	orcid	8
 les	leslie	familiar		familiar	familiar	clipped form of Leslie	en	orcid	9
 lesia	lesya	spelling		spelling	spelling	romanization variants	ru uk	orcid	8
 lew	lewis	familiar		familiar	familiar	Lew short form of Lewis	en	orcid	3
-lewis	louis	translation		translation	translation	English vs French form	mul	wikidata	4
 li	lily	different-name		different-name	different-name	Chinese name and English name	en	orcid	4
 liam	william	split		familiar	translation	Irish short form of William	en	orcid	9
 lidia	lidiya	spelling		spelling	spelling	romanization variants	ru	orcid	4
@@ -1134,9 +1124,7 @@ lilian	lily	familiar		familiar	familiar	Lily short form of Lilian	en	orcid	5
 liliia	liliya	spelling		spelling	spelling	romanization variant	ru uk	orcid	10
 lillian	lilly	familiar		familiar	familiar	pet form of Lillian	en	orcid	4
 lillian	lily	familiar		familiar	familiar	short form of Lillian	en	orcid	11
-lilly	lily	spelling		spelling	spelling	double vs single l	mul	wikidata	5
 lin	lynn	different-name		different-name	different-name	Chinese name and English name	en	orcid	4
-lindsay	lindsey	spelling		spelling	spelling	ay/ey variant	mul	wikidata	3
 liubov	lubov	spelling		spelling	spelling	romanization variants	ru uk	orcid	6
 liubov	lyubov	spelling		spelling	spelling	romanization variants	ru	orcid	8
 liudmila	liudmyla	translation		translation	translation	Russian Liudmila vs Ukrainian Liudmyla	ru uk	orcid	4
@@ -1228,7 +1216,6 @@ maria	masha	split		familiar	translation	Masha Russian pet form of Maria	en fr	or
 maria	mia	split		familiar	different-name	opus: Mia as Scandinavian pet form of Maria; sonnet: Mia is a name in its own right	sv	orcid	6
 maria	rosario	different-name		different-name	different-name	Maria and Rosario separate names (Maria do Rosario)	mul	orcid	3
 mariam	maryam	spelling		spelling	spelling	romanization variant	fa	orcid	4
-marian	marion	refused	decided	spelling	different-name	variant spellings of one name	mul	wikidata	6
 mariana	maryana	spelling	decided	spelling	translation	Ukrainian romanization variants	mul	orcid	3
 mariia	marija	translation		translation	translation	Ukrainian Mariia vs Lithuanian Marija	mul	orcid	3
 mariia	mariya	spelling		spelling	spelling	romanization variant	ru uk	orcid	21
@@ -1505,7 +1492,6 @@ prudence	prue	familiar		familiar	familiar	clipped form of Prudence	en	orcid	3
 przemek	przemyslaw	familiar		familiar	familiar	Przemek pet form of Przemyslaw	pl	orcid	8
 przemek	przemysław	familiar		familiar	familiar	Polish short form of Przemyslaw	pl	orcid	6
 przemyslaw	przemysław	spelling		spelling	spelling	Polish with and without ł	pl	orcid	33
-rachael	rachel	spelling		spelling	spelling	spelling variant	en	wikidata	7
 rachel	rae	familiar		familiar	familiar	short form of Rachel	en	orcid	10
 rachel	raquel	translation		translation	translation	English and Spanish/Portuguese forms	mul	orcid	3
 rachel	ray	split		familiar	different-name	short form of Rachel	en	orcid	3
@@ -1557,7 +1543,6 @@ ron	ronald	familiar		familiar	familiar	clipped form of Ronald	en	orcid	67
 ron	roni	split		familiar	different-name	Hebrew pet form of Ron	mul	orcid	3
 ros	rosalind	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
 ros	roslyn	familiar		familiar	familiar	short form of Roslyn	en	orcid	5
-rosa	rose	translation		translation	translation	Romance and English forms	mul	wikidata	8
 rosalie	rosie	familiar		familiar	familiar	pet form of Rosalie	en	orcid	3
 rosalind	rosie	familiar		familiar	familiar	pet form of Rosalind	en	orcid	5
 rosalind	roz	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
@@ -1695,7 +1680,6 @@ taisia	taisiia	spelling		spelling	spelling	romanization variant	ru	orcid	3
 taka	takahiro	familiar		familiar	familiar	Japanese short form	ja	orcid	3
 tamar	tami	familiar		familiar	familiar	Hebrew pet form of Tamar	mul	orcid	4
 tamara	tammy	familiar		familiar	familiar	pet form of Tamara	en	orcid	5
-tami	tammy	spelling		spelling	spelling	spelling variant	mul	wikidata	4
 tania	tanja	spelling		spelling	spelling	spelling variant	mul	orcid	3
 tania	tatiana	familiar		familiar	familiar	familiar form of Tatiana	en	orcid	3
 tania	tetiana	familiar		familiar	familiar	familiar form of Tetiana	ru uk	orcid	5

@@ -82,6 +82,24 @@ def test_a_file_only_the_tool_wrote_goes_when_it_holds_nothing() -> None:
     assert tool.rewrite(made, {}, "xx.toml") is None
 
 
+def test_held_words_and_the_block_are_each_placed_by_their_rule() -> None:
+    # each held word's lines go right under its own text, and the new
+    # words go in one block in the build's word order, by kind before
+    # text: a familiar form ahead of a spelling whatever their texts
+    words = {"aa": {"spelling": {"ab"}}, "zz": {"familiar": {"zzz"}},
+             "jr": {"familiar": {"junior"}}, "ed": {"familiar": {"edward"}}}
+    out = tool.rewrite(_FILE, words, "en.toml")
+    assert out is not None
+    lines = out.split("\n")
+    for held in ("jr", "ed"):
+        at = lines.index(f'text = "{held}"')
+        assert lines[at + 1].startswith("familiar = {"), held
+    block = lines[lines.index(tool.BEGIN):lines.index(tool.END)]
+    assert [line for line in block if line.startswith("text = ")] == [
+        'text = "zz"', 'text = "aa"']
+    tool.build.compile_files({"en.toml": out})
+
+
 def test_a_familiar_reading_written_by_hand_is_refused() -> None:
     hand = _FILE.replace('given = { note = "x" }',
                          'familiar = { short_for = ["edgar"], note = "mine" }')
@@ -105,8 +123,8 @@ def test_every_shipped_reading_is_one_the_tool_writes() -> None:
     assert notes == {tool.REVIEWED_SOURCE}
 
 
-def test_stripping_the_tree_leaves_no_familiar_reading() -> None:
-    # without the source: every familiar reading in the tree is one the
+def test_stripping_the_tree_leaves_no_familiar_or_spelling_reading() -> None:
+    # without the review: every familiar reading in the tree is one the
     # tool owns, and taking them out leaves a file the build reads
     for path in sorted(_VOCAB.glob("*.toml")):
         text = path.read_text()
@@ -157,7 +175,7 @@ def planted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         _row("aaron", "erin", "different-name", languages="en"),
         _row("bill", "william", "familiar", languages="en", source="fec"),
         _row("will", "william", "familiar", languages="en",
-             source="wikidata")), encoding="utf-8")
+             source="congress")), encoding="utf-8")
     monkeypatch.setattr(tool, "REVIEWED", reviewed)
     vocab = tmp_path / "vocab"
     vocab.mkdir()
@@ -286,6 +304,13 @@ def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
                                        match: str) -> None:
     with pytest.raises(ValueError, match=match):
         tool.read_reviewed(_reviewed(*rows))
+
+
+@pytest.mark.parametrize("source", sorted(tool.REVIEW_SOURCES))
+def test_each_source_the_project_may_use_is_accepted(source: str) -> None:
+    (row,) = tool.read_reviewed(_reviewed(
+        _row("kasia", "katarzyna", "familiar", source=source)))
+    assert row["source"] == source
 
 
 def test_the_committed_review_ships_what_was_agreed_or_decided_and_no_more() -> None:

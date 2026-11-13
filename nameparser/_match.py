@@ -898,10 +898,11 @@ def _paired_forms(spellings: frozenset[str], lexicon: Lexicon,
 
 def _familiar(a: str, b: str, lexicon: Lexicon) -> bool:
     """One given-name word and the other are a listed familiar-form
-    pair (`Bill` / `William`, `Babs` / `Barbara`): a name one word's
+    pair (`Bill` / `William`, `Charlie` / `Charles`): a name one word's
     spelling set is paired with directly meets the other's spelling
-    set. Read whichever way the source wrote the pair, since the
-    sources do not always write the shorter name first, and never
+    set. Read whichever way the pair was written, since the vocabulary
+    writes a pair on its shorter name, which is not always the familiar
+    form (`charles` / `charlie`), and a caller may write either, and never
     chained, so two longer names paired with one short name
     (`Maximilian` / `Maxwell`) are no pair. Symmetric in its two arguments by
     construction: the lexicon pairs each name both ways and under its

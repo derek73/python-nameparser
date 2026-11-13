@@ -8033,10 +8033,6 @@ text = "phillip"
 spelling = { spelling_of = ["philip"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "rachel"
-spelling = { spelling_of = ["rachael"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "russell"
 spelling = { spelling_of = ["russel"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

@@ -16,14 +16,14 @@ categorized, with the source that evidenced it: ORCID's public data
 file (CC0), read by tools/vocab/familiar_candidates.py; for a few
 common familiar forms researchers rarely publish under, the nicknames
 donors write in brackets in the FEC's filings and the nicknames of
-Congress's members (both in the public domain); and Wikidata's people
-(CC0), labelled with another form of their one given name, for a few
-spellings (decisions/name-matching, 2026-11-13 THE FAMILIAR FORMS FROM
-DATA ALONE, which holds how each was counted). No pair is copied from a list of
-familiar forms: a compiler's list copied whole keeps its licence
+Congress's members (both in the public domain), counted by recipes in
+decisions/name-matching, 2026-11-13 THE FAMILIAR FORMS FROM DATA
+ALONE. No pair is copied from
+a list of familiar forms: a compiler's list copied whole keeps its licence
 (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE and
 2026-11-13 THE NICKNAMES LIST LEAVES). A pair both readers called a
-familiar form is written as a `familiar` reading on its shorter name; a
+familiar form is written as a `familiar` reading on its shorter name
+(`place`); a
 pair both called a spelling as a `spelling` reading on the second name
 in order; a pair they split that the maintainer decided, as its decided
 category; each in the file of every language its row names, with
@@ -64,7 +64,8 @@ END = "# -- END generated --"
 
 #: The reviewed pairs, as two readers categorized them, and the note of
 #: every reading drawn from them (decisions/name-matching, 2026-11-12
-#: ALTERNATE SPELLINGS ARE OPT-IN).
+#: ALTERNATE SPELLINGS ARE OPT-IN and 2026-11-13 THE FAMILIAR FORMS FROM
+#: DATA ALONE).
 REVIEWED = Path(__file__).with_name("familiar_reviewed.tsv")
 REVIEWED_SOURCE = ("found in CC0 or public-domain data and reviewed, "
                    "tools/vocab/familiar_reviewed.tsv")
@@ -78,15 +79,17 @@ REVIEW_CATEGORIES = frozenset({
     "familiar", "spelling", "translation", "transliteration",
     "different-name", "sibling", "unclear", "abbreviation", "split",
     "refused"})
-#: A row's status: empty where the two readers agreed, `decided` where
-#: the maintainer settled a pair they split or one the review held, its
-#: category the maintainer's, and `pending` for a split awaiting that
-#: decision, which ships nowhere.
+#: A row's status: empty where the two readers agreed or on a `split`
+#: nobody has settled, `decided` where the maintainer settled a pair
+#: they split or one the review held, its category the maintainer's,
+#: and `pending` marking a split queued for that decision; no split
+#: ships.
 REVIEW_STATUSES = frozenset({"", "decided", "pending"})
-#: Where a reviewed pair was found, each data the project may use:
-#: ORCID's public data file and Wikidata (CC0), the FEC's filings and
-#: Congress's legislators (public domain).
-REVIEW_SOURCES = frozenset({"orcid", "wikidata", "fec", "congress"})
+#: Where a reviewed pair was found, each a source the project may use:
+#: ORCID's public data file (CC0), the FEC's filings and Congress's
+#: legislators (public domain). Wikidata joins with its fetch tool
+#: (#1387).
+REVIEW_SOURCES = frozenset({"orcid", "fec", "congress"})
 
 
 def _toml_str(text: str) -> str:
@@ -259,9 +262,10 @@ def place(reviewed: Iterable[Mapping[str, str]]) -> Placements:
     two readers agreed on or the maintainer decided, in the file of each
     language its row names, save a spelling the match's fold already
     reads `folded` (`Łukasz` / `Lukasz`, `Jürgen` / `Juergen`). A
-    familiar pair is written on its shorter name,
-    the familiar form, then the first in order; a spelling on the second
-    in order, listing the first, a link the match reads either way."""
+    familiar pair is written on its shorter name by length, then the
+    first in order, which is not always the familiar form (`charles` /
+    `charlie`, `josé` / `pepe`); a spelling on the second in order,
+    listing the first. The match reads either link both ways."""
     out: Placements = {}
 
     def put(tag: str, word: str, kind: str, name: str) -> None:

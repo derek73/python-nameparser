@@ -310,9 +310,10 @@ with another.
 ones the vocabulary lists it under: ``Max`` for Maximilian and
 Maxwell, ``Bill`` for William, ``Peggy`` for Margaret. It is read in the
 given name, middle name and nickname, never the family name. A pair
-is read whichever way the vocabulary wrote it, since its sources do
-not always write the shorter name first (``Barbara`` / ``Babs``), but
-never chained, so two longer names paired with one short name do not
+is read whichever way the vocabulary wrote it, since the vocabulary
+writes a pair on its shorter name, which is not always the familiar
+form (``Charles`` / ``Charlie``), and a caller may write one either
+way round, but never chained, so two longer names paired with one short name do not
 agree with each other. The keys follow: a name is keyed by the first
 letters of the names it is paired with too, so ``Bill Smith`` meets
 ``William Smith`` in a group:
@@ -361,7 +362,7 @@ ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
 ``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. It
 is read as a familiar form is, in the same roles, either way round and
 never chained, and the keys follow it where it is accepted. The same
-review as the familiar forms gives its 331 pairs (counted 2026-11-13),
+review as the familiar forms gives its 320 pairs (counted 2026-11-13),
 each called a spelling of one name by both reviewers or by the
 maintainer where they split, less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``

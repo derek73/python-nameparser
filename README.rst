@@ -299,7 +299,7 @@ for details.
 
 The package's licence expression is ``LGPL-2.1-or-later``. The word
 lists it ships are the project's own measurements over public data, and
-their sources are credited:
+the sources whose licences ask for credit are credited:
 
 - ``locales.ES`` and ``locales.ES_AR``'s given names, measured on Spain's
   Instituto Nacional de Estadística census tables (Creative Commons

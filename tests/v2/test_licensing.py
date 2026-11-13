@@ -7,6 +7,7 @@ README's License section, the PyPI page. A new file without a row in
 ``_THIRD_PARTY`` fails here, naming the three places to update. A list
 the project measured on a dataset names no licence in the expression;
 ``_CREDITED`` holds its credit in its module and the README instead."""
+import re
 import tomllib
 from pathlib import Path
 
@@ -104,7 +105,12 @@ def test_each_measured_source_is_credited(spdx: str) -> None:
 
 @needs_checkout
 def test_readme_names_each_licence_file_and_the_expression() -> None:
+    # the expression as a whole literal, so a stale longer one in the
+    # README (``LGPL-2.1-or-later AND Apache-2.0``) does not pass on the
+    # shorter one it opens with, and no licence file the table lacks
     section = _license_section()
-    for name in _THIRD_PARTY:
-        assert f"``{name}``" in section, name
-    assert _project()["license"] in section
+    assert f"``{_project()['license']}``" in section
+    named = set(re.findall(r"``(LICENSE-[^`]+)``", section))
+    assert named == set(_THIRD_PARTY), (
+        f"README.rst's License section names {sorted(named)}, "
+        f"_THIRD_PARTY {sorted(_THIRD_PARTY)}")
