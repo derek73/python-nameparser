@@ -57,9 +57,11 @@ from typing import Literal
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize, _spells_an_initial,
 )
-from nameparser._policy import (CapsSuffixes, Policy, Script, _EAST_ASIAN_SCRIPTS,
-                                _JA_SCRIPTS, _NO_INITIALS, _SCRIPT_RANGES,
-                                _script_matcher)
+from nameparser._policy import (
+    CapsSuffixes, Policy, Script, _CASELESS_LETTERS, _EAST_ASIAN_SCRIPTS,
+    _JA_SCRIPTS, _NO_ABBREVIATION_RANGES, _NO_INITIAL_RANGES, _SCRIPT_RANGES,
+    _SPELLED_INITIAL_RANGES, _ranges_matcher, _ranges_pattern, _script_matcher,
+)
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CAPITALS_FAMILY_TAG,
     COMMA_CHARS, COMMA_STRIP,
@@ -169,18 +171,25 @@ def _drop_kana_voicing_marks(text: str) -> str:
         kept.append(ch)
     return "".join(kept)
 
-# The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
+# The repertoire half of is_initial (_policy._SCRIPT_PROPERTIES'
+# writes_initials), kept apart
 # from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
 # and _render's copy stays pinned to it by tests/v2/test_regex_sync.py.
 # contains-any, not whole=True: the shape half has already admitted the
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
-# The second caller, is_title_shaped below, admits two or more
+_has_initialless_char = _ranges_matcher(_NO_INITIAL_RANGES, whole=False)
+# The period-abbreviation repertoire veto (_SCRIPT_PROPERTIES'
+# period_abbreviations), read through in_unabbreviating_script by H2's
+# shape (is_title_shaped and _pieces.is_leading_title), S3's split
+# pair (split_pair) and S3's joined shape (period_joined_vocab).
+# is_title_shaped admits two or more
 # characters, so contains-any there means one CJK character anywhere
 # vetoes the whole word -- 'Kim김.' is refused as a title along with
 # '田中.' -- and that is deliberate: a word carrying a script with no
 # abbreviations is not wearing an abbreviation's period.
-_has_initialless_char = _script_matcher(*_NO_INITIALS, whole=False)
+_has_unabbreviating_char = _ranges_matcher(_NO_ABBREVIATION_RANGES,
+                                           whole=False)
 
 
 def in_initialless_script(text: str) -> bool:
@@ -191,6 +200,16 @@ def in_initialless_script(text: str) -> bool:
     matcher's frame, as the callers' own `isascii()` gates do."""
     return (not text.isascii()
             and _has_initialless_char(unicodedata.normalize("NFC", text)))
+
+
+def in_unabbreviating_script(text: str) -> bool:
+    """Whether TEXT holds a character of a script that writes no period
+    abbreviation (rules/H2, #323; rules/S3's split and joined shapes),
+    asked of the composed spelling as
+    `in_initialless_script` is, the two being separate questions that
+    the four East Asian rows answer alike (#1256)."""
+    return (not text.isascii()
+            and _has_unabbreviating_char(unicodedata.normalize("NFC", text)))
 
 
 # H2's own shape, text-level: an unlisted period-marked abbreviation,
@@ -228,13 +247,14 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
 # rules/H2: "A word in one of the ten Brahmic scripts from Devanagari
 # to Sinhala" "never reads as a title by shape, even where it is a run
-# of letters" -- their Unicode blocks, U+0900 to U+0DFF. A vowel sign
+# of letters" -- the rows of _policy._SCRIPT_PROPERTIES whose
+# spells_initials holds, U+0900 to U+0DFF. A vowel sign
 # already breaks `_LETTER`'s run, but a spelled initial written with
 # none (एम. for M., এম., ਐਮ.) is a run of two letters, and the shape
 # read it as a title; these scripts write initials, so the veto is the
 # title shape's alone and not `is_initial`'s (decisions/H2, #1191).
 # Searched on the raw text: a nukta letter decomposes inside the range.
-_INDIC_BRAHMIC = re.compile('[\u0900-\u0dff]')
+_SPELLED_INITIAL = _ranges_pattern(_SPELLED_INITIAL_RANGES)
 
 # rules/H2: "A transliteration digraph" "never reads as a title by
 # shape" -- the digraphs that Except names, lowercase and periodless,
@@ -301,19 +321,21 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 
     The shape reads a Latin convention: a period marks an
-    abbreviation. Scripts with no initials have no period
-    abbreviations either (_policy._NO_INITIALS, the #320 veto
-    is_initial carries), so a CJK word wearing a period is a name
-    word, not a title -- a lone '田中.' is the family name (#323).
+    abbreviation, and a script that writes no period abbreviations
+    (_policy._SCRIPT_PROPERTIES' period_abbreviations) has nothing for
+    one to mark, so a CJK word wearing a period is a name word, not a
+    title -- a lone '田中.' is the family name (#323). The four East
+    Asian rows write no initials either; Thai writes no initials but
+    writes its titles short, so the two are separate columns (#1256).
     `_PERIOD_ABBREV` stays ASCII-period only: a word wearing '。' never
     matches it, and the veto is what makes the ASCII spelling agree.
-    ASCII text can carry no _NO_INITIALS character (every range sits
-    above U+3000), so the C-level test declines before the regex
+    ASCII text can carry no such character (every range sits
+    above U+007F), so the C-level test declines before the regex
     search runs -- four frames per unlisted-abbreviation opener per
     parse, this running four times per piece.
 
     A word holding a letter of the ten Brahmic scripts from Devanagari
-    to Sinhala is refused too (`_INDIC_BRAHMIC`, rules/H2's Except,
+    to Sinhala is refused too (`_SPELLED_INITIAL`, rules/H2's Except,
     #1191): those scripts write initials, and spell a Latin one out by
     its sound with no vowel sign (एम. for M.), a run of letters the
     shape would misread. Its search is C-level, so it costs no frame.
@@ -323,8 +345,8 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     (rules/H2's transliteration-digraph Except, #1136).
     """
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not (_INDIC_BRAHMIC.search(text)
-                                        or in_initialless_script(text)))
+            and (text.isascii() or not (_SPELLED_INITIAL.search(text)
+                                        or in_unabbreviating_script(text)))
             and text[:-1].lower() not in _DIGRAPH_INITIALS
             and _normalize(text) not in lexicon._sets.given_name_abbreviations)
 
@@ -336,7 +358,7 @@ def is_initial_shaped(text: str) -> bool:
     Callers asking whether a token is STRUCTURALLY part of an initial
     run want this; callers asking whether it can really stand in for a
     name want is_initial (#320). The two answers differ only inside
-    _NO_INITIALS scripts, where '씨.' is initial-SHAPED but is not an
+    scripts that write no initials, where '씨.' is initial-SHAPED but is not an
     initial -- see assign's roman-numeral fork, the shape caller, for
     what picking the wrong one costs.
 
@@ -800,7 +822,7 @@ def is_one_case(texts: Sequence[str]) -> bool:
     name never reaches a decision this gates, and "one case" is the
     honest verdict for text that has only one.
     """
-    joined = " ".join(texts)
+    joined = " ".join(texts).translate(_CASELESS_LETTERS)
     return joined in (joined.upper(), joined.lower())
 
 
@@ -866,8 +888,11 @@ def ambiguous_lean(text: str, one_case: bool,
     """
     if one_case or cue == "none":
         return None
-    if text.upper() == text.lower():     # caseless: no contrast to read
-        return None
+    # a script the table gives no case is caseless here too (#1222); no
+    # default vocabulary member is written in one, so only a caller's
+    # lexicon reaches this with a Georgian word
+    if (cased := text.translate(_CASELESS_LETTERS)).upper() == cased.lower():
+        return None                      # caseless: no contrast to read
     if text.isupper():
         return "credential" if cue == "acronym" else None
     if text.islower():
@@ -1301,7 +1326,7 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
             or is_cased_paired_initials(first + second)
             # a script that writes no abbreviations is not wearing an
             # abbreviation's periods, as rules/S3 reads it joined
-            or in_initialless_script(first + second)):
+            or in_unabbreviating_script(first + second)):
         return None
     fold = _normalize(a + b)
     if (fold in lexicon._sets.suffix_acronyms_ambiguous
@@ -1841,7 +1866,8 @@ def period_joined_vocab(
     alphabetic in the shipped lexicon, so this narrows only the
     previously-unclaimed "shape" answer, never the "suffix" one.
 
-    The INITIALLESS-SCRIPT guard is a second, independent narrowing of
+    The UNABBREVIATING-SCRIPT guard (the script-property table's
+    period_abbreviations, #1256) is a second, independent narrowing of
     the same verdict, on the same reasoning `is_title_shaped` already
     gives its own period-abbreviation inference (#323): a script with
     no period abbreviations at all has nothing for interior periods to
@@ -1869,7 +1895,7 @@ def period_joined_vocab(
     if period_joined_credential(text, lexicon):
         return "suffix"
     if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
-            and (text.isascii() or not in_initialless_script(text))):
+            and (text.isascii() or not in_unabbreviating_script(text))):
         return "shape"
     return None
 
@@ -3083,7 +3109,7 @@ def _normalized_for_script(text: str) -> str | None:
     segmenter's neighbour precondition missed a writer-drawn boundary
     ('山田太郎 田中.' consulted the segmenter on 山田太郎 as if it stood
     alone). The East Asian scripts this classifies (_policy's
-    _EAST_ASIAN_SCRIPTS, the same four as _NO_INITIALS, #320) have no
+    _EAST_ASIAN_SCRIPTS, the four East Asian rows of _policy._SCRIPT_PROPERTIES, #320) have no
     initials and no period abbreviations, so a stop on such a token
     carries no information about the word; on a Cyrillic word it is an
     initial's stop (`Б.`), dropped all the same, deliberately: the

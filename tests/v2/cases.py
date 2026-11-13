@@ -5601,9 +5601,11 @@ CASES: tuple[Case, ...] = (
     Case("thai_trailing_run_of_initials_opening_like_a_rank",
          "สมชาย พ.ต.ส.",
          {"given": "สมชาย", "family": "พ.ต.ส."},
-         ambiguities=("order", "suffix-or-name"),
+         ambiguities=("suffix-or-name",),
          notes="the boundary: a run of single letters running past the "
-               "rank is T7's run of initials (the fix-commit review)"),
+               "rank is T7's run of initials (the fix-commit review); "
+               "no order report since #1256, Thai writing no initials, "
+               "so no byline writes a Thai name before them"),
     Case("thai_acting_before_a_short_title_not_marked_to_peel",
          "ว่าที่ดร.สมชาย ใจดี",
          {"title": "ว่าที่ดร.", "given": "สมชาย", "family": "ใจดี"},
@@ -18568,6 +18570,14 @@ CASES: tuple[Case, ...] = (
          {'given': 'এম.', 'middle': 'আবদুল', 'family': 'লতিফ'},
          classification="fix(#1191)",
          notes="rules/H2's Brahmic veto (#1191): a Latin initial spelled in the script with no vowel sign (M. as एम.) is a run of two letters, which the shape read as a title; 1.4.0 through 3.0.1 read title 'এম.'."),
+    Case('georgian_beside_an_ambiguous_credential_is_one_case', 'ჯეკ MA',
+         {'given': 'ჯეკ', 'family': 'MA'},
+         classification="fix(#1222)", ambiguities=("suffix-or-name",),
+         notes="rules/S6's caseless script (#1222): Georgian writes no case a writer chooses, so the name is in one case and the count decides, as for 'محمد MA'; 1.4.0 through 2.3.0 read family 'MA', 2.4.0 through 3.0.1 suffix 'MA', Python counting Mkhedruli as lower case."),
+    Case('georgian_beside_an_ambiguous_credential_after_a_comma', 'ჯეკ, MA',
+         {'given': 'MA', 'family': 'ჯეკ'},
+         classification="fix(#1222)", ambiguities=("suffix-or-name",),
+         notes="rules/S6's caseless script (#1222): Georgian writes no case a writer chooses, so the name is in one case and the count decides, as for 'محمد MA'; 1.4.0 through 2.3.0 read given 'MA', 2.4.0 through 3.0.1 suffix 'MA', Python counting Mkhedruli as lower case."),
     Case('gurmukhi_spelled_initial_is_not_a_title', 'ਐਮ. ਸਿੰਘ',
          {'given': 'ਐਮ.', 'family': 'ਸਿੰਘ'},
          classification="fix(#1191)",
@@ -18632,8 +18642,9 @@ CASES: tuple[Case, ...] = (
          {"given": "ﾏｲｹﾙ."}, ambiguities=("given-or-family",),
          classification="fix(#594)",
          notes="the halfwidth twin of the row above: katakana has no "
-               "initials (_NO_INITIALS), and halfwidth kana is katakana "
-               "now, so H2's opening-abbreviation shape declines it. "
+               "initials nor period abbreviations (_SCRIPT_PROPERTIES), "
+               "and halfwidth kana is katakana now, so H2's "
+               "opening-abbreviation shape declines it. "
                "2.3.0 read title ﾏｲｹﾙ., the halfwidth limit "
                "decisions/cjk-full-stops recorded",
          tolerated=True),
@@ -18658,8 +18669,8 @@ CASES: tuple[Case, ...] = (
          "Проф. Иванов",
          {"title": "Проф.", "family": "Иванов"},
          classification="parity",
-         notes="the alphabet _policy._NO_INITIALS's own comment names "
-               "as the one it would be wrong to add: Cyrillic has "
+         notes="the alphabet _policy's script table names as a "
+               "writing convention, not a typology: Cyrillic has "
                "initials and abbreviations, so H2's shape fires and "
                "the #323 veto stays out of its way. Pins the veto's "
                "repertoire at the four CJK scripts from the other "

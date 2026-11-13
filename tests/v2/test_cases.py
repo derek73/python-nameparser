@@ -460,9 +460,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # initials ('Kavitha S', 'John V', 'Jack X.Y.Z.'); 1882 -> 1888 on
     # 2026-11-12, #1257's two Hebrew rows of a particle opening a name
     # ('בן כהן', 'אל כהן') reporting particle-or-given under three
-    # orders; 1888 -> 1891 the same day, its 'El Mehdi Haddou' the same.
-    assert claims == 1891, (
-        f"the field sweep checks {claims} claims, recorded as 1891 on "
+    # orders; 1888 -> 1891 the same day, its 'El Mehdi Haddou' the same;
+    # 1891 -> 1897 the same day, #1222's two Georgian rows ('ჯეკ MA',
+    # 'ჯეკ, MA') reporting suffix-or-name under three orders; 1897 ->
+    # 1896 the same day, #1256's Thai row ('สมชาย พ.ต.ส.') dropping its
+    # order report.
+    assert claims == 1896, (
+        f"the field sweep checks {claims} claims, recorded as 1896 on "
         f"2026-11-12")
 
 

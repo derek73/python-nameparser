@@ -1288,6 +1288,26 @@ capitalizes a particle that opens a hyphenated word, save Dutch 's and
     ...     "WILLEM 'S-GRAVESANDE")]
     ["Безугла Мар'яна", 'ნინო ბურჯანაძე', 'Levon Ter-Petrosyan', "Willem 's-Gravesande"]
 
+A Georgian name mixing Mtavruli with Mkhedruli is written in Mkhedruli
+too, Georgian having no case that a capital sets against the rest of
+the name, where 1.4 through 3.0 kept it as written; a Latin surname in
+capitals in a name of mixed case is still kept:
+
+.. doctest::
+
+    >>> [str(parse(n).capitalized()) for n in ("ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ",
+    ...     "Უჩა გოგოლაძე", "Jean DUPONT")]
+    ['ნინო ბურჯანაძე', 'უჩა გოგოლაძე', 'Jean DUPONT']
+
+:meth:`~nameparser.ParsedName.initials` gives nothing for a word in
+Thai or Burmese, scripts that shorten no name to a letter, as for Han,
+Hangul and kana, where 1.4 through 3.0 gave its first character:
+
+.. doctest::
+
+    >>> [parse(n).initials() for n in ("สมชาย ใจดี", "ကြည် ကြည် ဌေး")]
+    ['', '']
+
 A transliteration digraph opening a name, the Latin spelling of one
 Cyrillic letter (``Yu.``, ``Ya.``, ``Ye.``, ``Yo.``, ``Zh.``, ``Kh.``,
 ``Shch.``, ``Dzh.``), is a given name where 1.4 through 3.0 read it as a

@@ -68,6 +68,12 @@
   ```
   "Abdul E.T. Smith"          →  given="Abdul E.T."
   ```
+- A Georgian run before a credential that S8 reads as a name word stays whole: the credential's Latin capitals are then among the name words, so the run is no longer among names written wholly in lower case, as it already is beside a Hebrew or Arabic word.
+  ```
+  "ნ.ბ. ბერიძე Jr. ნინო"  →  given="ნ.ბ."
+  "ნ.ბ. MA"                →  given="ნ.ბ."
+  "ნ.ბ. בן ბერიძე"          →  given="ნ.ბ."
+  ```
 - A credential written as a run where the parse reads a name word parts with it, as the same letters written apart would: under the Vietnamese pack's given-last order `Nguyen Van Anh D.O.` reads middle 'Van Anh D.', given 'O.'.
 
 ---
