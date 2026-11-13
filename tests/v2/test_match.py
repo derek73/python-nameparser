@@ -1850,6 +1850,18 @@ def test_a_keyboards_spelling_reads_folded_by_default(a: str, b: str) -> None:
         assert m.keys(x) & m.keys(y)
 
 
+def test_a_transcription_reaches_a_family_base_and_the_birth_name() -> None:
+    # word by word, through the spelling set: a particle surname compares
+    # by its base (taken 2026-11-12: the transcription left out of
+    # `_spellings` refuses the first pair, and left out of the keys as
+    # well, keeps the second consistent under across-roles with no key)
+    assert m.check("Hans von Müller", "Hans Mueller").consistent
+    across = _with(Outcome.ACROSS_ROLES)
+    a, b = "Ann Smith (née Müller)", "Ann Mueller"
+    assert across.check(a, b).consistent
+    assert across.keys(a) & across.keys(b)
+
+
 def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
     # Muller and Mueller each meet Müller, and not each other: neither
     # holds the letter, and the check is not transitive
