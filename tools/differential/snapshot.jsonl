@@ -6752,45 +6752,46 @@
 {"name": "ເຄທີ ມູລເລີ", "given": "ເຄທີ", "family": "ມູລເລີ", "initials": "ເ. ມ."}
 {"name": "ເອກະພົນ ນາລິນ", "order": "FAMILY_FIRST", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
 {"name": "ເອກະພົນ, ນາລິນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
-{"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
-{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
-{"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
-{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
-{"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
-{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "initials": "ဒ. ပ. ဒ. အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ.", "generation": "ဂျူနီယာ"}
-{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "initials": "ဒ. မ. ဘ. ဝ. ဟ. ရ. ဝ.", "generation": "ဂျူနီယာ"}
-{"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ", "initials": "မ. ပ. ဝ. ႁ. ရ. ဝ. မ."}
-{"name": "မူလာ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ", "initials": "က. မ."}
-{"name": "မူးလႃႇ ၶေးတႃႇ", "order": "FAMILY_FIRST", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
-{"name": "မေရီ စူး ဟာမစ်ရှ် ဝပ်ဆင်", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "မေႇရီႇသူး ႁေးမိသျ် ဝတ်ႉသၼ်ႇ", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
-{"name": "ဝတ်ႉသၼ်ႇ မေႇရီႇသူး ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ", "initials": "မ. ႁ. ဝ."}
-{"name": "ဝပ်ဆင် မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်", "initials": "မ. စ. ဟ. ဝ."}
-{"name": "ဝုတ်ႉသ်တႃႇ မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "order": "FAMILY_FIRST", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "family": "ဝုတ်ႉသ်တႃႇ", "initials": "မ. ပ. ဝ. ႁ. ရ. မ. ဝ."}
-{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. ဗ. ဝ. ဘ. ပ. ဒ. အ. က. ဆ. မ.", "generation": "ဂျူနီယာ"}
-{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "အာဒါ", "middle": "ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ ဘရူ", "initials": "အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ."}
-{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "suffix": "ဂျူနီယာ", "initials": "ဒ. ဝ. မ. ဘ. ဝ. ဟ. ရ.", "generation": "ဂျူနီယာ"}
-{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ", "initials": "ဘ. ဝ. ဟ. ရ. ဝ."}
-{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "order": "FAMILY_FIRST", "given": "ပရူဝ်ႇလ်", "middle": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း", "initials": "ပ. ၵ. တ. ၶ. ဢ. ၶ. သ. မ. မ. ဝ."}
-{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "initials": "ၶ. ဢ. ၶ. သ. မ. မ. ဝ. ပ. ၵ. တ."}
-{"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
-{"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
-{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
-{"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
-{"name": "ဢၢႆႇရိၼ်း ဢႅတ်ႉလႃႇ", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
-{"name": "ဢႅတ်ႉလႃႇ ဢၢႆႇရိၼ်း", "order": "FAMILY_FIRST", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ", "initials": "ဢ. ဢ."}
-{"name": "ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "family": "မေႃယႃ", "initials": "ၶ. ဢ. ၶ. သ. မ. ဝ. ပ. ၵ. တ. မ."}
-{"name": "ၶေးတႃႇ မူးလႃႇ", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
-{"name": "ၸၸီးလီႇယႃႇ ႁေးမိသျ် သတူႇပႃႇ", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
-{"name": "ၸႅၼ်ႇတေႇယႃႇ", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
-{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
+{"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "ကြည် ကြည် ဌေး", "given": "ကြည်", "middle": "ကြည်", "family": "ဌေး"}
+{"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}
+{"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ဒေါက်တာ", "family": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ မေႃယႃ", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ ဝုတ်ႉသ်တႃႇ", "family": "မေႃယႃ"}
+{"name": "မူလာ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "မူလာ၊ ကက်သီ", "order": "FAMILY_FIRST", "given": "ကက်သီ", "family": "မူလာ"}
+{"name": "မူးလႃႇ ၶေးတႃႇ", "order": "FAMILY_FIRST", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ"}
+{"name": "မေရီ စူး ဟာမစ်ရှ် ဝပ်ဆင်", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "မေႇရီႇသူး ႁေးမိသျ် ဝတ်ႉသၼ်ႇ", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ"}
+{"name": "ဝတ်ႉသၼ်ႇ မေႇရီႇသူး ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "မေႇရီႇသူး", "middle": "ႁေးမိသျ်", "family": "ဝတ်ႉသၼ်ႇ"}
+{"name": "ဝပ်ဆင် မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "မေရီ", "middle": "စူး ဟာမစ်ရှ်", "family": "ဝပ်ဆင်"}
+{"name": "ဝုတ်ႉသ်တႃႇ မိတ်ႇသတႃႇ ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "order": "FAMILY_FIRST", "given": "မိတ်ႇသတႃႇ", "middle": "ပႃႇထရမ်ႇ ဝီလ်ပႃႇၾူတ်ႉ ႁႅၼ်ႇၼရီႇ ရေႃးပၢတ်ႉ မေႃယႃ", "family": "ဝုတ်ႉသ်တႃႇ"}
+{"name": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင်", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ ဘရူ၊ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "order": "FAMILY_FIRST", "given": "အာဒါ", "middle": "ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန်", "family": "ဝူစ်တာ ဘရူ"}
+{"name": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ", "order": "FAMILY_FIRST", "given": "ဒေါက်တာ", "family": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "suffix": "ဂျူနီယာ", "generation": "ဂျူနီယာ"}
+{"name": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "order": "FAMILY_FIRST", "given": "ဘာထရမ်", "middle": "ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်", "family": "ဝူစ်တာ"}
+{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "order": "FAMILY_FIRST", "given": "ပရူဝ်ႇလ်", "middle": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း"}
+{"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်"}
+{"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ"}
+{"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ"}
+{"name": "ဢၢႆႇရိၼ်း ဢႅတ်ႉလႃႇ", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ"}
+{"name": "ဢႅတ်ႉလႃႇ ဢၢႆႇရိၼ်း", "order": "FAMILY_FIRST", "given": "ဢၢႆႇရိၼ်း", "family": "ဢႅတ်ႉလႃႇ"}
+{"name": "ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "family": "မေႃယႃ"}
+{"name": "ၶေးတႃႇ မူးလႃႇ", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ"}
+{"name": "ၸၸီးလီႇယႃႇ ႁေးမိသျ် သတူႇပႃႇ", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ"}
+{"name": "ၸႅၼ်ႇတေႇယႃႇ", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "აბაშიძე მარიამ მართა", "order": "FAMILY_FIRST", "given": "მარიამ", "middle": "მართა", "family": "აბაშიძე", "initials": "მ. მ. ა."}
 {"name": "აბელ მამარდაშვილი", "given": "აბელ", "family": "მამარდაშვილი", "initials": "ა. მ."}
 {"name": "ალექსანდრე იაშვილი", "given": "ალექსანდრე", "family": "იაშვილი", "initials": "ა. ი."}

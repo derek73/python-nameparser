@@ -428,6 +428,15 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "initial capitals, are not in the row",
         "#1222 (the contrast), #1223 (case repair); CLDR ka writes "
         "initials, 1 of 15 authored patterns"),
+    "myanmar": _ScriptRow(
+        ((0x1000, 0x109F), (0xA9E0, 0xA9FF), (0xAA60, 0xAA7F),
+         (0x116D0, 0x116FF)), None, False, True, False,
+        "no Burmese name is abbreviated to a letter and a period in Burmese "
+        "script, a name being a run of syllables with no surname; whether "
+        "it writes period abbreviations is not decided, and reads as before",
+        "decided on #1234 from the convention; CLDR my's patterns are en's "
+        "copied (36 of 42 identical once the comma is ၊, cldr main "
+        "c0b65ae3, 2026-11-12), so the recipe does not answer"),
 }
 
 
