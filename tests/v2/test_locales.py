@@ -117,11 +117,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "mn", "ne", "pt",
-        "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
+        "ne", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -147,6 +147,22 @@ def test_ne_pack_contents() -> None:
                                 languages=frozenset({"ne"}))
     assert changed_words(selected(locales.NE.languages)) == {
         "guru", "गुरु", "श्री"}
+
+
+def test_ar_and_he_packs_are_their_choice_alone() -> None:
+    # #1257: each turns on `ben`'s clan reading, written default = false;
+    # ar's choice also drops en's credential ABD for abd's bound given name
+    import pickle
+    from nameparser._reading_index import changed_words, selected
+    for code, pack, words in (("ar", locales.AR, {"abd", "ben"}),
+                              ("he", locales.HE, {"ben"})):
+        assert pack == Locale(code=code, lexicon=Lexicon.empty(),
+                              languages=frozenset({code}))
+        assert changed_words(selected(pack.languages)) == words
+        assert pickle.loads(pickle.dumps(pack)) == pack
+        parser = parser_for(pack)
+        name = pickle.loads(pickle.dumps(parser)).parse("Karim Ben Haddad")
+        assert (name.middle, name.family) == ("", "Ben Haddad")
 
 
 @pytest.mark.parametrize("text", [
@@ -1783,6 +1799,21 @@ _ROTATORS["sl"] = [
 _ROTATORS["hr"] = [
     "Ivan Horvat ml.",               # ml
     "Ivan Horvat st.",               # st
+]
+# ar and he (#1257): ben mid-name, in each case and after a family comma;
+# ar also the credential ABD its choice drops for abd's bound given name
+_ROTATORS["ar"] = [
+    "Karim Ben Haddad",              # ben
+    "KARIM BEN HADDAD",              # ben, in one case
+    "karim ben haddad",              # ben, lower case
+    "Haddad, Karim Ben",             # ben ending the given part
+    "Jane Smith, ABD",               # abd, the credential leaving
+    "Jane Smith ABD",                # abd ending the name
+]
+_ROTATORS["he"] = [
+    "Yael Ben Arieh",                # ben
+    "YAEL BEN ARIEH",                # ben, in one case
+    "Arieh, Yael Ben",               # ben ending the given part
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
