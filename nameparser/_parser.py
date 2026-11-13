@@ -362,11 +362,12 @@ class Parser:
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
-        Measured 2026-11-10, re-taken 2026-11-11, with
+        Measured 2026-11-10, re-taken 2026-11-11 and 2026-11-12, with
         tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
         groups a size (decisions/group-suggestion's 2026-11-11 TRAILING
-        INITIAL entry holds the table): a group written in this parser's own order kept
+        INITIAL entry holds the table, its 2026-11-12 GIVEN NAMES FROM
+        ORCID entry the cells that moved since): a group written in this parser's own order kept
         it in at least 98% of groups at every size from 2 to 200 names,
         under either base order, save two populations whose capitals the
         capitals signal reads as a family name: ORCID's credit
@@ -382,7 +383,8 @@ class Parser:
         from 5 names; German, Dutch, Italian, Spanish, British and
         Vietnamese from 10; French, US, Japanese and Turkish from 20;
         Nigerian, Romanian, Russian and Brazilian from 50; and Indian
-        only at 200. A group whose votes fall short of the thresholds keeps
+        from 50 for US patent inventors, only at 200 for UK company
+        filers. A group whose votes fall short of the thresholds keeps
         the base rather than guess, so a smaller group moves it in fewer
         of the draws. ``capitals_as_family``, measured 2026-11-12
         (decisions/group-suggestion's CAPITALS entry): ORCID holders who
