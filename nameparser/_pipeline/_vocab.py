@@ -179,8 +179,11 @@ def _drop_kana_voicing_marks(text: str) -> str:
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
 _has_initialless_char = _ranges_matcher(_NO_INITIAL_RANGES, whole=False)
-# The H2 shape's repertoire veto (_SCRIPT_PROPERTIES'
-# period_abbreviations). is_title_shaped admits two or more
+# The period-abbreviation repertoire veto (_SCRIPT_PROPERTIES'
+# period_abbreviations), read through in_unabbreviating_script by H2's
+# shape (is_title_shaped and _pieces.is_leading_title), S3's split
+# pair (split_pair) and S3's joined shape (period_joined_vocab).
+# is_title_shaped admits two or more
 # characters, so contains-any there means one CJK character anywhere
 # vetoes the whole word -- 'Kim김.' is refused as a title along with
 # '田中.' -- and that is deliberate: a word carrying a script with no
@@ -201,7 +204,8 @@ def in_initialless_script(text: str) -> bool:
 
 def in_unabbreviating_script(text: str) -> bool:
     """Whether TEXT holds a character of a script that writes no period
-    abbreviation (rules/H2, #323), asked of the composed spelling as
+    abbreviation (rules/H2, #323; rules/S3's split and joined shapes),
+    asked of the composed spelling as
     `in_initialless_script` is, the two being separate questions that
     the four East Asian rows answer alike (#1256)."""
     return (not text.isascii()
@@ -326,7 +330,7 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     `_PERIOD_ABBREV` stays ASCII-period only: a word wearing '。' never
     matches it, and the veto is what makes the ASCII spelling agree.
     ASCII text can carry no such character (every range sits
-    above U+3000), so the C-level test declines before the regex
+    above U+007F), so the C-level test declines before the regex
     search runs -- four frames per unlisted-abbreviation opener per
     parse, this running four times per piece.
 
@@ -3102,7 +3106,7 @@ def _normalized_for_script(text: str) -> str | None:
     segmenter's neighbour precondition missed a writer-drawn boundary
     ('山田太郎 田中.' consulted the segmenter on 山田太郎 as if it stood
     alone). The East Asian scripts this classifies (_policy's
-    _EAST_ASIAN_SCRIPTS, the four that write no initials, #320) have no
+    _EAST_ASIAN_SCRIPTS, the four East Asian rows of _policy._SCRIPT_PROPERTIES, #320) have no
     initials and no period abbreviations, so a stop on such a token
     carries no information about the word; on a Cyrillic word it is an
     initial's stop (`Б.`), dropped all the same, deliberately: the

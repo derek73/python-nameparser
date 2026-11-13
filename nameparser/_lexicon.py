@@ -49,8 +49,9 @@ _ADDED_IN = "nameparser.added_in"
 #: classification fold, _script_segment's surname site and honorific
 #: tail match -- so that "which characters are a period" is answered
 #: once; the bundle's fifth site, _pieces' opening-abbreviation shape,
-#: reads no stop set at all but the no-initials repertoire
-#: (_policy._SCRIPT_PROPERTIES) that licenses every reader here. NFKC is
+#: reads no stop set at all but the script-property table's
+#: no-period-abbreviation spans (_policy._NO_ABBREVIATION_RANGES), the
+#: repertoire that licenses every reader here. NFKC is
 #: NOT a substitute for listing them: it folds U+FF0E to '.' and
 #: U+FF61 to U+3002, and leaves U+3002 as it is.
 #: Not every period test reads this set, and the ones that do not are

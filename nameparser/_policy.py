@@ -98,7 +98,8 @@ class Script(StrEnum):
     #: caller's or a pack's script_orders entry can, as locales.MN's
     #: does, licensed by the caller's choice of that pack (#1237). Not
     #: among the scripts the interpunct and the two-family-names count
-    #: read (_EAST_ASIAN_SCRIPTS), and writes initials (_SCRIPT_PROPERTIES):
+    #: read (_EAST_ASIAN_SCRIPTS), and has no row in _SCRIPT_PROPERTIES, so
+    #: writes initials:
     #: Cyrillic names abbreviate.
     CYRILLIC = "cyrillic"
 
@@ -334,11 +335,13 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 
 
 # ---------------------------------------------------------------------
-# The script-property table (#1256). Every rule that asks what a
-# script's writing does -- whether it has case, whether it writes
-# initials, whether it writes period abbreviations, whether a bare run
-# of its letters with a period is a Latin initial spelled out -- reads
-# its answer here, and nowhere else, so that adding a script is one
+# The script-property table (#1256). Every rule that asks one of four
+# questions about a script's writing -- whether it has case for the
+# name-case contrast, whether it writes initials, whether it writes
+# period abbreviations, whether a bare run of its letters with a period
+# is a Latin initial spelled out -- reads its answer here, and nowhere
+# else (other script facts, the order a script settles or the marks a
+# Thai name writes, live with their rules), so that adding a script is one
 # row and a misjudged answer sits in one place. Private, and keyed by
 # a private name rather than by Script: that enum holds what a caller
 # can key a setting on, and membership there settles nothing about
@@ -437,8 +440,9 @@ _SCRIPT_PROPERTIES: dict[str, _ScriptRow] = {
         "script, a name being a run of syllables with no surname; whether "
         "it writes period abbreviations is not decided, and reads as before",
         "decided on #1234 from the convention; CLDR my's patterns are en's "
-        "copied (36 of 42 identical once the comma is ၊, cldr main "
-        "c0b65ae3, 2026-11-12), so the recipe does not answer"),
+        "copied (36 of 42 identical once the comma is ၊, all 42 with "
+        "spaces removed, cldr main c0b65ae3, 2026-11-12), so the recipe "
+        "does not answer"),
     "thai": _ScriptRow(
         ((0x0E00, 0x0E7F),), None, False, True, False,
         "no Thai name is abbreviated to a letter and a period, but a title "
@@ -468,7 +472,8 @@ _SPELLED_INITIAL_RANGES = _ranges_where("spells_initials", True)
 #: The letters the name-case contrast reads no case in (rules/S6's "a
 #: script with no case to write in"), mapped to None so that
 #: `str.translate` drops them at C level before a contrast is read:
-#: _vocab.is_one_case, _vocab.ambiguous_lean and _render's R5 gate.
+#: _vocab.is_one_case, _vocab.ambiguous_lean and _render's R5 gate, and
+#: _render._capitalize writes a first letter in it in its lower case (R4).
 #: Only the letters Unicode gives a case are listed, the others being
 #: caseless to the comparison already.
 _CASELESS_LETTERS: dict[int, None] = {
