@@ -153,8 +153,14 @@ none. A group never turns the switch off, and a base reading an
 unlisted word in capitals as a credential everywhere
 (``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``) is suggested no
 change, the two settings being opposite readings of the same word. A
-word your parser lists as a title, a credential or a numeral is no
-evidence either way (``MISS Ann Berg``), whatever its case. The order is
+name counts against the switch where it would move the family onto a
+word your parser reads as a title in that name (``MISS Ann Berg``),
+and so does a name in mixed case with no capitals once its titles and
+post-nominals are read past (``DR Ann Berg``, ``Prof. Ann Berg``,
+``John Smith FRCS``); a surname your vocabulary also lists as a title
+counts for it where your parser reads it as the family (``Mary
+BISHOP``), but not where it opens the name and your parser takes it
+for a title (``BISHOP Mary``). The order is
 decided apart from it. In the report, each setting counts its names
 for and against the value the suggested parser has, so a list left with
 the switch off counts its names in mixed case with no capitals as

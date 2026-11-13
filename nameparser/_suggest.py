@@ -37,8 +37,10 @@ decided so casts no trailing-initial vote on its order. Beside them it
 decides ``capitals_as_family`` (rules/O9) from the names whose family
 the rule, asked of the parse itself with the switch on, reads as a
 word in capitals of four letters or more that the lexicon lists as no
-title, credential or numeral, against the names in mixed case with no
-word in capitals; it is no vote on the order, which the
+credential or numeral and the base reads as no title, against the names
+the switch would give a family the base reads as a title and the names
+in mixed case with no word in capitals; it is no vote on the order,
+which the
 capitals signal casts as before. A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
@@ -1194,46 +1196,45 @@ def _capitals_reader(parser: Parser) -> Parser:
             parser.policy, capitals_as_family=True))
 
 
-def _listed_title(text: str, lexicon: Lexicon) -> bool:
-    """A word the lexicon lists as a title of any kind: a title, one
-    read so only in a phrase (`DEAN`, `KING`), a modifier or a style."""
-    n = _normalize(text)
-    sets = lexicon._sets
-    return (n in sets.titles or n in sets.titles_ambiguous
-            or n in sets.title_modifiers or n in sets.title_styles)
-
-
-def _capitals_family(text: str, words: list[str], lexicon: Lexicon,
+def _capitals_family(text: str, words: list[str], base: Parser,
                      reader: Callable[[], Parser]) -> bool | None:
-    """One name's evidence on ``capitals_as_family``: True where
-    rules/O9, asked of the parse itself with the switch on, reads as the
-    family a word of at least _MIN_CAPITALS_LETTERS letters; False where
-    the words the signals read (`words`) are two or more, hold an
-    uppercase and a lowercase letter and none is in capitals; None
-    otherwise. A word the base reads as a title, a credential or a
-    numeral is no evidence that a list writes its FAMILIES in capitals,
-    so such a word in capitals casts nothing for it, and a name whose
-    only capitals are a listed title carries none (`MISS Ann Berg`);
-    a credential the name is read past leaves a name in mixed case with
-    no capitals, which counts against (`John Smith FRCS`). A name in one
-    case carries none, nor does a run of two or three capitals (`Zhi
-    LI`), a credential the name is not read past (`Mary Jones MBA`, a
-    name too), a family comma or a name of one word.
+    """One name's evidence on ``capitals_as_family``.
 
-    Only a name holding a word in capitals is parsed, its words cut at
-    commas and read past quotes and brackets as `_name_words` reads
-    them. The loops are plain and their per-character tests C-level, so
-    a name with no word holding two capitals costs this one call: the
-    group suggester parses no name of a list with none."""
-    titled = held = False
+    True where rules/O9, asked of the parse itself with the switch on,
+    reads as the family a word of at least _MIN_CAPITALS_LETTERS letters
+    that the lexicon lists as no credential or numeral, and that the
+    base, parsing the name itself, does not read as a title. False
+    where the switch would move the family onto words the base reads as
+    titles and nothing else (`MISS Ann Berg`, `VICE PRESIDENT Ann
+    Berg`), and where the words the signals read (`words`) are two or
+    more, hold an uppercase and a lowercase letter and none is in
+    capitals: a title or a credential they are read past leaves such a
+    name (`DR Ann Berg`, `Prof. Ann Berg`, `John Smith FRCS`). None
+    otherwise: a name in one case, a run of two or three capitals (`Zhi
+    LI`), a credential the name is not read past (`Mary Jones MBA`, a
+    name too), a family comma, a name of one word.
+
+    A word is a title by the base's own reading of the name, so a
+    surname the vocabulary also lists as a title counts as the family
+    the base reads it as (`Mary BISHOP`); the base parse is asked only
+    where a family word the switch reads is a listed title. Only a name
+    holding a word in capitals is parsed, its words cut at commas and
+    read past quotes and brackets as `_name_words` reads them. The loops
+    are plain and their per-character tests C-level, so a name with no
+    word holding two capitals costs this one call: the group suggester
+    parses no name of a list with none."""
+    held = False
     for word in _COMMAS.split(text):
         # a capitals word holds two capitals at least
-        if sum(map(str.isupper, word)) >= 2:
-            bare = word.strip(_EDGES)
-            if is_capitals_word(bare):
-                held = True
-                titled = titled or _listed_title(bare, lexicon)
+        if (sum(map(str.isupper, word)) >= 2
+                and is_capitals_word(word.strip(_EDGES))):
+            held = True
+            break
     if held:
+        lexicon = base.lexicon
+        sets = lexicon._sets
+        family = []
+        listed = False
         for token in reader().parse(text).tokens:
             # rules/O9's family: a family word read by its shape is a
             # word of the run in capitals (a particle the run took reads
@@ -1242,11 +1243,23 @@ def _capitals_family(text: str, words: list[str], lexicon: Lexicon,
                     and token.reading.source is ReadingSource.SHAPE
                     and sum(map(str.isalpha, token.text))
                     >= _MIN_CAPITALS_LETTERS
-                    and not _listed_suffix(token.text, lexicon)
-                    and not _listed_title(token.text, lexicon)):
-                return True
-        if titled:
-            return None
+                    and not _listed_suffix(token.text, lexicon)):
+                family.append(token)
+                # a title of any kind the vocabulary lists (a modifier and
+                # a style compile into the titles, a word that is also a
+                # given name into the ambiguous titles instead): only such
+                # a word may be the base's title, so only it costs the
+                # base parse
+                word = _normalize(token.text)
+                listed = listed or (
+                    word in sets.titles or word in sets.titles_ambiguous)
+        if family:
+            if listed:
+                titles = {token.span for token in base.parse(text).tokens
+                          if token.role is Role.TITLE}
+                # the switch would move the family onto the base's titles
+                return not all(token.span in titles for token in family)
+            return True
         for word in words:
             if is_capitals_word(word):
                 return None
@@ -1369,8 +1382,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         # the switch cannot be set beside it: no name is read for it
         marks: list[bool | None] = [None] * len(texts)
     else:
-        marks = [_capitals_family(text, words, parser.lexicon,
-                                  capitals_reader)
+        marks = [_capitals_family(text, words, parser, capitals_reader)
                  for text, _, _, words in with_words]
     capitals, capitals_fields = _decide_capitals(marks, parser.policy)
     read = [(text, votes, comma) for text, votes, comma, _ in with_words]

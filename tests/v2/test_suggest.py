@@ -1818,11 +1818,21 @@ _CAPITALS_VOTE = [
      False, 0, 2, 0),
     (["Jean DUPONT", "Marie MARTIN"], Policy(capitals_as_family=True),
      True, 2, 0, 0),
-    # a listed title in capitals is no evidence that FAMILIES are written
-    # so (#1369 review): neither for, nor against
+    # a name whose family the switch would move onto words the base
+    # reads as titles counts against (#1369's second review): the group
+    # is not decided, and short titles read past count against too
     (["MISS Ann Berg", "MISS Jane Doe", "PROF Paul Hollis"], Policy(),
-     False, 0, 0, 3),
-    (["Ann Berg MISS", "Jane Doe MISS"], Policy(), False, 0, 0, 2),
+     False, 3, 0, 0),
+    (["Jean DUPONT", "Marie MARTIN", "DR Ann Berg", "DR Paul Hollis",
+      "MME Anne Leroy"], Policy(), False, 3, 2, 0),
+    # a surname the vocabulary also lists as a title counts for, the
+    # base reading it as the family
+    (["Mary BISHOP", "John POPE", "Ann JUDGE", "Tom KNIGHT"], Policy(),
+     True, 4, 0, 0),
+    (["Ann FIELD", "Tom WING", "Ruth ENGLISH", "Mary GRACE"], Policy(),
+     True, 4, 0, 0),
+    # a bare title word ending the name is the family to the base (H5)
+    (["Ann Berg MISS", "Jane Doe MISS"], Policy(), True, 2, 0, 0),
     # a name wholly in lower case carries none, as one in capitals
     (["Mary SMITH", "Ruth HOLLIS", "tom reed", "ann lee"], Policy(),
      True, 2, 0, 2),
@@ -1903,16 +1913,29 @@ def test_the_capitals_note_says_what_it_saw() -> None:
 #: One name's evidence on capitals_as_family, NameEvidence's
 #: family_in_capitals: True for, False against, None none.
 _CAPITALS_MARKS = [
-    # a word the base reads as a title is no evidence, of any title kind:
-    # plain, read so only in a phrase, a title-particle, one addressing
-    # the given name, and a surname also listed as a title
-    ("MISS Ann Berg", None), ("Ann Berg MISS", None),
-    ("PROF Paul Hollis", None), ("DEAN Ann Berg", None),
-    ("KING Ann Berg", None), ("ST Ann Berg", None), ("SIR Ann Berg", None),
-    ("Mary DEAN", None), ("Mary BISHOP", None),
-    # one with a full stop is no capitals word (rules/O9): the name is in
-    # mixed case with none, read past the title
+    # a family the switch would move onto words the base reads as titles
+    # counts against, of any title kind: plain, a phrase, a
+    # title-particle; a short one, read past, leaves a name in mixed case
+    # with no capitals, which counts against too, as does one in mixed
+    # case or with a full stop (no capitals word, rules/O9)
+    ("MISS Ann Berg", False), ("PROF Paul Hollis", False),
+    ("VICE PRESIDENT Ann Berg", False), ("FREIHERR Ann Berg", False),
+    ("DR Ann Berg", False), ("MME Anne Leroy", False),
+    ("REV Ann Berg", False), ("SIR Ann Berg", False),
+    ("ST Ann Berg", False), ("Prof Ann Berg", False),
     ("PROF. Ann Berg", False),
+    # a title read so only in a phrase is the base's title in one, and
+    # so are a modifier and a style the vocabulary lists
+    ("Associate DEAN Ann Berg", False), ("DEAN of Students Ann Berg", False),
+    ("VICE President Ann Berg", False), ("EXCELLENCY Ann Berg", False),
+    # a word the base reads as a name counts as the name it is, whatever
+    # the vocabulary lists: a title read so only in a phrase, a surname
+    # also listed as a title, a bare title word ending the name (H5)
+    ("KING Ann Berg", True), ("DEAN Ann Berg", True),
+    ("Mary BISHOP", True), ("Paul DEAN", True), ("Ann FIELD", True),
+    ("Ann Berg MISS", True),
+    # a title in capitals beside a family in capitals: the family counts
+    ("MISS SMITH Ann", True),
     # beside a family in capitals, the family still counts
     ("DR Jean DUPONT", True), ("Jean DUPONT PROF", True),
     ("DEAN Mary SMITH", True),
@@ -1932,6 +1955,32 @@ def test_each_name_carries_its_capitals_evidence(
     assert Parser().suggest([text]).names[0].family_in_capitals is mark
 
 
+@pytest.mark.parametrize("parser, text, mark", [
+    # a caller's lexicon: the base's own reading decides
+    (Parser(lexicon=Lexicon.default().remove("miss", kind="title")),
+     "MISS Ann Berg", True),
+    (Parser(lexicon=Lexicon.default().add("berg", kind="title")),
+     "BERG Ann Lee", False),
+    (Parser(lexicon=Lexicon.default().add("berg", kind="title")),
+     "Ann BERG", True),
+    # under a pack
+    (parser_for(locales.RU), "MISS Ann Berg", False),
+    (parser_for(locales.TR_AZ), "DR Ann Berg", False),
+    (parser_for(locales.RU), "Mary BISHOP", True),
+    # under a family-first order a listed title opening the name is the
+    # base's title, a surname spelled so included
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "MISS Berg Ann", False),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "BISHOP Mary", False),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+     "DR DUPONT Jean", True),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+     "DR Berg Ann", False),
+])
+def test_the_capitals_evidence_reads_the_base_parse(
+        parser: Parser, text: str, mark: bool | None) -> None:
+    assert parser.suggest([text]).names[0].family_in_capitals is mark
+
+
 def test_a_name_against_a_decided_capitals_switch_disagrees() -> None:
     s = Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Luc PETIT",
                           "John Smith FRCS"])
@@ -1940,6 +1989,13 @@ def test_a_name_against_a_decided_capitals_switch_disagrees() -> None:
     assert "disagreeing (1): John Smith FRCS" in str(s)
     # undecided, nothing disagrees with it
     assert Parser().suggest(["Jean DUPONT", "John Smith"]).disagreeing() == ()
+    # a name with no evidence never disagrees, decided or not
+    s = Parser().suggest(["Jean DUPONT", "Marie MARTIN", "tom reed"])
+    assert s.patch.capitals_as_family is True and s.disagreeing() == ()
+    # a title the switch would make the family disagrees
+    s = Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Luc PETIT",
+                          "MISS Ann Berg"])
+    assert [n.text for n in s.disagreeing()] == ["MISS Ann Berg"]
 
 
 def test_name_evidence_holds_its_capitals_mark() -> None:
@@ -1970,3 +2026,22 @@ def test_an_everywhere_base_says_why_it_reads_no_capitals() -> None:
     e = _capitals(base.suggest(["Jean DUPONT", "Marie MARTIN"]))
     assert e.note.startswith("not read: the base reads an unlisted word "  # type: ignore[attr-defined]
                              "in capitals as a credential everywhere")
+
+
+def test_the_base_parse_is_asked_only_of_a_listed_title(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # a family in capitals the vocabulary lists as no title costs the
+    # switch-on parse alone; one it lists costs the base parse too
+    calls: list[str] = []
+    real = Parser.parse
+
+    def counting(self: Parser, text: str) -> object:
+        if not self.policy.capitals_as_family:
+            calls.append(text)
+        return real(self, text)
+
+    monkeypatch.setattr(Parser, "parse", counting)
+    Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Anne Leroy"])
+    assert calls == []
+    Parser().suggest(["MISS Ann Berg", "Jean DUPONT"])
+    assert calls == ["MISS Ann Berg"]

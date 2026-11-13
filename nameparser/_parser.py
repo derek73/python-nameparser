@@ -345,9 +345,13 @@ class Parser:
         evidence either way, write the family in capitals: the rule,
         asked of the name parsed with the switch on, reads as its family
         a word in capitals of four letters or more that is no listed
-        credential, numeral or title (``Jean DUPONT``), against a name of
-        two words or more in mixed case with none in capitals; a name
-        against a decided switch is among ``disagreeing()``. Two or three
+        credential or numeral and that this parser, reading the name,
+        does not take for a title (``Jean DUPONT``, ``Mary BISHOP``),
+        against a name whose family the switch would move onto words
+        this parser reads as titles (``MISS Ann Berg``) and a name of two
+        words or more in mixed case with none in capitals, read past its
+        titles and post-nominals (``DR Ann Berg``, ``John Smith FRCS``);
+        a name against a decided switch is among ``disagreeing()``. Two or three
         capitals are no evidence (``Zhi LI``, or initials, ``AM Hoy``),
         and only a name holding a word in capitals is parsed. A group
         never turns it off, nor turns it on under a base with
@@ -388,9 +392,7 @@ class Parser:
         family names so, only ORCID holders who typed their given name in
         capitals (``ANNA Smith``) were suggested it, which nothing in a
         name tells apart; no other list was, ORCID's bylines (``AM Hoy``)
-        included. A word this parser lists as a title, a credential or a
-        numeral is no evidence for it, and a name wholly in one case
-        carries none.
+        included. A name wholly in one case carries no evidence.
         """
         from nameparser._suggest import suggest
         return suggest(self, names)
