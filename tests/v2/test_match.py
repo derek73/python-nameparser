@@ -1939,6 +1939,27 @@ def test_a_name_with_many_transcribable_letters_has_few_keys() -> None:
         assert m.keys(name) & m.keys(other)
 
 
+def test_past_eight_transcribable_letters_a_text_has_two_forms() -> None:
+    # 2^k forms for k letters, so a text holding more than eight is read
+    # all written-out or none, never letter by letter
+    from nameparser._lexicon import _MOST_TRANSCRIBED, _forms
+    name = "Hans Ødegård-Søndergård-Bøgh-Åsøåø"
+    assert sum(c in "øå" for c in name.casefold()) == _MOST_TRANSCRIBED + 1
+    assert len(_forms(name)) == 2
+    assert m.check(name, "Hans Oedegaard-Soendergaard-Boegh-Aasoeaaoe").consistent
+    assert m.check(name, "Hans Odegard-Sondergard-Bogh-Asoao").consistent
+
+
+def test_a_given_part_needing_no_pair_has_no_familiar_outcome() -> None:
+    # every word folds alike or is a listed spelling: no alternate or
+    # familiar reading is asked for, whatever the caller accepts
+    from nameparser._match import Outcome, _familiar_outcome
+    lexicon = Lexicon.default()
+    every = frozenset(Outcome)
+    assert _familiar_outcome(["anna"], ["Anna"], lexicon, every) is None
+    assert _familiar_outcome(["wm"], ["william"], lexicon, every) is None
+
+
 def test_a_transcription_is_read_only_from_the_letter_it_writes_out() -> None:
     # Muller and Mueller each meet Müller, and not each other: neither
     # holds the letter, and the check is not transitive
