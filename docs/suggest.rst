@@ -59,7 +59,8 @@ votes do not decide keeps the base parser's value.
 
 Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
 the romanized surname in front, ``Garcia Emily`` by the common given
-name at the end. ``Taylor Morgan`` gives no evidence: it is read family
+name at the end; ``Wang Xiaoming`` carries both, so each signal's row
+counts it. ``Taylor Morgan`` gives no evidence: it is read family
 first because the list is, and nothing in the name can confirm that.
 
 .. _suggest-disagreeing:
@@ -77,7 +78,7 @@ written, so it takes ``Clark`` for the given name:
     Suggested for 6 names (base: Parser(Lexicon(default), Policy())):
       name_order  FAMILY_FIRST  4 for, 1 against, 1 no evidence
           surname FAMILY_FIRST  3
-          given-name FAMILY_FIRST  1
+          given-name FAMILY_FIRST  2
           given-name GIVEN_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
