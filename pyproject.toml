@@ -3,8 +3,8 @@ name = "nameparser"
 description = "Parse human names into title, given, middle, family, suffix, nickname and maiden name. Typed, zero-dependency, CJK-aware."
 readme = "README.rst"
 requires-python = ">=3.11"
-license = "LGPL-2.1-or-later"
-license-files = ["LICENSE", "AUTHORS", "LICENSE-nicknames"]
+license = "LGPL-2.1-or-later AND Apache-2.0 AND GFDL-1.2-no-invariants-or-later AND CC-BY-4.0 AND OGDL-Taiwan-1.0 AND Unicode-3.0"
+license-files = ["LICENSE", "AUTHORS", "LICENSE-nicknames", "LICENSE-nam_dict", "LICENSE-unicode"]
 authors = [{name = "Derek Gulbranson", email = "derek73@gmail.com"}]
 dynamic = ["version"]
 keywords = ["names", "parser", "name parsing", "human names", "nlp", "data cleaning", "record linkage", "cjk", "i18n"]

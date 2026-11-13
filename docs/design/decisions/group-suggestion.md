@@ -4,7 +4,7 @@
 
 - Proposed, for review: the parser never detects language; the group suggester (`Parser.suggest`) may, over a group the caller declares, says what it saw, and its answer is configuration the caller applies; the parse itself is untouched by it — 2026-11-10 SCOPE.
 - The two word tables the suggester reads (romanized zh, ko and vi surnames; common given names) are private compiled tables for the first version, not `Lexicon` kinds: no parse reads them, a language choice or `strict=True` does not filter them and a caller cannot edit them — 2026-11-10 TABLES.
-- The derived given-name table from nam_dict is approved (the table is derived from nam_dict, GNU FDL 1.2, already the source of the shipped familiar forms) — 2026-11-10 TABLES.
+- The derived given-name table from nam_dict is approved (the table is derived from nam_dict, GNU FDL 1.2, which seeded the shipped familiar forms until decisions/name-matching's 2026-11-12 ENGLISH ONLY UNTIL REBUILT) — 2026-11-10 TABLES.
 - Proposed, for review: the given-name table's size and filter (the top 500 per country, a family share of at most 5% over at least 20 uses) and the hand-kept surname lists — 2026-11-10 TABLES.
 - Proposed, for review: the evidence declined (the vocabulary's name readings, `Reading.languages`, the familiar forms) — 2026-11-10 DECLINED.
 - Proposed, for review: a comma name states its own order and does not vote on order — 2026-11-10 SIGNALS.

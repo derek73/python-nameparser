@@ -336,14 +336,38 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
                            match=f"{tag}.toml holds no reading a parse reads"):
             ri.selected([tag])
         assert ri.selected([tag], strict=True) == {tag}
-        # nothing Latin is left to compile but mul.toml's and the file's
-        # own familiar forms, which no parse reads: the native-script
-        # pool, mul.toml and the file alone (#1005)
+        # nothing Latin is left to compile but mul.toml's: the
+        # native-script pool, mul.toml and the file alone (#1005)
         assert ri.compile_choice(frozenset({tag}), True) == ri.compile_readings(
             ri.choose([r for r in ri.index() if ri.is_native_script(r.text)
                        or r.tag in ("mul", tag)], frozenset({tag})))
+        # any reading such a file holds is one no parse reads; a file of
+        # familiar readings alone is planted in the test below
         assert all(r.category == "familiar"
                    for r in ri.index() if r.tag == tag)
+
+
+def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # no shipped file has this shape since nam_dict's familiar forms left
+    # (decisions/name-matching, 2026-11-12 ENGLISH ONLY UNTIL REBUILT), so
+    # a file is planted: a plain choice never drops a familiar reading,
+    # so a file of familiar readings alone would change nothing as one
+    planted = dict(ri._by_text()) | {
+        "zzq": (("xx", "familiar", (("short_for", ("zzr",)),)),),
+        "zzs": (("yy", "familiar", (("short_for", ("zzt",)),)),
+                ("yy", "given", ())),
+    }
+    shipped = ri.files()
+    monkeypatch.setattr(ri, "_by_text", lambda: planted)
+    monkeypatch.setattr(ri, "files", lambda: shipped | {"xx", "yy"})
+    # the uncached function, reading the planted index
+    monkeypatch.setattr(ri, "tags", ri.tags.__wrapped__)
+    assert "xx" not in ri.tags() and "yy" in ri.tags()
+    with pytest.raises(ValueError, match="xx.toml holds no reading a parse"):
+        ri.selected(["xx"])
+    assert ri.selected(["xx"], strict=True) == {"xx"}
+    assert ri.selected(["yy"]) == {"yy"}
 
 
 #: The words each strict choice of one tag ungates against the plain

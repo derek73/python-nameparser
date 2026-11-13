@@ -282,8 +282,7 @@ checked in one of four ways:
   is accepted and reads that language's file, there being none of its
   own.
 - **A language whose file holds no reading a parse reads yet**
-  (``hu``, whose file records only words kept out and familiar forms,
-  which only name matching reads) raises ``ValueError``, a plain choice
+  (``hu``, whose file records only words kept out) raises ``ValueError``, a plain choice
   of it changing nothing; a strict choice accepts it (`Reading one language
   only`_).
 
@@ -433,8 +432,9 @@ drops from every name:
 - **A language whose file holds no reading a parse reads yet is
   accepted.** ``hu.toml`` holds none, so a plain ``hu`` choice is
   refused; a strict one reads the other scripts' words and, in Latin
-  letters, only the shared ones, and keeps ``hu.toml``'s familiar
-  forms, which name matching reads, dropping every other file's.
+  letters, only the shared ones. It keeps no familiar form, which name
+  matching reads: those are English alone, so a strict choice keeps
+  them only where it chooses ``en``.
 - **Your own words stay.** A word a strict choice drops is kept where
   you added it yourself, your lexicon's readings applying after the
   choice (`Your own words outrank a choice`_).
