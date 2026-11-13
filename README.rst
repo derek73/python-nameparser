@@ -9,7 +9,9 @@ composable, and locale packs are opt-in.
 
 📣 **nameparser 3.1 reads lists of names, not just one name at a
 time.** ``Parser.suggest()`` reads a list from one source and returns a
-parser configured for how it is written, and ``Parser.matching()``
+parser configured for how it is written (its name order, its
+patronymics, and family names written as letters or in capitals), and
+``Parser.matching()``
 groups and compares names from several sources. `Getting started
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
 takes you through both. 3.0 removed ``HumanName`` and the rest of the

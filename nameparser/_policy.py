@@ -906,7 +906,8 @@ class Policy:
     #: ("John Smith MD"); where one of ORCID's two boxes is wholly in
     #: capitals it is the given box about one time in ten. Cannot be set with
     #: ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads
-    #: the same unlisted word as a credential. Added in 3.1.
+    #: the same unlisted word as a credential. Parser.suggest suggests it
+    #: for a group whose names write the family in capitals. Added in 3.1.
     capitals_as_family: bool = field(
         default=False, metadata={ADDED_IN: "3.1.0"})
 

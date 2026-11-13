@@ -81,6 +81,7 @@ written, so it takes ``Clark`` for the given name:
           given-name GIVEN_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
+      capitals_as_family  unchanged (False)  6 for, 0 against, 0 no evidence
       disagreeing (1): Emily Clark
     >>> mixed.parser.parse("Emily Clark").given
     'Clark'
@@ -134,15 +135,65 @@ the switch would change none of its names.
     >>> nepal.parser.parse("Ram Bahadur B K").family
     'B K'
 
+.. _suggest-capitals:
+
+Some lists write every family name in capitals (``Mary SMITH``), as
+France's administrative style and several parliaments do. Where at
+least two names, and more than two thirds of the names with evidence
+either way, write their family in capitals, ``suggest()`` turns
+``capitals_as_family`` on (see :ref:`capitals-as-family`), so the
+capitals mark the family name wherever it stands. A name counts for it
+where the rule, asked of the name with the switch on, takes as its
+family a word in capitals of four letters or more that is no listed
+credential (``John Smith FRCS`` counts against); a name of two words or
+more in mixed case with no word in capitals counts against it. Two or
+three capitals are no evidence, being as often initials as a short
+surname (``AM Hoy``, ``Zhi LI``), and a name wholly in one case carries
+none. A group never turns the switch off, and a base reading an
+unlisted word in capitals as a credential everywhere
+(``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``) is suggested no
+change, the two settings being opposite readings of the same word. A
+name counts against the switch where it would move the family onto a
+word your parser reads as a title in that name (``MISS Ann Berg``),
+and so does a name in mixed case with no capitals once its titles and
+post-nominals are read past (``DR Ann Berg``, ``Prof. Ann Berg``,
+``John Smith FRCS``); a surname your vocabulary also lists as a title
+counts for it where your parser reads it as the family (``Mary
+BISHOP``), but not where it opens the name and your parser takes it
+for a title (``BISHOP Mary``). The order is
+decided apart from it. In the report, each setting counts its names
+for and against the value the suggested parser has, so a list left with
+the switch off counts its names in mixed case with no capitals as
+``for`` (``6 for`` above), and its names in capitals as ``against``;
+a name that writes no capitals disagrees with a decided switch:
+
+.. doctest::
+
+    >>> capitals = Parser().suggest(["Mary SMITH", "Ruth HOLLIS", "Anna BERG"])
+    >>> capitals.patch
+    PolicyPatch(capitals_as_family=True)
+    >>> Parser().parse("SMITH Mary").family
+    'Mary'
+    >>> capitals.parser.parse("SMITH Mary").family
+    'SMITH'
+
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10, re-taken 2026-11-11), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
-Polish names to 200 for Indian ones. One list keeps its order less
-often: bylines written with the initials first (``GH Yoon``), whose
-joined initials are read as a family name, so a group of ten or more is
-usually suggested family-first. A list whose names hold no such surname or
+Polish names to 200 for Indian ones. Two lists keep their order less
+often, the capitals in them read as a family name: bylines written with
+the initials first (``GH Yoon``), so a group of ten or more is usually
+suggested family-first, and names written with the given name in
+capitals (``ANNA Smith``). ``capitals_as_family`` was suggested in at
+least 95% of groups from 4 names for ORCID holders who typed their
+family name in capitals, and from 10 for those in China, Korea, Vietnam
+and Taiwan, whose short surnames are no evidence (2026-11-12). Of the
+lists measured that do not write their family names in capitals, only
+the one writing its given names so was suggested it, which nothing in a
+name tells apart and whose order is read the wrong way round already;
+no other was, ORCID's bylines (``AM Hoy``) included. A list whose names hold no such surname or
 given name (``Taylor Morgan``, ``Jordan Casey``) carries no evidence,
 and a group whose votes fall short of those thresholds keeps the base
 rather than guess. The

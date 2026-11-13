@@ -725,7 +725,9 @@ report about a title or a suffix on another word stays.
 case; ``capitalized(force=True)`` recases the family too. It cannot be
 set with
 ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads an
-unlisted capitals word ending a name as a credential.
+unlisted capitals word ending a name as a credential. ``Parser.suggest``
+suggests it for a list whose names write the family in capitals (see
+:ref:`Settings for a list of names <suggest-capitals>`).
 
 .. _brackets:
 

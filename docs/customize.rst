@@ -6,8 +6,9 @@ smaller and more specific change than the one before:
 
 #. **Let the data choose.** If you have a list of names from one
    source, :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads
-   the order it is written in, a patronymic rule and whether letters
-   ending a name are its family name, and returns a parser set for them
+   the order it is written in, a patronymic rule, whether letters
+   ending a name are its family name and whether family names are
+   written in capitals, and returns a parser set for them
    (:doc:`suggest`).
 #. **Choose the language.** If you know the data's language, a locale
    pack (:doc:`locales`) reads that language's words and conventions,

@@ -260,10 +260,39 @@ def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
     ]
     _plant(monkeypatch, "orcid-researchers", rows)
     keep = tool._Reservoir(1)
-    tool._orcid_bylines(keep)
+    tool._orcid(keep)
     assert sorted(keep.pools["orcid-byline"]) == [
         ("AM", "Hoy"), ("J.", "Smith"), ("M.A.", "Lopez-Diaz"),
         ("R P", "Huntley")]
+
+
+def test_orcid_capitals_keep_one_box_wholly_in_capitals(
+        _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The populations rules/O9's vote is measured on (#659): one box
+    every word in capitals, the other none, in a name holding a lowercase
+    letter; the East Asian row the family box's holders from CN, KR, VN
+    and TW."""
+    rows = [
+        {"given": "Jean", "family": "DUPONT", "country": "FR",
+         "credit": "Jean DUPONT"},
+        {"given": "Zhi", "family": "LI", "country": "CN"},
+        {"given": "Jeong Ho", "family": "PARK", "country": "KR"},
+        {"given": "ANNA", "family": "Smith", "country": "GB"},
+        # dropped: no lowercase letter, both boxes holding capitals, one
+        # box in capitals in part, a box missing
+        {"given": "JEAN", "family": "DUPONT", "country": "FR"},
+        {"given": "JEAN Paul", "family": "DUPONT", "country": "FR"},
+        {"given": "Jean", "family": "DUPONT Smith", "country": "FR"},
+        {"given": "", "family": "DUPONT", "country": "FR"},
+    ]
+    _plant(monkeypatch, "orcid-researchers", rows)
+    keep = tool._Reservoir(1)
+    tool._orcid(keep)
+    assert sorted(keep.pools["orcid-famcaps"]) == [
+        ("Jean", "DUPONT"), ("Jeong Ho", "PARK"), ("Zhi", "LI")]
+    assert sorted(keep.pools["orcid-famcaps-ea"]) == [
+        ("Jeong Ho", "PARK"), ("Zhi", "LI")]
+    assert keep.pools["orcid-givcaps"] == [("ANNA", "Smith")]
 
 
 @needs_checkout

@@ -340,7 +340,25 @@ class Parser:
         casts no trailing-initial vote on its order; a group never turns
         it off, nor turns it on under a base reading names family first
         or folding every middle into the family, where it would change
-        no name. A setting the votes do not decide keeps this parser's value, so
+        no name. ``capitals_as_family`` (rules/O9) is turned on where
+        at least two names, and more than two thirds of the names with
+        evidence either way, write the family in capitals: the rule,
+        asked of the name parsed with the switch on, reads as its family
+        a word in capitals of four letters or more that is no listed
+        credential or numeral and that this parser, reading the name,
+        does not take for a title (``Jean DUPONT``, ``Mary BISHOP``),
+        against a name whose family the switch would move onto a word
+        this parser reads as a title (``MISS Ann Berg``, ``DR DUPONT
+        Jean``) and a name of two
+        words or more in mixed case with none in capitals, read past its
+        titles and post-nominals (``DR Ann Berg``, ``John Smith FRCS``);
+        a name against a decided switch is among ``disagreeing()``. Two or three
+        capitals are no evidence (``Zhi LI``, or initials, ``AM Hoy``),
+        and only a name holding a word in capitals is parsed. A group
+        never turns it off, nor turns it on under a base with
+        ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, beside which
+        it cannot be set; it is decided apart from the order, which the
+        capitals in a name vote on as before. A setting the votes do not decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
@@ -350,11 +368,14 @@ class Parser:
         groups a size (decisions/group-suggestion's 2026-11-11 TRAILING
         INITIAL entry holds the table): a group written in this parser's own order kept
         it in at least 98% of groups at every size from 2 to 200 names,
-        under either base order, save one population: ORCID's credit
-        names written as a byline with the initials first (``GH Yoon``),
-        whose joined initials the capitals signal reads as a family name,
+        under either base order, save two populations whose capitals the
+        capitals signal reads as a family name: ORCID's credit
+        names written as a byline with the initials first (``GH Yoon``)
         kept their given-first order in 96% of groups of two and 0% of
-        groups of fifty, before this gate as after it. Moving the base takes more names, and
+        groups of fifty, before this gate as after it, and ORCID holders
+        who typed their given name in capitals (``ANNA Smith``) kept it
+        in 27% of groups of two and none of five (decisions/
+        group-suggestion's 2026-11-12 CAPITALS entry). Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups
@@ -363,7 +384,16 @@ class Parser:
         Nigerian, Romanian, Russian and Brazilian from 50; and Indian
         only at 200. A group whose votes fall short of the thresholds keeps
         the base rather than guess, so a smaller group moves it in fewer
-        of the draws.
+        of the draws. ``capitals_as_family``, measured 2026-11-12
+        (decisions/group-suggestion's CAPITALS entry): ORCID holders who
+        typed their family name in capitals were suggested it in at least
+        95% of groups from 4 names, and from 10 where many of the
+        surnames are two or three letters (holders in China, Korea,
+        Vietnam and Taiwan). Of the lists measured that do not write their
+        family names so, only ORCID holders who typed their given name in
+        capitals (``ANNA Smith``) were suggested it, which nothing in a
+        name tells apart; no other list was, ORCID's bylines (``AM Hoy``)
+        included. A name wholly in one case carries no evidence.
         """
         from nameparser._suggest import suggest
         return suggest(self, names)

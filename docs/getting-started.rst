@@ -90,8 +90,12 @@ it, and ``suggestion.base`` is the parser you started from:
           given-name FAMILY_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
+      capitals_as_family  unchanged (False)  5 for, 0 against, 0 no evidence
 
-Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+Each setting counts its names for and against the value the suggested
+parser has: all five names are in mixed case with no word in capitals,
+so they are evidence for leaving ``capitals_as_family`` off. Four names
+vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
 the romanized surname in front, ``Garcia Emily`` by the common given
 name at the end (``Garcia`` is not one of the surnames ``suggest``
 reads). ``Taylor Morgan`` gives no evidence, so the suggested
@@ -105,7 +109,7 @@ The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely
 a surname (``Mary``, not ``John``), at one end; a
 family name written in capitals; a lowercase particle; initials after
-the name, as a bibliography writes them. ``suggest`` decides three
+the name, as a bibliography writes them. ``suggest`` decides four
 settings from it, and leaves every other one as the parser you called
 it on has it:
 
@@ -118,6 +122,10 @@ it on has it:
   one run of letters ends at least two names, and at least half of the
   names that end in letters, as Nepal's ``B K`` and ``K C`` are family
   names written short (only on a base that reads given names first).
+- **Family names in capitals** (:ref:`capitals-as-family`): where at
+  least two names, and more than two thirds of the names with evidence,
+  write the family name in capitals of four letters or more
+  (``Mary SMITH``).
 
 Choose the language first
 ~~~~~~~~~~~~~~~~~~~~~~~~~
