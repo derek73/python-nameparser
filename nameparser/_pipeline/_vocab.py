@@ -1857,7 +1857,8 @@ def period_joined_vocab(
     alphabetic in the shipped lexicon, so this narrows only the
     previously-unclaimed "shape" answer, never the "suffix" one.
 
-    The INITIALLESS-SCRIPT guard is a second, independent narrowing of
+    The UNABBREVIATING-SCRIPT guard (the script-property table's
+    period_abbreviations, #1256) is a second, independent narrowing of
     the same verdict, on the same reasoning `is_title_shaped` already
     gives its own period-abbreviation inference (#323): a script with
     no period abbreviations at all has nothing for interior periods to
@@ -1885,7 +1886,7 @@ def period_joined_vocab(
     if period_joined_credential(text, lexicon):
         return "suffix"
     if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
-            and (text.isascii() or not in_initialless_script(text))):
+            and (text.isascii() or not in_unabbreviating_script(text))):
         return "shape"
     return None
 
