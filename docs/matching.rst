@@ -366,11 +366,12 @@ Latin letters in its own language is one name where that language uses
 both spellings (``Sara`` / ``Sarah`` in English). A different spelling in
 the source script (``Nataliia`` / ``Natalya``, ``Наталія`` / ``Наталья``)
 or another language's form (``Lydia`` / ``Lidia``) is a translation,
-which no outcome reads yet. It is read as a familiar form is, in the same roles, either way round and
-never chained, and the keys follow it where it is accepted. The same
-review as the familiar forms gives its 292 pairs (counted 2026-11-13),
-each called a spelling of one name by both reviewers or by the
-maintainer where they split, less the spellings a keyboard forces,
+which no outcome reads yet. It is read as a familiar form is, in the
+same roles, either way round and never chained, and the keys follow it
+where it is accepted. The same review as the familiar forms gives its
+293 pairs (counted 2026-11-13), each called a spelling of one name by
+both reviewers or by the maintainer, and read again against that test,
+less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``
 / ``Juergen``, ``Srđan`` / ``Srdjan``, from either side). It is outside the default because people
 sometimes spell a name differently on purpose, to be told apart from

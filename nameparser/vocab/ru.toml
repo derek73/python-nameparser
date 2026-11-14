@@ -274,10 +274,6 @@ text = "kateryna"
 spelling = { spelling_of = ["katerina"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "kristina"
-spelling = { spelling_of = ["christina"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "kseniia"
 spelling = { spelling_of = ["ksenia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -575,7 +571,7 @@ spelling = { spelling_of = ["iuliia"], note = "found in CC0 or public-domain dat
 
 [[word]]
 text = "yuliia"
-spelling = { spelling_of = ["iuliia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+spelling = { spelling_of = ["iuliia", "yulia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yuliya"

@@ -7993,6 +7993,10 @@ text = "kimberly"
 spelling = { spelling_of = ["kimberley"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "kristina"
+spelling = { spelling_of = ["christina"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "mahmoud"
 spelling = { spelling_of = ["mahmood"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

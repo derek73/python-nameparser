@@ -51,12 +51,12 @@ aleks	aleksandra	familiar		familiar	familiar	short form of Aleksandra	de	orcid	4
 aleksandar	alex	familiar		familiar	familiar	short form of Aleksandar	en	orcid	7
 aleksandar	alexandar	spelling		spelling	spelling	romanization variant	mul	orcid	3
 aleksandar	alexander	translation		translation	translation	South Slavic Aleksandar vs English Alexander	bg	orcid	7
-aleksander	aleksandr	translation	decided	spelling	translation	romanizations of Aleksandr for Russian holders; re-read 2026-11-13, the source-script test: translation	en ru	orcid	9
+aleksander	aleksandr	translation	decided	spelling	translation	romanizations of Aleksandr for Russian holders; re-read 2026-11-13, the source-script test: translation (Aleksandr = Russian Александр; Aleksander is the Polish/Scandinavian form, not a romanization of Александр)	en ru	orcid	9
 aleksander	alex	familiar		familiar	familiar	short form of Aleksander	mul	orcid	3
-aleksander	alexander	translation	decided	spelling	spelling	romanization of Александр; re-read 2026-11-13: translation	ru	orcid	14
+aleksander	alexander	translation	decided	spelling	spelling	romanization of Александр; re-read 2026-11-13: translation (Aleksander is the Polish (and Scandinavian/Estonian) own form, not a romanization of Александр (that is Aleksandr); against English/German Alexander it is another language's form)	ru	orcid	14
 aleksander	oleksandr	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
 aleksandr	alex	familiar		familiar	familiar	Alex used for Aleksandr	en	orcid	5
-aleksandr	alexander	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13, the source-script test: translation	ru	orcid	106
+aleksandr	alexander	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13, the source-script test: translation (Aleksandr is Russian Александр; Alexander is the Western form)	ru	orcid	106
 aleksandr	alexandr	spelling		spelling	spelling	romanization variants of Александр	ru	orcid	25
 aleksandr	oleksandr	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	44
 aleksandra	alex	familiar		familiar	familiar	short form of Aleksandra	mul	orcid	3
@@ -97,7 +97,7 @@ alex	oleksii	split		familiar	different-name	Alex used for Oleksii	ru uk	orcid	12
 alex	oleksiy	translation		translation	translation	English Alex vs Ukrainian Oleksiy	mul	orcid	3
 alex	william	different-name		different-name	different-name	Alex is not a form of William	en	orcid	5
 alexa	alexandra	familiar		familiar	familiar	Alexa short form of Alexandra	en	orcid	5
-alexander	alexandr	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation	ru	orcid	27
+alexander	alexandr	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation (alexandr romanizes Russian Александр (no vowel before р); Alexander is the English form)	ru	orcid	27
 alexander	alexandre	translation		translation	translation	English vs French form	ru	orcid	8
 alexander	alexandros	translation		translation	translation	English and Greek forms	mul	orcid	3
 alexander	aliaksandr	translation		translation	translation	English vs Belarusian form	mul	orcid	3
@@ -139,7 +139,7 @@ ali	allison	familiar		familiar	familiar	clipped form of Allison	en	orcid	3
 ali	alı	spelling		spelling	spelling	Turkish dotless i variant	tr	orcid	5
 ali	mohammadali	familiar		familiar	familiar	Ali is how Mohammadali is called	mul	orcid	4
 ali	seyedali	familiar		familiar	familiar	Ali is how Seyedali is called (Seyed prefix)	en	orcid	6
-alia	aliaa	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+alia	aliaa	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation (Aliaa is usually علياء; Alia may be عالية or علياء, cannot tell whether the Arabic spellings match)	mul	orcid	3
 alice	alisa	translation		translation	translation	English and Russian forms	ru	orcid	4
 alkis	alkiviadis	familiar		familiar	familiar	Alkis familiar form of Alkiviadis	el	orcid	4
 alli	allison	familiar		familiar	familiar	short form of Allison	en	orcid	6
@@ -148,7 +148,7 @@ allison	ally	familiar		familiar	familiar	pet form of Allison	en	orcid	6
 ally	allyson	familiar		familiar	familiar	pet form of Allyson	en	orcid	11
 alona	alyona	spelling		spelling	spelling	romanization variants	mul	orcid	3
 alyona	olena	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
-amaia	amaya	translation	decided	spelling	spelling	Basque name spelled two ways; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+amaia	amaya	translation	decided	spelling	spelling	Basque name spelled two ways; re-read 2026-11-13, the source-script test: translation (Amaia is the Basque form, Amaya the Castilian Spanish form)	mul	orcid	3
 amanda	amy	different-name		different-name	different-name	loose; Amy not formed from Amanda	mul	orcid	3
 amanda	mandi	familiar		familiar	familiar	Mandi pet form of Amanda	en	orcid	7
 amanda	mandy	familiar		familiar	familiar	pet form of Amanda	en	orcid	38
@@ -207,7 +207,7 @@ andy	james	different-name		different-name	different-name	unrelated names	en	orci
 ange	angela	familiar		familiar	familiar	short form of Angela	en	orcid	5
 angela	angi	familiar		familiar	familiar	pet form of Angela	en	orcid	3
 angela	angie	familiar		familiar	familiar	pet form of Angela	en	orcid	27
-angela	anzhela	translation	decided	spelling	translation	romanization of Анжела; re-read 2026-11-13: translation	ru uk	orcid	7
+angela	anzhela	translation	decided	spelling	translation	romanization of Анжела; re-read 2026-11-13: translation (Анжела is the Russian/Ukrainian form (French-influenced, zh), distinct from Angela (Анджела); Anzhela romanizes that other form, so two languages' own forms)	ru uk	orcid	7
 angelina	angie	familiar		familiar	familiar	pet form of Angelina	en	orcid	5
 ania	anna	familiar		familiar	familiar	Polish familiar form	en pl	orcid	21
 anil	anıl	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	12
@@ -250,7 +250,7 @@ aris	aristeidis	familiar		familiar	familiar	Greek short form of Aristeidis	el	or
 arsenii	arseniy	spelling		spelling	spelling	romanization variant	mul	orcid	3
 art	arthur	familiar		familiar	familiar	clipped form of Arthur	en	orcid	11
 artem	artyom	spelling	decided	spelling	translation	romanization variant	ru	orcid	15
-arthur	artur	translation	decided	spelling	translation	romanization of Артур; re-read 2026-11-13: translation	ru	orcid	12
+arthur	artur	translation	decided	spelling	translation	romanization of Артур; re-read 2026-11-13: translation (English/French Arthur against Artur, the own form in Polish, Portuguese, Scandinavian and Russian Артур; Arthur with th is not a romanization of Артур, so other-language form as Michael/Michal)	ru	orcid	12
 ash	ashleigh	familiar		familiar	familiar	short form of Ashleigh	en	orcid	3
 ash	ashley	familiar		familiar	familiar	clipped form of Ashley	en	orcid	24
 asimina	mina	familiar		familiar	familiar	Mina short form of Asimina	el	orcid	3
@@ -367,7 +367,7 @@ carola	carolina	different-name		different-name	different-name	Carola and Carolin
 caroline	carrie	familiar		familiar	familiar	pet form of Caroline	en	orcid	9
 caroline	caz	familiar		familiar	familiar	Caz British pet form of Caroline	en	orcid	4
 carolyn	carrie	familiar		familiar	familiar	pet form of Carolyn	en	orcid	10
-casey	cassandra	different-name	decided	familiar	familiar	short form of Cassandra; re-read 2026-11-13: different-name	en	orcid	5
+casey	cassandra	different-name	decided	familiar	familiar	short form of Cassandra; re-read 2026-11-13: different-name (Casey is a name in its own right and only rarely used for a Cassandra, whose familiar forms are Cass and Cassie; loose)	en	orcid	5
 cass	cassandra	familiar		familiar	familiar	short form of Cassandra	en	orcid	6
 cass	cassidy	familiar		familiar	familiar	clipped form of Cassidy	en	orcid	4
 cassandra	cassie	familiar		familiar	familiar	pet form of Cassandra	en	orcid	21
@@ -417,7 +417,7 @@ chrissy	christina	familiar		familiar	familiar	pet form of Christina	en	orcid	6
 chrissy	christine	familiar		familiar	familiar	pet form of Christine	en	orcid	6
 christie	christine	familiar		familiar	familiar	Christie pet form of Christine	en	orcid	5
 christina	christy	familiar		familiar	familiar	pet form of Christina	en	orcid	12
-christina	kristina	spelling	decided	translation	spelling	Russian Kristina vs Christina	ru	orcid	4
+christina	kristina	spelling	decided	translation	spelling	Russian Kristina vs Christina; kept by the source-script test 2026-11-13: English writes both	en	orcid	4
 christina	tina	familiar		familiar	familiar	clipped from the end of Christina	en	orcid	17
 christine	christy	familiar		familiar	familiar	pet form of Christine	en	orcid	7
 christine	cris	familiar		familiar	familiar	short form of Christine	en	orcid	3
@@ -451,7 +451,7 @@ da	josé	unclear		unclear	unclear	corrupt row, da is a particle	pt-BR	orcid	3
 daan	daniel	familiar		familiar	familiar	Dutch short form of Daniel	en nl	orcid	4
 dan	daniel	familiar		familiar	familiar	clipped form of Daniel	en	orcid	317
 dan	danielle	split		familiar	different-name	short form of Danielle	en	orcid	3
-dan	danilo	different-name	decided	familiar	familiar	Dan short form of Danilo; re-read 2026-11-13: different-name	mul	orcid	3
+dan	danilo	different-name	decided	familiar	familiar	Dan short form of Danilo; re-read 2026-11-13: different-name (Dan is the English short form of Daniel; in the Slavic, Italian and Portuguese communities that use Danilo its pet forms are Dani or Danko, so Dan for a Danilo crosses communities and is loose)	mul	orcid	3
 dan	danny	split		sibling	familiar	opus: both pet forms of Daniel; sonnet: Danny is a diminutive of Dan	mul	orcid	6
 dana	daniela	split		familiar	different-name	short form of Daniela	en ro	orcid	7
 danae	danai	spelling		spelling	spelling	romanization variant	el	orcid	5
@@ -459,7 +459,7 @@ dani	daniel	familiar		familiar	familiar	short form of Daniel	ca es	orcid	9
 dani	daniela	familiar		familiar	familiar	short form of Daniela	pt-BR	orcid	20
 dani	daniele	familiar		familiar	familiar	short form of Daniele	mul	orcid	3
 dani	danielle	familiar		familiar	familiar	pet form of Danielle	en	orcid	29
-danial	daniel	translation	decided	spelling	translation	Persian Daniel romanized Danial; re-read 2026-11-13: translation	fa	orcid	4
+danial	daniel	translation	decided	spelling	translation	Persian Daniel romanized Danial; re-read 2026-11-13: translation (Danial is the Persian form Daniyal (دانیال), pronounced and spelled distinctly from Hebrew-English Daniel; one name's equivalent in another language)	fa	orcid	4
 daniel	daniele	translation		translation	translation	English vs Italian male form	en it	orcid	7
 daniel	daniil	translation		translation	translation	English and Russian forms	ru	orcid	7
 daniel	dann	familiar		familiar	familiar	Dan written with a double n	en	orcid	3
@@ -497,7 +497,7 @@ dima	dmitriy	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 dima	dmitry	familiar		familiar	familiar	Russian familiar form	en	orcid	5
 dima	dmytro	familiar		familiar	familiar	Dima pet form of Dmytro	ru uk	orcid	7
 dimitri	dimitrios	translation		translation	translation	Russian/French vs Greek form	en	orcid	5
-dimitri	dmitri	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+dimitri	dmitri	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation (Dmitri is Russian Дмитрий; Dimitri is Димитрий/Greek Δημήτρης, different letters)	mul	orcid	3
 dimitrios	dimitris	familiar		familiar	familiar	Greek everyday form	el	orcid	96
 dionysios	dionysis	familiar	decided	familiar	spelling	Greek everyday form of Dionysios	el	orcid	3
 djordje	dorde	spelling		spelling	spelling	đ written d	sr	orcid	3
@@ -573,7 +573,7 @@ eli	eliezer	familiar		familiar	familiar	short form of Eliezer	en	orcid	3
 eli	elijah	familiar		familiar	familiar	clipped form of Elijah	en	orcid	9
 eli	elizabeth	familiar		familiar	familiar	Eli short form of Elizabeth	en	orcid	3
 elias	ilias	spelling		spelling	spelling	romanization variants of Greek Ilias	el	orcid	10
-elisabeth	elizabeth	spelling		spelling	spelling	Elisabeth/Elizabeth one name spelled with s or z	mul	orcid	8
+elisabeth	elizabeth	spelling		spelling	spelling	Elisabeth/Elizabeth one name spelled with s or z; kept by the source-script test 2026-11-13: English writes both	mul	orcid	8
 elisabeth	lis	familiar		familiar	familiar	short form of Elisabeth	en	orcid	6
 elisabeth	lisa	familiar		familiar	familiar	short form of Elisabeth	en	orcid	16
 elisabeth	liz	familiar		familiar	familiar	short form of Elisabeth	en	orcid	9
@@ -593,7 +593,7 @@ elizabeth	lizzy	familiar		familiar	familiar	pet form of Elizabeth	en	orcid	20
 elizaveta	lisa	familiar		familiar	familiar	familiar form of Elizaveta	mul	orcid	4
 elizaveta	liza	familiar		familiar	familiar	Russian short form of Elizaveta	en	orcid	4
 ellen	ellie	familiar		familiar	familiar	pet form of Ellen	en	orcid	11
-elsayed	sayed	spelling	decided	spelling	familiar	with and without article el; re-read 2026-11-13: spelling	ar	orcid	3
+elsayed	sayed	spelling	decided	spelling	familiar	with and without article el; re-read 2026-11-13: spelling (Arabic spellings differ: السيد (with article) vs سيد)	ar	orcid	3
 em	emily	familiar		familiar	familiar	clipped form of Emily	en	orcid	6
 eman	iman	refused	decided	spelling	different-name	Arabic romanization variants	ar	orcid	3
 emily	emma	different-name		different-name	different-name	two distinct names	en	orcid	3
@@ -608,10 +608,10 @@ emmanuela	emmanuella	spelling		spelling	spelling	doubled letter	mul	orcid	3
 enric	enrique	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	4
 enrique	henry	translation		translation	translation	Spanish and English forms	mul	orcid	3
 enzo	vincenzo	familiar		familiar	familiar	Italian short form of Vincenzo	it	orcid	8
-eric	erik	spelling		spelling	spelling	variant spellings	mul	orcid	3
+eric	erik	spelling		spelling	spelling	variant spellings; kept by the source-script test 2026-11-13: English writes both	mul	orcid	3
 eric	rick	split		familiar	different-name	opus: Rick clipped from Eric; sonnet: loose: Rick is normally from Richard	en	orcid	3
 ernest	ernesto	translation		translation	translation	English and Spanish forms	mul	orcid	3
-ester	esther	translation	decided	spelling	spelling	spelling variant; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+ester	esther	translation	decided	spelling	spelling	spelling variant; re-read 2026-11-13, the source-script test: translation (Ester is the Spanish/Scandinavian/Slavic form, Esther the English/French/German form)	mul	orcid	3
 eugene	evgenii	translation		translation	translation	English and Russian forms	ru	orcid	4
 eugene	evgeniy	translation		translation	translation	English and Russian forms	ru	orcid	10
 eugene	evgeny	translation		translation	translation	English and Russian forms	en ru	orcid	18
@@ -642,7 +642,7 @@ evgeniy	evgeny	spelling		spelling	spelling	romanization variant	ru	orcid	19
 evgeniy	yevgen	translation		translation	translation	Russian Evgeniy vs Ukrainian Yevhen	mul	orcid	4
 evi	paraskevi	familiar		familiar	familiar	Greek familiar form	el	orcid	9
 fateme	fatemeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	15
-fatemeh	fatima	translation	decided	translation	spelling	Persian vs Arabic form; re-read 2026-11-13: translation	en fa	orcid	7
+fatemeh	fatima	translation	decided	translation	spelling	Persian vs Arabic form; re-read 2026-11-13: translation (Persian Fatemeh (فاطمه) and Arabic Fatima (فاطمة) are each language's own form, differing in letter and pronunciation, so translation rather than one form romanized two ways)	en fa	orcid	7
 fedor	feodor	spelling		spelling	spelling	romanization variants	mul	orcid	3
 femi	olufemi	familiar		familiar	familiar	Yoruba short form	en	orcid	7
 femi	oluwafemi	familiar		familiar	familiar	Yoruba short form	en	orcid	6
@@ -763,7 +763,7 @@ guillem	guillermo	translation		translation	translation	Catalan and Spanish forms
 gus	gustavo	familiar		familiar	familiar	short form of Gustavo	en	orcid	8
 gwen	gwendolyn	familiar		familiar	familiar	clipped form of Gwendolyn	en	orcid	7
 hal	harold	familiar		familiar	familiar	traditional pet form of Harold	en	orcid	9
-halina	halyna	translation	decided	spelling	translation	romanizations of Галина; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+halina	halyna	translation	decided	spelling	translation	romanizations of Галина; re-read 2026-11-13, the source-script test: translation (Halyna = Ukrainian Галина; Halina is the Polish form of the name)	mul	orcid	3
 hamid	hamidreza	familiar		familiar	familiar	Persian compound called by its part	en	orcid	11
 han	hannah	split		familiar	different-name	short form of Hannah	en	orcid	5
 han	johannes	familiar		familiar	familiar	Dutch short form of Johannes	nl	orcid	4
@@ -813,7 +813,7 @@ igor	ihor	translation		translation	translation	Russian Igor vs Ukrainian Ihor	ru
 ike	isaac	familiar		familiar	familiar	traditional pet form of Isaac	en	orcid	4
 ilia	ilya	spelling		spelling	spelling	romanization variants of Илья	ru	orcid	28
 ilias	mohammad	different-name		different-name	different-name	unrelated names	en	orcid	3
-iliya	ilya	spelling		spelling	spelling	Iliya variant romanization of Ilya	ru	orcid	3
+iliya	ilya	spelling		spelling	spelling	Iliya variant romanization of Ilya; kept by the source-script test 2026-11-13: one Cyrillic spelling, Илья, romanized two ways	ru	orcid	3
 ilja	ilya	spelling		spelling	spelling	romanization variants	en	orcid	6
 illia	ilya	translation		translation	translation	Illia Ukrainian, Ilya Russian	mul	orcid	4
 inma	inmaculada	familiar		familiar	familiar	Spanish short form	ca es	orcid	8
@@ -930,8 +930,8 @@ jo	josephine	familiar		familiar	familiar	clipped form of Josephine	en	orcid	19
 joachim	jochen	familiar		familiar	familiar	German familiar of Joachim	de	orcid	3
 joan	joanie	familiar		familiar	familiar	pet form of Joan	en	orcid	4
 joan	juan	translation		translation	translation	Catalan vs Spanish form	ca es	orcid	12
-joanna	joey	different-name	decided	familiar	familiar	pet form of Joanna; re-read 2026-11-13: different-name	en	orcid	3
-joanna	yoanna	translation	decided	spelling	translation	romanization variant; re-read 2026-11-13, the source-script test: translation	bg	orcid	3
+joanna	joey	different-name	decided	familiar	familiar	pet form of Joanna; re-read 2026-11-13: different-name (loose: Joey serves many unrelated names (Joseph, Josephine, Joanna, Johanna), so it is not a familiar form of Joanna in particular)	en	orcid	3
+joanna	yoanna	translation	decided	spelling	translation	romanization variant; re-read 2026-11-13, the source-script test: translation (Yoanna is Bulgarian Йоанна; Joanna is the Western/Polish form)	bg	orcid	3
 joaquim	quim	familiar		familiar	familiar	Catalan familiar of Joaquim	pt-BR	orcid	8
 jocelyn	joss	familiar		familiar	familiar	clipped form of Jocelyn	mul	orcid	3
 jochen	joe	different-name		different-name	different-name	loose	de	orcid	3
@@ -988,7 +988,7 @@ jules	julian	familiar		familiar	familiar	Jules used as short for Julian	en	orcid
 jules	julie	familiar		familiar	familiar	Jules used as pet form of Julie	en	orcid	5
 juli	juliana	familiar		familiar	familiar	Juli short form of Juliana	en pt-BR	orcid	5
 julia	julie	split		translation	different-name	opus: Latin Julia vs French Julie; sonnet: Latin vs French forms, separate names	en	orcid	21
-julia	yulia	translation	decided	spelling	translation	Julia/Yulia romanization of Юлия; re-read 2026-11-13, the source-script test: translation	ru	orcid	53
+julia	yulia	translation	decided	spelling	translation	Julia/Yulia romanization of Юлия; re-read 2026-11-13, the source-script test: translation (Yulia is Russian Юлия; Julia is the Latin/Western form)	ru	orcid	53
 julia	yuliia	translation		translation	translation	English Julia vs Ukrainian Yuliia	ru uk	orcid	11
 julia	yuliya	translation		translation	translation	English Julia vs Slavic Yuliya	ru	orcid	23
 julianne	julie	split		familiar	different-name	short form of Julianne	en	orcid	5
@@ -1078,7 +1078,7 @@ kristi	kristin	split		familiar	different-name	short form of Kristin	en	orcid	5
 kristina	tina	familiar		familiar	familiar	clipped from the end of Kristina	en	orcid	3
 ksenia	kseniia	spelling		spelling	spelling	romanization variant	ru	orcid	8
 ksenia	kseniya	spelling		spelling	spelling	romanization variants	ru	orcid	7
-ksenia	xenia	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation	ru	orcid	8
+ksenia	xenia	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation (Ksenia is Russian Ксения; Xenia is the Greek/Western form Ξένια)	ru	orcid	8
 kseniia	kseniya	spelling		spelling	spelling	romanization variants of Ксения	ru uk	orcid	8
 kunle	olakunle	familiar		familiar	familiar	Yoruba short form of Olakunle	mul	orcid	3
 kyriacos	kyriakos	spelling		spelling	spelling	romanization variants	mul	orcid	3
@@ -1116,7 +1116,7 @@ lew	lewis	familiar		familiar	familiar	Lew short form of Lewis	en	orcid	3
 li	lily	different-name		different-name	different-name	Chinese name and English name	en	orcid	4
 liam	william	split		familiar	translation	Irish short form of William	en	orcid	9
 lidia	lidiya	spelling		spelling	spelling	romanization variants	ru	orcid	4
-lidia	lydia	translation	decided	spelling	translation	romanization variant; re-read 2026-11-13, the source-script test: translation	ru	orcid	3
+lidia	lydia	translation	decided	spelling	translation	romanization variant; re-read 2026-11-13, the source-script test: translation (lidia romanizes Russian Лидия; Lydia with y is the Greek/English form)	ru	orcid	3
 lidiia	lidiya	spelling		spelling	spelling	romanization variants	ru	orcid	4
 lilia	liliia	spelling		spelling	spelling	romanization variant	ru uk	orcid	6
 lilia	liliya	spelling		spelling	spelling	romanization variants	ru	orcid	5
@@ -1176,7 +1176,7 @@ mahdi	mehdi	spelling		spelling	spelling	Persian/Arabic romanization variants	fa	
 mahdieh	mahdiyeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	3
 mahmood	mahmoud	spelling		spelling	spelling	Mahmoud romanized two ways	en fa	orcid	5
 maira	maria	different-name		different-name	different-name	distinct names	en	orcid	3
-maja	maya	translation	decided	spelling	spelling	j vs y; re-read 2026-11-13, the source-script test: translation	mul	orcid	3
+maja	maya	translation	decided	spelling	spelling	j vs y; re-read 2026-11-13, the source-script test: translation (Maja is the German/Slavic/Scandinavian form, Maya the English/Spanish form)	mul	orcid	3
 maksim	maksym	translation		translation	translation	Russian vs Ukrainian form	ru	orcid	3
 maksim	max	familiar		familiar	familiar	short form of Maksim	en	orcid	3
 maksim	maxim	spelling		spelling	spelling	romanization variants	ru	orcid	45
@@ -1339,7 +1339,7 @@ mykyta	nikita	translation		translation	translation	Ukrainian Mykyta vs Russian N
 nadezda	nadezhda	spelling		spelling	spelling	romanization variants	ru	orcid	6
 nadezda	nadia	familiar		familiar	familiar	Nadia familiar form of Nadezda	en	orcid	3
 nadezhda	nadya	familiar		familiar	familiar	Nadya pet form of Nadezhda	ru	orcid	7
-nadia	nadiia	translation	decided	spelling	translation	romanizations of Надія; re-read 2026-11-13, the source-script test: translation	ru uk	orcid	4
+nadia	nadiia	translation	decided	spelling	translation	romanizations of Надія; re-read 2026-11-13, the source-script test: translation (Nadia is Надя (or the Western form); Nadiia is Ukrainian Надія, different letters)	ru uk	orcid	4
 nadiia	nadiya	spelling		spelling	spelling	romanization variants	ru uk	orcid	16
 nadja	nađa	spelling		spelling	spelling	dj/d for Serbian d-stroke	sr	orcid	5
 name	published	unclear		unclear	unclear	corrupt row, header words	mul	orcid	3
@@ -1357,7 +1357,7 @@ natalia	natasha	familiar		familiar	familiar	Natasha pet form of Natalia	en ru	or
 natalie	nataliia	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	4
 natalie	nataliya	translation		translation	translation	English vs Russian form	en	orcid	3
 nataliia	nataliya	spelling		spelling	spelling	romanizations of Ukrainian Nataliia	ru uk	orcid	42
-nataliia	natalya	translation	decided	translation	spelling	Ukrainian and Russian forms; re-read 2026-11-13, the source-script test: translation	ru uk	orcid	14
+nataliia	natalya	translation	decided	translation	spelling	Ukrainian and Russian forms; re-read 2026-11-13, the source-script test: translation (Ukrainian Наталія vs Russian Наталья, different letters (the rule's own example))	ru uk	orcid	14
 natalya	natasha	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 natasha	tash	familiar		familiar	familiar	short form of Natasha	en	orcid	3
 natasha	tasha	familiar		familiar	familiar	clipped from the end of Natasha	en	orcid	4
@@ -1409,7 +1409,7 @@ niko	nikolaos	familiar		familiar	familiar	short form of Nikolaos	mul	orcid	3
 niko	nikolaus	familiar		familiar	familiar	short form of Nikolaus	de	orcid	3
 nikolai	nikolay	spelling		spelling	spelling	romanization variants	ru	orcid	38
 nikolaj	nikolay	spelling		spelling	spelling	romanization variant	ru	orcid	3
-nikolaos	nikolas	translation	decided	spelling	spelling	Nikolas variant of Nikolaos; re-read 2026-11-13: translation	el en	orcid	8
+nikolaos	nikolas	translation	decided	spelling	spelling	Nikolas variant of Nikolaos; re-read 2026-11-13: translation (Nikolas is a Western form, the Greek familiar form being Nikos (the maintainer's ground))	el en	orcid	8
 nikolaos	nikos	familiar		familiar	familiar	Greek familiar form	el	orcid	100
 nikolas	nikos	familiar		familiar	familiar	Nikos familiar form of Nikolas	el	orcid	3
 niloofar	niloufar	spelling		spelling	spelling	Persian romanization variants	mul	orcid	3
@@ -1419,7 +1419,7 @@ oksana	oxana	spelling		spelling	spelling	romanization variants	ru	orcid	15
 olayinka	yinka	familiar		familiar	familiar	Yoruba short form	mul	orcid	3
 oleg	oleh	spelling	decided	spelling	translation	Russian vs Ukrainian romanization of one Cyrillic form	ru uk	orcid	53
 oleksander	oleksandr	spelling		spelling	spelling	romanization variants	ru uk	orcid	6
-oleksandr	olexander	spelling		spelling	spelling	Ukrainian romanization variants	ru uk	orcid	7
+oleksandr	olexander	spelling		spelling	spelling	Ukrainian romanization variants; kept by the source-script test 2026-11-13: one Cyrillic spelling, Олександр, romanized two ways	ru uk	orcid	7
 oleksandr	olexandr	spelling		spelling	spelling	Ukrainian Олександр romanized ks or x	ru uk	orcid	10
 oleksandr	sasha	familiar		familiar	familiar	Russian familiar for Oleksandr	en	orcid	3
 oleksandra	olexandra	spelling		spelling	spelling	Ukrainian Олександра romanized ks or x	mul	orcid	3
@@ -1581,7 +1581,7 @@ sandie	sandra	familiar		familiar	familiar	pet form of Sandra	en	orcid	6
 sandra	sandy	familiar		familiar	familiar	pet form of Sandra	en	orcid	34
 sandy	sanford	familiar		familiar	familiar	pet form of Sanford	en	orcid	3
 santi	santiago	familiar		familiar	familiar	short form of Santiago	ca es	orcid	7
-sara	sarah	spelling		spelling	spelling	spelling variant	fa	orcid	12
+sara	sarah	spelling		spelling	spelling	spelling variant; kept by the source-script test 2026-11-13: English writes both; also one Persian spelling, سارا, romanized two ways	fa	orcid	12
 satya	satyanarayana	familiar		familiar	familiar	Satya short form of Satyanarayana	en	orcid	5
 scott	thomas	different-name		different-name	different-name	unrelated names	en	orcid	3
 seb	sebastian	familiar		familiar	familiar	clipped form of Sebastian	en	orcid	8
@@ -1620,7 +1620,7 @@ sid	siddhartha	familiar		familiar	familiar	Sid short form of Siddhartha	en	orcid
 sid	sidney	familiar		familiar	familiar	clipped form of Sidney	en	orcid	8
 sidd	siddharth	familiar		familiar	familiar	short form of Siddharth	en	orcid	3
 sila	sıla	spelling		spelling	spelling	dropped Turkish dotless i	tr	orcid	5
-silvia	sylvia	spelling		spelling	spelling	i/y variant	mul	orcid	4
+silvia	sylvia	spelling		spelling	spelling	i/y variant; kept by the source-script test 2026-11-13: English writes both	mul	orcid	4
 sladjana	slađana	spelling		spelling	spelling	đ written dj	sr	orcid	10
 slava	viacheslav	familiar		familiar	familiar	Russian familiar form	de	orcid	5
 slava	vyacheslav	familiar		familiar	familiar	Slava pet form of Vyacheslav	en	orcid	5
@@ -1633,7 +1633,7 @@ sofia	sofya	spelling		spelling	spelling	romanization variants of София	ru	o
 sofia	sonia	familiar		familiar	familiar	Sonia a pet form of Sofia	en	orcid	4
 sofia	sophia	spelling		spelling	spelling	ph/f variant	el ru	orcid	9
 sofiia	sofiya	spelling		spelling	spelling	romanization variants	mul	orcid	3
-sofiya	sophia	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13: translation	mul	orcid	3
+sofiya	sophia	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13: translation (Sofiya romanizes Slavic София/Софія while Sophia is the Greek-English form with ph, not a romanization of the Cyrillic; two languages' forms)	mul	orcid	3
 sofya	sonya	familiar		familiar	familiar	Russian familiar form of Sofya	mul	orcid	3
 somaye	somayeh	spelling		spelling	spelling	romanization variant	fa	orcid	4
 sonia	sonya	spelling		spelling	spelling	romanization variants	mul	orcid	3
@@ -1777,7 +1777,7 @@ vasiliy	vasily	spelling		spelling	spelling	romanization variants of Васили
 vasiliy	vasyl	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
 vassilios	vassilis	familiar		familiar	familiar	Greek everyday form	el	orcid	7
 venkat	venkateswarlu	familiar		familiar	familiar	short form of Venkateswarlu	mul	orcid	3
-veronica	veronika	translation	decided	spelling	spelling	Veronica/Veronika c or k; re-read 2026-11-13, the source-script test: translation	ru	orcid	4
+veronica	veronika	translation	decided	spelling	spelling	Veronica/Veronika c or k; re-read 2026-11-13, the source-script test: translation (Veronika is Russian Вероника; Veronica is the Latin/English/Italian form)	ru	orcid	4
 veselin	vesselin	spelling		spelling	spelling	doubled letter	bg	orcid	3
 viacheslav	vjacheslav	spelling		spelling	spelling	romanization variant	mul	orcid	3
 viacheslav	vyacheslav	spelling		spelling	spelling	romanization variants	ru	orcid	13
@@ -1789,13 +1789,13 @@ vicente	vincent	translation		translation	translation	Spanish and English forms	m
 vicki	victoria	familiar		familiar	familiar	pet form of Victoria	en	orcid	26
 vickie	victoria	familiar		familiar	familiar	pet form of Victoria	mul	orcid	3
 vicky	victoria	familiar		familiar	familiar	pet form of Victoria	en	orcid	36
-victor	viktor	translation	decided	spelling	spelling	Victor/Viktor romanization of Виктор; re-read 2026-11-13, the source-script test: translation	ru	orcid	64
-victoria	victoriya	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation	ru	orcid	3
+victor	viktor	translation	decided	spelling	spelling	Victor/Viktor romanization of Виктор; re-read 2026-11-13, the source-script test: translation (Viktor is Russian Виктор; Victor is the Latin/English/French form)	ru	orcid	64
+victoria	victoriya	translation	decided	spelling	spelling	romanization variants; re-read 2026-11-13, the source-script test: translation (victoriya romanizes Russian Виктория; Victoria with c is the Latin/English form (as the rule's Victoria/Viktoriya))	ru	orcid	3
 victoria	viki	familiar		familiar	familiar	Viki short form of Victoria	mul	orcid	3
 victoria	vikki	familiar		familiar	familiar	Vikki pet form of Victoria	en	orcid	5
-victoria	viktoria	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13, the source-script test: translation	ru	orcid	13
+victoria	viktoria	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13, the source-script test: translation (viktoria romanizes Russian Виктория; Victoria with c is the Latin/English form (as the rule's Victoria/Viktoriya))	ru	orcid	13
 victoria	viktoriia	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	21
-victoria	viktoriya	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13: translation	mul	orcid	4
+victoria	viktoriya	translation	decided	spelling	spelling	romanization variant; re-read 2026-11-13: translation (Victoria is the Latin/English form and Viktoriya romanizes Russian Виктория; Victoria with c and no -ya is not a romanization of the Cyrillic, so they are two languages' forms)	mul	orcid	4
 victoriia	viktoriia	spelling		spelling	spelling	romanization variants	ru	orcid	3
 vijay	vijayakumar	familiar		familiar	familiar	called by base name without -kumar	en	orcid	4
 vijay	vijaykumar	familiar		familiar	familiar	Vijay is how a Vijaykumar is called	mul	orcid	5
@@ -1834,7 +1834,7 @@ yang	young	split		unclear	different-name	Chinese and Korean romanizations, may d
 yaser	yasser	spelling		spelling	spelling	Arabic Yasser romanized two ways	ar	orcid	4
 yash	yashkumar	familiar		familiar	familiar	Yash is how a Yashkumar is called	mul	orcid	3
 yevgen	yevhen	spelling		spelling	spelling	romanization variants	mul	orcid	3
-yevgenia	yevheniia	translation	decided	translation	spelling	Russian Yevgenia vs Ukrainian Yevheniia; re-read 2026-11-13: translation	mul	orcid	3
+yevgenia	yevheniia	translation	decided	translation	spelling	Russian Yevgenia vs Ukrainian Yevheniia; re-read 2026-11-13: translation (Russian Евгения and Ukrainian Євгенія are two different Cyrillic forms (Е/Є, и/і), each language's own form, so translation under the Russian/Ukrainian rule)	mul	orcid	3
 yildiz	yıldız	spelling		spelling	spelling	with and without Turkish ı	tr	orcid	3
 yilmaz	yılmaz	spelling		spelling	spelling	Turkish dotless ı dropped	tr	orcid	6
 yohei	youhei	spelling		spelling	spelling	Japanese long vowel romanized two ways	ja	orcid	3
@@ -1843,7 +1843,7 @@ yosef	yossi	familiar		familiar	familiar	Yossi pet form of Yosef	mul	orcid	4
 yoshi	yoshitaka	familiar		familiar	familiar	short form of Yoshitaka	en	orcid	3
 yossef	yossi	familiar		familiar	familiar	Yossi pet form of Yossef	mul	orcid	3
 yuki	yuuki	spelling		spelling	spelling	romanization of long vowel	mul	orcid	3
-yulia	yuliia	translation	decided	spelling	spelling	Ukrainian Юлія romanized two ways; re-read 2026-11-13, the source-script test: translation	ru uk	orcid	14
+yulia	yuliia	spelling	decided	spelling	spelling	Ukrainian Юлія romanized two ways; re-read 2026-11-13, the source-script test: translation (Yulia is Russian Юлия; Yuliia (Y-initial iia) is Ukrainian Юлія; и vs і differ); refined test 2026-11-13: spelling (Yulia fits Юлия and Юлія alike, so the pair is not a translation)	ru uk	orcid	14
 yulia	yuliya	spelling		spelling	spelling	romanization variants of Юлия	ru	orcid	20
 yuliia	yuliya	spelling		spelling	spelling	romanization variant	ru uk	orcid	14
 yuri	yurii	spelling		spelling	spelling	romanization variants	ru	orcid	5

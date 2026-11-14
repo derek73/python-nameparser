@@ -5811,7 +5811,7 @@ ALTERNATE_SPELLINGS: dict[str, tuple[str, ...]] = {
     'yevheniia': ('ievgeniia',),
     'youhei': ('yohei',),
     'yulia': ('iuliia',),
-    'yuliia': ('iuliia',),
+    'yuliia': ('iuliia', 'yulia'),
     'yuliya': ('iuliia', 'juliya', 'yulia', 'yuliia'),
     'yuri': ('iurii',),
     'yurii': ('iurii', 'yuri'),
