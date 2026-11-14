@@ -3928,8 +3928,19 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     lexicon = Lexicon.default()
     abbreviations = sorted(lexicon._sets.given_name_abbreviations)
     # the set emptied: each word keeps its given reading, without the
-    # full name that makes it one written short
-    off = lexicon.add(*abbreviations, kind="given", same_as=None)
+    # full name that makes it one written short, save a word whose
+    # credential that reading leaves unambiguous (`md`, #1383): a plain
+    # given reading would make the credential ambiguous, which the word
+    # written short is not, so it is compared with its given reading
+    # gone, its credential reading after a comma as before (`Smith, Md.`
+    # suffix 'Md.')
+    credentials = [w for w in abbreviations
+                   if w in lexicon._sets.suffix_acronyms
+                   and w not in lexicon._sets.suffix_acronyms_ambiguous]
+    assert credentials == ["md"], credentials
+    off = lexicon.add(*(w for w in abbreviations if w not in credentials),
+                      kind="given", same_as=None).remove(
+                          *credentials, kind="given")
 
     def fields(name: ParsedName, plain: str = "", head: str = "") -> dict[str, str]:
         return {k: v.replace(plain, head) if plain else v

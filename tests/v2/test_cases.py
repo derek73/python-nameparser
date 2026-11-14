@@ -464,10 +464,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1891 -> 1897 the same day, #1222's two Georgian rows ('ჯეკ MA',
     # 'ჯეკ, MA') reporting suffix-or-name under three orders; 1897 ->
     # 1896 the same day, #1256's Thai row ('สมชาย พ.ต.ส.') dropping its
-    # order report.
-    assert claims == 1896, (
-        f"the field sweep checks {claims} claims, recorded as 1896 on "
-        f"2026-11-12")
+    # order report; 1896 -> 1899 on 2026-11-13, #1383's 'Md.' row
+    # reporting suffix-or-name under three orders.
+    assert claims == 1899, (
+        f"the field sweep checks {claims} claims, recorded as 1899 on "
+        f"2026-11-13")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

@@ -181,7 +181,8 @@ familiar reading needs at least one name, and none may be the word
 itself.
 ``same_as="..."`` is accepted on a reading of every kind but
 ``familiar``: it names the word this one is a spelling of (``jnr`` is
-``jr``), and :ref:`name matching <matching-names>` reads two words
+``jr``), or a list of them where it is a spelling of several
+(``same_as=["muhammad", "mohammad"]``), and :ref:`name matching <matching-names>` reads two words
 whose ``same_as`` links reach a common word as a ``listed-spelling``
 and gives them the same grouping key. A short form that is also a
 given name of its own in the vocabulary (``jo``, José written short
@@ -194,7 +195,12 @@ and ``Deanna Smith`` a listed spelling), and you cannot currently mark
 a word of your own as a name of its own. ``same_as`` moves no word
 between kinds, save on a ``given`` reading, where it also marks the word as a given
 name written short (``chas`` is ``charles``), so ``Chas. Smith`` reads
-given ``Chas.`` rather than a title. A property given its unwritten
+given ``Chas.`` rather than a title. Such a reading is no name a credential
+of the same spelling clashes with: where the word is also a credential
+read only where the name has words to spare because it may be a name,
+the given name written short takes that doubt away, so with
+``add("jd", kind="given", same_as="zachary")``, ``Smith Jd`` ends in
+the credential ``Jd`` rather than the family name. A property given its unwritten
 value (``None``, ``False``) is removed; ``acronym`` is unwritten-true
 on a ``credential`` alone. Two things are not properties: whether a reading
 is on (a caller's always is) and its case mask (:ref:`case-exceptions`).

@@ -3250,3 +3250,67 @@ def test_the_default_keys_hold_no_maiden_word(name: str) -> None:
     # names agree, and they are keyed (#1264)
     without = name.split(" (")[0]
     assert m.keys(name) == m.keys(without)
+
+
+# -- Muhammad written short (#1383) -------------------------------------------
+
+#: The short forms of Muhammad against its long spellings and each other:
+#: each short form lists the long spellings written where it is, so the
+#: pairs ORCID's holders wrote both ways (`Mohd` / `Mohammad`) read
+#: `listed-spelling` by default, as `Wm` / `William` does.
+_MUHAMMAD: tuple[tuple[str, str, Outcome], ...] = (
+    ("Mohd Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Muhammad Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohammed Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohamed Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohamad Rahman", Outcome.LISTED_SPELLING),
+    ("Moh. Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Moh. Rahman", "Mohamad Rahman", Outcome.LISTED_SPELLING),
+    ("Md Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Md. Rahman", "Muhammad Rahman", Outcome.LISTED_SPELLING),
+    ("MD RAHMAN", "MOHAMMED RAHMAN", Outcome.LISTED_SPELLING),
+    ("Md Rahman", "Mohamed Rahman", Outcome.LISTED_SPELLING),
+    # two short forms meet through the long spellings they share
+    ("Md Rahman", "Mohd Rahman", Outcome.LISTED_SPELLING),
+    ("Moh Rahman", "Md. Rahman", Outcome.LISTED_SPELLING),
+    # `md` lists no `mohamad`, which Bangladesh's holders do not write;
+    # the pair reads as the opt-in spelling it is through `mohamed`
+    ("Md Rahman", "Mohamad Rahman", Outcome.ALTERNATE_SPELLING),
+    # `muhammed` (Turkish) is listed by none
+    ("Mohd Rahman", "Muhammed Rahman", Outcome.CONFLICT),
+    ("Md Rahman", "Muhammed Rahman", Outcome.CONFLICT),
+)
+
+
+@pytest.mark.parametrize("a, b, outcome", _MUHAMMAD)
+def test_muhammad_written_short_matches_its_long_spellings(
+        a: str, b: str, outcome: Outcome) -> None:
+    # Negative control (2026-11-13): on master 3dadc263 every
+    # `listed-spelling` row with Md is a conflict (no given reading), or
+    # `given-one-side` where `Md.` read as a title, and
+    # Mohd or Moh against Mohammad, Mohammed or Mohamed reads
+    # `alternate-spelling`, refused by default
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["given"].outcome is outcome, (x, y)
+        assert r.consistent is (outcome in m.accept), (x, y)
+        assert m.keys(x) & m.keys(y), (x, y)
+
+
+def test_muhammad_written_short_is_not_transitive_across_long_spellings() -> None:
+    # Accepted (decisions/name-matching, 2026-11-13 #1383): two long
+    # spellings are each consistent with a short form that lists both,
+    # and not with each other by default, that pair being an opt-in
+    # alternate spelling
+    assert m.check("Mohammad Rahman", "Md Rahman").consistent
+    assert m.check("Md Rahman", "Muhammad Rahman").consistent
+    r = m.check("Mohammad Rahman", "Muhammad Rahman")
+    assert not r.consistent
+    assert r["given"].outcome is Outcome.ALTERNATE_SPELLING
+
+
+def test_muhammad_written_short_keys_by_its_letter() -> None:
+    # the keys are the default's, the long spellings sharing the letter
+    for name in ("Md Rahman", "Md. Rahman", "Mohd Rahman", "Moh Rahman",
+                 "Mohammad Rahman", "Muhammad Rahman"):
+        assert m.keys(name) == {"rahman;m"}, name

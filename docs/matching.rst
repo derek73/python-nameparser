@@ -219,7 +219,11 @@ and ``Jas`` (James) are, is read as its long form only written with
 its period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia``
 / ``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while
 ``Wm Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm``
-being no name of its own. It is read with accents folded too, so
+being no name of its own. A short form may stand for several
+spellings: ``Md``, ``Mohd`` and ``Moh``, Muhammad written short, agree
+with ``Muhammad``, ``Mohammad``, ``Mohammed`` and ``Mohamed`` and with
+each other, while two of the long spellings agree at most as an
+``alternate-spelling``. It is read with accents folded too, so
 ``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A
 listed spelling counts inside a family name word by word as it does
 whole: with ``smyth`` added to a lexicon as a spelling of ``smith``,

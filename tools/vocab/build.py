@@ -62,7 +62,8 @@ at fault:
    has unwritten on a reading of the excluding kind, on any reading of
    its category (`cased`: of the word);
    run before 4 and 5, so the recorded reason is what a contributor sees;
-7. `same_as` names another word of the same category, `cased` spells
+7. `same_as` is a text or a list of texts, each named once (#1383),
+   each naming another word of the same category, `cased` spells
    its word's letters (#459), at most one `cased` per word; on a
    `given` reading `same_as` is the full given name the word
    abbreviates, a name rather than a word of the vocabulary, written
@@ -78,7 +79,9 @@ at fault:
     but und.toml in canonical order (_order_key): by kind, then by the
     word a spelling is the same_as of, then by text;
 11. a clash with a name is stated as a name reading, from which the
-    markers are derived (decisions/vocabulary-model, 2026-10-25):
+    markers are derived (decisions/vocabulary-model, 2026-10-25), save
+    a `given` reading carrying `same_as`, a name written short, which
+    marks no clash (2026-11-13 #1383):
     `may_be_name` and `may_be_given = true` are refused, each naming
     the reading to write, a particle reading states
     `may_be_given = false` exactly where its word has no `given`
@@ -495,8 +498,15 @@ def _check_descriptive(where: str, props: Mapping[str, Any]) -> None:
             raise VocabError(f"{where}: expands must be a string or a list of strings")
     if "gender" in props and props["gender"] not in ("f", "m", "n"):
         raise VocabError(f"{where}: gender must be 'f', 'm' or 'n'")
-    if "same_as" in props and not isinstance(props["same_as"], str):
-        raise VocabError(f"{where}: same_as must be a text")
+    if "same_as" in props:
+        v = props["same_as"]
+        vs = [v] if isinstance(v, str) else v
+        if not isinstance(vs, list) or not vs or not all(
+                isinstance(s, str) and s for s in vs):
+            raise VocabError(f"{where}: same_as must be a text or a list "
+                             f"of texts")
+        if len(set(vs)) != len(vs):
+            raise VocabError(f"{where}: same_as lists a word twice")
 
 
 def check_file_names(names: Iterable[str]) -> None:
@@ -638,8 +648,9 @@ def _heads(words: Iterable[Mapping[str, Any]]) -> dict[tuple[str, str], str]:
     heads: dict[tuple[str, str], str] = {}
     for e in words:
         for k in sorted((k for k in e if k in CATEGORY), key=KIND_ORDER.__getitem__):
-            if e[k].get("same_as") not in (None, e["text"]):
-                heads.setdefault((CATEGORY[k], e["text"]), e[k]["same_as"])
+            first = next(iter(_ri.same_as_of(e[k])), None)
+            if first not in (None, e["text"]):
+                heads.setdefault((CATEGORY[k], e["text"]), first)
     return heads
 
 
@@ -661,7 +672,7 @@ def _order_key(e: Mapping[str, Any],
     kind = _sort_kind(e)
     category = CATEGORY[kind]
     path = [e["text"]]
-    head = e[kind].get("same_as") if kind in e else None
+    head = next(iter(_ri.same_as_of(e[kind])), None) if kind in e else None
     if head == path[0]:
         head = None  # check 7's to refuse
     # _heads holds no self-reference and _check_same_as_cycles has
@@ -681,8 +692,10 @@ def _check_same_as_cycles(entries: Mapping[str, list[dict[str, Any]]]) -> None:
     for words in entries.values():
         for e in words:
             for k, v in e.items():
-                if k in CATEGORY and "same_as" in v and v["same_as"] != e["text"]:
-                    edges.setdefault((CATEGORY[k], e["text"]), set()).add(v["same_as"])
+                if k in CATEGORY and "same_as" in v:
+                    heads = set(_ri.same_as_of(v)) - {e["text"]}
+                    if heads:
+                        edges.setdefault((CATEGORY[k], e["text"]), set()).update(heads)
     done: set[tuple[str, str]] = set()
     for start in sorted(edges):
         # depth first, iteratively (a chain can be longer than Python's
@@ -956,10 +969,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 raise VocabError(f"{where}: same_as on a name reading names the "
                                  f"given name a word abbreviates, so only a "
                                  f"`given` reading takes one")
-            if _normalize(p["same_as"]) != p["same_as"]:
-                raise VocabError(f"{where}: same_as {p['same_as']!r} is not in "
-                                 f"normalized form; write "
-                                 f"{_normalize(p['same_as'])!r}")
+            for head in _ri.same_as_of(p):
+                if _normalize(head) != head:
+                    raise VocabError(f"{where}: same_as {head!r} is not in "
+                                     f"normalized form; write "
+                                     f"{_normalize(head)!r}")
         pool.readings.append(r)
         return
     stated = STATED.get(r.category, frozenset())
@@ -1250,16 +1264,16 @@ def check_pool(pool: Pool) -> None:
     # 7: same_as names another word of the same category; one cased
     # per word
     for r in pool.readings:
-        target = r.props.get("same_as")
-        if target == r.text:
-            raise VocabError(f"{r.where()}: same_as names the word itself; it "
-                             f"names the word this one is a spelling of")
-        # a given reading's same_as is the full name it abbreviates, and
-        # a name is no word of the vocabulary
-        if target is not None and r.category != "name" and not any(
-                t.category == r.category for t in by_text.get(target, ())):
-            raise VocabError(f"{r.where()}: same_as {target!r} has no "
-                             f"{r.category} reading")
+        for target in _ri.same_as_of(r.props):
+            if target == r.text:
+                raise VocabError(f"{r.where()}: same_as names the word itself; "
+                                 f"it names the word this one is a spelling of")
+            # a given reading's same_as is the full name it abbreviates,
+            # and a name is no word of the vocabulary
+            if r.category != "name" and not any(
+                    t.category == r.category for t in by_text.get(target, ())):
+                raise VocabError(f"{r.where()}: same_as {target!r} has no "
+                                 f"{r.category} reading")
     for text, rs in by_text.items():
         masks = {r.props["cased"] for r in rs if "cased" in r.props}
         if len(masks) > 1:

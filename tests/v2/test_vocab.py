@@ -32,6 +32,7 @@ import pytest
 
 from tests.checkout import require_checkout
 
+from nameparser import parse
 from nameparser._lexicon import Lexicon
 
 from ._differential_fixtures import load_by_path
@@ -212,6 +213,89 @@ def test_a_suffix_word_beside_a_name_reading_is_gated_and_an_agnomen_by_the_coun
     assert "zzv" in c["SUFFIX_ACRONYMS_AMBIGUOUS"] and "zzv" not in c["SUFFIX_WORDS"]
     # only the kinds a gate reads; another word kind beside a name
     # reading is refused (check 11), never left ungated
+
+
+def test_a_given_name_written_short_marks_no_clash_with_a_credential() -> None:
+    # #1383: a `given` reading carrying `same_as` is a name written
+    # short, read by rules/H2's yielding and the name match, so it makes
+    # no credential ambiguous (`md`, the medical degree and Muhammad
+    # written short); a plain name reading beside it still does (`ma`,
+    # a given name and a surname of its own)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzt"\ngeneration = {}\n'
+        'given = { note = "x", same_as = "zachary" }\n\n'
+        '[[word]]\ntext = "zzq"\ncredential = {}\n'
+        'given = { note = "x", same_as = ["zachary", "zebedee"] }\n\n'
+        '[[word]]\ntext = "zzr"\ncredential = {}\ngiven = { note = "x" }\n\n'
+        '[[word]]\ntext = "zzs"\ncredential = {}\n'
+        'family = { note = "x" }\ngiven = { note = "x", same_as = "zachary" }')})
+    assert {"zzq", "zzr", "zzs"} <= c["SUFFIX_ACRONYMS"]
+    assert {"zzr", "zzs"} <= c["SUFFIX_ACRONYMS_AMBIGUOUS"]
+    assert "zzq" not in c["SUFFIX_ACRONYMS_AMBIGUOUS"]
+    assert "zzt" in c["SUFFIX_WORDS"]
+    assert "zzt" not in c["SUFFIX_WORDS_AMBIGUOUS"]
+    assert {"zzq", "zzs", "zzt"} <= c["GIVEN_NAME_ABBREVIATIONS"]
+    # a list compiles every word it names into the given group
+    assert c["SAME_AS"]["given"]["zzq"] == ("zachary", "zebedee")
+
+
+def test_the_shipped_short_forms_of_muhammad() -> None:
+    # #1383: `md` keeps its credential unambiguous beside its given
+    # reading, and `ma` (a given name and surname of its own) keeps its
+    # ambiguous; each short form names the long spellings of Muhammad
+    # written where it is
+    sets = Lexicon.default()._sets
+    assert "md" in sets.suffix_acronyms
+    assert "md" not in sets.suffix_acronyms_ambiguous
+    assert "ma" in sets.suffix_acronyms_ambiguous
+    assert {"md", "mohd", "moh"} <= sets.given_name_abbreviations
+    lexicon = Lexicon.default()
+    assert lexicon._headwords("md", "given") == {
+        "md", "muhammad", "mohammad", "mohammed", "mohamed"}
+    for word in ("mohd", "moh"):
+        assert lexicon._headwords(word, "given") == {
+            word, "muhammad", "mohamad", "mohammad", "mohammed", "mohamed"}
+
+
+#: The credential `md` in the shapes a plain given reading moved (#1383's
+#: measurement, the committed corpora and ClinicalTrials.gov), each read
+#: as on master 3dadc263 save the glued `MD.MOKHTAR` (below), and three
+#: shapes left wrong as before
+#: (Accepted, decisions/vocabulary-model 2026-11-13 #1383).
+_MD_KEEPS_ITS_CREDENTIAL = (
+    ("AGAPE, MD", {"family": "AGAPE", "suffix": "MD"}),
+    ("Bin Zhang, MD & PhD", {"family": "Bin Zhang", "suffix": "MD & PhD"}),
+    ("John Smith, MD \u2013 PhD",
+     {"given": "John", "family": "Smith", "suffix": "MD \u2013 PhD"}),
+    ("John Smith, MD;PhD",
+     {"given": "John", "family": "Smith", "suffix": "MD;PhD"}),
+    ("Smith, MD - PhD - FACS", {"family": "Smith", "suffix": "MD - PhD - FACS"}),
+    ("Washington Jr. MD, Franklin",
+     {"given": "Franklin", "family": "Washington", "suffix": "Jr. MD"}),
+    ("Dumas VI MD, Ed", {"given": "Ed", "family": "Dumas", "suffix": "VI MD"}),
+    ("John Smith MD Jones",
+     {"given": "John", "family": "Smith", "suffix": "MD Jones"}),
+    ("Dr. Pope MD", {"title": "Dr.", "family": "Pope", "suffix": "MD"}),
+    ("Md Rahman, PhD", {"given": "Md", "family": "Rahman", "suffix": "PhD"}),
+    # left wrong as before, not moved by #1383
+    ("Rahman, Md.", {"family": "Rahman", "suffix": "Md."}),
+    ("RAHMAN, MD ABDUL", {"family": "RAHMAN", "suffix": "MD ABDUL"}),
+    ("MARIAM HAFIZAH MD.MOKHTAR",
+     {"given": "MARIAM", "family": "HAFIZAH", "suffix": "MD. MOKHTAR"}),
+)
+
+
+@pytest.mark.parametrize("text, fields", _MD_KEEPS_ITS_CREDENTIAL)
+def test_md_written_short_leaves_its_credential_reading(
+        text: str, fields: dict[str, str]) -> None:
+    # Negative control (2026-11-13): with `md` put back among the
+    # ambiguous acronyms (the plain given reading of #1383's shape (a)),
+    # 12 of the 13 rows move, all but `Md Rahman, PhD`; so do the case
+    # table's `John Smith Md` and `Smith (MD), John`. The glued
+    # `MD.MOKHTAR` is the one shape the change moves (its stop now
+    # divides the word, the suffix still holding both halves)
+    got = {k: v for k, v in parse(text).as_dict().items() if v}
+    assert got == fields, text
 
 
 # ------------------------------------------------- one mutation per check
@@ -540,6 +624,14 @@ MUTATIONS = [
     ("same-as-on-a-family-reading", {"en.toml": _w('[[word]]\ntext = "smyth"\nfamily = { note = "x", same_as = "smith" }')}, "only a `given` reading takes one"),
     ("same-as-on-a-given-reading-unnormalized", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "Charles" }')}, "not in normalized form; write 'charles'"),
     ("same-as-on-a-given-reading-names-itself", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "chas" }')}, "names the word itself"),
+    # a same_as list (#1383): each word it names is checked as a text is
+    ("same-as-list-empty", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = [] }')}, "same_as must be a text or a list of texts"),
+    ("same-as-list-not-texts", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = ["charles", 1] }')}, "same_as must be a text or a list of texts"),
+    ("same-as-list-twice", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = ["charles", "charles"] }')}, "same_as lists a word twice"),
+    ("same-as-list-unnormalized", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = ["charles", "Charlie"] }')}, "not in normalized form; write 'charlie'"),
+    ("same-as-list-names-itself", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = ["charles", "chas"] }')}, "names the word itself"),
+    ("same-as-list-missing-target", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = ["jr", "jrx"] }')}, "same_as 'jrx' has no suffix reading"),
+    ("same-as-list-cycle-through-a-later-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = ["sr", "jnr"] }\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as loops"),
     # 3, the two name-reading properties the two-name switches read
     # (#704): each is true or unwritten, and after_particle names a
     # given name, so only a given reading takes it

@@ -103,7 +103,7 @@ given = { same_as = "muhammad", note = "Muhammad (Mochammad) written short: ORCI
 
 [[word]]
 text = "moh"
-given = { same_as = "muhammad", note = "Muhammad (Mohammad) written short: ORCID given boxes 1,158 (Indonesia 531), family boxes 156; US Census 2010 counts Moh 379 times as a surname (2026-11-06); written with its period at the head of a name (Moh. Ali Arupin), it read as a title by the leading-abbreviation shape (#1115)" }
+given = { same_as = ["muhammad", "mohamad", "mohammad", "mohammed", "mohamed"], note = "Muhammad (Mohammad) written short: ORCID given boxes 1,158 (Indonesia 531), family boxes 156; US Census 2010 counts Moh 379 times as a surname (2026-11-06); written with its period at the head of a name (Moh. Ali Arupin), it read as a title by the leading-abbreviation shape (#1115). The long spellings it stands for are mohd's, Indonesia's ORCID given boxes opening muhammad 680, mohammad 69 and mohamad 38 (2026-11-13, #1383)" }
 
 [[word]]
 text = "muh"
