@@ -1012,6 +1012,18 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     return unique[0] if len(unique) == 1 else unique
 
 
+def _carries(props: Mapping[str, Any], prop: str, value: object) -> bool:
+    """A reading's properties carry `prop` at `value`, canonical as
+    `_prop_value` writes it: equal, save `same_as`, which a reading may
+    hold as several words and which is carried where every word asked
+    is among them (#1383)."""
+    if prop != "same_as" or value is None:
+        return props.get(prop) == value
+    held = _index_module().same_as_of(props)
+    asked = _index_module().same_as_of({"same_as": value})
+    return set(asked) <= set(held)
+
+
 def _check_kind(kind: object, op: str) -> str | None:
     """`kind` checked for `op`: a kind, or on `remove` and `words` a
     category too; None (every reading) only on `remove`."""
@@ -2165,8 +2177,12 @@ class Lexicon:
         credentials, unwritten-true, and the suffix words, unwritten-
         false, alike)
         (``words(kind="title", addresses="given")``, the titles that
-        address a person by the given name). A phrase the lexicon holds
-        whole (``"z domu"``) is one entry. Added in 3.0."""
+        address a person by the given name). ``same_as`` matches a
+        reading naming every word given among the words it is a
+        spelling of (``words(kind="given", same_as="muhammad")`` lists
+        ``md``, ``mohd`` and ``moh``, each a spelling of several). A
+        phrase the lexicon holds whole (``"z domu"``) is one entry.
+        Added in 3.0."""
         k = _check_kind(kind, "words")
         assert k is not None
         ri = _index_module()
@@ -2188,7 +2204,7 @@ class Lexicon:
             if any(r.on_by_default and (r.kind == k or r.category == k)
                    # a reading holds its properties canonical, as the
                    # build and add write them, the unwritten value never
-                   and all(r.props.get(p) == _prop_value(r.kind, p, v)
+                   and all(_carries(r.props, p, _prop_value(r.kind, p, v))
                            for p, v in properties.items())
                    for r in rs)))
 

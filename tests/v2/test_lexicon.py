@@ -2013,3 +2013,16 @@ def test_a_same_as_that_is_no_word_or_list_of_words_is_refused(
         same_as: object) -> None:
     with pytest.raises(TypeError, match="same_as must be the word"):
         Lexicon.default().add("zed", kind="given", same_as=same_as)
+
+
+def test_words_finds_a_spelling_of_several_by_any_word_it_names() -> None:
+    # `same_as` asks whether a reading is a spelling of the words given,
+    # not whether it names exactly them (the review of #1383)
+    lexicon = Lexicon.default()
+    assert {"md", "mohd", "moh"} <= set(
+        lexicon.words(kind="given", same_as="muhammad"))
+    assert set(lexicon.words(kind="given",
+                             same_as=["muhammad", "mohamad"])) >= {"mohd", "moh"}
+    assert "md" not in lexicon.words(kind="given",
+                                     same_as=["muhammad", "mohamad"])
+    assert lexicon.words(kind="given", same_as="charles") == ("chas",)

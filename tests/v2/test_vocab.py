@@ -259,7 +259,8 @@ def test_the_shipped_short_forms_of_muhammad() -> None:
 
 #: The credential `md` in the shapes a plain given reading moved (#1383's
 #: measurement, the committed corpora and ClinicalTrials.gov), each read
-#: as on master 3dadc263, and three shapes left wrong as before
+#: as on master 3dadc263 save the glued `MD.MOKHTAR` (below), and three
+#: shapes left wrong as before
 #: (Accepted, decisions/vocabulary-model 2026-11-13 #1383).
 _MD_KEEPS_ITS_CREDENTIAL = (
     ("AGAPE, MD", {"family": "AGAPE", "suffix": "MD"}),
