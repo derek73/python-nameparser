@@ -216,6 +216,18 @@ class ReadingProperties:
         return CATEGORY[self.kind]
 
     @property
+    def marks_a_clash(self) -> bool:
+        """A name reading that marks a clash with a reading beside it
+        (the derived markers, the build's check 11): every name reading
+        but a `given` one carrying `same_as`, a name written short, which
+        the parse reads through rules/H2's yielding at the head of a name
+        and the match through its listed spellings, never through the
+        words-to-spare count a clash gates (`md`, Muhammad written short
+        and the medical degree, #1383)."""
+        return self.category == "name" and not (
+            self.kind == "given" and "same_as" in self.props)
+
+    @property
     def acronym(self) -> bool:
         """Matched with its periods removed: unwritten, true only for a
         credential."""
@@ -660,14 +672,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     # a word's name reading beside the reading it clashes with, and a
     # name reading written `default = false` marks nothing in the
     # default, as it compiles to nothing (3a)
-    # A `given` reading carrying `same_as` is a name written short, not
-    # a name a bearer is called by, so it marks no clash with a
-    # credential: the parse reads it through rules/H2's yielding at the
-    # head of a name and the match through its listed spellings, never
-    # through the words-to-spare count a clash gates (`md`, Muhammad
-    # written short and the medical degree, #1383)
-    named = {t for r, t in texts if r.category == "name"
-             and not (r.kind == "given" and "same_as" in r.props)}
+    # a `given` reading carrying `same_as`, a name written short, marks
+    # none (`ReadingProperties.marks_a_clash`, #1383)
+    named = {t for r, t in texts if r.marks_a_clash}
     given = {t for r, t in texts if r.kind == "given"}
     titles: set[str] = set()
     given_titles: set[str] = set()

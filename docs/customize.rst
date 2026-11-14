@@ -200,7 +200,40 @@ of the same spelling clashes with: where the word is also a credential
 read only where the name has words to spare because it may be a name,
 the given name written short takes that doubt away, so with
 ``add("jd", kind="given", same_as="zachary")``, ``Smith Jd`` ends in
-the credential ``Jd`` rather than the family name. A property given its unwritten
+the credential ``Jd`` rather than the family name.
+
+``add`` on a reading the word already holds updates only the
+properties you pass, so ``add("md", kind="given")`` keeps the shipped
+reading, ``md`` being Muhammad written short since 3.1, and changes
+nothing. Through 3.0.1 the same call gave ``md`` a plain given
+reading, which made the credential ``MD`` one read only where the
+name has words to spare; that reading now takes ``same_as=None``:
+
+.. doctest::
+
+    >>> plain_md = Parser(lexicon=Lexicon.default().add(
+    ...     "md", kind="given", same_as=None))
+    >>> plain_md.parse("John Smith Md").family
+    'Md'
+    >>> Parser().parse("John Smith Md").suffix
+    'Md'
+
+.. _customize-md-title:
+
+Through 3.0.1 a leading ``Md.`` read as a title, and ``Md`` after a
+family comma as the credential. To keep those readings, remove the
+given reading; the name match then no longer links ``Md`` to the
+long spellings of Muhammad:
+
+.. doctest::
+
+    >>> md_title = Parser(lexicon=Lexicon.default().remove("md", kind="given"))
+    >>> md_title.parse("Md. Rahman").title
+    'Md.'
+    >>> md_title.parse("Rahman, Md").suffix
+    'Md'
+
+A property given its unwritten
 value (``None``, ``False``) is removed; ``acronym`` is unwritten-true
 on a ``credential`` alone. Two things are not properties: whether a reading
 is on (a caller's always is) and its case mask (:ref:`case-exceptions`).

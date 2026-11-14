@@ -239,6 +239,43 @@ def test_a_given_name_written_short_marks_no_clash_with_a_credential() -> None:
     assert c["SAME_AS"]["given"]["zzq"] == ("zachary", "zebedee")
 
 
+def test_a_chain_follows_the_first_word_a_same_as_list_names() -> None:
+    # check 10's order follows a spelling's head through the head's own
+    # same_as, and where that is a list, through its FIRST word (#1383's
+    # review: a mutant following the last word passed every test): `nn`
+    # is a spelling of `mm`, a spelling of `aa` and `zz`, so `nn` sorts
+    # under `aa`, before `zz`
+    def words(*texts: str) -> str:
+        entry = {"aa": "generation = {}",
+                 "mm": 'generation = { same_as = ["aa", "zz"] }',
+                 "nn": 'generation = { same_as = "mm" }',
+                 "zz": "generation = {}"}
+        return _w("\n\n".join(f'[[word]]\ntext = "{t}"\n{entry[t]}'
+                               for t in texts))
+    _compile({"en.toml": words("aa", "mm", "nn", "zz")})
+    with pytest.raises(build.VocabError, match="'zz' .* belongs after 'nn'"):
+        _compile({"en.toml": words("aa", "mm", "zz", "nn")})
+
+
+def test_a_given_name_written_short_still_forks_a_title_and_a_particle() -> None:
+    # #1383's exemption is the suffix markers' alone, by its reason: a
+    # credential stands at the END of a name, where a given name written
+    # short never does, so the short form contests nothing there; a
+    # title or a particle stands at the head, where the given name does,
+    # so the fork is real and the name reading still marks it (a title
+    # read only inside a phrase, rules/H9; a particle that may be a given
+    # name, rules/P1) (decisions/vocabulary-model, 2026-11-14)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzu"\nsalutation = {}\n'
+        'given = { note = "x", same_as = "zachary" }\n\n'
+        '[[word]]\ntext = "zzv"\narticle = {}\n'
+        'given = { note = "x", same_as = "zachary" }')})
+    assert "zzu" in c["TITLES_AMBIGUOUS"]
+    assert "zzu" not in c["TITLES"]
+    assert "zzv" in c["PARTICLES"]
+    assert "zzv" not in c["NON_GIVEN_NAME_PARTICLES"]
+
+
 def test_the_shipped_short_forms_of_muhammad() -> None:
     # #1383: `md` keeps its credential unambiguous beside its given
     # reading, and `ma` (a given name and surname of its own) keeps its
@@ -259,12 +296,14 @@ def test_the_shipped_short_forms_of_muhammad() -> None:
 
 #: The credential `md` in the shapes a plain given reading moved (#1383's
 #: measurement, the committed corpora and ClinicalTrials.gov), each read
-#: as on master 3dadc263 save the glued `MD.MOKHTAR` (below), and three
-#: shapes left wrong as before
+#: as on master 3dadc263 save the glued `MD.NOOR` (below), which is
+#: left wrong as before (#1394), and `Md` opening the part after a family
+#: comma, which #1393 reads as the given name (the case table's `md_*`
+#: rows, rules/C13).
 #: (Accepted, decisions/vocabulary-model 2026-11-13 #1383).
 _MD_KEEPS_ITS_CREDENTIAL = (
-    ("AGAPE, MD", {"family": "AGAPE", "suffix": "MD"}),
-    ("Bin Zhang, MD & PhD", {"family": "Bin Zhang", "suffix": "MD & PhD"}),
+    ("BERGER, MD", {"family": "BERGER", "suffix": "MD"}),
+    ("Bin Wang, MD & PhD", {"family": "Bin Wang", "suffix": "MD & PhD"}),
     ("John Smith, MD \u2013 PhD",
      {"given": "John", "family": "Smith", "suffix": "MD \u2013 PhD"}),
     ("John Smith, MD;PhD",
@@ -277,23 +316,23 @@ _MD_KEEPS_ITS_CREDENTIAL = (
      {"given": "John", "family": "Smith", "suffix": "MD Jones"}),
     ("Dr. Pope MD", {"title": "Dr.", "family": "Pope", "suffix": "MD"}),
     ("Md Rahman, PhD", {"given": "Md", "family": "Rahman", "suffix": "PhD"}),
-    # left wrong as before, not moved by #1383
-    ("Rahman, Md.", {"family": "Rahman", "suffix": "Md."}),
-    ("RAHMAN, MD ABDUL", {"family": "RAHMAN", "suffix": "MD ABDUL"}),
-    ("MARIAM HAFIZAH MD.MOKHTAR",
-     {"given": "MARIAM", "family": "HAFIZAH", "suffix": "MD. MOKHTAR"}),
+    # left wrong as before, not moved by #1383 (#1394)
+    ("SITI AMINAH MD.NOOR",
+     {"given": "SITI", "family": "AMINAH", "suffix": "MD. NOOR"}),
 )
 
 
 @pytest.mark.parametrize("text, fields", _MD_KEEPS_ITS_CREDENTIAL)
 def test_md_written_short_leaves_its_credential_reading(
         text: str, fields: dict[str, str]) -> None:
-    # Negative control (2026-11-13): with `md` put back among the
-    # ambiguous acronyms (the plain given reading of #1383's shape (a)),
-    # 12 of the 13 rows move, all but `Md Rahman, PhD`; so do the case
-    # table's `John Smith Md` and `Smith (MD), John`. The glued
-    # `MD.MOKHTAR` is the one shape the change moves (its stop now
-    # divides the word, the suffix still holding both halves)
+    # Negative control (2026-11-14, re-taken after #1393 moved
+    # `Rahman, Md.` and `RAHMAN, MD ABDUL` to the case table; 12 of 13
+    # on 2026-11-13): with `md` put back among the ambiguous acronyms
+    # (the plain given reading of #1383's shape (a)), 10 of the 11 rows
+    # move, all but `Md Rahman, PhD`; so do the case table's `John Smith
+    # Md` and `Smith (MD), John`. The glued `MD.NOOR` is the one shape
+    # the change moves (its stop now divides the word, the suffix still
+    # holding both halves)
     got = {k: v for k, v in parse(text).as_dict().items() if v}
     assert got == fields, text
 
@@ -461,6 +500,9 @@ MUTATIONS = [
     ("name-reading-beside-a-professional-honorific", {"en.toml": _w('[[word]]\ntext = "zzt"\nprofessional_honorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
     ("agnomen-as-an-acronym", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = { acronym = true }\nfamily = { note = "x" }')}, "an agnomen is a word"),
     ("agnomen-without-a-name-reading", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}')}, "an agnomen needs a `given` or `family` reading"),
+    # a given name written short gates nothing (#1383's review), so it is
+    # no name reading to this check
+    ("agnomen-whose-only-name-reading-is-written-short", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\ngiven = { note = "x", same_as = "filipe" }')}, "an agnomen needs a `given` or `family` reading"),
     ("agnomen-whose-name-reading-is-elsewhere-only-as-an-exclusion", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nexcluded = { family = "x" }')}, "an agnomen needs a `given` or `family` reading"),
     # a name reading written default = false (3a) is held to the same
     # value check as any reading's `default`, gates nothing in the

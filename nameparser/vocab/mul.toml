@@ -119,6 +119,11 @@ family = { us_census_2010 = 320, as_of = 2026-11-03, note = "the Igbo surname Mb
 credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
+text = "md"
+credential = { note = "the medical degree, written after names in every country's data (ClinicalTrials.gov officials, ORCID), so shared with its given reading here: a strict choice of a language other than English kept the given reading and dropped the credential, reading 'John Smith, MD' as given 'MD' (2026-11-14, #1383's review)", issue = 1383 }
+given = { us_ssa = 524, as_of = 2026-11-13, same_as = ["muhammad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Bangladesh, Nepal and India: the first word of 4,443 ORCID given boxes in Bangladesh, where the long spellings written are mohammad 593, muhammad 149 and mohammed 91; UK PSC filers write Md 1,358 times, Nepal's 2022 local candidates 318 (2026-11-13); US SSA male births. Its credential reading (the medical degree, above) stays unambiguous, a name written short marking no clash with it (#1383); written with its period at the head of a name (Md. Rahman), it read as a title by the leading-abbreviation shape until #1383" }
+
+[[word]]
 text = "mph"
 credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
@@ -137,10 +142,6 @@ credential = { expands = "Doctor of Philosophy", cased = "PhD", note = "written 
 [[word]]
 text = "&"
 conjunction = {}
-
-[[word]]
-text = "md"
-given = { us_ssa = 524, as_of = 2026-11-13, same_as = ["muhammad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Bangladesh, Nepal and India: the first word of 4,443 ORCID given boxes in Bangladesh, where the long spellings written are mohammad 593, muhammad 149 and mohammed 91; UK PSC filers write Md 1,358 times, Nepal's 2022 local candidates 318 (2026-11-13); US SSA male births. Its credential reading (the medical degree, en.toml) stays unambiguous, a name written short marking no clash with it (#1383); written with its period at the head of a name (Md. Rahman), it read as a title by the leading-abbreviation shape until #1383" }
 
 [[word]]
 text = "mhd"

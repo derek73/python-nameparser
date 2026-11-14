@@ -465,10 +465,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'ჯეკ, MA') reporting suffix-or-name under three orders; 1897 ->
     # 1896 the same day, #1256's Thai row ('สมชาย พ.ต.ส.') dropping its
     # order report; 1896 -> 1899 on 2026-11-13, #1383's 'Md.' row
-    # reporting suffix-or-name under three orders.
-    assert claims == 1899, (
-        f"the field sweep checks {claims} claims, recorded as 1899 on "
-        f"2026-11-13")
+    # reporting suffix-or-name under three orders; 1899 -> 1902 on
+    # 2026-11-14, #1393: the two 'Uddin, Md Karim' rows stop reporting
+    # and three boundary rows report ('Smith, MD XYZ', 'Rahman Khan, Md
+    # Abdul', 'SMITH, MD MBA, JANE'), each under three orders.
+    assert claims == 1902, (
+        f"the field sweep checks {claims} claims, recorded as 1902 on "
+        f"2026-11-14")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -524,6 +527,12 @@ _STAND_IN_REREADS = {
     # a name word in VI's place gives the 'y' a word to link, so P3's
     # join takes it with 'Smith' (#1098)
     ("John Smith y VI", 1),
+    # a name word in Pharm's place makes the 'MD' opening the part the
+    # given name written short (rules/C13's given-name Except, #1393)
+    ("Smith, MD Pharm D", None), ("Smith, MD Pharm D", 1),
+    ("Smith, MD Pharm D", 2),
+    ("SMITH, MD MBA, JANE", None), ("SMITH, MD MBA, JANE", 1),
+    ("SMITH, MD MBA, JANE", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -891,8 +900,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 582 and 360 -> 363, its second review's three head rows; 582 ->
     # 594 and 363 -> 366, its third review's rows; #1254's order
     # reports on 22 rows carry no alternative (rules/A1), so neither
-    # count moves with them
-    assert (checked, skipped) == (594, 366), (checked, skipped)
+    # count moves with them; 366 -> 363 on 2026-11-14, #1393's 'Smith,
+    # MD Pharm D' joining `_STAND_IN_REREADS` under the three orders,
+    # where its stand-in had landed in the taken field
+    assert (checked, skipped) == (594, 363), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

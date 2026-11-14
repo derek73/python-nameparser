@@ -87,7 +87,8 @@ at fault:
     `may_be_given = false` exactly where its word has no `given`
     reading in any file, and has no `given` reading only where some
     other is on by default, an agnomen reading has a name reading on
-    its word, which gates it (rules/S11), one on by default where the
+    its word, which gates it (rules/S11), one that marks a clash (a
+    `given` reading carrying `same_as` gates nothing), one on by default where the
     agnomen is, and no other suffix word kind has one but a generation
     and a credential written as a word (`acronym = false`), since the
     gate reads only those three (GATED_WORDS);
@@ -1319,17 +1320,21 @@ def check_pool(pool: Pool) -> None:
     # the gate is derived from a name reading, so one without a name
     # reading would read as the suffix wherever it ends a name, taking
     # the family name from every two-word name ('Maria Filha')
-    named = {t for t, rs in by_text.items() if any(r.category == "name" for r in rs)}
+    # A name written short gates nothing (`marks_a_clash`, #1383), so it
+    # is no name reading to this check either
+    named = {t for t, rs in by_text.items() if any(r.marks_a_clash for r in rs)}
     # a name reading written default = false gates nothing in the
     # default, so it leaves an agnomen the default compiles ungated
-    live_named = {t for t, rs in live.items() if any(r.category == "name" for r in rs)}
+    live_named = {t for t, rs in live.items() if any(r.marks_a_clash for r in rs)}
     for r in pool.readings:
         if r.kind == "agnomen" and r.text not in (
                 live_named if r.on_by_default else named):
             raise VocabError(f"{r.where()}: an agnomen needs a `given` or "
                              f"`family` reading on its word, which gates it "
-                             f"by the count (rules/S11); with dated counts "
-                             f"from tools/name_usage.py or a `note` saying why")
+                             f"by the count (rules/S11), a `given` reading "
+                             f"carrying same_as gating nothing; with dated "
+                             f"counts from tools/name_usage.py or a `note` "
+                             f"saying why")
 
     # 11, the other suffix words: the third marker reads only a
     # generation's, an agnomen's and a credential word's clash with a

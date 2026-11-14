@@ -993,21 +993,25 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     # form, or several, as a list (`md` of four spellings of Muhammad,
     # #1383); one is kept as its text, so an edit written before lists
     # were taken is the same edit, and several as a sorted tuple
+    fix = "write e.g. same_as='muhammad' or same_as=['muhammad', 'mohammad']"
     if isinstance(value, str):
         if not value.strip():
-            raise TypeError(f"same_as must be the word this one is a "
-                            f"spelling of, a non-empty string, got {value!r}")
+            raise ValueError(f"same_as must name the word this one is a "
+                             f"spelling of, got the empty text {value!r}; "
+                             f"{fix}")
         return value
     if isinstance(value, (bytes, Mapping)) or not isinstance(value, Iterable):
         raise TypeError(f"same_as must be the word this one is a spelling "
-                        f"of, a non-empty string, or a list of them, got "
-                        f"{value!r}")
+                        f"of, a string, or a list of them, got {value!r}; "
+                        f"{fix}")
     heads = tuple(cast("Iterable[object]", value))
-    if not heads or not all(isinstance(h, str) and h.strip() for h in heads):
-        raise TypeError(f"same_as must be the word this one is a spelling "
-                        f"of, a non-empty string, or a non-empty list of "
-                        f"them, got {value!r}; write e.g. "
-                        f"same_as=['muhammad', 'mohammad']")
+    for h in heads:
+        if not isinstance(h, str):
+            raise TypeError(f"same_as entries must be strings, got {h!r} "
+                            f"in {value!r}; {fix}")
+    if not heads or not all(cast("str", h).strip() for h in heads):
+        raise ValueError(f"same_as must name at least one word, none of "
+                         f"them empty, got {value!r}; {fix}")
     unique = tuple(sorted(set(cast("tuple[str, ...]", heads))))
     return unique[0] if len(unique) == 1 else unique
 
@@ -1269,13 +1273,15 @@ def _check_pool(pool: Pool, words: Iterable[str]) -> None:
         kinds = {r.category for r in on} | {r.kind for r in on}
         # check 11's agnomen clause: an agnomen is written in the case of
         # the name around it, so only the count gates it, and the gate is
-        # a name reading beside it (rules/S11)
-        if "agnomen" in kinds and "name" not in kinds:
+        # a name reading beside it (rules/S11), one that marks a clash (a
+        # given name written short gates nothing, #1383)
+        if "agnomen" in kinds and not any(r.marks_a_clash for r in on):
             raise ValueError(
-                f"{w!r} is an agnomen with no name reading, and an agnomen "
-                f"is read as the suffix only where a name reading gates "
-                f"it by the count: write .add({w!r}, kind='family') "
-                f"first, then the agnomen")
+                f"{w!r} is an agnomen with no name reading that gates it, "
+                f"and an agnomen is read as the suffix only where a name "
+                f"reading gates it by the count (a given name written "
+                f"short, carrying same_as, gates nothing): write "
+                f".add({w!r}, kind='family') first, then the agnomen")
         if {"bound_given", "particle"} <= kinds and "given" not in kinds:
             raise ValueError(
                 f"{w!r} is a bound given name and a particle with no given "

@@ -23,6 +23,18 @@
   "Smith, Ms Jane"            →  title="Ms"  · boundary
   ```
 
+- **A credential that is also a given name written short opens the given part** behind no whole name (C3's count), where it is written with a lower-case letter in a name of mixed case or a name word stands behind it, as a given name opens the part ('Rahman, Md Abdul', 'Rahman, Md'). Written in capitals with nothing behind it, it is the degree's own writing ('Barak, MD'), and so is one before a credential, half of a split credential or, in a name of mixed case, a word in capitals; behind a whole name, a title counting as a word, the run stands.
+  ```
+  "Rahman, Md Abdul"          →  given="Md"
+  "Rahman, Md."               →  given="Md."
+  "RAHMAN, MD ABDUL"          →  given="MD"
+  "Uddin, Mr Md Karim"        →  given="Md"
+  "RAHMAN, MD"                →  suffix="MD"  · boundary
+  "Smith, MD PhD"             →  suffix="MD PhD"  · boundary
+  "Dr. Rahman, Md"            →  suffix="Md"  · boundary
+  "Rahman Khan, Md Abdul"     →  suffix="Md Abdul"  · boundary
+  ```
+
 **Precedence:**
 
 - **Initials spelling a credential behind one word** ("Smith, J.P. Jones"): C16 governs, and the run opens the given part rather than the postnominal part.

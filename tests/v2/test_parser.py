@@ -3405,15 +3405,16 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Madam Minh Do").title == "Madam"
     assert strict.parse("Do, Madam Minh").title == "Madam"
     assert strict.parse("Do, Minh Madam").title == "Madam"
-    assert strict.parse("A Israni, MD, MS").suffix == "MS"
+    assert strict.parse("A Israni, MD, MS").suffix == "MD, MS"
     assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
     # the five degrees #1021 moved (and `ms`'s, above), each after a
     # comma and in a run
     assert strict.parse("Minh Do, MSc, MBA").suffix == "MSc, MBA"
     assert strict.parse("Minh Do, MPH, BSc").suffix == "MPH, BSc"
-    # en.toml's leave: `md`, kept there since a leading Md abbreviates
-    # Muhammad, `mx`, the abbreviation for Mexico, and `rn`
-    assert strict.parse("Minh Do, MD").given == "MD"
+    # `md` reads in mul.toml beside its given reading since #1383's
+    # review, so strict vi keeps the degree
+    assert strict.parse("Minh Do, MD").suffix == "MD"
+    # en.toml's leave: `mx`, the abbreviation for Mexico, and `rn`
     assert strict.parse("Mx Minh Do").given == "Mx"
     # and `sir`, a British honour, and the job titles `director` and
     # `ceo` (#1038)
@@ -3460,17 +3461,21 @@ def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
     assert "do" not in parser_for(_choosing("hu"), strict=True).lexicon._sets.particles
 
 
-def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:
-    # `md` stays in en.toml (#1005): a leading Md abbreviates Muhammad
-    # (#853), and after a family comma a strict choice reading `md`
-    # from mul.toml took the given name as a credential
+def test_md_reads_alike_under_a_strict_choice_that_does_not_read_en() -> None:
+    # `md`'s credential and its given reading are both in mul.toml since
+    # #1383's review, which every strict choice reads, so strict bn reads
+    # it as the default does: the given name after a family comma where
+    # rules/C13's given-name Except reads one (#1393), which kept the
+    # credential in en.toml until then (#1005), and the degree in
+    # capitals alone there and after a whole name, which strict bn read
+    # as a given name until then
     bn = parser_for(_choosing("bn"), strict=True)
-    for text, given, middle in (("Rahman, Md", "Md", ""),
-                                ("Rahman, MD", "MD", ""),
-                                ("Karim, Md Abdul", "Md", "Abdul")):
-        got = bn.parse(text)
-        assert (got.given, got.middle, got.suffix) == (given, middle, ""), text
-    assert bn.parse("Md Rahman").given == "Md"
+    for text in ("Rahman, Md", "Karim, Md Abdul", "Rahman, MD",
+                 "John Smith, MD", "Md Rahman", "Md. Rahman"):
+        assert bn.parse(text).as_dict() == parse(text).as_dict(), text
+    assert bn.parse("Karim, Md Abdul").given == "Md"
+    assert bn.parse("Rahman, MD").suffix == "MD"
+    assert bn.parse("John Smith, MD").suffix == "MD"
 
 
 def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> None:

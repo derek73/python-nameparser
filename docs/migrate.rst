@@ -1335,6 +1335,19 @@ after a name is still the medical degree:
     >>> parse("John Smith, MD").suffix
     'MD'
 
+After a family comma ``Md`` opening the given part is the given name
+too, where 1.4 through 3.0 read the part as credentials; ``MD`` in
+capitals alone there is still the degree. To keep the 3.0 readings,
+remove ``md``'s given reading (:ref:`customize-md-title`):
+
+.. doctest::
+
+    >>> karim = parse("Uddin, Md Karim")
+    >>> karim.given, karim.middle, karim.suffix
+    ('Md', 'Karim', '')
+    >>> parse("UDDIN, MD").suffix
+    'MD'
+
 ``El``, ``Ait``, ``Aït``, ``Nait``, ``Ould`` and ``Ouled`` start the
 family name they open, where 1.4 through 3.0 left them in the middle
 name (``El`` opening a name stays the given name), and

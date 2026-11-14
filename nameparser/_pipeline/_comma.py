@@ -38,7 +38,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, GENERATION_WORD_TAG,
-    SHAPE_ACRONYM_TAG,
+    GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
     PendingReading, Structure, WorkToken, copy_with,
 )
@@ -488,6 +488,39 @@ def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
             alternative=suffix_reading(token))))
 
 
+def _given_name_written_short(part: Sequence[int],
+                              tokens: Sequence[WorkToken],
+                              one_case: bool | None) -> bool:
+    """Whether the part after a family comma opens, behind its titles,
+    with a credential that is also a given name written short ('Md'),
+    written as the given name: with a lower-case letter in a name of
+    mixed case, or with a name word behind it (`one_case` is
+    ParseState.one_case, None read as mixed case)."""
+    k = 0
+    while (k < len(part) and "vocab:title" in tokens[part[k]].tags
+           and "vocab:suffix" not in tokens[part[k]].tags):
+        k += 1
+    if k == len(part):
+        return False
+    tags = tokens[part[k]].tags
+    if GIVEN_ABBREVIATION_TAG not in tags or "vocab:suffix" not in tags:
+        return False
+    if not one_case and any(map(str.islower, tokens[part[k]].text)):
+        return True
+    if k + 1 == len(part):
+        return False
+    after = tokens[part[k + 1]]
+    text = after.text.rstrip(".")
+    return ("vocab:suffix" not in after.tags
+            and "vocab:title" not in after.tags
+            and AMBIGUOUS_ACRONYM_TAG not in after.tags
+            and AMBIGUOUS_WORD_TAG not in after.tags
+            and SPLIT_MEMBER_TAG not in after.tags
+            and SPLIT_CREDENTIAL_TAG not in after.tags
+            and any(map(str.isalpha, text))
+            and (one_case or len(text) == 1 or not text.isupper()))
+
+
 def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     """The structure of a comma form, and the postnominal part bound.
     Returns `state` unchanged where the listing form stands.
@@ -552,6 +585,15 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     part = [i for i in seg1 if i not in core_set] if core_idx else list(seg1)
     if not part:
         return state
+    # rules/C13: "A credential that is also a given name written short
+    # opens the given part" -- the tag tested inline, so a part holding
+    # no such word pays no frame for it
+    for i in part:
+        if GIVEN_ABBREVIATION_TAG in tokens[i].tags:
+            if (_given_name_written_short(part, tokens, state.one_case)
+                    and not _whole_name(seg0, tokens, state.one_case)):
+                return state
+            break
     if pol.unlisted_dotted_suffixes:
         # rules/S3: "Paired initials are the exception [...] where S4
         # would count words to spare for them they are the name word

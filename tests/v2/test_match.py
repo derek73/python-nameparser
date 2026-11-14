@@ -3717,6 +3717,33 @@ def test_muhammad_written_short_is_not_transitive_across_long_spellings() -> Non
     assert r["given"].outcome is Outcome.ALTERNATE_SPELLING
 
 
+@pytest.mark.parametrize("a, b", [
+    ("Md. Rahman", "Rahman, Md"), ("Dr. Md. Rahman", "Rahman, Md"),
+    ("Md. Abdul Rahman", "Rahman, Md Abdul"),
+    ("Md Abdul Rahman", "RAHMAN, MD ABDUL"),
+    ("Mohammad Rahman", "Rahman, Md."), ("Md. Rahman", "Rahman, Md.")])
+def test_md_opening_the_part_after_a_family_comma_matches_its_own_name(
+        a: str, b: str) -> None:
+    # #1393 (rules/C13's given-name Except): the given part `Md` opens
+    # after a family comma is the given name, so the name written in
+    # both orders is consistent; at 3dadc263 the comma's reading was a
+    # credential, and the pairs read given-one-side
+    for x, y in ((a, b), (b, a)):
+        assert m.check(x, y).consistent, (x, y)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Md. Rahman", "RAHMAN, MD"), ("Md. Rahman", "Mohammed. Rahman")])
+def test_md_left_to_the_credential_or_a_title_shape_is_accepted(
+        a: str, b: str) -> None:
+    # Accepted (decisions/indic-honorifics, 2026-11-14): `MD` in capitals
+    # alone after a family comma stays the degree, its writing being the
+    # degree's ('Novak, MD'); a full spelling of Muhammad written with a
+    # full stop is a title by rules/H2's shape, a writing 10 of some
+    # 23,000 ORCID names opening with it use
+    assert not m.check(a, b).consistent
+
+
 def test_md_in_capitals_reads_as_its_long_spellings_or_as_two_initials() -> None:
     # #1351's capitals rule is asked only where a pair is not otherwise
     # consistent, so `MD` keeps its listed spellings and also reads as the

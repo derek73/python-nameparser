@@ -96,6 +96,10 @@ text = "engr"
 academic = { same_as = "engineer", issue = 1115, note = "Engr., the address of an engineer in Pakistan, Nigeria, Bangladesh and the Philippines (Engr. Ahsen Ali); no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box holds it 255 times (Pakistan 86, Nigeria 44), each a title typed there (2026-11-06)" }
 
 [[word]]
+text = "md"
+excluded = { academic = { reason = "a leading Md abbreviates Muhammad, a given name: 1,246 of 1,300 UK PSC filers with Md first in the forename box typed it there alone (2026-10-23), and a title reading took it from them", issue = 853 } }
+
+[[word]]
 text = "nurse"
 academic = { expands = "the address of a nurse, 'Nurse Smith'" }
 
@@ -4733,11 +4737,6 @@ credential = {}
 [[word]]
 text = "mct"
 credential = {}
-
-[[word]]
-text = "md"
-credential = {}
-excluded = { academic = { reason = "a leading Md abbreviates Muhammad, a given name: 1,246 of 1,300 UK PSC filers with Md first in the forename box typed it there alone (2026-10-23), and a title reading took it from them", issue = 853 } }
 
 [[word]]
 text = "mdiv"
