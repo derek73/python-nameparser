@@ -1777,7 +1777,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('mcsd', (('en', 'credential', ()),)),
     ('mcse', (('en', 'credential', ()),)),
     ('mct', (('en', 'credential', ()),)),
-    ('md', (('mul', 'credential', ()), ('mul', 'given', (('same_as', ('mohamed', 'mohammad', 'mohammed', 'muhammad')),)))),
+    ('md', (('mul', 'credential', ()), ('mul', 'given', (('same_as', ('mohamed', 'mohammad', 'mohammed', 'muhammad', 'muhammed')),)))),
     ('mda', (('de', 'credential', ()),)),
     ('mdb', (('de', 'credential', ()),)),
     ('mdbb', (('de', 'credential', ()),)),

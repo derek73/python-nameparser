@@ -54,12 +54,13 @@
   "Ch. Tahir Mehmood"         →  title="Ch."  · boundary
   ```
 
-- **A given name written short that is also a credential**, after a family comma, is read by C13 rather than as the given name it also is: the given name where it opens the part behind no whole name, written with a lower-case letter or with a name word behind it, and the credential otherwise, its capitals alone being the degree's writing (#1393).
+- **A given name written short that is also a credential**, after a family comma, is read by C13's given-name Except rather than as the given name it also is: the given name where that Except reads it so, the credential elsewhere (#1393).
   ```
   "Rahman, Md."               →  given="Md."
   "RAHMAN, MD. ABDUL"         →  given="MD."
   "RAHMAN, MD."               →  suffix="MD."  · boundary
   "Dr. Rahman, Md."           →  suffix="Md."  · boundary
+  "rahman, md."               →  suffix="md."  · boundary
   ```
 
 **Precedence:**

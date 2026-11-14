@@ -3684,10 +3684,18 @@ _MUHAMMAD: tuple[tuple[str, str, Outcome], ...] = (
     # `md` lists no `mohamad`, which Bangladesh's holders do not write;
     # the pair reads as the opt-in spelling it is through `mohamed`
     ("Md Rahman", "Mohamad Rahman", Outcome.ALTERNATE_SPELLING),
-    # `muhammed` (Turkish) is listed by none
+    # `md` lists `muhammed`, which Bangladesh's holders write 35 times
+    # (decided 2026-11-14); `mohd` and `moh` list none of it
+    ("Md Rahman", "Muhammed Rahman", Outcome.LISTED_SPELLING),
+    ("MD RAHMAN", "MUHAMMED RAHMAN", Outcome.LISTED_SPELLING),
     ("Mohd Rahman", "Muhammed Rahman", Outcome.CONFLICT),
-    ("Md Rahman", "Muhammed Rahman", Outcome.CONFLICT),
 )
+
+
+def test_md_and_muhammed_share_a_key() -> None:
+    # the listed spelling the 2026-11-14 decision added keys alike
+    assert m.check("Md Rahman", "Muhammed Rahman").consistent
+    assert m.keys("Md Rahman") & m.keys("Muhammed Rahman")
 
 
 @pytest.mark.parametrize("a, b, outcome", _MUHAMMAD)
@@ -3742,6 +3750,19 @@ def test_md_left_to_the_credential_or_a_title_shape_is_accepted(
     # full stop is a title by rules/H2's shape, a writing 10 of some
     # 23,000 ORCID names opening with it use
     assert not m.check(a, b).consistent
+
+
+def test_md_alone_behind_a_title_after_a_comma_is_one_sided() -> None:
+    # Accepted (decisions/C13, 2026-11-14 #1393, the second review): a
+    # lone `Md` behind a title after a family comma stays the credential,
+    # so the comma's side has no given name; against `Md.` read as the
+    # given name the given row is one-sided, consistent only where the
+    # caller accepts that (on 3dadc263 neither side had a given name)
+    r = m.check("Md. Rahman", "Rahman, Mr Md")
+    assert not r.consistent
+    assert r["given"].outcome is Outcome.GIVEN_ONE_SIDE
+    lenient = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.GIVEN_ONE_SIDE})
+    assert lenient.check("Md. Rahman", "Rahman, Mr Md").consistent
 
 
 def test_md_in_capitals_reads_as_its_long_spellings_or_as_two_initials() -> None:

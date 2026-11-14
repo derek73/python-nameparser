@@ -288,7 +288,7 @@ def test_the_shipped_short_forms_of_muhammad() -> None:
     assert {"md", "mohd", "moh"} <= sets.given_name_abbreviations
     lexicon = Lexicon.default()
     assert lexicon._headwords("md", "given") == {
-        "md", "muhammad", "mohammad", "mohammed", "mohamed"}
+        "md", "muhammad", "mohammad", "mohammed", "muhammed", "mohamed"}
     for word in ("mohd", "moh"):
         assert lexicon._headwords(word, "given") == {
             word, "muhammad", "mohamad", "mohammad", "mohammed", "mohamed"}

@@ -22,7 +22,8 @@ _vocab.is_wholly_suffix; every Lexicon wordlist through
 _vocab.caps_shape_candidate (to know an all-caps word is unlisted) and
 _vocab.claimed_as_non_name (the name's contrast); Lexicon
 .maiden_markers through _pieces.own_words, for the name's contrast;
-Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters,
+Lexicon.capitalization_exceptions, a credential's case mask, for rules/C13's
+given-name Except; Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters,
 Policy.unlisted_caps_suffixes and Policy.unlisted_dotted_suffixes.
 """
 from __future__ import annotations
@@ -490,35 +491,43 @@ def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
 
 def _given_name_written_short(part: Sequence[int],
                               tokens: Sequence[WorkToken],
-                              one_case: bool | None) -> bool:
-    """Whether the part after a family comma opens, behind its titles,
-    with a credential that is also a given name written short ('Md'),
-    written as the given name: with a lower-case letter in a name of
-    mixed case, or with a name word behind it (`one_case` is
+                              one_case: bool | None,
+                              lexicon: Lexicon) -> int | None:
+    """The word opening the part after a family comma, behind any titles,
+    that is an unambiguous credential and a given name written short
+    ('Md'), where it is written as the given name: alone in the part with
+    no title in front, in a name of mixed case, with a lower-case letter
+    its credential's own case mask does not write ('Md', not 'PhD'); or
+    with a name word behind it. Its index, else None (`one_case` is
     ParseState.one_case, None read as mixed case)."""
     k = 0
-    while (k < len(part) and "vocab:title" in tokens[part[k]].tags
-           and "vocab:suffix" not in tokens[part[k]].tags):
+    while k < len(part) and "vocab:title" in tokens[part[k]].tags:
         k += 1
     if k == len(part):
-        return False
-    tags = tokens[part[k]].tags
-    if GIVEN_ABBREVIATION_TAG not in tags or "vocab:suffix" not in tags:
-        return False
-    if not one_case and any(map(str.islower, tokens[part[k]].text)):
-        return True
+        return None
+    token = tokens[part[k]]
+    if GIVEN_ABBREVIATION_TAG not in token.tags or "vocab:suffix" not in token.tags:
+        return None
     if k + 1 == len(part):
-        return False
+        # alone: a title in front leaves the given part's walk nothing
+        # but the title to read as the name, so the part stays the
+        # postnominal one there (#1395's second review)
+        if k or one_case or not any(map(str.islower, token.text)):
+            return None
+        bare = token.text.replace(".", "")
+        cased = lexicon._cap_map.get(_normalize(bare), bare.upper())
+        return None if bare == cased else part[k]
     after = tokens[part[k + 1]]
     text = after.text.rstrip(".")
-    return ("vocab:suffix" not in after.tags
-            and "vocab:title" not in after.tags
-            and AMBIGUOUS_ACRONYM_TAG not in after.tags
-            and AMBIGUOUS_WORD_TAG not in after.tags
-            and SPLIT_MEMBER_TAG not in after.tags
-            and SPLIT_CREDENTIAL_TAG not in after.tags
-            and any(map(str.isalpha, text))
-            and (one_case or len(text) == 1 or not text.isupper()))
+    # a name word: no suffix or title reading, ambiguous or not, no half
+    # of a split credential, a letter, and in a name of mixed case no
+    # word in capitals but an initial
+    if any(t.startswith(("vocab:suffix", "vocab:title", "split:"))
+           for t in after.tags):
+        return None
+    if not any(map(str.isalpha, text)):
+        return None
+    return part[k] if one_case or len(text) == 1 or not text.isupper() else None
 
 
 def decide(state: ParseState, splits: bool | None = True) -> ParseState:
@@ -587,12 +596,20 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         return state
     # rules/C13: "A credential that is also a given name written short
     # opens the given part" -- the tag tested inline, so a part holding
-    # no such word pays no frame for it
+    # no such word pays no frame for it; the fork reported here, where
+    # it is taken, as a word of the ambiguous class reports it (C4)
     for i in part:
         if GIVEN_ABBREVIATION_TAG in tokens[i].tags:
-            if (_given_name_written_short(part, tokens, state.one_case)
-                    and not _whole_name(seg0, tokens, state.one_case)):
-                return state
+            at = _given_name_written_short(part, tokens, state.one_case, lex)
+            if at is not None and not _whole_name(seg0, tokens, state.one_case):
+                token = tokens[at]
+                return copy_with(state, ambiguities=(
+                    *state.ambiguities,
+                    PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{token.text!r} after the comma also spells a "
+                        f"credential; read as ", (at,), field_tail="",
+                        alternative=suffix_reading(token))))
             break
     if pol.unlisted_dotted_suffixes:
         # rules/S3: "Paired initials are the exception [...] where S4

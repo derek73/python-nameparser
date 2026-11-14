@@ -23,14 +23,21 @@
   "Smith, Ms Jane"            →  title="Ms"  · boundary
   ```
 
-- **A credential that is also a given name written short opens the given part** behind no whole name (C3's count), where it is written with a lower-case letter in a name of mixed case or a name word stands behind it, as a given name opens the part ('Rahman, Md Abdul', 'Rahman, Md'). Written in capitals with nothing behind it, it is the degree's own writing ('Barak, MD'), and so is one before a credential, half of a split credential or, in a name of mixed case, a word in capitals; behind a whole name, a title counting as a word, the run stands.
+- **A credential that is also a given name written short opens the given part** where the writing says it is the name, behind no whole name (C3's count, a title counting as a word): alone in the part with no title in front, in a name of mixed case, written with a lower-case letter its credential's own case mask does not write ('Rahman, Md'); or with a name word behind it, behind titles or not ('Rahman, Md Abdul', 'Uddin, Mr Md Karim'), a name word being one with no suffix or title reading of any kind, no half of a split credential, a letter, and in a name of mixed case no word in capitals but an initial. Elsewhere the run stands: capitals alone are the degree's own writing ('Novak, MD'); a credential, a title or a word in capitals behind it may be the degree's company; and alone behind a title it would leave the title as the only name word, so it stays the postnominal part. The fork is reported where it is taken, as a word of the ambiguous class reports it (C4).
   ```
   "Rahman, Md Abdul"          →  given="Md"
   "Rahman, Md."               →  given="Md."
   "RAHMAN, MD ABDUL"          →  given="MD"
   "Uddin, Mr Md Karim"        →  given="Md"
+  "Smith, MD J"               →  given="MD"
   "RAHMAN, MD"                →  suffix="MD"  · boundary
+  "rahman, md."               →  suffix="md."  · boundary
   "Smith, MD PhD"             →  suffix="MD PhD"  · boundary
+  "Smith, Md PhD"             →  suffix="Md PhD"  · boundary
+  "SMITH, MD DEAN"            →  suffix="MD DEAN"  · boundary
+  "Smith, Md XYZ"             →  suffix="Md XYZ"  · boundary
+  "Smith, Dr. Md"             →  suffix="Md"  · boundary
+  "Uddin, Mr Md"              →  title="Mr"  · boundary
   "Dr. Rahman, Md"            →  suffix="Md"  · boundary
   "Rahman Khan, Md Abdul"     →  suffix="Md Abdul"  · boundary
   ```
@@ -41,5 +48,5 @@
 - **Under the strict comma-suffix switch** ("Smith, PSM I."): the opened run reads as it does without the switch, taking in the word the switch vetoes; C14 states that veto and this exception to it.
 
 ---
-**Signal:** neighbor: a credential opening the part after a family comma
+**Signal:** neighbor: a credential opening the part after a family comma; for the given-name Except, the word's own writing, the word behind it and C3's count of the words before the comma
 **history:** decisions/C13 · **implemented:** nameparser/_pipeline/_comma.py

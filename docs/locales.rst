@@ -396,9 +396,8 @@ drops from every name:
 
 - **Other languages' words go with the accidents.** The shared words
   stay (``Kim Min Jun, PhD, MSc`` keeps both credentials), but the rest
-  of the English credentials (``Kim Min Jun, MD`` reads given ``MD``,
-  ``MD`` staying English's since a leading ``Md`` abbreviates Muhammad),
-  a bare ``Mx``, and an immigrant's particle from another language are
+  of the English credentials (``Kim Min Jun, RN`` reads given ``RN``;
+  ``MD``, shared with ``Md`` for Muhammad, is kept), a bare ``Mx``, and an immigrant's particle from another language are
   read as name words. A shape still reads as it does by default:
   ``Mx.``, with its period, is a title. Where English context is part
   of the data, choose ``en`` too, which brings back its words and its
@@ -410,8 +409,10 @@ drops from every name:
       'PhD, MSc'
       >>> parser_for(ko, en, strict=True).parse("Kim Min Ra").suffix
       'Ra'
-      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, MD").suffix
-      'MD'
+      >>> korean.parse("Kim Min Jun, RN").given
+      'RN'
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, RN").suffix
+      'RN'
 
 - **The shared words are a default like any other.** Take one out of
   the lexicon you build on and no choice brings it back:

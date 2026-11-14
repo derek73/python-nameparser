@@ -4577,7 +4577,7 @@ SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
         'jno': ('john',),
         'jo': ('josé',),
         'ma': ('maría',),
-        'md': ('mohamed', 'mohammad', 'mohammed', 'muhammad'),
+        'md': ('mohamed', 'mohammad', 'mohammed', 'muhammad', 'muhammed'),
         'mhd': ('muhammad',),
         'moch': ('muhammad',),
         'moh': ('mohamad', 'mohamed', 'mohammad', 'mohammed', 'muhammad'),

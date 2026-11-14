@@ -673,3 +673,16 @@ def test_a_part_of_titles_alone_opens_no_given_part_by_the_written_short_except(
     for text, title in (("Smith, Zork", "Zork"), ("Smith, Dr. Zork", "Dr. Zork")):
         got = parser.parse(text)
         assert (got.title, got.given, got.family) == (title, "", "Smith"), text
+
+
+def test_the_written_short_except_reads_past_a_credentials_own_case_mask() -> None:
+    # rules/C13's given-name Except reads a lower-case letter as a name's
+    # writing only where the credential's case mask does not write it
+    # (#1395's second review): a caller's `phd` written short for Philip
+    # stays the credential written `PhD`, and reads as the name `Phd`
+    parser = Parser(lexicon=Lexicon.default().add(
+        "phd", kind="given", same_as="philip"))
+    got = parser.parse("Smith, PhD")
+    assert (got.given, got.suffix) == ("", "PhD")
+    got = parser.parse("Smith, Phd")
+    assert (got.given, got.suffix) == ("Phd", "")

@@ -1336,7 +1336,8 @@ after a name is still the medical degree:
     'MD'
 
 After a family comma ``Md`` opening the given part is the given name
-too, where 1.4 through 3.0 read the part as credentials; ``MD`` in
+too, where 1.4 through 2.5 read it as a title and 2.6 through 3.0 read
+the part as credentials; ``MD`` in
 capitals alone there is still the degree. To keep the 3.0 readings,
 remove ``md``'s given reading (:ref:`customize-md-title`):
 
