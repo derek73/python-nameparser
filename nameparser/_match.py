@@ -32,6 +32,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -422,7 +423,15 @@ class Matching:
         first word, save a middle word or a nickname written in
         initials alone, which the check never matches across roles.
         Where `other_readings` is on, each other reading `check` tries
-        adds its own keys."""
+        adds its own keys.
+
+        A key is a bucket cut from a parse, by one nameparser version
+        under one matcher's settings, not an identifier: a parser that
+        reads the name another way, a release that reads it differently
+        or another accept set gives other keys. Store the names, not
+        their keys, build the keys again after upgrading nameparser or
+        changing the parser or the accepted outcomes, and compare only
+        keys built the same way (decisions/name-matching, 2026-11-13)."""
         parsed = self._parsed(name)
         readings = (self._readings(parsed) if self.other_readings
                     else [(parsed, None)])
@@ -438,41 +447,71 @@ class Matching:
         lexicon = self.parser.lexicon
         roles = [_compare_role(role, left, right, lexicon, self.accept)
                  for role in Role]
-        across: list[CrossRoleMatch] = []
-        if Outcome.ACROSS_ROLES in self.accept:
-            middles = [_role_text(left, Role.MIDDLE).split(),
-                       _role_text(right, Role.MIDDLE).split()]
-            for i, r in enumerate(roles):
-                if r.outcome in self.accept or not _RULES[r.role].across:
-                    continue
-                found = self._pick_across(r.role, left, right, middles)
-                if found is None:
-                    continue
-                cross, index = found
-                # the side carrying more is the one whose name held both
-                # the role and the cross role the match used
-                holder = Side.RIGHT if cross.left_role is r.role else Side.LEFT
-                held = r.left if holder is Side.LEFT else r.right
-                roles[i] = dataclasses.replace(
-                    r, outcome=Outcome.ACROSS_ROLES,
-                    more=holder if held else Side.NEITHER)
-                across.append(cross)
-                if index is not None:
-                    # the middle word matched as the given name is
-                    # consumed, and the words left compare role to role,
-                    # the row keeping both sides' text as parsed
-                    del middles[0 if cross.left_role is Role.MIDDLE
-                                else 1][index]
-                    la, lb = (" ".join(words) for words in middles)
-                    outcome = _role_outcome(_RULES[Role.MIDDLE], la, lb,
-                                            left, right, lexicon, self.accept)
-                    roles[_MIDDLE] = dataclasses.replace(
-                        roles[_MIDDLE], outcome=outcome,
-                        more=(Side.NEITHER if outcome is Outcome.CONFLICT
-                              else _more(la, lb)))
-        return MatchResult(all(r.outcome in self.accept for r in roles),
-                           tuple(roles), tuple(across),
+        resolved, across = self._resolved(roles, left, right)
+        if (not all(r.outcome in self.accept for r in resolved)
+                and (_capitals_spelled(left, right, lexicon)
+                     or _capitals_spelled(right, left, lexicon))):
+            # a given word of capitals the other side's names spell
+            # letter for letter reads as those initials, where that
+            # makes the pair consistent and only there, across-roles
+            # included, so it never takes a match away
+            # (decisions/name-matching, 2026-11-13 #1351)
+            spelled = list(roles)
+            for i in (_RANK_ROLE[Role.GIVEN], _MIDDLE):
+                spelled[i] = dataclasses.replace(
+                    roles[i], outcome=Outcome.INITIAL,
+                    more=_more(roles[i].left, roles[i].right))
+            spelled, spelled_across = self._resolved(spelled, left, right)
+            if all(r.outcome in self.accept for r in spelled):
+                resolved, across = spelled, spelled_across
+        return MatchResult(all(r.outcome in self.accept for r in resolved),
+                           tuple(resolved), tuple(across),
                            left_alternative, right_alternative)
+
+    def _resolved(self, compared: list[RoleMatch], left: ParsedName,
+                  right: ParsedName,
+                  ) -> tuple[list[RoleMatch], list[CrossRoleMatch]]:
+        """The rows `compared` with each given or family role whose
+        outcome is not accepted resolved across roles where
+        `across-roles` is accepted (`_pick_across`), a middle word the
+        match used taken out of the middle comparison, and the cross-role
+        matches used."""
+        roles = list(compared)
+        across: list[CrossRoleMatch] = []
+        if Outcome.ACROSS_ROLES not in self.accept:
+            return roles, across
+        lexicon = self.parser.lexicon
+        middles = [_role_text(left, Role.MIDDLE).split(),
+                   _role_text(right, Role.MIDDLE).split()]
+        for i, r in enumerate(roles):
+            if r.outcome in self.accept or not _RULES[r.role].across:
+                continue
+            found = self._pick_across(r.role, left, right, middles)
+            if found is None:
+                continue
+            cross, index = found
+            # the side carrying more is the one whose name held both
+            # the role and the cross role the match used
+            holder = Side.RIGHT if cross.left_role is r.role else Side.LEFT
+            held = r.left if holder is Side.LEFT else r.right
+            roles[i] = dataclasses.replace(
+                r, outcome=Outcome.ACROSS_ROLES,
+                more=holder if held else Side.NEITHER)
+            across.append(cross)
+            if index is not None:
+                # the middle word matched as the given name is
+                # consumed, and the words left compare role to role,
+                # the row keeping both sides' text as parsed
+                del middles[0 if cross.left_role is Role.MIDDLE
+                            else 1][index]
+                la, lb = (" ".join(words) for words in middles)
+                outcome = _role_outcome(_RULES[Role.MIDDLE], la, lb,
+                                        left, right, lexicon, self.accept)
+                roles[_MIDDLE] = dataclasses.replace(
+                    roles[_MIDDLE], outcome=outcome,
+                    more=(Side.NEITHER if outcome is Outcome.CONFLICT
+                          else _more(la, lb)))
+        return roles, across
 
     def _pick_across(self, role: Role, left: ParsedName, right: ParsedName,
                      middles: list[list[str]],
@@ -992,6 +1031,51 @@ def _initials_only(folded: str) -> bool:
     return all(_is_initial(w) for w in _WORDS.split(folded) if w)
 
 
+def _capitals_spelled(name: ParsedName, other: ParsedName,
+                      lexicon: Lexicon) -> bool:
+    """`name`'s given name is one word of two or three capital letters
+    (`JP`), it has no middle name and is not written wholly in capitals,
+    and `other` spells those letters exactly, in order: its given name
+    one word agreeing with the first letter and its middle names as many
+    words as the letters left, each agreeing with its letter, as
+    `_part_agrees` reads an initial (`JP Smith` / `John Paul Smith`);
+    the name's case is read off its own words, so a title, a suffix or
+    a nickname in mixed case leaves `Dr. JP SMITH` in capitals.
+    The words are counted as the comparison of the name written with
+    full stops (`J. P. Smith`) counts them, role by role, so a given
+    name of two words (`Abdul Adil`, a bound pair) spells no letter
+    (decisions/name-matching, 2026-11-13 #1351)."""
+    given = _role_text(name, Role.GIVEN).split()
+    if len(given) != 1 or _role_text(name, Role.MIDDLE):
+        return False
+    word = unicodedata.normalize("NFC", given[0])
+    if not (2 <= len(word) <= 3 and word.isalpha() and word.isupper()):
+        return False
+    if not any(c.islower() for role in _CAPITALS_CASE_ROLES
+               for c in getattr(name, role)):
+        # a title, suffix or nickname in mixed case says nothing of
+        # whether the name's words are initials (`Dr. JP SMITH`)
+        return False
+    theirs = _role_text(other, Role.GIVEN).split()
+    middle = _role_text(other, Role.MIDDLE).split()
+    if len(theirs) != 1 or len(middle) != len(word) - 1:
+        return False
+    return all(_part_agrees(letter, w, lexicon, "given") is not None
+               for letter, w in zip(word, theirs + middle))
+
+
+#: The roles whose case says whether a name is written wholly in
+#: capitals, for `_capitals_spelled`: the name's own words.
+_CAPITALS_CASE_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY, Role.MAIDEN)
+
+
+def _initials_alone(fa: str, fb: str) -> bool:
+    """Two folded texts are both initials alone: `joined` leaves them to
+    `initials-agree`, and a family or maiden name of them reads nothing
+    else (`_text_outcomes`)."""
+    return _initials_only(fa) and _initials_only(fb)
+
+
 def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
                   group: str) -> Outcome | None:
     """Two non-empty texts, `fa` and `fb` their folded forms, as full
@@ -1037,9 +1121,17 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
       set aside), so they are yielded after it, and a caller who does
       not accept `joined` keeps what they accepted before it
       (decisions/name-matching, 2026-11-09 #1261).
-    - Given `bases`, the family role's (`_compare_family`), the outcomes are
+    - Given `bases`, the family role's (`_compare_family`) or the maiden
+      name's (`_compare_maiden`), two texts of initials alone read
+      `initials-agree` where their letters agree in order and nothing
+      else: `family-initial` and `initial` ask whether an initial stands
+      for a word on the other side, and there is none, and
+      `particles-aside` and `part-of-other` would admit a reorder or a
+      subset of the letters (`J. P.` / `P. J.`, `J.` / `J. P.`; decisions/
+      name-matching, 2026-11-13 #1350).
+    - Given `bases`, the family role's, the other outcomes are
       treated as one chain, particles set aside, part of the other,
-      family initial, initials agree, and the first that holds is the
+      family initial, and the first that holds is the
       only one yielded. They are not all implied by the one before:
       part of the other and family initial are independent leniencies
       (`John S.` / `John S.-Jones` holds both), so a pair holding an
@@ -1054,9 +1146,7 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     - Given `bases` and not `chain`, the maiden name's
       (`_compare_maiden`), the two leniencies that read the bases,
       particles set aside then part of the other, the first that holds,
-      are yielded ahead of any other role's, save between two texts of
-      initials alone, which stay `initials-agree`'s to read as they are
-      `joined`'s exception (`J.-P.` / `J. P.`), so the maiden name sets its
+      are yielded ahead of any other role's, so the maiden name sets its
       particles aside as the family name does while an initial against
       it still reads `initial`, never the opt-in `family-initial`, and
       a hyphenated part is still yielded beside part of the other: a
@@ -1068,15 +1158,21 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
     if full is not None:
         yield full
     if full is None or full is Outcome.JOINED:
-        if bases is not None and chain:
+        if bases is not None and _initials_alone(fa, fb):
+            # a family or maiden name of initials alone on both sides
+            # agrees letter for letter, in order, or not at all: an
+            # initial stands for a word, and the other side holds none
+            # for it to stand for (decisions/name-matching, 2026-11-13
+            # #1350)
+            if ([w for w in _WORDS.split(fa) if w]
+                    == [w for w in _WORDS.split(fb) if w]):
+                yield Outcome.INITIALS_AGREE
+        elif bases is not None and chain:
             first = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
             if first is not None:
                 yield first
         else:
-            # two texts of initials alone are `initials-agree`'s to read,
-            # as they are `joined`'s exception
-            if bases is not None and not (
-                    _initials_only(fa) and _initials_only(fb)) and (
+            if bases is not None and (
                     aside := _aside_outcome(bases, lexicon, group)) is not None:
                 yield aside
             initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
@@ -1115,8 +1211,8 @@ def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
     that holds: the bases equal once folded or listed as spellings word
     for word (particles set aside), one base's words each among the
     other's or listed as a spelling of one of them (part of the other),
-    an initial against the family name (family initial), initials alone
-    agreeing. A later one is not always implied by an earlier (`John S.`
+    an initial against the family name (family initial). Two family
+    names of initials alone never reach it (`_text_outcomes`). A later one is not always implied by an earlier (`John S.`
     / `John S.-Jones` holds part of the other and family initial both),
     and only the first is returned (`_text_outcomes`). A listed spelling
     counts inside a compound surname as it does whole, in `group`
@@ -1125,9 +1221,9 @@ def _family_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
     aside = _aside_outcome(bases, lexicon, group)
     if aside is not None:
         return aside
-    initials = _initial_outcome(wa, wb, fa, fb, lexicon, group)
-    return (Outcome.FAMILY_INITIAL if initials is Outcome.INITIAL
-            else initials)
+    if _initial_outcome(wa, wb, fa, fb, lexicon, group) is Outcome.INITIAL:
+        return Outcome.FAMILY_INITIAL
+    return None
 
 
 def _aside_outcome(bases: tuple[str, str], lexicon: Lexicon,
