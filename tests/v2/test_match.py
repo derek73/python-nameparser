@@ -3182,6 +3182,411 @@ def test_a_maiden_name_reads_the_family_names_leniencies(
         assert r.consistent is (outcome is not Outcome.CONFLICT), (x, y)
 
 
+# -- a family or maiden name of initials alone on both sides (#1350) ----------
+
+#: Pairs whose family name, or maiden name, is initials alone on one side
+#: or both, the role the pair is about and its outcome under every
+#: setting: two texts of initials alone read `initials-agree` where their
+#: letters agree in order and no other leniency, the family name and the
+#: maiden name alike, so a reorder or a subset of the letters is a
+#: conflict, never `part-of-other`, `family-initial` or `initial`.
+_INITIALS_ALONE: tuple[tuple[str, str, Role, Outcome], ...] = (
+    # a reorder and a subset, with full stops, without, hyphenated, and
+    # a longer run
+    ("J. P., Ann", "P. J., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J. P.)", "Ann Smith (née P. J.)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    ("J., Ann", "J. P., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J.)", "Ann Smith (née J. P.)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    ("J P, Ann", "P J, Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J P)", "Ann Smith (née P J)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    ("J, Ann", "J P, Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J)", "Ann Smith (née J P)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    ("J. P., Ann", "J. P. Q., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J. P.)", "Ann Smith (née J. P. Q.)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    ("J.-P., Ann", "P.-J., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J.-P.)", "Ann Smith (née P.-J.)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    # an initial against a hyphenated pair of initials: no word for it
+    # to stand for, so neither `family-initial` nor `initial`
+    ("J.-P., Ann", "J., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann Smith (née J.-P.)", "Ann Smith (née J.)", Role.MAIDEN,
+     Outcome.CONFLICT),
+    # the same letters in order agree, however written
+    ("J.-P., Ann", "J. P., Ann", Role.FAMILY, Outcome.INITIALS_AGREE),
+    ("Ann Smith (née J.-P.)", "Ann Smith (née J. P.)", Role.MAIDEN,
+     Outcome.INITIALS_AGREE),
+    ("J. P., Ann", "J P, Ann", Role.FAMILY, Outcome.FOLDED),
+    ("Ann Smith (née J. P.)", "Ann Smith (née J P)", Role.MAIDEN,
+     Outcome.FOLDED),
+    ("J. P., Ann", "J. P., Ann", Role.FAMILY, Outcome.SAME),
+    # initials written together fold to one word, refused against a
+    # reorder before as now; against a spaced run they read `joined`,
+    # and against one initial `family-initial`, as before (the glued
+    # maiden name `(née J.P.)` parses as no maiden name, so it has no
+    # twin here)
+    ("J.P., Ann", "P.J., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("J.P., Ann", "J. P., Ann", Role.FAMILY, Outcome.JOINED),
+    ("J.P., Ann", "J., Ann", Role.FAMILY, Outcome.FAMILY_INITIAL),
+    # initials against words: family-initial's question, unchanged, and
+    # the maiden name's `initial`
+    ("J., Ann", "Jones, Ann", Role.FAMILY, Outcome.FAMILY_INITIAL),
+    ("Ann Smith (née J.)", "Ann Smith (née Jones)", Role.MAIDEN,
+     Outcome.INITIAL),
+    ("J. P., Ann", "Jones Price, Ann", Role.FAMILY, Outcome.FAMILY_INITIAL),
+    ("Ann Smith (née J. P.)", "Ann Smith (née Jones Price)", Role.MAIDEN,
+     Outcome.INITIAL),
+    # Accepted: a particle beside the initials makes the text more than
+    # initials alone, so the bases are compared as before, a reorder
+    # reading `part-of-other` in both roles; an unwritten shape
+    ("de J. P., Ann", "de P. J., Ann", Role.FAMILY, Outcome.PART_OF_OTHER),
+    ("Ann Smith (née de J. P.)", "Ann Smith (née de P. J.)", Role.MAIDEN,
+     Outcome.PART_OF_OTHER),
+    ("de J. P., Ann", "J. P., Ann", Role.FAMILY, Outcome.PARTICLES_ASIDE),
+    ("Ann Smith (née de J. P.)", "Ann Smith (née J. P.)", Role.MAIDEN,
+     Outcome.PARTICLES_ASIDE),
+    ("van J., Ann", "J. P., Ann", Role.FAMILY, Outcome.PART_OF_OTHER),
+    ("Ann Smith (née van J.)", "Ann Smith (née J. P.)", Role.MAIDEN,
+     Outcome.PART_OF_OTHER),
+    # other letters, no comma, and a stray hyphen, which spells no letter
+    ("J., Ann", "P., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("J. P., Ann", "J. Q., Ann", Role.FAMILY, Outcome.CONFLICT),
+    ("Ann J.-P.", "Ann J.", Role.FAMILY, Outcome.CONFLICT),
+    ("J.-, Ann", "J., Ann", Role.FAMILY, Outcome.INITIALS_AGREE),
+    ("Ann Smith (née J.-)", "Ann Smith (née J.)", Role.MAIDEN,
+     Outcome.INITIALS_AGREE),
+)
+
+
+@pytest.mark.parametrize("a, b, which, outcome", _INITIALS_ALONE)
+@pytest.mark.parametrize("setting", SETTINGS, ids=_SETTING_IDS)
+def test_a_surname_of_initials_alone_agrees_letter_for_letter(
+        a: str, b: str, which: Role, outcome: Outcome,
+        setting: tuple[frozenset[Outcome], bool]) -> None:
+    # Negative control (2026-11-13): against master 3dadc263's
+    # `_match.py`, 12 of the 37 rows fail under each of the 9 settings,
+    # the 8 family rows of a reorder, a subset and `J.-P.` / `J. P.`
+    # (each read part-of-other), the no-comma `Ann J.-P.` / `Ann J.`
+    # (part-of-other), the maiden `(née J.-P.)` / `(née J.)` (initial),
+    # and the stray hyphen `J.-` / `J.` in both roles (part-of-other and
+    # initial); the other 25 pass, the maiden twins of the reorder and
+    # subset refused since #1264
+    matching = Matching(Parser(), *setting)
+    for x, y in ((a, b), (b, a)):
+        r = matching.check(x, y)
+        assert r[which].outcome is outcome, (x, y, setting)
+        assert r.consistent is (outcome in matching.accept), (x, y, setting)
+
+
+def test_a_surname_of_initials_alone_reads_so_under_every_parser() -> None:
+    # the family name as a declared order and a pack read it
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST)).matching()
+    r = family_first.check("J.-P. Ann", "J. Ann")
+    assert r["family"].outcome is Outcome.CONFLICT and not r.consistent
+    spanish = parser_for(locales.ES).matching()
+    r = spanish.check("J. P., Ana", "P. J., Ana")
+    assert r["family"].outcome is Outcome.CONFLICT and not r.consistent
+
+
+@pytest.mark.parametrize("a, b, outcome", [
+    # the rule is the family and maiden names': a given or middle name of
+    # initials reads `initial` against fewer of them, as before
+    ("J.-P. Smith", "J. Smith", Outcome.INITIAL),
+    ("J.-P. Smith", "J. P. Smith", Outcome.INITIAL),
+])
+def test_a_given_name_of_initials_alone_is_not_held_to_it(
+        a: str, b: str, outcome: Outcome) -> None:
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent and r["given"].outcome is outcome, (x, y)
+    r = m.check("Ann J.-P. Smith", "Ann J. Smith")
+    assert r.consistent and r["middle"].outcome is Outcome.INITIAL
+
+
+@pytest.mark.parametrize("a, b, which", [
+    ("J. Smith", "-J. Smith", Role.GIVEN),
+    ("Smith, J.", "Smith, -J.", Role.GIVEN),
+    ("Ann J. Smith", "Ann -J. Smith", Role.MIDDLE),
+    ("Ann J. P. Smith", "Ann J. -P. Smith", Role.MIDDLE),
+    ("Ann \"J-P\" Smith", "Ann \"J P-\" Smith", Role.NICKNAME),
+])
+def test_a_stray_hyphen_outside_a_surname_reads_as_on_master(
+        a: str, b: str, which: Role) -> None:
+    # the family and maiden names drop a word of hyphens alone
+    # (`J.-, Ann` / `J., Ann` reads initials-agree, above); the given,
+    # middle and nickname rows keep it, as master did, so these conflict
+    # (1629bd55 read each consistent, the review of 1629bd55)
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert not r.consistent, (x, y)
+        assert r[which].outcome is Outcome.CONFLICT, (x, y)
+
+
+def test_a_surname_of_initials_alone_under_a_narrower_accept_set() -> None:
+    # `J.-P.` / `J. P.` reads `initials-agree`, which master read
+    # `part-of-other`: consistent now where `part-of-other` is refused,
+    # and not where `initials-agree` is
+    a, b = "J.-P., Ann", "J. P., Ann"
+    no_part = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.PART_OF_OTHER})
+    no_agree = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIALS_AGREE})
+    for x, y in ((a, b), (b, a)):
+        assert no_part.check(x, y).consistent
+        assert not no_agree.check(x, y).consistent
+
+
+def test_a_surname_of_initials_alone_keeps_the_key_guarantee() -> None:
+    parsed = tuple(Parser().parse(n) for n in dict.fromkeys(
+        name for a, b, _, _ in _INITIALS_ALONE for name in (a, b)))
+    for setting in SETTINGS:
+        _assert_the_key_guarantee(Matching(Parser(), *setting), parsed,
+                                  symmetric=True)
+
+
+# -- a given word of capitals the other side's names spell (#1351) -----------
+
+#: Pairs of a given word of two or three capitals against another name,
+#: the verdict under the default and the given and middle rows: the
+#: word reads as its initials where the other side's given name and
+#: middle names spell its letters exactly, in order, counted as the
+#: name written with full stops counts them, and only where that makes
+#: the pair consistent.
+_CAPITALS: tuple[tuple[str, str, bool, Outcome, Outcome], ...] = (
+    ("JP Smith", "John Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("JPR Smith", "John Paul Robert Smith", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("JP Smith", "Jack Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("Dr. JP Smith", "John Paul Smith", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("JP Smith, MD", "John Paul Smith", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("ÉJ Martin", "Émile Jean Martin", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("ÉJ Martin", "Émile Jean Martin", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("MD Rahman", "Mohammad Dewan Rahman", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("NG Smith", "Nora Grace Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("LI Wei", "Lan Ivy Wei", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("AL Smith", "Anna Louise Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("ED Jones", "Emma Dawn Jones", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("WM Smith", "Walter Mark Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    # already consistent: the rows stay as master read them
+    ("JP Smith", "J. P. Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
+    ("JP Smith", "J.P. Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
+    ("JP Smith", "J. Paul Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
+    ("JP Smith", "J.-P. Smith", True, Outcome.JOINED, Outcome.SAME),
+    ("JP Smith", "JP Smith", True, Outcome.SAME, Outcome.SAME),
+    ("NG Smith", "Ng Smith", True, Outcome.FOLDED, Outcome.SAME),
+    ("LI Wei", "Li Wei", True, Outcome.FOLDED, Outcome.SAME),
+    ("YAN Wang", "Yan Wang", True, Outcome.FOLDED, Outcome.SAME),
+    ("ED Jones", "Ed Jones", True, Outcome.FOLDED, Outcome.SAME),
+    ("WM Smith", "William Smith", True, Outcome.LISTED_SPELLING,
+     Outcome.SAME),
+    # not spelled exactly: fewer or more names than letters, a
+    # hyphenated given name (one word), a nickname, a bound given name
+    # (one given name of two words), another order, a name of its own
+    ("JPR Smith", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith", "John Paul Robert Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith", "John Smith", False, Outcome.CONFLICT, Outcome.SAME),
+    ("JP Smith", "Jean-Paul Smith", False, Outcome.CONFLICT, Outcome.SAME),
+    ("JP Smith", "John (Paul) Smith", False, Outcome.CONFLICT, Outcome.SAME),
+    ("AA Khan", "Abdul Adil Khan", False, Outcome.CONFLICT, Outcome.SAME),
+    ("AAK Khan", "Abdul Adil Karim Rahim Khan", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # a middle name beside the capitals, and four capitals
+    ("JP Q. Smith", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.CONFLICT),
+    ("JPRS Smith", "John Paul Robert Scott Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # spelled, but another role conflicts: the rows stay as read
+    ("JP Smith", "John Paul Jones", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # a capitals word on the other side is initials too, never a name
+    # word spelling one letter (the review of a40c2ca9)
+    ("JP Smith", "JR Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JJ Smith", "John JP Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith", "JP Paul Smith", True, Outcome.SAME, Outcome.ONE_SIDE),
+    ("E\u0301P Smith", "E\u0301R Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # Accepted: a capitals word is two or three letters, so a word with a
+    # digit or of four capitals on the other side counts as a name word
+    ("JP Smith", "J2 Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("JP Smith", "JPRS Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    # a maiden name in mixed case is another name's writing, and leaves
+    # the name in capitals; one in the name written in mixed case keeps
+    # the rule
+    ("JP SMITH (née Jones)", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith (née Jones)", "John Paul Smith", True, Outcome.INITIAL,
+     Outcome.INITIAL),
+    ("JP Smith", "Paul John Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith", "PJ Smith", False, Outcome.CONFLICT, Outcome.SAME),
+    ("AL Smith", "Alan Smith", False, Outcome.FAMILIAR_FORM, Outcome.SAME),
+    ("ED Jones", "Edward Jones", False, Outcome.FAMILIAR_FORM, Outcome.SAME),
+    # outside the gate: not capitals, a name wholly in capitals, the
+    # word in the middle slot, and one after a family comma (which the
+    # parse reads as a suffix, Accepted)
+    ("Jp Smith", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP SMITH", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP SMITH", "JOHN PAUL SMITH", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # a title, suffix or nickname in mixed case leaves the name's own
+    # words in capitals
+    ("Dr. JP SMITH", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP SMITH Jr.", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP SMITH (Jack)", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("John JP Smith", "John Paul Smith", False, Outcome.SAME,
+     Outcome.CONFLICT),
+    ("Smith, JP", "John Paul Smith", False, Outcome.GIVEN_ONE_SIDE,
+     Outcome.ONE_SIDE),
+)
+
+
+@pytest.mark.parametrize("a, b, consistent, given, middle", _CAPITALS)
+def test_a_given_word_of_capitals_reads_as_the_initials_it_spells(
+        a: str, b: str, consistent: bool, given: Outcome,
+        middle: Outcome) -> None:
+    # Negative control (2026-11-13): with `_capitals_spelled` answering
+    # False, the 16 rows reading initial/initial fail and the other 37
+    # pass; each other clause of the gate has a row it alone refuses
+    # (the middle name `JP Q. Smith`, three letters at most `JPRS
+    # Smith`, the other side's one given word `AAK Khan`, the name's
+    # case `Dr. JP SMITH`), save the name's own given name of one word,
+    # which refuses a name with no given name and no row besides (a
+    # given name of two words is a bound pair, opened by a listed word,
+    # never capitals); the replacement only
+    # where it makes the pair consistent is `JP Smith` / `John Paul
+    # Jones`
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent is consistent, (x, y)
+        assert r["given"].outcome is given, (x, y)
+        assert r["middle"].outcome is middle, (x, y)
+        assert m.check(y, x) == r.mirrored(), (x, y)
+
+
+_NO_ONE_SIDE = DEFAULT_ACCEPT - {Outcome.ONE_SIDE}
+
+
+@pytest.mark.parametrize("a, b, consistent, given, middle", _CAPITALS)
+def test_a_given_word_of_capitals_under_other_settings(
+        a: str, b: str, consistent: bool, given: Outcome,
+        middle: Outcome) -> None:
+    # refusing `initial` refuses the rule's rows; an opt-in leaves the
+    # rule as it reads under the default, save the familiar forms it
+    # accepts
+    spelled = given is middle is Outcome.INITIAL
+    no_initial = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})
+    familiar = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for x, y in ((a, b), (b, a)):
+        if spelled:
+            r = no_initial.check(x, y)
+            assert not r.consistent, (x, y)
+            assert r["given"].outcome is Outcome.CONFLICT, (x, y)
+        r = familiar.check(x, y)
+        assert r.consistent is (consistent or given is Outcome.FAMILIAR_FORM
+                                ), (x, y)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("JP Smith", "JR Paul Smith"), ("JJ Smith", "John JP Smith"),
+    ("JP Smith", "JP Paul Smith")])
+def test_a_capitals_word_on_the_other_side_spells_no_letter(
+        a: str, b: str) -> None:
+    # a40c2ca9 read each consistent, the other side's capitals word
+    # standing in for one name: under the default, and with `one-side`
+    # refused, where `Paul` hid the one-sided middle name
+    no_one_side = Matching(Parser(), _NO_ONE_SIDE)
+    for x, y in ((a, b), (b, a)):
+        assert not no_one_side.check(x, y).consistent, (x, y)
+        if (a, b) != ("JP Smith", "JP Paul Smith"):
+            assert not m.check(x, y).consistent, (x, y)
+    # what the rule already matched stays matched
+    for x, y in (("JP Smith", "John Paul Smith"),
+                 ("Dr. JP Smith", "John Paul Smith"),
+                 ("JP Smith, MD", "John Paul Smith"),
+                 ("JP Smith (née Jones)", "John Paul Smith")):
+        assert m.check(x, y).consistent and m.check(y, x).consistent
+
+
+def test_a_given_word_of_capitals_never_takes_a_match_away(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the rule replaces the rows only where that makes the pair
+    # consistent: every pair consistent with it switched off stays
+    # consistent, under every setting, over every pairing of the
+    # capitals rows' names (the dotted spellings, the folded ones and
+    # the names of their own among them)
+    import nameparser._match as match_module
+    names = tuple(dict.fromkeys(n for a, b, *_ in _CAPITALS for n in (a, b)))
+    parsed = tuple(Parser().parse(n) for n in names)
+    with_rule = {setting: {(a.original, b.original): Matching(
+        Parser(), *setting).check(a, b).consistent
+        for a, b in itertools.product(parsed, repeat=2)}
+        for setting in SETTINGS}
+    monkeypatch.setattr(match_module, "_capitals_spelled",
+                        lambda *args: False)
+    added = 0
+    for setting in SETTINGS:
+        matching = Matching(Parser(), *setting)
+        for a, b in itertools.product(parsed, repeat=2):
+            before = matching.check(a, b).consistent
+            after = with_rule[setting][a.original, b.original]
+            assert after or not before, (a.original, b.original, setting)
+            added += after and not before
+    assert added  # the rule reached the grid
+
+
+def test_a_given_word_of_capitals_counts_a_cross_role_match() -> None:
+    # decided after across-roles, as the dotted spelling reads: the
+    # family name resolved through the maiden name leaves the capitals
+    # to make the pair consistent
+    across = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.ACROSS_ROLES})
+    for a, b in (("JP Jones", "John Paul Smith (née Jones)"),
+                 ("J. P. Jones", "John Paul Smith (née Jones)")):
+        for x, y in ((a, b), (b, a)):
+            r = across.check(x, y)
+            assert r.consistent, (x, y)
+            assert r["given"].outcome is Outcome.INITIAL, (x, y)
+            assert r["family"].outcome is Outcome.ACROSS_ROLES, (x, y)
+    assert not m.check("JP Jones", "John Paul Smith (née Jones)").consistent
+
+
+def test_a_given_word_of_capitals_keeps_the_key_guarantee() -> None:
+    parsed = tuple(Parser().parse(n) for n in dict.fromkeys(
+        name for a, b, *_ in _CAPITALS for name in (a, b)))
+    for setting in SETTINGS:
+        _assert_the_key_guarantee(Matching(Parser(), *setting), parsed,
+                                  symmetric=True)
+
+
+def test_a_given_word_of_capitals_leaves_the_triples_it_cannot_close() -> None:
+    # Accepted (decisions/name-matching, 2026-11-13 #1351): "exactly"
+    # leaves a name with fewer or more names than letters to the
+    # dotted spelling's own reading, so these stay non-transitive
+    for a, b, c in (("JP Smith", "John Paul Smith", "John Smith"),
+                    ("JPR Smith", "John Paul Robert Smith",
+                     "John Paul Smith"),
+                    ("JP Smith", "J. Smith", "John Smith")):
+        assert m.check(a, b).consistent and m.check(b, c).consistent
+        assert not m.check(a, c).consistent
+    # and closes the one #1351 was filed for
+    assert m.check("JP Smith", "John Paul Smith").consistent
+
+
 def test_a_listed_spelling_counts_inside_a_compound_maiden_name() -> None:
     # as in a compound family name (#1262), in the family group (#1264)
     matching = Matching(Parser(lexicon=_SMYTH_LEXICON))
