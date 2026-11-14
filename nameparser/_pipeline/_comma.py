@@ -519,15 +519,18 @@ def _given_name_written_short(part: Sequence[int],
         return None if bare == cased else part[k]
     after = tokens[part[k + 1]]
     text = after.text.rstrip(".")
-    # a name word: no suffix or title reading, ambiguous or not, no half
-    # of a split credential, a letter, and in a name of mixed case no
-    # word in capitals but an initial
-    if any(t.startswith(("vocab:suffix", "vocab:title", "split:"))
-           for t in after.tags):
+    # a name word: no conjunction, no suffix or title reading, ambiguous
+    # or not, no half of a split credential, a letter, and in a name of
+    # mixed case no word in capitals but an initial, counted in letters
+    # (`composed_len`) so a letter written decomposed is one letter
+    if "conjunction" in after.tags or any(
+            t.startswith(("vocab:suffix", "vocab:title", "split:"))
+            for t in after.tags):
         return None
     if not any(map(str.isalpha, text)):
         return None
-    return part[k] if one_case or len(text) == 1 or not text.isupper() else None
+    return (part[k] if one_case or composed_len(text) == 1
+            or not text.isupper() else None)
 
 
 def decide(state: ParseState, splits: bool | None = True) -> ParseState:

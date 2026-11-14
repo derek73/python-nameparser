@@ -686,3 +686,7 @@ def test_the_written_short_except_reads_past_a_credentials_own_case_mask() -> No
     assert (got.given, got.suffix) == ("", "PhD")
     got = parser.parse("Smith, Phd")
     assert (got.given, got.suffix) == ("Phd", "")
+    # in capitals it writes no lower-case letter, the alone arm's first
+    # condition, whatever the mask (#1395's third review)
+    got = parser.parse("Smith, PHD")
+    assert (got.given, got.suffix) == ("", "PHD")

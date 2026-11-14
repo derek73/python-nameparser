@@ -592,7 +592,10 @@ class AmbiguityKind(StrEnum):
     its fork occurs (the comma's structure decision reports no
     reading by design, except where it decides a member of the
     ambiguous credential class, where since 2.4 that decision is
-    reported either way -- #289; an attachment decided AFTER a
+    reported either way -- #289 -- and where it reads a credential
+    that is also a given name written short as the given name, as in
+    "Rahman, Md Abdul", which since 3.1 reports SUFFIX_OR_NAME, the
+    credential its alternative -- #1393; an attachment decided AFTER a
     family comma is a separate fork and has reported on its own
     since 2.3, e.g. "Berg, Jan vd"; the two structural kinds above
     were never covered by either silence), and coverage grows over

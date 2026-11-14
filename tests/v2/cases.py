@@ -15580,6 +15580,32 @@ CASES: tuple[Case, ...] = (
     Case("md_before_a_word_holding_no_letter_stays_the_credential",
          "RAHMAN, MD 2", {"family": "RAHMAN", "suffix": "MD 2"},
          notes="boundary: a word with no letter is no name word"),
+    Case("md_before_a_conjunction_stays_the_credential", "Rahman, Md and Karim",
+         {"family": "Rahman", "suffix": "Md and Karim"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="boundary: a conjunction behind it is no name word, so the "
+               "part reads as on 3dadc263 (#1395's third review)"),
+    Case("md_before_a_gated_title_in_mixed_case_stays_the_credential",
+         "Rahman, Md Sheikh Karim",
+         {"family": "Rahman", "suffix": "Md Sheikh Karim"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="Accepted (rules/C13): a word with a title reading of any "
+               "kind is no name word, a title only inside a phrase "
+               "included; read as on 3dadc263; no local corpus writes the "
+               "shape (2026-11-14)"),
+    Case("md_before_dean_in_mixed_case_stays_the_credential", "Rahman, Md Dean",
+         {"family": "Rahman", "suffix": "Md Dean"},
+         ambiguities=("suffix-or-name",), notes="Accepted, as above"),
+    Case("md_before_a_name_in_capitals_in_mixed_case_stays_the_credential",
+         "Rahman, Md KARIM", {"family": "Rahman", "suffix": "Md KARIM"},
+         ambiguities=("suffix-or-name",),
+         notes="Accepted (rules/C13): in mixed case a word in capitals "
+               "may be a credential, so it is no name word; read as on "
+               "3dadc263. Under strict bn this moves from 3dadc263's "
+               "given 'Md', middle 'KARIM' (decisions/C13, 2026-11-14)"),
+    Case("md_before_abdul_in_capitals_in_mixed_case_stays_the_credential",
+         "Rahman, Md ABDUL", {"family": "Rahman", "suffix": "Md ABDUL"},
+         ambiguities=("suffix-or-name",), notes="Accepted, as above"),
     Case("a_given_name_written_short_that_is_no_credential_reports_nothing",
          "Smith, Wm Jones", {"given": "Wm", "middle": "Jones", "family": "Smith"},
          notes="the Except reads a credential only; `wm` spells none, so "

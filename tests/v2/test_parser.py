@@ -2336,6 +2336,13 @@ _NFD_ROWS = [
     "(Bob), 이서연·김민준",
     "Smith, 이서연·김민준",
     "이서연·김민준·박지훈",
+    # an initial behind a credential written short, after a family comma,
+    # counted in letters by rules/C13's given-name Except (#1395's third
+    # review: `len()` counted the decomposed É as two code points, so the
+    # NFD twin read suffix 'Md É'); added 2026-11-14, after the control below
+    "Rahman, Md É",
+    "Rahman, Md É.",
+    "Rahman, Md Ç",
 ]
 # Jamo that compose to no syllable (archaic, lone, Extended-A U+A960 and
 # Extended-B U+D7B0), which NFC leaves as written and so reach every

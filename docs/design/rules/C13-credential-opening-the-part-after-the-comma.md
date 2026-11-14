@@ -47,6 +47,22 @@
 - **Initials spelling a credential behind one word** ("Smith, J.P. Jones"): C16 governs, and the run opens the given part rather than the postnominal part.
 - **Under the strict comma-suffix switch** ("Smith, PSM I."): the opened run reads as it does without the switch, taking in the word the switch vetoes; C14 states that veto and this exception to it.
 
+**Accepted:**
+
+- **A mixed-case `Md` before a title that may also be a name stays the credential**: a word with a title reading of any kind is no name word to the given-name Except, a title only inside a phrase included, so the part reads as before the Except, the postnominal one. No fetched corpus writes the shape.
+  ```
+  "Rahman, Md Sheikh Karim"   →  suffix="Md Sheikh Karim"
+  "Rahman, Md Dean"           →  suffix="Md Dean"
+  ```
+- **A mixed-case `Md` before a name written in capitals stays the credential**: in a name of mixed case a word in capitals may be a credential, so it is no name word, and the part reads as before the Except. A strict choice that reads no other vocabulary for the word had read it as the given name, and now reads it as the default does.
+  ```
+  "Rahman, Md KARIM"          →  suffix="Md KARIM"
+  ```
+- **A lone `Md` behind a title stays the credential**, the given part's walk otherwise leaving the title as the only name word; so the comma's side has no given name, and the name match reads it against a `Md.` that is a given name as one-sided. Reading `Md` as the given name there needs a change in the given part's walk, which is not built.
+  ```
+  "Rahman, Mr Md"             →  suffix="Md"
+  ```
+
 ---
-**Signal:** neighbor: a credential opening the part after a family comma; for the given-name Except, the word's own writing, the word behind it and C3's count of the words before the comma
+**Signal:** neighbor: a credential opening the part after a family comma + case contrast: the given-name Except's own writing + neighbor: the word behind it
 **history:** decisions/C13 · **implemented:** nameparser/_pipeline/_comma.py

@@ -472,9 +472,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1950 the same day, #1395's second review: the Except reports its
     # fork (the ten `fix(#1393)` rows), and six of its new rows report
     # ('Smith, MD J', 'Rahman, MD A', 'Rahman, Sr Md Karim', 'Smith, Md
-    # XYZ', 'SMITH, MD SHEIKH', 'SMITH, MD DEAN'), each under three orders.
-    assert claims == 1950, (
-        f"the field sweep checks {claims} claims, recorded as 1950 on "
+    # XYZ', 'SMITH, MD SHEIKH', 'SMITH, MD DEAN'), each under three orders;
+    # 1950 -> 1971 the same day, #1395's third review's five rows ('Md and
+    # Karim' and 'Md Sheikh Karim' two reports each, 'Md Dean', 'Md
+    # KARIM' and 'Md ABDUL' one) under three orders.
+    assert claims == 1971, (
+        f"the field sweep checks {claims} claims, recorded as 1971 on "
         f"2026-11-14")
 
 
@@ -542,6 +545,13 @@ _STAND_IN_REREADS = {
     ("SMITH, MD DEAN", None), ("SMITH, MD DEAN", 1), ("SMITH, MD DEAN", 2),
     ("SMITH, MD SHEIKH", None), ("SMITH, MD SHEIKH", 1),
     ("SMITH, MD SHEIKH", 2),
+    # and in place of a conjunction or a gated title behind a mixed-case
+    # `Md` (#1395's third review)
+    ("Rahman, Md and Karim", None), ("Rahman, Md and Karim", 1),
+    ("Rahman, Md and Karim", 2),
+    ("Rahman, Md Sheikh Karim", None), ("Rahman, Md Sheikh Karim", 1),
+    ("Rahman, Md Sheikh Karim", 2),
+    ("Rahman, Md Dean", None), ("Rahman, Md Dean", 1), ("Rahman, Md Dean", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -913,8 +923,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # MD Pharm D' joining `_STAND_IN_REREADS` under the three orders,
     # where its stand-in had landed in the taken field; 363 -> 366 the
     # same day, #1395's second review's 'Smith, Md XYZ' under the three
-    # orders, whose stand-in keeps the taken field
-    assert (checked, skipped) == (594, 366), (checked, skipped)
+    # orders, whose stand-in keeps the taken field; 366 -> 372 the same
+    # day, #1395's third review's 'Rahman, Md KARIM' and 'Rahman, Md
+    # ABDUL' under the three orders, likewise
+    assert (checked, skipped) == (594, 372), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
