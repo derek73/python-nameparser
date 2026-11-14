@@ -288,10 +288,6 @@ text = "konstantinos"
 spelling = { spelling_of = ["constantinos"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "nikolas"
-spelling = { spelling_of = ["nikolaos"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "panayotis"
 spelling = { spelling_of = ["panagiotis"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

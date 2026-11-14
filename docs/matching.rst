@@ -331,7 +331,7 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms, 1,059 pairs (counted 2026-11-13), are
+The shipped familiar forms, 1,055 pairs (counted 2026-11-13), are
 pairs people wrote both ways for themselves, each read by two
 reviewers: mostly ORCID's researchers, who wrote one in the given-name
 box and the other in a published name, in many languages (``Peggy`` /
@@ -359,10 +359,16 @@ extends the names the word's shipped readings list (to replace them,
 
 ``alternate-spelling`` reads two given names as one name spelled two
 ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
-``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. It
-is read as a familiar form is, in the same roles, either way round and
+``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. A
+name romanized from another script is one name where that script spells
+it alike (``Mariia`` / ``Mariya``, both ``Марія``), and a name written in
+Latin letters in its own language is one name where that language uses
+both spellings (``Sara`` / ``Sarah`` in English). A different spelling in
+the source script (``Nataliia`` / ``Natalya``, ``Наталія`` / ``Наталья``)
+or another language's form (``Lydia`` / ``Lidia``) is a translation,
+which no outcome reads yet. It is read as a familiar form is, in the same roles, either way round and
 never chained, and the keys follow it where it is accepted. The same
-review as the familiar forms gives its 320 pairs (counted 2026-11-13),
+review as the familiar forms gives its 292 pairs (counted 2026-11-13),
 each called a spelling of one name by both reviewers or by the
 maintainer where they split, less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``

@@ -835,10 +835,6 @@ text = "misha"
 familiar = { short_for = ["michael"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "sayed"
-familiar = { short_for = ["elsayed"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "abdullah"
 spelling = { spelling_of = ["abdallah"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -877,6 +873,10 @@ spelling = { spelling_of = ["mohamed", "mohammad"], note = "found in CC0 or publ
 [[word]]
 text = "muhammad"
 spelling = { spelling_of = ["mohamed"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "sayed"
+spelling = { spelling_of = ["elsayed"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yasser"

@@ -213,10 +213,6 @@ text = "chas"
 familiar = { short_for = ["charles"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "dan"
-familiar = { short_for = ["danilo"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "dani"
 familiar = { short_for = ["daniele"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -601,16 +597,8 @@ text = "alexandar"
 spelling = { spelling_of = ["aleksandar"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "aliaa"
-spelling = { spelling_of = ["alia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "alyona"
 spelling = { spelling_of = ["alona"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "amaya"
-spelling = { spelling_of = ["amaia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "angelos"
@@ -629,10 +617,6 @@ text = "dimitra"
 spelling = { spelling_of = ["demetra"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "dmitri"
-spelling = { spelling_of = ["dimitri"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "dmitrii"
 spelling = { spelling_of = ["dmitri"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -649,16 +633,8 @@ text = "erik"
 spelling = { spelling_of = ["eric"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "esther"
-spelling = { spelling_of = ["ester"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "feodor"
 spelling = { spelling_of = ["fedor"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "halyna"
-spelling = { spelling_of = ["halina"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "hojjat"
@@ -701,10 +677,6 @@ text = "maryana"
 spelling = { spelling_of = ["mariana"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "maya"
-spelling = { spelling_of = ["maja"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "muhammad"
 spelling = { spelling_of = ["mohammad", "mohammed"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -745,10 +717,6 @@ text = "sonya"
 spelling = { spelling_of = ["sonia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "sophia"
-spelling = { spelling_of = ["sofiya"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "srdjan"
 spelling = { spelling_of = ["srdan"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -769,10 +737,6 @@ text = "vassilios"
 spelling = { spelling_of = ["vasilios"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "viktoriya"
-spelling = { spelling_of = ["victoria"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "vjacheslav"
 spelling = { spelling_of = ["viacheslav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -790,7 +754,7 @@ spelling = { spelling_of = ["yevgen"], note = "found in CC0 or public-domain dat
 
 [[word]]
 text = "yevheniia"
-spelling = { spelling_of = ["ievgeniia", "yevgenia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+spelling = { spelling_of = ["ievgeniia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "yury"

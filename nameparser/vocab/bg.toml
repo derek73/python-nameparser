@@ -78,8 +78,4 @@ spelling = { spelling_of = ["valeria"], note = "found in CC0 or public-domain da
 text = "vesselin"
 spelling = { spelling_of = ["veselin"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
-[[word]]
-text = "yoanna"
-spelling = { spelling_of = ["joanna"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
 # -- END generated --

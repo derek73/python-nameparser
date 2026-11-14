@@ -152,16 +152,8 @@ text = "behrouz"
 spelling = { spelling_of = ["behrooz"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "daniel"
-spelling = { spelling_of = ["danial"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "fatemeh"
 spelling = { spelling_of = ["fateme"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "fatima"
-spelling = { spelling_of = ["fatemeh"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "hassan"
