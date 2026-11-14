@@ -468,7 +468,9 @@ class Matching:
                 spelled[i] = dataclasses.replace(
                     roles[i], outcome=Outcome.INITIAL,
                     more=_more(roles[i].left, roles[i].right))
-            spelled, spelled_across = self._resolved(spelled, left, right)
+            spelled, spelled_across = (
+                self._resolved(spelled, left, right)
+                if Outcome.ACROSS_ROLES in self.accept else (spelled, []))
             if all(r.outcome in self.accept for r in spelled):
                 resolved, across, consistent = spelled, spelled_across, True
         return MatchResult(consistent, tuple(resolved), tuple(across),
@@ -1080,7 +1082,9 @@ def _capitals_word(word: str) -> bool:
 def _same_letters(fa: str, fb: str) -> bool:
     """Two folded texts of initials alone hold the same letters in
     order, a word of hyphens or full stops alone left out (`J.-` / `J.`):
-    the one test `initials-agree` reads, in every role."""
+    the test a family or maiden name of initials alone reads, where the
+    given, middle and nickname rows keep an empty word as master did
+    (`_initial_outcome`)."""
     return ([w for w in _WORDS.split(fa) if w]
             == [w for w in _WORDS.split(fb) if w])
 
@@ -1212,7 +1216,10 @@ def _initial_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
             return Outcome.INITIAL
-    if _initials_alone(fa, fb) and _same_letters(fa, fb):
+    # exact words here, an empty one kept: a stray hyphen in a given,
+    # middle or nickname spells a word as master read it, where the
+    # family and maiden names' branch leaves it out (`_same_letters`)
+    if _initials_alone(fa, fb) and _WORDS.split(fa) == _WORDS.split(fb):
         return Outcome.INITIALS_AGREE
     return None
 

@@ -3307,6 +3307,25 @@ def test_a_given_name_of_initials_alone_is_not_held_to_it(
     assert r.consistent and r["middle"].outcome is Outcome.INITIAL
 
 
+@pytest.mark.parametrize("a, b, which", [
+    ("J. Smith", "-J. Smith", Role.GIVEN),
+    ("Smith, J.", "Smith, -J.", Role.GIVEN),
+    ("Ann J. Smith", "Ann -J. Smith", Role.MIDDLE),
+    ("Ann J. P. Smith", "Ann J. -P. Smith", Role.MIDDLE),
+    ("Ann \"J-P\" Smith", "Ann \"J P-\" Smith", Role.NICKNAME),
+])
+def test_a_stray_hyphen_outside_a_surname_reads_as_on_master(
+        a: str, b: str, which: Role) -> None:
+    # the family and maiden names drop a word of hyphens alone
+    # (`J.-, Ann` / `J., Ann` reads initials-agree, above); the given,
+    # middle and nickname rows keep it, as master did, so these conflict
+    # (1629bd55 read each consistent, the review of 1629bd55)
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert not r.consistent, (x, y)
+        assert r[which].outcome is Outcome.CONFLICT, (x, y)
+
+
 def test_a_surname_of_initials_alone_under_a_narrower_accept_set() -> None:
     # `J.-P.` / `J. P.` reads `initials-agree`, which master read
     # `part-of-other`: consistent now where `part-of-other` is refused,
@@ -3395,6 +3414,12 @@ _CAPITALS: tuple[tuple[str, str, bool, Outcome, Outcome], ...] = (
     ("JJ Smith", "John JP Smith", False, Outcome.CONFLICT,
      Outcome.ONE_SIDE),
     ("JP Smith", "JP Paul Smith", True, Outcome.SAME, Outcome.ONE_SIDE),
+    ("E\u0301P Smith", "E\u0301R Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    # Accepted: a capitals word is two or three letters, so a word with a
+    # digit or of four capitals on the other side counts as a name word
+    ("JP Smith", "J2 Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
+    ("JP Smith", "JPRS Paul Smith", True, Outcome.INITIAL, Outcome.INITIAL),
     # a maiden name in mixed case is another name's writing, and leaves
     # the name in capitals; one in the name written in mixed case keeps
     # the rule
@@ -3436,7 +3461,7 @@ def test_a_given_word_of_capitals_reads_as_the_initials_it_spells(
         a: str, b: str, consistent: bool, given: Outcome,
         middle: Outcome) -> None:
     # Negative control (2026-11-13): with `_capitals_spelled` answering
-    # False, the 14 rows reading initial/initial fail and the other 36
+    # False, the 16 rows reading initial/initial fail and the other 37
     # pass; each other clause of the gate has a row it alone refuses
     # (the middle name `JP Q. Smith`, three letters at most `JPRS
     # Smith`, the other side's one given word `AAK Khan`, the name's
