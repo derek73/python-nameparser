@@ -369,7 +369,7 @@ or another language's form (``Lydia`` / ``Lidia``) is a translation,
 which no outcome reads yet. It is read as a familiar form is, in the
 same roles, either way round and never chained, and the keys follow it
 where it is accepted. The same review as the familiar forms gives its
-293 pairs (counted 2026-11-13), each called a spelling of one name by
+294 pairs (counted 2026-11-13), each called a spelling of one name by
 both reviewers or by the maintainer, and read again against that test,
 less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``

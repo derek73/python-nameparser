@@ -1339,7 +1339,7 @@ mykyta	nikita	translation		translation	translation	Ukrainian Mykyta vs Russian N
 nadezda	nadezhda	spelling		spelling	spelling	romanization variants	ru	orcid	6
 nadezda	nadia	familiar		familiar	familiar	Nadia familiar form of Nadezda	en	orcid	3
 nadezhda	nadya	familiar		familiar	familiar	Nadya pet form of Nadezhda	ru	orcid	7
-nadia	nadiia	translation	decided	spelling	translation	romanizations of Надія; re-read 2026-11-13, the source-script test: translation (Nadia is Надя (or the Western form); Nadiia is Ukrainian Надія, different letters)	ru uk	orcid	4
+nadia	nadiia	spelling	decided	spelling	translation	romanizations of Надія; re-read 2026-11-13, the source-script test: translation (Nadia is Надя (or the Western form); Nadiia is Ukrainian Надія, different letters); refined test 2026-11-13: spelling (Nadia fits Ukrainian Надія as Yulia fits Юлія, so the two share a source spelling)	ru uk	orcid	4
 nadiia	nadiya	spelling		spelling	spelling	romanization variants	ru uk	orcid	16
 nadja	nađa	spelling		spelling	spelling	dj/d for Serbian d-stroke	sr	orcid	5
 name	published	unclear		unclear	unclear	corrupt row, header words	mul	orcid	3
@@ -1357,7 +1357,7 @@ natalia	natasha	familiar		familiar	familiar	Natasha pet form of Natalia	en ru	or
 natalie	nataliia	translation		translation	translation	English and Ukrainian forms	ru uk	orcid	4
 natalie	nataliya	translation		translation	translation	English vs Russian form	en	orcid	3
 nataliia	nataliya	spelling		spelling	spelling	romanizations of Ukrainian Nataliia	ru uk	orcid	42
-nataliia	natalya	translation	decided	translation	spelling	Ukrainian and Russian forms; re-read 2026-11-13, the source-script test: translation (Ukrainian Наталія vs Russian Наталья, different letters (the rule's own example))	ru uk	orcid	14
+nataliia	natalya	translation	decided	translation	spelling	Ukrainian and Russian forms; re-read 2026-11-13, the source-script test: translation (Ukrainian Наталія vs Russian Наталья, different letters (the rule's own example)); Nataliia fits Наталія or Наталия, Natalya only Наталья, so no source spelling is shared	ru uk	orcid	14
 natalya	natasha	familiar		familiar	familiar	Russian familiar form	en	orcid	4
 natasha	tash	familiar		familiar	familiar	short form of Natasha	en	orcid	3
 natasha	tasha	familiar		familiar	familiar	clipped from the end of Natasha	en	orcid	4
@@ -1581,7 +1581,7 @@ sandie	sandra	familiar		familiar	familiar	pet form of Sandra	en	orcid	6
 sandra	sandy	familiar		familiar	familiar	pet form of Sandra	en	orcid	34
 sandy	sanford	familiar		familiar	familiar	pet form of Sanford	en	orcid	3
 santi	santiago	familiar		familiar	familiar	short form of Santiago	ca es	orcid	7
-sara	sarah	spelling		spelling	spelling	spelling variant; kept by the source-script test 2026-11-13: English writes both; also one Persian spelling, سارا, romanized two ways	fa	orcid	12
+sara	sarah	spelling		spelling	spelling	spelling variant; kept by the source-script test 2026-11-13: English writes both; also one Persian spelling, سارا, romanized two ways	en fa	orcid	12
 satya	satyanarayana	familiar		familiar	familiar	Satya short form of Satyanarayana	en	orcid	5
 scott	thomas	different-name		different-name	different-name	unrelated names	en	orcid	3
 seb	sebastian	familiar		familiar	familiar	clipped form of Sebastian	en	orcid	8

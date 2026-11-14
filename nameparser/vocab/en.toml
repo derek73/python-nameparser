@@ -8025,6 +8025,10 @@ text = "russell"
 spelling = { spelling_of = ["russel"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "sarah"
+spelling = { spelling_of = ["sara"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sofiia"
 spelling = { spelling_of = ["sofia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

@@ -5715,6 +5715,7 @@ ALTERNATE_SPELLINGS: dict[str, tuple[str, ...]] = {
     'mustapha': ('mostafa',),
     'mykhaylo': ('mykhailo',),
     'nadezhda': ('nadezda',),
+    'nadiia': ('nadia',),
     'nadiya': ('nadiia',),
     'nasser': ('naser',),
     'nataliia': ('natalia',),

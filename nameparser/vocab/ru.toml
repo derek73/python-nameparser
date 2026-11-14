@@ -358,6 +358,10 @@ text = "nadezhda"
 spelling = { spelling_of = ["nadezda"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "nadiia"
+spelling = { spelling_of = ["nadia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "nadiya"
 spelling = { spelling_of = ["nadiia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
