@@ -70,6 +70,22 @@ default, since the family name must be present on both sides and
 agree; the search for other readings (below) reaches it through its
 family reading.
 
+A key is a bucket cut from a parse, by one nameparser version under one
+matcher's settings, not an identifier: the same text keys differently
+under a parser that reads it in another order, a release that reads a
+name differently moves its keys, and accepting another outcome adds
+keys for it. Store the names, not their keys, build the keys again
+after upgrading nameparser or changing the parser or the accepted
+outcomes, and compare only keys built the same way:
+
+.. doctest::
+
+    >>> from nameparser import FAMILY_FIRST, Policy
+    >>> sorted(matcher.keys("Kim Minjun"))
+    ['minjun;k']
+    >>> sorted(Parser(policy=Policy(name_order=FAMILY_FIRST)).matching().keys("Kim Minjun"))
+    ['kim;m']
+
 Checking a pair
 ---------------
 
@@ -169,13 +185,13 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
    * - ``particles-aside``: the family names, or the maiden names, agree without their particles
      - ``Juan de la Vega`` / ``Juan Vega``
      - yes
-   * - ``part-of-other``: one family or maiden name's words are among the other's, or listed spellings of them
+   * - ``part-of-other``: one family or maiden name's words are among the other's, or listed spellings of them, save where both are initials alone
      - ``Ana de Melo Schmitt`` / ``Ana de Melo Schmitt e Braga``
      - yes
-   * - ``initial``: an initial against a name, outside the family name
-     - ``J. Smith`` / ``John Smith``
+   * - ``initial``: an initial against a name, outside the family name, and a given name of capitals against the names that spell it
+     - ``J. Smith`` / ``John Smith``, ``JP Smith`` / ``John Paul Smith``
      - yes
-   * - ``initials-agree``: one role written in initials alone on both sides, the same initials once spaces and hyphens are set aside
+   * - ``initials-agree``: one role written in initials alone on both sides, the same initials in the same order once spaces and hyphens are set aside; a family or maiden name of initials alone on both sides reads no other leniency, so ``J. P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict
      - ``Jane Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``
      - yes
    * - ``one-side``: a middle name, nickname or maiden name on one side only
@@ -239,7 +255,15 @@ a person's records. The fold drops accents only from Latin, Greek and
 Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 into one word agree with the same letters written apart as ``joined``
-(``J.P. Smith`` / ``J.-P. Smith``). Typos (``Slvatore`` / ``Salvatore``) and
+(``J.P. Smith`` / ``J.-P. Smith``). A given name of two or three
+capitals with no middle name beside it, whose given or family name
+holds a lower-case letter, reads as initials where the other side's given and middle
+names spell those letters exactly, in order (``JP Smith`` / ``John
+Paul Smith``), a capitals word there spelling no letter (``JR Paul
+Smith`` spells J, R, P), and only where that makes the pair consistent; it is
+not read so against fewer or more names than letters (``JP Smith`` /
+``John Smith``), which ``J. P. Smith`` matches, so a pair can still
+be consistent through ``J. P. Smith`` and not directly. Typos (``Slvatore`` / ``Salvatore``) and
 transliterations (``Igor`` / ``Ihor``) are conflicts. A familiar form
 (``Peggy`` / ``Margaret``, below) you have not accepted keeps the pair
 inconsistent though its row reads ``familiar-form``. The rows that kept a pair inconsistent are the
@@ -275,7 +299,12 @@ matcher and check with another:
     ['s;j', 'stallbaum;j']
 
 A family initial is outside the default because its key, one letter of
-the family name, gathers very large groups. An unknown outcome name
+the family name, gathers very large groups. It stands for a word on the
+other side, so against another family name of initials alone it never
+holds: ``J.-P., Ann`` / ``J., Ann`` conflicts under every setting.
+Initials written together are one word, not initials alone, so
+``J.P., Ann`` / ``J., Ann`` still reads ``family-initial``, and
+``J.P., Ann`` / ``J. P., Ann`` ``joined``. An unknown outcome name
 raises ``ValueError`` listing the valid ones, and ``conflict`` cannot
 be accepted.
 
