@@ -989,11 +989,27 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"names, got {value!r}; list each on its own")
         return folded or None
     # same_as: the word this one is a listed spelling of, a given name
-    # written short's full name (#789) or a title's or suffix's full form
-    if not isinstance(value, str) or not value.strip():
+    # written short's full name (#789) or a title's or suffix's full
+    # form, or several, as a list (`md` of four spellings of Muhammad,
+    # #1383); one is kept as its text, so an edit written before lists
+    # were taken is the same edit, and several as a sorted tuple
+    if isinstance(value, str):
+        if not value.strip():
+            raise TypeError(f"same_as must be the word this one is a "
+                            f"spelling of, a non-empty string, got {value!r}")
+        return value
+    if isinstance(value, (bytes, Mapping)) or not isinstance(value, Iterable):
         raise TypeError(f"same_as must be the word this one is a spelling "
-                        f"of, a non-empty string, got {value!r}")
-    return value
+                        f"of, a non-empty string, or a list of them, got "
+                        f"{value!r}")
+    heads = tuple(cast("Iterable[object]", value))
+    if not heads or not all(isinstance(h, str) and h.strip() for h in heads):
+        raise TypeError(f"same_as must be the word this one is a spelling "
+                        f"of, a non-empty string, or a non-empty list of "
+                        f"them, got {value!r}; write e.g. "
+                        f"same_as=['muhammad', 'mohammad']")
+    unique = tuple(sorted(set(cast("tuple[str, ...]", heads))))
+    return unique[0] if len(unique) == 1 else unique
 
 
 def _check_kind(kind: object, op: str) -> str | None:
@@ -2208,7 +2224,9 @@ class Lexicon:
             ``capital_opening=True`` on a particle reading,
             ``dotted=True`` on a title reading, and
             ``same_as=...`` on a reading of any kind: the word this one
-            is a spelling of, which name matching reads as a
+            is a spelling of, or a list of them where it is a spelling
+            of several (``same_as=["muhammad", "mohammad"]``), which name
+            matching reads as a
             ``listed-spelling`` and keys alike in the roles that read
             the kind's words (a ``given`` reading's in the given name,
             middle name and nickname, a ``family`` reading's in the

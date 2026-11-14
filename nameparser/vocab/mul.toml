@@ -139,12 +139,16 @@ text = "&"
 conjunction = {}
 
 [[word]]
+text = "md"
+given = { us_ssa = 524, as_of = 2026-11-13, same_as = ["muhammad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Bangladesh, Nepal and India: the first word of 4,443 ORCID given boxes in Bangladesh, where the long spellings written are mohammad 593, muhammad 149 and mohammed 91; UK PSC filers write Md 1,358 times, Nepal's 2022 local candidates 318 (2026-11-13); US SSA male births. Its credential reading (the medical degree, en.toml) stays unambiguous, a name written short marking no clash with it (#1383); written with its period at the head of a name (Md. Rahman), it read as a title by the leading-abbreviation shape until #1383" }
+
+[[word]]
 text = "mhd"
 given = { same_as = "muhammad", note = "Muhammad written short, in Indonesia, Syria, Turkey and Germany: ORCID given boxes 426 (Indonesia 86, Syria 37), family boxes 71 (2026-11-06); written with its period at the head of a name (Dr Mhd. Azhar Kharsa), it read as a title by the leading-abbreviation shape (#1115)" }
 
 [[word]]
 text = "mohd"
-given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = "muhammad", note = "Muhammad written short, in Malaysia, Brunei, Singapore and India: ORCID given boxes 8,594 (Malaysia 2,739, India 1,468), PatentsView 304; US SSA male births; Wikidata is a lower bound (Malaysia 276); written with its period at the head of a name (Mohd. Shameem), it read as a title by the leading-abbreviation shape (#1115)" }
+given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = ["muhammad", "mohamad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Malaysia, Brunei, Singapore and India: ORCID given boxes 8,594 (Malaysia 2,739, India 1,468), PatentsView 304; US SSA male births; Wikidata is a lower bound (Malaysia 276); written with its period at the head of a name (Mohd. Shameem), it read as a title by the leading-abbreviation shape (#1115). The long spellings it stands for are those written where it is: the first words of Malaysia's ORCID given boxes are muhammad 646, mohamad 192, mohammad 136, mohamed 62 and mohammed 55, and muhammed 2, a Turkish spelling (Turkey 153) left out (2026-11-13, #1383)" }
 
 [[word]]
 text = "kaur"

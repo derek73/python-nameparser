@@ -169,6 +169,18 @@ def same_as_group(kind: str) -> str | None:
     return SAME_AS_GROUPS.get(kind if category == "name" else category)
 
 
+def same_as_of(props: Mapping[str, Any]) -> tuple[str, ...]:
+    """The words a reading's `same_as` names, in the order written: a
+    text names one, a list several (`md` written short for `muhammad`,
+    `mohammad`, `mohammed` and `mohamed`, #1383), and none is ()."""
+    value = props.get("same_as")
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        return (value,)
+    return tuple(value)
+
+
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
     category's behavioral ones, and on every kind but `familiar`
@@ -648,7 +660,14 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     # a word's name reading beside the reading it clashes with, and a
     # name reading written `default = false` marks nothing in the
     # default, as it compiles to nothing (3a)
-    named = {t for r, t in texts if r.category == "name"}
+    # A `given` reading carrying `same_as` is a name written short, not
+    # a name a bearer is called by, so it marks no clash with a
+    # credential: the parse reads it through rules/H2's yielding at the
+    # head of a name and the match through its listed spellings, never
+    # through the words-to-spare count a clash gates (`md`, Muhammad
+    # written short and the medical degree, #1383)
+    named = {t for r, t in texts if r.category == "name"
+             and not (r.kind == "given" and "same_as" in r.props)}
     given = {t for r, t in texts if r.kind == "given"}
     titles: set[str] = set()
     given_titles: set[str] = set()
@@ -704,7 +723,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
             alternate.setdefault(t, set()).update(p.get("spelling_of", ()))
             continue
         if "same_as" in p and (group := same_as_group(r.kind)) is not None:
-            same_as[group].setdefault(t, set()).add(p["same_as"])
+            same_as[group].setdefault(t, set()).update(same_as_of(p))
         if r.category == "name":
             into = short_names if "same_as" in p else own_names
             into.setdefault(r.kind, set()).add(t)

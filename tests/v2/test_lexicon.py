@@ -1973,3 +1973,43 @@ def test_same_as_does_not_move_which_set_a_word_compiles_into() -> None:
     assert "wm" in lex._sets.given_name_abbreviations
     assert "capt" not in lex._sets.given_name_abbreviations
     assert "junior" not in lex._sets.given_name_abbreviations
+
+
+# -- a same_as list (#1383) ----------------------------------------------------
+
+def test_a_same_as_list_reaches_every_word_it_names() -> None:
+    lexicon = Lexicon.default().add("zed", kind="given",
+                                    same_as=["zebedee", "zachary"])
+    assert lexicon._headwords("zed", "given") == {"zed", "zachary", "zebedee"}
+    assert "zed" in lexicon._sets.given_name_abbreviations
+    reading, = (r for r in lexicon.readings_of("zed") if r.kind == "given")
+    assert dict(reading.properties)["same_as"] == ("zachary", "zebedee")
+
+
+def test_a_same_as_list_of_one_is_the_text() -> None:
+    # one word kept as its text, so an edit written before lists were
+    # taken is the same edit, equal and pickled alike
+    one = Lexicon.default().add("zed", kind="given", same_as=["zachary"])
+    text = Lexicon.default().add("zed", kind="given", same_as="zachary")
+    assert one == text
+    assert pickle.dumps(one) == pickle.dumps(text)
+    twice = Lexicon.default().add("zed", kind="given",
+                                  same_as=["zachary", "zachary"])
+    assert twice == text
+
+
+@pytest.mark.parametrize("same_as", ["zachary", ["zachary", "zebedee"]])
+def test_a_same_as_edit_round_trips_through_pickle(same_as: object) -> None:
+    lexicon = Lexicon.default().add("zed", kind="given", same_as=same_as)
+    loaded = pickle.loads(pickle.dumps(lexicon))
+    assert loaded == lexicon
+    assert loaded._headwords("zed", "given") == lexicon._headwords(
+        "zed", "given")
+
+
+@pytest.mark.parametrize("same_as", [[], ["zachary", 1], [""], b"zachary",
+                                     {"zachary": 1}, 3])
+def test_a_same_as_that_is_no_word_or_list_of_words_is_refused(
+        same_as: object) -> None:
+    with pytest.raises(TypeError, match="same_as must be the word"):
+        Lexicon.default().add("zed", kind="given", same_as=same_as)
