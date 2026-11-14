@@ -21,14 +21,14 @@ decisions/name-matching, 2026-11-13 THE FAMILIAR FORMS FROM DATA
 ALONE. No pair is copied from
 a list of familiar forms: a compiler's list copied whole keeps its licence
 (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE and
-2026-11-13 THE NICKNAMES LIST LEAVES). A pair both readers called a
-familiar form is written as a `familiar` reading on its shorter name
-(`place`); a
-pair both called a spelling as a `spelling` reading on the second name
-in order; a pair they split that the maintainer decided, as its decided
-category; each in the file of every language its row names, with
-REVIEWED_SOURCE as its note. Every other category is recorded there and
-written nowhere.
+2026-11-13 THE NICKNAMES LIST LEAVES). Each row is written by its
+category: the readers' agreed verdict, or the maintainer's where its
+status is `decided`, whether the readers split or agreed. A `familiar`
+pair is written as a `familiar` reading on its shorter name (`place`),
+a `spelling` pair as a `spelling` reading on the second name in order,
+each in the file of every language its row names, with REVIEWED_SOURCE
+as its note. Every other category is recorded there and written
+nowhere.
 
 In the file, a word already holding an entry gains a line under its
 `text`, and every other word an entry of its own in one generated block

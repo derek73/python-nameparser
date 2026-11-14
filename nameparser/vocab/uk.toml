@@ -84,10 +84,6 @@ text = "andriy"
 spelling = { spelling_of = ["andrii"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "anzhela"
-spelling = { spelling_of = ["angela"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "bohdan"
 spelling = { spelling_of = ["bogdan"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -169,10 +165,6 @@ spelling = { spelling_of = ["natalia"], note = "found in CC0 or public-domain da
 
 [[word]]
 text = "nataliya"
-spelling = { spelling_of = ["nataliia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "natalya"
 spelling = { spelling_of = ["nataliia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]

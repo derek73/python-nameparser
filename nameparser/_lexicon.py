@@ -2359,8 +2359,8 @@ class Lexicon:
         """The given names `word`, normalized, is paired with directly
         as an alternate spelling, in either direction (`olha` ->
         {`olga`}, `olga` -> {`olha`}), empty for a word in no pair.
-        Never chained, as familiar forms are not: `yurii` and `yury`,
-        each paired with `yuri`, do not reach each other. Read by the
+        Never chained, as familiar forms are not: `aleksej` and `aleksey`,
+        each paired with `aleksei`, do not reach each other. Read by the
         name match alone, never by a parse."""
         return self._alternate.get(_normalize(word), frozenset())
 
