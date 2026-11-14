@@ -447,10 +447,17 @@ class Matching:
         lexicon = self.parser.lexicon
         roles = [_compare_role(role, left, right, lexicon, self.accept)
                  for role in Role]
-        resolved, across = self._resolved(roles, left, right)
-        if (not all(r.outcome in self.accept for r in resolved)
-                and (_capitals_spelled(left, right, lexicon)
-                     or _capitals_spelled(right, left, lexicon))):
+        resolved, across = (self._resolved(roles, left, right)
+                            if Outcome.ACROSS_ROLES in self.accept
+                            else (roles, []))
+        consistent = all(r.outcome in self.accept for r in resolved)
+        # `isupper()` first, a C-level test, so a pair with no given name
+        # in capitals pays no frame for the rule
+        if not consistent and (
+                (left.given.isupper()
+                 and _capitals_spelled(left, right, lexicon))
+                or (right.given.isupper()
+                    and _capitals_spelled(right, left, lexicon))):
             # a given word of capitals the other side's names spell
             # letter for letter reads as those initials, where that
             # makes the pair consistent and only there, across-roles
@@ -463,23 +470,20 @@ class Matching:
                     more=_more(roles[i].left, roles[i].right))
             spelled, spelled_across = self._resolved(spelled, left, right)
             if all(r.outcome in self.accept for r in spelled):
-                resolved, across = spelled, spelled_across
-        return MatchResult(all(r.outcome in self.accept for r in resolved),
-                           tuple(resolved), tuple(across),
+                resolved, across, consistent = spelled, spelled_across, True
+        return MatchResult(consistent, tuple(resolved), tuple(across),
                            left_alternative, right_alternative)
 
     def _resolved(self, compared: list[RoleMatch], left: ParsedName,
                   right: ParsedName,
                   ) -> tuple[list[RoleMatch], list[CrossRoleMatch]]:
         """The rows `compared` with each given or family role whose
-        outcome is not accepted resolved across roles where
-        `across-roles` is accepted (`_pick_across`), a middle word the
+        outcome is not accepted resolved across roles (`_pick_across`),
+        called where `across-roles` is accepted, a middle word the
         match used taken out of the middle comparison, and the cross-role
         matches used."""
-        roles = list(compared)
         across: list[CrossRoleMatch] = []
-        if Outcome.ACROSS_ROLES not in self.accept:
-            return roles, across
+        roles = list(compared)
         lexicon = self.parser.lexicon
         middles = [_role_text(left, Role.MIDDLE).split(),
                    _role_text(right, Role.MIDDLE).split()]
@@ -1034,39 +1038,51 @@ def _initials_only(folded: str) -> bool:
 def _capitals_spelled(name: ParsedName, other: ParsedName,
                       lexicon: Lexicon) -> bool:
     """`name`'s given name is one word of two or three capital letters
-    (`JP`), it has no middle name and is not written wholly in capitals,
-    and `other` spells those letters exactly, in order: its given name
-    one word agreeing with the first letter and its middle names as many
-    words as the letters left, each agreeing with its letter, as
-    `_part_agrees` reads an initial (`JP Smith` / `John Paul Smith`);
-    the name's case is read off its own words, so a title, a suffix or
-    a nickname in mixed case leaves `Dr. JP SMITH` in capitals.
-    The words are counted as the comparison of the name written with
-    full stops (`J. P. Smith`) counts them, role by role, so a given
-    name of two words (`Abdul Adil`, a bound pair) spells no letter
+    (`JP`, `_capitals_word`), it has no middle name, and its given or
+    family name holds a lower-case letter (a title, suffix, nickname or
+    maiden name in mixed case leaves `Dr. JP SMITH` in capitals, the
+    maiden name being another name's writing), and `other` spells those
+    letters exactly, in order: its given name one word agreeing with the
+    first letter and its middle names as many words as the letters left,
+    each agreeing with its letter, as `_part_agrees` reads an initial
+    (`JP Smith` / `John Paul Smith`). The words are counted as the
+    comparison of the name written with full stops (`J. P. Smith`)
+    counts them, role by role, so a given name of two words (`Abdul
+    Adil`, a bound pair) spells no letter; and a word of `other` that
+    is a capitals word itself spells no letter either, being initials
+    by this same reading (`JR Paul Smith` spells J, R, P, not J, P), so
+    it never stands in for a name the caller's outcomes refuse
     (decisions/name-matching, 2026-11-13 #1351)."""
     given = _role_text(name, Role.GIVEN).split()
     if len(given) != 1 or _role_text(name, Role.MIDDLE):
         return False
     word = unicodedata.normalize("NFC", given[0])
-    if not (2 <= len(word) <= 3 and word.isalpha() and word.isupper()):
+    if not _capitals_word(word):
         return False
-    if not any(c.islower() for role in _CAPITALS_CASE_ROLES
+    if not any(c.islower() for role in (Role.GIVEN, Role.FAMILY)
                for c in getattr(name, role)):
-        # a title, suffix or nickname in mixed case says nothing of
-        # whether the name's words are initials (`Dr. JP SMITH`)
         return False
     theirs = _role_text(other, Role.GIVEN).split()
     middle = _role_text(other, Role.MIDDLE).split()
     if len(theirs) != 1 or len(middle) != len(word) - 1:
         return False
-    return all(_part_agrees(letter, w, lexicon, "given") is not None
+    return all(not _capitals_word(unicodedata.normalize("NFC", w))
+               and _part_agrees(letter, w, lexicon, "given") is not None
                for letter, w in zip(word, theirs + middle))
 
 
-#: The roles whose case says whether a name is written wholly in
-#: capitals, for `_capitals_spelled`: the name's own words.
-_CAPITALS_CASE_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY, Role.MAIDEN)
+def _capitals_word(word: str) -> bool:
+    """A word of two or three capital letters (`JP`), which
+    `_capitals_spelled` reads as initials: given NFC-composed."""
+    return 2 <= len(word) <= 3 and word.isalpha() and word.isupper()
+
+
+def _same_letters(fa: str, fb: str) -> bool:
+    """Two folded texts of initials alone hold the same letters in
+    order, a word of hyphens or full stops alone left out (`J.-` / `J.`):
+    the one test `initials-agree` reads, in every role."""
+    return ([w for w in _WORDS.split(fa) if w]
+            == [w for w in _WORDS.split(fb) if w])
 
 
 def _initials_alone(fa: str, fb: str) -> bool:
@@ -1089,8 +1105,7 @@ def _full_outcome(a: str, b: str, fa: str, fb: str, lexicon: Lexicon,
     if fa == fb or not forms_a.isdisjoint(forms_b):
         return Outcome.FOLDED
     if not {_joined(f) for f in forms_a}.isdisjoint(
-            {_joined(f) for f in forms_b}) and not (
-            _initials_only(fa) and _initials_only(fb)):
+            {_joined(f) for f in forms_b}) and not _initials_alone(fa, fb):
         # two texts of initials alone are `initials-agree`'s to read
         return Outcome.JOINED
     wa, wb = a.split(), b.split()
@@ -1164,8 +1179,7 @@ def _text_outcomes(a: str, b: str, lexicon: Lexicon, group: str,
             # initial stands for a word, and the other side holds none
             # for it to stand for (decisions/name-matching, 2026-11-13
             # #1350)
-            if ([w for w in _WORDS.split(fa) if w]
-                    == [w for w in _WORDS.split(fb) if w]):
+            if _same_letters(fa, fb):
                 yield Outcome.INITIALS_AGREE
         elif bases is not None and chain:
             first = _family_outcome(wa, wb, fa, fb, bases, lexicon, group)
@@ -1198,8 +1212,7 @@ def _initial_outcome(wa: list[str], wb: list[str], fa: str, fb: str,
         parts = [_part_agrees(x, y, lexicon, group) for x, y in zip(wa, wb)]
         if None not in parts and Outcome.INITIAL in parts:
             return Outcome.INITIAL
-    if _initials_only(fa) and _initials_only(fb) and (
-            _WORDS.split(fa) == _WORDS.split(fb)):
+    if _initials_alone(fa, fb) and _same_letters(fa, fb):
         return Outcome.INITIALS_AGREE
     return None
 

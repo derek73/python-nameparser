@@ -256,10 +256,11 @@ Cyrillic letters; a mark on another script's letter, such as a
 Devanagari vowel sign, is spelling and stays. Initials written joined
 into one word agree with the same letters written apart as ``joined``
 (``J.P. Smith`` / ``J.-P. Smith``). A given name of two or three
-capitals with no middle name beside it, in a name whose words are not
-all written in capitals, reads as initials where the other side's given and middle
+capitals with no middle name beside it, whose given or family name
+holds a lower-case letter, reads as initials where the other side's given and middle
 names spell those letters exactly, in order (``JP Smith`` / ``John
-Paul Smith``), and only where that makes the pair consistent; it is
+Paul Smith``), a capitals word there spelling no letter (``JR Paul
+Smith`` spells J, R, P), and only where that makes the pair consistent; it is
 not read so against fewer or more names than letters (``JP Smith`` /
 ``John Smith``), which ``J. P. Smith`` matches, so a pair can still
 be consistent through ``J. P. Smith`` and not directly. Typos (``Slvatore`` / ``Salvatore``) and
@@ -300,7 +301,10 @@ matcher and check with another:
 A family initial is outside the default because its key, one letter of
 the family name, gathers very large groups. It stands for a word on the
 other side, so against another family name of initials alone it never
-holds: ``J.-P., Ann`` / ``J., Ann`` conflicts under every setting. An unknown outcome name
+holds: ``J.-P., Ann`` / ``J., Ann`` conflicts under every setting.
+Initials written together are one word, not initials alone, so
+``J.P., Ann`` / ``J., Ann`` still reads ``family-initial``, and
+``J.P., Ann`` / ``J. P., Ann`` ``joined``. An unknown outcome name
 raises ``ValueError`` listing the valid ones, and ``conflict`` cannot
 be accepted.
 

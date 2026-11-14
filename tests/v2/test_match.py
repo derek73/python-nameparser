@@ -3272,7 +3272,7 @@ def test_a_surname_of_initials_alone_agrees_letter_for_letter(
     # the 8 family rows of a reorder, a subset and `J.-P.` / `J. P.`
     # (each read part-of-other), the no-comma `Ann J.-P.` / `Ann J.`
     # (part-of-other), the maiden `(née J.-P.)` / `(née J.)` (initial),
-    # and the stray hyphen `J.-` / `J.` in both roles (conflict and
+    # and the stray hyphen `J.-` / `J.` in both roles (part-of-other and
     # initial); the other 25 pass, the maiden twins of the reorder and
     # subset refused since #1264
     matching = Matching(Parser(), *setting)
@@ -3388,6 +3388,20 @@ _CAPITALS: tuple[tuple[str, str, bool, Outcome, Outcome], ...] = (
     # spelled, but another role conflicts: the rows stay as read
     ("JP Smith", "John Paul Jones", False, Outcome.CONFLICT,
      Outcome.ONE_SIDE),
+    # a capitals word on the other side is initials too, never a name
+    # word spelling one letter (the review of a40c2ca9)
+    ("JP Smith", "JR Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JJ Smith", "John JP Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith", "JP Paul Smith", True, Outcome.SAME, Outcome.ONE_SIDE),
+    # a maiden name in mixed case is another name's writing, and leaves
+    # the name in capitals; one in the name written in mixed case keeps
+    # the rule
+    ("JP SMITH (née Jones)", "John Paul Smith", False, Outcome.CONFLICT,
+     Outcome.ONE_SIDE),
+    ("JP Smith (née Jones)", "John Paul Smith", True, Outcome.INITIAL,
+     Outcome.INITIAL),
     ("JP Smith", "Paul John Smith", False, Outcome.CONFLICT,
      Outcome.ONE_SIDE),
     ("JP Smith", "PJ Smith", False, Outcome.CONFLICT, Outcome.SAME),
@@ -3422,7 +3436,7 @@ def test_a_given_word_of_capitals_reads_as_the_initials_it_spells(
         a: str, b: str, consistent: bool, given: Outcome,
         middle: Outcome) -> None:
     # Negative control (2026-11-13): with `_capitals_spelled` answering
-    # False, the 13 rows reading initial/initial fail and the other 32
+    # False, the 14 rows reading initial/initial fail and the other 36
     # pass; each other clause of the gate has a row it alone refuses
     # (the middle name `JP Q. Smith`, three letters at most `JPRS
     # Smith`, the other side's one given word `AAK Khan`, the name's
@@ -3438,6 +3452,50 @@ def test_a_given_word_of_capitals_reads_as_the_initials_it_spells(
         assert r["given"].outcome is given, (x, y)
         assert r["middle"].outcome is middle, (x, y)
         assert m.check(y, x) == r.mirrored(), (x, y)
+
+
+_NO_ONE_SIDE = DEFAULT_ACCEPT - {Outcome.ONE_SIDE}
+
+
+@pytest.mark.parametrize("a, b, consistent, given, middle", _CAPITALS)
+def test_a_given_word_of_capitals_under_other_settings(
+        a: str, b: str, consistent: bool, given: Outcome,
+        middle: Outcome) -> None:
+    # refusing `initial` refuses the rule's rows; an opt-in leaves the
+    # rule as it reads under the default, save the familiar forms it
+    # accepts
+    spelled = given is middle is Outcome.INITIAL
+    no_initial = Matching(Parser(), DEFAULT_ACCEPT - {Outcome.INITIAL})
+    familiar = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    for x, y in ((a, b), (b, a)):
+        if spelled:
+            r = no_initial.check(x, y)
+            assert not r.consistent, (x, y)
+            assert r["given"].outcome is Outcome.CONFLICT, (x, y)
+        r = familiar.check(x, y)
+        assert r.consistent is (consistent or given is Outcome.FAMILIAR_FORM
+                                ), (x, y)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("JP Smith", "JR Paul Smith"), ("JJ Smith", "John JP Smith"),
+    ("JP Smith", "JP Paul Smith")])
+def test_a_capitals_word_on_the_other_side_spells_no_letter(
+        a: str, b: str) -> None:
+    # a40c2ca9 read each consistent, the other side's capitals word
+    # standing in for one name: under the default, and with `one-side`
+    # refused, where `Paul` hid the one-sided middle name
+    no_one_side = Matching(Parser(), _NO_ONE_SIDE)
+    for x, y in ((a, b), (b, a)):
+        assert not no_one_side.check(x, y).consistent, (x, y)
+        if (a, b) != ("JP Smith", "JP Paul Smith"):
+            assert not m.check(x, y).consistent, (x, y)
+    # what the rule already matched stays matched
+    for x, y in (("JP Smith", "John Paul Smith"),
+                 ("Dr. JP Smith", "John Paul Smith"),
+                 ("JP Smith, MD", "John Paul Smith"),
+                 ("JP Smith (née Jones)", "John Paul Smith")):
+        assert m.check(x, y).consistent and m.check(y, x).consistent
 
 
 def test_a_given_word_of_capitals_never_takes_a_match_away(
