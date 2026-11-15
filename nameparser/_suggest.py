@@ -20,7 +20,7 @@ word is never looked up in the name tables, a capitals word of two or
 three letters ending a name that holds a lowercase letter (joined
 initials, `Armitage JO`, or a short surname, `Jason NG`) casts no
 capitals vote and is not looked up as a surname, one opening such a
-name with no capitals word after it (`AM Hoy`, `NG Jason`) casts no
+name with no capitals word after it (`AM Hoy`, `NG Emily`) casts no
 capitals vote either, and the name no surname vote (#1355), and a
 script the
 tables do not hold (Hangul, Han) simply matches nothing. A patronymic
@@ -173,9 +173,9 @@ def _ends_in_short_capitals(words: list[str]) -> bool:
 def _opens_in_short_capitals(words: list[str]) -> bool:
     """Whether a name holding a lowercase letter opens in one capitals
     word of two or three letters (`AM Hoy`, a byline written initials
-    first; `NG Jason`). Such a word casts no capitals vote, and the name
+    first; `NG Emily`). Such a word casts no capitals vote, and the name
     no surname vote: with the word in front not looked up, the word at
-    the other end would vote alone (`LI Zhi`, `Zhi` a listed surname
+    the other end would vote alone (`WU Zhi`, `Zhi` a listed surname
     too). A run of capitals words in front is the family as before,
     whatever its first word (`DE SOUZA Maria`, `LI WANG Zhi`)
     (decisions/group-suggestion, 2026-11-14 #1355)."""

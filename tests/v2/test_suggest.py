@@ -113,9 +113,9 @@ _OPENING_SHORT = [
     "AM Hoy",          # two letters
     "JKL Larsen",      # three
     "MA Hoy",          # initials that spell a listed surname
-    "NG Jason",        # a short surname, the same shape
-    "KIM Jason",
-    "TAN Wei",
+    "NG Emily",        # a short surname, the same shape
+    "KIM Emily",
+    "TAN Marsh",
     "ИП Иванов",       # cased evidence in any script
     "Dr AM Hoy",       # a title read past
     "AM de Hoy",       # the word after it a particle
@@ -138,12 +138,12 @@ def test_an_opening_short_capitals_word_casts_no_capitals_vote(
 
 
 @pytest.mark.parametrize("text", [
-    "MA Hoy", "MI Larsen", "NG Jason", "KIM Jason", "MA Jean Hoy",
+    "MA Hoy", "MI Larsen", "NG Emily", "KIM Emily", "MA Jean Hoy",
     # the word at the other end is not looked up alone either: `Yoon`
-    # is a listed surname, and so is `Zhi` (`LI Zhi` cast none before
+    # is a listed surname, and so is `Zhi` (`WU Zhi` cast none before
     # either, both ends listed; the row holds off a rule that skips the
     # opening word alone, under which `Zhi` votes given-first)
-    "GH Yoon", "LI Zhi"])
+    "QZ Yoon", "WU Zhi"])
 def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
         text: str) -> None:
     assert Signal.SURNAME not in name_votes(text, L)
@@ -152,7 +152,7 @@ def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
 @pytest.mark.parametrize(("text", "votes"), [
     # four letters: a capitals word as before, and looked up
     ("ABCD Hoy", {Signal.CAPITALS: FAMILY_FIRST}),
-    ("PARK Jason", {Signal.CAPITALS: FAMILY_FIRST,
+    ("PARK Emily", {Signal.CAPITALS: FAMILY_FIRST,
                     Signal.SURNAME: FAMILY_FIRST,
                     Signal.GIVEN_NAME: FAMILY_FIRST}),
     # a run of capitals words in front, its first one short
@@ -163,7 +163,7 @@ def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
     # four letters past the hyphen
     ("ABC-D Hoy", {Signal.CAPITALS: FAMILY_FIRST}),
     # the given-name signal reads the other word as before
-    ("NG Jason", {Signal.GIVEN_NAME: FAMILY_FIRST}),
+    ("NG Emily", {Signal.GIVEN_NAME: FAMILY_FIRST}),
     ("AM de Hoy", {Signal.PARTICLE: GIVEN_FIRST}),
     # initials written with full stops or spaces, and a name in one
     # case, were never capitals words
@@ -176,7 +176,7 @@ def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
     ("MA HOY", {Signal.SURNAME: FAMILY_FIRST}),
     # the ending word, as before
     ("Hoy AM", {}),
-    ("Jason NG", {Signal.GIVEN_NAME: GIVEN_FIRST}),
+    ("Emily NG", {Signal.GIVEN_NAME: GIVEN_FIRST}),
 ])
 def test_what_votes_beside_an_opening_short_capitals_word(
         text: str, votes: dict[Signal, object]) -> None:
@@ -189,12 +189,12 @@ _BASES = [Policy(), Policy(name_order=FAMILY_FIRST),
 
 @pytest.mark.parametrize("policy", _BASES)
 @pytest.mark.parametrize("group", [
-    ["AM Hoy", "JK Larsen", "RP Huntley", "MT Okafor", "GH Yoon",
+    ["AM Hoy", "JK Larsen", "RP Huntley", "MT Okafor", "QZ Yoon",
      "SL Perrin"],
     ["MA Hoy", "MI Larsen", "NA Huntley", "MO Okafor", "TA Perrin",
      "JKL Marsh"],
     # short surnames in capitals alone: the same shape, so no evidence
-    ["LI Zhi", "WU Wei", "XU Min", "MA Lin"],
+    ["WU Zhi", "NG Zhou", "MA Zhi", "HU Zhi"],
 ])
 def test_a_list_opening_in_short_capitals_words_keeps_its_base(
         policy: Policy, group: list[str]) -> None:
@@ -213,11 +213,11 @@ def test_a_list_opening_in_short_capitals_words_keeps_its_base(
 def test_longer_capitals_surnames_still_decide_a_family_first_order(
         policy: Policy) -> None:
     s = Parser(policy=policy).suggest(
-        ["ZHANG Wei", "LI Na", "WANG Fang", "CHEN Jie"])
+        ["ZHANG Hollis", "LI Marsh", "WANG Perrin", "CHEN Marsh"])
     order = s.evidence[0]
     assert order.decided
     assert s.parser.policy.name_order[0] is Role.FAMILY
-    # `LI Na` casts no vote; the three longer surnames decide
+    # `LI Marsh` casts no vote; the three longer surnames decide
     assert (order.votes_for, order.no_evidence) == (3, 1)
 
 
@@ -846,11 +846,11 @@ def test_the_new_types_are_exported() -> None:
 
 
 def test_one_heavily_marked_name_does_not_outvote_two() -> None:
-    # `PARK Jason J.` carries family-first signals, but is one name (its
+    # `PARK Emily J.` carries family-first signals, but is one name (its
     # trailing initial is one of four names, so it casts no vote: the
     # gate's tests below)
     s = Parser().suggest(["Jason Smith", "Mary Jones", "Anna Brown",
-                          "PARK Jason J."])
+                          "PARK Emily J."])
     assert s.patch.name_order is UNSET
     order = _order_evidence(s)
     assert order.decided
@@ -889,7 +889,7 @@ def test_a_name_whose_signals_conflict_is_contested() -> None:
     [],
     ["Xyzzy Plugh"],
     ["Smith Mary", "Jason Kim J.", "Smith, John", "", "Jason Smith"],
-    ["Jason Smith", "Mary Jones", "PARK Jason J."],
+    ["Jason Smith", "Mary Jones", "PARK Emily J."],
     ["Сидоров Иван Петрович", "SIDOROV Ivan Petrovich", "Kim Minjun"],
     ["Mamedov Ali Huseyn oglu", "Jason Kim J.", "Smith Mary"],
 ])

@@ -322,7 +322,7 @@ class Parser:
         signal in the same name contradicts. A capitals word of two
         or three letters ending a name in mixed case (``Armitage JO``),
         or opening it with no capitals word after it (``AM Hoy``, ``NG
-        Jason``), casts no capitals vote, being joined initials as
+        Emily``), casts no capitals vote, being joined initials as
         often as a short surname; the ending one is not looked up as a
         surname, and a name opening in one casts no surname vote.
         ``name_order`` is

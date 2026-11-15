@@ -14,8 +14,9 @@ evidence, and the evidence agrees.
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
 Each name votes on its order from the evidence it carries: a family
 name written in capitals at one end (a word of two or three capitals
-is as often joined initials, ``AM Hoy``, as a short surname, ``NG
-Jason``, and casts no vote), a trailing initial
+ending the name, or opening it with no word in capitals after it, is
+as often joined initials, ``AM Hoy``, as a short surname, ``NG Emily``,
+and casts no vote), a trailing initial
 (``Smith J.``) where at least three names, and 60% of the list's names
 that hold a name word (names with a comma, blanks and names of nothing
 but titles or marks leave the count), end in initials no other evidence
@@ -190,10 +191,11 @@ Polish names to 50 or 200 for Indian ones (US patent inventors and UK
 company filers). Three kinds of list keep their order less
 often. Names written with the given name in capitals (``ANNA Smith``)
 have their capitals read as a family name. A word of two or three
-capitals at an end of a name in mixed case is as often joined initials
-(``AM Hoy``, ``Armitage JO``) as a short surname (``NG Jason``, ``Zhi
-LI``), so it casts no capitals vote, and a name opening in one casts no
-surname vote: ORCID's bylines written initials first kept a given-first
+capitals ending a name in mixed case, or opening it with no word in
+capitals after it (``DE SOUZA Maria`` still votes), is as often joined
+initials (``AM Hoy``, ``Armitage JO``) as a short surname (``NG
+Emily``, ``Zhi LI``), so it casts no capitals vote, and a name opening
+in one casts no surname vote: ORCID's bylines written initials first kept a given-first
 base in at least 98% of groups, but a list of nothing but two or three
 joined initials (``AM Hoy``) kept it in 93% of groups of 50 and 92% of
 200, and a list of nothing but short surnames in capitals written last
