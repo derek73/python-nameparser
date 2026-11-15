@@ -19,7 +19,10 @@ as capitals (Cyrillic capitals vote, as Latin ones do), a one-letter
 word is never looked up in the name tables, a capitals word of two or
 three letters ending a name that holds a lowercase letter (joined
 initials, `Armitage JO`, or a short surname, `Jason NG`) casts no
-capitals vote and is not looked up as a surname, and a script the
+capitals vote and is not looked up as a surname, one opening such a
+name with no capitals word after it (`AM Hoy`, `NG Emily`) casts no
+capitals vote either, and the name no surname vote (#1355), and a
+script the
 tables do not hold (Hangul, Han) simply matches nothing. A patronymic
 votes, Latin or Cyrillic, only where the pipeline's rule reads one
 (rules/O1's three name words, rules/O2's four), through the pipeline's
@@ -152,23 +155,42 @@ def _has_lower(words: list[str]) -> bool:
     return any(c.islower() for w in words for c in w)
 
 
+def _is_short_capitals(word: str) -> bool:
+    """A capitals word of two or three letters: joined initials (`JO`,
+    `AM`) or a short surname (`NG`, `LI`), which the word alone cannot
+    tell apart."""
+    return 2 <= sum(c.isalpha() for c in word) <= 3 and _is_caps_word(word)
+
+
 def _ends_in_short_capitals(words: list[str]) -> bool:
     """Whether a name holding a lowercase letter ends in a capitals word
-    of two or three letters: joined initials (`Armitage JO`, `Smith JP`)
-    or a short surname (`Jason NG`), which the word alone cannot tell
-    apart. Such a word casts no capitals vote and is not looked up as a
-    surname; a leading one (`NG Jason`) still votes."""
-    last = words[-1]
-    letters = sum(c.isalpha() for c in last)
-    return (2 <= letters <= 3 and _is_caps_word(last)
+    of two or three letters (`Armitage JO`, `Smith JP`, `Jason NG`).
+    Such a word casts no capitals vote and is not looked up as a
+    surname."""
+    return _is_short_capitals(words[-1]) and _has_lower(words)
+
+
+def _opens_in_short_capitals(words: list[str]) -> bool:
+    """Whether a name holding a lowercase letter opens in one capitals
+    word of two or three letters (`AM Hoy`, a byline written initials
+    first; `NG Emily`). Such a word casts no capitals vote, and the name
+    no surname vote: with the word in front not looked up, the word at
+    the other end would vote alone (`WU Zhi`, `Zhi` a listed surname
+    too). A run of capitals words in front is the family as before,
+    whatever its first word (`DE SOUZA Maria`, `LI WANG Zhi`)
+    (decisions/group-suggestion, 2026-11-14 #1355)."""
+    return (_is_short_capitals(words[0]) and not _is_caps_word(words[1])
             and _has_lower(words))
 
 
 def _capitals(words: list[str]) -> tuple[Role, Role, Role] | None:
     """A run of capitals words at one end of a name that also holds a
     lowercase letter reads as the family name, which writers set in
-    capitals."""
-    if not _has_lower(words) or _ends_in_short_capitals(words):
+    capitals; two or three capitals ending the name, or opening it
+    with no capitals word after them, are joined initials as often, and
+    cast no vote."""
+    if (not _has_lower(words) or _ends_in_short_capitals(words)
+            or _opens_in_short_capitals(words)):
         return None
     # a name holding a lowercase letter holds a word that is not all
     # capitals, so the two ends never both vote by being every word
@@ -385,9 +407,13 @@ def _read(text: str, lexicon: Lexicon
         votes[Signal.PARTICLE] = particle
 
     short_capitals = _ends_in_short_capitals(words)
+    # a name opening in two or three capitals casts no surname vote
+    # (#1355)
+    tables = (() if _opens_in_short_capitals(words) else (
+        (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST,
+         short_capitals),))
     for signal, table, first_order, last_order, skip_last in (
-            (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST,
-             short_capitals),
+            *tables,
             (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST,
              False)):
         at_first, at_last = _at_one_end(words, table, skip_last)

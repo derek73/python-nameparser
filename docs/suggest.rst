@@ -13,7 +13,10 @@ evidence, and the evidence agrees.
 ``Parser.suggest()`` reads a list you declare to be one group (one
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
 Each name votes on its order from the evidence it carries: a family
-name written in capitals at one end, a trailing initial
+name written in capitals at one end (a word of two or three capitals
+ending the name, or opening it with no word in capitals after it, is
+as often joined initials, ``AM Hoy``, as a short surname, ``NG Emily``,
+and casts no vote), a trailing initial
 (``Smith J.``) where at least three names, and 60% of the list's names
 that hold a name word (names with a comma, blanks and names of nothing
 but titles or marks leave the count), end in initials no other evidence
@@ -180,15 +183,25 @@ a name that writes no capitals disagrees with a decided switch:
 
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
-in a known order (2026-11-10, re-taken 2026-11-11 and 2026-11-12), a list written in the base's own order keeps it
+in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12 and
+2026-11-14), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 50 or 200 for Indian ones (US patent inventors and UK
-company filers). Two lists keep their order less
-often, the capitals in them read as a family name: bylines written with
-the initials first (``GH Yoon``), so a group of ten or more is usually
-suggested family-first, and names written with the given name in
-capitals (``ANNA Smith``). ``capitals_as_family`` was suggested in at
+company filers). Three kinds of list keep their order less
+often. Names written with the given name in capitals (``ANNA Smith``)
+have their capitals read as a family name. A word of two or three
+capitals ending a name in mixed case, or opening it with no word in
+capitals after it (``DE SOUZA Maria`` still votes), is as often joined
+initials (``AM Hoy``, ``Armitage JO``) as a short surname (``NG
+Emily``, ``Zhi LI``), so it casts no capitals vote, and a name opening
+in one casts no surname vote: ORCID's bylines written initials first kept a given-first
+base in at least 98% of groups, but a list of nothing but two or three
+joined initials (``AM Hoy``) kept it in 93% of groups of 50 and 92% of
+200, and a list of nothing but short surnames in capitals written last
+(``Zhi LI``) in 79% of groups of ten. Such lists carry little evidence
+either way, so where you know how one is written, set ``name_order``
+yourself. ``capitals_as_family`` was suggested in at
 least 95% of groups from 4 names for ORCID holders who typed their
 family name in capitals, and from 10 for those in China, Korea, Vietnam
 and Taiwan, whose short surnames are no evidence (2026-11-12). Of the

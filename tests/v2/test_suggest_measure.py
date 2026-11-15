@@ -264,6 +264,8 @@ def test_orcid_bylines_keep_only_a_byline_the_boxes_confirm(
     assert sorted(keep.pools["orcid-byline"]) == [
         ("AM", "Hoy"), ("J.", "Smith"), ("M.A.", "Lopez-Diaz"),
         ("R P", "Huntley")]
+    # the bare joined capitals alone (#1355)
+    assert keep.pools["orcid-byline-joined"] == [("AM", "Hoy")]
 
 
 def test_orcid_capitals_keep_one_box_wholly_in_capitals(
@@ -292,6 +294,8 @@ def test_orcid_capitals_keep_one_box_wholly_in_capitals(
         ("Jean", "DUPONT"), ("Jeong Ho", "PARK"), ("Zhi", "LI")]
     assert sorted(keep.pools["orcid-famcaps-ea"]) == [
         ("Jeong Ho", "PARK"), ("Zhi", "LI")]
+    # a family box of one word of two or three letters (#1355)
+    assert keep.pools["orcid-famcaps-short"] == [("Zhi", "LI")]
     assert keep.pools["orcid-givcaps"] == [("ANNA", "Smith")]
 
 
