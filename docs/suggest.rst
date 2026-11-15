@@ -197,8 +197,8 @@ initials (``AM Hoy``, ``Armitage JO``) as a short surname (``NG
 Emily``, ``Zhi LI``), so it casts no capitals vote. A name opening in
 one casts no surname vote; the ending one casts no surname vote of its
 own, and where it is itself a listed surname (``Zhou NG``) the name
-casts none, its first word being the given name as often as the
-family. ORCID's bylines written initials first kept a given-first
+casts none: its first word is usually the given name there, and the
+table cannot tell the two readings apart. ORCID's bylines written initials first kept a given-first
 base in at least 98% of groups, but a list of nothing but two or three
 joined initials (``AM Hoy``) kept it in 93% of groups of 50 and 92% of
 200. Lists of such names carry little evidence
