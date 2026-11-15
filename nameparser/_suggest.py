@@ -19,7 +19,9 @@ as capitals (Cyrillic capitals vote, as Latin ones do), a one-letter
 word is never looked up in the name tables, a capitals word of two or
 three letters ending a name that holds a lowercase letter (joined
 initials, `Armitage JO`, or a short surname, `Jason NG`) casts no
-capitals vote and is not looked up as a surname, one opening such a
+capitals vote and no surname vote of its own, being looked up only to
+veto (a name ending in one that is a listed surname, `Zhou NG`, casts
+no surname vote, #1397), one opening such a
 name with no capitals word after it (`AM Hoy`, `NG Emily`) casts no
 capitals vote either, and the name no surname vote (#1355), and a
 script the
@@ -165,8 +167,8 @@ def _is_short_capitals(word: str) -> bool:
 def _ends_in_short_capitals(words: list[str]) -> bool:
     """Whether a name holding a lowercase letter ends in a capitals word
     of two or three letters (`Armitage JO`, `Smith JP`, `Jason NG`).
-    Such a word casts no capitals vote and is not looked up as a
-    surname."""
+    Such a word casts no capitals vote, and no surname vote of its
+    own: `_read` looks it up only to veto the word in front's (#1397)."""
     return _is_short_capitals(words[-1]) and _has_lower(words)
 
 
@@ -222,9 +224,8 @@ def _listed(word: str, table: frozenset[str]) -> bool:
     return len(spelling) >= 2 and spelling in table
 
 
-def _at_one_end(words: list[str], table: frozenset[str],
-                skip_last: bool = False) -> tuple[bool, bool]:
-    return _listed(words[0], table), not skip_last and _listed(words[-1], table)
+def _at_one_end(words: list[str], table: frozenset[str]) -> tuple[bool, bool]:
+    return _listed(words[0], table), _listed(words[-1], table)
 
 
 def _a_listed_name(word: str) -> bool:
@@ -406,17 +407,20 @@ def _read(text: str, lexicon: Lexicon
     if particle is not None:
         votes[Signal.PARTICLE] = particle
 
-    short_capitals = _ends_in_short_capitals(words)
     # a name opening in two or three capitals casts no surname vote
-    # (#1355)
-    tables = (() if _opens_in_short_capitals(words) else (
-        (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST,
-         short_capitals),))
-    for signal, table, first_order, last_order, skip_last in (
+    # (#1355), nor does one ending in them where they spell a listed
+    # surname: the ending word is looked up only to veto, so it never
+    # votes alone, and the word in front votes where it does not veto
+    # (#1397)
+    silent = _opens_in_short_capitals(words) or (
+        _ends_in_short_capitals(words)
+        and _listed(words[-1], ROMANIZED_SURNAMES))
+    tables = () if silent else (
+        (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST),)
+    for signal, table, first_order, last_order in (
             *tables,
-            (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST,
-             False)):
-        at_first, at_last = _at_one_end(words, table, skip_last)
+            (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST)):
+        at_first, at_last = _at_one_end(words, table)
         if at_first != at_last:
             votes[signal] = first_order if at_first else last_order
 

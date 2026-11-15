@@ -54,10 +54,8 @@ moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
 same-order rows, which must not fall below 95%, save orcid-givcaps'
 two, which the capitals signal reads the wrong way round by design,
-orcid-byline-joined's given-first row at 50 and 200 names, where the
-few names the name tables still vote on decide a large group, and
-orcid-famcaps-short's given-first row, whose given names are
-looked up as surnames while the short surname ending the name is not
+and orcid-byline-joined's given-first row at 50 and 200 names, where
+the few names the name tables still vote on decide a large group
 (decisions/group-suggestion, 2026-11-14 #1355). Under each population,
 the groups that decided the East Slavic rule and the groups that decided
 `initials_as_family` (rules/O8), each over every group of both written
