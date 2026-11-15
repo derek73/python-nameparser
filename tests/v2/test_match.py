@@ -3367,14 +3367,16 @@ _CAPITALS: tuple[tuple[str, str, bool, Outcome, Outcome], ...] = (
      Outcome.INITIAL),
     ("ÉJ Martin", "Émile Jean Martin", True, Outcome.INITIAL,
      Outcome.INITIAL),
-    ("MD Rahman", "Mohammad Dewan Rahman", True, Outcome.INITIAL,
-     Outcome.INITIAL),
     ("NG Smith", "Nora Grace Smith", True, Outcome.INITIAL, Outcome.INITIAL),
     ("LI Wei", "Lan Ivy Wei", True, Outcome.INITIAL, Outcome.INITIAL),
     ("AL Smith", "Anna Louise Smith", True, Outcome.INITIAL, Outcome.INITIAL),
     ("ED Jones", "Emma Dawn Jones", True, Outcome.INITIAL, Outcome.INITIAL),
     ("WM Smith", "Walter Mark Smith", True, Outcome.INITIAL, Outcome.INITIAL),
     # already consistent: the rows stay as master read them
+    # `MD` is Muhammad written short (#1383), so its listed spelling makes
+    # the pair consistent and the capitals rule is not asked
+    ("MD Rahman", "Mohammad Dewan Rahman", True, Outcome.LISTED_SPELLING,
+     Outcome.ONE_SIDE),
     ("JP Smith", "J. P. Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
     ("JP Smith", "J.P. Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
     ("JP Smith", "J. Paul Smith", True, Outcome.INITIAL, Outcome.ONE_SIDE),
@@ -3460,9 +3462,10 @@ _CAPITALS: tuple[tuple[str, str, bool, Outcome, Outcome], ...] = (
 def test_a_given_word_of_capitals_reads_as_the_initials_it_spells(
         a: str, b: str, consistent: bool, given: Outcome,
         middle: Outcome) -> None:
-    # Negative control (2026-11-13): with `_capitals_spelled` answering
-    # False, the 16 rows reading initial/initial fail and the other 37
-    # pass; each other clause of the gate has a row it alone refuses
+    # Negative control (2026-11-14, after #1383 made `MD Rahman` /
+    # `Mohammad Dewan Rahman` a listed spelling; 16 and 37 before it):
+    # with `_capitals_spelled` answering False, the 15 rows reading
+    # initial/initial fail and the other 38 pass; each other clause of the gate has a row it alone refuses
     # (the middle name `JP Q. Smith`, three letters at most `JPRS
     # Smith`, the other side's one given word `AAK Khan`, the name's
     # case `Dr. JP SMITH`), save the name's own given name of one word,
@@ -3655,3 +3658,131 @@ def test_the_default_keys_hold_no_maiden_word(name: str) -> None:
     # names agree, and they are keyed (#1264)
     without = name.split(" (")[0]
     assert m.keys(name) == m.keys(without)
+
+
+# -- Muhammad written short (#1383) -------------------------------------------
+
+#: The short forms of Muhammad against its long spellings and each other:
+#: each short form lists the long spellings written where it is, so the
+#: pairs ORCID's holders wrote both ways (`Mohd` / `Mohammad`) read
+#: `listed-spelling` by default, as `Wm` / `William` does.
+_MUHAMMAD: tuple[tuple[str, str, Outcome], ...] = (
+    ("Mohd Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Muhammad Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohammed Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohamed Rahman", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Mohamad Rahman", Outcome.LISTED_SPELLING),
+    ("Moh. Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Moh. Rahman", "Mohamad Rahman", Outcome.LISTED_SPELLING),
+    ("Md Rahman", "Mohammad Rahman", Outcome.LISTED_SPELLING),
+    ("Md. Rahman", "Muhammad Rahman", Outcome.LISTED_SPELLING),
+    ("MD RAHMAN", "MOHAMMED RAHMAN", Outcome.LISTED_SPELLING),
+    ("Md Rahman", "Mohamed Rahman", Outcome.LISTED_SPELLING),
+    # two short forms meet through the long spellings they share
+    ("Md Rahman", "Mohd Rahman", Outcome.LISTED_SPELLING),
+    ("Moh Rahman", "Md. Rahman", Outcome.LISTED_SPELLING),
+    # `md` lists no `mohamad`, which Bangladesh's holders do not write;
+    # the pair reads as the opt-in spelling it is through `mohamed`
+    ("Md Rahman", "Mohamad Rahman", Outcome.ALTERNATE_SPELLING),
+    # `md` lists `muhammed`, which Bangladesh's holders write 35 times
+    # (decided 2026-11-14); `mohd` and `moh` list none of it
+    ("Md Rahman", "Muhammed Rahman", Outcome.LISTED_SPELLING),
+    ("MD RAHMAN", "MUHAMMED RAHMAN", Outcome.LISTED_SPELLING),
+    ("Mohd Rahman", "Muhammed Rahman", Outcome.CONFLICT),
+)
+
+
+def test_md_and_muhammed_share_a_key() -> None:
+    # the listed spelling the 2026-11-14 decision added keys alike
+    assert m.check("Md Rahman", "Muhammed Rahman").consistent
+    assert m.keys("Md Rahman") & m.keys("Muhammed Rahman")
+
+
+@pytest.mark.parametrize("a, b, outcome", _MUHAMMAD)
+def test_muhammad_written_short_matches_its_long_spellings(
+        a: str, b: str, outcome: Outcome) -> None:
+    # Negative control (2026-11-13): on master 3dadc263 every
+    # `listed-spelling` row with Md is a conflict (no given reading), or
+    # `given-one-side` where `Md.` read as a title, and
+    # Mohd or Moh against Mohammad, Mohammed or Mohamed reads
+    # `alternate-spelling`, refused by default
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["given"].outcome is outcome, (x, y)
+        assert r.consistent is (outcome in m.accept), (x, y)
+        assert m.keys(x) & m.keys(y), (x, y)
+
+
+def test_muhammad_written_short_is_not_transitive_across_long_spellings() -> None:
+    # Accepted (decisions/name-matching, 2026-11-13 #1383): two long
+    # spellings are each consistent with a short form that lists both,
+    # and not with each other by default, that pair being an opt-in
+    # alternate spelling
+    assert m.check("Mohammad Rahman", "Md Rahman").consistent
+    assert m.check("Md Rahman", "Muhammad Rahman").consistent
+    r = m.check("Mohammad Rahman", "Muhammad Rahman")
+    assert not r.consistent
+    assert r["given"].outcome is Outcome.ALTERNATE_SPELLING
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Md. Rahman", "Rahman, Md"), ("Dr. Md. Rahman", "Rahman, Md"),
+    ("Md. Abdul Rahman", "Rahman, Md Abdul"),
+    ("Md Abdul Rahman", "RAHMAN, MD ABDUL"),
+    ("Mohammad Rahman", "Rahman, Md."), ("Md. Rahman", "Rahman, Md.")])
+def test_md_opening_the_part_after_a_family_comma_matches_its_own_name(
+        a: str, b: str) -> None:
+    # #1393 (rules/C13's given-name Except): the given part `Md` opens
+    # after a family comma is the given name, so the name written in
+    # both orders is consistent; at 3dadc263 the comma's reading was a
+    # credential, and the pairs read given-one-side
+    for x, y in ((a, b), (b, a)):
+        assert m.check(x, y).consistent, (x, y)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Md. Rahman", "RAHMAN, MD"), ("Md. Rahman", "Mohammed. Rahman")])
+def test_md_left_to_the_credential_or_a_title_shape_is_accepted(
+        a: str, b: str) -> None:
+    # Accepted (decisions/indic-honorifics, 2026-11-14): `MD` in capitals
+    # alone after a family comma stays the degree, its writing being the
+    # degree's ('Novak, MD'); a full spelling of Muhammad written with a
+    # full stop is a title by rules/H2's shape, a writing 10 of some
+    # 23,000 ORCID names opening with it use
+    assert not m.check(a, b).consistent
+
+
+def test_md_alone_behind_a_title_after_a_comma_is_one_sided() -> None:
+    # Accepted (decisions/C13, 2026-11-14 #1393, the second review): a
+    # lone `Md` behind a title after a family comma stays the credential,
+    # so the comma's side has no given name; against `Md.` read as the
+    # given name the given row is one-sided, consistent only where the
+    # caller accepts that (on 3dadc263 neither side had a given name)
+    r = m.check("Md. Rahman", "Rahman, Mr Md")
+    assert not r.consistent
+    assert r["given"].outcome is Outcome.GIVEN_ONE_SIDE
+    lenient = Matching(Parser(), DEFAULT_ACCEPT | {Outcome.GIVEN_ONE_SIDE})
+    assert lenient.check("Md. Rahman", "Rahman, Mr Md").consistent
+
+
+def test_md_in_capitals_reads_as_its_long_spellings_or_as_two_initials() -> None:
+    # #1351's capitals rule is asked only where a pair is not otherwise
+    # consistent, so `MD` keeps its listed spellings and also reads as the
+    # letters of a given and middle name; the two readings meet in no third
+    # name, the shape of the triples #1351 accepts
+    r = m.check("MD Rahman", "Mohammad Rahman")
+    assert r.consistent
+    assert r["given"].outcome is Outcome.LISTED_SPELLING
+    r = m.check("MD Rahman", "Mary Dawn Rahman")
+    assert r.consistent
+    assert r["given"].outcome is Outcome.INITIAL
+    assert not m.check("Mohammad Rahman", "Mary Dawn Rahman").consistent
+    # written Md, with a lower-case letter, it is no capitals word
+    assert not m.check("Md Rahman", "Mary Dawn Rahman").consistent
+
+
+def test_muhammad_written_short_keys_by_its_letter() -> None:
+    # the keys are the default's, the long spellings sharing the letter
+    for name in ("Md Rahman", "Md. Rahman", "Mohd Rahman", "Moh Rahman",
+                 "Mohammad Rahman", "Muhammad Rahman"):
+        assert m.keys(name) == {"rahman;m"}, name

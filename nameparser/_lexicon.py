@@ -989,11 +989,43 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"names, got {value!r}; list each on its own")
         return folded or None
     # same_as: the word this one is a listed spelling of, a given name
-    # written short's full name (#789) or a title's or suffix's full form
-    if not isinstance(value, str) or not value.strip():
+    # written short's full name (#789) or a title's or suffix's full
+    # form, or several, as a list (`md` of four spellings of Muhammad,
+    # #1383); one is kept as its text, so an edit written before lists
+    # were taken is the same edit, and several as a sorted tuple
+    fix = "write e.g. same_as='muhammad' or same_as=['muhammad', 'mohammad']"
+    if isinstance(value, str):
+        if not value.strip():
+            raise ValueError(f"same_as must name the word this one is a "
+                             f"spelling of, got the empty text {value!r}; "
+                             f"{fix}")
+        return value
+    if isinstance(value, (bytes, Mapping)) or not isinstance(value, Iterable):
         raise TypeError(f"same_as must be the word this one is a spelling "
-                        f"of, a non-empty string, got {value!r}")
-    return value
+                        f"of, a string, or a list of them, got {value!r}; "
+                        f"{fix}")
+    heads = tuple(cast("Iterable[object]", value))
+    for h in heads:
+        if not isinstance(h, str):
+            raise TypeError(f"same_as entries must be strings, got {h!r} "
+                            f"in {value!r}; {fix}")
+    if not heads or not all(cast("str", h).strip() for h in heads):
+        raise ValueError(f"same_as must name at least one word, none of "
+                         f"them empty, got {value!r}; {fix}")
+    unique = tuple(sorted(set(cast("tuple[str, ...]", heads))))
+    return unique[0] if len(unique) == 1 else unique
+
+
+def _carries(props: Mapping[str, Any], prop: str, value: object) -> bool:
+    """A reading's properties carry `prop` at `value`, canonical as
+    `_prop_value` writes it: equal, save `same_as`, which a reading may
+    hold as several words and which is carried where every word asked
+    is among them (#1383)."""
+    if prop != "same_as" or value is None:
+        return props.get(prop) == value
+    held = _index_module().same_as_of(props)
+    asked = _index_module().same_as_of({"same_as": value})
+    return set(asked) <= set(held)
 
 
 def _check_kind(kind: object, op: str) -> str | None:
@@ -1241,13 +1273,15 @@ def _check_pool(pool: Pool, words: Iterable[str]) -> None:
         kinds = {r.category for r in on} | {r.kind for r in on}
         # check 11's agnomen clause: an agnomen is written in the case of
         # the name around it, so only the count gates it, and the gate is
-        # a name reading beside it (rules/S11)
-        if "agnomen" in kinds and "name" not in kinds:
+        # a name reading beside it (rules/S11), one that marks a clash (a
+        # given name written short gates nothing, #1383)
+        if "agnomen" in kinds and not any(r.marks_a_clash for r in on):
             raise ValueError(
-                f"{w!r} is an agnomen with no name reading, and an agnomen "
-                f"is read as the suffix only where a name reading gates "
-                f"it by the count: write .add({w!r}, kind='family') "
-                f"first, then the agnomen")
+                f"{w!r} is an agnomen with no name reading that gates it, "
+                f"and an agnomen is read as the suffix only where a name "
+                f"reading gates it by the count (a given name written "
+                f"short, carrying same_as, gates nothing): write "
+                f".add({w!r}, kind='family') first, then the agnomen")
         if {"bound_given", "particle"} <= kinds and "given" not in kinds:
             raise ValueError(
                 f"{w!r} is a bound given name and a particle with no given "
@@ -2149,8 +2183,12 @@ class Lexicon:
         credentials, unwritten-true, and the suffix words, unwritten-
         false, alike)
         (``words(kind="title", addresses="given")``, the titles that
-        address a person by the given name). A phrase the lexicon holds
-        whole (``"z domu"``) is one entry. Added in 3.0."""
+        address a person by the given name). ``same_as`` matches a
+        reading naming every word given among the words it is a
+        spelling of (``words(kind="given", same_as="muhammad")`` lists
+        ``md``, ``mohd`` and ``moh``, each a spelling of several). A
+        phrase the lexicon holds whole (``"z domu"``) is one entry.
+        Added in 3.0."""
         k = _check_kind(kind, "words")
         assert k is not None
         ri = _index_module()
@@ -2172,7 +2210,7 @@ class Lexicon:
             if any(r.on_by_default and (r.kind == k or r.category == k)
                    # a reading holds its properties canonical, as the
                    # build and add write them, the unwritten value never
-                   and all(r.props.get(p) == _prop_value(r.kind, p, v)
+                   and all(_carries(r.props, p, _prop_value(r.kind, p, v))
                            for p, v in properties.items())
                    for r in rs)))
 
@@ -2208,7 +2246,9 @@ class Lexicon:
             ``capital_opening=True`` on a particle reading,
             ``dotted=True`` on a title reading, and
             ``same_as=...`` on a reading of any kind: the word this one
-            is a spelling of, which name matching reads as a
+            is a spelling of, or a list of them where it is a spelling
+            of several (``same_as=["muhammad", "mohammad"]``), which name
+            matching reads as a
             ``listed-spelling`` and keys alike in the roles that read
             the kind's words (a ``given`` reading's in the given name,
             middle name and nickname, a ``family`` reading's in the

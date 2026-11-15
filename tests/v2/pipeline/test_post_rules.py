@@ -49,9 +49,15 @@ _LEX = (
     # no run either.
     .add("md", "vd", "ma", kind="credential")
     # and `ma` is a given name written short too (Filipino María,
-    # #789), read so only period-marked at the head of the given part;
-    # the given reading is also what makes its credential ambiguous
+    # #789), read so only period-marked at the head of the given part
     .add("ma", kind="given", same_as="maría")
+    # and the surname Ma, a name reading of its own, which is what makes
+    # its credential ambiguous: a given name written short marks no
+    # clash (#1383)
+    .add("ma", kind="family")
+    # `md` is Muhammad written short as well as the credential, whose
+    # reading that leaves unambiguous (#1383)
+    .add("md", kind="given", same_as="muhammad")
     # `maría` is a given name written behind a particle too ('de
     # María'), which rules/O7 reads (#704)
     .add("maría", "maria", kind="given", after_particle=True)

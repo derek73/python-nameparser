@@ -26,7 +26,12 @@
 
 **Precedence:**
 
-- **A credential opening the part after the comma** ("Doe, PhD Jones"): C13 governs, and the part is postnominal however it goes on, not the given name.
+- **A credential opening the part after the comma** ("Doe, PhD Jones"): C13 governs, and the part is postnominal however it goes on, not the given name, save where C13's given-name Except reads it as the given part.
+- **A credential that is also a given name written short** ("Rahman, Md"): C13's given-name Except governs, so a part that is nothing but that word, written as the name, is the given part rather than the credential run.
+  ```
+  "Rahman, Md"                →  given="Md"
+  "Smith, Dr. Md"             →  suffix="Md"  · boundary
+  ```
 - **Initials spelling a credential behind one word** ("Jansen, J.P."): C16 governs, and the run is the given name there, not a part of suffix words.
 
 **Accepted:**

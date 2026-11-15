@@ -3909,6 +3909,13 @@ _ABBREVIATION_SLOTS = (
     "{} SMITH, XYZ", "John Smith, {}")
 
 
+#: The slots where a credential written short opens the part after a
+#: family comma behind no whole name (rules/C13's given-name Except,
+#: #1393); 'Smith, {}' only where it is written with a lower-case letter.
+_OPENS_THE_GIVEN_PART = frozenset({
+    "Smith, {}", "Smith, {} John", ", {} Smith", "Smith Jr., {} John"})
+
+
 def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     """rules/H2's precedence bullet (#789): "an abbreviation the
     vocabulary reads as a given name written short is that given name".
@@ -3922,14 +3929,27 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     report that reading draws after a comma. The bare spellings, which
     the shape never reads, must read exactly as with the set emptied in
     every slot, the capitals behind a comma included ('John Smith, JAS'
-    keeps suffix 'JAS', #789's review). Every slot must see the
+    keeps suffix 'JAS', #789's review), save a credential written short
+    opening the part after a family comma behind no whole name, which
+    reads as the plain given name does there (rules/C13, #1393). Every slot must see the
     shape fire somewhere, so a pass is not a grid the shape never
     reaches."""
     lexicon = Lexicon.default()
     abbreviations = sorted(lexicon._sets.given_name_abbreviations)
     # the set emptied: each word keeps its given reading, without the
-    # full name that makes it one written short
-    off = lexicon.add(*abbreviations, kind="given", same_as=None)
+    # full name that makes it one written short, save a word whose
+    # credential that reading leaves unambiguous (`md`, #1383): a plain
+    # given reading would make the credential ambiguous, which the word
+    # written short is not, so it is compared with its given reading
+    # gone, its credential reading after a comma as before (`Smith, Md.`
+    # suffix 'Md.')
+    credentials = [w for w in abbreviations
+                   if w in lexicon._sets.suffix_acronyms
+                   and w not in lexicon._sets.suffix_acronyms_ambiguous]
+    assert credentials == ["md"], credentials
+    off = lexicon.add(*(w for w in abbreviations if w not in credentials),
+                      kind="given", same_as=None).remove(
+                          *credentials, kind="given")
 
     def fields(name: ParsedName, plain: str = "", head: str = "") -> dict[str, str]:
         return {k: v.replace(plain, head) if plain else v
@@ -3958,8 +3978,20 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
                     text = slot.format(head)
                     got = fields(parser.parse(text))
                     unlisted = control.parse(text)
-                    if plain and (head in unlisted.title.split()
-                                  or slot.endswith(", Ed")):
+                    if (word in credentials and slot in _OPENS_THE_GIVEN_PART
+                            and (slot != "Smith, {}"
+                                 or not head.rstrip(".").isupper())):
+                        # rules/C13's given-name Except (#1393): the
+                        # credential written short opens the given part
+                        # behind no whole name, written with a lower-case
+                        # letter or with a name word behind it
+                        fired.add(slot)
+                        stand = ("JACK" if head.rstrip(".").isupper()
+                                 else "jack" if head.islower() else "Jack")
+                        want = fields(stand_in.parse(slot.format(stand)),
+                                      stand, head)
+                    elif plain and (head in unlisted.title.split()
+                                    or slot.endswith(", Ed")):
                         fired.add(slot)
                         want = fields(stand_in.parse(slot.format(plain)), plain, head)
                     else:

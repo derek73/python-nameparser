@@ -14598,20 +14598,17 @@ CASES: tuple[Case, ...] = (
                "with 'Abu', 'Al' or 'Bin'); the gap is the spelled-out "
                "name's, not Md's (decisions/indic-honorifics)",
          shape=1),
-    Case("md_opening_a_family_comma_given_part_is_a_credential",
+    Case("md_opening_a_family_comma_given_part_is_the_given_name",
          "Uddin, Md Karim",
-         {"family": "Uddin", "suffix": "Md Karim"},
-         classification="fix(#853)",
+         {"given": "Md", "middle": "Karim", "family": "Uddin"},
          ambiguities=("suffix-or-name",),
-         notes="an accepted cost of #853: a credential opening the "
-               "part after a family comma starts a credential run to "
-               "its end (rules/C13), and 'md' is a credential with no "
-               "title reading left to stand it down, so the given name "
-               "is lost. 9 FEC names take this shape, against about "
-               "380 ClinicalTrials.gov officials ('John Smith, MD "
-               "Jones' shapes) the title reading had misread "
-               "(decisions/indic-honorifics)",
-         shape=2),
+         classification="fix(#1393)",
+         notes="rules/C13's given-name Except: a credential that is "
+               "also a given name written short opens the given part "
+               "behind no whole name, here with a lower-case letter and "
+               "a name word behind it. Through #853 the part was the "
+               "postnominal one, suffix 'Md Karim', an accepted cost "
+               "now fixed (decisions/indic-honorifics, 2026-11-14)"),
     Case("mst_leading_stays_the_given_name", "Mrs Mst Nasima Akther",
          {"title": "Mrs", "given": "Mst", "middle": "Nasima",
           "family": "Akther"},
@@ -14662,14 +14659,14 @@ CASES: tuple[Case, ...] = (
          shape=2),
     Case("md_behind_a_title_opening_a_family_comma_given_part",
          "Uddin, Mr Md Karim",
-         {"title": "Mr", "family": "Uddin", "suffix": "Md Karim"},
-         classification="fix(#853)",
+         {"title": "Mr", "given": "Md", "middle": "Karim",
+          "family": "Uddin"},
          ambiguities=("suffix-or-name",),
-         notes="the same accepted cost behind a title: C13's run "
-               "starts behind titles alone, so the title in front "
-               "does not stand 'Md' down. The title reading gave "
-               "title 'Mr Md', given 'Karim' (decisions/indic-"
-               "honorifics)",
+         classification="fix(#1393)",
+         notes="the same Except behind a title: titles in front of "
+               "'Md' do not stand it down. #853 read suffix 'Md Karim'; "
+               "the title reading before it gave title 'Mr Md', given "
+               "'Karim' (decisions/indic-honorifics)",
          shape=2),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},
@@ -15418,6 +15415,249 @@ CASES: tuple[Case, ...] = (
     Case("ma_dotted_inside_the_name_is_unchanged", "John Ma. Smith",
          {"given": "John", "middle": "Ma.", "family": "Smith"},
          notes="the shape reads only the head of the given part"),
+    # -- #1383: `md` is Muhammad written short as well as the medical
+    # degree. Its given reading carries `same_as`, which marks no clash
+    # with the credential, so only rules/H2's yielding moves: a leading
+    # `Md.` is the given name, and the credential reads as it did.
+    Case("md_dotted_opening_the_name_is_the_given_name", "Md. Rahman",
+         {"given": "Md.", "family": "Rahman"},
+         classification="fix(#1383)",
+         notes="1.4.0 through 3.0.1 read title 'Md.' and no given name"),
+    Case("md_dotted_before_two_words_is_the_given_name", "Md. Abdul Karim",
+         {"given": "Md.", "middle": "Abdul", "family": "Karim"},
+         classification="fix(#1383)",
+         notes="1.4.0 through 3.0.1 read title 'Md.', given 'Abdul'"),
+    Case("md_dotted_in_capitals_is_the_given_name", "MD. ABDUL RAHMAN",
+         {"given": "MD.", "middle": "ABDUL", "family": "RAHMAN"},
+         classification="fix(#1383)",
+         notes="Nepal's candidates write it so: 1.4.0 through 3.0.1 read "
+               "title 'MD.', given 'ABDUL'"),
+    Case("md_dotted_behind_a_title_is_the_given_name", "Dr. Md. Rahman",
+         {"title": "Dr.", "given": "Md.", "family": "Rahman"},
+         classification="fix(#1383)",
+         notes="the shape chained it into the title run: 1.4.0 through "
+               "3.0.1 read title 'Dr. Md.' with no given name"),
+    Case("md_dotted_before_a_western_name_is_the_given_name",
+         "Md. John Smith",
+         {"given": "Md.", "middle": "John", "family": "Smith"},
+         classification="fix(#1383)",
+         notes="a leading Md. is Muhammad, not the degree, which follows "
+               "a name: 1.4.0 through 3.0.1 read title 'Md.'"),
+    Case("md_dotted_alone_is_the_given_name", "Md.",
+         {"given": "Md."}, ambiguities=("suffix-or-name",),
+         classification="fix(#1383)",
+         notes="1.4.0 through 3.0.1 read title 'Md.'"),
+    Case("md_dotted_under_family_first_is_placed_by_the_order", "Md. Rahman",
+         {"given": "Rahman", "family": "Md."},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1383)",
+         notes="out of the title, the word is a name word the declared "
+               "order places"),
+    Case("md_after_a_name_stays_the_credential", "John Smith MD",
+         {"given": "John", "family": "Smith", "suffix": "MD"}),
+    Case("md_after_a_comma_stays_the_credential", "John Smith, MD",
+         {"given": "John", "family": "Smith", "suffix": "MD"}),
+    Case("md_dotted_after_a_name_stays_the_credential", "John Smith M.D.",
+         {"given": "John", "family": "Smith", "suffix": "M.D."}),
+    Case("md_title_case_after_a_name_stays_the_credential", "John Smith Md",
+         {"given": "John", "family": "Smith", "suffix": "Md"},
+         notes="a plain given reading would make the credential "
+               "ambiguous and read middle 'Smith', family 'Md' here "
+               "(#1383)"),
+    Case("md_title_case_after_a_comma_stays_the_credential",
+         "John Smith, Md",
+         {"given": "John", "family": "Smith", "suffix": "Md"}),
+    Case("md_after_the_given_part_stays_the_credential", "Smith, John MD",
+         {"given": "John", "family": "Smith", "suffix": "MD"}),
+    Case("md_after_initials_stays_the_credential", "JP Clancy, MD",
+         {"given": "JP", "family": "Clancy", "suffix": "MD"}),
+    Case("md_inside_a_malay_name_is_unchanged",
+         "Badrul Akmal Hisham Md Yusoff",
+         {"given": "Badrul", "middle": "Akmal Hisham Md", "family": "Yusoff"}),
+    Case("md_bracketed_stays_the_credential", "Smith (MD), John",
+         {"given": "John", "family": "Smith", "suffix": "MD"},
+         notes="a plain given reading would make the credential "
+               "ambiguous and read it as the nickname (#1383)"),
+    # -- #1393: a credential that is also a given name written short
+    # opens the given part after a family comma behind no whole name,
+    # written with a lower-case letter or with a name word behind it
+    # (rules/C13's given-name Except). 3dadc263 read each fix row's part
+    # as the postnominal one.
+    Case("md_alone_after_a_family_comma_is_the_given_name", "Rahman, Md",
+         {"given": "Md", "family": "Rahman"}, ambiguities=("suffix-or-name",),
+         classification="fix(#1393)"),
+    Case("md_dotted_alone_after_a_family_comma_is_the_given_name",
+         "Rahman, Md.", {"given": "Md.", "family": "Rahman"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)"),
+    Case("md_dotted_before_a_name_after_a_family_comma",
+         "Rahman, Md. Abdul",
+         {"given": "Md.", "middle": "Abdul", "family": "Rahman"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)"),
+    Case("md_in_capitals_before_a_name_after_a_family_comma",
+         "RAHMAN, MD ABDUL",
+         {"given": "MD", "middle": "ABDUL", "family": "RAHMAN"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)",
+         notes="a name word behind it: its case says nothing here"),
+    Case("md_before_initials_after_a_family_comma", "Rahman, Md A. K.",
+         {"given": "Md", "middle": "A. K.", "family": "Rahman"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)"),
+    Case("md_in_one_case_before_a_name_after_a_family_comma",
+         "rahman, md abdul",
+         {"given": "md", "middle": "abdul", "family": "rahman"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)"),
+    Case("md_behind_a_generation_before_the_comma", "Smith Jr., Md Abdul",
+         {"given": "Md", "middle": "Abdul", "family": "Smith",
+          "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)",
+         notes="a generation is no name word to the whole-name count "
+               "(rules/C3)"),
+    Case("md_before_a_single_capital_in_mixed_case_is_the_given_name",
+         "Smith, MD J", {"given": "MD", "middle": "J", "family": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#1393)",
+         notes="an initial is a name word, whatever its case"),
+    Case("md_before_an_initial_is_the_given_name", "Rahman, MD A",
+         {"given": "MD", "middle": "A", "family": "Rahman"},
+         ambiguities=("suffix-or-name",), classification="fix(#1393)"),
+    Case("md_behind_a_dual_before_a_name_reports_the_fork",
+         "Rahman, Sr Md Karim",
+         {"title": "Sr", "given": "Md", "middle": "Karim", "family": "Rahman"},
+         ambiguities=("suffix-or-name",), classification="fix(#1393)",
+         notes="read so on 3dadc263 too, a dual opening nothing (C13); "
+               "the Except reads past it as past any title and reports"),
+    Case("md_alone_behind_a_title_stays_the_credential", "Smith, Dr. Md",
+         {"title": "Dr.", "family": "Smith", "suffix": "Md"},
+         notes="boundary: alone behind a title the given part's walk "
+               "would leave the title as the only name word, so the part "
+               "stays the postnominal one, as on 3dadc263 (#1395's second "
+               "review)"),
+    Case("md_alone_behind_a_salutation_stays_the_credential", "Uddin, Mr Md",
+         {"title": "Mr", "family": "Uddin", "suffix": "Md"},
+         notes="boundary, as above"),
+    Case("md_dotted_alone_behind_a_title_stays_the_credential",
+         "Rahman, Mr. Md.", {"title": "Mr.", "family": "Rahman", "suffix": "Md."},
+         notes="boundary, as above"),
+    Case("md_alone_behind_mrs_stays_the_credential", "Rahman, Mrs Md",
+         {"title": "Mrs", "family": "Rahman", "suffix": "Md"},
+         notes="boundary, as above"),
+    Case("md_behind_a_title_before_a_credential_stays_the_credential",
+         "Uddin, Mr Md PhD", {"title": "Mr", "family": "Uddin", "suffix": "Md PhD"},
+         notes="boundary: a credential behind it is no name word"),
+    Case("md_behind_a_title_before_a_generation_stays_the_credential",
+         "Uddin, Mr Md Jr.", {"title": "Mr", "family": "Uddin", "suffix": "Md Jr."},
+         notes="boundary: a generation behind it is no name word"),
+    Case("md_alone_behind_a_dual_stays_the_credential", "Rahman, Sr Md",
+         {"family": "Rahman", "suffix": "Sr Md"},
+         notes="boundary: as behind a title, a dual reading as nothing "
+               "else there"),
+    Case("md_alone_behind_ms_stays_the_credential", "Rahman, Ms Md",
+         {"family": "Rahman", "suffix": "Ms Md"}, notes="boundary, as above"),
+    Case("md_title_case_before_a_credential_stays_the_credential",
+         "Smith, Md PhD", {"family": "Smith", "suffix": "Md PhD"},
+         notes="boundary: its own writing settles it only alone in the "
+               "part; a credential behind it is no name word"),
+    Case("md_title_case_before_a_capitals_word_stays_the_credential",
+         "Smith, Md XYZ", {"family": "Smith", "suffix": "Md XYZ"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: in mixed case a word in capitals may be a "
+               "credential, so it is no name word"),
+    Case("md_before_a_gated_title_stays_the_credential", "SMITH, MD SHEIKH",
+         {"family": "SMITH", "suffix": "MD SHEIKH"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: a word with a title reading, a title only "
+               "inside a phrase included, is no name word"),
+    Case("md_before_dean_stays_the_credential", "SMITH, MD DEAN",
+         {"family": "SMITH", "suffix": "MD DEAN"},
+         ambiguities=("suffix-or-name",), notes="boundary, as above"),
+    Case("md_dotted_in_one_case_alone_stays_the_credential", "rahman, md.",
+         {"family": "rahman", "suffix": "md."},
+         notes="boundary: a name in one case writes no case that tells"),
+    Case("md_before_a_word_holding_no_letter_stays_the_credential",
+         "RAHMAN, MD 2", {"family": "RAHMAN", "suffix": "MD 2"},
+         notes="boundary: a word with no letter is no name word"),
+    Case("md_before_a_conjunction_stays_the_credential", "Rahman, Md and Karim",
+         {"family": "Rahman", "suffix": "Md and Karim"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="boundary: a conjunction behind it is no name word, so the "
+               "part reads as on 3dadc263 (#1395's third review)"),
+    Case("md_before_a_gated_title_in_mixed_case_stays_the_credential",
+         "Rahman, Md Sheikh Karim",
+         {"family": "Rahman", "suffix": "Md Sheikh Karim"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="Accepted (rules/C13): a word with a title reading of any "
+               "kind is no name word, a title only inside a phrase "
+               "included; read as on 3dadc263; no local corpus writes the "
+               "shape (2026-11-14)"),
+    Case("md_before_dean_in_mixed_case_stays_the_credential", "Rahman, Md Dean",
+         {"family": "Rahman", "suffix": "Md Dean"},
+         ambiguities=("suffix-or-name",), notes="Accepted, as above"),
+    Case("md_before_a_name_in_capitals_in_mixed_case_stays_the_credential",
+         "Rahman, Md KARIM", {"family": "Rahman", "suffix": "Md KARIM"},
+         ambiguities=("suffix-or-name",),
+         notes="Accepted (rules/C13): in mixed case a word in capitals "
+               "may be a credential, so it is no name word; read as on "
+               "3dadc263. Under strict bn this moves from 3dadc263's "
+               "given 'Md', middle 'KARIM' (decisions/C13, 2026-11-14)"),
+    Case("md_before_abdul_in_capitals_in_mixed_case_stays_the_credential",
+         "Rahman, Md ABDUL", {"family": "Rahman", "suffix": "Md ABDUL"},
+         ambiguities=("suffix-or-name",), notes="Accepted, as above"),
+    Case("a_given_name_written_short_that_is_no_credential_reports_nothing",
+         "Smith, Wm Jones", {"given": "Wm", "middle": "Jones", "family": "Smith"},
+         notes="the Except reads a credential only; `wm` spells none, so "
+               "no suffix-or-name report"),
+    Case("md_in_capitals_alone_after_a_family_comma_is_the_credential",
+         "RAHMAN, MD", {"family": "RAHMAN", "suffix": "MD"},
+         notes="boundary: capitals alone are the degree's writing, "
+               "which 107 ClinicalTrials.gov officials write after one "
+               "word ('Novak, MD'), so Muhammad written so is left "
+               "(decisions/indic-honorifics, 2026-11-14)"),
+    Case("md_in_one_case_alone_after_a_family_comma_is_the_credential",
+         "rahman, md", {"family": "rahman", "suffix": "md"},
+         notes="boundary: a name in one case writes no lower-case "
+               "letter that tells"),
+    Case("md_before_a_credential_after_a_family_comma_is_the_credential",
+         "Smith, MD PhD", {"family": "Smith", "suffix": "MD PhD"},
+         notes="boundary: a credential behind it is no name word"),
+    Case("md_before_a_split_credential_is_the_credential",
+         "Smith, MD Ph. D.", {"family": "Smith", "suffix": "MD Ph. D."},
+         notes="boundary: half of a split credential is no name word "
+               "(rules/S12)"),
+    Case("md_before_a_capitals_word_in_mixed_case_is_the_credential",
+         "Smith, MD XYZ", {"family": "Smith", "suffix": "MD XYZ"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: a word in capitals in a name of mixed case "
+               "may be a credential, so it is no name word"),
+    Case("md_before_an_ambiguous_credential_is_the_credential",
+         "SMITH, MD MBA, JANE",
+         {"family": "SMITH", "suffix": "MD MBA, JANE"},
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="boundary: a credential that may be a name ('MBA') is no "
+               "name word behind it; FEC writes the degrees between the "
+               "surname and the given name this way"),
+    Case("md_in_capitals_before_a_western_given_name_reads_as_given",
+         "SMITH, MD JANE",
+         {"given": "MD", "middle": "JANE", "family": "SMITH"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1393)",
+         notes="Accepted: the degree written before the given name "
+               "reads as Muhammad written short, the writing being the "
+               "same; 1 of the 9 FEC names of this shape "
+               "(decisions/indic-honorifics, 2026-11-14)"),
+    Case("md_behind_a_titled_surname_is_the_credential", "Dr. Rahman, Md",
+         {"title": "Dr.", "family": "Rahman", "suffix": "Md"},
+         notes="boundary: a title is a word to the whole-name count "
+               "(rules/C3), so the part is the postnominal one"),
+    Case("md_behind_a_two_word_surname_is_the_credential",
+         "Rahman Khan, Md Abdul",
+         {"given": "Rahman", "family": "Khan", "suffix": "Md Abdul"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: two words before the comma are a whole name, "
+               "and C13's run stands, as for 'John Smith, PhD Jones'"),
     Case("wm_dotted_trailing_is_a_name_word", "John Smith Wm.",
          {"given": "John", "middle": "Smith", "family": "Wm."},
          notes="H5 read a listed `wm` as a title here from 2.3.0 "

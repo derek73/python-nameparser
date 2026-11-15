@@ -1,3 +1,4 @@
+import ast
 import copy
 import dataclasses
 import pickle
@@ -784,7 +785,7 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "reading must be 'after'"),
     (lambda: Lexicon.empty().add("x y", kind="salutation", addresses="given", attached="before"), ValueError, "marks a one-word title"),
-    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the word this one is a spelling of"),
+    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), ValueError, "same_as must name the word this one is a spelling of"),
     # the build's check 8: a phrase matches only as a marker or a run of
     # titles addressing the given name
     (lambda: Lexicon.empty().add("chief justice", kind="title"), ValueError, "a phrase, which can never match as a title"),
@@ -1973,3 +1974,87 @@ def test_same_as_does_not_move_which_set_a_word_compiles_into() -> None:
     assert "wm" in lex._sets.given_name_abbreviations
     assert "capt" not in lex._sets.given_name_abbreviations
     assert "junior" not in lex._sets.given_name_abbreviations
+
+
+# -- a same_as list (#1383) ----------------------------------------------------
+
+def test_a_same_as_list_reaches_every_word_it_names() -> None:
+    lexicon = Lexicon.default().add("zed", kind="given",
+                                    same_as=["zebedee", "zachary"])
+    assert lexicon._headwords("zed", "given") == {"zed", "zachary", "zebedee"}
+    assert "zed" in lexicon._sets.given_name_abbreviations
+    reading, = (r for r in lexicon.readings_of("zed") if r.kind == "given")
+    assert dict(reading.properties)["same_as"] == ("zachary", "zebedee")
+
+
+def test_a_same_as_list_of_one_is_the_text() -> None:
+    # one word kept as its text, so an edit written before lists were
+    # taken is the same edit, equal and pickled alike
+    one = Lexicon.default().add("zed", kind="given", same_as=["zachary"])
+    text = Lexicon.default().add("zed", kind="given", same_as="zachary")
+    assert one == text
+    assert pickle.dumps(one) == pickle.dumps(text)
+    twice = Lexicon.default().add("zed", kind="given",
+                                  same_as=["zachary", "zachary"])
+    assert twice == text
+
+
+@pytest.mark.parametrize("same_as", ["zachary", ["zachary", "zebedee"]])
+def test_a_same_as_edit_round_trips_through_pickle(same_as: object) -> None:
+    lexicon = Lexicon.default().add("zed", kind="given", same_as=same_as)
+    loaded = pickle.loads(pickle.dumps(lexicon))
+    assert loaded == lexicon
+    assert loaded._headwords("zed", "given") == lexicon._headwords(
+        "zed", "given")
+
+
+def test_an_agnomen_beside_a_given_name_written_short_alone_is_refused() -> None:
+    # check 11's agnomen clause: a given name written short gates nothing
+    # (`marks_a_clash`, #1383's review), so it cannot be the name reading
+    # an agnomen needs; a plain given reading can
+    with pytest.raises(ValueError, match="no name reading that gates it"):
+        Lexicon.empty().add("zork", kind="given", same_as="zorkas").add(
+            "zork", kind="agnomen")
+    Lexicon.empty().add("zork", kind="given").add("zork", kind="agnomen")
+
+
+#: A `same_as` of the wrong type, or holding an entry of the wrong type,
+#: raises TypeError; a list or text of the right type that names no word
+#: raises ValueError (the taxonomy in AGENTS.md, the review of #1383)
+_SAME_AS_REFUSED: tuple[tuple[object, type[Exception], str], ...] = (
+    (b"zachary", TypeError, "a string, or a list of them, got b'zachary'"),
+    ({"zachary": 1}, TypeError, "a string, or a list of them"),
+    (3, TypeError, "a string, or a list of them, got 3"),
+    (["zachary", 1], TypeError, "entries must be strings, got 1 in"),
+    ([None], TypeError, "entries must be strings, got None in"),
+    ([], ValueError, "must name at least one word"),
+    ([""], ValueError, "must name at least one word"),
+    (["zachary", " "], ValueError, "must name at least one word"),
+    ("", ValueError, "must name the word this one is a spelling of"),
+    ("  ", ValueError, "must name the word this one is a spelling of"),
+)
+
+
+@pytest.mark.parametrize("same_as, error, message", _SAME_AS_REFUSED)
+def test_a_same_as_that_is_no_word_or_list_of_words_is_refused(
+        same_as: object, error: type[Exception], message: str) -> None:
+    with pytest.raises(error, match=re.escape(message)) as raised:
+        Lexicon.default().add("zed", kind="given", same_as=same_as)
+    # every message offers the call that works, and that call runs
+    offered = str(raised.value).split("write e.g. ", 1)[1]
+    for spelling in offered.split(" or "):
+        value = ast.literal_eval(spelling.split("=", 1)[1])
+        assert Lexicon.default().add("zed", kind="given", same_as=value)
+
+
+def test_words_finds_a_spelling_of_several_by_any_word_it_names() -> None:
+    # `same_as` asks whether a reading is a spelling of the words given,
+    # not whether it names exactly them (the review of #1383)
+    lexicon = Lexicon.default()
+    assert {"md", "mohd", "moh"} <= set(
+        lexicon.words(kind="given", same_as="muhammad"))
+    assert set(lexicon.words(kind="given",
+                             same_as=["muhammad", "mohamad"])) >= {"mohd", "moh"}
+    assert "md" not in lexicon.words(kind="given",
+                                     same_as=["muhammad", "mohamad"])
+    assert lexicon.words(kind="given", same_as="charles") == ("chas",)

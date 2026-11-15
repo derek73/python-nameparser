@@ -533,9 +533,9 @@ it:
    * - ``SUFFIX_WORDS``
      - ``d.words(kind="suffix", acronym=False)``
    * - ``SUFFIX_ACRONYMS_AMBIGUOUS``
-     - ``[w for w in d.words(kind="suffix", acronym=True) if any(r.category == "name" for r in d.readings_of(w))]``
+     - ``[w for w in d.words(kind="suffix", acronym=True) if any(r.category == "name" and not (r.kind == "given" and "same_as" in dict(r.properties)) for r in d.readings_of(w))]``
    * - ``SUFFIX_WORDS_AMBIGUOUS``
-     - ``[w for w in d.words(kind="suffix", acronym=False) if any(r.category == "name" for r in d.readings_of(w))]``
+     - ``[w for w in d.words(kind="suffix", acronym=False) if any(r.category == "name" and not (r.kind == "given" and "same_as" in dict(r.properties)) for r in d.readings_of(w))]``
    * - ``AGNOMENS``
      - ``d.words(kind="agnomen")``
    * - ``GLUED_HONORIFICS``
@@ -1322,6 +1322,32 @@ of Congress ``Iu.``) are unchanged:
     ('', 'Yu.', 'A.')
     >>> parse("Ts. Sandag-Ochir").title
     'Ts.'
+
+``Md.`` opening a name, Muhammad written short in Bangladesh and India,
+is the given name, where 1.4 through 3.0 read it as a title; ``MD``
+after a name is still the medical degree:
+
+.. doctest::
+
+    >>> short = parse("Md. Abdul Karim")
+    >>> short.title, short.given, short.middle
+    ('', 'Md.', 'Abdul')
+    >>> parse("John Smith, MD").suffix
+    'MD'
+
+After a family comma ``Md`` opening the given part is the given name
+too, where 1.4 through 2.5 read it as a title and 2.6 through 3.0 read
+the part as credentials; ``MD`` in
+capitals alone there is still the degree. To keep the 3.0 readings,
+remove ``md``'s given reading (:ref:`customize-md-title`):
+
+.. doctest::
+
+    >>> karim = parse("Uddin, Md Karim")
+    >>> karim.given, karim.middle, karim.suffix
+    ('Md', 'Karim', '')
+    >>> parse("UDDIN, MD").suffix
+    'MD'
 
 ``El``, ``Ait``, ``Aït``, ``Nait``, ``Ould`` and ``Ouled`` start the
 family name they open, where 1.4 through 3.0 left them in the middle

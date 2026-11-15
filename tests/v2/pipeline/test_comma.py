@@ -656,3 +656,37 @@ def test_a_listed_run_read_as_initials_matches_the_name_written_out() -> None:
     check = Parser().matching().check
     assert check("Jansen, J.P.", "Jan Pieter Jansen").consistent
     assert check("Jansen, J.P.", "J. P. Jansen").consistent
+
+
+def test_a_part_of_titles_alone_opens_no_given_part_by_the_written_short_except() -> None:
+    # rules/C13's given-name Except (#1393) asks the first word behind the
+    # part's titles; where every word is a title, none is asked, and the
+    # title reading stands. No shipped word reaches it: a title with a
+    # given reading is a title only inside a phrase, save one that is a
+    # particle too, as a caller's word here is
+    lexicon = (Lexicon.default().add("zork", kind="salutation")
+               .add("zork", kind="article")
+               .add("zork", kind="given", same_as="zorkas"))
+    assert "zork" in lexicon._sets.titles
+    assert "zork" in lexicon._sets.given_name_abbreviations
+    parser = Parser(lexicon=lexicon)
+    for text, title in (("Smith, Zork", "Zork"), ("Smith, Dr. Zork", "Dr. Zork")):
+        got = parser.parse(text)
+        assert (got.title, got.given, got.family) == (title, "", "Smith"), text
+
+
+def test_the_written_short_except_reads_past_a_credentials_own_case_mask() -> None:
+    # rules/C13's given-name Except reads a lower-case letter as a name's
+    # writing only where the credential's case mask does not write it
+    # (#1395's second review): a caller's `phd` written short for Philip
+    # stays the credential written `PhD`, and reads as the name `Phd`
+    parser = Parser(lexicon=Lexicon.default().add(
+        "phd", kind="given", same_as="philip"))
+    got = parser.parse("Smith, PhD")
+    assert (got.given, got.suffix) == ("", "PhD")
+    got = parser.parse("Smith, Phd")
+    assert (got.given, got.suffix) == ("Phd", "")
+    # in capitals it writes no lower-case letter, the alone arm's first
+    # condition, whatever the mask (#1395's third review)
+    got = parser.parse("Smith, PHD")
+    assert (got.given, got.suffix) == ("", "PHD")

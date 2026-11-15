@@ -54,6 +54,15 @@
   "Ch. Tahir Mehmood"         →  title="Ch."  · boundary
   ```
 
+- **A given name written short that is also a credential**, after a family comma, is read by C13's given-name Except rather than as the given name it also is: the given name where that Except reads it so, the credential elsewhere (#1393).
+  ```
+  "Rahman, Md."               →  given="Md."
+  "RAHMAN, MD. ABDUL"         →  given="MD."
+  "RAHMAN, MD."               →  suffix="MD."  · boundary
+  "Dr. Rahman, Md."           →  suffix="Md."  · boundary
+  "rahman, md."               →  suffix="md."  · boundary
+  ```
+
 **Precedence:**
 
 - **A credential opening the part after a family comma** ("Smith, Esq. John"): C13 wins, and the part is postnominal: a suffix word that starts S8's run makes the part its postnominals however it goes on. The shape still reads as a title there an abbreviation that starts no such run — an unlisted one, or a listed suffix word C13 does not open with, such as a word of the ambiguous class.

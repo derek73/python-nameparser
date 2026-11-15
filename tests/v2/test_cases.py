@@ -464,10 +464,21 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1891 -> 1897 the same day, #1222's two Georgian rows ('ჯეკ MA',
     # 'ჯეკ, MA') reporting suffix-or-name under three orders; 1897 ->
     # 1896 the same day, #1256's Thai row ('สมชาย พ.ต.ส.') dropping its
-    # order report.
-    assert claims == 1896, (
-        f"the field sweep checks {claims} claims, recorded as 1896 on "
-        f"2026-11-12")
+    # order report; 1896 -> 1899 on 2026-11-13, #1383's 'Md.' row
+    # reporting suffix-or-name under three orders; 1899 -> 1902 on
+    # 2026-11-14, #1393: the two 'Uddin, Md Karim' rows stop reporting
+    # and three boundary rows report ('Smith, MD XYZ', 'Rahman Khan, Md
+    # Abdul', 'SMITH, MD MBA, JANE'), each under three orders; 1902 ->
+    # 1950 the same day, #1395's second review: the Except reports its
+    # fork (the ten `fix(#1393)` rows), and six of its new rows report
+    # ('Smith, MD J', 'Rahman, MD A', 'Rahman, Sr Md Karim', 'Smith, Md
+    # XYZ', 'SMITH, MD SHEIKH', 'SMITH, MD DEAN'), each under three orders;
+    # 1950 -> 1971 the same day, #1395's third review's five rows ('Md and
+    # Karim' and 'Md Sheikh Karim' two reports each, 'Md Dean', 'Md
+    # KARIM' and 'Md ABDUL' one) under three orders.
+    assert claims == 1971, (
+        f"the field sweep checks {claims} claims, recorded as 1971 on "
+        f"2026-11-14")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -523,6 +534,24 @@ _STAND_IN_REREADS = {
     # a name word in VI's place gives the 'y' a word to link, so P3's
     # join takes it with 'Smith' (#1098)
     ("John Smith y VI", 1),
+    # a name word in Pharm's place makes the 'MD' opening the part the
+    # given name written short (rules/C13's given-name Except, #1393)
+    ("Smith, MD Pharm D", None), ("Smith, MD Pharm D", 1),
+    ("Smith, MD Pharm D", 2),
+    ("SMITH, MD MBA, JANE", None), ("SMITH, MD MBA, JANE", 1),
+    ("SMITH, MD MBA, JANE", 2),
+    # likewise a plain word in place of a gated title (#1395's second
+    # review: a title reading of any kind is no name word there)
+    ("SMITH, MD DEAN", None), ("SMITH, MD DEAN", 1), ("SMITH, MD DEAN", 2),
+    ("SMITH, MD SHEIKH", None), ("SMITH, MD SHEIKH", 1),
+    ("SMITH, MD SHEIKH", 2),
+    # and in place of a conjunction or a gated title behind a mixed-case
+    # `Md` (#1395's third review)
+    ("Rahman, Md and Karim", None), ("Rahman, Md and Karim", 1),
+    ("Rahman, Md and Karim", 2),
+    ("Rahman, Md Sheikh Karim", None), ("Rahman, Md Sheikh Karim", 1),
+    ("Rahman, Md Sheikh Karim", 2),
+    ("Rahman, Md Dean", None), ("Rahman, Md Dean", 1), ("Rahman, Md Dean", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -890,8 +919,14 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 582 and 360 -> 363, its second review's three head rows; 582 ->
     # 594 and 363 -> 366, its third review's rows; #1254's order
     # reports on 22 rows carry no alternative (rules/A1), so neither
-    # count moves with them
-    assert (checked, skipped) == (594, 366), (checked, skipped)
+    # count moves with them; 366 -> 363 on 2026-11-14, #1393's 'Smith,
+    # MD Pharm D' joining `_STAND_IN_REREADS` under the three orders,
+    # where its stand-in had landed in the taken field; 363 -> 366 the
+    # same day, #1395's second review's 'Smith, Md XYZ' under the three
+    # orders, whose stand-in keeps the taken field; 366 -> 372 the same
+    # day, #1395's third review's 'Rahman, Md KARIM' and 'Rahman, Md
+    # ABDUL' under the three orders, likewise
+    assert (checked, skipped) == (594, 372), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
