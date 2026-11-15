@@ -323,8 +323,11 @@ class Parser:
         or three letters ending a name in mixed case (``Armitage JO``),
         or opening it with no capitals word after it (``AM Hoy``, ``NG
         Emily``), casts no capitals vote, being joined initials as
-        often as a short surname; the ending one is not looked up as a
-        surname, and a name opening in one casts no surname vote.
+        often as a short surname. The ending one casts no surname
+        vote of its own, and where it is itself a listed surname
+        (``Zhou NG``) the name casts none: its first word is usually
+        the given name there, and the table cannot tell the two
+        readings apart. A name opening in one casts no surname vote.
         ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
@@ -371,11 +374,11 @@ class Parser:
         Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12 and
         2026-11-14, with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's 2026-11-14 #1355
+        groups a size (decisions/group-suggestion's 2026-11-14 #1397
         entry holds the table): a group written in this parser's own
         order kept
         it in at least 98% of groups at every size from 2 to 200 names,
-        under either base order, save three lists. ORCID holders who
+        under either base order, save two lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
         capitals signal reads as a family name, kept their given-first
         order in 49% of groups of two and 3% of five (why, in that
@@ -384,9 +387,7 @@ class Parser:
         (``AM Hoy``) kept it in at least 98% of groups up to 20 names,
         93% of 50 and 92% of 200, the name tables voting on a few of
         its names; ORCID's bylines of every writing kept it in at
-        least 98%. And a list of nothing but short surnames in
-        capitals written last (``Zhi LI``) kept it in 79% of groups of
-        ten, the given name alone being looked up as a surname.
+        least 98%.
         Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames

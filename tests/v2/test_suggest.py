@@ -82,7 +82,7 @@ def test_a_name_casts_no_such_vote(text: str, signal: Signal) -> None:
 
 # a final all-capitals word of two or three letters in a mixed-case name
 # is joined initials (`Armitage JO`) or a short surname (`Jason NG`):
-# it casts no capitals vote and is not looked up as a surname
+# it casts no capitals vote, and never a surname vote of its own
 @pytest.mark.parametrize("text", [
     "Armitage JO", "Smith JP", "Jones AB", "Jason NG", "Lee SH",
     "DUPONT Jean AB"])
@@ -90,10 +90,67 @@ def test_a_final_short_capitals_word_casts_no_capitals_vote(text: str) -> None:
     assert Signal.CAPITALS not in name_votes(text, L)
 
 
-@pytest.mark.parametrize("text", ["Armitage JO", "Smith JP", "Jason NG"])
-def test_a_final_short_capitals_word_is_not_looked_up_as_a_surname(
+@pytest.mark.parametrize("text", [
+    "Armitage JO", "Smith JP", "Jason NG",
+    # `JO` and `NG` are listed surnames, the name's first word is not
+    "Marsh JO", "Hollis NG", "Marsh Hollis NG"])
+def test_a_final_short_capitals_word_never_votes_as_a_surname_alone(
         text: str) -> None:
     assert Signal.SURNAME not in name_votes(text, L)
+
+
+# it is looked up all the same, to veto: where it is a listed surname
+# the word in front is the given name as often as the family (`Zhou
+# NG`, `Zhou` listed too), and the name casts no surname vote (#1397)
+@pytest.mark.parametrize("text", [
+    "Zhou NG",           # two letters
+    "Yoon LI",
+    "Zhou TAN",          # three
+    "Zhou NG.",          # a final full stop read past
+    "Yoon Zhou LI",      # three words
+    "Yoon Marsh NG",     # the first word listed, the one between not
+    "Zhou LÍ",           # listed under the tables' spelling fold
+    "Zhi WANG NG",       # a capitals word before it
+    "Zhou NG, PhD",      # post-nominals after a comma
+    "Zhou NG PhD",
+    "Dr Zhou NG",        # a title read past
+])
+def test_a_listed_surname_ending_in_short_capitals_silences_the_surname_vote(
+        text: str) -> None:
+    assert Signal.SURNAME not in name_votes(text, L)
+
+
+@pytest.mark.parametrize(("text", "votes"), [
+    # the ending word no listed surname: the word in front votes, as
+    # before (a byline written family first, its initials joined)
+    ("Zhou QZ", {Signal.SURNAME: FAMILY_FIRST}),
+    ("Kim QZX", {Signal.SURNAME: FAMILY_FIRST}),
+    ("Zhou Yoon QZ", {Signal.SURNAME: FAMILY_FIRST}),
+    ("Yoon HOLLIS QZ", {Signal.SURNAME: FAMILY_FIRST}),
+    ("Zhou QZ, PhD", {Signal.SURNAME: FAMILY_FIRST}),
+    # a joiner in the ending word: its fold is no listed surname
+    ("Zhou LI-", {Signal.SURNAME: FAMILY_FIRST}),
+    # neither end listed
+    ("Marsh QZ", {}),
+    # four letters: a capitals word, and both ends looked up as ever
+    ("Zhou PARK", {Signal.CAPITALS: GIVEN_FIRST}),
+    # not capitals, or the whole name in one case: both ends looked up
+    ("Zhou Ng", {}),
+    ("ZHOU NG", {}),
+    # a family comma states its own order
+    ("NG, Zhou", {}),
+    # the given-name signal reads the word in front as before
+    ("Emily NG", {Signal.GIVEN_NAME: GIVEN_FIRST}),
+    ("Emily QZ", {Signal.GIVEN_NAME: GIVEN_FIRST}),
+    # a short capitals word at both ends: the opening word's rule
+    # (#1355) silences the surname signal whatever ends the name
+    ("NG Zhou JO", {}),
+    ("QZ Zhou NG", {}),
+    ("AM Hoy JO", {}),
+])
+def test_what_votes_beside_a_final_short_capitals_word(
+        text: str, votes: dict[Signal, object]) -> None:
+    assert dict(name_votes(text, L)) == votes
 
 
 @pytest.mark.parametrize(("text", "signal"), [
@@ -207,6 +264,41 @@ def test_a_list_opening_in_short_capitals_words_keeps_its_base(
     assert s.patch.name_order is UNSET
     assert s.parser.policy.name_order == policy.name_order
     assert s.disagreeing() == ()
+
+
+@pytest.mark.parametrize("policy", _BASES)
+@pytest.mark.parametrize("group", [
+    # short surnames in capitals written last, each given name a listed
+    # surname too (#1397)
+    ["Yoon LI", "Zhou NG", "Yoon WU", "Zhou TAN", "Yoon MA", "Zhou HU"],
+    # the ending words listed surnames, the words in front not
+    ["Marsh JO", "Hollis NG", "Perrin MA", "Okafor LI", "Larsen NG",
+     "Huntley WU"],
+])
+def test_a_list_ending_in_listed_short_capitals_words_keeps_its_base(
+        policy: Policy, group: list[str]) -> None:
+    s = Parser(policy=policy).suggest(group)
+    order = s.evidence[0]
+    assert order.setting == "name_order"
+    assert not order.decided
+    assert order.by_signal == ()
+    assert s.patch.name_order is UNSET
+    assert s.parser.policy.name_order == policy.name_order
+
+
+@pytest.mark.parametrize("policy", _BASES)
+def test_bylines_ending_in_joined_initials_still_vote_by_their_surname(
+        policy: Policy) -> None:
+    # the family name first, a listed surname; the initials spell none,
+    # save the last name's, which casts no vote
+    s = Parser(policy=policy).suggest(
+        ["Kim QZ", "Yoon QX", "Zhou QK", "Zhou NG"])
+    order = s.evidence[0]
+    assert order.decided
+    assert s.parser.policy.name_order[0] is Role.FAMILY
+    assert (order.votes_for, order.votes_against, order.no_evidence) == (
+        3, 0, 1)
+    assert order.by_signal == ((Signal.SURNAME, FAMILY_FIRST, 3),)
 
 
 @pytest.mark.parametrize("policy", _BASES)
