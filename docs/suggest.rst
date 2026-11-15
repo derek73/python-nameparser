@@ -42,16 +42,18 @@ initial alone was set aside counting among them (the patronymic
 evidence's note says how many), and a patronymic
 votes only where the rule can read it (three name words for East
 Slavic, three or four for Turkic). A group decided East Slavic gets
-the rule, and under a given-first base reads given-first, the order
-that rule reorders each name under, unless its names' own votes decide
-a family-first order, which the rule never overrides. The rule never
-moves a base that reads names family first. Under ``FAMILY_FIRST`` the
-group keeps that order and still gets the rule, which reorders no name
-there and fills the ``patronymic`` view (``Sidorov Ivan Petrovich``).
-Under ``FAMILY_FIRST_GIVEN_LAST``, where the rule names no patronymic
-in a name written family, given, patronymic, both settings keep your
-parser's values. Under either, the names' own given-first votes move the order
-as any votes do, and the rule then comes with it. Every setting the
+the rule and reads given-first, the order that rule reorders each name
+under, unless its names' own votes decide a family-first order, which
+the rule never overrides. One case keeps a declared order instead:
+under a ``FAMILY_FIRST`` parser whose names' votes do not decide
+given-first, where more of the names carrying the patronymic write it
+last (``Sidorov Ivan Petrovich``) than in the middle (``Ivan Petrovich
+Sidorov``), the group keeps that order and gets the rule alone, which
+reorders no name there and fills the ``patronymic`` view; the names
+written the other way stay as your parser reads them, and the
+patronymic evidence's note counts them. A tie, and a
+``FAMILY_FIRST_GIVEN_LAST`` parser, get the given-first order with the
+rule. Every setting the
 votes do not decide keeps the base parser's value.
 
 .. doctest::

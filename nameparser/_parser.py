@@ -338,19 +338,19 @@ class Parser:
         a name whose only vote was a set-aside trailing initial counts
         among the names that cast one, and the patronymic evidence's
         note says how many.
-        A group decided East Slavic gets the rule, and under a
-        given-first base reads given-first, the order the rule reorders
-        each name under, unless its names' own votes decide
-        family-first, which the rule never overrides. The rule never
-        moves a base that reads names family first. Under
-        ``FAMILY_FIRST`` the group keeps that order and still gets the
-        rule, which reorders no name there and fills the ``patronymic``
-        view (``Sidorov Ivan Petrovich``). Under
-        ``FAMILY_FIRST_GIVEN_LAST``, where the rule names no patronymic
-        in a name written family, given, patronymic, both settings keep
-        this parser's values. Under either, the names' own given-first votes
-        move the order as any votes do, and the rule then comes with
-        it. A Turkic group
+        A group decided East Slavic gets the rule and reads
+        given-first, the order the rule reorders each name under,
+        unless its names' own votes decide family-first, which the rule
+        never overrides. One case keeps a declared order instead: under
+        a ``FAMILY_FIRST`` parser whose names' votes do not decide
+        given-first, where more of the names carrying the patronymic
+        write it last (``Sidorov Ivan Petrovich``) than in the middle
+        (``Ivan Petrovich Sidorov``), the group keeps that order and
+        gets the rule alone, which reorders no name there and fills the
+        ``patronymic`` view; the names written the other way stay as
+        this parser reads them, and the patronymic evidence's note
+        counts them. A tie, and a ``FAMILY_FIRST_GIVEN_LAST`` parser,
+        get the given-first order with the rule. A Turkic group
         gets the rule alone, its order decided by its names' own votes.
         ``initials_as_family`` (rules/O8) is turned on where one run of
         letters ends at least two names and at least half of the names
@@ -383,7 +383,7 @@ class Parser:
         Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12 and
         2026-11-14, with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's 2026-11-14 #1356
+        groups a size (decisions/group-suggestion's 2026-11-15 #1356
         entry holds the table): a group written in this parser's own
         order kept
         it in at least 98% of groups at every size from 2 to 200 names,

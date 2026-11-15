@@ -139,8 +139,23 @@ def test_the_parliament_tables_are_printed(
     assert turkic.split()[3] == "6/6"
     assert re.search(r"^ua_rada\s+Cyrillic base FF n=5 .*rules east-slavic\s+rule$",
                      out, re.M)
+    # each list is read under the given-last order too (#1356)
+    assert re.search(r"^ua_rada\s+Cyrillic base FFGL n=5 ", out, re.M)
     # an alias row is not a name row
     assert "ua_rada                  Latin" not in out
+
+
+def test_the_patronymic_population_keeps_a_given_name_and_a_patronymic(
+        ) -> None:
+    """The names an East Slavic group is made of (#1356): a given box
+    of a given name and a patronymic, a family box of one word."""
+    pool = [("Zzyvan Petrovich", "Qqsidorov"), ("Qqolek", "Zzlebedin"),
+            ("Xxpavel Ivanovich Jr", "Xxmorozan"),
+            ("Petrovich Zzyvan", "Vvnovikar"),
+            ("Vvilya Andreevna", "Kkzaitsun Jjvolkar"),
+            ("Kkanton Olegovna", "Wworlovin")]
+    assert tool.patronymic_names(pool) == [
+        ("Zzyvan Petrovich", "Qqsidorov"), ("Kkanton Olegovna", "Wworlovin")]
 
 
 @needs_checkout
