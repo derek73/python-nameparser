@@ -26,13 +26,17 @@ before the surname), Czech candidates (cz-candidates, `jmeno` and
 given name, as Vietnamese writes them) and ORCID credit names written as
 a byline (orcid-researchers, `orcid-byline`: `Huntley R P`, the given
 name its initials, the family name the box it matches; written
-family-first it is the byline itself), and ORCID holders who typed one
+family-first it is the byline itself; `orcid-byline-joined` the ones
+whose given part is one word of two or three bare capitals, `AM Hoy`,
+the shape #1355 is about), and ORCID holders who typed one
 box wholly in capitals and the other with none, in a name holding a
 lowercase letter (rules/O9, #659): `orcid-famcaps` the family box
 (`Jean DUPONT`, the convention `capitals_as_family` reads),
 `orcid-famcaps-ea` the same from CN, KR, VN and TW, where many surnames
-are two or three letters, and `orcid-givcaps` the given box (`ANNA
-Smith`, the convention's other writing). A population keeps at most
+are two or three letters, `orcid-famcaps-short` the ones whose family
+box is one word of two or three letters (`Zhi LI`, a list with no
+longer surname in capitals beside it), and `orcid-givcaps` the given
+box (`ANNA Smith`, the convention's other writing). A population keeps at most
 POOL_CAP names, drawn by a seeded reservoir. A source not fetched is
 left out with a note, as is one present that yields no names and each
 population a present source yields none of; one present but unreadable
@@ -48,9 +52,13 @@ was written with; a given-first group under the given-first base is right
 where the suggester kept or confirmed the base, and wrong only where it
 moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
-same-order rows, which must not fall below 95%, save orcid-byline's
-given-first row and orcid-givcaps' two, which the capitals signal reads
-the wrong way round at the base too. Under each population,
+same-order rows, which must not fall below 95%, save orcid-givcaps'
+two, which the capitals signal reads the wrong way round by design,
+orcid-byline-joined's given-first row at 50 and 200 names, where the
+few names the name tables still vote on decide a large group (93% and
+92%), and orcid-famcaps-short's given-first row, whose given names are
+looked up as surnames while the short surname ending the name is not
+(decisions/group-suggestion, 2026-11-14 #1355). Under each population,
 the groups that decided the East Slavic rule and the groups that decided
 `initials_as_family` (rules/O8), each over every group of both written
 orders and both bases; `--base` lists a population whose counts moved.
@@ -332,6 +340,11 @@ def _vi(keep: _Reservoir) -> None:
 _BYLINE_INITIAL = re.compile(r"^(?:[^\W\d_]\.?|(?:[^\W\d_]\.)+[^\W\d_]?\.?|[A-Z]{2,3})$")
 
 
+#: A byline's initials written as one word of two or three bare
+#: capitals (`AM`), the third shape _BYLINE_INITIAL admits.
+_JOINED_INITIALS = re.compile(r"^[A-Z]{2,3}$")
+
+
 def _orcid(keep: _Reservoir) -> None:
     """The ORCID populations: the bylines, and the boxes typed one
     wholly in capitals (`_orcid_capitals`)."""
@@ -357,6 +370,8 @@ def _orcid_capitals(keep: _Reservoir, r: dict[str, Any],
     pair = (" ".join(given), " ".join(family))
     if all(in_family) and not any(in_given):
         keep.add("orcid-famcaps", *pair)
+        if len(family) == 1 and 2 <= sum(map(str.isalpha, family[0])) <= 3:
+            keep.add("orcid-famcaps-short", *pair)
         if r.get("country") in EAST_ASIAN_COUNTRIES:
             keep.add("orcid-famcaps-ea", *pair)
     elif all(in_given) and not any(in_family):
@@ -382,6 +397,8 @@ def _orcid_byline(keep: _Reservoir, r: dict[str, Any]) -> None:
     if words[1][0].casefold() != given.strip()[:1].casefold():
         return
     keep.add("orcid-byline", " ".join(words[1:]), words[0])
+    if len(words) == 2 and _JOINED_INITIALS.match(words[1]):
+        keep.add("orcid-byline-joined", words[1], words[0])
 
 
 SOURCES = (("patentsview-inventors", _patentsview),
@@ -393,8 +410,9 @@ SOURCES = (("patentsview-inventors", _patentsview),
 WANTED = {"patentsview-inventors": tuple(f"pv-{c}" for c in PV_COUNTRIES),
           "psc-individuals": tuple(f"psc-{n}" for n in PSC_NATIONALITIES),
           "cz-candidates": ("cz",), "uit-vinames": ("vi",),
-          "orcid-researchers": ("orcid-byline", "orcid-famcaps",
-                                "orcid-famcaps-ea", "orcid-givcaps")}
+          "orcid-researchers": ("orcid-byline", "orcid-byline-joined",
+                                "orcid-famcaps", "orcid-famcaps-ea",
+                                "orcid-famcaps-short", "orcid-givcaps")}
 
 
 def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:

@@ -82,8 +82,7 @@ def test_a_name_casts_no_such_vote(text: str, signal: Signal) -> None:
 
 # a final all-capitals word of two or three letters in a mixed-case name
 # is joined initials (`Armitage JO`) or a short surname (`Jason NG`):
-# it casts no capitals vote and is not looked up as a surname; a
-# leading one still votes
+# it casts no capitals vote and is not looked up as a surname
 @pytest.mark.parametrize("text", [
     "Armitage JO", "Smith JP", "Jones AB", "Jason NG", "Lee SH",
     "DUPONT Jean AB"])
@@ -98,14 +97,115 @@ def test_a_final_short_capitals_word_is_not_looked_up_as_a_surname(
 
 
 @pytest.mark.parametrize(("text", "signal"), [
-    ("NG Jason", Signal.CAPITALS), ("KIM Jason", Signal.CAPITALS),
-    ("NG Jason", Signal.SURNAME), ("Lee SH", Signal.SURNAME),
-    ("Mehmet DEMİR", Signal.CAPITALS)])
-def test_a_leading_or_longer_capitals_word_still_votes(
+    ("Lee SH", Signal.SURNAME), ("Mehmet DEMİR", Signal.CAPITALS)])
+def test_the_word_in_front_or_a_longer_capitals_word_still_votes(
         text: str, signal: Signal) -> None:
     votes = name_votes(text, L)
     expected = GIVEN_FIRST if text == "Mehmet DEMİR" else FAMILY_FIRST
     assert votes[signal] == expected
+
+
+# the same word OPENING a mixed-case name is joined initials as often
+# (`AM Hoy`, a byline written initials first) as a short surname (`NG
+# Jason`): it casts no capitals vote, and the name no surname vote
+# (#1355)
+_OPENING_SHORT = [
+    "AM Hoy",          # two letters
+    "JKL Larsen",      # three
+    "MA Hoy",          # initials that spell a listed surname
+    "NG Jason",        # a short surname, the same shape
+    "KIM Jason",
+    "TAN Wei",
+    "ИП Иванов",       # cased evidence in any script
+    "Dr AM Hoy",       # a title read past
+    "AM de Hoy",       # the word after it a particle
+    "AM hoy",
+]
+
+
+@pytest.mark.parametrize("text", _OPENING_SHORT)
+def test_an_opening_short_capitals_word_casts_no_capitals_vote(
+        text: str) -> None:
+    assert Signal.CAPITALS not in name_votes(text, L)
+
+
+@pytest.mark.parametrize("text", [
+    "MA Hoy", "MI Larsen", "NG Jason", "KIM Jason",
+    # the word at the other end is not looked up alone either: `Yoon`
+    # and `Zhi` are listed surnames
+    "GH Yoon", "LI Zhi"])
+def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
+        text: str) -> None:
+    assert Signal.SURNAME not in name_votes(text, L)
+
+
+@pytest.mark.parametrize(("text", "votes"), [
+    # four letters: a capitals word as before, and looked up
+    ("ABCD Hoy", {Signal.CAPITALS: FAMILY_FIRST}),
+    ("PARK Jason", {Signal.CAPITALS: FAMILY_FIRST,
+                    Signal.SURNAME: FAMILY_FIRST,
+                    Signal.GIVEN_NAME: FAMILY_FIRST}),
+    # a run of capitals words in front, its first one short
+    ("LI WANG Zhi", {Signal.CAPITALS: FAMILY_FIRST}),
+    ("DE SOUZA Maria", {Signal.CAPITALS: FAMILY_FIRST,
+                        Signal.GIVEN_NAME: FAMILY_FIRST}),
+    # the given-name signal reads the other word as before
+    ("NG Jason", {Signal.GIVEN_NAME: FAMILY_FIRST}),
+    ("AM de Hoy", {Signal.PARTICLE: GIVEN_FIRST}),
+    # initials written with full stops or spaces, and a name in one
+    # case, were never capitals words
+    ("A.M. Hoy", {}),
+    ("A M Hoy", {}),
+    ("AM HOY", {}),
+    ("am Hoy", {}),
+    ("Am Hoy", {}),
+    # a name wholly in capitals is still looked up
+    ("MA HOY", {Signal.SURNAME: FAMILY_FIRST}),
+    # the ending word, as before
+    ("Hoy AM", {}),
+    ("Jason NG", {Signal.GIVEN_NAME: GIVEN_FIRST}),
+])
+def test_what_votes_beside_an_opening_short_capitals_word(
+        text: str, votes: dict[Signal, object]) -> None:
+    assert dict(name_votes(text, L)) == votes
+
+
+_BASES = [Policy(), Policy(name_order=FAMILY_FIRST),
+          Policy(name_order=FAMILY_FIRST_GIVEN_LAST)]
+
+
+@pytest.mark.parametrize("policy", _BASES)
+@pytest.mark.parametrize("group", [
+    ["AM Hoy", "JK Larsen", "RP Huntley", "MT Okafor", "GH Yoon",
+     "SL Perrin"],
+    ["MA Hoy", "MI Larsen", "NA Huntley", "MO Okafor", "TA Perrin",
+     "JKL Marsh"],
+    # short surnames in capitals alone: the same shape, so no evidence
+    ["LI Zhi", "WU Wei", "XU Min", "MA Lin"],
+])
+def test_a_list_opening_in_short_capitals_words_keeps_its_base(
+        policy: Policy, group: list[str]) -> None:
+    base = Parser(policy=policy)
+    s = base.suggest(group)
+    order = s.evidence[0]
+    assert order.setting == "name_order"
+    assert not order.decided
+    assert order.by_signal == ()
+    assert s.patch.name_order is UNSET
+    assert s.parser.policy.name_order == policy.name_order
+    assert s.disagreeing() == ()
+
+
+@pytest.mark.parametrize("policy", _BASES)
+def test_longer_capitals_surnames_still_decide_a_family_first_order(
+        policy: Policy) -> None:
+    s = Parser(policy=policy).suggest(
+        ["ZHANG Wei", "LI Na", "WANG Fang", "CHEN Jie"])
+    order = s.evidence[0]
+    assert order.decided
+    assert s.parser.policy.name_order[0] is Role.FAMILY
+    # `LI Na` casts no vote; the three longer surnames decide
+    assert (order.votes_for, order.no_evidence) == (3, 1)
 
 
 def test_joined_initials_keep_a_family_first_base() -> None:
@@ -733,11 +833,11 @@ def test_the_new_types_are_exported() -> None:
 
 
 def test_one_heavily_marked_name_does_not_outvote_two() -> None:
-    # `KIM Jason J.` carries family-first signals, but is one name (its
+    # `PARK Jason J.` carries family-first signals, but is one name (its
     # trailing initial is one of four names, so it casts no vote: the
     # gate's tests below)
     s = Parser().suggest(["Jason Smith", "Mary Jones", "Anna Brown",
-                          "KIM Jason J."])
+                          "PARK Jason J."])
     assert s.patch.name_order is UNSET
     order = _order_evidence(s)
     assert order.decided
@@ -776,7 +876,7 @@ def test_a_name_whose_signals_conflict_is_contested() -> None:
     [],
     ["Xyzzy Plugh"],
     ["Smith Mary", "Jason Kim J.", "Smith, John", "", "Jason Smith"],
-    ["Jason Smith", "Mary Jones", "KIM Jason J."],
+    ["Jason Smith", "Mary Jones", "PARK Jason J."],
     ["Сидоров Иван Петрович", "SIDOROV Ivan Petrovich", "Kim Minjun"],
     ["Mamedov Ali Huseyn oglu", "Jason Kim J.", "Smith Mary"],
 ])

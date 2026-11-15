@@ -319,7 +319,12 @@ class Parser:
         the patronymic rule reads one, and a trailing initial
         (``Smith J.``) only where at least three names, and 60% of the
         group's names holding a name word, end in initials no other
-        signal in the same name contradicts. ``name_order`` is
+        signal in the same name contradicts. Two or three capitals
+        alone at either end of a name in mixed case (``AM Hoy``,
+        ``Armitage JO``, ``NG Jason``) cast no capitals vote, being
+        joined initials as often as a short surname; one ending a name
+        is not looked up as a surname, and a name opening in one casts
+        no surname vote. ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end and they are more than two thirds of the names casting
@@ -362,27 +367,32 @@ class Parser:
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
-        Measured 2026-11-10, re-taken 2026-11-11 and 2026-11-12, with
-        tools/differential/suggest_measure.py
+        Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12 and
+        2026-11-14, with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's 2026-11-11 TRAILING
-        INITIAL entry holds the table, its 2026-11-12 GIVEN NAMES FROM
-        ORCID entry the cells that moved since): a group written in this parser's own order kept
+        groups a size (decisions/group-suggestion's 2026-11-14 #1355
+        entry holds the table): a group written in this parser's own
+        order kept
         it in at least 98% of groups at every size from 2 to 200 names,
-        under either base order, save two populations whose capitals the
-        capitals signal reads as a family name: ORCID's credit
-        names written as a byline with the initials first (``GH Yoon``)
-        kept their given-first order in 96% of groups of two and 0% of
-        groups of fifty, before this gate as after it, and ORCID holders
-        who typed their given name in capitals (``ANNA Smith``) kept it
-        in 30% of groups of two and none of five (decisions/
-        group-suggestion's 2026-11-12 CAPITALS entry, re-taken in its
-        GIVEN NAMES FROM ORCID entry). Moving the base takes more names, and
+        under either base order, save three lists. ORCID holders who
+        typed their given name in capitals (``ANNA Smith``), which the
+        capitals signal reads as a family name, kept their given-first
+        order in 49% of groups of two and 3% of five (decisions/
+        group-suggestion's 2026-11-12 CAPITALS entry). A list of
+        nothing but bylines written two or three joined initials first
+        (``AM Hoy``) kept it in at least 98% of groups up to 20 names,
+        93% of 50 and 92% of 200, the name tables voting on a few of
+        its names; ORCID's bylines of every writing kept it in at
+        least 98%. And a list of nothing but short surnames in
+        capitals written last (``Zhi LI``) kept it in 79% of groups of
+        ten, the given name alone being looked up as a surname.
+        Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups
-        from 5 names; German, Dutch, Italian, Spanish, British and
-        Vietnamese from 10; French, US, Japanese and Turkish from 20;
+        from 5 names; German, Italian, Spanish, British and
+        Vietnamese from 10; French, Dutch, US, Japanese and Turkish
+        from 20;
         Nigerian, Romanian, Russian and Brazilian from 50; and Indian
         from 50 for US patent inventors, only at 200 for UK company
         filers. A group whose votes fall short of the thresholds keeps
