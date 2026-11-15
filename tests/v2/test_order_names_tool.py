@@ -220,11 +220,14 @@ def _common(tool: ModuleType, countries: dict[str, dict[str, int]],
             given: dict[str, int], family: dict[str, int] | None = None, *,
             top: int = 10, min_country_uses: int = 1,
             exclude: frozenset[str] = frozenset()) -> set[str]:
+    # the family share is the tool's own constant, so a test of the cut
+    # fails when the constant moves
     from collections import Counter
     return tool.common_given(  # type: ignore[no-any-return]
         {c: Counter(words) for c, words in countries.items()},
         Counter(given), Counter(family or {}), top=top,
-        min_country_uses=min_country_uses, max_family_share=0.05,
+        min_country_uses=min_country_uses,
+        max_family_share=tool.MAX_FAMILY_SHARE,
         min_uses=20, exclude=set(exclude))
 
 
@@ -232,9 +235,21 @@ def _common(tool: ModuleType, countries: dict[str, dict[str, int]],
 def test_a_name_mostly_written_as_a_family_name_is_dropped(
         tool: ModuleType) -> None:
     got = _common(tool, {"X": {"thomas": 9, "kim": 9, "anna": 9}},
-                  {"thomas": 90, "kim": 50, "anna": 100},
-                  {"thomas": 10, "kim": 50, "anna": 1})
+                  {"thomas": 85, "kim": 50, "anna": 100},
+                  {"thomas": 15, "kim": 50, "anna": 1})
     assert got == {"anna"}
+
+
+@needs_checkout
+def test_the_family_share_cut_is_ten_percent(tool: ModuleType) -> None:
+    # #1357: a given name written in the family box 7 times in 100
+    # (`John`) is kept, one written there exactly 10 in 100 is kept, and
+    # one written there 11 in 100 is not
+    names = {"zzseven": 9, "zzten": 9, "zzeleven": 9}
+    got = _common(tool, {"X": names},
+                  {"zzseven": 93, "zzten": 90, "zzeleven": 89},
+                  {"zzseven": 7, "zzten": 10, "zzeleven": 11})
+    assert got == {"zzseven", "zzten"}
 
 
 @needs_checkout
@@ -385,6 +400,35 @@ def test_a_listed_title_is_refused_and_an_ambiguous_one_is_not(
     # a title that may also be a given name stays a candidate
     assert not {"grace", "king", "dean", "princess"} & titles
     assert not titles & _order_names.COMMON_GIVEN_NAMES
+
+
+@needs_checkout
+def test_a_listed_suffix_is_refused_ambiguous_or_not(
+        tool: ModuleType) -> None:
+    # #1357: a post-nominal stands at the end of a name with no comma,
+    # where a table word votes that the given name is written last
+    suffixes = tool.listed_suffixes()
+    assert {"md", "phd", "jr", "mst", "cem"} <= suffixes
+    # a suffix that may also be a name is refused too, unlike a title:
+    # written in capitals after a name word, the parse reads it as the
+    # credential
+    assert {"asa", "ace", "ala"} <= suffixes
+    assert not suffixes & _order_names.COMMON_GIVEN_NAMES
+
+
+@needs_checkout
+def test_the_table_is_built_without_listed_titles_and_suffixes(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    # the exclusions as the build applies them, on a planted corpus:
+    # each word is typed first in the given box 25 times in one country
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    _plant_orcid(cache, [
+        {"given": word, "family": "Zzfam", "country": "BD"}
+        for word in ("Md", "Asa", "Prof", "Zzgiv", "Zzsur")
+        for _ in range(25)])
+    assert tool.load_common_given({"zzsur"}) == {"zzgiv"}
 
 
 @needs_checkout

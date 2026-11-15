@@ -383,29 +383,28 @@ class Parser:
         Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12,
         2026-11-14 and 2026-11-15, with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's 2026-11-15 #1356
+        groups a size (decisions/group-suggestion's 2026-11-15 #1357
         entry holds the table): a group written in this parser's own
         order kept
-        it in at least 98% of groups at every size from 2 to 200 names,
+        it in at least 97% of groups at every size from 2 to 200 names,
         under either base order, save two lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
         capitals signal reads as a family name, kept their given-first
-        order in 49% of groups of two and 3% of five (why, in that
+        order in 52% of groups of two and 4% of five (why, in that
         file's 2026-11-12 CAPITALS entry). A list of
         nothing but bylines written two or three joined initials first
-        (``AM Hoy``) kept it in at least 98% of groups up to 20 names,
-        93% of 50 and 92% of 200, the name tables voting on a few of
-        its names; ORCID's bylines of every writing kept it in at
-        least 98%.
+        (``AM Hoy``) kept it in at least 97% of groups at every size
+        but 50 names, where it kept it in 95% (94.7), the name tables
+        voting on a few of its names; ORCID's bylines of every writing
+        kept it in at least 97%.
         Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
-        Taiwanese, Korean, Czech or Polish names (the romanized surnames
-        and the common given names) were read right in 95% of groups
-        from 5 names; German, Dutch, Italian, Spanish, British and
-        Vietnamese from 10; French, US, Japanese and Turkish from 20;
-        Nigerian, Romanian, Russian and Brazilian from 50; and Indian
-        from 50 for US patent inventors, only at 200 for UK company
-        filers. A group whose votes fall short of the thresholds keeps
+        Taiwanese, Korean, Czech, Polish or Italian names (the romanized
+        surnames and the common given names) were read right in 95% of
+        groups from 5 names; German, Dutch, Spanish, British, French,
+        Romanian and Vietnamese from 10; US, Japanese, Turkish,
+        Nigerian and Brazilian from 20; and Russian and Indian from
+        50. A group whose votes fall short of the thresholds keeps
         the base rather than guess, so a smaller group moves it in fewer
         of the draws. ``capitals_as_family``, measured 2026-11-12
         (decisions/group-suggestion's CAPITALS entry): ORCID holders who

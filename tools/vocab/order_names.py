@@ -32,9 +32,10 @@ least ``MIN_COUNTRY_USES`` times there, that pass the filter, which
 keeps a name of two letters or more holding no full stop, written in
 ORCID's own family box at most ``MAX_FAMILY_SHARE`` of the
 ``MIN_USES`` or more times its holders wrote it, no romanized
-surname this run writes and no word the default lexicon compiles into
+surname this run writes, no word the default lexicon compiles into
 its title sets outside ``titles_ambiguous`` (``prof``, typed before the
-name). Each word is spelled as the suggester looks it up
+name) and no word it compiles into its suffix sets (``md``, written
+after it). Each word is spelled as the suggester looks it up
 (:func:`spelling`). Only the first word is ranked: the words after
 it are middle names, an East Slavic patronymic (``Анна Викторовна``) or
 a second given name. Before 2026-11-12, and in no release, the ranking
@@ -70,13 +71,14 @@ from nameparser._suggest import _EDGES, fold  # noqa: E402  (the one fold)
 
 TOP = 500
 MIN_COUNTRY_USES = 3
-MAX_FAMILY_SHARE = 0.05
+MAX_FAMILY_SHARE = 0.10
 MIN_USES = 20
 ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
 #: (2026-11-12: 200 pinyin surnames, 6,409 given names; nam_dict's
-#: ranking gave 4,262, under a floor of 3,000).
+#: ranking gave 4,262, under a floor of 3,000; 2026-11-15: 8,027 given
+#: names at a family share of 10%, #1357).
 MIN_PINYIN = 150
 MIN_GIVEN = 5_000
 
@@ -300,16 +302,40 @@ def listed_titles() -> set[str]:
             - sets.titles_ambiguous if " " not in w}
 
 
+def listed_suffixes() -> set[str]:
+    """The words the default lexicon compiles into its suffix sets
+    (``suffix_acronyms``, ``suffix_words``), folded, the ones that may
+    also be a name among them. A post-nominal is written at the end of
+    a name with no comma (``Ann Okoro MD``), where a table word votes
+    that the given name is written last, and a word the tables list is
+    never read past as a post-nominal, so a suffix in the table votes
+    where the parse reads a credential. ORCID holders type ``Md``,
+    Muhammad written short, into the given-name box often enough to
+    rank (2026-11-15: 5,379 times, 7.7% of its uses in the family box).
+    Unlike a title, a suffix that may be a name is refused too (``asa``,
+    ``ace``, ``ed``). Written without full stops, the suggester does
+    not read such a word past, in the table or out of it, but the parse
+    reads it as the credential by the case it is written in: in
+    capitals after a name word (``Ann Okoro ASA``, suffix ``ASA``;
+    ``Ann Okoro Asa`` is a name word), in lower case after two. In the
+    table it voted there: four names ending in ``ASA`` moved a default
+    base to family-first before #1357."""
+    from nameparser import Lexicon
+    sets = Lexicon.default()._sets
+    return {fold(w) for w in sets.suffix_acronyms | sets.suffix_words
+            if " " not in w}
+
+
 def load_common_given(exclude: set[str]) -> set[str]:
     """The given-name table, refusing ``exclude`` and every word
-    :func:`listed_titles` names."""
+    :func:`listed_titles` and :func:`listed_suffixes` name."""
     given, family, first_given = orcid_box_counts(
         name_usage.cache_dir().joinpath(*ORCID_RAW))
     return common_given(
         first_given, given, family, top=TOP,
         min_country_uses=MIN_COUNTRY_USES,
         max_family_share=MAX_FAMILY_SHARE, min_uses=MIN_USES,
-        exclude=exclude | listed_titles())
+        exclude=exclude | listed_titles() | listed_suffixes())
 
 
 def check_tables(pinyin: set[str], given: set[str]) -> None:

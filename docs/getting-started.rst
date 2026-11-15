@@ -108,7 +108,7 @@ Clark``) votes against the list, and is the one to check by hand (see :ref:`a na
 
 The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely
-a surname (``Mary``, not ``John``), at one end; a
+a surname (``Mary``, not ``James``), at one end; a
 family name written in capitals; a lowercase particle; initials after
 the name, as a bibliography writes them. ``suggest`` decides four
 settings from it, and leaves every other one as the parser you called
@@ -157,12 +157,12 @@ Where too few names agree, ``suggest`` keeps the base parser's value.
 An order needs at least two names voting for it, more than two thirds
 of the names whose own order votes do not contradict each other. A name of one word casts none,
 nor does a name with a comma, unless only post-nominals follow it
-(``Zhang Wei, PhD``). Here only ``Mary`` votes (``John`` is also a
+(``Zhang Wei, PhD``). Here only ``Mary`` votes (``James`` is also a
 surname), one short:
 
 .. doctest::
 
-    >>> Parser().suggest(["Smith John", "Jones Mary"]).patch
+    >>> Parser().suggest(["Smith James", "Jones Mary"]).patch
     PolicyPatch()
 
 Initials after the name vote only where at least three names end in
