@@ -347,8 +347,8 @@ class Parser:
         rule, which reorders no name there and fills the ``patronymic``
         view (``Sidorov Ivan Petrovich``). Under
         ``FAMILY_FIRST_GIVEN_LAST``, where the rule names no patronymic
-        of a list written family first, both settings keep this
-        parser's values. Under either, the names' own given-first votes
+        in a name written family, given, patronymic, both settings keep
+        this parser's values. Under either, the names' own given-first votes
         move the order as any votes do, and the rule then comes with
         it. A Turkic group
         gets the rule alone, its order decided by its names' own votes.

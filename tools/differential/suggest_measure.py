@@ -95,8 +95,9 @@ checkout without that threshold runs its own rule, and the comparison
 says so); it is also the
 harness's proof that it can report a difference: `--set
 _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
-(the first holds the order, the second the patronymic rule, which forces
-an order of its own), so every family-first group under the given-first
+(the first holds the order, the second the patronymic rule, which under
+the given-first base decides a given-first order of its own, and until
+#1356 forced one on the family-first base too), so every family-first group under the given-first
 base must read 0% (and every given-first group under the family-first
 base). `--base` runs the same measurement against another
 checkout in a child process and lists every cell that moved, every

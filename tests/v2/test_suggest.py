@@ -730,7 +730,8 @@ def test_an_east_slavic_group_changes_nothing_where_the_given_name_is_last(
         "9 names carry an East Slavic patronymic, enough to decide the "
         "rule, but it is not suggested: the base reads the given name "
         "last (FAMILY_FIRST_GIVEN_LAST), where the rule reorders no name "
-        "and names no patronymic of a list written family first")
+        "and names no patronymic in a name written family, given, "
+        "patronymic")
     assert rules.note in str(s)
     assert s.disagreeing() == ()
     assert s.parser.parse("Karimov Rustam Anvarovich") == base.parse(
@@ -752,6 +753,43 @@ def test_a_family_first_base_carrying_the_rule_keeps_its_order_and_its_rule(
     assert rules.value == _EAST_SLAVIC_RULE
     assert rules.decided is decided
     assert rules.votes_for == 9
+    # the note never says a rule the base holds "is not suggested"
+    assert ("family-first order is kept" if decided else
+            "the base's own rule and order are kept") in rules.note
+    assert "not suggested" not in rules.note
+
+
+@pytest.mark.parametrize(("base_order", "value"), [
+    (FAMILY_FIRST, frozenset(PatronymicRule)),
+    (FAMILY_FIRST_GIVEN_LAST, frozenset({PatronymicRule.TURKIC}))])
+def test_a_family_first_base_carrying_the_turkic_rule_keeps_it(
+        base_order: tuple[Role, Role, Role],
+        value: frozenset[PatronymicRule]) -> None:
+    base = Parser(policy=Policy(
+        name_order=base_order,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    s = base.suggest(_FAMILY_FIRST_PATRONYMICS)
+    rules = _patronymic_evidence(s)
+    assert rules.value == value
+    assert s.parser.policy.patronymic_rules == value
+    # the Turkic name votes for a rule the value holds under either base
+    assert (rules.votes_for, rules.votes_against) == (
+        (10, 0) if base_order == FAMILY_FIRST else (1, 9))
+    assert not _order_evidence(s).decided
+
+
+def test_family_first_votes_under_a_given_last_base_bring_no_rule() -> None:
+    # the names' capitals decide the order the base has; the rule is
+    # still not suggested there
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    s = base.suggest(_CAPITALS_EAST_SLAVIC)
+    order = _order_evidence(s)
+    assert order.decided and order.value == FAMILY_FIRST_GIVEN_LAST
+    assert s.patch.name_order is UNSET
+    assert s.patch.patronymic_rules is UNSET
+    rules = _patronymic_evidence(s)
+    assert not rules.decided
+    assert "not suggested" in rules.note
 
 
 @pytest.mark.parametrize("base_order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])

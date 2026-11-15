@@ -463,11 +463,14 @@ _MIN_VOTES = 2
 _MIN_SHARE = 2 / 3
 #: The share of the names casting any vote that one patronymic rule
 #: (East Slavic or Turkic) must hold strictly more than to decide it,
-#: higher than _MIN_SHARE because a decided East Slavic rule brings a
-#: given-first order with it.
+#: higher than _MIN_SHARE because a decided East Slavic rule brought a
+#: given-first order with it on any base when the share was chosen;
+#: since #1356 it moves no family-first base.
 _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
-#: besides the share, for the same reason.
+#: besides the share, chosen for the same reason; what it still decides
+#: is whether a small group gets the rule at all (decisions/
+#: group-suggestion, 2026-11-14 #1356).
 _MIN_PATRONYMIC_VOTES = 5
 #: The fewest names ending in one run of letters (rules/O8) that can
 #: decide initials_as_family, and the share of the names ending in any
@@ -877,7 +880,8 @@ class Suggestion:
         with no word in capitals disagrees with a decided
         ``capitals_as_family``; and a name carrying an
         East Slavic patronymic never disagrees on order where the East
-        Slavic rule is decided, since the rule reorders it."""
+        Slavic rule is decided with a given-first order, since the rule
+        reorders it there."""
         decided = {e.setting: e.value for e in self.evidence if e.decided}
         if not decided:
             return ()
@@ -1082,8 +1086,8 @@ def _decide_east_slavic_under_family_first(
     first already. Under ``FAMILY_FIRST`` the group still gets the rule,
     which reorders no name there and fills the ``patronymic`` view
     (`Sidorov Ivan Petrovich`); under ``FAMILY_FIRST_GIVEN_LAST``, which
-    reads the last word as the given name, it names no patronymic of
-    such a list, so the rule stays the base's own value too."""
+    reads the last word as the given name, it names no patronymic in a
+    name written so, so the rule stays the base's own value too."""
     rule = PatronymicRule.EAST_SLAVIC
     if kept_order == FAMILY_FIRST:
         value = base_rules | {rule}
@@ -1096,12 +1100,15 @@ def _decide_east_slavic_under_family_first(
             fields, False)
     count = tally.by_name[rule]
     noun = "name carries" if count == 1 else "names carry"
+    outcome = ("; the base's own rule and order are kept"
+               if rule in base_rules else
+               ", enough to decide the rule, but it is not suggested")
     return (tally.evidence(
         _PATRONYMIC_RULES, base_rules, False, lambda v: v in base_rules,
-        f"{count} {noun} an East Slavic patronymic, enough to decide the "
-        f"rule, but it is not suggested: the base reads the given name "
-        f"last (FAMILY_FIRST_GIVEN_LAST), where the rule reorders no name "
-        f"and names no patronymic of a list written family first"),
+        f"{count} {noun} an East Slavic patronymic{outcome}: the base "
+        f"reads the given name last (FAMILY_FIRST_GIVEN_LAST), where the "
+        f"rule reorders no name and names no patronymic in a name written "
+        f"family, given, patronymic"),
         {}, False)
 
 
@@ -1138,9 +1145,11 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     decided East Slavic rule decides the order as given-first, since
     the rule reorders each name and reorders none under a family-first
     order, unless the names' own votes decide family-first: a decided
-    order is never overridden, and the rule then reorders no name. A
-    base that reads names family first is not asked: `suggest` leaves
-    its order to the names' own votes (`_decide_patronymic`)."""
+    order is never overridden, and the rule then reorders no name. For
+    a base that reads names family first, `suggest` passes the rule
+    here only where the names' own votes decide given-first
+    (`_decide_patronymic`); otherwise the order is the votes' or the
+    base's."""
     notes = [_comma_note(comma_left_out), trailing_note]
     end = tally.winner()
     if rule_needs_given_first and end != FAMILY_FIRST:

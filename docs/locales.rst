@@ -134,7 +134,7 @@ How each part combines:
   setting one script to different orders warn, and the later wins.
   A script order takes a name before a patronymic rule does: the East
   Slavic and Turkic rotations stand down where an order is declared, so
-  beside ``mn`` the ``ru`` and ``tr_az`` rules no longer read a name
+  beside ``mn`` the ``ru`` and ``tr_az`` rules no longer reorder a name
   written wholly in Cyrillic, which ``mn`` reads father's name first:
 
   .. doctest::

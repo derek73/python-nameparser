@@ -49,8 +49,8 @@ moves a base that reads names family first. Under ``FAMILY_FIRST`` the
 group keeps that order and still gets the rule, which reorders no name
 there and fills the ``patronymic`` view (``Sidorov Ivan Petrovich``).
 Under ``FAMILY_FIRST_GIVEN_LAST``, where the rule names no patronymic
-of a list written family first, both settings keep your parser's
-values. Under either, the names' own given-first votes move the order
+in a name written family, given, patronymic, both settings keep your
+parser's values. Under either, the names' own given-first votes move the order
 as any votes do, and the rule then comes with it. Every setting the
 votes do not decide keeps the base parser's value.
 

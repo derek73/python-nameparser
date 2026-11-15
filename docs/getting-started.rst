@@ -118,7 +118,9 @@ it on has it:
   name first.
 - **A patronymic rule** (:class:`~nameparser.PatronymicRule`): East
   Slavic or Turkic, where at least five names, and more than four in
-  five of the names that cast any vote, carry that patronymic.
+  five of the names that cast any vote, carry that patronymic (the
+  East Slavic rule is left out for a parser reading names
+  ``FAMILY_FIRST_GIVEN_LAST``, where it would name none).
 - **Letters as the family name** (:ref:`initials-as-family`): where
   one run of letters ends at least two names, and at least half of the
   names that end in letters, as Nepal's ``B K`` and ``K C`` are family
