@@ -398,7 +398,10 @@ def test_a_listed_title_is_refused_and_an_ambiguous_one_is_not(
     titles = tool.listed_titles()
     assert {"prof", "dr", "dra", "lady", "sir"} <= titles
     # a title that may also be a given name stays a candidate
-    assert not {"grace", "king", "dean", "princess"} & titles
+    assert not {"grace", "king", "dean", "princess", "justice"} & titles
+    # unless the lexicon lists it as an abbreviation: with its full
+    # stop the parse reads it as the title at either end of a name
+    assert {"gen", "maj", "brig", "hon"} <= titles
     assert not titles & _order_names.COMMON_GIVEN_NAMES
 
 
@@ -426,8 +429,11 @@ def test_the_table_is_built_without_listed_titles_and_suffixes(
     cache = own_cache(monkeypatch, tmp_path_factory)
     _plant_orcid(cache, [
         {"given": word, "family": "Zzfam", "country": "BD"}
-        for word in ("Md", "Asa", "Prof", "Zzgiv", "Zzsur")
+        for word in ("Md", "Asa", "Prof", "Gen", "Pere", "Zzgiv", "Zzsur")
         for _ in range(25)])
+    # `Pere` is refused by the fold: the lexicon lists `père`, and a
+    # table word is the folded spelling, so the listed words are folded
+    # as the candidates are
     assert tool.load_common_given({"zzsur"}) == {"zzgiv"}
 
 

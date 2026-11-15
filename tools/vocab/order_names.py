@@ -34,13 +34,15 @@ ORCID's own family box at most ``MAX_FAMILY_SHARE`` of the
 ``MIN_USES`` or more times its holders wrote it, no romanized
 surname this run writes, no word the default lexicon compiles into
 its title sets outside ``titles_ambiguous`` (``prof``, typed before the
-name) and no word it compiles into its suffix sets (``md``, written
-after it). Each word is spelled as the suggester looks it up
+name), no title it lists as an abbreviation (``gen``), and no word it
+compiles into its suffix sets (``md``, written after it). Each word is spelled as the suggester looks it up
 (:func:`spelling`). Only the first word is ranked: the words after
 it are middle names, an East Slavic patronymic (``Анна Викторовна``) or
 a second given name. Before 2026-11-12, and in no release, the ranking
 was nam_dict's (Jörg Michael, GNU FDL 1.2), its 55 country columns by
-frequency band, with the same filter; the table is the project's own
+frequency band, filtered by a family share of 5% and the surname
+exclusion alone (the title, abbreviation and suffix exclusions are
+later); the table is the project's own
 measurement over a CC0 file (decisions/shipped-data-licences, FACTS WE
 MEASURE). It needs the ORCID local corpus cached
 (tools/differential/local_corpora.py), checked whole against its
@@ -77,7 +79,7 @@ ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: The fewest entries a generated block may hold: a run that yields
 #: fewer read an input cut short or changed, and writes nothing
 #: (2026-11-12: 200 pinyin surnames, 6,409 given names; nam_dict's
-#: ranking gave 4,262, under a floor of 3,000; 2026-11-15: 8,027 given
+#: ranking gave 4,262, under a floor of 3,000; 2026-11-15: 8,026 given
 #: names at a family share of 10%, #1357).
 MIN_PINYIN = 150
 MIN_GIVEN = 5_000
@@ -295,11 +297,17 @@ def listed_titles() -> set[str]:
     that compile into ``titles`` rather than ``titles_ambiguous``: the
     title-particles (``st``, ``graf``, ``freiherr``) and the
     title/suffix duals (``sr``, ``ms``); none of them is in the table
-    either way (2026-11-12)."""
+    either way (2026-11-12). A title the lexicon lists as an
+    abbreviation (``title_abbreviations``) is refused though it is in
+    ``titles_ambiguous``: written with its full stop the parse reads it
+    as the title at either end of a name (``Zorvan Qelliot Gen.``,
+    ``Gen. Zorvan Qelliot``), where the table word ``gen``, which a 10%
+    family share admits, voted as a given name (#1357)."""
     from nameparser import Lexicon
     sets = Lexicon.default()._sets
-    return {fold(w) for w in (sets.titles | sets.given_name_titles)
-            - sets.titles_ambiguous if " " not in w}
+    return {fold(w) for w in ((sets.titles | sets.given_name_titles)
+                              - sets.titles_ambiguous)
+            | sets.title_abbreviations if " " not in w}
 
 
 def listed_suffixes() -> set[str]:
