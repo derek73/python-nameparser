@@ -120,6 +120,14 @@ _OPENING_SHORT = [
     "Dr AM Hoy",       # a title read past
     "AM de Hoy",       # the word after it a particle
     "AM hoy",
+    unicodedata.normalize("NFD", "ÉM Hoy"),  # a letter typed as base and mark
+    "O'N Hoy",         # three letters, counted past the apostrophe
+    "AM-B Hoy",
+    "(AM) Hoy",        # brackets read past
+    "AM Hoy PhD",      # a post-nominal read past
+    "AM Hoy, MD",
+    "AM Hoy JO",       # a short capitals word at both ends
+    "MA Jean Hoy",     # three words
 ]
 
 
@@ -130,9 +138,11 @@ def test_an_opening_short_capitals_word_casts_no_capitals_vote(
 
 
 @pytest.mark.parametrize("text", [
-    "MA Hoy", "MI Larsen", "NG Jason", "KIM Jason",
+    "MA Hoy", "MI Larsen", "NG Jason", "KIM Jason", "MA Jean Hoy",
     # the word at the other end is not looked up alone either: `Yoon`
-    # and `Zhi` are listed surnames
+    # is a listed surname, and so is `Zhi` (`LI Zhi` cast none before
+    # either, both ends listed; the row holds off a rule that skips the
+    # opening word alone, under which `Zhi` votes given-first)
     "GH Yoon", "LI Zhi"])
 def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
         text: str) -> None:
@@ -149,6 +159,9 @@ def test_a_name_opening_in_a_short_capitals_word_casts_no_surname_vote(
     ("LI WANG Zhi", {Signal.CAPITALS: FAMILY_FIRST}),
     ("DE SOUZA Maria", {Signal.CAPITALS: FAMILY_FIRST,
                         Signal.GIVEN_NAME: FAMILY_FIRST}),
+    ("AM HOY Jean", {Signal.CAPITALS: FAMILY_FIRST}),
+    # four letters past the hyphen
+    ("ABC-D Hoy", {Signal.CAPITALS: FAMILY_FIRST}),
     # the given-name signal reads the other word as before
     ("NG Jason", {Signal.GIVEN_NAME: FAMILY_FIRST}),
     ("AM de Hoy", {Signal.PARTICLE: GIVEN_FIRST}),

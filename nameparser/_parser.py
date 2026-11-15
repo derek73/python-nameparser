@@ -319,12 +319,13 @@ class Parser:
         the patronymic rule reads one, and a trailing initial
         (``Smith J.``) only where at least three names, and 60% of the
         group's names holding a name word, end in initials no other
-        signal in the same name contradicts. Two or three capitals
-        alone at either end of a name in mixed case (``AM Hoy``,
-        ``Armitage JO``, ``NG Jason``) cast no capitals vote, being
-        joined initials as often as a short surname; one ending a name
-        is not looked up as a surname, and a name opening in one casts
-        no surname vote. ``name_order`` is
+        signal in the same name contradicts. A capitals word of two
+        or three letters ending a name in mixed case (``Armitage JO``),
+        or opening it with no capitals word after it (``AM Hoy``, ``NG
+        Jason``), casts no capitals vote, being joined initials as
+        often as a short surname; the ending one is not looked up as a
+        surname, and a name opening in one casts no surname vote.
+        ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end and they are more than two thirds of the names casting
@@ -377,8 +378,8 @@ class Parser:
         under either base order, save three lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
         capitals signal reads as a family name, kept their given-first
-        order in 49% of groups of two and 3% of five (decisions/
-        group-suggestion's 2026-11-12 CAPITALS entry). A list of
+        order in 49% of groups of two and 3% of five (why, in that
+        file's 2026-11-12 CAPITALS entry). A list of
         nothing but bylines written two or three joined initials first
         (``AM Hoy``) kept it in at least 98% of groups up to 20 names,
         93% of 50 and 92% of 200, the name tables voting on a few of
@@ -390,9 +391,8 @@ class Parser:
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech or Polish names (the romanized surnames
         and the common given names) were read right in 95% of groups
-        from 5 names; German, Italian, Spanish, British and
-        Vietnamese from 10; French, Dutch, US, Japanese and Turkish
-        from 20;
+        from 5 names; German, Dutch, Italian, Spanish, British and
+        Vietnamese from 10; French, US, Japanese and Turkish from 20;
         Nigerian, Romanian, Russian and Brazilian from 50; and Indian
         from 50 for US patent inventors, only at 200 for UK company
         filers. A group whose votes fall short of the thresholds keeps

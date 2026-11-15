@@ -20,8 +20,9 @@ word is never looked up in the name tables, a capitals word of two or
 three letters ending a name that holds a lowercase letter (joined
 initials, `Armitage JO`, or a short surname, `Jason NG`) casts no
 capitals vote and is not looked up as a surname, one opening such a
-name (`AM Hoy`, `NG Jason`) casts no capitals vote either, and the name
-no surname vote (#1355), and a script the
+name with no capitals word after it (`AM Hoy`, `NG Jason`) casts no
+capitals vote either, and the name no surname vote (#1355), and a
+script the
 tables do not hold (Hangul, Han) simply matches nothing. A patronymic
 votes, Latin or Cyrillic, only where the pipeline's rule reads one
 (rules/O1's three name words, rules/O2's four), through the pipeline's
@@ -185,8 +186,9 @@ def _opens_in_short_capitals(words: list[str]) -> bool:
 def _capitals(words: list[str]) -> tuple[Role, Role, Role] | None:
     """A run of capitals words at one end of a name that also holds a
     lowercase letter reads as the family name, which writers set in
-    capitals; two or three capitals alone at either end are joined
-    initials as often, and cast no vote."""
+    capitals; two or three capitals ending the name, or opening it
+    with no capitals word after them, are joined initials as often, and
+    cast no vote."""
     if (not _has_lower(words) or _ends_in_short_capitals(words)
             or _opens_in_short_capitals(words)):
         return None
