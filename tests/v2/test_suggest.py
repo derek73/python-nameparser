@@ -661,8 +661,8 @@ _FAMILY_FIRST_PATRONYMICS = [
     "Karimov Rustam Anvarovich", "Yusupova Dilnoza Bahodirovna",
     "Rahimov Sardor Ilhomovich", "Nazarova Gulnora Shavkatovna",
     "Ismoilov Botir Erkinovich", "Hamidov Otabek Rashidovich",
-    "Sobirova Nodira Tohirovna", "Ergashev Aziz Komilovich",
-    "Qodirov Bekzod Zafarovich", "Tursunov Jasur Olim o‘g‘li",
+    "Sobirova Xurshida Tohirovna", "Ergashev Aziz Komilovich",
+    "Qodirov Bekzod Zafarovich", "Zokirjonov Jasur Olim o‘g‘li",
     "Aliyev Farrukh"]
 _EAST_SLAVIC_RULE = frozenset({PatronymicRule.EAST_SLAVIC})
 _ROLE_FIELDS = [role.value for role in Role]
@@ -726,12 +726,12 @@ def test_patronymics_written_last_keep_a_family_first_base_and_get_the_rule(
     # the name carrying the other rule's patronymic disagrees, as under
     # a given-first base; the name of two words does not
     assert [n.text for n in s.disagreeing()] == [
-        "Tursunov Jasur Olim o‘g‘li"]
+        "Zokirjonov Jasur Olim o‘g‘li"]
 
 
 @pytest.mark.parametrize(("text", "patronymic"), [
     ("Karimov Rustam Anvarovich", "Anvarovich"),
-    ("Tursunov Jasur Olim o‘g‘li", ""),
+    ("Zokirjonov Jasur Olim o‘g‘li", ""),
     ("Aliyev Farrukh", ""),
 ])
 def test_the_rule_suggested_with_a_kept_order_moves_no_field(
@@ -829,11 +829,34 @@ def test_the_kept_order_note_counts_the_names_it_leaves_misread() -> None:
         "the base's family-first order is kept: 5 of the 8 names carrying "
         "the patronymic write it last, as a list written family first "
         "does, and the rule reorders none of them; the 3 that write it "
-        "in the middle are left as the base reads them")
+        "in the middle get no given-first order from this suggestion")
     one = _written("last", 0, 6) + _written("middle", 6, 7)
     s = Parser(policy=Policy(name_order=FAMILY_FIRST)).suggest(one)
     assert _patronymic_evidence(s).note.endswith(
-        "; the 1 that writes it in the middle is left as the base reads it")
+        "; the 1 that writes it in the middle gets no given-first order "
+        "from this suggestion")
+
+
+def test_the_kept_order_note_holds_beside_capitals_as_family() -> None:
+    # five families in capitals written first, three written last: the
+    # order is kept, and capitals_as_family, suggested in the same
+    # patch, reads the three the kept order would misread. The note
+    # says nothing of how they are read
+    names = _written("LAST", 0, 5) + [
+        f"{g} {p} {f.upper()}"
+        for g, p, f in list(zip(_GIVEN, _FATHERS, _FAMILY))[5:]]
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(names)
+    assert s.patch == PolicyPatch(
+        patronymic_rules=_EAST_SLAVIC_RULE, capitals_as_family=True)
+    assert not _order_evidence(s).decided
+    assert _patronymic_evidence(s).note == (
+        "the base's family-first order is kept: 5 of the 8 names carrying "
+        "the patronymic write it last, as a list written family first "
+        "does, and the rule reorders none of them; the 3 that write it "
+        "in the middle get no given-first order from this suggestion")
+    assert _wholly_right(base, names) == 5
+    assert _wholly_right(s.parser, names) == 8
 
 
 def test_an_ending_on_both_words_counts_as_written_in_the_middle() -> None:
@@ -1939,7 +1962,8 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
     ("_MIN_PATRONYMIC_SHARE", 0.5, _east_slavic(5) + _OTHERS[:2],
      GIVEN_FIRST, (UNSET, UNSET, UNSET),
      (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
-    # under a family-first base the rule comes without an order (#1356);
+    # under a FAMILY_FIRST base the rule comes without an order where the
+    # patronymics are written last, as these are (#1356);
     # under the default one the order it needs is the base's own
     ("_MIN_PATRONYMIC_VOTES", 2, _east_slavic(2), FAMILY_FIRST,
      (UNSET, UNSET, UNSET),

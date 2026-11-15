@@ -347,9 +347,9 @@ class Parser:
         write it last (``Sidorov Ivan Petrovich``) than in the middle
         (``Ivan Petrovich Sidorov``), the group keeps that order and
         gets the rule alone, which reorders no name there and fills the
-        ``patronymic`` view; the names written the other way stay as
-        this parser reads them, and the patronymic evidence's note
-        counts them. A tie, and a ``FAMILY_FIRST_GIVEN_LAST`` parser,
+        ``patronymic`` view; the names written the other way get no
+        given-first order, and the patronymic evidence's note counts
+        them. A tie, and a ``FAMILY_FIRST_GIVEN_LAST`` parser,
         get the given-first order with the rule. A Turkic group
         gets the rule alone, its order decided by its names' own votes.
         ``initials_as_family`` (rules/O8) is turned on where one run of
@@ -380,8 +380,8 @@ class Parser:
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
-        Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12 and
-        2026-11-14, with tools/differential/suggest_measure.py
+        Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12,
+        2026-11-14 and 2026-11-15, with tools/differential/suggest_measure.py
         on groups drawn from real names written in a known order, 300
         groups a size (decisions/group-suggestion's 2026-11-15 #1356
         entry holds the table): a group written in this parser's own

@@ -50,8 +50,8 @@ given-first, where more of the names carrying the patronymic write it
 last (``Sidorov Ivan Petrovich``) than in the middle (``Ivan Petrovich
 Sidorov``), the group keeps that order and gets the rule alone, which
 reorders no name there and fills the ``patronymic`` view; the names
-written the other way stay as your parser reads them, and the
-patronymic evidence's note counts them. A tie, and a
+written the other way get no given-first order, and the patronymic
+evidence's note counts them. A tie, and a
 ``FAMILY_FIRST_GIVEN_LAST`` parser, get the given-first order with the
 rule. Every setting the
 votes do not decide keeps the base parser's value.
@@ -192,8 +192,8 @@ a name that writes no capitals disagrees with a decided switch:
 
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
-in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12 and
-2026-11-14), a list written in the base's own order keeps it
+in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12,
+2026-11-14 and 2026-11-15), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 50 or 200 for Indian ones (US patent inventors and UK

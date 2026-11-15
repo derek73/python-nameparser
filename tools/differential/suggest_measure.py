@@ -82,9 +82,11 @@ Slavic rule beside `capitals_as_family` in one patch, and a given-first
 patronymic list whose words cast no order vote are held by tests alone
 (tests/v2/test_suggest.py; decisions/group-suggestion, 2026-11-15 #1356).
 `pv-RU-patronymic`'s row written family-first under the given-first base
-reads near 0% with every name read right: the rule is suggested with
-the base's order and rotates each name, and a group is RIGHT by its
-order.
+reads near 0% at every size, for two reasons. From five names the rule
+is decided with the base's order and rotates each name, so every name
+is read right while the group is not RIGHT, which is said of its order.
+At two to four names nothing is decided (a rule needs five names), the
+base stands, and the names are misread.
 
 THE PARLIAMENTS, from the opensanctions-parliaments raw.jsonl, rows whose
 `form` is "name" and whose `script` is Latin or Cyrillic: the Turkic
@@ -468,7 +470,7 @@ PATRONYMIC_LABEL = "pv-RU-patronymic"
 
 def patronymic_names(pool: Pool) -> Pool:
     """The names of `pool` whose given box is a given name and an East
-    Slavic patronymic (`Yury Igorevich`) and whose family box is one
+    Slavic patronymic (`Zzyvan Petrovich`) and whose family box is one
     word: written given-first they are given, patronymic, family, and
     family-first family, given, patronymic, the two shapes rules/O1
     reads. A list of nothing but them is what the East Slavic rule is

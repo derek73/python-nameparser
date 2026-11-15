@@ -1089,8 +1089,8 @@ def _decide_east_slavic_keeping_the_order(
     and under it the rule reorders no name and fills the ``patronymic``
     view (`Sidorov Ivan Petrovich`); a given-first order would read the
     list's names without a patronymic family-last (`Aliyev Farrukh`).
-    The names that write the patronymic in the middle stay as the base
-    reads them, and the note says how many
+    The names that write the patronymic in the middle get no
+    given-first order, and the note says how many
     (decisions/group-suggestion, 2026-11-15 #1356)."""
     rule = PatronymicRule.EAST_SLAVIC
     value = base_rules | {rule}
@@ -1101,10 +1101,11 @@ def _decide_east_slavic_keeping_the_order(
             f"last, as a list written family first does, and the rule "
             f"reorders none of them")
     if middle:
-        verb = "writes" if middle == 1 else "write"
-        note += (f"; the {middle} that {verb} it in the middle "
-                 f"{'is' if middle == 1 else 'are'} left as the base "
-                 f"reads {'it' if middle == 1 else 'them'}")
+        # true whatever else the patch turns on: capitals_as_family,
+        # suggested beside it, may read these names all the same
+        verb, gets = ("writes", "gets") if middle == 1 else ("write", "get")
+        note += (f"; the {middle} that {verb} it in the middle {gets} "
+                 f"no given-first order from this suggestion")
     return (tally.evidence(_PATRONYMIC_RULES, value, True,
                            lambda v: v in value, note), fields, False)
 
