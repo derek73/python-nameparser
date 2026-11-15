@@ -32,10 +32,12 @@ own predicates, never a copy of them. No signal raises on any string.
 
 ``suggest`` tallies the group's votes and decides two settings
 together, ``patronymic_rules`` first and ``name_order`` second: a
-decided East Slavic rule reorders each name itself and stands down
+decided East Slavic rule reorders each name itself, and reorders none
 under a family-first order, so it decides the order as given-first,
 unless the names' own votes decide family-first, which it never
-overrides (decisions/group-suggestion). Before either it decides
+overrides, or the base reads ``FAMILY_FIRST`` and the patronymics are
+mostly written last, whose order it keeps (decisions/group-suggestion).
+Before either it decides
 ``initials_as_family`` (rules/O8) from the runs of letters ending the
 group's names, a group property with no per-name vote, and a group
 decided so casts no trailing-initial vote on its order. Beside them it
@@ -462,11 +464,15 @@ _MIN_VOTES = 2
 _MIN_SHARE = 2 / 3
 #: The share of the names casting any vote that one patronymic rule
 #: (East Slavic or Turkic) must hold strictly more than to decide it,
-#: higher than _MIN_SHARE because a decided East Slavic rule brings a
-#: given-first order with it.
+#: higher than _MIN_SHARE because a decided East Slavic rule brought a
+#: given-first order with it on any base when the share was chosen;
+#: since #1356 a FAMILY_FIRST base keeps its order where the
+#: patronymics are mostly written last.
 _MIN_PATRONYMIC_SHARE = 0.8
 #: The fewest names carrying one patronymic rule that can decide it,
-#: besides the share, for the same reason.
+#: besides the share, chosen for the same reason (decisions/
+#: group-suggestion, 2026-11-15 #1356, which measured what it decides
+#: now).
 _MIN_PATRONYMIC_VOTES = 5
 #: The fewest names ending in one run of letters (rules/O8) that can
 #: decide initials_as_family, and the share of the names ending in any
@@ -876,7 +882,8 @@ class Suggestion:
         with no word in capitals disagrees with a decided
         ``capitals_as_family``; and a name carrying an
         East Slavic patronymic never disagrees on order where the East
-        Slavic rule is decided, since the rule reorders it."""
+        Slavic rule is decided with a given-first order, since the rule
+        reorders it there."""
         decided = {e.setting: e.value for e in self.evidence if e.decided}
         if not decided:
             return ()
@@ -1043,15 +1050,23 @@ def _patronymic_winner(tally: _Tally, any_voters: int
 
 
 def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule],
-                       any_voters: int
+                       any_voters: int,
+                       written_last: tuple[int, int] | None = None
                        ) -> tuple[SettingEvidence, dict[str, object], bool]:
     """Decide ``patronymic_rules``: the evidence, the patch fields, and
-    whether the decided rule needs a given-first order."""
+    whether the decided rule needs a given-first order. ``written_last``
+    is given where a decided East Slavic rule keeps the base's
+    ``FAMILY_FIRST`` order (`_keeps_family_first`): how many of its
+    voters write the patronymic last and how many in the middle."""
     rule = _patronymic_winner(tally, any_voters)
+    if rule is PatronymicRule.EAST_SLAVIC and written_last is not None:
+        return _decide_east_slavic_keeping_the_order(
+            tally, base_rules, *written_last)
     if rule is PatronymicRule.EAST_SLAVIC:
         # the rule reorders a family-first East Slavic name itself, and
-        # stands down under a declared family-first order, so the group
-        # gets the rule with a given-first order (what locales.RU ships)
+        # its reordering stands down under a declared family-first
+        # order, so the group gets the rule with a given-first order
+        # (what locales.RU ships)
         value = base_rules | {rule}
         fields: dict[str, object] = (
             {} if rule in base_rules else {_PATRONYMIC_RULES: frozenset({rule})})
@@ -1061,6 +1076,69 @@ def _decide_patronymic(tally: _Tally, base_rules: frozenset[PatronymicRule],
         return _decide_turkic(tally, base_rules)
     return (tally.evidence(_PATRONYMIC_RULES, base_rules, False,
                            lambda v: v in base_rules), {}, False)
+
+
+def _decide_east_slavic_keeping_the_order(
+        tally: _Tally, base_rules: frozenset[PatronymicRule],
+        last: int, middle: int
+        ) -> tuple[SettingEvidence, dict[str, object], bool]:
+    """A group whose patronymics are East Slavic and mostly written
+    last, under a ``FAMILY_FIRST`` base the names' own votes do not
+    move (`_keeps_family_first`): the group gets the rule and no order.
+    That order reads a name written family, given, patronymic already,
+    and under it the rule reorders no name and fills the ``patronymic``
+    view (`Sidorov Ivan Petrovich`); a given-first order would read the
+    list's names without a patronymic family-last (`Aliyev Farrukh`).
+    The names that write the patronymic in the middle get no
+    given-first order, and the note says how many
+    (decisions/group-suggestion, 2026-11-15 #1356)."""
+    rule = PatronymicRule.EAST_SLAVIC
+    value = base_rules | {rule}
+    fields: dict[str, object] = (
+        {} if rule in base_rules else {_PATRONYMIC_RULES: frozenset({rule})})
+    note = (f"the base's family-first order is kept: {last} of the "
+            f"{last + middle} names carrying the patronymic write it "
+            f"last, as a list written family first does, and the rule "
+            f"reorders none of them")
+    if middle:
+        # true whatever else the patch turns on: capitals_as_family,
+        # suggested beside it, may read these names all the same
+        verb, gets = ("writes", "gets") if middle == 1 else ("write", "get")
+        note += (f"; the {middle} that {verb} it in the middle {gets} "
+                 f"no given-first order from this suggestion")
+    return (tally.evidence(_PATRONYMIC_RULES, value, True,
+                           lambda v: v in value, note), fields, False)
+
+
+def _keeps_family_first(
+        policy: Policy, order_end: Vote | None,
+        with_words: list[tuple[str, dict[Signal, Vote], bool, list[str]]]
+        ) -> tuple[int, int] | None:
+    """Whether a decided East Slavic rule would keep this base's order,
+    and if so how many of its voters write the patronymic last and how
+    many in the middle; None where the rule decides the order as
+    given-first, as it does on every other base.
+
+    The order is kept only under ``FAMILY_FIRST``, only where the names'
+    own votes do not decide a given-first order, and only where MORE of
+    the names casting the East Slavic vote write the patronymic last
+    (family, given, patronymic: rules/O1's family-first shape) than in
+    the middle (given, patronymic, family); a tie is not kept. A name
+    with the ending on both its middle and its last word counts as
+    middle, as rules/O1 reads it. ``FAMILY_FIRST_GIVEN_LAST`` is never
+    kept: that order takes the patronymic of such a list for the given
+    name, and the given-first order with the rule reads it."""
+    if policy.name_order != FAMILY_FIRST or order_end == GIVEN_FIRST:
+        return None
+    last = middle = 0
+    for _, votes, _, words in with_words:
+        if votes.get(Signal.PATRONYMIC) is PatronymicRule.EAST_SLAVIC:
+            # _patronymic votes East Slavic on three words alone
+            if has_patronymic_ending(words[1].rstrip(".") or words[1]):
+                middle += 1
+            else:
+                last += 1
+    return (last, middle) if last > middle else None
 
 
 def _decide_turkic(tally: _Tally, base_rules: frozenset[PatronymicRule]
@@ -1094,9 +1172,12 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     """Decide ``name_order`` in either direction. A family-first answer
     keeps the base's family-first spelling where the base has one. A
     decided East Slavic rule decides the order as given-first, since
-    the rule reorders each name and stands down under a family-first
+    the rule reorders each name and reorders none under a family-first
     order, unless the names' own votes decide family-first: a decided
-    order is never overridden, and the rule then stands down."""
+    order is never overridden, and the rule then reorders no name. A
+    rule that keeps a ``FAMILY_FIRST`` base's order
+    (`_keeps_family_first`) is not passed here: the order is then the
+    votes' or the base's."""
     notes = [_comma_note(comma_left_out), trailing_note]
     end = tally.winner()
     if rule_needs_given_first and end != FAMILY_FIRST:
@@ -1110,7 +1191,7 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     if rule_needs_given_first:
         notes.insert(0, "the East Slavic rule is decided too, but the names' "
                         "order votes decide a family-first order, under "
-                        "which the rule stands down")
+                        "which the rule reorders no name")
     note = "; ".join(n for n in notes if n)
     if end is None:
         return (tally.evidence(_NAME_ORDER, base_order, False,
@@ -1451,8 +1532,12 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         for setting, tally in tallies.items():
             tally.add(per_setting[setting])
     policy = parser.policy
+    # a FAMILY_FIRST base keeps its order where the group's East Slavic
+    # patronymics are mostly written last (#1356)
     patronymic, patronymic_fields, settled = _decide_patronymic(
-        tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters)
+        tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters,
+        _keeps_family_first(policy, tallies[_NAME_ORDER].winner(),
+                            with_words))
     if set_aside and any(Signal.PATRONYMIC in n.votes for n in evidence):
         # the evidence says what its share was taken of: the names a
         # set-aside vote left with none still count among those casting

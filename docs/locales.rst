@@ -134,7 +134,7 @@ How each part combines:
   setting one script to different orders warn, and the later wins.
   A script order takes a name before a patronymic rule does: the East
   Slavic and Turkic rotations stand down where an order is declared, so
-  beside ``mn`` the ``ru`` and ``tr_az`` rules no longer read a name
+  beside ``mn`` the ``ru`` and ``tr_az`` rules no longer reorder a name
   written wholly in Cyrillic, which ``mn`` reads father's name first:
 
   .. doctest::
@@ -704,7 +704,8 @@ A declared family-first ``name_order`` stands down both patronymic
 rotations (``ru`` and ``tr_az``) instead of competing with them. Under
 ``FAMILY_FIRST`` the two never disagree on a name the rule matches: that
 order already reads ``"Сидоров Иван Петрович"`` as family ``Сидоров``,
-so folding the pack onto a base built with it adds nothing. Under
+so the pack's rotation adds nothing to a base built with it, and the
+pack still fills ``patronymic`` there (``Петрович``). Under
 ``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
 word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
 as the given name. ``patronymic`` does not stand down, but it reads only

@@ -26,7 +26,10 @@ before the surname), Czech candidates (cz-candidates, `jmeno` and
 given name, as Vietnamese writes them) and ORCID credit names written as
 a byline (orcid-researchers, `orcid-byline`: `Huntley R P`, the given
 name its initials, the family name the box it matches; written
-family-first it is the byline itself; `orcid-byline-joined` the ones
+family-first it is the byline itself; `pv-RU-patronymic` is PatentsView's
+Russian inventors whose given box is a given name and an East Slavic
+patronymic, the list the East Slavic rule is decided on, in both
+writings (#1356); `orcid-byline-joined` the ones
 whose given part is one word of two or three bare capitals, `AM Hoy`,
 the shape #1355 is about), and ORCID holders who typed one
 box wholly in capitals and the other with none, in a name holding a
@@ -73,11 +76,24 @@ names, the per-NAME order votes (`suggest`'s unit: right, wrong,
 contested, none) and each signal's own votes right and wrong. With
 `--wrong-words N`, each signal's N commonest words in a wrong vote.
 
+The draws run under two bases, and no population writes its families in
+capitals with patronymics: a FAMILY_FIRST_GIVEN_LAST draw, the East
+Slavic rule beside `capitals_as_family` in one patch, and a given-first
+patronymic list whose words cast no order vote are held by tests alone
+(tests/v2/test_suggest.py; decisions/group-suggestion, 2026-11-15 #1356).
+`pv-RU-patronymic`'s row written family-first under the given-first base
+reads near 0% at every size, for two reasons. From five names the rule
+is decided with the base's order and rotates each name, so every name
+is read right while the group is not RIGHT, which is said of its order.
+At two to four names nothing is decided (a rule needs five names), the
+base stands, and the names are misread.
+
 THE PARLIAMENTS, from the opensanctions-parliaments raw.jsonl, rows whose
 `form` is "name" and whose `script` is Latin or Cyrillic: the Turkic
 table of decisions/group-suggestion's 2026-11-10 TURKIC entry (its
 TURKIC_LISTS, scored by TURKIC_CONVENTION under each fixed policy and
-end to end through `suggest`), then every list's suggestion as a whole,
+end to end through `suggest`), then every list's suggestion as a whole
+under the two bases and under FAMILY_FIRST_GIVEN_LAST,
 beside the order the list was read by eye to write (LIST_ORDER).
 
 THE CHECKS (`--checks`, in place of the tables): over every population's
@@ -95,8 +111,9 @@ checkout without that threshold runs its own rule, and the comparison
 says so); it is also the
 harness's proof that it can report a difference: `--set
 _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
-(the first holds the order, the second the patronymic rule, which forces
-an order of its own), so every family-first group under the given-first
+(the first holds the order, the second the patronymic rule, which
+decides a given-first order of its own, save where #1356 keeps the
+family-first base's), so every family-first group under the given-first
 base must read 0% (and every given-first group under the family-first
 base). `--base` runs the same measurement against another
 checkout in a child process and lists every cell that moved, every
@@ -150,7 +167,7 @@ PV_COUNTRIES = ("US", "DE", "FR", "CN", "JP", "KR", "IN", "IT", "ES", "RU",
                 "BR", "TW", "NL")
 PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
                      "Nigerian", "Turkish", "Spanish")
-GF, FF = "GF", "FF"
+GF, FF, FFGL = "GF", "FF", "FFGL"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
             "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
@@ -439,7 +456,31 @@ def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
         else:
             notes.extend(f"{label}: no names in {source}" for label in empty)
     pools = {label: pool for label, pool in keep.pools.items() if pool}
+    patronymics = patronymic_names(pools.get(PATRONYMIC_SOURCE, []))
+    if patronymics:
+        pools[PATRONYMIC_LABEL] = patronymics
     return dict(sorted(pools.items())), notes
+
+
+#: The population whose names carrying an East Slavic patronymic make
+#: one of their own, and its label (#1356).
+PATRONYMIC_SOURCE = "pv-RU"
+PATRONYMIC_LABEL = "pv-RU-patronymic"
+
+
+def patronymic_names(pool: Pool) -> Pool:
+    """The names of `pool` whose given box is a given name and an East
+    Slavic patronymic (`Zzyvan Petrovich`) and whose family box is one
+    word: written given-first they are given, patronymic, family, and
+    family-first family, given, patronymic, the two shapes rules/O1
+    reads. A list of nothing but them is what the East Slavic rule is
+    decided on, which the population they are drawn from (two names in
+    five carrying one) seldom gives."""
+    from nameparser._pipeline._vocab import has_patronymic_ending
+    return [(given, family) for given, family in pool
+            if len(family.split()) == 1 and len(given.split()) == 2
+            and has_patronymic_ending(given.split()[1])
+            and not has_patronymic_ending(given.split()[0])]
 
 
 def written(name: tuple[str, str], order: str) -> str:
@@ -496,6 +537,15 @@ def _thresholds(overrides: dict[str, float]) -> Iterator[None]:
 def _bases() -> dict[str, Any]:
     from nameparser import FAMILY_FIRST, Parser, Policy
     return {GF: Parser(), FF: Parser(policy=Policy(name_order=FAMILY_FIRST))}
+
+
+def _list_bases() -> dict[str, Any]:
+    """The bases a whole parliament list is read under: the two of the
+    draws and FAMILY_FIRST_GIVEN_LAST, which the East Slavic rule's
+    order decision treats apart from FAMILY_FIRST (#1356)."""
+    from nameparser import FAMILY_FIRST_GIVEN_LAST, Parser, Policy
+    return {**_bases(), FFGL: Parser(policy=Policy(
+        name_order=FAMILY_FIRST_GIVEN_LAST))}
 
 
 def _end(order: tuple[Any, ...]) -> str:
@@ -781,7 +831,7 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
         row["scored"] = len(scored)
         turkic[dataset] = row
     suggestions = []
-    bases = _bases()
+    bases = _list_bases()
     for dataset, scripts in lists.items():
         for script, names in scripts.items():
             for base, parser in bases.items():
@@ -859,7 +909,9 @@ def report(result: dict[str, Any], show_words: bool) -> None:
                   + " ".join(_pct(x) for x in row) + f"   {p['size']}{mark}")
         if p["east_slavic"]:
             print(f"{'':14} (the East Slavic rule was decided in "
-                  f"{p['east_slavic']} groups, and forced a given-first order)")
+                  f"{p['east_slavic']} groups: it brings a given-first "
+                  f"order, save under the family-first base where the "
+                  f"patronymics are mostly written last)")
         if p.get("letters"):
             print(f"{'':14} (initials_as_family was decided in "
                   f"{p['letters']} groups)")

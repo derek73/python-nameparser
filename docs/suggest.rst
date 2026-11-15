@@ -41,10 +41,19 @@ are more than four in five of the voting names, a name whose trailing
 initial alone was set aside counting among them (the patronymic
 evidence's note says how many), and a patronymic
 votes only where the rule can read it (three name words for East
-Slavic, three or four for Turkic); a group decided East Slavic reads
-given-first, since that rule reorders each name itself and stands down
-under a family-first order, unless its names' own votes decide a
-family-first order, which the rule never overrides. Every setting the
+Slavic, three or four for Turkic). A group decided East Slavic gets
+the rule and reads given-first, the order that rule reorders each name
+under, unless its names' own votes decide a family-first order, which
+the rule never overrides. One case keeps a declared order instead:
+under a ``FAMILY_FIRST`` parser whose names' votes do not decide
+given-first, where more of the names carrying the patronymic write it
+last (``Sidorov Ivan Petrovich``) than in the middle (``Ivan Petrovich
+Sidorov``), the group keeps that order and gets the rule alone, which
+reorders no name there and fills the ``patronymic`` view; the names
+written the other way get no given-first order, and the patronymic
+evidence's note counts them. A tie, and a
+``FAMILY_FIRST_GIVEN_LAST`` parser, get the given-first order with the
+rule. Every setting the
 votes do not decide keeps the base parser's value.
 
 .. doctest::
@@ -183,8 +192,8 @@ a name that writes no capitals disagrees with a decided switch:
 
 Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
-in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12 and
-2026-11-14), a list written in the base's own order keeps it
+in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12,
+2026-11-14 and 2026-11-15), a list written in the base's own order keeps it
 in at least 98% of groups from 2 to 200 names, but moving the base
 takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
 Polish names to 50 or 200 for Indian ones (US patent inventors and UK
