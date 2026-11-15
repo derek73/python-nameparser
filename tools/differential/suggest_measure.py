@@ -859,7 +859,9 @@ def report(result: dict[str, Any], show_words: bool) -> None:
                   + " ".join(_pct(x) for x in row) + f"   {p['size']}{mark}")
         if p["east_slavic"]:
             print(f"{'':14} (the East Slavic rule was decided in "
-                  f"{p['east_slavic']} groups, and forced a given-first order)")
+                  f"{p['east_slavic']} groups: under the given-first base it "
+                  f"decides a given-first order, and it leaves the "
+                  f"family-first base's order to the names' own votes)")
         if p.get("letters"):
             print(f"{'':14} (initials_as_family was decided in "
                   f"{p['letters']} groups)")

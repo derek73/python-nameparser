@@ -41,10 +41,17 @@ are more than four in five of the voting names, a name whose trailing
 initial alone was set aside counting among them (the patronymic
 evidence's note says how many), and a patronymic
 votes only where the rule can read it (three name words for East
-Slavic, three or four for Turkic); a group decided East Slavic reads
-given-first, since that rule reorders each name itself and stands down
-under a family-first order, unless its names' own votes decide a
-family-first order, which the rule never overrides. Every setting the
+Slavic, three or four for Turkic). A group decided East Slavic gets
+the rule, and under a given-first base reads given-first, the order
+that rule reorders each name under, unless its names' own votes decide
+a family-first order, which the rule never overrides. The rule never
+moves a base that reads names family first. Under ``FAMILY_FIRST`` the
+group keeps that order and still gets the rule, which reorders no name
+there and fills the ``patronymic`` view (``Sidorov Ivan Petrovich``).
+Under ``FAMILY_FIRST_GIVEN_LAST``, where the rule names no patronymic
+of a list written family first, both settings keep your parser's
+values. Under either, the names' own given-first votes move the order
+as any votes do, and the rule then comes with it. Every setting the
 votes do not decide keeps the base parser's value.
 
 .. doctest::

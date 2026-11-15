@@ -653,22 +653,149 @@ def test_an_east_slavic_group_gets_the_rule_and_a_given_first_order(
     assert s.parser.parse("Ivan Petrovich Sidorov").family == "Sidorov"
 
 
+# a list written family first: nine East Slavic patronymics, a Turkic
+# one and a name of two words (#1356)
+_FAMILY_FIRST_PATRONYMICS = [
+    "Karimov Rustam Anvarovich", "Yusupova Dilnoza Bahodirovna",
+    "Rahimov Sardor Ilhomovich", "Nazarova Gulnora Shavkatovna",
+    "Ismoilov Botir Erkinovich", "Hamidov Otabek Rashidovich",
+    "Sobirova Nodira Tohirovna", "Ergashev Aziz Komilovich",
+    "Qodirov Bekzod Zafarovich", "Tursunov Jasur Olim o‘g‘li",
+    "Aliyev Farrukh"]
+_EAST_SLAVIC_RULE = frozenset({PatronymicRule.EAST_SLAVIC})
+_ROLE_FIELDS = [role.value for role in Role]
+
+
+def test_an_east_slavic_group_keeps_a_family_first_base_and_gets_the_rule(
+        ) -> None:
+    # under FAMILY_FIRST the rule reorders no name and fills the
+    # patronymic view, so the order the base declared is kept
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    s = base.suggest(_FAMILY_FIRST_PATRONYMICS)
+    assert s.patch == PolicyPatch(patronymic_rules=_EAST_SLAVIC_RULE)
+    order = _order_evidence(s)
+    assert not order.decided
+    assert order.value == FAMILY_FIRST
+    assert order.note == ""
+    rules = _patronymic_evidence(s)
+    assert rules.decided
+    assert rules.value == _EAST_SLAVIC_RULE
+    assert (rules.votes_for, rules.votes_against, rules.no_evidence) == (
+        9, 1, 1)
+    assert rules.note == (
+        "the base's family-first order is kept: it reads these names "
+        "already, and the rule only names the patronymic there")
+    assert rules.note in str(s)
+    # the name carrying the other rule's patronymic disagrees, as under
+    # a given-first base; the name of two words does not
+    assert [n.text for n in s.disagreeing()] == [
+        "Tursunov Jasur Olim o‘g‘li"]
+
+
+@pytest.mark.parametrize(("text", "patronymic"), [
+    ("Karimov Rustam Anvarovich", "Anvarovich"),
+    ("Tursunov Jasur Olim o‘g‘li", ""),
+    ("Aliyev Farrukh", ""),
+    # written given first, which the base's order misreads either way
+    ("Rustam Anvarovich Karimov", ""),
+])
+def test_the_rule_suggested_under_a_family_first_base_moves_no_field(
+        text: str, patronymic: str) -> None:
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    suggested = base.suggest(_FAMILY_FIRST_PATRONYMICS).parser
+    assert suggested.policy.name_order == FAMILY_FIRST
+    before, after = base.parse(text), suggested.parse(text)
+    for field in _ROLE_FIELDS:
+        assert getattr(after, field) == getattr(before, field), field
+    assert before.patronymic == ""
+    assert after.patronymic == patronymic
+
+
+def test_an_east_slavic_group_changes_nothing_where_the_given_name_is_last(
+        ) -> None:
+    # under FAMILY_FIRST_GIVEN_LAST the rule names no patronymic of a
+    # list written family first, so neither setting is suggested
+    base = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    s = base.suggest(_FAMILY_FIRST_PATRONYMICS)
+    assert s.patch == PolicyPatch()
+    order = _order_evidence(s)
+    assert not order.decided
+    assert order.value == FAMILY_FIRST_GIVEN_LAST
+    rules = _patronymic_evidence(s)
+    assert not rules.decided
+    assert rules.value == frozenset()
+    assert (rules.votes_for, rules.votes_against, rules.no_evidence) == (
+        0, 10, 1)
+    assert rules.note == (
+        "9 names carry an East Slavic patronymic, enough to decide the "
+        "rule, but it is not suggested: the base reads the given name "
+        "last (FAMILY_FIRST_GIVEN_LAST), where the rule reorders no name "
+        "and names no patronymic of a list written family first")
+    assert rules.note in str(s)
+    assert s.disagreeing() == ()
+    assert s.parser.parse("Karimov Rustam Anvarovich") == base.parse(
+        "Karimov Rustam Anvarovich")
+
+
+@pytest.mark.parametrize(("base_order", "decided"), [
+    (FAMILY_FIRST, True), (FAMILY_FIRST_GIVEN_LAST, False)])
+def test_a_family_first_base_carrying_the_rule_keeps_its_order_and_its_rule(
+        base_order: tuple[Role, Role, Role], decided: bool) -> None:
+    base = Parser(policy=Policy(name_order=base_order,
+                                patronymic_rules=_EAST_SLAVIC_RULE))
+    s = base.suggest(_FAMILY_FIRST_PATRONYMICS)
+    assert s.patch == PolicyPatch()
+    assert s.parser.policy == base.policy
+    assert not _order_evidence(s).decided
+    rules = _patronymic_evidence(s)
+    # the base's own value either way, never none
+    assert rules.value == _EAST_SLAVIC_RULE
+    assert rules.decided is decided
+    assert rules.votes_for == 9
+
+
 @pytest.mark.parametrize("base_order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
-def test_an_east_slavic_group_moves_a_family_first_base_to_given_first(
+def test_given_first_order_votes_move_a_family_first_base_with_the_rule(
         base_order: tuple[Role, Role, Role]) -> None:
-    # the rule stands down under a family-first order, so it brings a
-    # given-first one with it, whatever the names' order votes say
+    # the names' own votes decide a given-first order (the family in
+    # capitals, written last), so the base moves by them, and the rule
+    # comes with the order it reads under
     s = Parser(policy=Policy(name_order=base_order)).suggest(
-        ["Сидоров Иван Петрович", "Иванов Пётр Сергеевич",
-         "Петров Олег Иванович", "Смирнов Павел Андреевич",
-         "Попов Илья Ильич", "Kim Minjun"])
-    assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
+        ["Иван Петрович СИДОРОВ", "Пётр Сергеевич ИВАНОВ",
+         "Олег Иванович ПЕТРОВ", "Павел Андреевич СМИРНОВ",
+         "Илья Ильич ПОПОВ"])
     assert s.patch.name_order == GIVEN_FIRST
+    assert s.patch.patronymic_rules == _EAST_SLAVIC_RULE
     order = _order_evidence(s)
     assert order.decided
-    assert (order.votes_for, order.votes_against) == (0, 1)
-    assert s.parser.parse("Ivan Petrovich Sidorov").family == "Sidorov"
-    assert s.parser.parse("Sidorov Ivan Petrovich").family == "Sidorov"
+    assert (order.votes_for, order.votes_against) == (5, 0)
+    assert "it needs a given-first order" in order.note
+    assert _patronymic_evidence(s).note == ""
+    assert s.parser.parse("Иван Петрович СИДОРОВ").family == "СИДОРОВ"
+
+
+@pytest.mark.parametrize("base_order", [
+    GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+def test_a_turkic_group_gets_the_rule_alone_under_every_base(
+        base_order: tuple[Role, Role, Role]) -> None:
+    s = Parser(policy=Policy(name_order=base_order)).suggest(_TURKIC)
+    assert s.patch == PolicyPatch(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))
+    assert not _order_evidence(s).decided
+    assert _patronymic_evidence(s).note == ""
+    assert s.disagreeing() == ()
+
+
+def test_an_east_slavic_group_moves_no_order_under_a_given_first_base(
+        ) -> None:
+    # the default base: the rule, and the given-first order it reads
+    # under, which is the base's own
+    s = Parser().suggest(_FAMILY_FIRST_PATRONYMICS)
+    assert s.patch == PolicyPatch(patronymic_rules=_EAST_SLAVIC_RULE)
+    order = _order_evidence(s)
+    assert order.decided and order.value == GIVEN_FIRST
+    assert "it needs a given-first order" in order.note
+    assert _patronymic_evidence(s).note == ""
 
 
 @pytest.mark.parametrize("names, rule", [
@@ -1207,7 +1334,15 @@ def test_a_decided_rule_never_overrides_an_order_decided_against_it(
     order = _order_evidence(s)
     assert order.decided and order.value == FAMILY_FIRST
     assert (order.votes_for, order.votes_against) == (5, 0)
-    assert "East Slavic" in order.note and "stands down" in order.note
+    if base_order == GIVEN_FIRST:
+        # the order moved against the rule's own: the note says the
+        # rule reorders no name under it
+        assert "East Slavic" in order.note
+        assert "reorders no name" in order.note
+    else:
+        # the base's own order, kept: the patronymic evidence says so
+        assert order.note == ""
+        assert "family-first order is kept" in _patronymic_evidence(s).note
     assert s.parser.policy.name_order == FAMILY_FIRST
     assert s.parser.parse("SIDOROV Ivan Petrovich").family == "SIDOROV"
     assert s.disagreeing() == ()
@@ -1634,9 +1769,11 @@ _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
     ("_MIN_PATRONYMIC_SHARE", 0.5, _east_slavic(5) + _OTHERS[:2],
      GIVEN_FIRST, (UNSET, UNSET, UNSET),
      (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
+    # under a family-first base the rule comes without an order (#1356);
+    # under the default one the order it needs is the base's own
     ("_MIN_PATRONYMIC_VOTES", 2, _east_slavic(2), FAMILY_FIRST,
      (UNSET, UNSET, UNSET),
-     (GIVEN_FIRST, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
+     (UNSET, frozenset({PatronymicRule.EAST_SLAVIC}), UNSET)),
     # one name ending in B K decides the switch once one is enough
     ("_MIN_RUN_NAMES", 1, ["Durga B K", "Mary Smith"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (UNSET, UNSET, True)),

@@ -704,7 +704,8 @@ A declared family-first ``name_order`` stands down both patronymic
 rotations (``ru`` and ``tr_az``) instead of competing with them. Under
 ``FAMILY_FIRST`` the two never disagree on a name the rule matches: that
 order already reads ``"Сидоров Иван Петрович"`` as family ``Сидоров``,
-so folding the pack onto a base built with it adds nothing. Under
+so the pack's rotation adds nothing to a base built with it, and the
+pack still fills ``patronymic`` there (``Петрович``). Under
 ``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
 word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
 as the given name. ``patronymic`` does not stand down, but it reads only
