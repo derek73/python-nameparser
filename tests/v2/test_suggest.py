@@ -92,8 +92,8 @@ def test_a_final_short_capitals_word_casts_no_capitals_vote(text: str) -> None:
 
 @pytest.mark.parametrize("text", [
     "Armitage JO", "Smith JP", "Jason NG",
-    # `JO` and `NG` are listed surnames, the word in front is not
-    "Marsh JO", "Hollis NG", "Yoon Marsh NG"])
+    # `JO` and `NG` are listed surnames, the name's first word is not
+    "Marsh JO", "Hollis NG", "Marsh Hollis NG"])
 def test_a_final_short_capitals_word_never_votes_as_a_surname_alone(
         text: str) -> None:
     assert Signal.SURNAME not in name_votes(text, L)
@@ -108,6 +108,8 @@ def test_a_final_short_capitals_word_never_votes_as_a_surname_alone(
     "Zhou TAN",          # three
     "Zhou NG.",          # a final full stop read past
     "Yoon Zhou LI",      # three words
+    "Yoon Marsh NG",     # the first word listed, the one between not
+    "Zhou LÍ",           # listed under the tables' spelling fold
     "Zhi WANG NG",       # a capitals word before it
     "Zhou NG, PhD",      # post-nominals after a comma
     "Zhou NG PhD",
@@ -126,6 +128,8 @@ def test_a_listed_surname_ending_in_short_capitals_silences_the_surname_vote(
     ("Zhou Yoon QZ", {Signal.SURNAME: FAMILY_FIRST}),
     ("Yoon HOLLIS QZ", {Signal.SURNAME: FAMILY_FIRST}),
     ("Zhou QZ, PhD", {Signal.SURNAME: FAMILY_FIRST}),
+    # a joiner in the ending word: its fold is no listed surname
+    ("Zhou LI-", {Signal.SURNAME: FAMILY_FIRST}),
     # neither end listed
     ("Marsh QZ", {}),
     # four letters: a capitals word, and both ends looked up as ever
@@ -285,9 +289,10 @@ def test_a_list_ending_in_listed_short_capitals_words_keeps_its_base(
 @pytest.mark.parametrize("policy", _BASES)
 def test_bylines_ending_in_joined_initials_still_vote_by_their_surname(
         policy: Policy) -> None:
-    # the family name first, a listed surname; the initials spell none
+    # the family name first, a listed surname; the initials spell none,
+    # save the last name's, which casts no vote
     s = Parser(policy=policy).suggest(
-        ["Kim QZ", "Yoon QX", "Zhou QK", "Marsh QZ"])
+        ["Kim QZ", "Yoon QX", "Zhou QK", "Zhou NG"])
     order = s.evidence[0]
     assert order.decided
     assert s.parser.policy.name_order[0] is Role.FAMILY

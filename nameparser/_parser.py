@@ -325,7 +325,7 @@ class Parser:
         Emily``), casts no capitals vote, being joined initials as
         often as a short surname. The ending one casts no surname
         vote of its own, and where it is itself a listed surname
-        (``Zhou NG``) the name casts none, the word in front being the
+        (``Zhou NG``) the name casts none, its first word being the
         given name as often as the family; a name opening in one casts
         no surname vote.
         ``name_order`` is
