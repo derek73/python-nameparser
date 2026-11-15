@@ -233,7 +233,11 @@ def _at_one_end(words: list[str], table: frozenset[str]) -> tuple[bool, bool]:
 def _a_listed_name(word: str) -> bool:
     """A word the name tables list: name evidence, which is never read
     past as a title or a post-nominal (`Law`, a Cantonese surname and a
-    listed title; `Cem`, a Turkish given name and a listed credential)."""
+    listed title). The given-name table holds no listed suffix since
+    #1357, and the surname table's (`ma`, `meng`) are acronyms that may
+    be a name, which are not read past bare with or without this test,
+    so the post-nominal half acts on no shipped word; it holds for a
+    table built otherwise."""
     return (_listed(word, ROMANIZED_SURNAMES)
             or _listed(word, COMMON_GIVEN_NAMES))
 

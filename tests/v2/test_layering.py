@@ -737,13 +737,17 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: (the given names refusing a listed title, 2026-11-12), 20 -> 24;
 #: and tools/vocab/familiar_candidates.py reading the default's
 #: titles, to drop a title from a name before it pairs a familiar
-#: form, 24 -> 25. 4i-a's own count was 114 (on
+#: form, 24 -> 25; and order_names.py's `listed_suffixes`, its
+#: `sets =` binding and the two suffix sets it reads (the given names
+#: refusing a listed suffix, #1357), 25 -> 28 (`listed_titles`
+#: reading `title_abbreviations` too adds none, that set being no
+#: field of `_VOCAB_FIELDS`). 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 203, "tools": 25}
+_UNGUARDED_READS = {"library": 203, "tools": 28}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

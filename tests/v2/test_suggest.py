@@ -1628,15 +1628,20 @@ def test_a_stroked_or_dotless_given_name_votes_either_way_written(
 
 @pytest.mark.parametrize("pair", [
     ("Barış Yilmaz", "Baris Yilmaz"), ("Yilmaz Barış", "Yilmaz Baris"),
+    ("Aslı Yilmaz", "Asli Yilmaz"), ("Yilmaz Aslı", "Yilmaz Asli"),
     ("Małgorzata Nowak", "Malgorzata Nowak"),
     ("Strauß Øystein", "Strauss Oystein")])
 def test_a_name_reads_alike_written_with_or_without_its_letters(
         pair: tuple[str, str]) -> None:
-    # `baris` is not in the table: ORCID's holders wrote it in the
-    # family box 8 times of 89, more than the filter's 5%, once Barış
-    # and Baris count as one spelling; both spellings still read alike
+    # two spellings read alike whether the name is a table word or not:
+    # `baris` votes both ways written (in the family box 8 times of 89,
+    # 9.0%, inside the 10% share since #1357), and `asli` casts no vote
+    # either way written (14 of 119, 11.8%), once the dotted and the
+    # dotless spelling count as one
     written, typed = pair
     assert name_votes(written, L) == name_votes(typed, L)
+    voted = Signal.GIVEN_NAME in name_votes(typed, L)
+    assert voted == ("Asl" not in typed)
 
 
 @pytest.mark.parametrize("text, signal, value", [
@@ -1879,6 +1884,162 @@ def test_the_base_lexicon_is_the_one_consulted() -> None:
     s = Parser().suggest(["zzp Berg Jan", "zzp Holt Anna"])
     assert all(row[0] is not Signal.PARTICLE
                for row in _order_evidence(s).by_signal)
+
+
+# -- the given-name table's family share (#1357) -----------------------------
+
+#: Eight invented surnames no table lists, under the given names of
+#: #1357's list: three the table holds since its family share went from
+#: 5% to 10% (`John` 7.1%, `David` 5.1%, `Robert` 5.7% of their ORCID
+#: uses in the family box, 2026-11-15) and five it still leaves out
+#: (`James` 10.3%, `Thomas` 15.8%, `Paul` 11.3%, `George` 12.7%,
+#: `Charles` 12.3%). `James` stands 0.3 points over the cut, so a table
+#: rebuilt from a refreshed ORCID file may take it, and the count of
+#: three votes in the list test below then fails and is re-taken.
+_SHARED_GIVEN_NAMES = [
+    ("John", "Zorvath"), ("David", "Brenwick"), ("James", "Tulvane"),
+    ("Robert", "Maskery"), ("Thomas", "Quillfen"), ("Paul", "Havelund"),
+    ("George", "Pennacott"), ("Charles", "Dorrance"),
+]
+_BASE_ORDERS = [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST]
+
+
+def _shared(given_first: bool) -> list[str]:
+    return [f"{g} {f}" if given_first else f"{f} {g}"
+            for g, f in _SHARED_GIVEN_NAMES]
+
+
+def _shared_right(parser: Parser, names: list[str]) -> int:
+    return sum((parsed.given, parsed.family) == pair for parsed, pair
+               in zip(map(parser.parse, names), _SHARED_GIVEN_NAMES))
+
+
+@pytest.mark.parametrize("text, vote", [
+    # between 5% and 10%: these vote since #1357. The test reads the
+    # committed table, so a refreshed ORCID file moves nothing here
+    # until the table is rebuilt, and each word stands well inside its
+    # side of the cut (7.1% and 5.7% under it, 15.8%, 19.6% and 12.7%
+    # over it)
+    ("John Zorvath", GIVEN_FIRST), ("Zorvath John", FAMILY_FIRST),
+    ("Robert Zorvath", GIVEN_FIRST), ("Zorvath Robert", FAMILY_FIRST),
+    ("Thomas Zorvath", None), ("Zorvath Thomas", None),
+    ("Martin Zorvath", None), ("George Zorvath", None),
+])
+def test_a_given_name_votes_up_to_a_tenth_of_its_uses_as_a_family_name(
+        text: str, vote: object) -> None:
+    assert name_votes(text, L).get(Signal.GIVEN_NAME) == vote
+
+
+@pytest.mark.parametrize("base_order", _BASE_ORDERS)
+@pytest.mark.parametrize("given_first", [True, False])
+def test_given_names_that_are_also_surnames_decide_a_list(
+        base_order: object, given_first: bool) -> None:
+    # #1357's list cast no vote: every given name in it is also a
+    # surname, and the table kept none of them
+    names = _shared(given_first)
+    base = Parser(policy=Policy(name_order=base_order))  # type: ignore[arg-type]
+    s = base.suggest(names)
+    order = _order_evidence(s)
+    assert (order.votes_for, order.votes_against, order.no_evidence) == (
+        3, 0, 5)
+    assert order.decided
+    written_as_the_base_reads = given_first == (base_order == GIVEN_FIRST)
+    if written_as_the_base_reads:
+        assert s.patch == PolicyPatch()
+        assert _shared_right(base, names) == 8
+    else:
+        assert s.patch.name_order == (
+            GIVEN_FIRST if given_first else FAMILY_FIRST)
+        assert _shared_right(base, names) == 0
+    assert _shared_right(s.parser, names) == 8
+
+
+@pytest.mark.parametrize("base_order", _BASE_ORDERS)
+@pytest.mark.parametrize("credential", ["MD", "ASA"])
+def test_a_bare_credential_ending_a_name_is_no_given_name(
+        base_order: object, credential: str) -> None:
+    # `Md` is Muhammad written short, typed into ORCID's given-name box
+    # often enough to rank; in the table it voted that these names
+    # write the given name last, and the word was no longer read past
+    # as a post-nominal. `Asa` is a given name and a credential the
+    # parse reads where it is written in capitals (suffix `ASA`); the
+    # table held it before #1357 and these four names moved a default
+    # base to family-first. The builder refuses every listed suffix.
+    names = [f"{name} {credential}" for name in (
+        "Zorvan Qelliot", "Brask Tulliver", "Ennis Varkoly",
+        "Corwen Prewitt")]
+    assert all(Parser().parse(name).suffix == credential for name in names)
+    for name in names:
+        assert Signal.GIVEN_NAME not in name_votes(name, L)
+    base = Parser(policy=Policy(name_order=base_order))  # type: ignore[arg-type]
+    s = base.suggest(names)
+    assert s.patch == PolicyPatch()
+    assert _order_evidence(s).no_evidence == 4
+
+
+def test_no_table_word_is_read_as_a_title_or_a_suffix() -> None:
+    # the two suffix sets and the title abbreviations hold none of the
+    # table, and by the parse's own reading no table word is a title or
+    # a suffix: in capitals and in Title case, ending a name with and
+    # without a full stop, and opening one without. Opening a name with
+    # a full stop is left out: nearly every table word is a title there
+    # by rules/H2's shape (`Emily. Zorvan Qelliot`), and the suggester
+    # votes on it all the same, a gap older than this table that no
+    # exclusion closes. About 48,000 parses.
+    from nameparser.config._order_names import COMMON_GIVEN_NAMES
+    sets = L._sets
+    assert not COMMON_GIVEN_NAMES & (
+        sets.suffix_acronyms | sets.suffix_words | sets.title_abbreviations)
+    parser = Parser()
+    read = []
+    for word in sorted(COMMON_GIVEN_NAMES):
+        for cased in (word.upper(), word.capitalize()):
+            names = [f"Zorvan Qelliot {cased}", f"Zorvan Qelliot {cased}.",
+                     f"{cased} Zorvan Qelliot"]
+            read += [name for name in names
+                     if (parsed := parser.parse(name)).title or parsed.suffix]
+    assert read == []
+
+
+@pytest.mark.parametrize("given_first, base_order, patch, right", [
+    # written family first under a given-first base: no vote. Before
+    # #1357 the table word `asa` voted that the given name is last,
+    # right for this list by accident, and the base was moved; the
+    # cost is recorded (decisions/group-suggestion, 2026-11-15 #1357)
+    (False, GIVEN_FIRST, PolicyPatch(), 0),
+    (False, FAMILY_FIRST, PolicyPatch(), 4),
+    # written given first: the listed given name votes alone, where
+    # `asa` at the other end cancelled it
+    (True, GIVEN_FIRST, PolicyPatch(), 4),
+    (True, FAMILY_FIRST, PolicyPatch(name_order=GIVEN_FIRST), 4),
+    (True, FAMILY_FIRST_GIVEN_LAST, PolicyPatch(name_order=GIVEN_FIRST), 4),
+])
+def test_a_post_nominal_that_may_be_a_name_casts_no_vote_after_a_listed_name(
+        given_first: bool, base_order: object, patch: PolicyPatch,
+        right: int) -> None:
+    pairs = [("Emily", "Zorvath"), ("Hannah", "Brenwick"),
+             ("Megan", "Tulvane"), ("Sophie", "Maskery")]
+    names = [f"{g} {f} ASA" if given_first else f"{f} {g} ASA"
+             for g, f in pairs]
+    s = Parser(policy=Policy(name_order=base_order)).suggest(names)  # type: ignore[arg-type]
+    assert s.patch == patch
+    assert _order_evidence(s).votes_for == (4 if given_first else 0)
+    assert sum((parsed.given, parsed.family) == pair for parsed, pair
+               in zip(map(s.parser.parse, names), pairs)) == right
+
+
+def test_a_title_abbreviation_at_either_end_is_no_given_name() -> None:
+    # `gen` is a given name the 10% share admits and a title the
+    # lexicon lists as an abbreviation; as a table word it voted at
+    # both ends of a name the parse reads `Gen.` as the title of. It
+    # casts none now because it left the table: at the head the
+    # suggester still does not read a word of that shape past
+    names = ["Qelliot", "Tulliver", "Varkoly", "Prewitt"]
+    assert Parser().suggest(
+        [f"Zorvan {name} Gen." for name in names]).patch == PolicyPatch()
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    assert family_first.suggest(
+        [f"Gen. Zorvan {name}" for name in names]).patch == PolicyPatch()
 
 
 @pytest.fixture

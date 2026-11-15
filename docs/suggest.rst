@@ -194,10 +194,10 @@ Where it stops. A group is read right only once it carries enough
 names with evidence. Measured on groups drawn from real names written
 in a known order (2026-11-10, re-taken 2026-11-11, 2026-11-12,
 2026-11-14 and 2026-11-15), a list written in the base's own order keeps it
-in at least 98% of groups from 2 to 200 names, but moving the base
-takes more names, from 5 for Chinese, Taiwanese, Korean, Czech and
-Polish names to 50 or 200 for Indian ones (US patent inventors and UK
-company filers). Two kinds of list keep their order less
+in at least 97% of groups from 2 to 200 names, but moving the base
+takes more names, from 5 for Chinese, Taiwanese, Korean, Czech, Polish
+and Italian names to 50 for Russian and Indian ones. Two kinds of list
+keep their order less
 often. Names written with the given name in capitals (``ANNA Smith``)
 have their capitals read as a family name. A word of two or three
 capitals ending a name in mixed case, or opening it with no word in
@@ -208,9 +208,9 @@ one casts no surname vote; the ending one casts no surname vote of its
 own, and where it is itself a listed surname (``Zhou NG``) the name
 casts none: its first word is usually the given name there, and the
 table cannot tell the two readings apart. ORCID's bylines written initials first kept a given-first
-base in at least 98% of groups, but a list of nothing but two or three
-joined initials (``AM Hoy``) kept it in 93% of groups of 50 and 92% of
-200. Lists of such names carry little evidence
+base in at least 97% of groups, but a list of nothing but two or three
+joined initials (``AM Hoy``) kept it in just under 95% of groups of 50
+(94.7%). Lists of such names carry little evidence
 either way, so where you know how one is written, set ``name_order``
 yourself. ``capitals_as_family`` was suggested in at
 least 95% of groups from 4 names for ORCID holders who typed their

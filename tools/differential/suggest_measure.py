@@ -57,7 +57,8 @@ moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
 same-order rows, which must not fall below 95%, save orcid-givcaps'
 two, which the capitals signal reads the wrong way round by design,
-and orcid-byline-joined's given-first row at 50 and 200 names, where
+and orcid-byline-joined's given-first row at 50 names (and at 200
+until #1357), where
 the few names the name tables still vote on decide a large group
 (decisions/group-suggestion, 2026-11-14 #1355). Under each population,
 the groups that decided the East Slavic rule and the groups that decided
