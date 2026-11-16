@@ -179,64 +179,85 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
 
 .. list-table::
    :header-rows: 1
-   :widths: 22 38 12
+   :widths: 50 28 10
 
    * - Outcome
      - Example (left / right)
      - Default
    * - ``same``
-     - ``Smith`` / ``Smith``
+     - | ``Smith`` /
+       | ``Smith``
      - yes
    * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away, and each hyphen the parser joins two names with (U+2010, the en dash and others) read as the hyphen-minus wherever the parser reads the name alike, which it does not for a credential joined by one (``MD‐PhD``); and a letter a keyboard lacks written as one types it or as its standard transcription (``Łukasz`` / ``Lukasz``, ``Müller`` / ``Mueller``)
-     - ``María García`` / ``MARIA GARCIA``
+     - | ``María García`` /
+       | ``MARIA GARCIA``
      - yes
    * - ``joined``: equal once folded and stripped of spaces and hyphens, save where both are initials alone
-     - ``Ignazio LaRussa`` / ``Ignazio La Russa``
+     - | ``Ignazio LaRussa`` /
+       | ``Ignazio La Russa``
      - yes
    * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
-     - ``Wm. Smith`` / ``William Smith``
+     - | ``Wm. Smith`` /
+       | ``William Smith``
      - yes
    * - ``particles-aside``: the family names, or the maiden names, agree without their particles
-     - ``Juan de la Vega`` / ``Juan Vega``
+     - | ``Juan de la Vega`` /
+       | ``Juan Vega``
      - yes
    * - ``part-of-other``: one family or maiden name's words are among the other's, or listed spellings of them, save where both are initials alone
-     - ``Ana de Melo Schmitt`` / ``Ana de Melo Schmitt e Braga``
+     - | ``Ana de Melo Schmitt`` /
+       | ``Ana de Melo Schmitt e Braga``
      - yes
    * - ``initial``: an initial against a name, outside the family name, and a given name of capitals against the names that spell it
-     - ``J. Smith`` / ``John Smith``, ``JP Smith`` / ``John Paul Smith``
+     - | ``J. Smith`` /
+       | ``John Smith``
+       |
+       | ``JP Smith`` /
+       | ``John Paul Smith``
      - yes
    * - ``initials-agree``: one role written in initials alone on both sides, the same initials in the same order once spaces and hyphens are set aside; a family or maiden name of initials alone on both sides reads no other leniency, so ``J. P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict
-     - ``Jane Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``
+     - | ``Jane Doe (née J.-P.)`` /
+       | ``Jane Doe (née J. P.)``
      - yes
    * - ``one-side``: a middle name, nickname or maiden name on one side only
-     - ``John A. Smith`` / ``John Smith``
+     - | ``John A. Smith`` /
+       | ``John Smith``
      - yes
    * - ``generation-one-side``: a generation on one side only
-     - ``John Smith`` / ``John Smith Jr.``
+     - | ``John Smith`` /
+       | ``John Smith Jr.``
      - yes
    * - ``noted``: titles and credentials, which never conflict
-     - ``Dr. John Smith`` / ``John Smith, PhD``
+     - | ``Dr. John Smith`` /
+       | ``John Smith, PhD``
      - yes
    * - ``alternate-spelling``: two given names the vocabulary lists as one name spelled two ways, either way round, never chained
-     - ``Yuliya Ivanova`` / ``Iuliia Ivanova``
+     - | ``Yuliya Ivanova`` /
+       | ``Iuliia Ivanova``
      - no
    * - ``familiar-form``: two given names the vocabulary lists as a familiar-form pair, either way round, never chained
-     - ``Bill Smith`` / ``William Smith``
+     - | ``Bill Smith`` /
+       | ``William Smith``
      - no
    * - ``family-initial``: the family name written as an initial
-     - ``John S.`` / ``John Stallbaum``
+     - | ``John S.`` /
+       | ``John Stallbaum``
      - no
    * - ``given-one-side``: a given name on one side only
-     - ``Mr. Smith`` / ``John Smith``
+     - | ``Mr. Smith`` /
+       | ``John Smith``
      - no
    * - ``hyphenated-part``: a given name against the first half of a hyphenated one
-     - ``Hong Guo`` / ``Hong-Yi Guo``
+     - | ``Hong Guo`` /
+       | ``Hong-Yi Guo``
      - no
    * - ``across-roles``: a name in a different role on each side
-     - ``J. Edgar Hoover`` / ``Edgar Hoover``
+     - | ``J. Edgar Hoover`` /
+       | ``Edgar Hoover``
      - no
    * - ``conflict``
-     - ``John Smith`` / ``Jane Smith``
+     - | ``John Smith`` /
+       | ``Jane Smith``
      - never
 
 A listed spelling is read in the role's own kind of word: given names
@@ -378,8 +399,8 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
-The shipped familiar forms, 1,055 pairs (counted 2026-11-13), are
-pairs people wrote both ways for themselves, each read by two
+The shipped familiar forms, about a thousand pairs, are pairs people
+wrote both ways for themselves, each read by two
 reviewers: mostly ORCID's researchers, who wrote one in the given-name
 box and the other in a published name, in many languages (``Peggy`` /
 ``Margaret``, ``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``,
@@ -452,7 +473,7 @@ or another language's form (``Lydia`` / ``Lidia``) is a translation,
 which no outcome reads yet. It is read as a familiar form is, in the
 same roles, either way round and never chained, and the keys follow it
 where it is accepted. The same review as the familiar forms gives its
-294 pairs (counted 2026-11-13), each called a spelling of one name by
+pairs, about three hundred, each called a spelling of one name by
 both reviewers or by the maintainer, and read again against that test,
 less the spellings a keyboard forces,
 which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``
@@ -536,8 +557,8 @@ still conflicts:
 Keep the default parser for reading the fields: the fold reads the
 grandfather's name into the family too, and on ORCID's Ethiopian
 records, where holders filed their own names, it agrees with their
-boxes about 21.5 points less often than the default does (measured
-2026-11-12, #1203).
+boxes about 21.5 points less often than the default does
+(:issue:`1203`).
 
 The matcher compares a family of several words regardless of order, and
 the fold makes every such family several words, so two names consistent

@@ -70,21 +70,36 @@ One reading, a title, with the property ``addresses="given"``, which
 says the honorific precedes the *given* name — as Arabic ones do — so
 the word after it isn't read as a family name.
 
-East Asian names need no pack
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _east-asian-packs:
 
-A name written wholly in Han or Hangul, or in Japanese kanji and kana
-other than katakana alone, is read family-first, and an unspaced hangul
-name is split into surname and given name, by default, because the
-script alone settles both (:ref:`east-asian-names`;
-:ref:`east-asian-defaults` turns them off). A name only in katakana
-keeps the default order, since it may be a transcribed foreign name.
-Splitting an unspaced Han name is the exception: the same characters
-can be a Chinese or a Japanese name, divided in different places, so
-the ``zh`` and ``ja`` packs below turn it on for data whose language
-you can declare.
+Which East Asian names need a pack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A pack is for something different: a *structural* rule, like reordering
+A name written in its own script with a space between its parts needs
+no pack. Written wholly in Han or Hangul, or in Japanese kanji and kana
+other than katakana alone, it is read family-first by default, because
+the script alone settles the order (:ref:`east-asian-names`). A name only in katakana keeps
+the default order, since it may be a transcribed foreign name.
+
+A name written with no space has to be divided first, and the script
+settles that only for Korean:
+
+- **Korean** (``김민준``): no pack. An unspaced hangul name is split
+  into surname and given name by default.
+- **Chinese** (``毛泽东``): turn on ``zh``, with
+  ``parser_for(locales.ZH)``. Without it the name stays one word, read
+  as the family name.
+- **Japanese** (``山田太郎``): turn on ``ja`` and pass a segmenter, with
+  ``parser_for(locales.JA, segmenter=locales.ja_segmenter())``.
+
+Neither pack is a default, because the same Han characters can be a
+Chinese or a Japanese name, divided in different places: each is for
+data whose language you can declare
+(:ref:`splitting-unspaced-names`). The two defaults, the family-first
+order and the Korean split, can each be turned off
+(:ref:`east-asian-defaults`).
+
+Most other packs are for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express, or words that are
 right in one language and wrong as a default (`Packs that choose a
 language`_).
@@ -463,6 +478,8 @@ own (the ``ja`` row below). A code no pack has but a vocabulary file
 does (``--locale ko``) chooses that language alone, and ``--strict``
 makes the choice strict (`Reading one language only`_).
 
+.. _shipped-packs:
+
 Shipped packs
 ~~~~~~~~~~~~~
 
@@ -629,31 +646,6 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``bn``, ``ga``, ``gd``, ``hi``, ``hr``, ``pt``, ``pt_br`` and ``sl`` are each a choice of languages
-and nothing else: the readings each turns on are the default
-vocabulary's own, written in its language's file (``ne.toml`` for
-Nepali) and off until a caller chooses the language. ``ru`` and
-``tr_az`` are policy-only — they carry no vocabulary of their own.
-``ne`` is a choice with one policy field beside it,
-``initials_as_family``.
-``ja`` is a choice of the language ``ja`` (which turns on ``君``) beside one
-policy field, the segmentation it needs a segmenter to use.
-``es`` and ``es_ar`` are each a choice with a list and one policy field
-beside it: each turns ``two_family_names`` on and carries the given
-names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
-field beside it and no list. ``mn`` is a choice with one policy field,
-a ``script_orders`` entry for Cyrillic, and its choice turns on nothing. ``vi`` is a choice with one policy field,
-``name_order``, and the one fragment that takes readings out rather
-than adding them: a choice prefers its language's reading of a word
-only where that reading is a title, a particle or another vocabulary
-kind, never a name, so no reading ``vi.toml`` could write would keep
-``Van`` a name word (its fragment takes out connective and credential
-readings of Vietnamese syllables too). ``zh`` is both halves at once: a surname list, plus the
-one policy field that turns segmentation on for the script it covers. See
-:ref:`config-containers` for how that split (language vocabulary vs. behavior)
-is drawn, and :ref:`Contributing a pack to nameparser <contributing-a-pack>` for which half a
-new naming rule belongs in.
-
 Under ``ne`` a name opening with one of its words reads it as a name
 word, placed by position as any other is, a listed title in front of it
 included: the given name in the default order, the family name under a
@@ -713,6 +705,80 @@ a middle name with the ending, so it follows the order: under
 ``FAMILY_FIRST`` ``Ivan Ivanovich Ivanov`` reads given ``Ivanovich``
 and no patronymic. A marker and the word before it are read under
 every order.
+
+.. _what-a-pack-carries:
+
+What each pack carries
+^^^^^^^^^^^^^^^^^^^^^^
+
+A pack is made of up to three things, and which of them it carries
+says what it can change:
+
+- **A choice of languages** turns on readings the default vocabulary
+  already holds for that language, written in its language's file
+  (``ne.toml`` for Nepali) and off until a caller chooses it. Where
+  the language reads a word its own way, the choice also turns off
+  other languages' readings of that word (:ref:`choosing-languages`).
+- **Policy fields** change how a name is read whatever its words are.
+- **A word list** of the pack's own.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 14 28 28
+
+   * - Pack
+     - Chooses a language
+     - Policy fields
+     - Word list
+   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``pt``,
+       ``pt_br``, ``sl``
+     - yes
+     - none
+     - none
+   * - ``cs``, ``sk``
+     - yes
+     - ``two_family_names``
+     - none
+   * - ``es``, ``es_ar``
+     - yes
+     - ``two_family_names``
+     - the given names that switch leaves where they stand
+   * - ``ja``
+     - yes (turns on ``君``)
+     - ``segment_scripts``, which needs a segmenter to act
+     - none
+   * - ``mn``
+     - yes (turns on nothing)
+     - a ``script_orders`` entry for Cyrillic
+     - none
+   * - ``ne``
+     - yes
+     - ``initials_as_family``
+     - none
+   * - ``vi``
+     - yes
+     - ``name_order``
+     - none; it takes readings out instead
+   * - ``ru``, ``tr_az``
+     - no
+     - ``patronymic_rules``
+     - none
+   * - ``zh``
+     - no
+     - ``segment_scripts``, for the script its list covers
+     - a surname list
+
+``vi`` is the one pack whose own fragment takes readings out rather
+than adding them.
+A choice prefers its language's reading of a word only where that
+reading is a title, a particle or another vocabulary kind, never a
+name, so no reading ``vi.toml`` could write would keep ``Van`` a name
+word; its fragment takes out connective and credential readings of
+Vietnamese syllables too.
+
+See :ref:`config-containers` for how that split (language vocabulary
+vs. behavior) is drawn, and :ref:`Contributing a pack to nameparser
+<contributing-a-pack>` for which half a new naming rule belongs in.
 
 .. _language-packs:
 
