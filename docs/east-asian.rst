@@ -192,8 +192,8 @@ The dot itself is the marker, so nameparser does two things with it:
 - **It divides the name at the dot** when the dot sits between
   classified-script characters, each side judged on its own: a hangul
   character beside a Han one qualifies.
-- **It reads the whole name as a transcription**, wherever in the name
-  the dot is. The name keeps the declared order, which under the
+- **It reads a name the dot divides as a transcription**, the whole
+  name, wherever among its words the dot is. The name keeps the declared order, which under the
   default is the order it was written in, and is never segmented. Pure
   katakana plays this role for Japanese transcriptions, by its script
   where Chinese uses the divider.
@@ -216,6 +216,11 @@ undivided:
     'Gal·la'
     >>> parse("王·Smith").given
     '王·Smith'
+
+A dot at the edge of a word divides nothing, and there the two marks
+part: an interpunct still stands the family-first reading down
+(``毛· 泽东`` reads given ``毛·``), while a fullwidth full stop is read
+as the stop that ends a word (``毛． 泽东`` reads family ``毛．``).
 
 Without the dot there is no signal. A Han transcription written with a
 space instead of the 间隔号 (威廉 莎士比亚) carries nothing to
@@ -345,7 +350,7 @@ The shipped segmenter leaves a token whole, returning ``None``, for:
 - text holding the closing mark ``〆``;
 - text too short to divide;
 - an answer that fails to reconstruct its input;
-- a score outside [0, 1].
+- a score outside [0, 1] by more than a rounding error.
 
 .. _katakana-family-first:
 
@@ -379,7 +384,8 @@ When the script rules don't apply
 ---------------------------------
 
 The script settles the order where every word of the name itself is
-written in the script. A title, credential or nickname in Latin beside
+written in Han characters, in hangul, or in kanji and kana (`What
+happens automatically`_). A title, credential or nickname in Latin beside
 the name does not count: ``Dr. 毛 泽东`` reads family ``毛``. These
 names keep the ordinary positional rules:
 
@@ -390,8 +396,9 @@ names keep the ordinary positional rules:
   :ref:`suggest-settings` can suggest the order from a whole list.
 - **A name written wholly in katakana**, which may be a transcription
   (`Katakana names you know are Japanese`_).
-- **A name whose own words mix an East Asian script with another**:
-  ``山田 Taro`` reads given ``山田``, family ``Taro``.
+- **A name whose own words mix scripts** other than kanji with kana:
+  ``山田 Taro`` reads given ``山田``, family ``Taro``, and Han beside
+  hangul (``김 泽东``) reads given ``김``.
 
 .. doctest::
 
@@ -404,6 +411,8 @@ names keep the ordinary positional rules:
     ('Min-jun', 'Kim')
     >>> parse("山田 Taro").family, parse("Dr. 毛 泽东").family
     ('Taro', '毛')
+    >>> parse("김 泽东").given
+    '김'
 
 Honorifics after a name
 -----------------------
@@ -453,6 +462,19 @@ ambiguous:
    * - Han characters
      - 様, 先生, 教授, 女士, 小姐
      - 氏, 博士, 殿
+
+The words that peel are the ones the vocabulary marks ``attached``,
+which the lexicon lists by kind (``professional_honorific``,
+``credential`` and ``generation`` hold the rest):
+
+.. doctest::
+
+    >>> Lexicon.default().words(kind="honorific", attached="after")
+    ('くん', 'さま', 'さん', 'ちゃん', '女士', '小姐', '様', '님', '씨')
+
+The table covers honorifics and the degree and profession words used
+as one. A generation word written in kana or hangul (``ジュニア``,
+``주니어``, ``시니어``) is read only when spaced.
 
 Each word in the last column can end a name: 김지양 is a given name,
 as 김지군 is; 王氏 is a historical form of a woman's name; 田中博士 is
