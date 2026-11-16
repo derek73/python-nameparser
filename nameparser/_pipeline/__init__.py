@@ -1,8 +1,8 @@
 """The 2.0 parse pipeline: pure stages folded over ParseState.
 
-Stage names and ParseState are NOT public API. The stage list is data;
-runners other than the plain fold (explain(), parse_all()) arrive in
-2.x minors without changing any stage signature.
+Stage names and ParseState are NOT public API. The stage list is data,
+so a runner other than the plain fold could be added without changing
+any stage signature.
 
 Layering: imports only nameparser._pipeline.* (enforced by
 tests/v2/test_layering.py).

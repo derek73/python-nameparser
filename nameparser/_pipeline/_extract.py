@@ -20,7 +20,10 @@ through `_vocab.set_apart_kind` and
 `set_apart` (rules/S1) Lexicon.suffix_words / suffix_words_ambiguous /
 suffix_acronyms / suffix_acronyms_ambiguous / titles /
 title_modifiers / title_styles / given_name_titles /
-after_given_titles.
+after_given_titles, honorific_tails (through
+`_vocab.period_joined_credential`) and generation_words and
+honorific_words (through `_vocab.settles_a_member`, rules/S13's
+member settled by a word beside it).
 
 Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan

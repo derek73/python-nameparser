@@ -567,10 +567,11 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     other is the vocabulary-against-shape split nameparser/AGENTS.md's
     spelling sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
     middle 'Jones' where 'Smith, John PhD Jones' reads suffix
-    'PhD Jones'). The no-comma spelling is not reached: `run_start`
+    'PhD Jones'). The no-comma spelling is not reached here: `run_start`
     asks only of the pieces `peel_walk` keeps, and the walk drops the
-    merged piece, so 'John Smith Ph. D. Jones' still reads family
-    'Jones'.
+    merged piece, so `run_start` starts the run at the piece behind
+    it itself (#827): 'John Smith Ph. D. Jones' reads suffix
+    'Ph. D. Jones' as 'John Smith PhD Jones' reads 'PhD Jones'.
 
     A roman numeral of two or more letters starts it where
     `_vocab.reads_as_generation` reads it as the generation, with
@@ -862,7 +863,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     suffix 'MA'). Only the LEAN reaches here on its own: a token
     admitted to the class by SHAPE takes the count instead, which
     `_comma.decide` takes and hands in as `licensed`, below ('Smith,
-    A.B.' -> given 'A.B.', one name word being no count).
+    XYZ' -> given 'XYZ', one name word being no count).
 
     A listed member ANCHORED by an unambiguous credential in front of
     it in the same run reads as a credential too, whatever its writing
@@ -1231,7 +1232,7 @@ def credential_at_the_given_slot(
     in front of it in the same run (`credential_anchors`) makes it the
     credential whatever its writing says, a particle member included
     -- a degree in front outranks P6's attachment, as the capitals do
-    ('doe, jane v phd do' reads suffix 'v phd do'). Only the caller
+    ('doe, jane v phd do' reads suffix 'phd do'). Only the caller
     knows the run, so it computes the anchor; `anchored` is a THUNK,
     asked last, so a member the writing already settles never pays
     for the walk.
@@ -1509,7 +1510,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                                        one_case)
             # rules/S11: "the floor holds first" -- a generation word's
             # case may settle it as the suffix only where the name keeps
-            # a family word ('Pedro Junior fils' keeps family 'fils',
+            # a family word ('Pedro Jnr fils' keeps family 'fils',
             # Derek, #890); an acronym's capitals take it with none
             gated = AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags
             if (lean == "credential" and (not gated or front >= second)

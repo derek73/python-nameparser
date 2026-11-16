@@ -45,10 +45,13 @@ Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13, through `_vocab.dotted_member`), and for S1's set-apart clause
 Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
 `set_apart`, Lexicon.suffix_words_ambiguous, suffix_acronyms, titles,
-title_modifiers, title_styles and after_given_titles.
+title_modifiers, title_styles, after_given_titles and honorific_tails
+(through `_vocab.period_joined_credential`), with generation_words
+and honorific_words, which settle a member (`_vocab.settles_a_member`).
 
-Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
-O6, O7, O8, O9, O3 and R1 of docs/design/rules/; each is cited at its code below, and
+Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, P11,
+O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's surname pair of
+docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -96,7 +99,7 @@ from nameparser._types import (
 #: entry pass below). These three roles render into fields other than
 #: the name and the suffix, so a run of
 #: post-nominals is not parted by them -- 'Smith, MD Dr. PhD',
-#: 'Smith, MD "Doc" PhD' and 'Smith, MD nee Jones PhD' are each one
+#: 'Smith, MD "Doc" PhD' and 'Smith, MD (nee Jones) PhD' are each one
 #: entry. GIVEN/MIDDLE/FAMILY are name words and part it.
 _RENDERS_ELSEWHERE = frozenset({Role.TITLE, Role.NICKNAME, Role.MAIDEN})
 
@@ -1272,8 +1275,8 @@ def post_rules(state: ParseState) -> ParseState:
     # rather than a boundary: this guard counts GIVEN tokens where
     # H1 counts nothing (it tests which roles are unoccupied), so a
     # name word another rule joined counts as several here and the
-    # rule declines -- `Dr. Dean of Chemistry` reads family, while
-    # `Dean of Chemistry née Jones` keeps given 'Dean of Chemistry'.
+    # rule declines -- `Dr. Mary and Jane` reads family, while
+    # `Mary and Jane née Jones` keeps given 'Mary and Jane'.
     # rules/P3 says a joined part is one name word wherever
     # another rule counts them, so the two disagree; widening moves
     # no corpus name and is not this change's to make

@@ -11,7 +11,10 @@ TITLE roles of a postnominal part after the comma, emptying its
 segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAME
 ambiguities that decision reports, those the particle chain and a
 maiden clause report on a trailing member they take into the name
-(an ambiguous acronym, or since #718 a declined numeral), and the
+(an ambiguous acronym, or since #718 a declined numeral), the
+PARTICLE_OR_GIVEN report the particle chain makes where it claims an
+ambiguous particle that is not the name's leading piece (`St van
+Johnson`, `Dr. St van Johnson`), and the
 caps shape's acronym tags on
 a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
@@ -37,7 +40,8 @@ them). The v1
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason).
 
-Implements rules P2, P3, P4, P12 and M2, S2's trailing read (#614), C1's
+Implements rules P2, P3, P4, P12, P13, M2 and C10 (a delimiter core
+parting a tail segment), S2's trailing read (#614), C1's
 decision through _comma, and
 the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
@@ -59,8 +63,9 @@ back like any other caller, and still does the work H3 and S2 describe
 with them. is_prefix_piece and is_conj_piece followed in #617, with
 the merge and rules/P3's connective joins (join_connectives), when
 the comma decision's own copy of those joins was folded into them.
-What remains defined here is group's own: _is_rootname and
-_is_maiden_marker_piece.
+What remains defined here is group's own: the piece predicates
+_is_rootname, _is_maiden_marker_piece, _is_lone_letter and
+_is_name_word, beside the helpers of its joins and its maiden take.
 """
 from __future__ import annotations
 

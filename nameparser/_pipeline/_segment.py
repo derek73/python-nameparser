@@ -11,7 +11,10 @@ which may set SUFFIX_COMMA -- one_case where C2's flag asked for it,
 and COMMA_STRUCTURE ambiguities for unrecognized extra segments (a
 part of title and suffix words is recognized, #603).
 Reads: for C2's flag on a part past the second comma only: Lexicon
-suffix vocabulary and Policy through _vocab.is_wholly_suffix
+suffix vocabulary (the four suffix sets; generation_words and
+honorific_words, which settle a joined member; title_case_name_words,
+whose Title case leans to the name; and honorific_tails, through
+_vocab.period_joined_credential) and Policy through _vocab.is_wholly_suffix
 (Policy.lenient_comma_suffixes picks the lenient or strict token test;
 Policy.extra_suffix_delimiters makes a delimiter-core token
 transparent, as the built-in cores are), with the credential lean the lazy case gate supplies
@@ -24,7 +27,8 @@ Policy.extra_suffix_delimiters through _vocab.glued_cores for a
 title with a delimiter glued to it (rules/C10), for a part of titles
 and suffixes (#603).
 
-Implements rule C2 of docs/design/rules/, and C1's segmentation;
+Implements rules C2 and C10 (a title with a delimiter glued to it) of
+docs/design/rules/, and C1's segmentation;
 C1's decision is `_comma.decide`'s. History in decisions/C1.
 """
 from __future__ import annotations

@@ -146,6 +146,26 @@ def test_an_exception_value_that_does_not_spell_its_key_raises(
     assert repr(value) in str(caught.value)
 
 
+def test_the_mask_error_offers_code_that_adds_the_mask_and_keeps_the_rest(
+) -> None:
+    """The offered fix must RUN as pasted (AGENTS.md), and add to the
+    lexicon's masks as its two siblings' offers do: the 3.0 message
+    offered `capitalization_exceptions=(('phd', 'PHD'),)`, which pasted
+    into dataclasses.replace drops every shipped mask."""
+    with pytest.raises(_MaskValueError) as caught:
+        Lexicon(capitalization_exceptions=(("phd", "Doctor"),))
+    code = re.search(r"dataclasses\.replace\(.*?\)\)\)", str(caught.value))
+    assert code is not None
+    base = Lexicon.default()
+    pasted = eval(code[0], {"dataclasses": dataclasses,  # noqa: S307
+                            "lexicon": base})
+    masks = pasted.capitalization_exceptions_map
+    assert masks["phd"] == caught.value.offered
+    assert {k: v for k, v in masks.items() if k != "phd"} == {
+        k: v for k, v in base.capitalization_exceptions_map.items()
+        if k != "phd"}
+
+
 def test_a_mask_may_recase_a_digit_key_unchanged() -> None:
     """#459 review: the mask compares ALPHANUMERICS (_lexicon._alnum),
     not letters alone, so a digit is part of what a value must spell
@@ -200,14 +220,16 @@ def test_the_mask_error_offers_a_spelling_that_works_and_type_checks(
     a tuple of pairs, so a dict literal there is an arg-type error --
     AGENTS.md's rule for actionable messages. The offered spelling is
     the offending KEY recased upper, not a fixed example, so the two
-    constructions below use the spelling the 'jr' key's own error
+    construction below uses the spelling the 'jr' key's own error
     offers, verbatim; mypy checks this file."""
-    offered = "capitalization_exceptions=(('jr', 'JR'),)"
+    offered = ("dataclasses.replace(lexicon, capitalization_exceptions=("
+               "*lexicon.capitalization_exceptions, ('jr', 'JR')))")
     with pytest.raises(ValueError) as caught:
         Lexicon(capitalization_exceptions=(("jr", "Junior"),))
     assert offered in str(caught.value)
-    assert Lexicon(capitalization_exceptions=(('jr', 'JR'),)) \
-        .capitalization_exceptions_map == {"jr": "JR"}
+    lexicon = Lexicon.default()
+    assert dataclasses.replace(lexicon, capitalization_exceptions=(*lexicon.capitalization_exceptions, ('jr', 'JR'))) \
+        .capitalization_exceptions_map["jr"] == "JR"
 
 
 def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
@@ -219,11 +241,13 @@ def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
     upper() would not itself spell the key's own letters."""
     with pytest.raises(ValueError) as caught:
         Lexicon(capitalization_exceptions=(("straße", "STRASSE"),))
-    offered = "capitalization_exceptions=(('straße', 'straße'),)"
+    offered = ("dataclasses.replace(lexicon, capitalization_exceptions=("
+               "*lexicon.capitalization_exceptions, ('straße', 'straße')))")
     assert offered in str(caught.value)
     # pasted, the offered spelling constructs
-    assert Lexicon(capitalization_exceptions=(('straße', 'straße'),)) \
-        .capitalization_exceptions_map == {"straße": "straße"}
+    lexicon = Lexicon.default()
+    assert dataclasses.replace(lexicon, capitalization_exceptions=(*lexicon.capitalization_exceptions, ('straße', 'straße'))) \
+        .capitalization_exceptions_map["straße"] == "straße"
 
 
 def test_the_mask_error_echoes_the_callers_own_spelling_not_the_composed_one(
