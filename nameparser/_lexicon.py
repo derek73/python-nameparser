@@ -869,7 +869,11 @@ class _Edit(NamedTuple):
     vocabulary-model, 2026-11-02 #754, item 3): its words normalized,
     its kind (None on a `remove` of every reading), its properties
     sorted pairs, a property given its unwritten value held as None,
-    which removes it. Compared and hashed as a tuple."""
+    which removes it. A `remove` holds no properties, save the one pair
+    list a `familiar` or `spelling` remove may name (`short_for`,
+    `spelling_of`): the pairs to drop, where none drops every pair
+    naming the word (decisions/name-matching, 2026-11-15 #1404).
+    Compared and hashed as a tuple."""
 
     op: str
     words: tuple[str, ...]
@@ -926,6 +930,11 @@ _MATCHING_LISTS: Mapping[str, str] = MappingProxyType({
 _MATCHING_EXAMPLES: Mapping[str, str] = MappingProxyType({
     "familiar": "add('max', kind='familiar', short_for=['maxwell'])",
     "spelling": "add('olha', kind='spelling', spelling_of=['olga'])"})
+#: Each matching-only category's example remove of one pair, offered by
+#: the messages refusing one: code that runs, as the adds above do.
+_MATCHING_REMOVALS: Mapping[str, str] = MappingProxyType({
+    "familiar": "remove('max', kind='familiar', short_for=['maxwell'])",
+    "spelling": "remove('olha', kind='spelling', spelling_of=['olga'])"})
 
 
 def _prop_value(kind: str, prop: str, value: object) -> object:
@@ -1130,9 +1139,7 @@ def _make_edit(op: object, words: object, kind: object,
     k = _check_kind(kind, op)
     ws = _edit_words(words, op, k)
     if op == "remove":
-        if props:
-            raise ValueError(f"remove() takes no properties, got {props!r}")
-        return _Edit(op, ws, k, ())
+        return _Edit(op, ws, k, _removed_pairs(k, ws, props))
     assert k is not None
     if not isinstance(props, (tuple, Mapping)):
         raise TypeError(f"an edit's properties are pairs, got {props!r}")
@@ -1178,6 +1185,117 @@ def _make_edit(op: object, words: object, kind: object,
     return _Edit(op, ws, k, p)
 
 
+def _removed_pairs(kind: str | None, words: tuple[str, ...],
+                   props: object) -> _Props:
+    """A remove's properties checked and canonical: none, or the one
+    list a `familiar` or `spelling` remove names its pairs by
+    (`short_for`, `spelling_of`), the names normalized and sorted as an
+    add's are (decisions/name-matching, 2026-11-15 #1404). A name that
+    is one of the words is kept: the pair of a word with itself is in
+    no lexicon, and removing what is absent is no error."""
+    if not props:
+        return ()
+    if not isinstance(props, (tuple, Mapping)):
+        raise TypeError(f"an edit's properties are pairs, got {props!r}")
+    given: dict[str, object] = dict(props)
+    either = " or ".join(_MATCHING_REMOVALS.values())
+    for prop in given:
+        if prop not in _MATCHING_LISTS.values():
+            raise TypeError(
+                f"remove() got an unexpected keyword argument {prop!r}: it "
+                f"takes a property only as the pairs to drop from a "
+                f"familiar or a spelling reading, {either}")
+    own = _MATCHING_LISTS.get(kind) if kind is not None else None
+    for prop in given:
+        if prop != own:
+            holder = next(k for k, p in _MATCHING_LISTS.items() if p == prop)
+            raise ValueError(
+                f"{prop} names the pairs of a {holder} reading, and this "
+                f"remove() is of kind={kind!r}; write "
+                f"{_MATCHING_REMOVALS[holder]}")
+    assert kind is not None and own is not None
+    if not words:
+        raise TypeError(
+            f"remove(every=True) takes out every {kind} reading and takes "
+            f"no {own}; name the words of the pairs to drop: "
+            f"{_MATCHING_REMOVALS[kind]}")
+    names = _prop_value(kind, own, given[own])
+    if names is None:
+        raise ValueError(
+            f"{own} must be a non-empty list of given names, got "
+            f"{given[own]!r}; write {_MATCHING_REMOVALS[kind]}, or leave "
+            f"{own} out to drop every pair naming the word")
+    return ((own, names),)
+
+
+def _pair_keys(names: Iterable[str]) -> frozenset[str]:
+    """What the familiar-form index files `names` under (`_familiar_of`):
+    each as stored and in every folded form (`_forms`). Two names are
+    one name to the match where their keys meet."""
+    return frozenset(k for n in names for k in {n} | _forms(n) if k)
+
+
+def _drop_pairs(pool: dict[str, tuple[Any, ...]],
+                edit: _Edit) -> tuple[str, ...]:
+    """Apply a `familiar` or `spelling` remove of words to `pool` in
+    place, returning the words it touched. A pair is stored on one of
+    its two words and read both ways, so the remove reaches both
+    (decisions/name-matching, 2026-11-15 #1404): with no names, every
+    pair naming one of the words goes, the word's own readings of the
+    kind and its name in every other word's list; with names, each
+    pair of a word and a name goes, whichever of the two holds it.
+    A name is compared as the match reads it, by its folded forms
+    (`_pair_keys`), so a pair stored accented (`álex`) goes with the
+    word written plain, which the match would otherwise still read it
+    for. Every file's reading of the pair is cut, one written `default
+    = false` too, and keeps its file and whether it is on; a reading
+    left listing no name goes with its last one."""
+    assert edit.kind is not None
+    prop = _MATCHING_LISTS[edit.kind]
+    words = _pair_keys(edit.words)
+    listed = dict(edit.props).get(prop)
+    names = None if listed is None else _pair_keys(listed)
+    ri = _index_module()
+    touched = []
+    for w, rs in list(pool.items()):
+        if not any(r.kind == edit.kind for r in rs):
+            continue
+        mine = _pair_keys((w,))
+        # the names to cut from this word's lists: the words', where it
+        # is not one of them (every name where it is, and no names were
+        # given); under names, the names' where it is a word and the
+        # words' where it is a name
+        if names is None:
+            cut = None if not mine.isdisjoint(words) else words
+        else:
+            cut = ((names if not mine.isdisjoint(words) else frozenset())
+                   | (words if not mine.isdisjoint(names) else frozenset()))
+            if not cut:
+                continue
+        kept = []
+        for r in rs:
+            if r.kind != edit.kind:
+                kept.append(r)
+            elif cut is not None:
+                held = r.props.get(prop, ())
+                left = tuple(n for n in held
+                             if _pair_keys((n,)).isdisjoint(cut))
+                if len(left) == len(held):
+                    kept.append(r)
+                elif left:
+                    kept.append(ri.IndexReading(
+                        w, r.tag, r.kind,
+                        MappingProxyType({**r.props, prop: left})))
+        if len(kept) == len(rs) and all(x is y for x, y in zip(kept, rs)):
+            continue
+        touched.append(w)
+        if kept:
+            pool[w] = tuple(kept)
+        else:
+            del pool[w]
+    return tuple(touched)
+
+
 def _apply_edit(pool: dict[str, tuple[Any, ...]],
                 edit: _Edit) -> tuple[str, ...]:
     """Apply `edit` to `pool` (word -> its readings) in place, returning
@@ -1186,8 +1304,11 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
     written `default = false` on; otherwise it adds the caller's own
     reading, which names no file. A remove with no words is one of a
     whole kind, reaching every word in the pool that holds a reading of
-    it, whatever turned the reading on."""
+    it, whatever turned the reading on. A remove of words' `familiar`
+    or `spelling` readings is one of pairs (`_drop_pairs`)."""
     ri = _index_module()
+    if edit.op == "remove" and edit.words and edit.kind in _MATCHING_LISTS:
+        return _drop_pairs(pool, edit)
     words = edit.words or tuple(
         w for w, rs in pool.items()
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
@@ -2267,11 +2388,10 @@ class Lexicon:
             the word's shipped familiar readings list, in a reading of
             the caller's own that names no file, rather than replacing
             them (unlike an add of any other kind the word holds); to
-            replace them, ``remove(word, kind="familiar")`` first. A
-            pair lives on the word whose reading lists the other (its
-            shorter name, as the files write it): to cut
-            ``Max`` / ``Maximilian``, remove ``max``'s familiar
-            reading and add it back without ``maximilian``.
+            replace them, ``remove(word, kind="familiar")`` first, and
+            to cut one pair, ``Max`` / ``Maximilian``, name it:
+            ``remove("max", kind="familiar",
+            short_for=["maximilian"])``, either name first.
             ``spelling_of=[...]`` on a ``spelling`` reading is its twin:
             the given names the word is another spelling of, by the
             person's or a romanization's choice, which name matching
@@ -2310,7 +2430,7 @@ class Lexicon:
             return added
 
     def remove(self, *words: str, kind: str | None = None,
-               every: bool = False, **removed: object) -> Lexicon:
+               every: bool = False, **pairs: object) -> Lexicon:
         """This lexicon without each word's readings of `kind`: a kind,
         or a category, matching every kind of it (``kind="title"`` takes
         out ``dean``'s ``office`` reading, ``kind="name"`` its ``given``
@@ -2322,7 +2442,30 @@ class Lexicon:
         empty ``remove(*words, kind=...)`` never takes out a whole kind.
         Removing a reading the word does not hold changes nothing now,
         and is kept: a later choice of languages may turn that reading
-        on."""
+        on.
+
+        A ``familiar`` or ``spelling`` reading is a pair of given names,
+        stored on one of the two and read by name matching both ways, so
+        removing one reaches both names. ``remove("robert",
+        kind="familiar")`` drops every pair naming ``robert``: the
+        word's own familiar readings and its name in every other
+        word's (``bob``, ``rob``, ...), whose other pairs stay.
+        ``remove("alex", kind="familiar", short_for=["alexis"])`` drops
+        that one pair, whichever name is written first and whichever
+        holds it, and ``remove("sarah", kind="spelling",
+        spelling_of=["sara"])`` an alternate spelling's; several words
+        and several names drop every pair of one with the other. A
+        name is compared as matching reads it, case and accents folded
+        and a letter a keyboard lacks written out or not, so a pair the
+        files store accented (``álex``) goes with the word written
+        plain. A pair goes from every file that lists it, under any choice of
+        languages; edits apply in the order written, so a pair added
+        after the remove stands. No other kind takes a property here:
+        to take a property off a reading, :meth:`add` it with its
+        unwritten value."""
+        removed = {k: pairs.pop(k) for k in list(pairs)
+                   if k in _SET_FIELDS + _LIST_FIELDS
+                   or k == "capitalization_exceptions"}
         if removed:
             raise _refusal("remove()", removed)
         if not isinstance(every, bool):
@@ -2344,7 +2487,7 @@ class Lexicon:
                 "kind='title'), or every=True with a kind to take out every "
                 "word's readings of it, e.g. remove(kind='title', "
                 "every=True)")
-        edit = _make_edit("remove", words, kind, ())
+        edit = _make_edit("remove", words, kind, pairs)
         return dataclasses.replace(self, _edits=self._edits + (edit,))
 
     # -- private helpers --------------------------------------------------
