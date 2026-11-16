@@ -204,51 +204,60 @@ Linking two lists
 ~~~~~~~~~~~~~~~~~
 
 The four steps together, for two lists read by one parser: bucket each
-list's names by key, pair the two sides of each bucket, and check each
-pair once. Two names can share more than one key (the two writings of
-``de la Cruz`` below share ``cruz;m`` and ``delacruz;m``), so collect
-the pairs in a set before checking them:
+list's records by key, pair the two sides of each bucket, and check each
+pair once. Bucket the records by their row numbers, not their text, so
+two records written alike stay two. Two names can share more than one
+key (the two writings of ``de la Cruz`` below share ``cruz;m`` and
+``delacruz;m``), so collect the pairs in a set before checking them:
 
 .. doctest::
 
     >>> from itertools import product
     >>> registry = ["Okafor, Ngozi A.", "Maria de la Cruz", "Tomas Lindqvist",
-    ...             "Lindqvist, Tove", "Ana Cruz"]
+    ...             "Lindqvist, Tove", "Ana Cruz", "Suharto"]
     >>> payroll = ["N. Okafor", "MARÍA DE LA CRUZ", "T. Lindqvist",
-    ...            "Nkem Okafor", "Lindqvist, Tomas Jr."]
+    ...            "Nkem Okafor", "Lindqvist, Tomas Jr.", "T. Lindqvist"]
     >>> by_key = defaultdict(lambda: ([], []))
     >>> for side, source in enumerate((registry, payroll)):
-    ...     for written in source:
+    ...     for row, written in enumerate(source):
     ...         for key in matcher.keys(written):
-    ...             by_key[key][side].append(written)
+    ...             by_key[key][side].append(row)
     >>> candidates = sorted({pair for ours, theirs in by_key.values()
     ...                      for pair in product(ours, theirs)})
     >>> len(candidates), len(registry) * len(payroll)
-    (7, 25)
+    (9, 36)
     >>> for ours, theirs in candidates:
-    ...     linked = matcher.check(ours, theirs)
-    ...     print(ours, "|", theirs, "|", linked.consistent, linked.weakest.value)
-    Lindqvist, Tove | Lindqvist, Tomas Jr. | False conflict
-    Lindqvist, Tove | T. Lindqvist | True initial
-    Maria de la Cruz | MARÍA DE LA CRUZ | True folded
-    Okafor, Ngozi A. | N. Okafor | True one-side
-    Okafor, Ngozi A. | Nkem Okafor | False conflict
-    Tomas Lindqvist | Lindqvist, Tomas Jr. | True generation-one-side
-    Tomas Lindqvist | T. Lindqvist | True initial
+    ...     linked = matcher.check(registry[ours], payroll[theirs])
+    ...     print(ours, theirs, registry[ours], "|", payroll[theirs], "|",
+    ...           linked.consistent, linked.weakest.value)
+    0 0 Okafor, Ngozi A. | N. Okafor | True one-side
+    0 3 Okafor, Ngozi A. | Nkem Okafor | False conflict
+    1 1 Maria de la Cruz | MARÍA DE LA CRUZ | True folded
+    2 2 Tomas Lindqvist | T. Lindqvist | True initial
+    2 4 Tomas Lindqvist | Lindqvist, Tomas Jr. | True generation-one-side
+    2 5 Tomas Lindqvist | T. Lindqvist | True initial
+    3 2 Lindqvist, Tove | T. Lindqvist | True initial
+    3 4 Lindqvist, Tove | Lindqvist, Tomas Jr. | False conflict
+    3 5 Lindqvist, Tove | T. Lindqvist | True initial
 
-Seven of the 25 pairs shared a key and were checked, and two of the
-seven are not consistent: a key only gathers candidates. ``Ana Cruz``
-shares no key with any name on the other list and is never checked.
-To find the duplicates inside one list, bucket it the same way and
-pair each bucket with itself (``itertools.combinations(bucket, 2)``),
-collecting the pairs in a set as here.
+Nine of the 36 pairs shared a key and were checked, and two of the
+nine are not consistent: a key only gathers candidates. ``Ana Cruz``
+shares no key with any record on the other list and is never checked.
+Neither is the lone ``Suharto``, which has no key under the default,
+so the recipe never reaches it (:ref:`matching-other-readings`).
+
+To find the duplicates inside one list, bucket its row numbers the same
+way and pair each bucket with itself (``itertools.combinations(rows,
+2)``), collecting the pairs in a set as here. The rows of a bucket are
+in order, so each pair comes out once.
+
 Where the two lists need different parsers, parse each with its own
 and pass the :class:`~nameparser.ParsedName` objects to ``keys()`` and
 ``check()``, as in the example before this one.
 
-``T. Lindqvist`` came out consistent with two people. The matcher does
-not choose between them, and the next section says why you should not
-merge all three.
+Each ``T. Lindqvist`` came out consistent with two people. The matcher
+does not choose between them, and the next section says why you should
+not merge the three.
 
 .. _matching-not-transitive:
 
@@ -525,9 +534,10 @@ middle ``initial``) where all of these hold:
   Paul Brown``, whose family names conflict, keeps its given row
   ``conflict``.
 
-``J. P. Smith``, written apart, does agree with fewer names than
-letters (``J. P. Smith`` / ``John Smith``), and with ``JP Smith``, so a
-pair can still be consistent through ``J. P. Smith`` and not directly.
+``J. P. Smith``, written apart, does agree with fewer or more names
+than letters (``J. P. Smith`` / ``John Smith``, ``J. P. Smith`` /
+``John Paul Robert Smith``), and with ``JP Smith``, so a pair can still
+be consistent through ``J. P. Smith`` and not directly.
 
 .. _matching-conflicts:
 
@@ -637,7 +647,9 @@ names they go by and another by their full given names.
 ``familiar-form`` reads a short given name as standing for the longer
 ones the vocabulary lists it under: ``Max`` for Maximilian and
 Maxwell, ``Bill`` for William, ``Peggy`` for Margaret. It is read in the
-given name, middle name and nickname, never the family name.
+given name, middle name and nickname, never the family name. A pair whose short name reads
+as a title in front of a name is never compared as a given name, so it
+stays inert while the title reading stands.
 
 A pair is read whichever way the vocabulary wrote it, since the vocabulary
 writes a pair on its shorter name, which is not always the familiar
@@ -695,10 +707,6 @@ Each pair is in the file of the languages written where its holders
 work. A plain choice of languages (:ref:`choosing-languages`) keeps
 every file's pairs, and a strict one (:ref:`strict-choice`) keeps its
 own files' and the shared ones.
-
-A pair whose short name reads
-as a title in front of a name is never compared as a given name, so it
-stays inert while the title reading stands.
 
 .. _matching-editing-familiar-forms:
 
