@@ -19,7 +19,8 @@ time:**
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
 takes you through both, and the `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details.
+the details. 3.1 also reads Thai titles, a salutation written joined to
+the given name included (``นายสมชาย ใจดี``).
 
 **Upgrading from 1.x or 2.x?** 3.0 removed ``HumanName`` and the rest
 of the 1.x compatibility layer: `Coming from 1.x or 2.x`_ below says
@@ -126,7 +127,9 @@ Korean names written in their own scripts are read family-first (save a
 name in katakana alone, often a transcribed foreign name), unspaced
 Korean names are split against the census surname list, and CJK
 honorifics are recognized. See `East Asian names
-<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__.
+<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__. Thai
+writes a salutation joined to the given name with no space, and the
+parser splits it off.
 
 .. code-block:: python
 
@@ -136,6 +139,9 @@ honorifics are recognized. See `East Asian names
     '高橋'
     >>> parse("김민준씨").honorifics               # an honorific written against the name
     '씨'
+    >>> thai = parse("นายสมชาย ใจดี")              # Thai: the salutation is written joined to
+    >>> thai.title, thai.given, thai.family       # the given name, and is split off it
+    ('นาย', 'สมชาย', 'ใจดี')
     >>> parse("г-н Иван Петров").title             # Cyrillic title
     'г-н'
     >>> arabic = parse("محمد بن سلمان")            # Arabic: بن chains onto the family name
