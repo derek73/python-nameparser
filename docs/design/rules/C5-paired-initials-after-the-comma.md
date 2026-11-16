@@ -20,6 +20,23 @@
   "Jane Doe Jr., MJ M.D."     →  suffix="Jr., MJ M.D."
   "Jane Doe MD, MJ PhD"       →  suffix="MD, MJ PhD"
   ```
+- **Undotted and alone in its part, two capitals with a listed credential in a later comma part are the credential run** ('Jane Mary Doe, MH, PhD'), the credential behind them speaking across the comma as it does inside the part. A later part is that credential where every word of it is a listed one: a suffix word that is no generation, a title/suffix dual only in capitals, a listed member of the ambiguous class only where its capitals settle it (S6), and a credential split across a space (S12); a word read as a credential by its shape alone (S3) makes the part none. Any later part answers, not only the next, and the parts are then read as C2 reads them. With company in their own part the two capitals are decided by that part alone, as above, and the dotted pair keeps the given name whatever a later part holds.
+  ```
+  "Jane Mary Doe, MH, PhD"    →  suffix="MH, PhD"
+  "Jane Mary Doe, MH, PhD"    →  given="Jane"
+  "Jane Doe, BM, BCh, PhD"    →  suffix="BM, BCh, PhD"
+  "Jane Doe, MH, Jr., PhD"    →  suffix="MH, Jr., PhD"
+  "Jane Doe MD, MH, PhD"      →  suffix="MD, MH, PhD"
+  "Jane Doe, MH, Jr."         →  given="MH"  · boundary
+  "Jane Doe, MH, Ma"          →  given="MH"  · boundary
+  "Jane Doe, MH, XYZ"         →  given="MH"  · boundary
+  "Jane Doe, MH Jr., PhD"     →  given="MH"  · boundary
+  "Jane Doe, Ms MH, PhD"      →  given="MH"  · boundary
+  "Jane Doe, M.H., PhD"       →  given_names="M.H."  · boundary
+  "Doe, MH, PhD"              →  given="MH"  · boundary
+  "JANE DOE, MH, PHD"         →  given="MH"  · boundary
+  "Jane Doe, MH, PhD"  unlisted_caps_suffixes-off  →  given="MH"
+  ```
 
 **Because:** two words before the comma may be one surname written in two ('García Márquez'), and the count cannot tell them from a given name and a family name.
 
@@ -62,11 +79,36 @@
   "García Márquez, MJ PhD"    →  suffix="MJ PhD"
   ```
 
+- The same holds across a comma: undotted initials alone in their part behind a surname of two words, or of words a connective joins, read as a credential where a later part is a listed credential. No name of the kind was found where the rule was measured, every such pair read there being a credential.
+  ```
+  "García Márquez, MJ, PhD"   →  suffix="MJ, PhD"
+  "Ortega y Gasset, MJ, PhD"  →  suffix="MJ, PhD"
+  ```
+
+- A given name or a surname that two capitals spell is not held back there: the pair is read by its shape, and a word listed as a name in another writing is unlisted in this one.
+  ```
+  "Ana Ruiz, JO, MD"          →  suffix="JO, MD"
+  "Ram Bahadur, BK, MD"       →  suffix="BK, MD"
+  "Ram Bahadur, BK, MD"  [ne]  →  suffix="BK, MD"
+  ```
+
+- A part between the two capitals and the listed credential is taken with them whatever it holds, a name word included, and keeps C2's flag.
+  ```
+  "Jane Doe, MH, John, PhD"   →  suffix="MH, John, PhD"
+  "Jane Doe, MH, John, PhD"   →  ambiguities=("comma-structure", "suffix-or-name")
+  ```
+
+- A full name the count reads as one name word (C3: a capitalized particle with its surname, a word that is a title and a particle with its surname) keeps the listing form, so the two capitals stay the given name there.
+  ```
+  "Bin Zhang, MH, PhD"        →  given="MH"
+  "Freiherr von Berg, MH, PhD"  →  given="MH"
+  ```
+
 - Three or more initials run together with periods behind a surname of two words read as a credential. Initials are conventionally written apart ('J. R. R.'), and a token of three or more single letters run together is far likelier a credential than a given name and a middle name written as one word.
   ```
   "García Márquez, G.J.R."    →  suffix="G.J.R."
   ```
 
 ---
-**Signal:** shape: paired initials after the comma, dotted or as two undotted capitals + neighbor: credentials behind the undotted pair
+**Signal:** shape: paired initials after the comma, dotted or as two undotted capitals + neighbor: credentials behind the undotted pair, in its part or in a later one
 **history:** decisions/C5 · **implemented:** nameparser/_pipeline/_comma.py

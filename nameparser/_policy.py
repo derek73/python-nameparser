@@ -916,7 +916,10 @@ class Policy:
     #: name word) and "García Márquez, MJ" keeps given ``MJ`` -- a lone
     #: two-letter word is how a person's initials are written, and two
     #: words before the comma may be one surname, the case #563 decides
-    #: for "M.J." too. The all-caps SURNAME convention ("Jean DUPONT",
+    #: for "M.J." too. Credentials behind the two letters make them one:
+    #: in their own part ("Jane Doe, BM PhD"), or a listed credential
+    #: in a later comma part where they stand alone in theirs ("Jane
+    #: Doe, BM, PhD"). The all-caps SURNAME convention ("Jean DUPONT",
     #: "DUPONT, Jean") writes the capitals at the end of a name or
     #: before a comma, never after one behind a full name, which is why
     #: this position is on by default and the others are not.

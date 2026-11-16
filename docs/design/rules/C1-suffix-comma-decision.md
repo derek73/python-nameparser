@@ -4,7 +4,7 @@
 
 **Then:** the name reads as trailing suffixes when the part after the first comma is entirely suffix words and more than one word precedes the comma, and otherwise as the listing form, the part before the comma being the family name, less a title run opening it (H6), unless the part after it fixes no family boundary (C8).
 
-- **Only the part after the first comma decides**, but for a suffix word ending a whole name before it (C12).
+- **Only the part after the first comma decides**, but for a suffix word ending a whole name before it (C12) and a listed credential in a later part, which speaks for two capitals standing alone in that part (C5).
 - **How the words before the comma are counted** is C3's.
 - **The ambiguous credential class**, counted by name words (C4), with paired initials (C5) and an unlisted all-caps word (C6) read there by rules of their own, and initials spelling a listed credential behind one word read as paired initials are (C16).
 - **A part read as postnominal** is read before any join (C7).

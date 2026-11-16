@@ -1365,3 +1365,21 @@ longer fills ``patronymic``:
     >>> hebrew_ben = parse("בן כהן")
     >>> hebrew_ben.given, hebrew_ben.family
     ('בן', 'כהן')
+
+Two capitals between a full name and credentials, after a comma, are a
+credential, where 1.4 through 3.0 read them as the given name and the
+whole name before the comma as the family name. They are read so beside
+credentials in their own part, or alone in it before a listed
+credential in a later one. Behind one word they are still the given
+name, as are dotted initials and two capitals with no credential behind
+them. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps the 3.0
+readings:
+
+.. doctest::
+
+    >>> [(c.given, c.family, c.suffix) for c in map(parse, (
+    ...     "Jane Doe, BM PhD", "Jane Doe, BM, PhD"))]
+    [('Jane', 'Doe', 'BM PhD'), ('Jane', 'Doe', 'BM, PhD')]
+    >>> [parse(n).given for n in ("Doe, BM, PhD", "Jane Doe, BM",
+    ...     "Jane Doe, BM, Jr.")]
+    ['BM', 'BM', 'BM']

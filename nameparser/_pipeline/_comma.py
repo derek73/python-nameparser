@@ -471,6 +471,38 @@ def _credentials_beside(state: ParseState, seg0: Sequence[int],
     return contrast[0]
 
 
+def _listed_credentials_behind(state: ParseState) -> bool:
+    """Whether a part past the second comma is nothing but listed
+    credentials (rules/C5, #1392): every piece a suffix piece, a split
+    credential the vocabulary lists among them ('Ph. D.'), a
+    title/suffix dual only in capitals, or a listed member of the
+    ambiguous class its capitals settle ('MA', not 'Ma', nor a word the
+    count gates, 'KC'); never a generation or a word read by its shape
+    alone ('XYZ', 'X.Y.Z.': tagged a member where a setting reads it,
+    and no capitals settle a word the vocabulary does not list). Any
+    later part answers, an empty one being none."""
+    tokens = state.tokens
+    for seg in state.segments[2:]:
+        if not seg:
+            continue
+        pieces, ptags = _reading_pieces(seg, tokens)
+        for p, pt in zip(pieces, ptags):
+            if not is_suffix_piece(p, pt, tokens):
+                if not (len(p) == 1
+                        and AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
+                        and settled_by_case(tokens[p[0]], state.one_case)):
+                    break
+            elif len(p) == 1:
+                token = tokens[p[0]]
+                if (GENERATION_WORD_TAG in token.tags
+                        or "vocab:title" in token.tags
+                        and not token.text.isupper()):
+                    break
+        else:
+            return True
+    return False
+
+
 def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
     """The listing form, with the run of initials at `i` that made the
     part the given part (rules/C16, #1238) tagged an initial, as a run
@@ -855,7 +887,16 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                         # per part (decisions/C5 (#1323))
                         or "." not in text and k + 1 < len(p1)
                         and _credentials_beside(state, seg0, p1, pt1, k,
-                                                texts, contrast_box)):
+                                                texts, contrast_box)
+                        # rules/C5: "undotted and alone in its part,
+                        # two capitals with a listed credential in a
+                        # later comma part are the credential run" --
+                        # asked only where the pair is the whole part
+                        # and a later part stands, so no other name
+                        # pays a frame for it (decisions/C5 (#1392))
+                        or "." not in text and len(p1) == 1
+                        and len(state.segments) > 2
+                        and _listed_credentials_behind(state)):
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:

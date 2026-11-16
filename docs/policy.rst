@@ -979,9 +979,11 @@ an unambiguous post-nominal in front of them that is not also a title,
 or another unlisted dotted or all-caps word beside them that its own
 field reads as a credential. The capitals give way to one more: written
 undotted, the letters are a credential when credentials follow them and
-nothing else stands beside them (``"Jane Doe, BM PhD"``), where the
-dotted spelling keeps its given name (``"John Smith, A.B. Ph.D."``). A
-title in front of them says the opposite:
+nothing else stands beside them (``"Jane Doe, BM PhD"``), or when they
+stand alone in their part and a later part is a listed credential
+(``"Jane Doe, BM, PhD"``), where the dotted spelling keeps its given
+name (``"John Smith, A.B. Ph.D."``). A title in front of them says the
+opposite:
 
 .. doctest::
 
@@ -993,6 +995,8 @@ title in front of them says the opposite:
     'MJ XYZ'
     >>> parse("Jane Doe, BM PhD").suffix
     'BM PhD'
+    >>> parse("Jane Doe, BM, PhD").suffix
+    'BM, PhD'
     >>> parse("John Smith, A.B. Ph.D.").given_names
     'A.B.'
     >>> cred = parse("García Márquez, Ms G.J.")
