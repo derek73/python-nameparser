@@ -127,9 +127,8 @@ kind. What it takes out depends on what you pass:
   readings of that kind.
 - **A category** (``kind="title"``, ``kind="name"``): every reading of
   the word in that category, whatever its kind.
-- **A kind, no words, and** ``every=True``: every word's readings of
-  it, and of a whole category where the kind is one, such as
-  ``"title"`` (:ref:`title-detection-off`).
+- **A kind or a category, no words, and** ``every=True``: every word's
+  readings of it (:ref:`title-detection-off`).
 
 ``professor`` holds an ``academic`` reading, and ``"title"`` here names
 its category:
@@ -201,8 +200,8 @@ A kind belongs to a category, which decides what the reading does:
      - Kinds
    * - title
      - The word is a title in front of the name, and written with its
-       period at the end of one (:ref:`trailing-titles`), unless a
-       ``given`` reading limits it to a title phrase.
+       period at the end of one (:ref:`trailing-titles`). A ``given``
+       reading makes the bare word a title only inside a title phrase.
      - ``title``, ``salutation``, ``style``, ``academic``, ``religious``,
        ``nobility``, ``military``, ``office``, ``occupation``,
        ``kinship``, ``modifier``
@@ -247,14 +246,15 @@ classifies the word, and some rules read it. Among them:
   ``modifier`` and ``style`` make a title phrase with the title after
   them (:ref:`titles-also-given-names`).
 - ``generation``, ``agnomen`` and ``credential`` are the suffix kinds a
-  name reading on the word makes ambiguous (:ref:`ambiguous-words`); a
-  suffix of another kind stays a suffix beside one. An ``agnomen``
-  needs that name reading.
-- A suffix shows in the ``generation`` view as a ``generation`` or an
-  ``agnomen``, in ``honorifics`` as an ``honorific`` or a
-  ``professional_honorific``, and in ``credentials`` otherwise; a
-  ``patronymic`` particle fills the ``patronymic`` view
-  (:ref:`aggregate-views`).
+  name reading on the word makes ambiguous (:ref:`ambiguous-words`),
+  as it does a suffix of any kind written ``acronym=True``; a suffix
+  word of another kind stays a suffix beside one. An ``agnomen`` needs
+  that name reading.
+- A suffix written as a word shows in the ``generation`` view as a
+  ``generation`` or an ``agnomen`` and in ``honorifics`` as an
+  ``honorific`` or a ``professional_honorific``; any other suffix, and
+  every acronym, shows in ``credentials``. A ``patronymic`` particle
+  fills the ``patronymic`` view (:ref:`aggregate-views`).
 - ``saint`` and ``rank`` are written with a capital by case repair
   (:ref:`case-exceptions`).
 
@@ -395,8 +395,8 @@ given name, and a credential or a generation word with a name reading
 is read as the suffix only where the writing or the count says so
 (:ref:`ambiguous-words`). So ``add("guru", kind="given")``
 makes ``Guru`` a title only inside a phrase, and
-``remove("van", kind="given")`` makes ``van`` a particle that is never
-a given name.
+``remove("van", kind="given")`` makes a ``van`` that opens a name part
+of the surname rather than the given name.
 
 Familiar forms
 ^^^^^^^^^^^^^^
@@ -787,8 +787,8 @@ capitalization decides:
     >>> parse("John Smith Ma").family
     'Ma'
 
-A bare marked acronym is read by the first of these signals that
-applies (where the parse reads
+A bare marked acronym with no comma right before it and no brackets
+around it is read by the first of these signals that applies (where the parse reads
 it by the count or by a Title-case lean, it reports a
 ``suffix-or-name`` ambiguity, :ref:`credentials-also-surnames`):
 
