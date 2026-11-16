@@ -23,6 +23,8 @@ The workflow is four steps:
 #. Group the names by ``keys()``.
 #. Within each group, ``check()`` each pair.
 
+.. _matching-grouping-keys:
+
 Grouping by key
 ---------------
 
@@ -129,6 +131,18 @@ consistent. A pair is inconsistent when a role's outcome is
     >>> johns = matcher.check("John Smith Jr.", "John Smith Sr.")
     >>> johns.consistent, johns["suffix"].outcome.value
     (False, 'conflict')
+
+A conflict is a result too, so a result has no truth value: ``if
+matcher.check(a, b):`` raises ``TypeError`` rather than take the
+branch for every pair. Test ``consistent``:
+
+.. doctest::
+
+    >>> if johns:
+    ...     print("same person")
+    Traceback (most recent call last):
+        ...
+    TypeError: a MatchResult has no truth value, got bool() of one whose consistent is False: ...
 
 The check is symmetric: swapping the two names gives the same verdict
 and the same table with ``left`` and ``right`` exchanged

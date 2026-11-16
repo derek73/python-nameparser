@@ -229,7 +229,7 @@ The library has two layers: data — the per-word TOML in `nameparser/vocab/`, c
 
 A pack's script order is a different license, and not on this list: Cyrillic settles no order (Russian writes given-first, Mongolian the father's name first), so no default keys on `Script.CYRILLIC` and `DEFAULT_SCRIPT_ORDERS` holds no entry for it; `locales.MN` carries one (`FAMILY_FIRST_GIVEN_LAST`), licensed by the caller's choice of Mongolian, as a caller's own katakana entry is by the caller (#594), and it reads every wholly-Cyrillic name that way, Russian ones included — rules/W4's pack Except, decisions/W4 (#1237). Never read it as "Cyrillic means family-first".
 
-The group suggester (`Parser.suggest`) is outside this rule, as proposed for review in decisions/group-suggestion's 2026-11-10 SCOPE entry: the parser never detects language; the group suggester may, over a group the caller declares, says what it saw, and its answer is configuration the caller applies. No parse changes, and a single name is still read positionally.
+The group suggester (`Parser.suggest`) is outside this rule, as decided in decisions/group-suggestion's 2026-11-10 SCOPE entry (accepted 2026-11-15): the parser never detects language; the group suggester may, over a group the caller declares, says what it saw, and its answer is configuration the caller applies. No parse changes, and a single name is still read positionally.
 
 Latin-script input is never touched by any of this: "Kim Min-jun" is genuinely order-ambiguous and stays governed by `name_order` and opt-in packs. Before adding a script-conditional rule, work out which of the three it is — certain, certain for this one behavior only, or a statistical guess wearing a script's clothes.
 

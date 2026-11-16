@@ -430,9 +430,72 @@ def test_check_takes_a_parsed_name() -> None:
     assert m.check(parse("John Smith"), "John Smith").consistent
 
 
-def test_check_rejects_a_non_name() -> None:
-    with pytest.raises(TypeError, match="ParsedName"):
-        m.check(3, "John Smith")  # type: ignore[arg-type]
+@pytest.mark.parametrize("method, call", [
+    ("check", lambda bad: m.check(bad, "John Smith")),
+    ("check", lambda bad: m.check("John Smith", bad)),
+    ("keys", lambda bad: m.keys(bad)),
+], ids=["check-first", "check-second", "keys"])
+@pytest.mark.parametrize("bad", [3, b"John Smith", None, ["John Smith"]],
+                         ids=["int", "bytes", "None", "list"])
+def test_a_non_name_is_refused_naming_the_method_called(
+        method: str, call: Callable[[object], object], bad: object) -> None:
+    with pytest.raises(TypeError) as caught:
+        call(bad)
+    message = str(caught.value)
+    assert message.startswith(
+        f"{method} takes a name string or a ParsedName, got "
+        f"{type(bad).__name__} {bad!r}")
+    # the fix it offers holds for either method, and bytes get the
+    # decode hint parse() gives them
+    assert message.endswith(
+        "decode first, e.g. raw.decode('utf-8')" if isinstance(bad, bytes)
+        else "pass the text, or parser.parse(text)")
+    if isinstance(bad, bytes):
+        assert m.keys(eval(message.split("e.g. ")[1], {"raw": bad}))
+
+
+@pytest.mark.parametrize("a, b", [
+    ("John Smith", "J. Smith"), ("John Smith", "Mary Jones"),
+], ids=["consistent", "conflict"])
+def test_a_result_has_no_truth_value(a: str, b: str) -> None:
+    result = m.check(a, b)
+    for ask in (bool, lambda r: not r, lambda r: r and True,
+                lambda r: 1 if r else 0, lambda r: any([r]),
+                lambda r: list(filter(None, [r]))):
+        with pytest.raises(TypeError) as caught:
+            ask(result)
+        message = str(caught.value)
+        assert message.startswith(
+            "a MatchResult has no truth value, got bool() of one whose "
+            f"consistent is {result.consistent}")
+        assert "read its consistent field, e.g. " in message
+    # the offered code runs and gives the answer bool() was asked for
+    parser = Parser()
+    offered = eval(message.split("e.g. ")[1], {"parser": parser})
+    assert offered is True
+    # and type-checks, the same spelling written out for mypy; the
+    # message is held to it, so the two cannot drift
+    assert message.endswith(
+        'e.g. parser.matching().check("John Smith", "J. Smith").consistent')
+    assert parser.matching().check("John Smith", "J. Smith").consistent is True
+
+
+@pytest.mark.parametrize("a, b", [
+    ("John Smith", "J. Smith"), ("John Smith", "Mary Jones"),
+    ("Suharto", "Suharto"),
+], ids=["consistent", "conflict", "other-reading"])
+def test_a_result_without_a_truth_value_still_compares_hashes_and_pickles(
+        a: str, b: str) -> None:
+    result = _every.check(a, b)
+    again = _every.check(a, b)
+    assert result == again and not (result != again)
+    assert result != _every.check(a, "Zed Quux")
+    assert hash(result) == hash(again)
+    assert {result, again} == {result} and result in [again]
+    assert result.mirrored() == _every.check(b, a)
+    assert result.mirrored().mirrored() == result
+    assert pickle.loads(pickle.dumps(result)) == result
+    assert result is not None and repr(result).startswith("MatchResult(")
 
 
 def test_a_missing_middle_name_is_consistent_and_says_which_side() -> None:

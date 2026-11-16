@@ -156,6 +156,11 @@ class CrossRoleMatch:
                               self.right, self.left)
 
 
+#: The code a refused `bool(result)` is offered; it runs and type-checks.
+_CONSISTENT_HINT = ('e.g. parser.matching().check("John Smith", "J. Smith")'
+                    '.consistent')
+
+
 @dataclass(frozen=True, slots=True)
 class MatchResult:
     """The result of comparing two names: whether nothing in them
@@ -169,7 +174,9 @@ class MatchResult:
     time; each row keeps its own outcome under it.
 
     A row is read by its role, a `Role` member or its name
-    (`result["suffix"]`), and `weakest` is the weakest row's outcome."""
+    (`result["suffix"]`), and `weakest` is the weakest row's outcome.
+    A result has no truth value: `bool(result)` raises TypeError, a
+    conflict being a result too, so test `result.consistent`."""
 
     consistent: bool
     roles: tuple[RoleMatch, ...]
@@ -198,6 +205,15 @@ class MatchResult:
                 f"roles must hold one RoleMatch per Role, in Role order "
                 f"({order}), got {', '.join(str(r) for r in held) or 'none'}; "
                 f"pass a row for every role, in that order")
+
+    def __bool__(self) -> bool:
+        """Raises TypeError: a result has no truth value, since a
+        conflict is a result too. Read `consistent`."""
+        raise TypeError(
+            f"a MatchResult has no truth value, got bool() of one whose "
+            f"consistent is {self.consistent}: a conflict is a result "
+            f"too, so `if result:` cannot mean a match; read its "
+            f"consistent field, {_CONSISTENT_HINT}")
 
     def __getitem__(self, role: Role | str) -> RoleMatch:
         """The row of one role: a `Role` member or its name; anything
@@ -365,7 +381,7 @@ class Matching:
         words left compared role to role. No cross-role match is tried
         where `across-roles` is not accepted. The family role must still
         agree, here directly or through the maiden name."""
-        left, right = self._parsed(a), self._parsed(b)
+        left, right = self._parsed(a, "check"), self._parsed(b, "check")
         best = self._result(left, right)
         if best.consistent or not self.other_readings:
             return best
@@ -432,7 +448,7 @@ class Matching:
         their keys, build the keys again after upgrading nameparser or
         changing the parser or the accepted outcomes, and compare only
         keys built the same way (decisions/name-matching, 2026-11-13)."""
-        parsed = self._parsed(name)
+        parsed = self._parsed(name, "keys")
         readings = (self._readings(parsed) if self.other_readings
                     else [(parsed, None)])
         return frozenset().union(
@@ -679,15 +695,20 @@ class Matching:
             keys |= words
         return frozenset(keys)
 
-    def _parsed(self, name: object) -> ParsedName:
+    def _parsed(self, name: object, method: str) -> ParsedName:
+        """`name` parsed, for the public method named, which a refusal
+        names."""
         if isinstance(name, ParsedName):
             return name
         if isinstance(name, str):
             return self.parser.parse(name)
+        # bytes get the decode hint parse() gives them
+        fix = ("decode first, e.g. raw.decode('utf-8')"
+               if isinstance(name, bytes)
+               else "pass the text, or parser.parse(text)")
         raise TypeError(
-            f"check takes a name string or a ParsedName, got "
-            f"{type(name).__name__} {name!r}; pass the text, or "
-            f"parser.parse(text)")
+            f"{method} takes a name string or a ParsedName, got "
+            f"{type(name).__name__} {name!r}; {fix}")
 
 
 def _parser_repr(parser: Parser) -> str:
