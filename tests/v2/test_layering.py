@@ -10,6 +10,7 @@ from tests.checkout import ROOT
 
 import nameparser
 import nameparser._pipeline
+import nameparser.locales
 
 PKG = pathlib.Path(nameparser.__file__).parent
 
@@ -27,9 +28,7 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_pieces.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py",
-               "locales/__init__.py", "locales/ja.py",
-               "locales/ru.py", "locales/tr_az.py", "locales/zh.py",
-               "locales/_es_given_names.py"}
+               "locales/__init__.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -42,6 +41,9 @@ _PIPELINE_STAGE_ALLOWED = (
 # access (mechanisms.md#LOCALE-PACKS-PURE-DATA) -- one contract
 # shared by every pack, like
 # _PIPELINE_STAGE_ALLOWED above, so tightening it is a one-line edit.
+# No pack is keyed in ALLOWED: _locale_rules() gives every
+# nameparser/locales/*.py but __init__.py this rule, plus the pack's own
+# private data module, so a new pack is checked from its first commit.
 # _types joined the three in #272: the ja pack's segmenter factory
 # constructs a Segmentation, and _types is the bottom of the graph
 # (Locale itself imports it), so this widens the base types, not the
@@ -162,13 +164,6 @@ ALLOWED = {
     # "nameparser.locales." prefix documents that reach for humans even
     # though the walker never exercises it.
     "locales/__init__.py": ("nameparser._locale", "nameparser.locales."),
-    "locales/ja.py": _LOCALE_PACK_ALLOWED,
-    "locales/ru.py": _LOCALE_PACK_ALLOWED,
-    "locales/tr_az.py": _LOCALE_PACK_ALLOWED,
-    "locales/zh.py": _LOCALE_PACK_ALLOWED,
-    # a pack's data, no pack itself: rules/O6's given-name list (#959),
-    # which the es pack will carry as a lexicon fragment
-    "locales/_es_given_names.py": (),
     # the data modules' package: a docstring, no imports
     "config/__init__.py": (),
     # CLI: imports only the public package, same as
@@ -182,11 +177,32 @@ def _is_type_checking(test: ast.expr) -> bool:
         isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING")
 
 
-def _nameparser_imports(path: pathlib.Path) -> list[str]:
+def _package_of(path: pathlib.Path) -> str:
+    """The dotted package a module at `path` sits in: `nameparser` for
+    a file outside the package (a test's planted snippet)."""
+    try:
+        parts = path.resolve().relative_to(PKG.resolve()).parent.parts
+    except ValueError:
+        return "nameparser"
+    return ".".join(("nameparser", *parts))
+
+
+def _nameparser_imports(path: pathlib.Path,
+                        package: str | None = None) -> list[str]:
     """All nameparser-internal imports in the module, at any nesting
     depth, EXCEPT those under `if TYPE_CHECKING:` -- annotation-only
-    imports are not runtime dependencies."""
+    imports are not runtime dependencies.
+
+    A relative import is recorded by its absolute name, resolved against
+    `package` (by default the one `path` sits in): `from ._lexicon import
+    X` in `_suggest.py` is `nameparser._lexicon`, and `from .. import
+    _parser` in a pack is `nameparser._parser`, each name of a bare
+    `from <dots> import` being taken as a module. Until 3.1 the walker
+    read `node.module` alone, so a relative import was recorded as a
+    name the filter below dropped or not at all, and `_suggest.py`, which
+    imports nothing else, was checked by nothing."""
     found: list[str] = []
+    base = (package or _package_of(path)).split(".")
 
     def _record(node: ast.AST) -> None:
         # guard checked on EVERY node uniformly, so `elif TYPE_CHECKING:`
@@ -197,6 +213,12 @@ def _nameparser_imports(path: pathlib.Path) -> list[str]:
             return
         if isinstance(node, ast.Import):
             found.extend(a.name for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level:
+            anchor = ".".join(base[:len(base) - node.level + 1])
+            if node.module:
+                found.append(f"{anchor}.{node.module}")
+            else:
+                found.extend(f"{anchor}.{a.name}" for a in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             found.append(node.module)
         for child in ast.iter_child_nodes(node):
@@ -219,8 +241,43 @@ def _permitted(imported: str, allowed: tuple[str, ...]) -> bool:
     return False
 
 
+def _locale_rules() -> dict[str, tuple[str, ...]]:
+    """The rule for every module in nameparser/locales/ but __init__.py.
+
+    A pack (`es.py`) may import _LOCALE_PACK_ALLOWED and its own
+    private data modules: `_es_given_names.py` belongs to `es.py`, the
+    pack with the LONGEST stem the data module's name opens with, so
+    `_es_ar_given_names.py` is `es_ar.py`'s and not `es.py`'s. A data
+    module (a leading underscore, rules/O6's given-name lists, #959)
+    imports nothing internal."""
+    locales_dir = pathlib.Path(nameparser.locales.__file__).parent
+    stems = sorted(p.stem for p in locales_dir.glob("*.py")
+                   if not p.stem.startswith("_"))
+    rules: dict[str, tuple[str, ...]] = {}
+    for path in sorted(locales_dir.glob("*.py")):
+        stem = path.stem
+        if stem == "__init__":
+            continue
+        if stem.startswith("_"):
+            rules[f"locales/{path.name}"] = ()
+            continue
+        own = tuple(
+            f"nameparser.locales.{data.stem}"
+            for data in sorted(locales_dir.glob("_*.py"))
+            if data.stem != "__init__"
+            and max((s for s in stems if data.stem.startswith(f"_{s}_")),
+                    key=len, default=None) == stem)
+        rules[f"locales/{path.name}"] = _LOCALE_PACK_ALLOWED + own
+    return rules
+
+
+def _checked() -> dict[str, tuple[str, ...]]:
+    """Every module test_layering_contract checks, with its rule."""
+    return {**_locale_rules(), **ALLOWED}
+
+
 def test_layering_contract() -> None:
-    for mod, allowed in ALLOWED.items():
+    for mod, allowed in _checked().items():
         path = PKG / mod
         if not path.exists():
             assert mod not in _MUST_EXIST, (
@@ -231,6 +288,32 @@ def test_layering_contract() -> None:
                 f"{mod} imports {imported}, which the layering contract "
                 f"forbids (allowed prefixes: {allowed or 'none'})"
             )
+
+
+@pytest.mark.parametrize("pack,data,allowed", [
+    ("es", "_es_given_names", True),
+    ("es_ar", "_es_ar_given_names", True),
+    # a data module is its longest-stemmed pack's alone
+    ("es", "_es_ar_given_names", False),
+    ("pt", "_es_given_names", False),
+])
+def test_a_pack_may_import_its_own_data_module_only(
+        pack: str, data: str, allowed: bool) -> None:
+    rule = _locale_rules()[f"locales/{pack}.py"]
+    assert _permitted(f"nameparser.locales.{data}", rule) is allowed
+
+
+def test_the_pack_rule_refuses_what_a_pack_may_not_import() -> None:
+    # the negative control: the rule every pack is held to refuses the
+    # pipeline, the parser, the config data and another pack
+    rule = _locale_rules()["locales/es.py"]
+    for imported in ("nameparser._pipeline._vocab", "nameparser._parser",
+                     "nameparser.config._compiled", "nameparser.locales.pt",
+                     "nameparser._reading_index"):
+        assert not _permitted(imported, rule), imported
+    for data in _locale_rules():
+        if pathlib.PurePath(data).stem.startswith("_"):
+            assert _locale_rules()[data] == ()
 
 
 def test_every_pipeline_module_is_keyed_in_allowed() -> None:
@@ -258,7 +341,7 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
     check measuring nothing, which is the shape of the bug it exists
     to prevent.
     """
-    keyed = set(ALLOWED)
+    keyed = set(_checked())
     pipeline_dir = pathlib.Path(nameparser._pipeline.__file__).parent
     shipped = {f"_pipeline/{p.name}" for p in pipeline_dir.glob("*.py")}
     assert "_pipeline/_group.py" in shipped, (
@@ -272,6 +355,41 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
         f"imports -- _PIPELINE_STAGE_ALLOWED for a stage, something "
         f"tighter for a leaf several stages sit on (see _pipeline/_pieces.py)"
     )
+
+
+def test_every_locales_module_is_checked() -> None:
+    """The same completeness check over nameparser/locales/, where no
+    pack is keyed by hand. Until 3.1 only four packs and one data module
+    were keyed, and the other seventeen packs, and
+    `_es_ar_given_names.py`, were checked by nothing.
+
+    _locale_rules() enumerates the folder with a `*.py` glob, so this
+    lists it another way, by what the import system finds there
+    (pkgutil), and holds each module to the rule its name calls for: a
+    pack to _LOCALE_PACK_ALLOWED and a data module to none. What it
+    catches: a module the glob does not reach (a subpackage,
+    `locales/xx/`), and a module given a rule other than its kind's.
+    What it cannot: a module neither the glob nor the import system
+    lists, which no import can load either."""
+    import pkgutil
+    rules = _checked()
+    found = {m.name: m.ispkg for m in pkgutil.iter_modules(
+        nameparser.locales.__path__)}
+    assert {"ja", "es", "_es_given_names"} <= set(found), (
+        f"the listing found no locale modules, so this check can no "
+        f"longer fail: {sorted(found)}")
+    missing = sorted(name for name, ispkg in found.items()
+                     if ispkg or f"locales/{name}.py" not in rules)
+    assert not missing, (
+        f"locale modules the layering contract does not check: {missing}")
+    for name in found:
+        rule = rules[f"locales/{name}.py"]
+        if name.startswith("_"):
+            assert rule == (), name
+        else:
+            assert rule[:len(_LOCALE_PACK_ALLOWED)] == _LOCALE_PACK_ALLOWED
+            assert all(extra.startswith(f"nameparser.locales._{name}_")
+                       for extra in rule[len(_LOCALE_PACK_ALLOWED):]), name
 
 
 def test_lexicon_never_imports_config_package_root_or_parser() -> None:
@@ -377,6 +495,47 @@ def test_type_checking_imports_do_not_count(tmp_path: pathlib.Path) -> None:
         "    from nameparser import _render\n"
     )
     assert _nameparser_imports(mod) == ["nameparser.util", "nameparser"]
+
+
+@pytest.mark.parametrize("package,source,expected", [
+    ("nameparser.locales", "from .. import _parser\n",
+     ["nameparser._parser"]),
+    ("nameparser.locales", "from ._es_given_names import GIVEN_NAMES\n",
+     ["nameparser.locales._es_given_names"]),
+    ("nameparser.locales", "from . import pt\n", ["nameparser.locales.pt"]),
+    ("nameparser", "from ._pipeline._vocab import x\n",
+     ["nameparser._pipeline._vocab"]),
+    ("nameparser._pipeline", "from .._parser import Parser\n",
+     ["nameparser._parser"]),
+])
+def test_a_relative_import_is_recorded_by_its_absolute_name(
+        tmp_path: pathlib.Path, package: str, source: str,
+        expected: list[str]) -> None:
+    mod = tmp_path / "snippet.py"
+    mod.write_text(source)
+    assert _nameparser_imports(mod, package) == expected
+
+
+def test_a_pack_s_relative_import_breaks_the_contract(
+        tmp_path: pathlib.Path) -> None:
+    # the planted violation the walker missed before it read node.level
+    mod = tmp_path / "pt.py"
+    mod.write_text("from .. import _parser\n"
+                   "from ._es_given_names import GIVEN_NAMES\n")
+    rule = _locale_rules()["locales/pt.py"]
+    refused = [m for m in _nameparser_imports(mod, "nameparser.locales")
+               if not _permitted(m, rule)]
+    assert refused == ["nameparser._parser",
+                       "nameparser.locales._es_given_names"]
+
+
+def test_the_walker_reaches_the_relative_imports_of_suggest() -> None:
+    # reachability: _suggest.py writes every internal import relatively,
+    # so an empty list here is a contract that checks nothing
+    imports = _nameparser_imports(PKG / "_suggest.py")
+    assert "nameparser._lexicon" in imports
+    assert "nameparser.config._order_names" in imports
+    assert "nameparser._parser" in imports  # the call-time one
 
 
 def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
