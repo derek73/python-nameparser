@@ -80,7 +80,8 @@ inherited family name under
 How large the groups get
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-A key is a family name and one letter, so a common surname makes a
+A key is a family name and the given name's first letter, so a common
+surname makes a
 large group, and the pairs to check grow with the square of a group's
 size: every Smith whose given name starts with J is in ``smith;j``.
 It is the family names your data holds most of that set the cost.
@@ -108,14 +109,15 @@ Store the names, not their keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A key is a bucket cut from a parse, by one nameparser version under one
-matcher's settings, not an identifier. These move a name's keys:
+matcher's settings, not an identifier. Each of these moves a name's
+keys:
 
 - **The parser.** The same text keys differently under a parser that
-  reads it in another order.
+  reads it in another order, or with another lexicon.
 - **The release.** A release that reads a name differently moves its
   keys.
-- **The accepted outcomes.** Accepting another outcome adds keys for
-  it.
+- **The matcher's settings.** Accepting another outcome adds the keys
+  it needs, and so does switching on ``other_readings``.
 
 So store the names, build the keys again after upgrading nameparser or
 changing the parser or the accepted outcomes, and compare only keys
@@ -239,7 +241,8 @@ Seven of the 25 pairs shared a key and were checked, and two of the
 seven are not consistent: a key only gathers candidates. ``Ana Cruz``
 shares no key with any name on the other list and is never checked.
 To find the duplicates inside one list, bucket it the same way and
-pair each bucket with itself (``itertools.combinations(bucket, 2)``).
+pair each bucket with itself (``itertools.combinations(bucket, 2)``),
+collecting the pairs in a set as here.
 Where the two lists need different parsers, parse each with its own
 and pass the :class:`~nameparser.ParsedName` objects to ``keys()`` and
 ``check()``, as in the example before this one.
@@ -406,6 +409,8 @@ an unaccepted one shows what the pair needed. ``alternate-spelling``,
 readings only where the search is switched on
 (:ref:`matching-other-readings`): otherwise the table shows the names
 as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
+
+.. _matching-comparing-outcomes:
 
 Comparing two outcomes
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -580,7 +585,7 @@ it. Each has a cost, which its section gives in full:
    * - | ``Mr. Smith`` /
        | ``John Smith``
      - ``given-one-side``
-     - A key of the surname alone on every name
+     - A key of each family part alone, with no given letter
      - :ref:`matching-given-one-side`
    * - | ``Hong`` /
        | ``Hong-Yi``
@@ -590,7 +595,8 @@ it. Each has a cost, which its section gives in full:
    * - | ``J. Edgar Hoover`` /
        | ``Edgar Hoover``
      - ``across-roles``
-     - Keys for the middle names, nickname and maiden name too
+     - Given letters from the middle names and nickname, family keys
+       from the maiden name
      - :ref:`matching-across-roles`
    * - | ``Suharto`` /
        | ``Suharto``
@@ -861,7 +867,8 @@ name is present on both sides and agrees:
     (True, 'given-one-side')
 
 It is outside the default because of what it does to the keys: every
-name gets each family part it is keyed by as a key of its own, with no
+name with a family name gets each family part it is keyed by as a key
+of its own, with no
 given letter, so a group holds everyone of that surname.
 
 .. doctest::
@@ -1079,9 +1086,10 @@ are the same and fewer of their pairs come out consistent:
 
 To grade the consistent pairs rather than refuse some, keep the
 default and filter on ``weakest``, comparing by ``Outcome.strength``
-(`Comparing two outcomes`_). This keeps a pair whose weakest row is at
-least ``initial``, and so sets aside one that differs by a missing
-generation:
+(:ref:`matching-comparing-outcomes`). This keeps a pair whose weakest
+row is at least ``initial``, and so sets aside every pair with a row
+ranked below it: a middle name or a generation on one side only, or a
+title or credential (``noted``):
 
 .. doctest::
 
@@ -1090,6 +1098,8 @@ generation:
     >>> at_least_initial(matcher.check("J. Smith", "John Smith"))
     True
     >>> at_least_initial(matcher.check("John Smith", "John Smith Jr."))
+    False
+    >>> at_least_initial(matcher.check("John A. Smith", "John Smith"))
     False
 
 .. _matching-without-an-inherited-family-name:
