@@ -35,6 +35,9 @@ Which part is yours
      - Read
    * - calls ``HumanName``
      - :ref:`migrate-removed`, then the :ref:`migrate-attribute-map`
+   * - was written against 1.x
+     - :ref:`migrate-earlier-breaks` as well: what 2.0 removed still
+       applies
    * - edits ``CONSTANTS`` or builds a ``Constants``
      - the :ref:`migrate-config-map`
    * - uses the 2.x ``Lexicon`` and ``Policy`` and is going to 3.0 or
@@ -64,6 +67,8 @@ Upgrade steps
 4. If you keep pickles, read :ref:`migrate-pickles` before leaving 3.0
    behind: a ``Lexicon``, ``Parser`` or locale pack pickled by 2.7 or
    2.8 loads under 3.0 and not under 3.1, so pickle it again under 3.0.
+   That load raises a ``DeprecationWarning``, so it stops a run that
+   turns warnings into errors.
 5. Upgrade, and compare your fixtures with the lists under
    :ref:`migrate-behavior` for the releases between your old version
    and the new one.
@@ -702,7 +707,7 @@ that wrote it:
      - Build the object again
    * - ``Lexicon``, ``Parser`` or locale pack
      - 2.7 or 2.8
-     - loads
+     - loads, with a ``DeprecationWarning``
      - ``ValueError``
      - Load it under 3.0 and pickle it again there
    * - ``Policy``
@@ -742,7 +747,8 @@ readings, and a ``Parser`` or a locale pack holds a ``Lexicon``. What
 loads it depends on the release that wrote it:
 
 - **Written by 2.7 or 2.8.** 3.0 loads it, translating it onto
-  readings, and 3.1 refuses it with a ``ValueError`` saying which
+  readings and raising a ``DeprecationWarning`` that says 3.1 will
+  refuse it, and 3.1 refuses it with a ``ValueError`` saying which
   releases wrote it. Load it under 3.0 and pickle the loaded object
   again there (``pickle.dumps(obj)``). If 3.0 refuses the pickle too,
   as it refused an edited ``Lexicon`` whose sets no readings express,
@@ -813,9 +819,10 @@ Behavior changes
 -----------------
 
 Beyond the API surface mapped above, parse *outputs* differ between 1.4
-and 3.1 for the input shapes listed here, release by release. The
-reasoning for each is in that release's section of :doc:`release_log`,
-the 3.0 and 3.1 ones included.
+and 3.1 for specific input shapes. The ones listed here, release by
+release, are the shapes worth checking your fixtures for; the full
+list, with reasoning, is in each release's section of
+:doc:`release_log`, the 3.0 and 3.1 ones included.
 
 .. list-table::
    :header-rows: 1
@@ -1036,8 +1043,6 @@ characters — each side judged on its own — where the katakana dot is
 unconditional) are decided
 in tokenization rather than by policy, so a name written with either
 still divides at the dot whatever those two fields are set to.
-
-.. _migrate-2-3-to-2-8:
 
 Changed in 2.3 through 2.8
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1753,13 +1758,14 @@ dotted ones:
 Initials that spell a credential
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dotted initials that spell a listed credential, after a one-word
-surname and a comma, are the given and middle names, as the initials
-they may be, where 1.4 read them as one given name and 2.0 through 3.0
-as the credential (:ref:`migrate-2-0`).
-The parse reports the credential it did not read. Two name words before
-the comma, another credential beside the initials, or the undotted
-spelling keep the credential:
+Dotted initials that spell a listed credential, after a comma and a
+surname of one word, or of one word behind its particles (``de
+Waart``), are the given and middle names, as the initials they may be,
+where 1.4 read them as one given name and 2.0 through 3.0 as the
+credential (:ref:`migrate-2-0`). The parse reports the credential it
+did not read. Two name words before the comma, another credential in
+the same part as the initials, or the undotted spelling keep the
+credential:
 
 .. doctest::
 
@@ -1768,6 +1774,8 @@ spelling keep the credential:
     ('M.', 'D.', '')
     >>> [str(report.kind) for report in dotted.ambiguities]
     ['suffix-or-name']
+    >>> parse("de Waart, M.D.").given, parse("de Waart, M.D.").family
+    ('M.', 'de Waart')
     >>> [parse(n).suffix for n in ("Bin Zhang, M.D.",
     ...     "Andrews, M.D. Ph.D.", "Andrews, MD")]
     ['M.D.', 'M.D. Ph.D.', 'MD']
