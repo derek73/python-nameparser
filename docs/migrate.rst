@@ -1935,9 +1935,10 @@ Credentials joined at a full stop, and the Royal Colleges
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Listed credentials written in two chunks joined at a full stop
-(``S.Pd``, ``M.Pd``, ``B.Pharm``) are credentials, where 1.4 through 3.0
-read them after a comma as a title, and 2.4 through 3.0 reported one
-ending a name as ``suffix-or-name``. The Royal Colleges' fellowships and
+(``S.Pd``, ``M.Pd``, ``B.Pharm``) are credentials. After a comma, 1.4
+through 2.3 read the first as a title and 2.4 through 3.0 read both as
+one title; 2.4 through 3.0 also reported one ending a name as
+``suffix-or-name``. The Royal Colleges' fellowships and
 memberships (``FRCS``, ``MRCP``) are credentials, where 1.4 through 3.0
 read them as the family or middle name:
 
@@ -2083,8 +2084,8 @@ default parse is unchanged:
     >>> parser_for(locales.AR).parse("Karim Ben Haddad").family
     'Ben Haddad'
 
-``locales.JA`` lists the honorific ``君``, where 3.0 read it with the
-given name, and ``ja_segmenter`` no longer cuts a name with no kanji
+``locales.JA`` lists the honorific ``君``, where 2.1 through 3.0 read it
+with the given name, and ``ja_segmenter`` no longer cuts a name with no kanji
 after its first character, where 2.1 through 3.0 did. The segmenter
 needs the ``ja`` extra, and the pack warns without one, so the example
 is not run here:
