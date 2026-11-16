@@ -875,8 +875,9 @@ list, with reasoning, is in each release's section of
        credentials and titles
      - :ref:`migrate-3-0`
    * - 3.1
-     - Case repair, initials, ``Md``, Maghrebi and Hebrew particles,
-       capitals and initials after a comma
+     - Runs of initials, words glued at a full stop, commas in other
+       scripts, case repair, titles and particles in other scripts,
+       ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
 
 Each entry says what it compares with. The lists of readings through
@@ -1629,6 +1630,115 @@ Changed in 3.1
 
 Each entry names the releases that read the name the old way.
 
+Runs of initials
+^^^^^^^^^^^^^^^^
+
+A given name written as a run of initials joined by full stops is read
+as the initials, the first letter the given name and the rest the middle
+name, where 1.4 through 3.0 read the run as one given name.
+:meth:`~nameparser.ParsedName.initials` gives every letter of a run, in
+the middle or family name too, where 1.4 through 3.0 gave its first.
+``str()`` keeps the run as written:
+
+.. doctest::
+
+    >>> tolkien = parse("J.R.R. Tolkien")
+    >>> tolkien.given, tolkien.middle, tolkien.initials(), str(tolkien)
+    ('J.', 'R.R.', 'J. R. R. T.', 'J.R.R. Tolkien')
+    >>> parse("Ana J.R. García").initials()
+    'A. J. R. G.'
+
+A dotted title before another title
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``U.S.``, ``U.K.`` and the German ``P.D.`` opening a name are part of the
+title where another title the name keeps follows them, where 1.4 through
+3.0 read them as the given name and the title after them as a middle
+name. Before a name word they are not read as a title:
+
+.. doctest::
+
+    >>> judge = parse("U.S. District Judge Marc Thomas Treadwell")
+    >>> judge.title, judge.given
+    ('U.S. District Judge', 'Marc')
+    >>> parse("U.S. Grant").title
+    ''
+
+Latin initials in Brahmic scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A Latin initial spelled in Devanagari, Bengali or another Brahmic script
+from Devanagari to Sinhala (``एम.`` for M.) is a name word, where 1.4
+through 3.0 read it as a title. Listed titles such as ``डा.`` are
+unchanged:
+
+.. doctest::
+
+    >>> verma = parse("एम. एस. वर्मा")
+    >>> verma.title, verma.given, verma.middle
+    ('', 'एम.', 'एस.')
+
+A word glued at a full stop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A name glued to the title or initial before it at a full stop divides
+there, where 1.4 through 3.0 read the two as one word, so ``Dr.John
+Smith`` had no given name. ``str()`` keeps the word as written, and a
+word in lower case after the stop (``Dr.med``) stays whole. A saint's
+particle glued to a name stays one word and is a name word, where 1.4
+through 3.0 read ``St.John`` opening a name as a title and 2.4 through
+3.0 read ``Sta.Ana`` ending one as a credential:
+
+.. doctest::
+
+    >>> glued = parse("Dr.John Smith")
+    >>> glued.title, glued.given, str(glued)
+    ('Dr.', 'John', 'Dr.John Smith')
+    >>> parse("St.John Price").given, parse("Mark Jhon Sta.Ana").family
+    ('St.John', 'Sta.Ana')
+
+Commas and word dividers in other scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The commas of Ethiopic, Burmese, N'Ko, Mongolian, Manchu, Lisu, Vai and
+Bamum divide a name as the ASCII comma does, and the Ethiopic wordspace
+``፡`` divides its words, where 1.4 through 3.0 kept each inside the word
+before it. The fullwidth full stop ``．`` between Han, Hangul or kana
+names divides them as the middle dot does, where 1.4 through 3.0 read
+one word. A narrow no-break space (U+202F) between two Mongolian
+letters joins a case suffix to its word, where 1.4 through 3.0 divided
+there:
+
+.. doctest::
+
+    >>> amharic = parse("ከበደ፣ አበበ")
+    >>> amharic.family, amharic.given
+    ('ከበደ', 'አበበ')
+    >>> parse("አበበ፡ከበደ፡ተሰማ").middle
+    'ከበደ'
+    >>> taiwan = parse("台邦．撒沙勒")
+    >>> taiwan.given, taiwan.family
+    ('台邦', '撒沙勒')
+    >>> parse("ᠬᠣᠷᠯᠤ᠎ᠠ ᠶ᠋ᠢᠨ ᠴᠣᠢᠢᠪᠠᠯᠰᠠᠩ").middle
+    ''
+
+Dutch 't and 's
+^^^^^^^^^^^^^^^
+
+``'s`` before a surname is part of the family name, where 1.4 through
+3.0 read it with the middle name, and neither ``'t`` nor ``'s`` is
+reported as an unbalanced quote, as 2.0 through 3.0 reported it. A
+nickname in quotes after ``'t`` is read as 1.4 read it, where 2.0
+through 3.0 took the nickname from the ``'t``:
+
+.. doctest::
+
+    >>> gravesande = parse("Willem Jacob 's Gravesande")
+    >>> gravesande.middle, gravesande.family, gravesande.ambiguities
+    ('Jacob', "'s Gravesande", ())
+    >>> parse("Jan van 't Hof 'Jantje'").nickname
+    'Jantje'
+
 Case repair: apostrophes, Georgian and hyphenated particles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1655,6 +1765,16 @@ capitals in a name of mixed case is still kept:
     >>> [str(parse(n).capitalized()) for n in ("ნინო ᲑᲣᲠᲯᲐᲜᲐᲫᲔ",
     ...     "Უჩა გოგოლაძე", "Jean DUPONT")]
     ['ნინო ბურჯანაძე', 'უჩა გოგოლაძე', 'Jean DUPONT']
+
+A spaced ``Ter`` or ``Der`` opening the family name takes a capital too,
+where 1.4 through 3.0 wrote it in lowercase; after another particle it
+keeps its lowercase:
+
+.. doctest::
+
+    >>> [str(parse(n).capitalized()) for n in ("LEVON TER PETROSYAN",
+    ...     "JAN VAN DER BERG")]
+    ['Levon Ter Petrosyan', 'Jan van der Berg']
 
 Initials in Thai and Burmese
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1735,6 +1855,118 @@ longer fills ``patronymic``:
     >>> hebrew_ben.given, hebrew_ben.family
     ('בן', 'כהן')
 
+A bound given name before ``El`` gives the rest to the family name,
+where 2.2 through 3.0 read given ``Abd El`` and 1.4 through 2.1 middle
+``El Kader``:
+
+.. doctest::
+
+    >>> abd_el = parse("Abd El Kader Haddou")
+    >>> abd_el.given, abd_el.family
+    ('Abd', 'El Kader Haddou')
+
+More particles
+^^^^^^^^^^^^^^
+
+The standalone Arabic ``ال`` before a name, the clan prefix, and the
+Icelandic ``frá``, "from", before a place name start the family name,
+where 1.4 through 3.0 read them with the middle name. A particle's
+family name runs on past a credential that spells a name (``Abd``,
+``Md``), where 1.4 through 3.0 ended it there:
+
+.. doctest::
+
+    >>> [parse(n).family for n in ("سارة علي ال ناصر",
+    ...     "Jónas Jónsson frá Hriflu", "Ahmad bin Abd Rahman")]
+    ['ال ناصر', 'frá Hriflu', 'bin Abd Rahman']
+
+Georgian, Armenian and Persian titles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Georgian and Armenian titles written in their own scripts, Persian
+titles and the Persian spellings of the Arabic ones are titles, where
+1.4 through 3.0 read them as the given name, and an Arabic word drawn
+out with the tatweel ``ـ`` reads as it does without it. The Armenian
+``Տեր`` opening a family name is part of it, and opening a name is a
+priest's title:
+
+.. doctest::
+
+    >>> [parse(n).title for n in ("ბატონი დავით ყიფიანი",
+    ...     "Պարոն Արամ Սարգսյան", "دکتر محمد رضایی", "الدكتــور خالد سالم")]
+    ['ბატონი', 'Պարոն', 'دکتر', 'الدكتــور']
+    >>> parse("Զավեն Տեր Եղիյան").family, parse("Տեր Հուսիկ Լազարյան").title
+    ('Տեր Եղիյան', 'Տեր')
+
+A Georgian name beside capitals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A Georgian name is not read as mixed case beside a word in capitals,
+Georgian's capitals making no case contrast, so ``MA`` after it is the
+family name, as after an Arabic-script name, where 2.4 through 3.0 read
+it as a credential:
+
+.. doctest::
+
+    >>> georgian_ma = parse("ჯეკ MA")
+    >>> georgian_ma.family, georgian_ma.suffix
+    ('MA', '')
+
+Thai names
+^^^^^^^^^^
+
+Thai ranks, dotted salutations, academic and professional titles, and
+salutations glued to the start of the given name are titles, where 1.4
+through 3.0 read them as the given name or part of it. A Thai title
+before one name word reads that word as the given name, where 1.4
+through 3.0 read the family name, and a noble family name opening with
+``ณ`` is one family name, where they read ``ณ`` as a middle name.
+:ref:`thai-names` lists what is read:
+
+.. doctest::
+
+    >>> [(t.title, t.given) for t in map(parse, ("พ.ต.ท. สมมาตร เกลี้ยงสิน",
+    ...     "นายสมชาย ใจดี", "รศ.ดร.สุดา ใจดี", "ดร. สุดา"))]
+    [('พ.ต.ท.', 'สมมาตร'), ('นาย', 'สมชาย'), ('รศ.ดร.', 'สุดา'), ('ดร.', 'สุดา')]
+    >>> parse("สุดา ณ อยุธยา").family
+    'ณ อยุธยา'
+
+Credentials joined at a full stop, and the Royal Colleges
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Listed credentials written in two chunks joined at a full stop
+(``S.Pd``, ``M.Pd``, ``B.Pharm``) are credentials, where 1.4 through 3.0
+read them after a comma as a title, and 2.4 through 3.0 reported one
+ending a name as ``suffix-or-name``. The Royal Colleges' fellowships and
+memberships (``FRCS``, ``MRCP``) are credentials, where 1.4 through 3.0
+read them as the family or middle name:
+
+.. doctest::
+
+    >>> parse("Ayu Pangestu, S.Pd, M.Pd").suffix
+    'S.Pd, M.Pd'
+    >>> parse("Ahmed Ali B.Pharm").ambiguities
+    ()
+    >>> [parse(n).suffix for n in ("John Smith FRCS", "Smith, John MRCP")]
+    ['FRCS', 'MRCP']
+
+Title words at the ends of a name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A military title written short after a connective ends the name as a
+title, where 3.0 read it with the family name. A title word between a
+nickname and a suffix is the family name, where 2.3 through 3.0 read it
+as the given name and 1.4 through 2.2 as a title:
+
+.. doctest::
+
+    >>> smith_maj = parse("John Smith y Maj.")
+    >>> smith_maj.title, smith_maj.family
+    ('Maj.', 'Smith y')
+    >>> smitty = parse("'Smitty' Pope Jr.")
+    >>> smitty.given, smitty.family
+    ('', 'Pope')
+
 Two capitals before a later credential
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1789,3 +2021,78 @@ credential:
     >>> [parse(n).suffix for n in ("Bin Zhang, M.D.",
     ...     "Andrews, M.D. Ph.D.", "Andrews, MD")]
     ['M.D.', 'M.D. Ph.D.', 'MD']
+
+The order report
+^^^^^^^^^^^^^^^^
+
+A name of one word followed by initials reports an ``order`` ambiguity,
+where 2.0 through 3.0 reported nothing; the reading is unchanged. The
+report names no alternative, since the other reading lays out the whole
+name (``name_order=FAMILY_FIRST`` reads it):
+
+.. doctest::
+
+    >>> kavitha = parse("Kavitha S")
+    >>> [str(report.kind) for report in kavitha.ambiguities], kavitha.family
+    (['order'], 'S')
+
+.. _migrate-3-1-packs:
+
+Under a pack or a setting
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These move a reading only where a pack or a setting is chosen; the
+default parse is unchanged:
+
+- ``locales.TR_AZ`` reads a Kyrgyz name of three words ending in its
+  patronymic marker with the family name ``Cholponbai uulu``, where 1.4
+  (with Turkic handling) through 3.0 read ``uulu`` alone, and finds the
+  Uzbek ``o‘g‘li`` written with a curly quote or a backtick, where 2.0
+  through 3.0 read it as the family name.
+- ``PatronymicRule.TURKIC`` finds a marker written with a combining mark
+  (``oğlu`` with ``g`` and U+0306), where 2.0 through 3.0 did not.
+- ``locales.RU`` keeps an initial before a surname ending like a
+  patronymic in given-first order, where 2.0 through 3.0 rotated it.
+- ``locales.ZH`` no longer divides seven simplified surnames no Wikidata
+  family-name item writes (``谌龙``), which 2.5 through 3.0 divided.
+- ``locales.MN`` is new, and reads a name written in Cyrillic father's
+  name first; ``PolicyPatch.script_orders`` merges by script, where 2.1
+  through 3.0 replaced the whole table.
+- ``locales.AR`` and ``locales.HE`` are new, and read ``Ben`` inside a
+  name as a family-name particle, where the default reads it as a middle
+  name.
+
+.. doctest::
+
+    >>> import unicodedata
+    >>> from nameparser import Parser, PatronymicRule, Policy, locales, parser_for
+    >>> kyrgyz = parser_for(locales.TR_AZ).parse("Bekmyrza Cholponbai uulu")
+    >>> kyrgyz.given, kyrgyz.family
+    ('Bekmyrza', 'Cholponbai uulu')
+    >>> parser_for(locales.TR_AZ).parse("Sa'dullayev Alisher Zafar o‘g‘li").family
+    "Sa'dullayev"
+    >>> turkic = Parser(policy=Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    >>> turkic.parse(unicodedata.normalize("NFD", "Mamedov Ali Huseyn oğlu")).family
+    'Mamedov'
+    >>> parser_for(locales.RU).parse("И. Б. Зубкевич").family
+    'Зубкевич'
+    >>> parser_for(locales.ZH).parse("谌龙").family
+    '谌龙'
+    >>> parser_for(locales.MN).parse("Батын Сүхээ").family
+    'Батын'
+    >>> parser_for(locales.AR).parse("Karim Ben Haddad").family
+    'Ben Haddad'
+
+``locales.JA`` lists the honorific ``君``, where 3.0 read it with the
+given name, and ``ja_segmenter`` no longer cuts a name with no kanji
+after its first character, where 2.1 through 3.0 did. The segmenter
+needs the ``ja`` extra, and the pack warns without one, so the example
+is not run here:
+
+.. code-block:: python
+
+    >>> parser_for(locales.JA).parse("逢沢　一郎君").suffix
+    '君'
+    >>> ja = parser_for(locales.JA, segmenter=locales.ja_segmenter())
+    >>> ja.parse("あいさわいちろう").family
+    'あいさわいちろう'
