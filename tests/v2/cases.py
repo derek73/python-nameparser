@@ -6952,10 +6952,10 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "suffix": "MH, Md"},
          classification="fix(#1392)",
          ambiguities=("suffix-or-name",),
-         notes="#1392 accepted cost: 'Md' in a part of its own behind a "
-               "full name is the credential in any case, as beside the "
-               "pair ('Jane Doe, BM Md'). 1.4.0 through 3.0.1 read given "
-               "'MH'"),
+         notes="#1392, open (put to the maintainer 2026-11-15, "
+               "decisions/C5): 'Md' in a part of its own behind a full "
+               "name is the credential in any case, as beside the pair "
+               "('Jane Doe, BM Md'). 1.4.0 through 3.0.1 read given 'MH'"),
     Case("two_caps_alone_before_a_listed_credential_that_is_not_the_last_part",
          "Jane Doe, MH, PhD, Jr.",
          {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, Jr."},
@@ -7060,8 +7060,9 @@ CASES: tuple[Case, ...] = (
          notes="#1392, a limit: the vi choice drops the particle "
                "readings of 'la' and 'van', so the head counts two name "
                "words and the pair is a credential, as 'de la Vega, MH "
-               "PhD' reads there since #1323; under the default and "
-               "every other pack a particle head keeps the given name"),
+               "PhD' reads there since #1323; so does any choice of "
+               "languages that drops the head's particle reading, and "
+               "under the default a particle head keeps the given name"),
     Case("two_caps_alone_before_a_later_part_in_fullwidth_capitals",
          "Jane Doe, MH, \uff2d\uff24",
          {"given": "MH", "family": "Jane Doe", "suffix": "\uff2d\uff24"},
@@ -7085,6 +7086,38 @@ CASES: tuple[Case, ...] = (
                "decisions/C5): 'VI' is unlisted two capitals and reads "
                "through the pair, reported, where the listed 'II' reads "
                "suffix unreported. 1.4.0 through 3.0.1 read given 'VI'"),
+    Case("two_caps_alone_before_a_lowercase_particle_part_and_a_credential",
+         "Jane Doe, MH, de, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, de, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392, what 'any later part' gives, the class of 'MH, "
+               "John, PhD'. 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_credential_and_a_trailing_name_part",
+         "Jane Doe, MH, PhD, Smith",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, Smith"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392, what 'any later part' gives, as 'MH, PhD, John'"),
+    Case("two_caps_alone_before_a_title_part_and_a_listed_credential",
+         "Jane Doe, MH, Dr., PhD",
+         {"title": "Dr.", "given": "Jane", "family": "Doe",
+          "suffix": "MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, what 'any later part' gives: the title part "
+               "between is a title (rules/C2). 3.0.1 read given 'MH', "
+               "title 'Dr.'"),
+    Case("two_caps_alone_before_a_particle_with_a_glued_delimiter",
+         "Jane Doe, MH, Mc;",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Mc;"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, a recorded gap and not the intent (decisions/C5, "
+               "third review): classify tags no particle on a word with "
+               "a delimiter glued to it, so 'Mc;' speaks where 'Mc' "
+               "does not, as beside the pair ('Jane Doe, BM Mc;'). "
+               "1.4.0 through 3.0.1 read given 'MH'"),
     Case("a_mixed_case_pair_before_a_later_credential_stays_the_given_name",
          "Jane Doe, Mh, PhD",
          {"given": "Mh", "family": "Jane Doe", "suffix": "PhD"},

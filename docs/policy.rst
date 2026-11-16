@@ -1228,9 +1228,11 @@ undotted, the letters are a credential when credentials follow them and
 nothing else stands beside them (``"Jane Doe, BM PhD"``), where the
 dotted spelling keeps its given name (``"John Smith, A.B. Ph.D."``).
 
-Either spelling is a credential when it stands alone in its part and a
-later part is a listed credential (``"Jane Doe, BM, PhD"``, ``"Jane Doe,
-B.M., PhD"``). A title in front of them says the opposite:
+Either spelling, in capitals in a name of mixed case, is a credential
+when it stands alone in its part and a later part holds nothing but
+credentials the vocabulary lists as that alone (``"Jane Doe, BM,
+PhD"``, ``"Jane Doe, B.M., PhD"``). A title in front of them says the
+opposite:
 
 .. doctest::
 
@@ -1268,8 +1270,8 @@ At the end
 of a name, given part or clause, either reading reports the fork as a
 ``suffix-or-name`` ambiguity, so a record that reads wrong can still be
 found; right after a comma behind a full name, the credential reading
-is taken silently, save for the two letters a later part speaks for
-(above):
+is taken silently, save for two letters that only other such pairs,
+or a later part, speak for (above):
 
 .. doctest::
 

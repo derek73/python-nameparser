@@ -5,7 +5,7 @@
 - Behind one word as written, initials run together are the given name whatever they spell: a run of single letters joined by full stops that spells a listed credential reads as a run spelling nothing does, every letter a capital or the name in one case, and reports `suffix-or-name` with the credential as the other reading (`Jansen, J.P.` → given 'J.', middle 'P.'); two words as written before the comma (a title word or a capitalized particle among them), a lower-case particle before a word with no capital, a suffix word in front of the run and a part whose other words are all credentials, a generation and a dual written as a title not counted, keep the credential — 2026-11-10 (Derek), #1238.
 - The run governs over C13 (`Smith, J.P. Jones` → given 'J.', as `Smith, J.Q. Jones` reads), and reports behind a title, unlike C5's paired initials (C11) — 2026-11-10 #1238.
 
-Elsewhere: paired initials spelling nothing, read as the given name after the comma behind any head, are rules/C5's; decisions/C5 holds their history.
+Elsewhere: paired initials spelling nothing, read as the given name after the comma behind any head (save behind two or more name words where a later comma part is a listed credential, decisions/C5's 2026-11-15 #1392 entry), are rules/C5's; decisions/C5 holds their history.
 
 Open: none in this file.
 

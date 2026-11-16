@@ -506,9 +506,11 @@ def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
     suffix word that is no generation, a title/suffix dual only in
     capitals, a listed member of the ambiguous class its capitals
     settle ('MA', not 'Ma'), a credential split across a space
-    ('Ph. D.'); never a particle standing as a word, a word the count
-    gates, a joined word holding a generation or a gated or unsettled
-    chunk ('MD/Jr.'), nor a word read by its shape alone ('XYZ',
+    ('Ph. D.'); never a word classify tagged a particle (one with a
+    delimiter glued to it carries no such tag and passes, 'Mc;', as in
+    the pair's own part), a word the count gates, a joined word holding
+    a generation or a gated or unsettled chunk ('MD/Jr.'), nor a word
+    read by its shape alone ('XYZ',
     'X.Y.Z.': untagged, or tagged a member no capitals settle). A
     delimiter core standing alone is no word of the part ('MD - PhD',
     rules/C10), and a word with one glued is read without it, as the
