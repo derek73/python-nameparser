@@ -775,7 +775,12 @@ class Suggestion:
     with the patch applied; ``evidence`` holds one
     :class:`SettingEvidence` per setting considered, and ``names`` one
     :class:`NameEvidence` per input name, in input order, blanks and
-    duplicates included. ``str()`` is a readable report."""
+    duplicates included. ``str()`` is a readable report.
+
+    A suggestion is one release's reading of the group: the tables and
+    thresholds behind it change between releases, so keep the ``patch``
+    applied (or the ``parser``'s ``Policy``) with the data rather than
+    calling ``suggest`` again and expecting the same one."""
 
     #: The parser ``suggest`` was called on.
     base: Parser
