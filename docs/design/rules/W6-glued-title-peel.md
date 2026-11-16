@@ -60,7 +60,7 @@
 
 **Accepted:**
 
-- One title peels, so a second glued behind it with no full stop between them stays with the name ('รองศาสตราจารย์นายแพทย์สมชาย'), Thai writing a title run apart.
+- One title peels, so a second glued behind it stays with the name ('รองศาสตราจารย์นายแพทย์สมชาย'), Thai writing a title run apart.
 
 ---
 **Signal:** neighbor: a listed title glued to the start of the name's first word
