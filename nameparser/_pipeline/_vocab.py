@@ -2145,7 +2145,6 @@ _NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
 
-
 def is_capitals_word(text: str) -> bool:
     """Whether TEXT is a name written in capitals, as rules/O9 reads
     one: two or more letters in capitals ending the word, after any
@@ -2182,8 +2181,8 @@ def is_capitals_word(text: str) -> bool:
         return False  # a full stop, slash, digit, bracket or caseless letter
     # i is 0 where no lowercase prefix stopped the walk
     if i and not all(c.isalpha() or c in _NAME_JOINERS
-                          or unicodedata.category(c) in ("Mn", "Mc", "Me")
-                          for c in word[:i]):
+                     or unicodedata.category(c) in ("Mn", "Mc", "Me")
+                     for c in word[:i]):
         return False
     return max(longest, chunk) >= 2
 
