@@ -28,7 +28,7 @@ Write the rules the pack turns on as data, if they are `Policy` fields the vocab
 1. Put the table in the pack's language file.
 2. List the file in `PACK_RULES` in `tools/vocab/build.py`.
 3. Rebuild (`uv run python tools/vocab/build.py`).
-4. Give the pack `policy=rules_patch("<tag>")` from `nameparser._locale`, as `nameparser/locales/ru.py` does. `PACK_RULES` maps each file holding a table to the pack it is written for; a country pack may read its language's file without a row of its own (`nameparser/locales/es_ar.py` reads `es.toml`'s), so `git grep rules_patch nameparser/locales` lists every pack that reads one.
+4. Give the pack `policy=rules_patch("<tag>")` from `nameparser._locale`, as `nameparser/locales/ru.py` does. `PACK_RULES` maps each file holding a table to the pack it is written for; a country pack may read its language's file without a row of its own (`nameparser/locales/es_ar.py` reads `es.toml`'s), so `git grep -l rules_patch -- 'nameparser/locales/*.py'` lists every pack that reads one.
 
 A rule the table does not list is a change to the parser, not to a pack.
 
