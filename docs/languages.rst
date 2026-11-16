@@ -145,8 +145,9 @@ titles under ``cs`` wherever a doctorate is one:
      - suffix
      - name word
 
-Written bare at the end of a name, as any title is, a degree is a name
-word (``Jan Novák MUDr`` → family ``MUDr``). "By its shape" is the
+Written bare at the end of a name, as any title is, a doctorate or
+``Mgr.`` is a name word (``Jan Novák MUDr`` → family ``MUDr``), and so
+are ``MgA``, ``BcA`` and ``mjr`` under ``cs``. "By its shape" is the
 default's reading of any unlisted abbreviation written with a period
 at the head of a name or of the part after a comma (see
 :ref:`abbreviated-titles`).
@@ -468,15 +469,17 @@ The figures are of ORCID's researchers, who split their own names into
 a given and a family box, and count the names that agree in every box
 with the filer:
 
-- **Under es, outside Argentina,** every Spanish-speaking country
-  measured gains: by default they read between 13.5% (Peru) and 61.8%
-  (Uruguay) of names right, and under the pack between 93.2%
-  (Venezuela) and 97.3% (Chile).
+- **Under es, outside Argentina,** each country of one measurement
+  gains (Spain, Mexico, Colombia, Peru, Chile, Venezuela, Ecuador,
+  Bolivia, Cuba and Uruguay): by default they read between 13.5%
+  (Peru) and 61.8% (Uruguay) of names right, and under the pack
+  between 93.2% (Venezuela) and 97.3% (Chile).
 - **In Argentina,** 83.4% by default, 90.2% under ``es`` and 96.1%
   under ``es_ar``. Among Argentine inventors on US patents the figures
   are 93.8% by default, 86.2% under ``es`` and 92.7% under ``es_ar``,
   since most of them write one family name. The Argentine figures
-  leave out the records whose given box opens with a title.
+  are from a separate, later measurement, which leaves out the records
+  whose given box opens with a title.
 
 The dated figures, and those for Portuguese above, are in
 ``docs/design/decisions/O6-two-family-names.md``; the Argentine ones
