@@ -272,8 +272,9 @@ both from 95.0% to 96.4% in Czechia and from 94.8% to 96.4% in
 Slovakia. Among the candidates of the 2022 municipal and 2025 Chamber
 elections, about 170,000 records, each a distinct set of the boxes the
 Czech registers file a name in, it raises them from 97.0% to 97.5%.
-Stacking ``locales.ES`` on ``locales.CS`` moved fewer than two hundred
-of those register records, about seven in ten of them to agreeing. The
+The Spanish given-name list carried beside ``locales.CS`` moved fewer
+than two hundred of those register records, about seven in ten of them
+to agreeing. The
 dated figures are in
 ``docs/design/decisions/O6-two-family-names.md`` and
 ``docs/design/decisions/vocabulary-model.md``.
@@ -297,10 +298,12 @@ Spanish and Latin American usage puts an academic or professional title
 in front of a name (*Licenciado*, *Ingeniero*, *Mtro.*), and Portuguese
 does the same with *Doutor* and *Professora*. These words are borne
 as names hardly at all, so the default reads them as titles, written
-out, abbreviated or dotted. A family name written first that is one of
-them reads as the title too: ``Doctora``, ``Licenciado`` and ``Lic``
-are each a family name almost nowhere in ORCID or PatentsView
-(:issue:`1115`).
+out, abbreviated or dotted. A family name that is one of them, opening
+a name written family name first without a comma, reads as the title
+too (``Doctora Ruiz Ana`` → title ``Doctora``): ``Doctora``,
+``Licenciado`` and ``Lic`` are each a family name almost nowhere in
+ORCID or PatentsView (``docs/design/decisions/vocabulary-model.md``,
+:issue:`1115`).
 
 ``es`` turns on the two titles the default leaves off: ``Maestra``,
 which is also a family name and the word for a schoolteacher, and
@@ -379,6 +382,8 @@ A compound given name stays opt-in under the Spanish packs and ``pt``
 alike (``two_given_names``, see :ref:`two-given-names`): people filling
 a form with a middle-name box put the second given name there.
 
+.. _argentine-spanish-pack:
+
 Argentina: ``es_ar``
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -424,6 +429,8 @@ Peru, Bolivia, Ecuador, Costa Rica, Guatemala, Cuba, the Dominican
 Republic and Puerto Rico, the longer list
 reads fewer researchers' names right than ``es``'s does.
 
+.. _portuguese-two-family-names:
+
 Portuguese: why ``pt`` leaves the switch off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -466,7 +473,8 @@ with the filer:
   (Uruguay) of names right, and under the pack between 93.2%
   (Venezuela) and 97.3% (Chile).
 - **In Argentina,** 83.4% by default, 90.2% under ``es`` and 96.1%
-  under ``es_ar``. Among Argentine inventors on US patents the figures
+  under ``es_ar``, in a later measurement that leaves out the records
+  whose given box opens with a title. Among Argentine inventors on US patents the figures
   are 93.8% by default, 86.2% under ``es`` and 92.7% under ``es_ar``,
   since most of them write one family name.
 
@@ -741,6 +749,10 @@ What the packs cost
   choice also drops the Amazigh ``Ait`` and ``Nait``, which are
   ``ber``'s (Berber), so for Moroccan and Algerian data choose ``ber``
   too.
+- **Every particle read by default, under a strict Hebrew choice.** A
+  strict Hebrew choice drops ``Ait``, ``Nait``, ``Ould``, ``Ouled`` and
+  ``El``, none of which is Hebrew's (``Sara El Haddou`` gives middle
+  ``El``).
 
 .. doctest::
 
