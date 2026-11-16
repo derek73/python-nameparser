@@ -99,7 +99,8 @@ class Script(StrEnum):
     #: caller's or a pack's script_orders entry can, as locales.MN's
     #: does, licensed by the caller's choice of that pack (#1237). Not
     #: among the scripts the interpunct and the two-family-names count
-    #: read, and writes initials: Cyrillic names abbreviate.
+    #: read (_EAST_ASIAN_SCRIPTS), and, having no row in
+    #: _SCRIPT_PROPERTIES, writes initials: Cyrillic names abbreviate.
     CYRILLIC = "cyrillic"
 
 
