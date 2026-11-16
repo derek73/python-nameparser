@@ -987,8 +987,12 @@ last:
 1. **A clause of credentials, generations or titles** is taken first
    and set apart from the name: each word becomes the suffix or the
    title its vocabulary makes it, and the name around it reads as it
-   would beside a nickname. Other content ending in a period loses its
-   brackets and parses as if it had been written bare.
+   would beside a nickname. A few such words stay a nickname all the
+   same: a bare ``Sir``, ``Mrs`` or ``Junior``, and a credential
+   written as initials before a name word (``Justin (JP) Stearns``);
+   :ref:`nicknames-and-maiden-names` has the cases. Other content
+   ending in a period loses its brackets and parses as if it had been
+   written bare.
 2. **A clause that announces itself**, opening with a recognized maiden
    marker and carrying a word after it, is a maiden name inside any
    configured pair, with nothing configured (since 2.2). The marker is
