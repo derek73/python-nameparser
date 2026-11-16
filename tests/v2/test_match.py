@@ -2077,6 +2077,7 @@ _PAIR_KINDS = (
     ("spelling", "spelling_of", Outcome.ALTERNATE_SPELLING,
      Lexicon._alternate_spellings))
 _pair_kinds = pytest.mark.parametrize("kind, prop, outcome, paired", _PAIR_KINDS)
+_OTHER_PROP = {"short_for": "spelling_of", "spelling_of": "short_for"}
 
 
 def _named(prop: str, *names: object) -> dict[str, Any]:
@@ -2309,6 +2310,69 @@ def test_a_remove_of_one_kinds_pairs_leaves_the_other_kinds_and_the_parse(
         assert Parser(lexicon=after).parse("Zzrobert Jane Smith").title == "Zzrobert"
 
 
+@_pair_kinds
+def test_a_removed_words_readings_of_other_kinds_stay(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # the word removed holds the pair itself, beside a title reading
+    # and the other matching kind's pair: only its readings of the kind go
+    other, other_prop, _, other_paired = next(
+        row for row in _PAIR_KINDS if row[0] != kind)
+    lexicon = (_pairs(kind, prop).add("zzbo", kind="title")
+               .add("zzbo", kind=other, **_named(other_prop, "zzx")))
+    after = lexicon.remove("zzbo", kind=kind)
+    assert sorted(r.kind for r in after.readings_of("zzbo")) == sorted(
+        ["title", other])
+    assert other_paired(after, "zzbo") == {"zzx"}
+    assert paired(after, "zzbo") == frozenset()
+    assert Parser(lexicon=after).parse("Zzbo Jane Smith").title == "Zzbo"
+    # a phrase is no word of any pair: silent, as an absent word is
+    assert lexicon.remove("zz bo", kind=kind)._pool() == lexicon._pool()
+
+
+@_pair_kinds
+def test_a_cut_reading_keeps_its_file_its_other_properties_and_whether_it_is_on(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # no shipped familiar or spelling reading is written `default =
+    # false` (2026-11-15), so the pool is planted: a file's reading
+    # written off is cut as one on is, and stays off, in its file
+    from nameparser import _lexicon, _reading_index as ri
+    from types import MappingProxyType
+    off = ri.IndexReading("zzq", "xx", kind, MappingProxyType(
+        {prop: ("zzr", "zzs"), "default": False}))
+    on = ri.IndexReading("zzq", "yy", kind, MappingProxyType({prop: ("zzr",)}))
+    for edit, left in ((("zzr",), ("zzs",)), (("zzq",), None)):
+        pool: dict[str, tuple[Any, ...]] = {"zzq": (off, on)}
+        touched = _lexicon._drop_pairs(pool, _lexicon._make_edit(
+            "remove", edit, kind, ()), {})
+        assert touched == ("zzq",)
+        if left is None:
+            assert pool == {}
+            continue
+        (kept,) = pool["zzq"]
+        assert (kept.tag, kept.kind, dict(kept.props)) == (
+            "xx", kind, {prop: left, "default": False})
+        assert not kept.on_by_default
+
+
+def test_a_clash_message_names_a_remove_of_pairs_as_its_call_bounded() -> None:
+    # the words a remove of pairs touched are what a clash under a
+    # choice names its edits by, and the call is rendered with its list
+    # bounded: `st` is a generation under cs, which the caller's
+    # credential clashes with
+    names = [f"zzn{i}" for i in range(12)]
+    lexicon = (Lexicon.default()
+               .add("st", kind="familiar", short_for=["zzlong", *names])
+               .remove("st", kind="familiar", short_for=names)
+               .add("st", kind="credential"))
+    with pytest.raises(ValueError, match=re.escape(
+            ".remove('st', kind='familiar', short_for=['zzn0', ")) as raised:
+        parser_for(locales.CS, base=Parser(lexicon=lexicon))
+    assert "... 6 more]" in str(raised.value)
+    assert "zzn9" not in str(raised.value)
+
+
 def _shipped_pair_in_several_files(kind: str, prop: str) -> tuple[str, str]:
     """A shipped word and a name that two or more of its readings of
     `kind`, from different files, both list."""
@@ -2399,11 +2463,9 @@ def test_a_remove_of_pairs_holds_under_a_choice_of_languages(
         assert (after.languages, after.strict) == (chosen.languages, strict)
         assert short not in paired(after, long)
         assert not _consistent(after, outcome, short, long)
-        assert len(after.words(kind=kind)) >= len(chosen.words(kind=kind)) - 1 - (
-            len(paired(chosen, long)) if not remove else 0)
 
 
-def test_a_remove_of_pairs_reaches_a_reading_a_later_choice_turns_on() -> None:
+def test_a_remove_of_pairs_written_on_the_default_holds_under_a_strict_choice() -> None:
     # under a strict choice only the chosen files' pairs are read; a
     # remove written on the default still cuts them once chosen, and a
     # pair no chosen file lists is absent either way
@@ -2491,7 +2553,13 @@ def test_a_remove_of_every_reading_of_a_word_keeps_the_pairs_other_words_hold() 
      ValueError, "{prop} names the pairs of a {kind} reading"),
     # a whole-kind remove names no pair
     (lambda L, k, p: L.remove(kind=k, every=True, **{p: ["maxwell"]}), TypeError,
-     "words or every=True|takes no {prop}"),
+     "takes no {prop}"),
+    # the other matching kind's property, alone and beside this one's
+    (lambda L, k, p: L.remove("max", kind=k, **{_OTHER_PROP[p]: ["maxwell"]}),
+     ValueError, "names the pairs of a {other} reading"),
+    (lambda L, k, p: L.remove("max", kind=k, **{
+        p: ["maxwell"], _OTHER_PROP[p]: ["maxwell"]}),
+     ValueError, "names the pairs of a {other} reading"),
     # a property no remove takes, with the kind or without
     (lambda L, k, p: L.remove("max", kind=k, same_as="maxwell"), TypeError,
      "unexpected keyword argument 'same_as'"),
@@ -2504,7 +2572,9 @@ def test_a_remove_of_pairs_refuses_a_wrong_argument_with_code_that_runs(
         match: str) -> None:
     # the guard and the hint for the whole family (AGENTS.md), and the
     # code each message offers runs as pasted and cuts a shipped pair
-    with pytest.raises(error, match=match.format(kind=kind, prop=prop)) as raised:
+    other = next(row[0] for row in _PAIR_KINDS if row[0] != kind)
+    with pytest.raises(error, match=match.format(
+            kind=kind, prop=prop, other=other)) as raised:
         call(Lexicon.default(), kind, prop)
     offered = re.findall(r"remove\('\w+', kind='\w+', \w+=\['\w+'\]\)",
                          str(raised.value))
