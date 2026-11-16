@@ -42,7 +42,7 @@ Proposing a pack or another large change
 
 For anything significant, open an issue first, so it can be discussed there before anyone builds it. A locale pack is the clearest case; a batch of vocabulary, a new rule and a change to how a kind of name reads are others.
 
-A pack or a vocabulary change is measured against the large local corpora described above, which a contributor is unlikely to have downloaded. So it is usually quicker, and gives a better result, for the maintainers to build it and for the person who proposed it to review it.
+A pack or a vocabulary change is measured against the large local corpora described above, which a contributor is unlikely to have downloaded. So it is usually quicker, and gives a better result, for the maintainer to build it and for the person who proposed it to review it.
 
 What helps most is the report itself:
 
