@@ -23,7 +23,8 @@ capitals vote and no surname vote of its own, being looked up only to
 veto (a name ending in one that is a listed surname, `Zhou NG`, casts
 no surname vote, #1397), one opening such a name with no capitals word
 after it (`AM Hoy`, `NG Emily`) casts no capitals vote either, and the
-name no surname vote (#1355), and a script the tables do not hold (Hangul, Han) simply matches nothing. A patronymic
+name no surname vote (#1355), and a script the tables do not hold
+(Hangul, Han) simply matches nothing. A patronymic
 votes, Latin or Cyrillic, only where the pipeline's rule reads one
 (rules/O1's three name words, rules/O2's four), through the pipeline's
 own predicates, never a copy of them. No signal raises on any string.
