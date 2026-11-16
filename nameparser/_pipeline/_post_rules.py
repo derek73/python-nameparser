@@ -373,15 +373,6 @@ def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
             or _is_numeral(text))
 
 
-def _patronymic_under(rules: frozenset[PatronymicRule], text: str) -> bool:
-    """Whether a patronymic rule in `rules` reads `text` as its marker:
-    an East Slavic ending, or a Turkic marker word."""
-    return (PatronymicRule.EAST_SLAVIC in rules
-            and has_patronymic_ending(text)
-            or PatronymicRule.TURKIC in rules
-            and is_patronymic_marker(text))
-
-
 def _is_numeral(text: str) -> bool:
     # rules/O9: "a lone roman numeral of two or more letters stays the
     # suffix" -- asked only of a capitals word, which has two or more
@@ -483,8 +474,11 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
 
     rules = state.policy.patronymic_rules
     if rules:
-        markers = {i for i in seq
-                   if caps[i] and _patronymic_under(rules, tokens[i].text)}
+        markers = {i for i in seq if caps[i] and (
+            PatronymicRule.TURKIC in rules
+            and is_patronymic_marker(tokens[i].text)
+            or PatronymicRule.EAST_SLAVIC in rules
+            and has_patronymic_ending(tokens[i].text))}
         # rules/O9: "a word the patronymic rule in force reads as its
         # marker is no capitals word where another capitals word is
         # left to be the family" -- the switch never moves a marker into
@@ -544,7 +538,8 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
         t = tokens[i]
         if (t.role in NAME_ROLES and not caps[i] and i not in in_runs
                 and any(ch.islower() for ch in t.text)
-                and not lowercase_joiner(i)):
+                and not (t.text.islower() and ("particle" in t.tags
+                                               or "conjunction" in t.tags))):
             break
     else:
         return False
@@ -572,7 +567,9 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
     # middle name (a particle with a word after it shares its unit,
     # above); one written with a capital, as a name is, is read as one
     given = next((piece_of.get(i, -1 - i) for i in others
-                  if not lowercase_joiner(i)),
+                  if not (tokens[i].text.islower()
+                          and ("conjunction" in tokens[i].tags
+                               or "particle" in tokens[i].tags))),
                  piece_of.get(others[0], -1 - others[0]) if others else None)
     for i in others:
         role = Role.GIVEN if piece_of.get(i, -1 - i) == given else Role.MIDDLE
@@ -898,9 +895,13 @@ def _take_second_given_name(state: ParseState,
         return
     rules = state.policy.patronymic_rules
     if rules:
+        slavic = PatronymicRule.EAST_SLAVIC in rules
+        turkic = PatronymicRule.TURKIC in rules
         after = take[-1] + 1
-        if any(_patronymic_under(rules, tokens[i].text) for i in take) or (
-                PatronymicRule.TURKIC in rules and after < len(tokens)
+        if any(slavic and has_patronymic_ending(tokens[i].text)
+               or turkic and is_patronymic_marker(tokens[i].text)
+               for i in take) or (
+                turkic and after < len(tokens)
                 and is_patronymic_marker(tokens[after].text)):
             return
     for i in take:

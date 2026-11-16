@@ -90,7 +90,7 @@ import functools
 import unicodedata
 from collections.abc import Callable, Sequence
 
-from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
+from nameparser._lexicon import FULL_STOPS, _normalize
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
@@ -101,7 +101,7 @@ from nameparser._pipeline._vocab import (
     GLUED_SHAPE, dotted_title_end, effective_script,
     glued_cuts, glued_saint_cut, title_prefixes,
     is_initial_chunk, is_one_case,
-    period_joined_vocab, _listed_whole,
+    period_joined_vocab,
     is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
@@ -977,7 +977,8 @@ def _only_post_nominals(texts: Sequence[str], state: ParseState) -> bool:
                 j + 2 < len(texts) and f"{n} {_normalize(texts[j + 1])}"
                 in sets.maiden_markers):
             return True
-        if not _listed_whole(later, state.lexicon):
+        if (n not in sets.suffix_words
+                and n.replace(".", "") not in sets.suffix_acronyms):
             return False
     return True
 
@@ -1000,14 +1001,8 @@ def _a_name_before(texts: Sequence[str], state: ParseState) -> bool:
     if (last in sets.titles or last in sets.titles_ambiguous
             or last in sets.title_modifiers or last in sets.title_styles):
         return False
-    return _not_glued_titles(texts[-1], state.lexicon)
-
-
-def _not_glued_titles(word: str, lexicon: Lexicon) -> bool:
-    """Whether `word` is no run of titles glued at their stops with no
-    name after them ('Prof.Dr.'): a word that may hold a name."""
-    return (period_joined_vocab(word, lexicon) != "title"
-            or bool(glued_cuts(word, lexicon)))
+    return (period_joined_vocab(texts[-1], state.lexicon) != "title"
+            or bool(glued_cuts(texts[-1], state.lexicon)))
 
 
 def _ends_with_the_family(state: ParseState) -> bool:
@@ -1027,9 +1022,11 @@ def _a_word_to_spare(texts: Sequence[str], state: ParseState) -> bool:
     glued at their stops with no name after them ('Prof.Dr.'): a word
     of the name before the last one, which a title is not ('Mr.
     St.Clair', 'Dr. A.Smith')."""
-    titles = state.lexicon._sets.titles
-    return any(_normalize(before) not in titles
-               and _not_glued_titles(before, state.lexicon)
+    sets = state.lexicon._sets
+    lexicon = state.lexicon
+    return any(_normalize(before) not in sets.titles
+               and (period_joined_vocab(before, lexicon) != "title"
+                    or glued_cuts(before, lexicon))
                for before in texts)
 
 

@@ -725,9 +725,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: ambiguous suffix halves dropped from the peel as subsets, 202 -> 200;
 #: #1369's capitals vote asking the base parse where a family word is
 #: a listed title, its `sets =` binding and the two title sets it
-#: reads, 200 -> 203; the 3.1 /simplify pass of the stages, the
-#: glued word's post-nominal test asked through `_vocab._listed_whole`
-#: and a `sets =` binding narrowed to the titles, 203 -> 200);
+#: reads, 200 -> 203);
 #: the tools' first 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -749,7 +747,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 200, "tools": 28}
+_UNGUARDED_READS = {"library": 203, "tools": 28}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
