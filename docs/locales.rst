@@ -78,8 +78,7 @@ Which East Asian names need a pack
 A name written in its own script with a space between its parts needs
 no pack. Written wholly in Han or Hangul, or in Japanese kanji and kana
 other than katakana alone, it is read family-first by default, because
-the script alone settles the order (:ref:`east-asian-names`;
-:ref:`east-asian-defaults` turns it off). A name only in katakana keeps
+the script alone settles the order (:ref:`east-asian-names`). A name only in katakana keeps
 the default order, since it may be a transcribed foreign name.
 
 A name written with no space has to be divided first, and the script
@@ -96,7 +95,9 @@ settles that only for Korean:
 Neither pack is a default, because the same Han characters can be a
 Chinese or a Japanese name, divided in different places: each is for
 data whose language you can declare
-(:ref:`splitting-unspaced-names`).
+(:ref:`splitting-unspaced-names`). The two defaults, the family-first
+order and the Korean split, can each be turned off
+(:ref:`east-asian-defaults`).
 
 Most other packs are for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express, or words that are
@@ -715,7 +716,9 @@ says what it can change:
 
 - **A choice of languages** turns on readings the default vocabulary
   already holds for that language, written in its language's file
-  (``ne.toml`` for Nepali) and off until a caller chooses it.
+  (``ne.toml`` for Nepali) and off until a caller chooses it. Where
+  the language reads a word its own way, the choice also turns off
+  other languages' readings of that word (:ref:`choosing-languages`).
 - **Policy fields** change how a name is read whatever its words are.
 - **A word list** of the pack's own.
 
@@ -765,7 +768,8 @@ says what it can change:
      - ``segment_scripts``, for the script its list covers
      - a surname list
 
-``vi`` is the one pack that takes readings out rather than adding them.
+``vi`` is the one pack whose own fragment takes readings out rather
+than adding them.
 A choice prefers its language's reading of a word only where that
 reading is a title, a particle or another vocabulary kind, never a
 name, so no reading ``vi.toml`` could write would keep ``Van`` a name

@@ -13,9 +13,13 @@ evidence, and the evidence agrees.
 ``Parser.suggest()`` reads a list you declare to be one group (one
 source, one convention) and returns a :class:`~nameparser.Suggestion`.
 Each name votes on its order from the evidence it carries
-(:ref:`suggest-evidence`), and the group decides a setting where enough
-of its names agree (:ref:`suggest-deciding`). Every setting the votes
-do not decide keeps the base parser's value.
+(:ref:`suggest-evidence`), and the group decides the order where enough
+of its names agree (:ref:`suggest-deciding`). Three more settings are
+decided the same way, each by its own evidence: a patronymic rule
+(:ref:`suggest-patronymics`), ``initials_as_family``
+(:ref:`suggest-initials`) and ``capitals_as_family``
+(:ref:`suggest-capitals`). Every setting the votes do not decide keeps
+the base parser's value.
 
 .. doctest::
 
