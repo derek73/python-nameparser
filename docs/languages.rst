@@ -18,7 +18,7 @@ subset with its own parser, or pass several packs to ``parser_for``:
 
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
-Vietnamese and Mongolian names, and Maghrebi, Amazigh and Hebrew
+Vietnamese, Mongolian and Thai names, and Maghrebi, Amazigh and Hebrew
 particles. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
@@ -657,6 +657,225 @@ Accept ``family-initial`` to match them under the pack:
     >>> mongolian.matching(accept=plain.accept | {"family-initial"}).check(
     ...     "Батын Сүхээ", "Б. Сүхээ").consistent
     True
+
+
+.. _thai-names:
+
+Thai names
+----------
+
+A Thai name written in Thai script needs no pack and no setting: its
+titles, the noble particle ``ณ`` and the absence of initials are read
+by default. A Thai name written in Latin letters gets none of this
+(`Where the Thai reading stops`_).
+
+A Thai name is written given name first, then the family name, and a
+person is addressed by the given name after any title. Titles stand
+before the name: the salutations ``นาย`` (Mr.), ``นาง`` (Mrs.) and
+``นางสาว`` (Miss), academic and professional titles, military and
+police ranks, and royal lineage titles. A title is written out
+(``รองศาสตราจารย์``, associate professor) or short with full stops
+(``รศ.``), and it is often glued to the given name with no space; the
+salutations are glued more often than written apart. Thai shortens no
+name to an initial. A few noble family names open with the particle
+``ณ`` (``ณ อยุธยา``).
+
+Titles glued to the given name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A salutation or a spelled-out title glued to the start of the name's
+first word is split off and read as the title. The name without it
+reads the same either way:
+
+.. doctest::
+
+    >>> parse("สมชาย ใจดี").given
+    'สมชาย'
+    >>> somchai = parse("นายสมชาย ใจดี")
+    >>> somchai.title, somchai.given, somchai.family
+    ('นาย', 'สมชาย', 'ใจดี')
+    >>> parse("นางสุดา ใจดี").title
+    'นาง'
+    >>> thai_miss = parse("นางสาวสุดา ใจดี")
+    >>> thai_miss.title, thai_miss.given
+    ('นางสาว', 'สุดา')
+    >>> thai_ajarn = parse("อาจารย์สุดา ใจดี")
+    >>> thai_ajarn.title, thai_ajarn.given
+    ('อาจารย์', 'สุดา')
+
+The longest listed title is the one taken, so ``นางสาวสุดา`` is Miss
+Suda and not Mrs. ``สาวสุดา``. Where the longer title would leave a
+vowel sign with no consonant to sit on, the shorter one is taken
+instead:
+
+.. doctest::
+
+    >>> thai_sawitri = parse("นางสาวิตรี ใจดี")
+    >>> thai_sawitri.title, thai_sawitri.given
+    ('นาง', 'สาวิตรี')
+
+A title written apart reads the same as one glued (``นาย สมชาย ใจดี``
+gives title ``นาย``), and several written apart are all read.
+
+Titles written short, ranks and royal titles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A listed title written short with its full stops is read glued to the
+name or apart, alone or in a chain:
+
+.. doctest::
+
+    >>> thai_dr = parse("ดร.สุดา ใจดี")
+    >>> thai_dr.title, thai_dr.given
+    ('ดร.', 'สุดา')
+    >>> thai_chain = parse("รศ.ดร.สุดา ใจดี")
+    >>> thai_chain.title, thai_chain.given
+    ('รศ.ดร.', 'สุดา')
+    >>> parse("รองศาสตราจารย์ ดร.สุดา ใจดี").title
+    'รองศาสตราจารย์ ดร.'
+
+Military and police ranks are read written out or short, each with its
+feminine form (``พ.อ.หญิง``), and so are the royal lineage titles
+(``หม่อมราชวงศ์``, short ``ม.ร.ว.``):
+
+.. doctest::
+
+    >>> thai_rank = parse("พ.ต.ท.สมชาย ใจดี")
+    >>> thai_rank.title, thai_rank.given
+    ('พ.ต.ท.', 'สมชาย')
+    >>> parse("พันตำรวจโทสมชาย ใจดี").title
+    'พันตำรวจโท'
+    >>> thai_royal = parse("หม่อมราชวงศ์สมชาย ใจดี")
+    >>> thai_royal.title, thai_royal.given
+    ('หม่อมราชวงศ์', 'สมชาย')
+    >>> parse("ม.ร.ว.สมชาย ใจดี").title
+    'ม.ร.ว.'
+
+A title before one name word
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After a title, one name word is read as the family name in most
+languages (``Dr. Smith``). After a Thai title it is the given name,
+since that is the name a Thai title is used with:
+
+.. doctest::
+
+    >>> parse("Dr. Smith").family
+    'Smith'
+    >>> parse("ดร. สุดา").given
+    'สุดา'
+    >>> parse("นายสมชาย").given
+    'สมชาย'
+
+Family names that open with ``ณ``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``ณ`` is read as a particle, so it and the word after it are one
+family name:
+
+.. doctest::
+
+    >>> thai_noble = parse("นางสาวสุดา ณ อยุธยา")
+    >>> thai_noble.given, thai_noble.middle, thai_noble.family
+    ('สุดา', '', 'ณ อยุธยา')
+
+Initials
+~~~~~~~~
+
+:meth:`~nameparser.ParsedName.initials` gives an empty string for a
+name in Thai script, as it does for Chinese, Japanese and Korean ones,
+since no Thai name is shortened to a letter. A word in another script
+beside it still gives its own:
+
+.. doctest::
+
+    >>> parse("Somchai Jaidee").initials()
+    'S. J.'
+    >>> parse("สมชาย ใจดี").initials()
+    ''
+    >>> parse("สมชาย Jaidee").initials()
+    'J.'
+
+Where the Thai reading stops
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Five things are left as written:
+
+- **A short title glued with no full stop.** ``ดร``, ``นพ`` and the
+  other short forms stay part of the given name when nothing separates
+  them from it, because Thai given names open with the same letters
+  (``นพพร``, ``นพดล``). With the full stop, or a space, they are read
+  (``docs/design/decisions/W6-glued-title-peel.md``, :issue:`317`).
+- **A second glued title.** One title is split off a word; a second
+  glued behind it stays in the given name. Written apart, both are
+  read.
+- **A word the vocabulary does not list.** ``คุณ`` (Khun) and ``พระ``
+  are not titles by default, each also opening ordinary names. A
+  caller adds one (`Adding a Thai title`_).
+- **A clan name before** ``ณ อยุธยา``. A royal clan's surname written
+  between the given name and ``ณ อยุธยา`` is read as a middle name,
+  the parser reading by position.
+- **Latin letters.** Nothing is split off a name written wholly in
+  Latin letters, and the romanized particle ``na`` is not read, being
+  also a Korean family name. ``Mr.`` is read as it is in any name;
+  ``Khun`` is not listed and reads as the given name.
+
+.. doctest::
+
+    >>> parse("ดรสุดา ใจดี").given
+    'ดรสุดา'
+    >>> thai_two = parse("รองศาสตราจารย์นายแพทย์สมชาย ใจดี")
+    >>> thai_two.title, thai_two.given
+    ('รองศาสตราจารย์', 'นายแพทย์สมชาย')
+    >>> parse("รองศาสตราจารย์ นายแพทย์สมชาย ใจดี").title
+    'รองศาสตราจารย์ นายแพทย์'
+    >>> parse("ปฐมพร อินทรางกูร ณ อยุธยา").middle
+    'อินทรางกูร'
+    >>> parse("Suda na Ayutthaya").family
+    'Ayutthaya'
+    >>> parse("Mr. Somchai Jaidee").title
+    'Mr.'
+    >>> thai_khun = parse("Khun Somchai Jaidee")
+    >>> thai_khun.given, thai_khun.middle
+    ('Khun', 'Somchai')
+
+Adding a Thai title
+~~~~~~~~~~~~~~~~~~~
+
+There is no Thai pack, and the readings above need none. A title the
+default lacks is added to a :class:`~nameparser.Lexicon`
+(:ref:`vocabulary-lexicon`):
+
+.. doctest::
+
+    >>> parse("คุณ สมชาย ใจดี").given
+    'คุณ'
+    >>> with_khun = Parser(lexicon=Lexicon.default().add("คุณ", kind="title"))
+    >>> khun_apart = with_khun.parse("คุณ สมชาย ใจดี")
+    >>> khun_apart.title, khun_apart.given
+    ('คุณ', 'สมชาย')
+    >>> with_khun.parse("คุณสมชาย ใจดี").given
+    'คุณสมชาย'
+
+The added title is read written apart. Glued, it stays in the given
+name unless it is added with ``attached="before"``, which is for a
+word that opens no name; ``คุณ`` opens several given names.
+
+Listing the Thai titles
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The vocabulary holds about two hundred Thai titles, most of them
+ranks. :meth:`~nameparser.Lexicon.words` lists them by kind,
+``"salutation"``, ``"academic"``, ``"military"`` or ``"nobility"``,
+each stored without its last full stop:
+
+.. doctest::
+
+    >>> thai_salutations = [
+    ...     word for word in Lexicon.default().words(kind="salutation")
+    ...     if "฀" <= word[0] <= "๿"]
+    >>> sorted(thai_salutations)
+    ['ด.ช', 'ด.ญ', 'น.ส', 'นาง', 'นางสาว', 'นาย', 'เด็กชาย', 'เด็กหญิง']
 
 
 .. _maghrebi-hebrew-particles:
