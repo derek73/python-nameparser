@@ -8,25 +8,22 @@ family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
 📣 **nameparser 3.1 reads lists of names, not just one name at a
-time.** ``Parser.suggest()`` reads a list from one source and returns a
-parser configured for how it is written (its name order, its
-patronymics, and family names written as letters or in capitals), and
-``Parser.matching()``
-groups and compares names from several sources. `Getting started
-<https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
-takes you through both. 3.0 removed ``HumanName`` and the rest of the
-1.x compatibility layer: `Coming from 1.x or 2.x`_ below says where to
-start. The `release log
-<https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details. Please `open an
-issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
-that parses wrong.
+time:**
 
-Chinese, Japanese and Korean names written in their own scripts are read
-family-first (save a name in katakana alone, often a transcribed foreign
-name), unspaced Korean names are split against the census surname
-list, and CJK honorifics are recognized. See `East Asian names
-<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__.
+* ``Parser.suggest()`` reads a list from one source and returns a
+  parser configured for how it is written: its name order, its
+  patronymics, and family names written as letters or in capitals.
+* ``Parser.matching()`` groups and compares names from several sources.
+
+`Getting started
+<https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
+takes you through both, and the `release log
+<https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
+the details.
+
+**Upgrading from 1.x or 2.x?** 3.0 removed ``HumanName`` and the rest
+of the 1.x compatibility layer: `Coming from 1.x or 2.x`_ below says
+where to start.
 
 Installation
 ------------
@@ -92,14 +89,11 @@ name keys to group records by, and checks a pair field by field:
     >>> matcher.check("Jane Smith", "John Smith").consistent
     False
 
-A language pack reads the conventions of a language you know your data
-is in, such as two family names in Spanish or the patronymic in
-Russian; see `Locale packs
-<https://nameparser.readthedocs.io/en/latest/locales.html>`__ and
-`Notes by language
-<https://nameparser.readthedocs.io/en/latest/languages.html>`__.
+More shapes the parser reads
+----------------------------
 
-More shapes the parser reads:
+**Titles, suffixes and commas.** Runs of titles, listing forms and
+credentials are read without configuration, and a guess is reported:
 
 .. code-block:: python
 
@@ -125,6 +119,16 @@ More shapes the parser reads:
     >>> van.reading.languages                    # the vocabulary that read "van"
     ('nl',)
 
+**Other scripts.** The default vocabulary reads titles, honorifics and
+particles in several scripts besides Latin. Chinese, Japanese and
+Korean names written in their own scripts are read family-first (save a
+name in katakana alone, often a transcribed foreign name), unspaced
+Korean names are split against the census surname list, and CJK
+honorifics are recognized. See `East Asian names
+<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__.
+
+.. code-block:: python
+
     >>> parse("김민준").family                     # Korean: unspaced, split on the census list
     '김'
     >>> parse("高橋 みなみ").family                 # Japanese: kanji with kana, family first
@@ -141,6 +145,16 @@ More shapes the parser reads:
     >>> parse("نوال عبد هاشم").family             # هاشم is not one, so it stands alone
     'هاشم'
 
+**Language packs.** The parser never guesses a name's language, so the
+conventions of one language are opt-in: a pack reads them when you know
+the language your data is in, such as two family names in Spanish or
+the patronymic in Russian. See `Locale packs
+<https://nameparser.readthedocs.io/en/latest/locales.html>`__ and
+`Notes by language
+<https://nameparser.readthedocs.io/en/latest/languages.html>`__.
+
+.. code-block:: python
+
     >>> from nameparser import locales, parser_for
     >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
     >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
@@ -151,7 +165,7 @@ More shapes the parser reads:
     >>> ivan = russian.parse("Сидоров Иван Петрович")
     >>> ivan.given, ivan.patronymic, ivan.family
     ('Иван', 'Петрович', 'Сидоров')
-    >>> locales.available()
+    >>> locales.available()                        # every pack that ships
     ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
 
 When a reading is wrong for your data
@@ -188,6 +202,10 @@ first:
 A ``Lexicon`` and a ``Policy`` are frozen, so each change returns a new
 object and nothing is shared between parsers.
 
+If a name still reads wrong, please `open an issue
+<https://github.com/derek73/python-nameparser/issues>`__ with the name
+and the reading you expected.
+
 Learn more
 ----------
 
@@ -199,97 +217,78 @@ Learn more
 * `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, Spanish double surnames, and more
 * There's also a CLI: ``python -m nameparser --json "Doe, John"``
 
-How well it reads names
------------------------
-
-Measured 2026-11-05 against the 3.0 development tree, by comparing each
-reading with the boxes the name was filed in. That is agreement with
-someone else's convention, not ground truth, after folding case,
-periods, commas and spacing:
-
-* **US patent inventors** (PatentsView, 657,991 distinct name-and-country
-  records, split into two boxes by the filing attorney): both boxes agree
-  for 94.7%, and for 98.0% outside Spanish- and Portuguese-speaking
-  countries.
-* **UK company filings** (people with significant control, 1,039,144
-  records typed into title, forename, middle and surname boxes): all four
-  agree for 96.8%.
-* **Czech election candidates** (170,181, with degrees before and after
-  the name): all four boxes agree for 97.0%, and for 97.5% with
-  ``locales.CS``.
-
-Most of what the default misses is a convention rather than a misreading.
-It reads one family name, so a Spanish double surname comes out differently
-from how its bearer files it. Choosing the language closes most of the gap:
-for ORCID researchers in Spain, ``parser_for(locales.ES)`` lifts agreement
-from 49.5% to 96.7% (Mexico 33.6% to 96.9%). The pack costs where people
-file a single surname: Argentine patent inventors agree 93.8% by default,
-86.2% under ``ES`` and 92.7% under ``ES_AR``.
-
-Speed and testing
------------------
-
-* **About 90 µs a name**, some 11,000 names a second. Measured
-  2026-11-07 against the 3.0 development tree, on an Apple M3 Pro, one
-  core, Python 3.11, with one ``Parser`` reading the 7,106 entries of
-  the committed `corpus snapshot`_ (6,897 distinct names, some read
-  under more than one name order), the median of seven passes after a
-  warm-up.
-* **Linear in the input, on the shapes the scaling tests repeat.** The
-  clock-timed ones ran 32 costly input shapes on 2026-11-07, each with
-  its repeated part four times as long, and fail when the cost grows
-  more than six times.
-* **Pure Python, with no runtime dependencies.** Only the optional
-  ``ja`` extra adds any: namedivider-python and what it brings (numpy,
-  pandas, scipy and lightgbm among them), for dividing unspaced Japanese kanji names.
-* **Build one Parser and reuse it.** The first parser for a choice of
-  languages in a process compiles the choice and, unless a parse has
-  already loaded it, loads the reading index, about two thirds of the cost:
-  together tens of milliseconds the same day, several hundred parses.
-  Another choice after it took a few milliseconds, and a later
-  build of the same choice about 1 ms. Its ``Lexicon`` and
-  ``Policy`` are frozen and a parse never writes to them, so one parser
-  can be shared across threads without locking, and it pickles for
-  ``multiprocessing``. A segmenter you supply has to be thread-safe and
-  picklable too, and the ``ja`` extra's segmenter does not pickle.
-
-And the tests that hold the readings in place:
-
-* **40,256 tests** (collected 2026-11-07), run in CI on each of Python
-  3.11 through 3.15, save the 25 that need the ``ja`` extra, which a job
-  with the extra installed runs with the rest of the 39,652 tests then
-  under ``tests/v2/``. Another job runs the suite from a source export
-  without nameparser installed.
-* **Every corpus name's reading is recorded** in the snapshot, and a
-  test fails when the parser reads one differently, so a change that
-  moves a reading lists every name it moved in its pull request.
-* **Every interactive example runs.** Each one with a ``>>>`` prompt, in
-  this README and in the documentation, is a doctest run in CI.
-* **The parsing rules** are written down with examples the suite runs, in
-  `docs/design/rules <https://github.com/derek73/python-nameparser/tree/master/docs/design/rules>`__.
-  Where the parser is known to fall short of a rule, the example carries
-  a ``deviates:`` marker naming its issue, and the suite fails once the
-  gap closes until the marker comes off.
-
-.. _corpus snapshot: https://github.com/derek73/python-nameparser/blob/master/tools/differential/README.md
-
 Coming from 1.x or 2.x
 ----------------------
 
 3.0 has no ``HumanName``: ``parse(text)`` reads the same seven fields,
 named ``given`` and ``family`` where ``HumanName`` had ``first`` and
 ``last``, and a ``Lexicon`` and ``Policy`` handed to a ``Parser``
-replace ``Constants``. Upgrade to 2.8.2 first and run your tests under
-``python -W error::DeprecationWarning``: it stops at every use 3.0
-removes except a read of the shared ``CONSTANTS`` or of a ``Lexicon``
-set field and the imports `Migrating to 3.0`_ lists, which 2.8.2 does
-not warn on, so search for those too. A pickled ``HumanName`` or
-``Constants`` does not load in 3.0; store ``parse(text).as_dict()`` or
-the original string instead.
+replace ``Constants``. To find what your code has to change:
+
+1. Upgrade to 2.8.2, which warns of what 3.0 removes.
+2. Run your tests under ``python -W error::DeprecationWarning``. The run
+   stops at each use 3.0 removes, with three exceptions that 2.8.2 does
+   not warn on.
+3. Search your code by hand for those three: a read of the shared
+   ``CONSTANTS``, a read of a ``Lexicon`` set field, and the imports
+   `Finding the sites`_ lists.
+
+A pickled ``HumanName`` or ``Constants`` does not load in 3.0; store
+``parse(text).as_dict()`` or the original string instead.
 `Migrating to 3.0`_ maps ``HumanName``'s attributes and the
 ``Constants`` settings onto the 3.0 API.
 
 .. _Migrating to 3.0: https://nameparser.readthedocs.io/en/latest/migrate.html
+.. _Finding the sites: https://nameparser.readthedocs.io/en/latest/migrate.html#finding-the-sites
+
+How well it reads names
+-----------------------
+
+These figures give a general idea of what to expect and of how much a
+setting can change it. Each compares the parser's fields with the boxes
+a name was filed in on one large public dataset, which is agreement
+with someone else's convention and not ground truth, so they will
+differ for every dataset and yours will probably match none of them.
+
+* **US patent inventors**, filed in a given-name and a family-name box:
+  both agree for about 95% of names, and for about 98% outside Spanish-
+  and Portuguese-speaking countries.
+* **UK company filings**, typed into title, forename, middle-name and
+  surname boxes: all four agree for about 97%.
+* **Czech election candidates**, with degrees before and after the
+  name: all four boxes agree for about 97%.
+* **Choosing the language** closes most of the gap where a convention
+  differs. The default reads one family name, so for researchers in
+  Spain it agrees with the two boxes of their ORCID record for about
+  half of the names, and ``parser_for(locales.ES)`` for about 97%. A
+  pack costs where people file a single surname: Argentine patent
+  inventors agree for about 94% by default, 86% under ``ES`` and 93%
+  under ``ES_AR``.
+
+Speed and testing
+-----------------
+
+* **Pure Python, with no runtime dependencies.** Only the optional
+  ``ja`` extra adds any: namedivider-python and what it brings (numpy,
+  pandas, scipy and lightgbm among them), for dividing unspaced
+  Japanese kanji names.
+* **Build one Parser and reuse it.** The first parser for a choice of
+  languages costs tens of milliseconds, once in a process; a parse
+  costs roughly a tenth of a millisecond on a recent laptop.
+* **A parser can be shared.** Its ``Lexicon`` and ``Policy`` are frozen
+  and a parse never writes to them, so one parser can be shared across
+  threads without locking, and it pickles for ``multiprocessing``. A
+  segmenter you supply has to be thread-safe and picklable too, and the
+  ``ja`` extra's segmenter does not pickle.
+* **Every interactive example runs.** Each one with a ``>>>`` prompt, in
+  this README and in the documentation, is a doctest run in CI, beside
+  a suite of tens of thousands of tests.
+
+The measurements behind this section and the one above, with their
+dates, counts and commands, are in the project's `record of README
+figures`_.
+
+.. _record of README figures: https://github.com/derek73/python-nameparser/blob/master/docs/design/decisions/readme-figures.md
 
 License
 -------

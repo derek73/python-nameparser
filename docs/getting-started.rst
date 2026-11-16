@@ -5,10 +5,25 @@ Getting started
 
 Three steps, in the order most people need them: read one name, let a
 list of names choose the settings, and compare names from several
-sources. Each links to the page that covers it in full.
+sources. Each links to the page that covers it in full, and `When a
+name is read wrong`_ says what to try when a reading does not suit your
+data.
 
 Install it with ``pip install nameparser``. It needs Python 3.11 or
-later and no other package. The optional extra ``nameparser[ja]`` divides unspaced Japanese kanji names (:ref:`east-asian-names`).
+later and no other package.
+
+The parser reads a name by the position of its words and never guesses
+its language. A Chinese, Japanese or Korean name written in its own
+script is read family name first without configuration, save a name in
+katakana alone, which keeps the order it is written in. Where such a
+name is written with no space between its parts, a Korean one is
+divided by default, a Chinese one by the ``zh`` pack, and a Japanese
+one by the ``ja`` pack with a segmenter, which the optional extra
+``nameparser[ja]`` installs (:ref:`splitting-unspaced-names`).
+
+The conventions of one language, such as two family names in Spanish or
+the patronymic in Russian, are packs you turn on when you know your
+data's language: :doc:`locales` says whether your names need one.
 
 Parse one name
 --------------
@@ -49,6 +64,17 @@ Most names report nothing. A name that does is one to route to a
 person for review. :doc:`usage` covers everything a parsed name gives
 you, and :doc:`shapes` the forms of input it reads.
 
+For a column of names, build one :class:`~nameparser.Parser` and call
+its ``parse`` on each:
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> column = ["Dr. Ann Berg", "Ruiz, Marta", "Tom de la Cruz Jr."]
+    >>> reader = Parser()
+    >>> [reader.parse(text).family for text in column]
+    ['Berg', 'Ruiz', 'de la Cruz']
+
 A list of names: let ``suggest`` choose the settings
 -----------------------------------------------------
 
@@ -60,13 +86,10 @@ order.
 
 :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads a list you
 declare to be one group and returns a :class:`~nameparser.Suggestion`.
-Parse the list's names with its ``parser``. ``suggest`` reads its
-argument once, so pass a list, not a ``csv.reader`` you mean to parse
-afterwards:
+Parse the list's names with its ``parser``:
 
 .. doctest::
 
-    >>> from nameparser import Parser
     >>> listing = ["Taylor Morgan", "Kim Minjun", "Wang Xiaoming",
     ...            "Nguyen Anh", "Garcia Emily"]
     >>> suggestion = Parser().suggest(listing)
@@ -76,6 +99,11 @@ afterwards:
     'Taylor'
     >>> suggestion.parser.parse("Taylor Morgan").given
     'Morgan'
+    >>> [suggestion.parser.parse(text).family for text in listing]
+    ['Taylor', 'Kim', 'Wang', 'Nguyen', 'Garcia']
+
+``suggest`` reads its argument once, so pass it a list, not a
+``csv.reader`` you mean to loop over again to parse the names.
 
 ``patch`` holds the settings the list changed. Printing the suggestion
 shows the evidence for each setting and any names that voted against
@@ -94,39 +122,46 @@ it, and ``suggestion.base`` is the parser you started from:
 
 Each setting counts its names for and against the value the suggested
 parser has: all five names are in mixed case with no word in capitals,
-so they are evidence for leaving ``capitals_as_family`` off. Four names
-vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
+so they are evidence for leaving ``capitals_as_family`` off.
+
+Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
 the romanized surname in front, ``Garcia Emily`` by the common given
 name at the end (``Garcia`` is not one of the surnames ``suggest``
 reads). ``Wang Xiaoming`` carries both kinds, so the surname and
-given-name rows count it once each. ``Taylor Morgan`` gives no evidence, so the suggested
-parser reads it family first only because the rest of the list is
-written that way; nothing in the name itself can confirm that reading.
-A name written the other way round that carries evidence (``Emily
-Clark``) votes against the list, and is the one to check by hand (see :ref:`a name that disagrees
-<suggest-disagreeing>`).
+given-name rows count it once each.
+
+``Taylor Morgan`` gives no evidence, so the suggested parser reads it
+family first only because the rest of the list is written that way;
+nothing in the name itself can confirm that reading. A name written the
+other way round that carries evidence (``Emily Clark``) votes against
+the list, and is the one to check by hand (see :ref:`a name that
+disagrees <suggest-disagreeing>`).
+
+What ``suggest`` decides
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The evidence is in the names themselves: a common romanized Chinese,
 Korean or Vietnamese surname, or a common given name that is rarely
 a surname (``Mary``, not ``James``), at one end; a
 family name written in capitals; a lowercase particle; initials after
-the name, as a bibliography writes them. ``suggest`` decides four
-settings from it, and leaves every other one as the parser you called
-it on has it:
+the name, as a bibliography writes them (:ref:`suggest-evidence`).
+
+``suggest`` decides four settings from it, each only where enough of
+the list's names carry its evidence, and leaves every other one as the
+parser you called it on has it:
 
 - **The name order** (:ref:`name-order`): given name first, or family
-  name first.
+  name first (:ref:`suggest-deciding`).
 - **A patronymic rule** (:class:`~nameparser.PatronymicRule`): East
-  Slavic or Turkic, where at least five names, and more than four in
-  five of the names that cast any vote, carry that patronymic.
-- **Letters as the family name** (:ref:`initials-as-family`): where
-  one run of letters ends at least two names, and at least half of the
-  names that end in letters, as Nepal's ``B K`` and ``K C`` are family
-  names written short (only on a base that reads given names first).
-- **Family names in capitals** (:ref:`capitals-as-family`): where at
-  least two names, and more than two thirds of the names with evidence,
-  write the family name in capitals of four letters or more
-  (``Mary SMITH``).
+  Slavic or Turkic, for a list whose names carry that patronymic
+  (:ref:`suggest-patronymics`).
+- **Letters as the family name** (:ref:`initials-as-family`): for a
+  list whose names end in the same run of letters, as Nepal's ``B K``
+  and ``K C`` are family names written short, and only on a base that
+  reads given names first (:ref:`suggest-initials`).
+- **Family names in capitals** (:ref:`capitals-as-family`): for a list
+  that writes the family name in capitals of four letters or more
+  (``Mary SMITH``) (:ref:`suggest-capitals`).
 
 Choose the language first
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,35 +188,30 @@ the pack reads both family names and ``suggest`` adds the order:
 Where it declines
 ~~~~~~~~~~~~~~~~~
 
-Where too few names agree, ``suggest`` keeps the base parser's value.
-An order needs at least two names voting for it, more than two thirds
-of the names whose own order votes do not contradict each other. A name of one word casts none,
-nor does a name with a comma, unless only post-nominals follow it
-(``Zhang Wei, PhD``). Here only ``Mary`` votes (``James`` is also a
-surname), one short:
+Where you know the order a list is written in, set it yourself with
+``Policy(name_order=FAMILY_FIRST)`` (:ref:`name-order`): ``suggest``
+is for a list whose conventions you do not know.
+
+Where too few of a list's names agree, ``suggest`` keeps the base
+parser's value rather than guess. Here only ``Mary`` votes (``James``
+is also a surname), and one name does not decide a list:
 
 .. doctest::
 
     >>> Parser().suggest(["Smith James", "Jones Mary"]).patch
     PolicyPatch()
 
-Initials after the name vote only where at least three names end in
-initials nothing else in the name contradicts, and those are at least
-60% of the list's names (a name a comma leaves out of the vote, or one
-of nothing but titles, is not counted), so a short list of
-bylines may get no order suggestion:
+So a short list may get no suggestion, a short list of bylines
+included:
 
 .. doctest::
 
     >>> Parser().suggest(["Smith J", "Jones M"]).patch
     PolicyPatch()
-    >>> Parser().suggest(["Smith J", "Jones M", "Brown K"]).patch
-    PolicyPatch(name_order=FAMILY_FIRST)
 
-Where you know the order a list is written in, bylines included, set it
-yourself with ``Policy(name_order=FAMILY_FIRST)`` (:ref:`name-order`).
-:doc:`suggest` has the full rules, how many names each population took
-to be read right, and the evidence it reports.
+:ref:`suggest-limits` says how many names each kind of list took to be
+read right, and :doc:`suggest` has the full rules and the evidence it
+reports.
 
 Names from several sources: ``matching``
 ----------------------------------------
@@ -228,10 +258,35 @@ accepts: by default the same name, an initial against its name, or a
 middle name on one side only, among others. Some outcomes are opt-in
 (``Bill`` against ``William``), and a name with no family name, such
 as a lone ``Suharto``, gets no key and matches nothing, itself
-included. It is not proof of the same person, so combine it with your own
-evidence (dates, places, identifiers), and it is not transitive:
-``J. Smith`` matches both ``John Smith`` and ``Jane Smith``. :doc:`matching` covers the outcomes it accepts and how
-to accept more.
+included. Read the answer from ``consistent``: a result has no truth
+value, so ``if matcher.check(a, b):`` raises ``TypeError``.
+
+It is not proof of the same person, so combine it with your own
+evidence (dates, places, identifiers). It is not transitive either:
+``J. Smith`` matches both ``John Smith`` and ``Jane Smith``.
+:doc:`matching` covers the outcomes it accepts and how to accept more.
+
+When a name is read wrong
+-------------------------
+
+A reading that is wrong for your data is often a convention the parser
+was not told about, such as the order a source writes its names in.
+Try these in order:
+
+#. **See whether the parser guessed.** ``ambiguities`` names the other
+   reading where the text allowed two (:ref:`parser-guesses`).
+#. **Let the list choose** where the names come from one source (`A
+   list of names: let suggest choose the settings`_).
+#. **Choose the language** where you know it: a pack reads its
+   conventions (:doc:`locales`).
+#. **Change one setting or one word**: a :class:`~nameparser.Policy`
+   field says how positions and punctuation are read (:doc:`policy`),
+   and a :class:`~nameparser.Lexicon` edit how one word is read
+   (:doc:`customize`).
+
+If the reading still looks wrong, `open an issue
+<https://github.com/derek73/python-nameparser/issues>`__ with the name
+and the reading you expected.
 
 Where to go next
 ----------------
@@ -246,6 +301,8 @@ Where to go next
      - :doc:`usage`
    * - know what the parser does with a given input form
      - :doc:`shapes`
+   * - see why a name was read the way it was
+     - :ref:`parser-guesses`
    * - read Chinese, Japanese or Korean names
      - :doc:`east-asian`
    * - understand how ``suggest`` decides
