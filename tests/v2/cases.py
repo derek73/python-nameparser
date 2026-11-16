@@ -18770,7 +18770,7 @@ CASES: tuple[Case, ...] = (
                "transcription written without the 间隔号 opening with "
                "a listed surname is cut after it. 盖 is entered by hand "
                "(#1445) where 2.5.0 through 3.0.1 took it from Unihan; "
-               "9 of 322,895 corpus names with a Han character are "
+               "9 of 322,896 corpus names with a Han character are "
                "this shape"),
     Case("zh_transcription_cost_mai", "买买提",
          {"family": "买", "given": "买提"},

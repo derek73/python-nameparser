@@ -172,12 +172,24 @@ def test_a_hand_entry_joins_where_the_rule_gives_none(
     assert _forms(surnames) == [{"諶", "谌"}, {"陳"}]
 
 
-def test_a_hand_entry_the_rule_now_states_is_refused() -> None:
+@pytest.mark.parametrize("items, variants", [
+    # the simplified labels give the hand entry's form, or another
+    ([], {"諶": {"谌"}}),
+    ([], {"諶": {"沈"}}),
+    # a ranked item labelled with both joins the pair before the label
+    # rule runs, so the rule adds nothing, and the entry is still refused
+    (_item("Q1", 10, "諶", "谌"), {"諶": {"谌"}, "谌": {"谌"}}),
+    (_item("Q1", 10, "諶", "沈"), {"諶": {"沈"}, "沈": {"沈"}}),
+    # ... and so with no simplified label at all
+    (_item("Q1", 10, "諶", "沈"), {}),
+])
+def test_a_hand_entry_the_data_now_states_is_refused(
+        items: list[dict[str, str]], variants: dict[str, set[str]]) -> None:
     # The same form or another: either way the data now speaks for the
     # form, and the entry is to be removed, never to override it.
-    for simple in ("谌", "沈"):
-        with pytest.raises(ValueError, match="now give 諶"):
-            tool.select(["諶"], [], {"諶": {simple}}, by_hand={"諶": "谌"})
+    with pytest.raises(ValueError, match="already gives 諶"):
+        tool.select(["諶"], tool.read_wikidata(items), variants,
+                    by_hand={"諶": "谌"})
 
 
 def test_a_hand_entry_for_a_form_no_ranking_selects_is_refused() -> None:

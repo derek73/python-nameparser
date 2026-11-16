@@ -37,10 +37,10 @@ one-to-many (餘 is one of 余's, and no one's surname). Until 3.1 the
 simplified forms came from Unihan's variant table (Unicode License v3);
 7 of its 19 additions no Wikidata item attests
 (decisions/shipped-data-licences, 2026-11-12). Five of those seven are
-entered by hand in BY_HAND below, each a pairing the PRC's character standards state, and
-applied only where the Wikidata rule gives a selected form no
-simplified one; the other two (厐, 芈) no standard pairs with their
-traditional forms, and stay out (#1445).
+entered by hand in BY_HAND below, each a pairing the PRC's character
+standards state, and applied only where the Wikidata data gives a
+selected form no simplified one; the other two (厐, 芈) neither
+standard prints with their traditional forms, and stay out (#1445).
 
 Two-character surnames are NOT taken from here. Taiwan's multi-character
 rows are mostly married double surnames (王李, 李林), and an entry like
@@ -131,8 +131,9 @@ END = "# -- END generated --"
 #: table. No conversion table is copied
 #: (decisions/shipped-data-licences, 2026-11-16 #1445). An entry applies only where the
 #: Wikidata rule gives its traditional form no simplified form, and
-#: :func:`select` refuses one whose traditional form is not selected or
-#: that the rule has come to state, so the list can only shrink. Left
+#: :func:`select`, which every run of the tool calls, listing or
+#: writing, refuses one whose traditional form is not selected or that
+#: Wikidata's items have come to state, so the list can only shrink. Left
 #: out: 龎 -> 厐 (neither table lists either character; 龎's form 龐
 #: simplifies to 庞, already listed) and 羋 -> 芈 (芈 is a 规范字, 6588,
 #: but no 附件1 row pairs it with 羋, nor does the 1986 table).
@@ -252,11 +253,14 @@ def select(moi: list[str], items: list[Item],
 
     ``by_hand`` maps a traditional form to the simplified form entered
     for it (:data:`BY_HAND`), joined after the Wikidata rule and only
-    where the rule gave that form none. An entry whose traditional form
-    is not selected, or which the rule now states, raises
-    ``ValueError``: the first would add a surname no ranking holds, and
-    the second is a hand entry the data has made redundant (or
-    contradicts), to be removed."""
+    where the data gives that form none. An entry raises ``ValueError``
+    where its traditional form is not selected, which would add a
+    surname no ranking holds, and where the data already speaks for
+    the form, which makes the entry redundant or contradicts it, to be
+    removed: the selected surname holds a form beside it (a ranked item
+    labelled with both, as 衛 and 卫 join), or the simplified labels
+    give it one BMP form other than itself, whether or not the rule
+    added that form."""
     surnames: list[Surname] = []
     by_form: dict[str, Surname] = {}
 
@@ -285,7 +289,6 @@ def select(moi: list[str], items: list[Item],
         add({char}, moi_rank=i)
     for i, item in enumerate(items[:top], 1):
         add(item.singles(), wikidata_rank=i)
-    by_rule: set[str] = set()
     for surname in list(surnames):
         for form in list(surname.forms):
             # A supplementary-plane form is one only GB 18030's
@@ -295,17 +298,20 @@ def select(moi: list[str], items: list[Item],
             variants = {v for v in simplified.get(form, ()) if ord(v) < 0x10000}
             if len(variants) == 1 and not variants <= surname.forms:
                 add(variants | {form})
-                by_rule.add(form)
     for form, simple in (by_hand or {}).items():
         if form not in by_form:
             raise ValueError(
                 f"BY_HAND enters {simple} for {form}, which no ranking's "
                 f"top {top} selects; remove the entry")
-        if form in by_rule:
+        beside = by_form[form].forms - {form}
+        # the rule's own test, short of whether the form is held yet:
+        # two forms (乾's 干 and 乾) state none
+        stated = {v for v in simplified.get(form, ()) if ord(v) < 0x10000}
+        if beside or (len(stated) == 1 and stated != {form}):
             raise ValueError(
-                f"BY_HAND enters {simple} for {form}, but Wikidata's labels "
-                f"now give {form} the simplified form "
-                f"{''.join(sorted(simplified[form]))}; remove the entry")
+                f"BY_HAND enters {simple} for {form}, but Wikidata already "
+                f"gives {form} the form "
+                f"{''.join(sorted(beside or stated))}; remove the entry")
         add({form, simple})
     return sorted(surnames, key=lambda s: (s.rank, min(s.forms)))
 

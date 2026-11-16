@@ -924,7 +924,7 @@ def test_zh_parses_unspaced_names() -> None:
     ("买文华", "买", "文华"), ("買文華", "買", "文華"),
     ("篮建国", "篮", "建国"), ("籃建國", "籃", "建國"),
     ("诸建国", "诸", "建国"), ("諸建國", "諸", "建國"),
-    # the two Unihan gave that no standard pairs stay whole, while
+    # the two Unihan gave that neither standard prints stay whole, while
     # their traditional forms divide (decisions/shipped-data-licences,
     # 2026-11-16 #1445)
     ("厐建国", "厐建国", ""), ("龎建國", "龎", "建國"),
