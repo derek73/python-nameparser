@@ -335,8 +335,10 @@ class Parser:
         ``name_order`` is
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
-        one end and they are more than two thirds of the names casting
-        an order vote. A patronymic rule is decided where more than four
+        one end, they are more than two thirds of the names casting
+        an order vote, and they are at least 1% of the group: in a long
+        list where few names vote, a few stray votes decide nothing, and
+        the order evidence's note says so. A patronymic rule is decided where more than four
         in five of the names that cast a vote carry its patronymic (and
         at least five do), for the East Slavic and the Turkic rule alike;
         a name whose only vote was a set-aside trailing initial counts
@@ -385,22 +387,23 @@ class Parser:
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
         Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12,
-        2026-11-14 and 2026-11-15, with tools/differential/suggest_measure.py
-        on groups drawn from real names written in a known order, 300
-        groups a size (decisions/group-suggestion's 2026-11-15 #1357
-        entry holds the table): a group written in this parser's own
-        order kept
-        it in at least 97% of groups at every size from 2 to 200 names,
-        under either base order, save two lists. ORCID holders who
+        2026-11-14, 2026-11-15 and 2026-11-16, with
+        tools/differential/suggest_measure.py on groups drawn from real
+        names written in a known order, 300 groups a size
+        (decisions/group-suggestion's 2026-11-16 ORDER FLOOR entry holds
+        the table): a group written in this parser's own order kept it
+        in at least 97% of groups at every size from 2 to 2,000 names,
+        under either base order, save three lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
         capitals signal reads as a family name, kept their given-first
         order in 52% of groups of two and 4% of five (why, in that
         file's 2026-11-12 CAPITALS entry). A list of
         nothing but bylines written two or three joined initials first
         (``AM Hoy``) kept it in at least 97% of groups at every size
-        but 50 names, where it kept it in 95% (94.7), the name tables
-        voting on a few of its names; ORCID's bylines of every writing
-        kept it in at least 97%.
+        measured, to 500 names (it holds 644), but 50 and 100 names, where it kept it in 94.7% and 93.3%, the
+        name tables voting on a few of its names; ORCID's bylines of
+        every writing kept it in 95.3% and 96.7% at 100 and 200 names
+        and at least 97% at every other size.
         Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech, Polish or Italian names (the romanized

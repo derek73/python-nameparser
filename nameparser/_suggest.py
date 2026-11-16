@@ -473,6 +473,13 @@ _MIN_VOTES = 2
 #: STRICTLY MORE THAN to decide the order: more than two thirds, so a
 #: tie, or two names against one, decides nothing.
 _MIN_SHARE = 2 / 3
+#: The share of ALL the group's names, voting or not, that the names
+#: voting for one end must be at least to decide the order: in a long
+#: list where few names vote, two stray votes are more than two thirds
+#: of the voters and would decide it. At 200 names or fewer it asks no more
+#: than _MIN_VOTES does (decisions/group-suggestion, 2026-11-16
+#: ORDER FLOOR, #1442).
+_MIN_ORDER_GROUP_SHARE = 0.01
 #: The share of the names casting any vote that one patronymic rule
 #: (East Slavic or Turkic) must hold strictly more than to decide it,
 #: higher than _MIN_SHARE because a decided East Slavic rule brought a
@@ -1027,10 +1034,20 @@ class _Tally:
             self.contested += 1
 
     def winner(self) -> Vote | None:
-        """The value whose names are at least _MIN_VOTES and strictly
-        more than _MIN_SHARE of the names that cast a vote, if one
-        is."""
-        return self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        """The value whose names are at least _MIN_VOTES, strictly
+        more than _MIN_SHARE of the names that cast a vote and at least
+        _MIN_ORDER_GROUP_SHARE of the group, if one is."""
+        end = self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        return None if end is None or self._short_of_group(end) else end
+
+    def held_back(self) -> Vote | None:
+        """The value the votes would decide but for
+        _MIN_ORDER_GROUP_SHARE, if one is."""
+        end = self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        return end if end is not None and self._short_of_group(end) else None
+
+    def _short_of_group(self, end: Vote) -> bool:
+        return self.by_name[end] < _MIN_ORDER_GROUP_SHARE * self.names
 
     def top(self, min_votes: int, min_share: float, total: int
             ) -> Vote | None:
@@ -1183,6 +1200,17 @@ def _comma_note(left_out: int) -> str:
             f"so only a comma followed by post-nominals alone is read past")
 
 
+def _floor_note(tally: _Tally) -> str:
+    """The note on an order the group share alone held back."""
+    end = tally.held_back()
+    if end is None:
+        return ""
+    return (f"{tally.by_name[end]} of the group's {tally.names} names vote "
+            f"{_label(end)}, too few to decide the order: it is decided "
+            f"where the names voting for one end are at least "
+            f"{_MIN_ORDER_GROUP_SHARE:.0%} of the group")
+
+
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
                   rule_needs_given_first: bool, comma_left_out: int,
                   trailing_note: str = ""
@@ -1196,7 +1224,8 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     rule that keeps a ``FAMILY_FIRST`` base's order
     (`_keeps_family_first`) is not passed here: the order is then the
     votes' or the base's."""
-    notes = [_comma_note(comma_left_out), trailing_note]
+    notes = [_comma_note(comma_left_out), _floor_note(tally),
+             trailing_note]
     end = tally.winner()
     if rule_needs_given_first and end != FAMILY_FIRST:
         end = GIVEN_FIRST
