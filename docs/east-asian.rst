@@ -16,9 +16,9 @@ name arrives as a single token, find the boundary inside it.
 This page covers names written in their own script. A romanized name
 (``Kim Min-jun``, ``Wang Xiaoming``) is Latin script and follows the
 positional rules, read given-first by default: set ``name_order`` where
-your data writes the family name first (:ref:`name-order`), or have
-:ref:`suggest-settings` read the order off a whole list (`When the
-script rules don't apply`_).
+your data writes the family name first (:ref:`name-order`), or ask
+:ref:`suggest-settings` to suggest the order from a whole list (`When
+the script rules don't apply`_).
 
 Which name comes first
 ----------------------
@@ -68,7 +68,8 @@ whether the language is known:
 
 Without its pack an unspaced Han name stays one word, read whole as the
 family name. A name written with a space between its parts needs none
-of this (`Which name comes first`_).
+of this (`Which name comes first`_). The family-first order and the
+Korean split can each be switched off (:ref:`east-asian-defaults`).
 
 .. _splitting-korean-names:
 
@@ -332,6 +333,20 @@ does this on its own, so the same code parses alike wherever it runs.
 division carries, and `What ja_segmenter() declines`_ the text the
 shipped segmenter leaves whole.
 
+What ja_segmenter() declines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The shipped segmenter leaves a token whole, returning ``None``, for:
+
+- text outside the Japanese repertoire;
+- text with no kanji (namedivider divides by kanji statistics, so
+  ``あいさわいちろう`` stays whole rather than splitting after its
+  first character);
+- text holding the closing mark ``〆``;
+- text too short to divide;
+- an answer that fails to reconstruct its input;
+- a score outside [0, 1].
+
 .. _katakana-family-first:
 
 Katakana names you know are Japanese
@@ -364,16 +379,18 @@ When the script rules don't apply
 ---------------------------------
 
 The script settles the order only for a name written wholly in an
-East Asian script, and two kinds of name keep the ordinary positional
-rules:
+East Asian script. Any other name keeps the ordinary positional rules,
+among them:
 
 - **A romanized name** (``Kim Min-jun``, ``Yamada Taro``) is Latin
   script. Order genuinely varies in romanized data, so nothing
   script-based applies: the name is read in the declared order,
   given-first by default (:ref:`name-order`).
-  :ref:`suggest-settings` reads the order off a whole list.
+  :ref:`suggest-settings` can suggest the order from a whole list.
 - **A name written wholly in katakana**, which may be a transcription
   (`Katakana names you know are Japanese`_).
+- **A name that mixes an East Asian script with another**: ``山田 Taro``
+  reads given ``山田``, family ``Taro``.
 
 .. doctest::
 
@@ -419,21 +436,32 @@ ambiguous:
 
 .. list-table::
    :header-rows: 1
-   :widths: 14 36 50
+   :widths: 20 50 30
 
    * - Written in
      - Splits off when glued
      - Read only when spaced
    * - Hangul
      - 씨, 님, 박사, 박사님, 선생님, 교수님
-     - 양, 군: 김지양 is a given name.
+     - 양, 군
    * - Kana
      - さん, さま, くん, ちゃん
-     - None.
+     - —
    * - Han characters
      - 様, 先生, 教授, 女士, 小姐
-     - 氏, 博士, 殿: 田中博士 is Tanaka Hiroshi as readily as Doctor
-       Tanaka, and some ninety Japanese surnames end in 殿 (鵜殿, 真殿).
+     - 氏, 博士, 殿
+
+Each word in the last column can end a name: 김지양 is a given name,
+as 김지군 is; 王氏 is a historical form of a woman's name; 田中博士 is
+Tanaka Hiroshi as readily as Doctor Tanaka; and some ninety Japanese
+surnames end in 殿 (鵜殿, 真殿).
+
+.. doctest::
+
+    >>> parse("田中殿").family
+    '田中殿'
+    >>> parse("田中 殿").suffix
+    '殿'
 
 君 is recognized in neither form by default, since 王君 is a complete
 Chinese name, though its kana spelling くん peels.
@@ -470,8 +498,9 @@ Spacing, and where the name divides
 
 Where a segmenter divides the name, the two spellings part company. A
 spaced honorific is a token boundary the writer typed, and the
-segmenter is asked only where an undivided name divides, so anything
-standing beside the name calls it off, honorific or not. Under the
+segmenter is asked only where an undivided name divides, so any second
+word in an East Asian script beside the name calls it off, honorific
+or not (`When a segmenter is asked`_). Under the
 Japanese pack ``佐藤 氏`` keeps family 佐藤, where bare ``佐藤`` would
 have been divided 佐 + 藤.
 
@@ -598,14 +627,16 @@ they read its composed twin:
   ``capitalized()`` gives a decomposed ``josé garcía`` the same
   ``José García`` as the composed spelling, still decomposed.
 
-Splitting is the exception. An unspaced decomposed hangul name is
+Splitting an unspaced name and peeling a glued honorific are the
+exceptions. An unspaced decomposed hangul name is
 ordered correctly but not split, because surname matching runs against
 the text as given and a decomposed name matches no entry in the census
 list. That is the deliberate choice: being unsplit is recoverable,
-whereas splitting in the wrong place is not. A hangul honorific glued
-to a decomposed name is not split off it either (a decomposed
-``김민준씨`` stays one word, the family name), while a spaced one is
-read as the suffix.
+whereas splitting in the wrong place is not.
+
+A hangul honorific glued to a decomposed name is not split off it
+either: a decomposed ``김민준씨`` stays one word, the family name,
+while a spaced honorific is read as the suffix.
 
 One consequence is worth stating outright, because it looks like a
 bug. Parse output preserves the encoding it was given, so a field from
@@ -758,8 +789,9 @@ leaving the token whole:
 
     >>> from nameparser import Segmentation
     >>> def after_two(text):
-    ...     if len(text) != 4:
-    ...         return None
+    ...     kanji = all("\u4e00" <= char <= "\u9fff" for char in text)
+    ...     if len(text) != 4 or not kanji:
+    ...         return None                  # not mine to divide
     ...     return Segmentation((2,), confidence=1.0)
     >>> toy_parser = parser_for(locales.JA, segmenter=after_two)
     >>> toy_divided = toy_parser.parse("山田太郎")
@@ -767,6 +799,8 @@ leaving the token whole:
     ('山田', '太郎')
     >>> toy_parser.parse("山田太").family
     '山田太'
+    >>> toy_parser.parse("やまだたろ").family
+    'やまだたろ'
 
 Declining is the load-bearing half of the
 contract, because ``segment_scripts`` unions across packs: your
@@ -809,20 +843,10 @@ rather than hiding them. Declining silently would leave an off-by-one
 segmenter invisible: every answer it gave would vanish and the name
 would merely look undivided.
 
-What ja_segmenter() declines
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The shipped :func:`~nameparser.locales.ja_segmenter` does decline,
-returning ``None`` and leaving the token whole, for the cases that are
-*not* protocol violations:
-
-- text outside the Japanese repertoire;
-- text with no kanji (namedivider divides by kanji statistics, so
-  ``あいさわいちろう`` stays whole rather than splitting after its
-  first character);
-- text too short to divide;
-- an answer that fails to reconstruct its input;
-- a score outside [0, 1].
+The shipped :func:`~nameparser.locales.ja_segmenter` is the model for
+the other half: what it declines are facts about the text rather than
+protocol violations, so it returns ``None`` for them
+(`What ja_segmenter() declines`_).
 
 A pack for your segmenter
 ~~~~~~~~~~~~~~~~~~~~~~~~~
