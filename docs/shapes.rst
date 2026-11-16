@@ -18,7 +18,7 @@ Understood by default
 
 Every piece of each is optional:
 
-1. **Natural order** —
+1. **Spoken order** —
    ``Title Given "Nickname" Middle Middle Family Suffix``
 2. **Family comma** —
    ``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
@@ -204,8 +204,9 @@ meant:
 - **A name word after a second comma** lands in ``suffix``:
   ``Tilby, Rowan, Quill`` reads suffix ``Quill`` (:ref:`comma-forms`).
 - **A title written bare at the end of a name** is a name word, since
-  many title words are also surnames: ``Rowan Tilby Judge`` reads
-  family ``Judge``, and ``Tilby, Rowan Judge`` middle ``Judge``. A
+  many title words are also surnames: by default ``Rowan Tilby Judge``
+  reads family ``Judge``, and ``Tilby, Rowan Judge`` middle ``Judge``
+  under any order. A
   word that is also a post-nominal (``Ms``) is the suffix there
   instead, and after a suffix comma the bare word is the title
   (``Rowan Tilby, Judge``). :ref:`trailing-titles` gives the other
@@ -489,17 +490,20 @@ happen to be credentials:
     >>> parse("John Smith (Dr)").title
     'Dr'
 
-Some such words stay the nickname all the same, among them initials
-inside a name (``Justin (JP) Stearns``) and, after one, a bare
-``Sir``, ``Mrs`` or ``Junior``:
+Some such words stay the nickname all the same. One is a credential
+written as initials before a name word, with periods or without
+(``Justin (JP) Stearns``, ``Justin (M.D.) Stearns``). Another is a bare
+``Sir``, ``Mrs`` or ``Junior``, wherever the clause stands:
 
 .. doctest::
 
-    >>> parse("John Smith (Sir)").nickname
-    'Sir'
+    >>> parse("Justin (M.D.) Stearns").nickname
+    'M.D.'
+    >>> parse("John Smith (Sir)").nickname, parse("John (Sir) Smith").nickname
+    ('Sir', 'Sir')
 
-Content ending in a period that is not such a word is read as if
-written without its brackets:
+Other content ending in a period is read as if written without its
+brackets:
 
 .. doctest::
 
@@ -512,7 +516,10 @@ delimiters, it keeps the nickname reading unless the way it is written
 settles it after the name: in capitals in a name written in mixed case,
 or with a period inside it. A name written all in capitals says
 nothing about the word, and inside the name the word in capitals is a
-nickname too (``Justin (JD) Stearns``):
+nickname too (``Justin (JD) Stearns``). With periods inside the name it
+is neither: it is content ending in a period, read as if written
+without its brackets, so ``Justin (J.D.) Stearns`` reads as
+``Justin J.D. Stearns`` does:
 
 .. doctest::
 
@@ -522,6 +529,8 @@ nickname too (``Justin (JD) Stearns``):
     'Jd'
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
+    >>> parse("Justin (J.D.) Stearns").middle, parse("Justin J.D. Stearns").middle
+    ('J.D.', 'J.D.')
 
 ``JD`` holds a ``given`` reading beside its credential one
 (``Lexicon.default().readings_of("jd")``); see :ref:`ambiguous-words`
