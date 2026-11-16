@@ -18763,6 +18763,27 @@ CASES: tuple[Case, ...] = (
          notes="the recorded cost of 芦: 102 of 172,413 Japanese names "
                "open with it (芦田, 芦川, 芦名), 123 counting 蘆, and "
                "under ZH each divides after it"),
+    Case("zh_transcription_cost_gai", "盖尔哈尔德",
+         {"family": "盖", "given": "尔哈尔德"},
+         locale="zh", classification="fix(#695)",
+         notes="the recorded cost of 盖, as 高橋一郎 is of 高: a "
+               "transcription written without the 间隔号 opening with "
+               "a listed surname is cut after it. 盖 is entered by hand "
+               "(#1445) where 2.5.0 through 3.0.1 took it from Unihan; "
+               "9 of 322,895 corpus names with a Han character are "
+               "this shape"),
+    Case("zh_transcription_cost_mai", "买买提",
+         {"family": "买", "given": "买提"},
+         locale="zh", classification="fix(#695)",
+         notes="买买提 (Memet) is a Uyghur given name transcribed; "
+               "alone it reads as 买 + 买提, the cost of listing 买 "
+               "(#1445 restores it, read so 2.5.0 through 3.0.1)"),
+    Case("zh_transcription_cost_mai_interpunct", "买买提·艾力",
+         {"given": "买买提", "family": "艾力"},
+         locale="zh", classification="fix(#298)",
+         notes="written with the 间隔号 the name is a transcription "
+               "and is not divided (rules/W1's interpunct Except), so "
+               "the cost of 买 falls only on a name written without it"),
 
     # -- #272: the kana license + nakaguro (amendment 2026-07-29).
     # Segmenter-dependent divisions cannot live here (Case has no

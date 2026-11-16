@@ -915,6 +915,27 @@ def test_zh_parses_unspaced_names() -> None:
     assert (n.family, n.given) == ("萧", "红")
 
 
+@pytest.mark.parametrize("text, family, given", [
+    # The five simplified forms tools/zh_surnames.py enters by hand
+    # (BY_HAND, #1445), each beside its traditional form, which the
+    # rankings list: 2.5.0 through 3.0.1 divided both, from Unihan.
+    ("谌龙", "谌", "龙"), ("諶龍", "諶", "龍"),
+    ("盖丽丽", "盖", "丽丽"), ("蓋麗麗", "蓋", "麗麗"),
+    ("买文华", "买", "文华"), ("買文華", "買", "文華"),
+    ("篮建国", "篮", "建国"), ("籃建國", "籃", "建國"),
+    ("诸建国", "诸", "建国"), ("諸建國", "諸", "建國"),
+    # the two Unihan gave that no standard pairs stay whole, while
+    # their traditional forms divide (decisions/shipped-data-licences,
+    # 2026-11-16 #1445)
+    ("厐建国", "厐建国", ""), ("龎建國", "龎", "建國"),
+    ("芈月", "芈月", ""), ("羋月", "羋", "月"),
+])
+def test_zh_divides_the_hand_entered_simplified_surnames(
+        text: str, family: str, given: str) -> None:
+    n = _PACKED["zh"].parse(text)
+    assert (n.family, n.given) == (family, given)
+
+
 def test_zh_longest_match_prefers_compound_over_single_surname() -> None:
     # The longest-first tie-break, exercised by the PACK's own data
     # rather than by the synthetic lexicon the stage tests use. Most
