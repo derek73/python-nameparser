@@ -4,40 +4,62 @@ Names the parser reads
 The input forms the parser reads without configuration: how a name is arranged, the words that attach to their neighbors, nicknames and maiden names, and titles it was not told about.
 
 
+.. _input-shapes:
+
 Input shapes
 -------------
 
 Three arrangements are understood by default, two more when you
 declare a family-first order, and two more by how they are written.
+Each has a number and a name.
 
 Understood by default
 ~~~~~~~~~~~~~~~~~~~~~
 
 Every piece of each is optional:
 
-1. ``Title Given "Nickname" Middle Middle Family Suffix``
-2. ``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
-3. ``Title Given Middle Family [Suffix], Suffix or Title [, Suffix or Title]``
+1. **Spoken order** —
+   ``Title Given "Nickname" Middle Middle Family Suffix``
+2. **Family comma** —
+   ``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
+3. **Suffix comma** —
+   ``Title Given Middle Family [Suffix], Suffix or Title [, Suffix or Title]``
+
+Forms 2 and 3 are covered under :ref:`comma-forms`, next.
 
 A title written with a period (``Prof.``) is also read at the end of a
 name in forms 1 and 3 and at the end of the given name in form 2;
-written bare there (``Prof``), it is a name word, because many title
-words are also surnames — unless a credential stands before it, which
-starts a run of post-nominals and titles (``John Smith PhD Prof`` reads
-title ``Prof``; see :ref:`trailing-titles`), or, at the end of the
-given name in form 2, it is a listed salutation such as ``Mrs``
-(``Doe, Jane Mrs`` reads title ``Mrs`` since 2.6;
-``Lexicon.default().words(kind="salutation", after_given=True)`` lists
-them).
+:ref:`trailing-titles` covers that, and what a title written bare
+there reads as.
 
-The last two differ in what the comma is doing. In form 2 it separates
+.. _comma-forms:
+
+Names written with a comma
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Data written ``Last, First`` is read by default. The comma names
+the family, and the part after it holds the given and middle names,
+with a suffix behind them or after a further comma:
+
+.. doctest::
+
+    >>> from nameparser import parse
+    >>> rowan = parse("Tilby, Rowan")
+    >>> rowan.given, rowan.family
+    ('Rowan', 'Tilby')
+    >>> parse("Tilby, Rowan, Jr.").suffix
+    'Jr.'
+    >>> parse("Tilby, Rowan MD").suffix
+    'MD'
+
+That is form 2, the family-comma form. Form 3, the suffix-comma form,
+differs in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form
 3 it only sets off suffixes and titles, and the name before it is still
 given-then-family:
 
 .. doctest::
 
-    >>> from nameparser import parse
     >>> parse("de la Vega, Juan Q. Xavier III").family   # form 2
     'de la Vega'
     >>> parse("Doe Jr., John").suffix                    # form 2, suffix before the comma
@@ -45,11 +67,17 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
+A family comma reads family-then-given whatever ``name_order`` you
+declare, while the name before a suffix comma is laid out by the order
+(:ref:`name-order`).
+
+A suffix before the comma
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 A suffix ending a name of two or more words (a title counts) before the comma reads as
 form 3 even when what follows is a credential the vocabulary does not
 know, since a generation is written there in natural order. A word
-after the comma written as a name, or an initial, keeps form 2 (since
-2.5):
+after the comma written as a name, or an initial, keeps form 2:
 
 .. doctest::
 
@@ -58,10 +86,12 @@ after the comma written as a name, or an initial, keeps form 2 (since
     >>> parse("Garcia Lopez Jr., Juan").given
     'Juan'
 
+Suffixes and titles after a comma
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 A part after the comma in form 3, or after a further comma in either
-form, holds suffixes and titles, a word there that is a title rather
-than a suffix being read as the title (after a further comma, since
-2.4):
+form, holds suffixes and titles. A word there that is a title rather
+than a suffix is read as the title:
 
 .. doctest::
 
@@ -70,14 +100,49 @@ than a suffix being read as the title (after a further comma, since
     >>> parse("Eric H. Holder, Jr., Attorney General").title
     'Attorney General'
 
+A name word after a second comma is not read as part of the name. It
+is kept in ``suffix``, and the parse reports ``comma-structure`` (see
+:ref:`parser-guesses`):
+
+.. doctest::
+
+    >>> extra_part = parse("Tilby, Rowan, Quill")
+    >>> extra_part.given, extra_part.family, extra_part.suffix
+    ('Rowan', 'Tilby', 'Quill')
+    >>> [a.kind.value for a in extra_part.ambiguities]
+    ['comma-structure']
+
+Two neighboring cases have their own sections: post-nominals separated
+by something other than a comma (:ref:`suffix-delimiters`), and a
+single letter after a comma, as in ``Vega Ruiz, V``
+(:ref:`lenient-comma-suffixes`).
+
 Family-first forms you declare
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two more arrangements apply only when ``name_order`` declares
-family-first input — common outside Europe; see :ref:`name-order`:
+Declare ``name_order`` when your records write the family name first
+with no comma, which is common outside Europe. Undeclared, such a name
+is read given-first:
 
-4. ``Title Family Given Middle Middle [Particle] [, Suffix]``  (``FAMILY_FIRST``)
-5. ``Title Family Middle Middle Given [, Suffix]``  (``FAMILY_FIRST_GIVEN_LAST``)
+.. doctest::
+
+    >>> from nameparser import FAMILY_FIRST, Parser, Policy
+    >>> parse("Tilby Rowan").given
+    'Tilby'
+    >>> ff = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> ff.parse("Tilby Rowan").given
+    'Rowan'
+
+:ref:`name-order` covers the setting, and :ref:`suggest-settings` how
+to have the order read off a whole list of names.
+
+Two more arrangements apply only when ``name_order`` declares
+family-first input:
+
+4. **Family first** —
+   ``Title Family Given Middle Middle [Particle] [, Suffix]``  (``FAMILY_FIRST``)
+5. **Family first, given last** —
+   ``Title Family Middle Middle Given [, Suffix]``  (``FAMILY_FIRST_GIVEN_LAST``)
 
 A trailing particle earns a slot in form 4 alone because it is
 displaced from the family name it belongs to; form 5's trailing word
@@ -92,8 +157,6 @@ family and the given name, it is a name word, read by its position:
 
 .. doctest::
 
-    >>> from nameparser import FAMILY_FIRST, Parser, Policy
-    >>> ff = Parser(policy=Policy(name_order=FAMILY_FIRST))
     >>> ff.parse("Dr. Wang Xiaoming").title, ff.parse("Wang Xiaoming Dr.").title
     ('Dr.', 'Dr.')
     >>> ff.parse("Wang Dr. Xiaoming").given
@@ -107,8 +170,10 @@ no ``name_order`` at all — the script itself carries the reading —
 and the second is read the way the default order reads it, its own
 written order:
 
-6. ``Family Given [Honorific]``
-7. ``Given[·Given]·Family / katakana transcription (source order)``
+6. **Native East Asian** —
+   ``Family Given [Honorific]``
+7. **Transcription** —
+   ``Given[·Given]·Family / katakana transcription (source order)``
 
 Form 6 is the native family-first arrangement written in Han or
 Hangul — spaced or unspaced, with the honorific spaced or glued and
@@ -127,6 +192,38 @@ parsed best-effort, its handling changeable without notice.
 Forms 6 and 7, and how a Latin wrapper around either is handled, are
 covered in full on their own page, :ref:`East Asian names <east-asian-names>`.
 
+Arrangements that are misread
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Three arrangements are read without an error and not as their writer
+meant:
+
+- **A family-first name with no comma and no order declared** is read
+  given-first: ``Tilby Rowan`` reads given ``Tilby``. Declare the order
+  (:ref:`name-order`).
+- **A name word after a second comma** lands in ``suffix``:
+  ``Tilby, Rowan, Quill`` reads suffix ``Quill`` (:ref:`comma-forms`).
+- **A title written bare at the end of a name** is a name word, since
+  many title words are also surnames: by default ``Rowan Tilby Judge``
+  reads family ``Judge``, and ``Tilby, Rowan Judge`` middle ``Judge``
+  under any order. A
+  word that is also a post-nominal (``Ms``) is the suffix there
+  instead, and after a suffix comma the bare word is the title
+  (``Rowan Tilby, Judge``). :ref:`trailing-titles` gives the other
+  cases where a bare title is read as the title.
+
+Only the second is reported on ``ambiguities`` (see
+:ref:`parser-guesses`). The other two look like any other name, so
+nothing in the result marks them:
+
+.. doctest::
+
+    >>> parse("Tilby Rowan").ambiguities
+    ()
+    >>> bare_title = parse("Rowan Tilby Judge")
+    >>> bare_title.family, bare_title.ambiguities
+    ('Judge', ())
+
 Words that attach to their neighbors
 --------------------------------------
 
@@ -136,11 +233,13 @@ most of what decides a parse.
 
 Most words stand alone. A few pull in a neighbor, and each kind pulls
 into one particular field — so this table is also a map of which fields
-get built by attachment rather than by position. Titles and suffixes
-attach only to *adjacent words of their own kind* (a run of titles
-chains into one, but a title never swallows a plain name); the rest
-reach forward to pull in the next word, whatever it is. Each row's
-reading kind is what :meth:`Lexicon.words(kind=...)
+get built by attachment rather than by position.
+
+Titles and suffixes attach only to *adjacent words of their own kind*
+(a run of titles chains into one, but a title never swallows a plain
+name); the rest reach forward to pull in the next word, whatever it is.
+
+Each row's reading kind is what :meth:`Lexicon.words(kind=...)
 <nameparser.Lexicon.words>` takes to list its words:
 
 .. list-table::
@@ -165,13 +264,11 @@ reading kind is what :meth:`Lexicon.words(kind=...)
      - ``given``
      - ``abdul salam ahmed`` → ``abdul salam``
    * - Particles (``particle``)
-     - the following surname, save a given name's second half
-       (``del Carmen``), which is ``middle``
+     - the following surname
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
    * - Ranks (``rank``)
-     - the following surname, inside the name; opening it, most are
-       titles (below)
+     - the following surname, inside the name
      - ``family``
      - ``Jan Freiherr von Berg`` → ``Freiherr von Berg``
    * - Maiden markers (``birth_marker``)
@@ -194,6 +291,16 @@ names together as easily as two surnames:
     >>> parse("Juan de la Vega y Rodriguez").family
     'de la Vega y Rodriguez'
 
+A particle before a given name's second half (``del Carmen``), with a
+surname behind the pair, does not build the surname: under the default
+order the two are ``middle`` (see :ref:`two-given-names`):
+
+.. doctest::
+
+    >>> parse("María del Carmen García").middle
+    'del Carmen'
+
+A rank attaches to the following surname only inside the name.
 Most ranks (``Freiherr``, ``Graf``, ``Prinz``) are titles as well as
 particles, and read by where they stand: opening the name each is a
 title, and inside it the surname takes it in. ``Freiherrin`` holds no
@@ -220,37 +327,6 @@ attached="after")`` lists them), split off the end of a Chinese,
 Japanese or Korean name. Both are covered under :ref:`East Asian names <east-asian-names>`.
 :doc:`customize` covers how to add and remove the readings behind each
 of these rows.
-
-Inspecting the vocabulary
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Two questions explain why a word read as it did, and each has its own
-call. What a word *may* be read as is the lexicon's answer,
-:meth:`Lexicon.readings_of <nameparser.Lexicon.readings_of>`, each
-reading naming the language files that hold it. What the parse *did*
-read it as is the token's, :attr:`Token.reading
-<nameparser.Token.reading>` (see :ref:`reading-taken`):
-
-.. doctest::
-
-    >>> from nameparser import Lexicon
-    >>> [(r.kind, r.languages) for r in Lexicon.default().readings_of("van")]
-    [('preposition', ('nl',)), ('given', ('nl',))]
-    >>> parse("Ludwig van Beethoven").tokens[1].reading
-    Reading('particle' as 'family', 'vocabulary', in nl)
-
-A lexicon answers for the readings it has on. A reading its file holds
-off until a caller chooses the language (:ref:`choosing-languages`) is not among
-the default lexicon's: ``Lady`` is a given name only under a Spanish
-choice, and only that parser's lexicon lists the reading:
-
-.. doctest::
-
-    >>> from nameparser import locales, parser_for
-    >>> [r.kind for r in Lexicon.default().readings_of("lady")]
-    ['nobility']
-    >>> [r.kind for r in parser_for(locales.ES).lexicon.readings_of("lady")]
-    ['nobility', 'given']
 
 A particle at the start of a name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -284,6 +360,37 @@ comma is the given name:
 
 :ref:`ambiguous-words` covers changing which particles may double as
 given names.
+
+Inspecting the vocabulary
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two questions explain why a word read as it did, and each has its own
+call. What a word *may* be read as is the lexicon's answer,
+:meth:`Lexicon.readings_of <nameparser.Lexicon.readings_of>`, each
+reading naming the language files that hold it. What the parse *did*
+read it as is the token's, :attr:`Token.reading
+<nameparser.Token.reading>` (see :ref:`reading-taken`):
+
+.. doctest::
+
+    >>> from nameparser import Lexicon
+    >>> [(r.kind, r.languages) for r in Lexicon.default().readings_of("van")]
+    [('preposition', ('nl',)), ('given', ('nl',))]
+    >>> parse("Ludwig van Beethoven").tokens[1].reading
+    Reading('particle' as 'family', 'vocabulary', in nl)
+
+A lexicon answers for the readings it has on. A reading its file holds
+off until a caller chooses the language (:ref:`choosing-languages`) is not among
+the default lexicon's: ``Lady`` is a given name only under a Spanish
+choice, and only that parser's lexicon lists the reading:
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> [r.kind for r in Lexicon.default().readings_of("lady")]
+    ['nobility']
+    >>> [r.kind for r in parser_for(locales.ES).lexicon.readings_of("lady")]
+    ['nobility', 'given']
 
 .. _nicknames-and-maiden-names:
 
@@ -366,14 +473,13 @@ can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
     >>> parse("Cherice J. (Johnson) Williams").nickname
     'Johnson'
 
-If every word inside is a known
+Credentials and titles in brackets are mostly read as such. If every
+word inside is a known
 credential, generation or title, the clause is set apart from the name
 instead, each word read as the suffix or the title it is — that reading
 is taken before the maiden one, and parenthesized credentials, titles
 and retired ranks are far more common than parenthesized nicknames that
-happen to be credentials. Initials inside a name stay the nickname
-(``Justin (JP) Stearns``), and other content ending in a period is read
-as if written without its brackets:
+happen to be credentials:
 
 .. doctest::
 
@@ -384,13 +490,33 @@ as if written without its brackets:
     >>> parse("John Smith (Dr)").title
     'Dr'
 
-The exception to that exception is an *ambiguous* acronym — one that is
-also a plausible name or set of initials. Standing alone inside
+Some such words stay the nickname all the same. One is a credential
+written as initials before a name word, with periods or without
+(``Justin (JP) Stearns``, ``Justin (M.D.) Stearns``). Another is a bare
+``Sir``, ``Mrs`` or ``Junior``, wherever the clause stands:
+
+.. doctest::
+
+    >>> parse("Justin (M.D.) Stearns").nickname
+    'M.D.'
+    >>> parse("John Smith (Sir)").nickname, parse("John (Sir) Smith").nickname
+    ('Sir', 'Sir')
+
+Other content ending in a period is read as if written without its
+brackets:
+
+.. doctest::
+
+    >>> parse("Jane (Xyz.) Smith").middle
+    'Xyz.'
+
+The exception to the credential reading is an *ambiguous* acronym — one
+that is also a plausible name or set of initials. Standing alone inside
 delimiters, it keeps the nickname reading unless the way it is written
 settles it after the name: in capitals in a name written in mixed case,
 or with a period inside it. A name written all in capitals says
-nothing about the word, and inside the name the delimiters are read as
-a nickname however it is written:
+nothing about the word, and inside the name the word in capitals is a
+nickname too (``Justin (JD) Stearns``):
 
 .. doctest::
 
@@ -400,6 +526,16 @@ a nickname however it is written:
     'Jd'
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
+
+Written with periods inside the name, an ambiguous acronym is neither
+a credential nor a nickname: it is content ending in a period, read as
+if written without its brackets, so ``Justin (J.D.) Stearns`` reads as
+``Justin J.D. Stearns`` does:
+
+.. doctest::
+
+    >>> parse("Justin (J.D.) Stearns").middle, parse("Justin J.D. Stearns").middle
+    ('J.D.', 'J.D.')
 
 ``JD`` holds a ``given`` reading beside its credential one
 (``Lexicon.default().readings_of("jd")``); see :ref:`ambiguous-words`
@@ -462,7 +598,7 @@ The rule is bounded so it doesn't swallow ordinary names:
   slot holds a surname too: ``Xyz. Smith, John`` keeps family
   ``Xyz. Smith``. A listed title is still read there, so
   ``Dr. Smith, John`` gives title ``Dr.``.
-- **A given name written short** is that given name (since 2.7): the
+- **A given name written short** is that given name: the
   traditional English abbreviations such as ``Chas.``, ``Geo.`` and
   ``Wm.``, and the Filipino ``Ma.`` (María) and ``Jo.`` (José).
   Each is a ``given`` reading carrying ``same_as``, the full name
@@ -524,3 +660,19 @@ behind it is a title:
     >>> john_prof = parse("John Smith PhD Prof")
     >>> (john_prof.title, john_prof.suffix)
     ('Prof', 'PhD')
+
+After a family comma (form 2) the end of the name is the end of the
+given name, and the same rules apply there. One kind of word is the
+title there even written bare: a listed salutation such as ``Mrs``,
+the comma having already said where the surname is.
+``Lexicon.default().words(kind="salutation", after_given=True)`` lists
+them. With no comma, the same word is a name word:
+
+.. doctest::
+
+    >>> parse("Doe, Jane Prof.").title, parse("Doe, Jane Prof").middle
+    ('Prof.', 'Prof')
+    >>> parse("Doe, Jane Mrs").title
+    'Mrs'
+    >>> parse("Jane Doe Mrs").family
+    'Mrs'
