@@ -115,13 +115,13 @@
   "Ram Bahadur, B.K., MD"  [ne]  →  suffix="B.K., MD"
   ```
 
-- A dotted pair whose letters spell a particle or a connective reads as a credential, where the same letters undotted are a listed word and stay a name.
+- A dotted pair whose letters spell a particle or a connective reads as a credential, where the same letters undotted are a listed word and stay a name unless the vocabulary also lists them as a credential or a title.
   ```
   "Jane Doe, A.L., PhD"       →  suffix="A.L., PhD"
   "Jane Doe, AL, PhD"         →  given="AL"
   ```
 
-- A later part that is a credential a given name written short also spells speaks for the pair in whatever case it is written, as it does in the pair's own part.
+- A later part that is an unambiguous credential a given name written short also spells speaks for the pair in whatever case it is written, as it does in the pair's own part.
   ```
   "Jane Doe, MH, Md"          →  suffix="MH, Md"
   ```
