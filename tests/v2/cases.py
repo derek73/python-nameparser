@@ -7052,6 +7052,39 @@ CASES: tuple[Case, ...] = (
          notes="#1392, left as it was: 'DO' is a particle too, and a "
                "particle speaks for no credential, in a later part as "
                "beside the pair ('Jane Doe, BM DO')"),
+    Case("two_caps_behind_a_particle_head_under_the_vietnamese_pack",
+         "de la Vega, MH, PhD",
+         {"given": "Vega", "family": "de la", "suffix": "MH, PhD"},
+         locale="vi", classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, a limit: the vi choice drops the particle "
+               "readings of 'la' and 'van', so the head counts two name "
+               "words and the pair is a credential, as 'de la Vega, MH "
+               "PhD' reads there since #1323; under the default and "
+               "every other pack a particle head keeps the given name"),
+    Case("two_caps_alone_before_a_later_part_in_fullwidth_capitals",
+         "Jane Doe, MH, \uff2d\uff24",
+         {"given": "MH", "family": "Jane Doe", "suffix": "\uff2d\uff24"},
+         ambiguities=("comma-structure",),
+         notes="#1392, an unwritten shape left as it was: fullwidth "
+               "capitals are no listed credential in a later part"),
+    Case("two_caps_alone_before_a_particle_part_and_a_listed_credential",
+         "Jane Doe, MH, Mc, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Mc, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost, the class of 'MH, John, PhD': any "
+               "later part answers, whatever stands between. 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
+    Case("two_caps_that_spell_a_numeral_before_a_later_credential",
+         "Jane Doe, VI, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "VI, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, open (put to the maintainer 2026-11-15, "
+               "decisions/C5): 'VI' is unlisted two capitals and reads "
+               "through the pair, reported, where the listed 'II' reads "
+               "suffix unreported. 1.4.0 through 3.0.1 read given 'VI'"),
     Case("a_mixed_case_pair_before_a_later_credential_stays_the_given_name",
          "Jane Doe, Mh, PhD",
          {"given": "Mh", "family": "Jane Doe", "suffix": "PhD"},

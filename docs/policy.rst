@@ -1266,7 +1266,7 @@ of a name, given part or clause, either reading reports the fork as a
 ``suffix-or-name`` ambiguity, so a record that reads wrong can still be
 found; right after a comma behind a full name, the credential reading
 is taken silently, save for the two letters a later part speaks for
-(below):
+(above):
 
 .. doctest::
 
