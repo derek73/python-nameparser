@@ -64,10 +64,11 @@ ALLOWED = {
     # Lexicon compiles its readings)
     "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
-    # name matching: the types, the lexicon's listed spellings, the
-    # scripts that write no initials (as _render reads them) and the
-    # pipeline's hyphens (_pipeline/_vocab._HYPHEN_CHARS, rules/O6's
-    # set, which the match reads every hyphen as, #1264); _parser at
+    # name matching: the types, the lexicon's listed spellings, Policy
+    # (which its repr compares a parser's policy with), and from
+    # _pipeline/_vocab the pipeline's hyphens (_HYPHEN_CHARS, rules/O6's
+    # set, which the match reads every hyphen as, #1264) and the scripts
+    # that write no initials (in_initialless_script); _parser at
     # call time only, in Matching's constructor, which requires a
     # Parser, and its repr, which tells a Parser from a subclass (Parser
     # imports this module at call time, in Parser.matching)
