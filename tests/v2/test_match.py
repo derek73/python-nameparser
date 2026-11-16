@@ -3,6 +3,8 @@ and the grouping keys, with the symmetry and key-guarantee properties
 held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
+from typing import Any
+
 import dataclasses
 import functools
 import itertools
@@ -10,7 +12,6 @@ import pickle
 import re
 import unicodedata
 from collections.abc import Callable
-from typing import Any
 
 import pytest
 
