@@ -122,6 +122,31 @@ release *and* the module loaded from outside the repository.
 package, and strips `PYTHONPATH` from the worker's environment. The
 traps below are why.
 
+### The case table's parity rows
+
+```
+uv run python tools/differential/parity_check.py [--check]
+```
+
+A row of `tests/v2/cases.py` whose `classification` is `parity`, the
+default, claims that 1.4.0 read its text as the row expects, and the
+suite, which runs every row against the tree, never checks that.
+`parity_check.py` reads each such row's text with the 1.4.0 wheel's
+`HumanName`, in a worker hardened as `compare.py`'s is (generated into
+a temporary folder, `PYTHONPATH` stripped, `PYTHONSAFEPATH=1`, the
+version and path tell checked by `compare.py`'s own `_check_tell`), and
+lists the rows whose seven fields 1.4.0 does not give, with both values.
+The suffix is compared by its words, since 1.4.0 joins a suffix of
+several words with ", " where the tree keeps the separators written;
+a row carrying a policy or a locale is skipped and counted, 1.4.0
+having no `Policy` to read it under. Every run also reads two planted
+rows, one 1.4.0 gives and one it does not, and aborts unless only the
+second is reported, so a worker that answered from the tree cannot
+report a clean table. It exits 0 unless `--check` is passed and a row is
+listed; `--cases PATH` reads another copy of the table. On 2026-11-16
+it listed 72 of 698 rows, which the sweep that followed relabelled with
+the change each reading came from, and 0 of 626 after.
+
 ## The three invocation traps
 
 None of the three below is hypothetical -- the second was reproduced
