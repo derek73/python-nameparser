@@ -71,7 +71,7 @@ def test_writes_initials_reaches_every_reader(key: str,
     for letter, writes in ((c, row.writes_initials), ("J", True)):
         assert is_initial(letter + ".") is writes, (key, letter)
         assert (not _render._initialless(letter)) is writes, (key, letter)
-        assert (not _match._initialless(letter)) is writes, (key, letter)
+        assert _match._is_initial(letter) is writes, (key, letter)
 
 
 @pytest.mark.parametrize(("key", "row"), _ROWS, ids=[k for k, _ in _ROWS])
@@ -185,15 +185,15 @@ def test_a_reader_never_restates_a_row() -> None:
 
 
 def test_the_initial_reader_and_the_matcher_agree_on_every_letter() -> None:
-    """_vocab's contains-any matcher and the whole-word matchers of
-    _render and _match are built from the same spans."""
+    """_vocab's contains-any matcher and _render's whole-word matcher
+    are built from the same spans; _match reads _vocab's."""
     for _, row in _ROWS:
         for lo, hi in row.ranges:
             for cp in (lo, hi, (lo + hi) // 2):
                 c = chr(cp)
                 assert (_vocab._has_initialless_char(c)
                         is _render._initialless(c)
-                        is _match._initialless(c)
+                        is _vocab.in_initialless_script(c)
                         is (not row.writes_initials))
 
 
