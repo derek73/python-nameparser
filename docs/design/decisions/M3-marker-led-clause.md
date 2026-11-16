@@ -13,7 +13,7 @@
 
 Elsewhere: a marker followed by a comma, standing alone or glued to either word, is no marker (`Jane (née , Jones) Smith` → nickname 'née , Jones') — decisions/N1's 2026-10-12 #653 entry; the delimiters trumping every reading inside the clause (`Jane Doe (nee Smith MA)` → maiden 'Smith MA') — decisions/M2's 2026-09-19 (Derek), #533 review — THE DELIMITERS TRUMP entry; the bare take's first-word floor, which reads `Jane Smith née V` as maiden 'V' — decisions/M2's 2026-10-04 (Derek), #601 entry; `roz`, refused as a default marker and since 3.0 a reading off by default that the Czech pack turns on (`uv run python tools/vocab/query.py --word roz`) — decisions/vocabulary-exclusions' Excluded (MAIDEN_MARKERS) block.
 
-Open: the fullwidth-colon marker (`旧姓：佐藤` arriving as one word) is decisions/M2's Open line for #317.
+Open: the fullwidth-colon marker (`旧姓：佐藤` arriving as one word) is decisions/M2's Open line, a known limit with no open issue.
 
 ## Log
 

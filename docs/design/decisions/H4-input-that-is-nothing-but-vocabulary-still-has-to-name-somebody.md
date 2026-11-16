@@ -10,7 +10,7 @@
 - A lone name unit that is a join carrying title vocabulary reports `title-or-name` too (`John of Bishop`, `Smith and Bishop`; `prince` was the example until it left TITLES on 2026-10-27, decisions/H9), stated since 2026-10-20 as rules/H7 — 2026-09-07 #491.
 - The join clause (rules/H7's, recorded here) stands beside the peel clause, so a peeled title, a maiden name or a claimed word does not silence it (`Dr. Smith and Bishop`, `van and Bishop`, `Attorney General of Minnesota` report) — 2026-09-08 #518.
 
-Elsewhere: the title run's floor that leaves `Pope` standing in `Dr Pope Jr` and `Dr. Pope MD`, both reporting here, is decisions/H3's 2026-09-08 entry; the suffix and join halves' `detail` naming the field the word lands in, which moves with the order (`Rinpoche` 'a given name' by default, 'a family name' family-first), is decisions/A1's 2026-10-08 #626 entry; the join clause's move into a rule of its own is decisions/H7's 2026-10-20 #761 entry.
+Elsewhere: the title run's floor that leaves `Pope` standing in `Dr Pope Jr` and `Dr. Pope MD`, both reporting here, is decisions/H3's 2026-09-08 entry; the suffix and join halves' `detail` naming the field the word lands in, which moves with the lone name word's convention (`Rinpoche` 'a given name' under every order, 'a family name' under `Policy(lone_name_word=Role.FAMILY)`, decisions/O5), is decisions/A1's 2026-10-08 #626 entry; the join clause's move into a rule of its own is decisions/H7's 2026-10-20 #761 entry.
 
 Open: none in this file.
 

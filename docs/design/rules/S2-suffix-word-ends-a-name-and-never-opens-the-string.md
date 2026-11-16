@@ -36,13 +36,14 @@
 
 **Precedence:**
 
-- **A suffix-shaped word opening the string** ("Ph. D. Van Johnson"): position outranks the vocabulary match, so a suffix-shaped word written before anything else reads as whatever its position and shape make it — a title where it wears the abbreviation shape (H2), an ordinary name word otherwise — and never as a credential belonging to a name that has not been written yet. The string, not the name: a title, a nickname or a bracketed clause standing first leaves the credential reading intact, which is the ONE place this document says "opening" and does not mean what P4 and the H Background mean by it.
+- **A suffix-shaped word opening the string** ("Ph. D. Van Johnson"): position outranks the vocabulary match, so a suffix-shaped word written before anything else reads as whatever its position and shape make it — a title where it wears the abbreviation shape (H2), an ordinary name word otherwise — and never as a credential belonging to a name that has not been written yet. The string, not the name: a title, a nickname or a bracketed clause standing first leaves the spaced `Ph. D.` pair's credential reading intact, which is the ONE place this document says "opening" and does not mean what P4 and the H Background mean by it; a suffix word written as one word there is read by its position, so `Sir PhD Van Johnson` reads given `PhD`.
   ```
   "Ph. D. Van Johnson"        →  family="Van Johnson"
   "Ph. D. Van Johnson"        →  title="Ph."
   "II Van Johnson"            →  given="II"  · boundary
   "Stariji Bruegel"           →  given="Stariji"  · boundary
   "Sir Ph. D. Van Johnson"    →  suffix="Ph. D."  · boundary
+  "Sir PhD Van Johnson"       →  given="PhD"  · boundary
   ```
 - **A family comma** ("Smith, Ph. D. Jr.", "Ph. D., John"): a family comma is the other boundary: the comma has already named the family, so a credential run may open the part after it (C13), and the part before it is that family, less a title run opening it (H6).
   ```
@@ -57,7 +58,7 @@
 
 **Accepted:**
 
-- A title before the credential keeps it a credential, and behind a title run that addresses by the given name (H1) the name loses its surname exactly as it did before the clause that a suffix never opens the string — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with an empty family. That is 1.4.0's reading, and that clause cannot reach it: the first piece of the NAME is not computable before this decision, since the abbreviation test H2 uses is true of `Ph.` itself, so a scan that stepped over titles would step over the very piece being judged.
+- A title before the spaced `Ph. D.` pair keeps it a credential, and behind a title run that addresses by the given name (H1) the name loses its surname exactly as it did before the clause that a suffix never opens the string — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with an empty family. That is 1.4.0's reading, and that clause cannot reach it: the first piece of the NAME is not computable before this decision, since the abbreviation test H2 uses is true of `Ph.` itself, so a scan that stepped over titles would step over the very piece being judged.
 - An unambiguous suffix is consumed even when that leaves no family name at all.
   ```
   "Smith Jr."                 →  family=""

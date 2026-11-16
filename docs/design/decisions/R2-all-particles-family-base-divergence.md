@@ -13,7 +13,7 @@
 
 Elsewhere: where a connective initials, a part holding nothing else for it to join (`Jon Dough and` → 'J. D.', `Juan de y` → 'J. y.') — decisions/R3's 2026-09-20 #461 entry; case repair keeping that connective lowercase, its carve-out not gated on the mark (under `Lexicon.default().add('y', kind='particle')`, `Juan de y` forced → family 'De y') — decisions/R4's 2026-08-29, the CONJUNCTION CARVE-OUT entry; case repair reading the unjoined mark for the whole part (`ANH DO` → 'Anh Do') — decisions/R4's 2026-08-29 #407 entry; the snapshot recording `initials()`, so a change to the base is visible there — decisions/differential-ledger's 2026-10-13 #664, a committed snapshot replaces the classified gate entry.
 
-Open: #754 (whether a language pack supplies a convention's sort key or entry element from Phase 4's per-surname units, the RFC's Phase 4 Left open).
+Open: [#1145](https://github.com/derek73/python-nameparser/issues/1145) (split out of #754 when it closed: whether a language pack supplies a convention's sort key or entry element from Phase 4's per-surname units, the RFC's Phase 4 Left open).
 
 ## Log
 
