@@ -99,9 +99,7 @@ class Script(StrEnum):
     #: caller's or a pack's script_orders entry can, as locales.MN's
     #: does, licensed by the caller's choice of that pack (#1237). Not
     #: among the scripts the interpunct and the two-family-names count
-    #: read (_EAST_ASIAN_SCRIPTS), and has no row in _SCRIPT_PROPERTIES, so
-    #: writes initials:
-    #: Cyrillic names abbreviate.
+    #: read, and writes initials: Cyrillic names abbreviate.
     CYRILLIC = "cyrillic"
 
 
@@ -328,7 +326,8 @@ def _ranges_matcher(ranges: Iterable[tuple[int, int]],
     return matcher
 
 
-#: One character, or a string wholly, of a script the table classifies:
+#: One character, or a string wholly, of an East Asian script
+#: (_EAST_ASIAN_SCRIPTS):
 #: the question the interpunct's flank guard (rules/T3) and the
 #: two-family-names declaration's run count (_locale) both ask, defined
 #: once here because _locale may not import the pipeline (#1087).
@@ -351,27 +350,8 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 # script's typology: Devanagari is an abugida and Arabic an abjad,
 # and both abbreviate a name to a letter and a period ("म. गांधी",
 # "م. الفارسي"), as Cyrillic does ("А. С. Пушкин"). decisions/script-properties holds each row's
-# history and the recompute recipes.
-#
-# The CLDR recipe, how "writes initials" is decided where a locale
-# states it: count the LOCALE-AUTHORED namePattern entries in
-# common/main/<locale>.xml's personNames block (a pattern whose text
-# is the inheritance marker ↑↑↑ is not authored) that produce an
-# initial ("-initial" in the pattern). ja and ko author 29 and 32 and
-# use one in none; ru uses one in 7 of 39 ("{given-initial}
-# {given2-initial} {surname}"). Then read the locale's own
-# initialPattern: zh counts 6 of 40 but overrides it to "{0}", no
-# period, so its "initial" is the whole character and Han writes none.
-# Do NOT read initialPattern alone: root defaults it to "{0}." and
-# nearly every locale inherits it. And before counting, check that the
-# block is the locale's own: compare each authored pattern with
-# en.xml's for the same order, length, usage and formality, after
-# removing spaces and every comma (",", "၊", "、", "，") from both; a
-# block equal to en's in every pattern is a copy, and states nothing
-# about the locale (my's, 42 of 42 on 2026-11-12). A block equal in
-# most is not: ru's is equal in 36 of 39 and is Russian's own, short
-# patterns being written alike in most locales (counts measured
-# 2026-11-12 on cldr main c0b65ae3; decisions/script-properties).
+# history and the recompute recipes, the CLDR count that decides
+# "writes initials" where a locale states it among them.
 
 @dataclass(frozen=True, slots=True)
 class _ScriptRow:
@@ -537,6 +517,24 @@ def _order_repr(value: tuple[Role, ...]) -> str:
     return repr(value)
 
 
+def _fields_repr(obj: Policy | PolicyPatch, name: str,
+                 skip: Callable[[dataclasses.Field[Any], object], bool]) -> str:
+    """`name(...)` over every field of `obj` that `skip` does not drop,
+    name_order through _order_repr: the one body Policy's and
+    PolicyPatch's bounded reprs share, so a field needing its own repr
+    is written once."""
+    parts = []
+    for f in dataclasses.fields(obj):
+        value = getattr(obj, f.name)
+        if skip(f, value):
+            continue
+        if f.name == "name_order":
+            parts.append(f"name_order={_order_repr(value)}")
+        else:
+            parts.append(f"{f.name}={value!r}")
+    return f"{name}({', '.join(parts)})"
+
+
 # Single source for the migration hint raised by both Policy and
 # PolicyPatch when patronymic_rules gets a non-iterable (True is the
 # likeliest wrong value -- v1's flag was a bool that enabled BOTH rules).
@@ -638,17 +636,7 @@ def _validated_script(key: object) -> Script:
     shares. Single-sourced deliberately: script_orders and the
     script-keyed fields that follow it must not each grow their own
     wording for the same lookup."""
-    try:
-        # Enum lookup accepts ANY value at runtime and answers a
-        # non-member with ValueError -- which is the contract here, and
-        # the taxonomy's rule for a failed enum lookup whatever the
-        # input type was (stdlib EnumType precedent).
-        return Script(key)  # type: ignore[arg-type]
-    except ValueError:
-        valid = ", ".join(v.value for v in Script)
-        raise ValueError(
-            f"unknown script {key!r}; valid scripts: {valid}"
-        ) from None
+    return _coerce_enum(key, Script, "script", "scripts")
 
 
 def _validated_script_orders(
@@ -1108,16 +1096,9 @@ class Policy:
                 f"{_PATRONYMIC_MIGRATION_HINT}"
             ) from None
         items = tuple(rule_iter)
-        rules = set()
-        for r in items:
-            try:
-                rules.add(PatronymicRule(r))
-            except ValueError:
-                valid = ", ".join(v.value for v in PatronymicRule)
-                raise ValueError(
-                    f"unknown patronymic rule {r!r}; valid rules: {valid}"
-                ) from None
-        object.__setattr__(self, "patronymic_rules", frozenset(rules))
+        object.__setattr__(self, "patronymic_rules", frozenset(
+            _coerce_enum(r, PatronymicRule, "patronymic rule", "rules")
+            for r in items))
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
             _reject_str_and_mapping(getattr(self, pairs_name), pairs_name)
             pairs = tuple(_require_iterable(getattr(self, pairs_name), pairs_name))
@@ -1219,16 +1200,8 @@ class Policy:
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
         # (design rule, see nameparser._types module docstring).
-        parts = []
-        for f in dataclasses.fields(self):
-            value = getattr(self, f.name)
-            if value == f.default:
-                continue
-            if f.name == "name_order":
-                parts.append(f"name_order={_order_repr(value)}")
-            else:
-                parts.append(f"{f.name}={value!r}")
-        return f"Policy({', '.join(parts)})"
+        return _fields_repr(self, "Policy",
+                            lambda f, value: value == f.default)
 
     # -- editing ------------------------------------------------------
 
@@ -1292,8 +1265,8 @@ class PolicyPatch:
     #: Composes BY SCRIPT: each entry replaces the base's entry for its
     #: script and the base's other entries stand, so a pack adds one
     #: script's order without restating or erasing the rest, a caller's
-    #: own opt-outs included (locales.MN's Cyrillic entry, #1237; a
-    #: scalar override until then, nothing shipped having patched it).
+    #: own opt-outs included (locales.MN's Cyrillic entry; decisions/W4,
+    #: #1237).
     script_orders: tuple[
         tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = field(
         default=UNSET, metadata=_BY_SCRIPT)
@@ -1396,16 +1369,8 @@ class PolicyPatch:
         # Bounded: only fields the patch actually sets are shown; UNSET
         # fields are omitted (design rule, see nameparser._types module
         # docstring -- the sibling of Policy's deviation-only repr).
-        parts = []
-        for f in dataclasses.fields(self):
-            value = getattr(self, f.name)
-            if value is UNSET:
-                continue
-            if f.name == "name_order":
-                parts.append(f"name_order={_order_repr(value)}")
-            else:
-                parts.append(f"{f.name}={value!r}")
-        return f"PolicyPatch({', '.join(parts)})"
+        return _fields_repr(self, "PolicyPatch",
+                            lambda f, value: value is UNSET)
 
 
 def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:

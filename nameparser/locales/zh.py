@@ -182,15 +182,10 @@ ZH = Locale(
     policy=PolicyPatch(segment_scripts=frozenset({Script.HAN})),
 )
 
-# Compiled by _policy's factory from the shared codepoint table, so
-# the pack carries no Han spans of its own to drift out of sync.
-_has_han = _script_matcher(Script.HAN)
-
-
-def DEVIATES(name: str) -> bool:
-    """True when this pack may parse `name` differently from the
-    default parser (the declared-deviation predicate the
-    non-interference gate consumes): any Han-bearing name -- see the
-    module docstring's declared-deviations note for why over-declaring
-    is safe."""
-    return _has_han(name)
+#: True when this pack may parse a name differently from the default
+#: parser (the declared-deviation predicate the non-interference gate
+#: consumes): any Han-bearing name -- see the module docstring's
+#: declared-deviations note for why over-declaring is safe. Compiled by
+#: _policy's factory from the shared codepoint table, so the pack
+#: carries no Han spans of its own to drift out of sync.
+DEVIATES = _script_matcher(Script.HAN)

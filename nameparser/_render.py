@@ -58,7 +58,8 @@ _DERIVED_VIEWS = ("family_base", "family_particles", "surnames", "given_names",
 _RENDER_KEYS = tuple(r.value for r in Role) + _DERIVED_VIEWS
 
 #: str.format keys initials() accepts: the three name-bearing roles.
-_INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
+_INITIALS_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+_INITIALS_KEYS = tuple(role.value for role in _INITIALS_ROLES)
 
 #: Tags whose tokens contribute no initial outside the given group --
 #: unless the token also carries UNJOINED_TAG, i.e. the whole part is
@@ -231,11 +232,7 @@ _DOT_SEPARATORS = frozenset({"\u00B7", "\uFF0E", "\u30FB", "\uFF65",
 _NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.
-_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C",
-                  "\u1363": "\u1363 ", "\u104A": "\u104A ",
-                  "\u07F8": "\u07F8 ", "\u1802": "\u1802 ",
-                  "\u1808": "\u1808 ", "\uA4FE": "\uA4FE ",
-                  "\uA60D": "\uA60D ", "\uA6F5": "\uA6F5 "}
+_COMMA_WRITTEN = {c: c if c == "\uff0c" else c + " " for c in _COMMAS}
 
 
 def _written_separator(gap: str) -> str | None:
@@ -259,8 +256,12 @@ def _ordered(tokens: Sequence[Token]) -> list[Token]:
     # first (mechanisms.md#FOLDED_TAG: "a rule that needs different
     # rendering order tags the token, and the rendering views consult
     # the tag")
-    return ([t for t in tokens if FOLDED_TAG in t.tags]
-            + [t for t in tokens if FOLDED_TAG not in t.tags])
+    # (one loop, not two comprehensions: a frame each, on every str())
+    folded: list[Token] = []
+    rest: list[Token] = []
+    for t in tokens:
+        (folded if FOLDED_TAG in t.tags else rest).append(t)
+    return folded + rest
 
 
 def _default_render(name: ParsedName,
@@ -404,13 +405,11 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         if t.role in _NAME_WORD_ROLES and not t.text.islower():
             all_lower = False
             break
-    for key in _INITIALS_KEYS:
-        role = Role(key)
-        tokens = name.tokens_for(role)
+    for key, role in zip(_INITIALS_KEYS, _INITIALS_ROLES):
         skip = _SKIP_TAGS_GIVEN if role is Role.GIVEN else _SKIP_TAGS
-        tokens = tuple(t for t in tokens
-                       if not (skip & t.tags)
-                       or _UNJOINED_MARKS & t.tags)
+        tokens = [t for t in name.tokens
+                  if t.role is role
+                  and (not (skip & t.tags) or _UNJOINED_MARKS & t.tags)]
         # mechanisms.md#FOLDED_TAG: "a rule that needs different
         # rendering order tags the token, and the rendering views
         # consult the tag" -- this is a rendering view, so it reads
@@ -854,11 +853,9 @@ def _inner_apostrophe(text: str, end: int, start: int) -> bool:
     two are one word: 'МАР'ЯНА' is one word, 'О'КОННОР' two."""
     if start != end + 1 or text[end] not in _APOSTROPHES:
         return False
-    before = end - 1
-    while before >= 0 and unicodedata.category(text[before])[0] == "M":
-        before -= 1
-    return (before >= 0
-            and unicodedata.name(text[before], "").startswith("CYRILLIC")
+    before = _beside(text, end, -1)
+    return (before is not None
+            and unicodedata.name(before, "").startswith("CYRILLIC")
             and text[start].lower() in _APOSTROPHE_VOWELS)
 
 
@@ -1006,20 +1003,22 @@ def _capital_openings(tokens: Sequence[Token],
         return ("-" in t.text
                 and _normalize(t.text.rsplit("-", 1)[-1]) in particles)
 
-    middle = [t for t in tokens if t.role is Role.MIDDLE]
+    def after_particle(t: Token) -> bool:
+        return is_particle(t) or ends_in_particle(t)
+
+    last_middle = next(
+        (t for t in reversed(tokens) if t.role is Role.MIDDLE), None)
     family = [(i, t) for i, t in enumerate(tokens) if t.role is Role.FAMILY]
     out: set[int] = set()
     before: Token | None = None
-    for i, t in ([(i, t) for i, t in family if FOLDED_TAG in t.tags]
-                 + [(i, t) for i, t in family if FOLDED_TAG not in t.tags]):
+    # folded words first, as _ordered lays the family out (a stable sort)
+    for i, t in sorted(family, key=lambda p: FOLDED_TAG not in p[1].tags):
         if before is None:
-            written = tokens[i - 1] if i else None
-            follows = ((written is not None
-                        and (is_particle(written)
-                             or ends_in_particle(written)))
-                       or (bool(middle) and ends_in_particle(middle[-1])))
+            follows = ((i > 0 and after_particle(tokens[i - 1]))
+                       or (last_middle is not None
+                           and ends_in_particle(last_middle)))
         else:
-            follows = is_particle(before) or ends_in_particle(before)
+            follows = after_particle(before)
         if (not follows and is_particle(t)
                 and _normalize(t.text) in capital):
             out.add(i)
@@ -1163,12 +1162,13 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     # word). decisions/R12 (#1224).
     openings: frozenset[int] = frozenset()
     capital = lex._sets.capital_opening_particles
-    for t in name.tokens:
-        if (t.role is Role.FAMILY and capital
-                and (t.text.lower().strip(FULL_STOPS) if t.text.isascii()
-                     else _normalize(t.text)) in capital):
-            openings = _capital_openings(name.tokens, lex)
-            break
+    if capital:
+        for t in name.tokens:
+            if (t.role is Role.FAMILY
+                    and (t.text.lower().strip(FULL_STOPS) if t.text.isascii()
+                         else _normalize(t.text)) in capital):
+                openings = _capital_openings(name.tokens, lex)
+                break
     new_tokens = tuple(
         t if (not force and t.role is Role.SUFFIX
               and not _in_one_case(t.text))
