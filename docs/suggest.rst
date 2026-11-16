@@ -119,10 +119,23 @@ written, so it takes ``Clark`` for the given name:
     >>> mixed = Parser().suggest(listing + ["Emily Clark"])
     >>> [entry.text for entry in mixed.disagreeing()]
     ['Emily Clark']
-    >>> mixed.evidence[0]
-    SettingEvidence(name_order=FAMILY_FIRST, decided, 4 for, 1 against, 0 contested, 1 no evidence)
     >>> mixed.parser.parse("Emily Clark").given
     'Clark'
+
+The report counts it as ``against`` and names it on its last line:
+
+.. doctest::
+
+    >>> print(mixed)
+    Suggested for 6 names (base: Parser(Lexicon(default), Policy())):
+      name_order  FAMILY_FIRST  4 for, 1 against, 1 no evidence
+          surname FAMILY_FIRST  3
+          given-name FAMILY_FIRST  2
+          given-name GIVEN_FIRST  1
+      patronymic_rules  unchanged (none)  no evidence
+      initials_as_family  unchanged (False)  no evidence
+      capitals_as_family  unchanged (False)  6 for, 0 against, 0 no evidence
+      disagreeing (1): Emily Clark
 
 .. _suggest-deciding:
 
@@ -150,10 +163,10 @@ and enough of them agree:
      - :ref:`suggest-patronymics`
    * - ``initials_as_family``
      - 2 ending in one run of letters
-     - at least half of the names ending in letters
+     - at least half of the names ending in a run of letters
      - :ref:`suggest-initials`
    * - ``capitals_as_family``
-     - 2 writing the family name in capitals
+     - 2 writing the family name in capitals of four letters or more
      - more than two thirds of the names with evidence either way
      - :ref:`suggest-capitals`
 
@@ -175,7 +188,7 @@ Where no name in the list carries evidence, or the votes fall short of
 the thresholds above, ``suggest()`` leaves every setting as the base
 parser has it rather than guess, and the patch is empty. None of these
 names holds a romanized surname, a given name that is rarely a
-surname, or any other evidence:
+surname, or any other evidence on the order:
 
 .. doctest::
 
@@ -186,8 +199,9 @@ surname, or any other evidence:
 
 An empty patch says the list did not show its order, not that it is
 written given name first. Print the suggestion to see which it was:
-each setting's line says ``no evidence``, or gives the votes that fell
-short.
+the ``name_order`` line says ``no evidence``, or gives the votes that
+fell short. (The ``capitals_as_family`` line counts names in mixed
+case as ``for`` the switch staying off, :ref:`suggest-report`.)
 
 .. doctest::
 
@@ -383,7 +397,7 @@ letters: Nepal's ``B K`` and ``K C`` are surnames written short.
 
 The repeat is the evidence. The switch is decided where one run of
 letters ends at least two of the list's names and at least half of the
-names ending in letters:
+names ending in a run of letters:
 
 .. doctest::
 
@@ -585,9 +599,9 @@ Two kinds of list keep their order less often:
   as a family name, and such a list is suggested ``capitals_as_family``
   too: nothing in a name tells it from a list that writes its family
   names in capitals, and its order is read the wrong way round already.
-- **Two or three capitals at one end** are no evidence
+- **Two or three capitals at one end** cast no capitals vote
   (:ref:`suggest-evidence`), so a list of such names carries little
-  either way. Researchers' bylines written initials first kept a
+  evidence either way. Researchers' bylines written initials first kept a
   given-first base in at least 97% of groups, but a list of nothing
   but two or three joined initials (``AM Hoy``) kept it in just under
   95% of groups of 50. Where you know how such a list is written, set
