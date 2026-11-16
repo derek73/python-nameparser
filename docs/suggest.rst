@@ -53,8 +53,8 @@ them at most:
 - **Under five names** often gets no suggestion. That is safe: a list
   short of evidence keeps the parser it was given.
 - **Fifty names** settles most kinds of list.
-- **A few hundred** settles nearly every kind measured, and more adds
-  nothing.
+- **A few hundred** settles nearly every kind measured. More rarely
+  helps, and can hurt.
 
 For a large dataset, take a sample from each source instead of passing
 everything:
@@ -68,11 +68,16 @@ everything:
     >>> Parser().suggest(sample).patch
     PolicyPatch(name_order=FAMILY_FIRST)
 
-Sampling is not about speed: a suggestion costs less than parsing the
-same names. A very long list can be read less well than a sample of
-it, because the order is decided among the names that vote, and in a
-list where few names vote a handful of stray votes weigh more the
-longer the list is.
+A sample is quicker, a suggestion costing about what parsing the same
+names does, but that is not the main reason. A very long list can be
+read less well than a sample of it, because the order is decided among
+the names that vote, and in a list where few names vote a handful of
+stray votes weigh more the longer the list is.
+
+The one kind of list measured that more names kept helping is bylines
+written initials first (``AM Hoy``) under a family-first base, where
+so few names vote that a sample of a few hundred often decides nothing.
+Where you know how such a list is written, set ``name_order`` yourself.
 
 A list that mixes sources written differently works against itself.
 Split it by source and ask once for each. :ref:`suggest-limits` gives
