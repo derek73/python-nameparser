@@ -120,12 +120,14 @@ section parses.
      - ``MD, Esq.``
    * - ``patronymic``
      - The words that say whose child the bearer is, where a particle
-       or a pack's rule marks them (:ref:`usage-finding-a-patronymic`)
+       or a ``patronymic_rules`` rule marks them
+       (:ref:`usage-finding-a-patronymic`)
      - ``bin Mohamad``
    * - ``surname1``, ``surname2``
      - The first family name and the second, where the family was read
-       as two; elsewhere ``surname1`` is the whole family and
-       ``surname2`` is empty (:ref:`usage-surname1-and-surname2`)
+       as two; elsewhere ``surname2`` is empty and ``surname1`` is the
+       family, less any middle names folded into it
+       (:ref:`usage-surname1-and-surname2`)
      - | ``García``
        | ``Márquez``
    * - ``surname1_base``, ``surname1_particles``
@@ -213,9 +215,10 @@ Finding a patronymic
 
 ``patronymic`` names the words that say whose child the bearer is, a
 particle such as ``bin`` with the parent's name after it, in whatever
-field the parse put them, which keeps them. It reads no position, so a
-name written without the particle has none, unless a pack's rule reads
-a patronymic by its ending, as ``ru`` does (:doc:`locales`):
+field the parse put them, which keeps them. The view reads no position
+itself, so a name written without the particle has none, unless the
+parse ran a rule of ``Policy.patronymic_rules`` that read one, as the
+``ru`` pack sets (:doc:`locales`):
 
 .. doctest::
 
@@ -522,8 +525,9 @@ changes them.
 
 Two ``Policy`` switches read a word the vocabulary does not hold as a
 credential from how it is written. ``unlisted_dotted_suffixes`` (on by
-default) reads a token of two or more period-separated chunks, and
-``unlisted_caps_suffixes`` an all-caps word: by default only after a
+default) lets a token of two or more period-separated chunks read as
+one, and ``unlisted_caps_suffixes`` an all-caps word: by default only
+after a
 comma behind a full name, and at the end of a name only on request,
 since an all-caps surname is written there.
 :ref:`unlisted-credentials` says where each applies and what it
