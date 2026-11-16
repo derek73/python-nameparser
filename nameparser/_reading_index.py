@@ -97,9 +97,14 @@ CATEGORY: dict[str, str] = {
 #: spelling reading moves no parse at all, so none competes with another
 #: file's reading of the word.
 UNPREFERRED = frozenset({"name", "familiar", "spelling"})
+#: Each category only the name match reads, with the list property its
+#: reading names its pairs by: the longer names a familiar form stands
+#: for, the names a spelling is another spelling of.
+MATCHING_LISTS: Mapping[str, str] = MappingProxyType({
+    "familiar": "short_for", "spelling": "spelling_of"})
 #: The categories only the name match reads: a file of these alone
 #: changes nothing a plain choice of it could (tags).
-MATCHING_ONLY = frozenset({"familiar", "spelling"})
+MATCHING_ONLY = frozenset(MATCHING_LISTS)
 
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
@@ -192,11 +197,8 @@ def indexed(kind: str) -> frozenset[str]:
     given names the word is another spelling of, which compiles into
     ALTERNATE_SPELLINGS. Everything else a reading carries is
     evidence, compiled to nothing."""
-    if CATEGORY[kind] == "familiar":
-        return BEHAVIORAL["familiar"] | {"short_for"}
-    if CATEGORY[kind] == "spelling":
-        return BEHAVIORAL["spelling"] | {"spelling_of"}
-    return BEHAVIORAL[CATEGORY[kind]] | {"same_as"}
+    category = CATEGORY[kind]
+    return BEHAVIORAL[category] | {MATCHING_LISTS.get(category, "same_as")}
 
 
 class ReadingProperties:
@@ -401,10 +403,11 @@ def selected(languages: Iterable[str], *,
                 f"every choice, plain or strict, keeps mul.toml's, a plain "
                 f"one keeps und.toml's too and a strict one drops "
                 f"und.toml's. Drop it")
-        found = {by_fold[a] for a in _ancestors(tag) if a in by_fold}
+        ancestors = _ancestors(tag)
+        found = {by_fold[a] for a in ancestors if a in by_fold}
         if not found:
             empty = sorted(t for t in files() - tags() - UNCHOOSABLE
-                           if t.casefold() in _ancestors(tag))
+                           if t.casefold() in ancestors)
             if empty:
                 raise ValueError(
                     f"{empty[0]}.toml holds no reading a parse reads yet, "
@@ -448,12 +451,13 @@ def choose(readings: Iterable[IndexReading],
     so the default is the compile of an empty choice."""
     if not chosen:
         return [r for r in readings if r.on_by_default]
-    live = [r for r in readings if r.on_by_default or r.tag in chosen]
-    preferred = {r.text for r in live
-                 if r.tag in chosen and r.category not in UNPREFERRED}
+    live = [(r, CATEGORY[r.kind] not in UNPREFERRED) for r in readings
+            if r.on_by_default or r.tag in chosen]
+    preferred = {r.text for r, competes in live
+                 if competes and r.tag in chosen}
     out = []
-    for r in live:
-        if (r.text in preferred and r.category not in UNPREFERRED
+    for r, competes in live:
+        if (competes and r.text in preferred
                 and r.tag not in chosen and r.tag not in UNCHOOSABLE):
             continue
         if r.tag in chosen and ("default" in r.props
@@ -607,6 +611,13 @@ def holds_kind(text: str, kind: str) -> bool:
     return any(k == kind for _tag, k, _pairs in _by_text().get(text, ()))
 
 
+def _sorted_lists(lists: Mapping[str, Iterable[str]]
+                  ) -> dict[str, tuple[str, ...]]:
+    """Each word's names as a sorted tuple, the words sorted, as the
+    compiled module writes a map of word lists."""
+    return {w: tuple(sorted(names)) for w, names in sorted(lists.items())}
+
+
 class CompileError(ValueError):
     """The readings cannot compile: a fact about the data, which the
     build reports as a vocabulary error (exit 2) where any other
@@ -667,15 +678,15 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     Raises :class:`CompileError` on a post-nominal that is both an
     acronym and a word, a backstop the build's checks 4 and 5 always
     reach first. Any other exception is a bug in this function."""
-    texts = [(r, r.text) for r in readings if r.on_by_default]
+    on = [r for r in readings if r.on_by_default]
     # the derived markers (the build's check 11): a clash with a name is
     # a word's name reading beside the reading it clashes with, and a
     # name reading written `default = false` marks nothing in the
     # default, as it compiles to nothing (3a)
     # a `given` reading carrying `same_as`, a name written short, marks
     # none (`ReadingProperties.marks_a_clash`, #1383)
-    named = {t for r, t in texts if r.marks_a_clash}
-    given = {t for r, t in texts if r.kind == "given"}
+    named = {r.text for r in on if r.marks_a_clash}
+    given = {r.text for r in on if r.kind == "given"}
     titles: set[str] = set()
     given_titles: set[str] = set()
     after_given: set[str] = set()
@@ -687,7 +698,6 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     conjunctions: set[str] = set()
     initial_conjunctions: set[str] = set()
     bound: set[str] = set()
-    abbreviations: set[str] = set()
     markers: set[str] = set()
     words: set[str] = set()
     glued: set[str] = set()
@@ -715,32 +725,28 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     # and the words it names with none: a name of its own
     short_names: dict[str, set[str]] = {}
     own_names: dict[str, set[str]] = {}
-    # a familiar form -> the given names it stands for, every file's
-    familiar: dict[str, set[str]] = {}
-    # a given name -> the given names it is another spelling of
-    alternate: dict[str, set[str]] = {}
-    for r, t in texts:
-        p = r.props
-        if r.category == "familiar":
-            familiar.setdefault(t, set()).update(p.get("short_for", ()))
-            continue
-        if r.category == "spelling":
-            # another spelling of a given name, which only the match's
-            # opt-in `alternate-spelling` reads
-            alternate.setdefault(t, set()).update(p.get("spelling_of", ()))
+    # per matching-only category, a word -> the given names its pairs
+    # name, every file's: a familiar form -> the longer names it stands
+    # for, a spelling -> the names it is another spelling of
+    pairs: dict[str, dict[str, set[str]]] = {c: {} for c in MATCHING_LISTS}
+    for r in on:
+        t, p, category = r.text, r.props, CATEGORY[r.kind]
+        if category in MATCHING_LISTS:
+            pairs[category].setdefault(t, set()).update(
+                p.get(MATCHING_LISTS[category], ()))
             continue
         if "same_as" in p and (group := same_as_group(r.kind)) is not None:
             same_as[group].setdefault(t, set()).update(same_as_of(p))
-        if r.category == "name":
-            into = short_names if "same_as" in p else own_names
-            into.setdefault(r.kind, set()).add(t)
         if "cased" in p:
             cased[t] = p["cased"]
-        if r.category == "name" and r.flag("shared"):
-            shared.add(t)
-        if r.kind == "given" and r.flag("after_particle"):
-            after_particle.add(t)
-        if r.category == "title":
+        if category == "name":
+            into = short_names if "same_as" in p else own_names
+            into.setdefault(r.kind, set()).add(t)
+            if r.flag("shared"):
+                shared.add(t)
+            if r.kind == "given" and r.flag("after_particle"):
+                after_particle.add(t)
+        elif category == "title":
             titles.add(t)
             if r.addresses == "given":
                 given_titles.add(t)
@@ -755,7 +761,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 written_short.add(t)
             title_kinds.setdefault(t, set()).add(r.kind)
             attaches.setdefault(t, set()).update(p.get("attaches", ()))
-        elif r.category == "suffix":
+        elif category == "suffix":
             if r.acronym:
                 acronyms.add(t)
                 if t in named:
@@ -776,7 +782,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                     credential_words.add(t)
                 elif r.kind in HONORIFIC_KINDS:
                     honorific_words.add(t)
-        elif r.category == "particle":
+        elif category == "particle":
             particles.add(t)
             if r.kind == "patronymic":
                 patronymics.add(t)
@@ -788,18 +794,16 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 capital_opening.add(t)
             if t not in given:
                 never_given.add(t)
-        elif r.category == "conjunction":
+        elif category == "conjunction":
             conjunctions.add(t)
             if r.flag("may_be_initial"):
                 initial_conjunctions.add(t)
-        elif r.category == "bound_given":
+        elif category == "bound_given":
             bound.add(t)
             bound_phrases.update(f"{t} {w}"
                                  for w in p.get("completed_by", ()))
-        elif r.category == "relation":
+        elif category == "relation":
             markers.add(t)
-        elif r.kind == "given" and "same_as" in p:
-            abbreviations.add(t)
     contested = titles & given - particles
     out = Compiled(
         GIVEN_NAME_TITLES=frozenset(given_titles),
@@ -835,7 +839,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # a given name written short (`chas`, Filipino `ma`): opening the
         # given part period-marked, it is the given name, which outranks
         # rules/H2's shape (#789)
-        GIVEN_NAME_ABBREVIATIONS=frozenset(abbreviations),
+        GIVEN_NAME_ABBREVIATIONS=frozenset(short_names.get("given", ())),
         MAIDEN_MARKERS=frozenset(markers),
         SUFFIX_WORDS=frozenset(words),
         GLUED_HONORIFICS=frozenset(glued),
@@ -924,15 +928,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # each other), every file's together: read by the name match's
         # opt-in `familiar-form` alone, never by a parse
         # (decisions/name-matching, 2026-11-08 FAMILIAR FORMS)
-        FAMILIAR={w: tuple(sorted(longs))
-                  for w, longs in sorted(familiar.items())},
+        FAMILIAR=_sorted_lists(pairs["familiar"]),
         # a given name and the given names it is another spelling of,
         # one way, every file's together: read by the name match's
         # opt-in `alternate-spelling` alone, never by a parse
         # (decisions/name-matching, 2026-11-12 ALTERNATE SPELLINGS ARE
         # OPT-IN)
-        ALTERNATE_SPELLINGS={w: tuple(sorted(names))
-                             for w, names in sorted(alternate.items())},
+        ALTERNATE_SPELLINGS=_sorted_lists(pairs["spelling"]),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

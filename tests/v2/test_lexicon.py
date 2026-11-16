@@ -1447,6 +1447,15 @@ def test_lexicon_marks_an_added_field_with_the_shared_key() -> None:
     assert _ADDED_IN == _types.ADDED_IN
 
 
+def test_lexicon_holds_the_reading_index_s_matching_lists() -> None:
+    # one table of each matching-only category's list property: the
+    # lexicon's copy, written there because layering lets it read the
+    # reading index's only at call time, and the compile's
+    from nameparser import _lexicon, _reading_index
+    assert dict(_lexicon._MATCHING_LISTS) == dict(
+        _reading_index.MATCHING_LISTS)
+
+
 
 # -- pickle (decisions/vocabulary-model, 2026-11-02 #754, item 5) ----------
 
