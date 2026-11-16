@@ -894,7 +894,9 @@ class Policy:
     #: single letters each followed by a period in a script with
     #: capitals ("Ram Bahadur B.K." keeps family ``B.K.``) except
     #: right after a comma, where they are the given name unless
-    #: something in the part speaks for them. ``False`` reads such a token as
+    #: something in the part speaks for them, or a listed credential in
+    #: a later comma part where they stand alone in theirs ("Jane Doe,
+    #: B.M., PhD" gives suffix ``B.M., PhD``). ``False`` reads such a token as
     #: name material everywhere, as 2.3 did for a token no chunk
     #: claimed; the roman-chunk retirement (rules/S3) is not
     #: behind this switch, and still reports the fork.

@@ -6998,9 +6998,10 @@ CASES: tuple[Case, ...] = (
          "Jane Doe, MH, M. A.",
          {"given": "MH", "family": "Jane Doe", "suffix": "M. A."},
          ambiguities=("comma-structure",),
-         notes="#1392 boundary, its test review: a split pair the "
-               "vocabulary lists only in the ambiguous class (rules/S12) "
-               "is not settled, as beside the pair ('Jane Doe, BM M. A.')"),
+         notes="#1392 boundary, its test review: two single letters "
+               "written apart are no split credential (rules/S12), so "
+               "'M. D.' keeps the given name too, as beside the pair "
+               "('Jane Doe, BM M. A.')"),
     Case("two_caps_alone_before_a_credential_and_a_generation_in_one_part",
          "Jane Doe, MH, PhD Jr.",
          {"given": "MH", "family": "Jane Doe", "suffix": "PhD Jr."},

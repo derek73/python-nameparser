@@ -1371,9 +1371,9 @@ credential, where 1.4 through 3.0 read them as the given name and the
 whole name before the comma as the family name. They are read so beside
 credentials in their own part, or alone in it before a listed
 credential in a later one, where dotted initials are read so too.
-Behind one word they are still the given name, as are two capitals with
-no credential behind them and dotted initials with credentials in their
-own part. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps two
+Behind one word they are still the given name, as are two capitals
+alone after the comma with no listed credential in a later part, and
+dotted initials with credentials in their own part. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps two
 capitals the given name, with every other unlisted word in capitals
 after a comma, and ``Policy(unlisted_dotted_suffixes=False)`` the
 dotted ones:

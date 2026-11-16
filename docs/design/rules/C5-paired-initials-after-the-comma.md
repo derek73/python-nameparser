@@ -20,7 +20,7 @@
   "Jane Doe Jr., MJ M.D."     →  suffix="Jr., MJ M.D."
   "Jane Doe MD, MJ PhD"       →  suffix="MD, MJ PhD"
   ```
-- **Alone in its part, two capitals with a listed credential in a later comma part are the credential run, dotted or not** ('Jane Mary Doe, MH, PhD', 'Jane Mary Doe, M.H., PhD'), a credential behind them speaking from a later part where none stands in their own. This narrows the reading above: dotted, the pair is the given name after the comma only where no later part is such a credential. The pair is what the bullet above reads: an unlisted word, so two capitals a particle spells stay a name, behind two or more name words (C4) in a name that carries C6's contrast, which the dotted pair has to meet here too, as two capitals; the undotted pair is asked of the capitals' switch and the dotted one of the dotted shape's. A later part is that credential where every word of it is company the bullet above would take beside the pair and the vocabulary lists: a suffix word that is no generation, a title/suffix dual only in capitals, a listed member of the ambiguous class only where its capitals settle it (S6), a credential split across a space that is unambiguous suffix vocabulary (S12), and a word joined by a slash or a hyphen asked chunk by chunk; a particle, a word gated by the count (S11) and a word read as a credential by its shape alone (S3) each make the part none, and a delimiter standing alone between its words is no word of it (C10). Any later part answers, not only the next and not only the last, and the parts are then read as C2 reads them. A suffix ending the name before the comma takes nothing from this, a generation included. With company in their own part the two capitals are decided by that part alone, as above, where the dotted pair keeps the given name.
+- **Alone in its part, two capitals with a listed credential in a later comma part are the credential run, dotted or not** ('Jane Mary Doe, MH, PhD', 'Jane Mary Doe, M.H., PhD'), a credential behind them speaking from a later part where none stands in their own. The pair is what the bullet above reads: an unlisted word, so undotted capitals that spell a particle or a connective stay a name, behind two or more name words (C4) in a name that carries C6's contrast, which the dotted pair has to meet here too, as two capitals, whatever its letters spell. For such a pair this narrows the reading above: dotted, it is the given name after the comma only where no later part is such a credential; the undotted pair is asked of the capitals' switch and the dotted one of the dotted shape's. A later part is that credential where every word of it is company the bullet above would take beside the pair and the vocabulary lists: a suffix word that is no generation, a title/suffix dual only in capitals, a listed member of the ambiguous class only where its capitals settle it (S6), a credential split across a space as S12 reads one, and a word joined by a slash or a hyphen, asked chunk by chunk for a generation, a word gated by the count and a member its capitals do not settle; a particle standing as a word, a word gated by the count (S11) and a word read as a credential by its shape alone (S3) each make the part none, a part with no word in it answers nothing, and a delimiter standing alone between its words is no word of it (C10). Any later part answers, not only the next and not only the last, and the parts are then read as C2 reads them. A suffix ending the name before the comma takes nothing from this, a generation included. With company in their own part the two capitals are decided by that part alone, as above, where the dotted pair keeps the given name.
   ```
   "Jane Mary Doe, MH, PhD"    →  suffix="MH, PhD"
   "Jane Mary Doe, MH, PhD"    →  given="Jane"
@@ -42,6 +42,7 @@
   "Jane Doe, MH, XYZ"         →  given="MH"  · boundary
   "Jane Doe, MH, M. A."       →  given="MH"  · boundary
   "Jane Doe, AL, PhD"         →  given="AL"  · boundary
+  "Jane Doe, MH, M. D."       →  given="MH"  · boundary
   "Jane Doe, MH Jr., PhD"     →  given="MH"  · boundary
   "Jane Doe, Ms MH, PhD"      →  given="MH"  · boundary
   "Jane Doe, M.H. PhD"        →  given_names="M.H."  · boundary
@@ -103,7 +104,7 @@
   "García Márquez, M.J., PhD"  →  suffix="M.J., PhD"
   ```
 
-- A given name or a surname that two capitals spell, dotted or not, is not held back there unless it is also a particle: the pair is read by its shape, and a word listed as a name in another writing is unlisted in this one. Nor is a later part's credential that a given name written short also spells, in whatever case, as in the pair's own part.
+- A given name or a surname that two capitals spell, dotted or not, is not held back there: the pair is read by its shape, and a word listed as a name in another writing is unlisted in this one. Undotted capitals that spell a particle or a connective are a listed word and stay a name; dotted, the same letters are a pair like any other. Nor is a later part's credential that a given name written short also spells, in whatever case, as in the pair's own part.
   ```
   "Ana Ruiz, JO, MD"          →  suffix="JO, MD"
   "Ram Bahadur, BK, MD"       →  suffix="BK, MD"
@@ -111,6 +112,7 @@
   "Ram Bahadur, B.K., MD"     →  suffix="B.K., MD"
   "Ram Bahadur, B.K., MD"  [ne]  →  suffix="B.K., MD"
   "Jane Doe, MH, Md"          →  suffix="MH, Md"
+  "Jane Doe, A.L., PhD"       →  suffix="A.L., PhD"
   ```
 
 - A part between the two capitals and the listed credential is taken with them whatever it holds, a name word included, and keeps C2's flag.

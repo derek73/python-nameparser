@@ -506,8 +506,9 @@ def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
     suffix word that is no generation, a title/suffix dual only in
     capitals, a listed member of the ambiguous class its capitals
     settle ('MA', not 'Ma'), a credential split across a space
-    ('Ph. D.'); never a particle, a word the count gates, a joined word
-    holding one of those ('MD/Jr.'), nor a word read by its shape alone
+    ('Ph. D.'); never a particle standing as a word, a word the count
+    gates, a joined word holding a generation or a gated or unsettled
+    chunk ('MD/Jr.'), nor a word read by its shape alone
     ('XYZ', 'X.Y.Z.': untagged, or tagged a member no capitals
     settle). A delimiter core standing alone is no word of the part
     ('MD - PhD', rules/C10). Any later part answers, one with no word
@@ -1025,8 +1026,9 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # rules/C11's Except bullet "A flip in which no listed word of the
     # ambiguous credential class (C4) takes part is the exception and
     # is made in silence" -- "unless what said so is nothing but other
-    # paired initials", the clause that bullet ends on
-    # (decisions/C11 (#544)). A run whose every class word is listed and settled by
+    # paired initials, or a listed credential in a later comma part",
+    # the clause that bullet ends on (decisions/C11 (#544),
+    # decisions/C5 (#1392)). A run whose every class word is listed and settled by
     # its capitals is read on that evidence, not flipped by the count.
     # A caps word bound above carries the class tags now, so membership
     # is the tag alone; a part with no word of the class has none, and

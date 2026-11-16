@@ -1822,6 +1822,7 @@
 {"name": "Jane Doe nee Smith ma jd", "given": "Jane", "family": "Doe", "suffix": "ma jd", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)", "SUFFIX_OR_NAME: name as maiden (declared)"], "initials": "J. D.", "capitalized_force": "Jane Doe (Smith) MA JD"}
 {"name": "Jane Doe nee Yo-Yo Ma", "given": "Jane", "family": "Doe", "maiden": "Yo-Yo Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. D."}
 {"name": "Jane Doe née Jones Smith V", "given": "Jane", "family": "Doe", "suffix": "V", "maiden": "Jones Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as maiden (shape)"], "initials": "J. D.", "generation": "V"}
+{"name": "Jane Doe, A.L., PhD", "given": "Jane", "family": "Doe", "suffix": "A.L., PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, AL, PhD", "given": "AL", "family": "Jane Doe", "suffix": "PhD", "initials": "A. J. D.", "capitalized_force": "Al Jane Doe PhD"}
 {"name": "Jane Doe, BM Jr.", "given": "BM", "family": "Jane Doe", "suffix": "Jr.", "initials": "B. J. D.", "capitalized_force": "Bm Jane Doe Jr.", "generation": "Jr."}
 {"name": "Jane Doe, BM PhD", "given": "Jane", "family": "Doe", "suffix": "BM PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
@@ -1838,6 +1839,7 @@
 {"name": "Jane Doe, MH, Jr.", "given": "MH", "family": "Jane Doe", "suffix": "Jr.", "initials": "M. J. D.", "capitalized_force": "Mh Jane Doe Jr.", "generation": "Jr."}
 {"name": "Jane Doe, MH, Jr., PhD", "given": "Jane", "family": "Doe", "suffix": "MH, Jr., PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "generation": "Jr.", "credentials": "MH, PhD"}
 {"name": "Jane Doe, MH, M. A.", "given": "MH", "family": "Jane Doe", "suffix": "M. A.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. J. D.", "capitalized_force": "Mh Jane Doe M. A."}
+{"name": "Jane Doe, MH, M. D.", "given": "MH", "family": "Jane Doe", "suffix": "M. D.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. J. D.", "capitalized_force": "Mh Jane Doe M. D."}
 {"name": "Jane Doe, MH, MD - PhD", "given": "Jane", "family": "Doe", "suffix": "MH, MD, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, MH, MD/Jr.", "given": "MH", "family": "Jane Doe", "suffix": "MD/Jr.", "initials": "M. J. D.", "capitalized_force": "Mh Jane Doe MD/Jr."}
 {"name": "Jane Doe, MH, MD/PhD", "given": "Jane", "family": "Doe", "suffix": "MH, MD/PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
