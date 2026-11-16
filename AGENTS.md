@@ -169,7 +169,8 @@ uv run sphinx-build -b html docs dist/docs
 #      nameparser/_pipeline/AGENTS.md, nameparser/vocab/AGENTS.md,
 #      nameparser/locales/AGENTS.md, docs/AGENTS.md and
 #      docs/design/AGENTS.md (`git ls-files '*AGENTS.md'` lists them),
-#      for stale commands, architecture notes, sweeps or gotchas. READ them after the cycle's last behavior PR merges: 3.0's
+#      for stale commands, architecture notes, sweeps or gotchas.
+#      READ them after the cycle's last behavior PR merges: 3.0's
 #      sweep (#1079) read four of the six, and a later check found the root's
 #      initials gotcha still naming v1's initials_separator/initials_format
 #    - the pickle-break bullet: pickle every public type (Lexicon, Policy,
