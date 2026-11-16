@@ -1756,6 +1756,7 @@ def test_a_pickle_written_by_3_0_does_not_warn() -> None:
     (lambda: Lexicon(_edits=(("add", "x", "title", ()),)), TypeError, "words are a tuple"),  # type: ignore[arg-type]
     (lambda: Lexicon(_edits=(("remove", ("x",), "title", (("a", 1),)),)), TypeError, "unexpected keyword argument 'a'"),  # type: ignore[arg-type]
     (lambda: Lexicon(_edits=(("add", ("x",), "title", 5),)), TypeError, "properties are pairs"),  # type: ignore[arg-type]
+    (lambda: Lexicon(_edits=(("remove", ("x",), "familiar", 5),)), TypeError, "properties are pairs"),  # type: ignore[arg-type]
     (lambda: Lexicon(_edits=5), TypeError, "_edits must be a tuple"),  # type: ignore[arg-type]
     (lambda: Lexicon(_base=5), TypeError, "base is 'default', 'empty'"),
     (lambda: Lexicon(_base=(("x", ("bad",)),)), TypeError, "snapshot is \\(word, rows\\)"),
