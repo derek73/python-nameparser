@@ -702,10 +702,13 @@ class Matching:
             return name
         if isinstance(name, str):
             return self.parser.parse(name)
+        # bytes get the decode hint parse() gives them
+        fix = ("decode first, e.g. raw.decode('utf-8')"
+               if isinstance(name, bytes)
+               else "pass the text, or parser.parse(text)")
         raise TypeError(
             f"{method} takes a name string or a ParsedName, got "
-            f"{type(name).__name__} {name!r}; pass the text, or "
-            f"parser.parse(text)")
+            f"{type(name).__name__} {name!r}; {fix}")
 
 
 def _parser_repr(parser: Parser) -> str:

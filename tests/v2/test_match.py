@@ -443,8 +443,13 @@ def test_a_non_name_is_refused_naming_the_method_called(
     assert message.startswith(
         f"{method} takes a name string or a ParsedName, got "
         f"{type(bad).__name__} {bad!r}")
-    # the fix it offers holds for either method
-    assert message.endswith("pass the text, or parser.parse(text)")
+    # the fix it offers holds for either method, and bytes get the
+    # decode hint parse() gives them
+    assert message.endswith(
+        "decode first, e.g. raw.decode('utf-8')" if isinstance(bad, bytes)
+        else "pass the text, or parser.parse(text)")
+    if isinstance(bad, bytes):
+        assert m.keys(eval(message.split("e.g. ")[1], {"raw": bad}))
 
 
 @pytest.mark.parametrize("a, b", [
@@ -466,7 +471,10 @@ def test_a_result_has_no_truth_value(a: str, b: str) -> None:
     parser = Parser()
     offered = eval(message.split("e.g. ")[1], {"parser": parser})
     assert offered is True
-    # and type-checks, the same spelling written out for mypy
+    # and type-checks, the same spelling written out for mypy; the
+    # message is held to it, so the two cannot drift
+    assert message.endswith(
+        'e.g. parser.matching().check("John Smith", "J. Smith").consistent')
     assert parser.matching().check("John Smith", "J. Smith").consistent is True
 
 

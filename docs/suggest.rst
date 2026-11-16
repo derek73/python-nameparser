@@ -128,8 +128,6 @@ setting's evidence and the names that disagree with it.
 ``disagreeing()`` lists the names whose vote is against a decided
 setting, the ones to check by hand.
 
-.. _suggest-across-releases:
-
 A suggestion is one nameparser release's reading of a list, not a
 fixed answer: the word tables and thresholds behind it are tuned
 between releases, so a later release may suggest other settings for
