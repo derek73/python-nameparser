@@ -132,7 +132,8 @@ uv run sphinx-build -b html docs dist/docs
 #      substantially rewritten this cycle, run as docs/AGENTS.md's "A reader
 #      critique before release" says, with `uv run python tools/docs_scan.py`
 #      for the lengths. 3.1's matching and suggester pages reached review
-#      with no subheadings and buried guidance, found by hand (#1406, #1408)
+#      with long sections under no subheading and with buried guidance,
+#      found by hand (#1406, #1408)
 #    - migrate.rst's "Changed in ..." list: the shapes whose 1.4 reading
 #      moved, each with a doctest. Every release log bullet saying "1.4.0
 #      through" the last release adds one. 2.5.0 nearly shipped with none
