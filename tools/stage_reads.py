@@ -121,8 +121,12 @@ def _charged_apart(module: ModuleType, name: str,
         setattr(module, name, real)
 
 
-def trace(cases: Iterable[CaseLike]) -> Reads:
-    """Run each case through the stages and assemble, recording reads."""
+def trace(cases: Iterable[CaseLike],
+          assembled: Callable[[object], None] | None = None) -> Reads:
+    """Run each case through the stages and assemble, recording reads.
+
+    `assembled`, where given, is handed each case's ParsedName, which is
+    how a test holds the traced fold to `Parser.parse`."""
     from nameparser import Parser, locales, parser_for
     from nameparser._pipeline import STAGES, _comma
     from nameparser._pipeline._assemble import assemble
@@ -147,7 +151,9 @@ def trace(cases: Iterable[CaseLike]) -> Reads:
                 recorder.where = stage.__name__
                 state = stage(state)
             recorder.where = "assemble"
-            assemble(state)
+            name = assemble(state)
+            if assembled is not None:
+                assembled(name)
     return {stage: dict(reads) for stage, reads in recorder.reads.items()}
 
 
