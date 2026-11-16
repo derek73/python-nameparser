@@ -125,6 +125,25 @@ def test_a_limit_is_exceeded_not_met(tool: ModuleType) -> None:
 
 
 @needs_checkout
+def test_an_item_ends_at_the_next_marker_at_any_indent(
+        tool: ModuleType) -> None:
+    ten = " ".join(["word"] * 10)
+    # a nested bullet, then numbered steps at the margin with no blank
+    # line between: one block, four items of about ten words each
+    page = (f"#. {ten}\n\n   - {ten}\n   - {ten}\n#. {ten}\n#. {ten}\n")
+    assert tool.scan(page, paragraph=12) == []
+    # and a long one among them is found at its own line, alone
+    long_step = page.replace(f"#. {ten}\n#. {ten}\n",
+                             f"#. {ten} {ten}\n#. {ten}\n")
+    assert [(f.line, f.kind) for f in tool.scan(long_step, paragraph=12)
+            ] == [(5, "ITEM")]
+    # a parent item and the bullets nested under it with no blank line
+    # are measured apart too
+    nested = f"- {ten}\n  - {ten}\n  - {ten}\n"
+    assert tool.scan(nested, paragraph=12) == []
+
+
+@needs_checkout
 def test_a_table_is_read_cell_by_cell(tool: ModuleType) -> None:
     half = " ".join(["word"] * 20)
     page = f".. list-table::\n\n   * - {half}\n     - {half}\n"

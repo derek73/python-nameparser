@@ -185,10 +185,13 @@ class _Scan:
             self.prose += end - i
             item = _ITEM.match(line)
             if item:
-                # one item per marker at the block's own indent
-                starts = [k for k in range(i, end)
-                          if (m := _ITEM.match(lines[k]))
-                          and len(m.group(1)) == len(item.group(1))]
+                # one item per marker, at whatever indent: a block can
+                # run from a nested bullet into the numbered step after
+                # it with no blank line between, and a marker at the
+                # block's own indent alone folded those steps into the
+                # bullet (#1412's first form read a 35-word bullet as
+                # 240 words)
+                starts = [k for k in range(i, end) if _ITEM.match(lines[k])]
                 for a, b in zip(starts, [*starts[1:], end]):
                     self._measure("ITEM", " ".join(lines[a:b]), a + 1)
             else:
