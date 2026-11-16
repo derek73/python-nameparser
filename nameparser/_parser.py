@@ -336,9 +336,10 @@ class Parser:
         decided in either direction, keeping this parser's family-first
         spelling where it has one, where at least two names vote for
         one end, they are more than two thirds of the names casting
-        an order vote, and they are at least 1% of the group: in a long
-        list where few names vote, a few stray votes decide nothing, and
-        the order evidence's note says so. A patronymic rule is decided where more than four
+        an order vote, and they are at least 1% of the group's names a
+        comma does not leave out: in a long list where few names vote, a
+        few stray votes decide nothing, and the order evidence's note
+        says so. A patronymic rule is decided where more than four
         in five of the names that cast a vote carry its patronymic (and
         at least five do), for the East Slavic and the Turkic rule alike;
         a name whose only vote was a set-aside trailing initial counts
@@ -400,8 +401,9 @@ class Parser:
         file's 2026-11-12 CAPITALS entry). A list of
         nothing but bylines written two or three joined initials first
         (``AM Hoy``) kept it in at least 97% of groups at every size
-        measured, to 500 names (it holds 644), but 50 and 100 names, where it kept it in 94.7% and 93.3%, the
-        name tables voting on a few of its names; ORCID's bylines of
+        measured, to 500 names (it holds 644), but 50 and 100 names,
+        where it kept it in 94.7% and 93.3%, the name tables voting on
+        a few of its names; ORCID's bylines of
         every writing kept it in 95.3% and 96.7% at 100 and 200 names
         and at least 97% at every other size.
         Moving the base takes more names, and

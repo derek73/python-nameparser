@@ -69,12 +69,19 @@ everything:
     PolicyPatch(name_order=FAMILY_FIRST)
 
 A sample is quicker, a suggestion costing about what parsing the same
-names does. A longer list is not read worse for being long: the order
-needs its votes to be at least 1% of the list
-(:ref:`suggest-deciding`), so a few stray votes in a long list where
-few names vote decide nothing, and every list measured that was
-written in its base's own order kept it as well at 2,000 names as at
-a few hundred.
+names does. The order's own votes are not read worse in a long list:
+they must be at least 1% of the names (:ref:`suggest-deciding`), so a
+few stray order votes in a list where few names vote decide nothing,
+and every kind of list measured that was written in its base's own
+order kept it as well at 2,000 names as at a few hundred.
+
+The other settings have no such floor. In a long list where almost no
+name carries their evidence, a handful of names can still decide
+``patronymic_rules``, ``initials_as_family`` or ``capitals_as_family``:
+five names written given name, patronymic, family name among a
+thousand written family first without one decide the East Slavic rule,
+and with it a given-first order for all of them. A sample of a few
+hundred names makes that rarer.
 
 The one kind of list measured that more names kept helping is bylines
 written initials first (``AM Hoy``) under a family-first base, where
@@ -199,7 +206,7 @@ and enough of them agree:
    * - ``name_order``
      - 2 voting for one end
      - more than two thirds of the names that cast an order vote, and
-       at least 1% of the whole list
+       at least 1% of the list's names
      - this one
    * - ``patronymic_rules``
      - 5 carrying one rule's patronymic
@@ -220,12 +227,15 @@ vote: a tie, or two names against one, decides nothing. A name with no
 evidence on the order, and a name whose evidence is contested, casts no
 order vote and is outside that share.
 
-The names voting for one end must also be at least 1% of the whole
-list, voting or not. A list of 200 names or fewer needs no more than
-the two names it needs anyway; in a longer list where few names vote,
-it keeps a handful of stray votes (a surname that is also a given name,
-written first) from deciding the order for every name. Where this
-alone holds the order back, the order evidence's note says so.
+The names voting for one end must also be at least 1% of the list's
+names, voting or not, save the names a comma leaves out, which state
+their own order. A list of 200 names or fewer needs no more than the
+two names it needs anyway; in a longer list where few names vote, it
+keeps a handful of stray votes (a surname that is also a given name,
+written first) from deciding the order for every name. Where this alone
+holds the order back, the order evidence's note says so, and it says
+so too where the votes it holds back are against the given-first order
+a decided East Slavic rule sets.
 
 Two is the floor, not what a typical list needs. Two names decide a
 list only where no other name votes against them, and how many names a

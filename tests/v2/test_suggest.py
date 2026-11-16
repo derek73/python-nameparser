@@ -615,8 +615,33 @@ def test_an_order_needs_one_percent_of_the_group() -> None:
         0, 2, 199)
     assert order.note == (
         "2 of the group's 201 names vote FAMILY_FIRST, too few to decide "
-        "the order: it is decided where the names voting for one end are "
-        "at least 1% of the group")
+        "the order: an order is decided where the names voting for one "
+        "end are at least 1% of those names")
+
+
+def test_the_floor_is_exact_at_three_votes() -> None:
+    # 0.01 * 300 == 3.0: three votes decide a group of 300, not of 301
+    assert 0.01 * 300 == 3.0
+    voting = ["Smith Mary", "Kim Minjun", "Wang Xiaoming"]
+    assert Parser().suggest(voting + [_SILENT] * 297).patch == (
+        PolicyPatch(name_order=FAMILY_FIRST))
+    assert Parser().suggest(voting + [_SILENT] * 298).patch == PolicyPatch()
+
+
+def test_a_name_a_comma_leaves_out_is_no_name_of_the_floor() -> None:
+    # a comma states its own order, and the order decided reads none of
+    # those names: two votes among the two names it reads decide
+    commas = ["Smith, John"] * 199
+    voting = ["Smith Mary", "Kim Minjun"]
+    s = Parser().suggest(commas + voting)
+    assert s.patch == PolicyPatch(name_order=FAMILY_FIRST)
+    assert "too few" not in _order_evidence(s).note
+    held = Parser().suggest(commas + voting + [_SILENT] * 199)
+    assert held.patch == PolicyPatch()
+    assert _order_evidence(held).note.endswith(
+        "2 of the 201 names no comma left out vote FAMILY_FIRST, too few "
+        "to decide the order: an order is decided where the names voting "
+        "for one end are at least 1% of those names")
 
 
 def test_a_short_group_still_decides_on_two_names() -> None:
@@ -629,6 +654,7 @@ def test_a_short_group_still_decides_on_two_names() -> None:
 @pytest.mark.parametrize("base_order, strays", [
     (GIVEN_FIRST, ["Smith Mary", "Kim Minjun"]),
     (FAMILY_FIRST, ["Mary Smith", "Jason Smith"]),
+    (FAMILY_FIRST_GIVEN_LAST, ["Mary Smith", "Jason Smith"]),
 ])
 def test_two_stray_votes_do_not_move_a_long_silent_group(
         base_order: tuple[Role, Role, Role], strays: list[str]) -> None:
@@ -638,6 +664,49 @@ def test_two_stray_votes_do_not_move_a_long_silent_group(
     s = base.suggest([_SILENT] * 1000 + strays)
     assert s.patch == PolicyPatch()
     assert "too few to decide the order" in _order_evidence(s).note
+
+
+#: Ten names carrying an East Slavic patronymic in the middle (given,
+#: patronymic, family), which decide the rule and its given-first order.
+_MIDDLE_PATRONYMICS = ["Qqsan Petrovich Zzyvova"] * 10
+
+
+@pytest.mark.parametrize("base_order", [
+    GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+def test_strays_for_the_rules_order_leave_no_floor_note(
+        base_order: tuple[Role, Role, Role]) -> None:
+    # the rule decides the order the strays voted for: they decided
+    # nothing, and the note says nothing of them
+    s = Parser(policy=Policy(name_order=base_order)).suggest(
+        _MIDDLE_PATRONYMICS + ["Mary Smith", "Jason Smith"]
+        + [_SILENT] * 1000)
+    order = _order_evidence(s)
+    assert order.decided and order.value == GIVEN_FIRST
+    assert "too few" not in order.note
+
+
+@pytest.mark.parametrize("base_order, patronymics", [
+    (GIVEN_FIRST, _MIDDLE_PATRONYMICS),
+    (FAMILY_FIRST, _MIDDLE_PATRONYMICS),
+    # under this order the rule is needed with the patronymic written
+    # last too (#1356): it takes the patronymic for the given name
+    (FAMILY_FIRST_GIVEN_LAST, _MIDDLE_PATRONYMICS),
+    (FAMILY_FIRST_GIVEN_LAST, ["Zzyvova Qqsan Petrovich"] * 10),
+])
+def test_strays_against_the_rules_order_no_longer_decide_it(
+        base_order: tuple[Role, Role, Role], patronymics: list[str]) -> None:
+    # two stray family-first votes among 1,012 names: before the floor
+    # they decided a family-first order, under which the rule reorders
+    # no name; now the rule's given-first order stands
+    s = Parser(policy=Policy(name_order=base_order)).suggest(
+        patronymics + ["Smith Mary", "Kim Minjun"] + [_SILENT] * 1000)
+    order = _order_evidence(s)
+    assert order.decided and order.value == GIVEN_FIRST
+    assert s.patch.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
+    assert order.note.endswith(
+        "2 of the group's 1012 names vote FAMILY_FIRST, too few to decide "
+        "that order against the rule: an order is decided where the names "
+        "voting for one end are at least 1% of those names")
 
 
 #: #1442's group: written family first, with a patronymic, under a
