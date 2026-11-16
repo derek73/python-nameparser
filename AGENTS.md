@@ -164,8 +164,8 @@ uv run sphinx-build -b html docs dist/docs
 #      with the Lexicon and Policy wrapped to record each read, and lists
 #      per stage what was read and a text that read it (`--stage classify`
 #      for one); it cannot see a read no row reaches. A Reads: line may
-#      name a set of fields at once (_classify's "every Lexicon vocabulary
-#      field except ..."), so check what it leaves out against the trace
+#      name a set of fields at once, as _classify's does by naming the
+#      fields it leaves out, so check what it leaves out against the trace
 #    - tests/v2/cases.py notes, which explain why a row lands where it does
 #    - docs/design/rules/, decisions/ and mechanisms.md -- READ, don't
 #      grep: the excerpt and example tests catch citation and example drift,
