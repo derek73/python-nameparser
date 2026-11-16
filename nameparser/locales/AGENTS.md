@@ -28,7 +28,7 @@ Write the rules the pack turns on as data, if they are `Policy` fields the vocab
 1. Put the table in the pack's language file.
 2. List the file in `PACK_RULES` in `tools/vocab/build.py`.
 3. Rebuild (`uv run python tools/vocab/build.py`).
-4. Give the pack `policy=rules_patch("<tag>")` from `nameparser._locale`, as `nameparser/locales/ru.py` does. `PACK_RULES` is the list of packs that do.
+4. Give the pack `policy=rules_patch("<tag>")` from `nameparser._locale`, as `nameparser/locales/ru.py` does. `PACK_RULES` maps each file holding a table to the pack it is written for; a country pack may read its language's file without a row of its own (`nameparser/locales/es_ar.py` reads `es.toml`'s), so `git grep rules_patch nameparser/locales` lists every pack that reads one.
 
 A rule the table does not list is a change to the parser, not to a pack.
 
@@ -51,7 +51,7 @@ Add a rotator list to `_ROTATORS` in `tests/v2/test_locales.py`. Every pack need
 - **By codepoint range** (`zh`): there are no branches to sweep, so the pack drops out of that test and its rotators carry the same weight by hand: the unspaced names the pack must split, one per shape of the vocabulary it ships (single surname, compound surname, and any spelling variant it means to cover).
 - **By a choice of languages** (`hi`; a pack with a patch beside its choice too, as `cs`, and `ja`, whose choice turns on 君): a name for each word the choice changes, in each script it is written in and each position where the default reads it otherwise. `test_choice_rotators_cover_every_changed_word` fails until every word is held.
 - **By a choice that changes no word, beside a patch that does** (`mn`, whose file's readings are all on by default): there is no word to hold. List the pack in the test file's `_INERT_CHOICES`, and its rotators cover what the patch moves.
-- **With no vocabulary at all** (`ja`'s segmentation): list the shapes its *segmenter* must divide instead, and make the rotator tests skip when the optional dependency is absent (`_require_packed`), so the contract tests still run everywhere.
+- **With no vocabulary at all** (`ja`'s segmentation): list the shapes its *segmenter* must divide instead, and make the rotator tests skip when the optional dependency is absent, so the contract tests still run everywhere: probe for the dependency and build the pack's parser only when it is there, in `_packed_parsers`, which handles `ja` alone today (`_JA_AVAILABLE`), and `_require_packed` then skips a test whose pack has no parser.
 
 ### The non-interference gate
 
@@ -59,7 +59,7 @@ Keep the non-interference gate green over the shared corpus plus your rotators (
 
 ## One exemplar per shape
 
-The shipped packs are the rows of `_REGISTRY` in `nameparser/locales/__init__.py`, and the ones reading a `[rules]` table are `PACK_RULES` in `tools/vocab/build.py`. Read those for the roster; these are one worked example of each shape:
+The shipped packs are the rows of `_REGISTRY` in `nameparser/locales/__init__.py`, and the files holding a `[rules]` table are the keys of `PACK_RULES` in `tools/vocab/build.py`, each with the pack it is written for. Read those for the roster; these are one worked example of each shape:
 
 | Shape | Exemplar |
 |---|---|
