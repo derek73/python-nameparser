@@ -42,6 +42,42 @@ decided the same way, each by its own evidence: a patronymic rule
 (:ref:`suggest-capitals`). Every setting the votes do not decide keeps
 the base parser's value.
 
+.. _suggest-how-many:
+
+How many names to give it
+-------------------------
+
+Give it names from one source, written one way, and a few hundred of
+them at most:
+
+- **Under five names** often gets no suggestion. That is safe: a list
+  short of evidence keeps the parser it was given.
+- **Fifty names** settles most kinds of list.
+- **A few hundred** settles nearly every kind measured, and more adds
+  nothing.
+
+For a large dataset, take a sample from each source instead of passing
+everything:
+
+.. doctest::
+
+    >>> import random
+    >>> registry = ["Kim Minjun", "Wang Xiaoming", "Nguyen Anh",
+    ...             "Garcia Emily", "Taylor Morgan"] * 20_000
+    >>> sample = random.Random(0).sample(registry, k=300)
+    >>> Parser().suggest(sample).patch
+    PolicyPatch(name_order=FAMILY_FIRST)
+
+Sampling is not about speed: a suggestion costs less than parsing the
+same names. A very long list can be read less well than a sample of
+it, because the order is decided among the names that vote, and in a
+list where few names vote a handful of stray votes weigh more the
+longer the list is.
+
+A list that mixes sources written differently works against itself.
+Split it by source and ask once for each. :ref:`suggest-limits` gives
+the sizes measured for each kind of list.
+
 .. _suggest-report:
 
 Reading the result

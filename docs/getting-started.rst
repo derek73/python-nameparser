@@ -212,9 +212,9 @@ suggestion either:
     >>> Parser().suggest(["Smith J", "Jones M", "Brown K"]).patch
     PolicyPatch(name_order=FAMILY_FIRST)
 
-:ref:`suggest-limits` says how many names each kind of list took to be
-read right, and :doc:`suggest` has the full rules and the evidence it
-reports.
+:ref:`suggest-how-many` says how many names to give it, a few hundred
+from each source being enough, and :doc:`suggest` has the full rules and
+the evidence it reports.
 
 Names from several sources: ``matching``
 ----------------------------------------
