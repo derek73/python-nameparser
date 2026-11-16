@@ -184,9 +184,10 @@ list needs before enough of them vote depends on what its names carry:
 When it suggests nothing
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Where no name in the list carries evidence, or the votes fall short of
-the thresholds above, ``suggest()`` leaves every setting as the base
-parser has it rather than guess, and the patch is empty. None of these
+A setting whose votes fall short of its threshold above keeps the
+base parser's value rather than a guess, whatever the other settings
+decide. Where every setting falls short, or no name in the list
+carries evidence, the patch is empty. None of these
 names holds a romanized surname, a given name that is rarely a
 surname, or any other evidence on the order:
 
@@ -472,18 +473,18 @@ Each name counts for the switch, against it, or not at all:
 - **For**: a name whose family name, read with the switch on, holds a
   word in capitals of four letters or more that is no listed
   credential. A surname your vocabulary also lists as a title counts
-  for it where your parser reads it as the family (``Mary BISHOP``),
-  but not where it opens the name and your parser takes it for a title
-  (``BISHOP Mary``).
+  for it where your parser reads it as the family (``Mary BISHOP``).
 - **Against**: a name of two words or more in mixed case with no word
   in capitals, which a name is once its titles and post-nominals are
   read past (``DR Ann Berg``, ``Prof. Ann Berg``, ``John Smith FRCS``);
   and a name where the switch would move the family onto a word your
-  parser reads as a title in that name (``MISS Ann Berg``). Such a name
-  disagrees with a decided switch.
-- **No evidence**: two or three capitals, which are as often initials
-  as a short surname (``AM Hoy``, ``Zhi LI``; see
-  :ref:`suggest-evidence`), and a name wholly in one case.
+  parser reads as a title in that name (``MISS Ann Berg``, and
+  ``BISHOP Mary``, whose surname opens the name and is taken for a
+  title). Such a name disagrees with a decided switch.
+- **No evidence**: every other name. Two or three capitals are as
+  often initials as a short surname (``AM Hoy``, ``Zhi LI``; see
+  :ref:`suggest-evidence`), and a name wholly in one case shows
+  nothing.
 
 A group never turns the switch off, and a base reading an unlisted word
 in capitals as a credential everywhere
@@ -551,7 +552,8 @@ and expecting the same patch. Grouping keys are cut by one release the
 same way (:ref:`matching-grouping-keys`).
 
 A parser built from the kept ``Policy`` reads as the suggested one
-did, and the kept patch gives the same ``Policy`` back:
+did, and the kept patch, applied to the base's ``Policy``, gives the
+same ``Policy`` back:
 
 .. doctest::
 
@@ -566,7 +568,9 @@ did, and the kept patch gives the same ``Policy`` back:
     True
 
 Where the base was built with ``parser_for``, keep the pack as well:
-copy that base with the kept ``Policy``.
+copy that base with the kept ``Policy``. A kept patch goes onto that
+base's ``Policy``, which holds the pack's settings, not onto a new
+``Policy()``.
 
 .. doctest::
 
@@ -575,6 +579,10 @@ copy that base with the kept ``Policy``.
     ...     spanish, policy=spanish_list.parser.policy)
     >>> kept_spanish.parse("García López María").family
     'García López'
+    >>> spanish.policy.patched(spanish_list.patch) == kept_spanish.policy
+    True
+    >>> Policy().patched(spanish_list.patch) == kept_spanish.policy
+    False
 
 .. _suggest-limits:
 
