@@ -473,10 +473,10 @@ with the filer:
   (Uruguay) of names right, and under the pack between 93.2%
   (Venezuela) and 97.3% (Chile).
 - **In Argentina,** 83.4% by default, 90.2% under ``es`` and 96.1%
-  under ``es_ar``, in a later measurement that leaves out the records
-  whose given box opens with a title. Among Argentine inventors on US patents the figures
+  under ``es_ar``. Among Argentine inventors on US patents the figures
   are 93.8% by default, 86.2% under ``es`` and 92.7% under ``es_ar``,
-  since most of them write one family name.
+  since most of them write one family name. The Argentine figures
+  leave out the records whose given box opens with a title.
 
 The dated figures, and those for Portuguese above, are in
 ``docs/design/decisions/O6-two-family-names.md``; the Argentine ones
@@ -749,10 +749,11 @@ What the packs cost
   choice also drops the Amazigh ``Ait`` and ``Nait``, which are
   ``ber``'s (Berber), so for Moroccan and Algerian data choose ``ber``
   too.
-- **Every particle read by default, under a strict Hebrew choice.** A
-  strict Hebrew choice drops ``Ait``, ``Nait``, ``Ould``, ``Ouled`` and
-  ``El``, none of which is Hebrew's (``Sara El Haddou`` gives middle
-  ``El``).
+- **Other languages' particles, under a strict Hebrew choice.** A
+  strict Hebrew choice keeps ``Ben`` and the particles written in
+  Hebrew script, and drops the particles of other languages written in
+  Latin letters, ``Ait``, ``Nait``, ``Ould``, ``Ouled`` and ``El``
+  among them (``Sara El Haddou`` gives middle ``El``).
 
 .. doctest::
 
