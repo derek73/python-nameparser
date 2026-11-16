@@ -128,7 +128,11 @@ kind. What it takes out depends on what you pass:
 - **A category** (``kind="title"``, ``kind="name"``): every reading of
   the word in that category, whatever its kind.
 - **A kind or a category, no words, and** ``every=True``: every word's
-  readings of it (:ref:`title-detection-off`).
+  readings of it, as ``remove(kind="title", every=True)`` does
+  (:ref:`title-detection-off`). A removal that leaves a word the
+  lexicon refuses raises: ``remove(kind="given", every=True)`` does, a
+  bound given name that is also a particle needing its ``given``
+  reading.
 
 ``professor`` holds an ``academic`` reading, and ``"title"`` here names
 its category:
@@ -201,7 +205,7 @@ A kind belongs to a category, which decides what the reading does:
    * - title
      - The word is a title in front of the name, and written with its
        period at the end of one (:ref:`trailing-titles`). A ``given``
-       reading makes the bare word a title only inside a title phrase.
+       reading on the word limits both (`Name readings`_).
      - ``title``, ``salutation``, ``style``, ``academic``, ``religious``,
        ``nobility``, ``military``, ``office``, ``occupation``,
        ``kinship``, ``modifier``
@@ -291,11 +295,11 @@ arguments to ``add``:
    * - ``attached="before"``
      - title
      - The title is split off the start of a name it is glued to
-       (Thai ``นายสมชาย``).
+       (Thai ``นายสมชาย``), never in a name written wholly in ASCII.
    * - ``attached="after"``
      - suffix
      - The word is split off the end of a name it is glued to
-       (``田中さん``).
+       (``田中さん``), never in a name written wholly in ASCII.
    * - ``acronym=...``
      - suffix
      - True, a ``credential``'s unwritten value: matched with every
@@ -303,8 +307,10 @@ arguments to ``add``:
        a word.
    * - ``title_case_is_name=True``
      - suffix
-     - On a word that is also a name: Title case reads the name, lower
-       case the suffix (`Generation words that are also surnames`_).
+     - On a ``generation``, an ``agnomen`` or a ``credential`` written
+       as a word, where the word is also a name: Title case reads the
+       name, lower case the suffix (`Generation words that are also
+       surnames`_).
    * - ``capital_opening=True``
      - particle
      - Case repair writes the particle with a capital where it opens
@@ -395,8 +401,15 @@ given name, and a credential or a generation word with a name reading
 is read as the suffix only where the writing or the count says so
 (:ref:`ambiguous-words`). So ``add("guru", kind="given")``
 makes ``Guru`` a title only inside a phrase, and
-``remove("van", kind="given")`` makes a ``van`` that opens a name part
-of the surname rather than the given name.
+``remove("van", kind="given")`` makes a ``van`` that opens a name, with
+a word behind it, part of the surname rather than the given name.
+
+The period does less for a title holding a ``given`` reading than for
+any other. In front of a name written without a comma the word with
+its period is still a title, by its shape (``Dean. John Smith``). At
+the end of a name it is one only where its reading carries
+``abbreviation``: ``John Smith Maj.`` reads title ``Maj.``, where
+``John Smith Dean.`` reads family ``Dean.``.
 
 Familiar forms
 ^^^^^^^^^^^^^^
@@ -794,8 +807,8 @@ it by the count or by a Title-case lean, it reports a
 
 #. **ALL CAPITALS** in a mixed-case name leans to the credential: it is
    a suffix even with no words to spare (``"Jack MA"``). The capitals
-   settle it as the periods do, so it reports no ``suffix-or-name``
-   ambiguity, and a word after it in the given part after a family
+   settle it as the periods do, so the acronym reports no
+   ``suffix-or-name`` ambiguity, and a word after it in the given part after a family
    comma reads as part of the suffix (``"Smith, John MA Jones"`` gives
    suffix ``MA Jones``).
 #. **Title-case** in a mixed-case name leans to the surname: it stays
@@ -998,9 +1011,10 @@ follows the comma is the given name as usual:
     'Juan'
 
 If your data never uses ``Van`` as a given name, take out its
-``given`` reading: a leading ``van`` is then no decision at all, so no
-ambiguity is recorded and it becomes part of the surname — under any
-``name_order``, since that is what taking the word out asserted:
+``given`` reading: a leading ``van`` with a word behind it is then no
+decision at all, so no ambiguity is recorded and it becomes part of
+the surname — under any ``name_order``, since that is what taking the
+word out asserted (``Van`` standing alone is still a given name):
 
 .. doctest::
 
