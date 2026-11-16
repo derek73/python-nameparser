@@ -67,7 +67,7 @@ Coming from 1.x, or from 2.x code using ``HumanName``? :doc:`migrate`.
    modules
    migrate
    release_log
-   contributing
+   Contributing <https://github.com/derek73/python-nameparser/blob/master/CONTRIBUTING.md>
 
 Indices and tables
 ==================

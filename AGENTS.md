@@ -38,7 +38,7 @@ Three committed contributor docs carry the parser's normative rules and their re
 
 **Writing the user docs (docs/*.rst) has its own AGENTS.md too.** `docs/AGENTS.md` carries the style the docs are written in — tables as indexes, subheadings per task, measured claims, recipe doctests — distilled from PR #588. It also holds the length scan (`tools/docs_scan.py`) and the reader critique every new or rewritten page gets before a release. It loads the same way as the docs/design/ one below; if your tool does not do nested discovery, read it before editing a `.rst` file under docs/.
 
-**A nested AGENTS.md is a file in its folder, and a tool that reads the folder whole reads it too.** Root AGENTS.md is loaded by every session, so guidance that applies to one folder belongs in that folder's AGENTS.md, which loads when a session reads a file there: `nameparser/AGENTS.md` (the sweeps), `nameparser/_pipeline/AGENTS.md` (ambiguity reports), `nameparser/vocab/AGENTS.md` (adding a word), `docs/AGENTS.md` and `docs/design/AGENTS.md`. Before adding one, check what reads its folder: `tools/vocab/build.py` refuses every non-TOML file in `nameparser/vocab/` but the names in its `SKIPPED`, so that a misnamed language file fails loudly, and #911's vocab file failed eleven tests until it joined that set.
+**A nested AGENTS.md is a file in its folder, and a tool that reads the folder whole reads it too.** Root AGENTS.md is loaded by every session, so guidance that applies to one folder belongs in that folder's AGENTS.md, which loads when a session reads a file there: `nameparser/AGENTS.md` (the sweeps), `nameparser/_pipeline/AGENTS.md` (ambiguity reports), `nameparser/vocab/AGENTS.md` (adding a word), `nameparser/locales/AGENTS.md` (the contract a shipped pack is built to), `docs/AGENTS.md` and `docs/design/AGENTS.md`. Before adding one, check what reads its folder: `tools/vocab/build.py` refuses every non-TOML file in `nameparser/vocab/` but the names in its `SKIPPED`, so that a misnamed language file fails loudly, and #911's vocab file failed eleven tests until it joined that set.
 
 **Working on docs/design/ has its own AGENTS.md.** `docs/design/AGENTS.md` carries the landing-a-design distillation checklist, the primary-source review rule, the dated-count convention, and the review axes. Claude Code loads it automatically when a session reads or edits anything under docs/design/; if your tool does not do nested discovery, read it yourself before touching those files or reviewing a change to them.
 
@@ -167,7 +167,7 @@ uv run sphinx-build -b html docs dist/docs
 #      that changed
 #    - EVERY AGENTS.md, not just the root: nameparser/AGENTS.md,
 #      nameparser/_pipeline/AGENTS.md, nameparser/vocab/AGENTS.md,
-#      docs/AGENTS.md and docs/design/AGENTS.md (`git ls-files '*AGENTS.md'`
+#      nameparser/locales/AGENTS.md, docs/AGENTS.md and docs/design/AGENTS.md (`git ls-files '*AGENTS.md'`
 #      lists them), for stale commands, architecture notes, sweeps or
 #      gotchas. READ them after the cycle's last behavior PR merges: 3.0's
 #      sweep (#1079) read four of the six, and a later check found the root's

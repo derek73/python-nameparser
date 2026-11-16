@@ -167,8 +167,10 @@ shape covers much:
 
 Every shipped pack is held to the same test: over the test corpus and
 the pack's own example names, every name it reads differently from the
-default is one its declared surface covers (:ref:`Contributing a pack
-to nameparser <contributing-a-pack>` describes the contract).
+default is one its declared surface covers. The contract is written
+for the maintainers, who build the shipped packs, in
+`nameparser/locales/AGENTS.md
+<https://github.com/derek73/python-nameparser/blob/master/nameparser/locales/AGENTS.md>`__.
 
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~
@@ -405,8 +407,12 @@ says what it can change:
 than adding them (`What a pack's lexicon may hold`_).
 
 See :ref:`config-containers` for how that split (language vocabulary
-vs. behavior) is drawn, and :ref:`Contributing a pack to nameparser
-<contributing-a-pack>` for which half a new naming rule belongs in.
+vs. behavior) is drawn. Which half a new naming rule belongs in is
+part of the contract for whoever builds a shipped pack, in
+`nameparser/locales/AGENTS.md
+<https://github.com/derek73/python-nameparser/blob/master/nameparser/locales/AGENTS.md>`__;
+to propose a pack, `open an issue first
+<https://github.com/derek73/python-nameparser/blob/master/CONTRIBUTING.md>`__.
 
 .. _east-slavic-patronymics:
 
