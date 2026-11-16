@@ -33,15 +33,6 @@ from nameparser._locale import Locale, rules_patch
 from nameparser._policy import initials_as_family_may_move
 
 
-def DEVIATES(name: str) -> bool:
-    """True when the pack's patch may parse `name` differently from the
-    default parser: rules/O8 moves only letters standing two or more in
-    a row, which Policy's initials_as_family_may_move tests, dividing
-    words at every character that is not a letter or a combining mark,
-    so it over-declares, the safe direction."""
-    return initials_as_family_may_move(name)
-
-
 NE = Locale(
     code="ne",
     lexicon=Lexicon.empty(),
@@ -49,3 +40,10 @@ NE = Locale(
     policy=rules_patch("ne"),
     languages=frozenset({"ne"}),
 )
+
+#: True when the pack's patch may parse a name differently from the
+#: default parser: rules/O8 moves only letters standing two or more in
+#: a row, which initials_as_family_may_move tests, dividing words at
+#: every character that is not a letter or a combining mark, so it
+#: over-declares, the safe direction.
+DEVIATES = initials_as_family_may_move

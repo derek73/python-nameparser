@@ -23,7 +23,10 @@ from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._post_rules import suffix_entries
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
-from nameparser._policy import UNSET, Policy, PolicyPatch, Script, _Unset, apply_patch
+from nameparser._policy import (
+    _EAST_ASIAN_SCRIPTS, _JA_SCRIPTS, UNSET, Policy, PolicyPatch, _Unset,
+    apply_patch,
+)
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Role, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
@@ -104,8 +107,8 @@ class Parser:
             uncovered = sorted(
                 script.value
                 for script in self.policy.segment_scripts
-                # CYRILLIC divides nothing in any configuration (#1237)
-                if script is not Script.CYRILLIC
+                # only the East Asian scripts divide (#1237)
+                if script in _EAST_ASIAN_SCRIPTS
                 and not any(_SCRIPT_MATCHERS[script](entry)
                            for entry in self.lexicon._sets.surnames))
             if uncovered:
@@ -120,7 +123,7 @@ class Parser:
                     " For Japanese, pass "
                     "segmenter=locales.ja_segmenter() (install with: "
                     "pip install 'nameparser[ja]')."
-                    if {"han", "hiragana", "katakana"} & set(uncovered)
+                    if {s.value for s in _JA_SCRIPTS} & set(uncovered)
                     else "")
                 warnings.warn(
                     f"Policy.segment_scripts activates {names} but the "
@@ -675,8 +678,9 @@ def parser_for(*locales: Locale, base: Parser | None = None,
                         UserWarning, stacklevel=2)
             scalar_setters[name] = (loc.code, value)
         if loc.policy.script_orders is not UNSET:
+            patched = {s for s, _ in loc.policy.script_orders}
             for script, order in policy.script_orders:
-                if not any(s == script for s, _ in loc.policy.script_orders):
+                if script not in patched:
                     continue
                 if script in script_setters:
                     code, held = script_setters[script]
