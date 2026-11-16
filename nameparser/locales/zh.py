@@ -30,9 +30,9 @@ hand-curated (see the note above _COMPOUND), never generated, since a
 married double surname like 李林 would cut 李林伟 into 李林 + 伟. A
 coverage floor, not a census roster: extend by giving
 parser_for a base whose lexicon already carries the additions --
-``parser_for(locales.ZH, base=Parser(lexicon=Lexicon.default().add(
-surnames={...})))``. (Adding to the finished parser's lexicon instead
-is a silent no-op: Lexicon is frozen, so ``.add`` returns a NEW
+``parser_for(locales.ZH, base=Parser(lexicon=Lexicon.default() |
+Lexicon(surnames={...})))``. (Changing the finished parser's lexicon
+instead is a silent no-op: Lexicon is frozen, so ``|`` returns a NEW
 lexicon that no parser is holding.)
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the

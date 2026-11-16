@@ -369,7 +369,9 @@ _initialless = _ranges_matcher(_NO_INITIAL_RANGES, whole=True)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
-    """First letter of each contributing token per group, v1 semantics:
+    """First letter of each contributing token per group (one per
+    letter of a word written as a run of initials, rules/R3, #1296),
+    v1 semantics:
     delimiter follows each initial, separator sits between initials
     within a group. Each group is ordered the way its FIELD is
     ordered -- written order, except folded words, which initial

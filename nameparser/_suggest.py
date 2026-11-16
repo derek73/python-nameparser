@@ -120,11 +120,22 @@ def fold(word: str) -> str:
 class Signal(StrEnum):
     """The evidence a single name offers about its writer's name order."""
 
+    #: A family name written in capitals at one end of a name in mixed
+    #: case (``Mary SMITH``).
     CAPITALS = "capitals"
+    #: A trailing initial (``Smith J.``), counted only where enough of
+    #: the group's names end in initials.
     TRAILING_INITIAL = "trailing-initial"
+    #: A lowercase particle first or before the last word.
     PARTICLE = "particle"
+    #: A common romanized Chinese, Korean or Vietnamese surname as the
+    #: first or last word.
     SURNAME = "surname"
+    #: A common given name that is rarely a surname (``Emily``, not
+    #: ``Taylor``) as the first or last word.
     GIVEN_NAME = "given-name"
+    #: A patronymic one rule reads (Russian ``Petrovich``, Azerbaijani
+    #: ``Huseyn oglu``), the evidence on ``patronymic_rules``.
     PATRONYMIC = "patronymic"
 
 
@@ -611,8 +622,10 @@ _NAME_EVIDENCE_EXAMPLE = (
 @dataclass(frozen=True, slots=True, init=False)
 class NameEvidence:
     """One input name and the votes it cast, read with the base
-    parser's lexicon. A name with a comma, no words or one word casts
-    none, and a name that casts none never disagrees with the group.
+    parser's lexicon. A name with a comma, save one whose comma only
+    post-nominals follow (``Kim Minjun, PhD``), and a name of no words
+    or one word cast none, and a name that casts none never disagrees
+    with the group.
     Order votes are one per NAME: the end the name's order signals
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
@@ -709,11 +722,20 @@ class SettingEvidence:
     value: SettingValue
     #: Whether the group's votes decided the value.
     decided: bool
+    #: The names whose vote is for ``value``.
     votes_for: int
+    #: The names whose vote is for another value.
     votes_against: int
+    #: The names whose signals point both ways on this setting, and so
+    #: cast no vote.
     contested: int
+    #: The names with no signal on this setting.
     no_evidence: int
+    #: The signals' own votes as ``(signal, vote, count)`` rows; a name
+    #: two signals read is in two of them.
     by_signal: tuple[tuple[Signal, Vote, int], ...]
+    #: Why the setting was decided or left undecided as it was, where
+    #: not empty.
     note: str = ""
 
     __getstate__ = _guarded_getstate
@@ -782,7 +804,10 @@ class Suggestion:
     base: Parser
     #: The settings the group decided that differ from the base's.
     patch: PolicyPatch
+    #: One :class:`SettingEvidence` per setting considered.
     evidence: tuple[SettingEvidence, ...]
+    #: One :class:`NameEvidence` per input name, in input order, blanks and
+    #: duplicates included.
     names: tuple[NameEvidence, ...]
 
     __getstate__ = _guarded_getstate

@@ -541,7 +541,7 @@ def assemble(state: ParseState) -> ParsedName:
         reading: Reading | None = None
         if role is Role.SUFFIX:
             # a suffix ends a particle's run: the family can resume
-            # behind it ('Hasan' in 'bin Ahmad Jr. Hasan, Ali')
+            # behind it ('Hasan' in 'bin Ahmad III Hasan, Ali')
             run_field = None
             kind, source = suffix_kind(t.text, tags)
             if (source is ReadingSource.VOCABULARY

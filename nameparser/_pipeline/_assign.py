@@ -5,7 +5,9 @@ one_case, and tail_reads -- rules/S2's trailing run as group read it
 once, after P3's joins and before the particle chain (#614), which the
 main segment's placement takes rather than peeling again, save where
 group's joins left no name word in front of it; and interpunct_offsets,
-whose 间隔号 keeps a transcription in its declared order (rules/W4).
+whose 间隔号 keeps a transcription in its declared order (rules/W4);
+and extracted, whether a set-apart clause stands beside the name
+(N3's single-name rule and the sites that follow it).
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle and attached tags on the particles P6's attachment joins
 to the family after a family comma (#613; the attached tag, 3.0's 4c,
@@ -17,14 +19,18 @@ the field a lone name word takes, #1111), Policy.initials_as_family
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
-across pieces); token/piece tags; Lexicon only through tags already
-applied by classify (plus the leading-title period rule), and
+across pieces); token/piece tags; Lexicon through tags already
+applied by classify (plus the leading-title period rule), save the
+four suffix sets (suffix_words, suffix_acronyms and their ambiguous
+sets), which the walk over the given part after a family comma reads
+through _vocab.is_suffix_lenient (`_reads_as_a_trailing_suffix`), and
 Lexicon.given_name_titles, which an ambiguity's alternative asks for
 rules/P5's given-name-title licence; and Lexicon.title_phrases, titles
 and titles_ambiguous through _vocab.in_a_title_phrase, for rules/H9's
 TITLE_OR_NAME report on a contested word opening the name.
 
-Implements rules H2, H4, H5, H6, H7, H8, N3, O4, O5, S10, W4, and P6 after a family comma,
+Implements rules H2, H4, H5, H6, H7, H8, H9, H10, C9, N3, O4, O5, P9,
+S8, S10, S12, W4, and P6 after a family comma,
 of docs/design/rules/,
 each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
@@ -976,7 +982,7 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     marks an abbreviation, is name material -- so 'Smith, John V.' is
     middle 'V.' where 'Smith, John V' stays suffix 'V' (v1 parity,
     #144). Only behind a NAME word: behind a suffix the credential run
-    owns it, and 'Smith, John PhD I.' keeps suffix 'PhD, I.'.
+    owns it, and 'Smith, John PhD I.' keeps suffix 'PhD I.'.
 
     The period is the whole carve-out. is_initial_shaped would be
     redundant beside it: the caller only consults this where
@@ -1757,7 +1763,7 @@ def assign(state: ParseState) -> ParseState:
             # reading now (#613), so the walk here never meets
             # either: a last piece
             # that is unambiguously suffix-shaped is a suffix, where v1
-            # made it the given ('Andrews, M.D.', 'Smith, Dr. Jr.';
+            # made it the given ('Smith, Dr. Jr.';
             # classified fix(comma-family)), a segment whose only
             # non-title piece is a suffix piece holding no name word;
             # and a credential opening the segment makes it the

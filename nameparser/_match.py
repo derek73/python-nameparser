@@ -19,8 +19,10 @@ outcomes the caller accepts. The module imports `_types`, `_policy`
 (for `Policy()`, which the repr compares a parser's policy with) and
 `_lexicon` (for
 `_normalize`, which folds a hyphen half before it is looked up among
-the particles, and `Lexicon.default()`, which the repr compares a
-parser's lexicon with), `_pipeline._vocab` (for `_HYPHEN_CHARS`, the
+the particles, `Lexicon.default()`, which the repr compares a
+parser's lexicon with, `_fold` and `_forms`, the fold and the folded
+forms the match compares and keys a word by, and `FULL_STOPS`, the
+full stops a word written short ends in), `_pipeline._vocab` (for `_HYPHEN_CHARS`, the
 hyphens the pipeline joins two names with, every one of which the
 match reads as the hyphen-minus, `_HYPHENS`, the pattern a word
 is cut at them by, and `in_initialless_script`, the scripts that
@@ -74,23 +76,53 @@ class Outcome(StrEnum):
     `Matching.other_readings`, and the reading used is named in
     `MatchResult.left_alternative` and `right_alternative`."""
 
+    #: The two texts are equal as written.
     SAME = "same"
+    #: Equal once case, accents, full stops and apostrophes are folded
+    #: away, each joining hyphen is read as the hyphen-minus, and a
+    #: letter a keyboard lacks is read as typed.
     FOLDED = "folded"
+    #: Equal once folded and stripped of spaces and hyphens, save where
+    #: both are initials alone (``LaRussa`` / ``La Russa``).
     JOINED = "joined"
+    #: Spellings the vocabulary lists as one (``Wm.`` / ``William``).
     LISTED_SPELLING = "listed-spelling"
+    #: The family names, or the maiden names, agree without their
+    #: particles (``de la Vega`` / ``Vega``).
     PARTICLES_ASIDE = "particles-aside"
+    #: One family or maiden name's words are among the other's, or
+    #: listed spellings of them, save where both are initials alone.
     PART_OF_OTHER = "part-of-other"
+    #: An initial against a name, outside the family name, and a given
+    #: name of capitals against the names that spell it (``JP`` /
+    #: ``John Paul``).
     INITIAL = "initial"
+    #: One role written in initials alone on both sides, the same
+    #: initials in the same order.
     INITIALS_AGREE = "initials-agree"
+    #: A middle name, nickname or maiden name on one side only.
     ONE_SIDE = "one-side"
+    #: A generation on one side only.
     GENERATION_ONE_SIDE = "generation-one-side"
+    #: Titles and credentials, which never conflict.
     NOTED = "noted"
+    #: Two given names the vocabulary lists as one name spelled two
+    #: ways (``Yuliya`` / ``Iuliia``). Not accepted by default.
     ALTERNATE_SPELLING = "alternate-spelling"
+    #: Two given names the vocabulary lists as a familiar-form pair
+    #: (``Bill`` / ``William``). Not accepted by default.
     FAMILIAR_FORM = "familiar-form"
+    #: The family name written as an initial. Not accepted by default.
     FAMILY_INITIAL = "family-initial"
+    #: A given name on one side only. Not accepted by default.
     GIVEN_ONE_SIDE = "given-one-side"
+    #: A given name against the first half of a hyphenated one
+    #: (``Hong`` / ``Hong-Yi``). Not accepted by default.
     HYPHENATED_PART = "hyphenated-part"
+    #: A name in a different role on each side, recorded in
+    #: :attr:`MatchResult.across`. Not accepted by default.
     ACROSS_ROLES = "across-roles"
+    #: The two texts contradict each other; never accepted.
     CONFLICT = "conflict"
 
     @property
@@ -110,8 +142,11 @@ _STRENGTH: Mapping[Outcome, int] = {
 class Side(StrEnum):
     """Which side of a comparison carried more of the role's text."""
 
+    #: The left name carried more of the role's text.
     LEFT = "left"
+    #: The right name carried more of the role's text.
     RIGHT = "right"
+    #: Neither name carried more than the other.
     NEITHER = "neither"
 
 
@@ -125,10 +160,15 @@ class RoleMatch:
     more is the one whose name held both the role and the cross role
     the match used (`J. Edgar Hoover` / `Edgar Hoover`: left)."""
 
+    #: The role compared.
     role: Role
+    #: How the two sides' text of the role compares.
     outcome: Outcome
+    #: The left name's text of the role.
     left: str
+    #: The right name's text of the role.
     right: str
+    #: Which side carried more of the role's text.
     more: Side
 
     __getstate__ = _guarded_getstate
@@ -146,10 +186,15 @@ class CrossRoleMatch:
     other (`across-roles`): the left name's role and text, the right
     name's role and text, and the outcome of comparing the two texts."""
 
+    #: The left name's role the match used.
     left_role: Role
+    #: The right name's role the match used.
     right_role: Role
+    #: The outcome of comparing the two texts.
     outcome: Outcome
+    #: The left name's text in ``left_role``.
     left: str
+    #: The right name's text in ``right_role``.
     right: str
 
     __getstate__ = _guarded_getstate
@@ -183,10 +228,20 @@ class MatchResult:
     A result has no truth value: `bool(result)` raises TypeError, a
     conflict being a result too, so test `result.consistent`."""
 
+    #: Whether nothing in the two names contradicts the match under
+    #: the accepted outcomes.
     consistent: bool
+    #: One :class:`RoleMatch` per :class:`Role`, in ``Role`` order.
     roles: tuple[RoleMatch, ...]
+    #: The :class:`CrossRoleMatch` behind each role read
+    #: ``across-roles``, in ``Role`` order of the role it resolved;
+    #: empty unless ``across-roles`` is accepted.
     across: tuple[CrossRoleMatch, ...] = ()
+    #: The :class:`Ambiguity` whose other reading the table used for the
+    #: left name, or ``None`` where it is read as parsed (always ``None``
+    #: unless ``other_readings`` is on).
     left_alternative: Ambiguity | None = None
+    #: The same for the right name.
     right_alternative: Ambiguity | None = None
 
     __getstate__ = _guarded_getstate

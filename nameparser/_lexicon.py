@@ -22,9 +22,13 @@ from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType, ModuleType
 from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
-#: Vocabulary set fields, in declaration order. add()/remove() operate
-#: on exactly these and reject capitalization_exceptions (its entries
-#: are pairs -- use dataclasses.replace); __or__ unions these AND merges
+#: Vocabulary set fields, in declaration order: the 2.x `Lexicon`
+#: fields but the masks, and `given_names` (3.0). Since 3.0's 4i-b
+#: (#754) only the two lists (`_LIST_FIELDS`) are still fields, the
+#: rest being the sets a compile of readings gives (`_SET_FIELDS`);
+#: add() and remove() take a word and its reading's kind, never one of
+#: these names, and ``|`` unions the lists, concatenates the edit logs
+#: (which is how every other set is joined) and merges
 #: capitalization_exceptions right-biased.
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
@@ -370,9 +374,10 @@ class _MaskValueError(ValueError):
             f"capitalization_exceptions value {value!r} for key {key!r} "
             f"does not spell the key's letters and digits: a value "
             f"is a case mask, the key's own letters and digits "
-            f"recased -- e.g. "
-            f"capitalization_exceptions=(({normalized_key!r}, "
-            f"{self.offered!r}),)")
+            f"recased -- e.g. dataclasses.replace(lexicon, "
+            f"capitalization_exceptions=(*lexicon."
+            f"capitalization_exceptions, ({normalized_key!r}, "
+            f"{self.offered!r})))")
 
     def __reduce__(
         self,
@@ -1126,7 +1131,7 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
         if prop == "after_particle" and kind == "family":
             raise ValueError(
                 "after_particle names a given name written behind a "
-                "particle (rules/O7), so only a given reading takes it: "
+                "particle (rules/P10), so only a given reading takes it: "
                 "write add(word, kind='given', after_particle=True)")
         if prop not in allowed:
             raise ValueError(
@@ -1906,24 +1911,27 @@ class LexiconReading:
     as, in the vocabulary files' terms (decisions/vocabulary-model,
     2026-11-02 #754, item 2).
 
-    ``kind`` is a vocabulary kind as the language files write it
-    (``"office"``, ``"credential"``, ``"preposition"``, ``"given"``),
-    finer than :class:`ReadingKind`, which is the parse's; ``category``
-    its category (``"title"``, ``"suffix"``, ``"particle"``,
-    ``"conjunction"``, ``"bound_given"``, ``"relation"``, ``"name"``);
-    ``properties`` its behavioral properties as sorted ``(name, value)``
-    pairs, spelled as the files spell them (``("addresses", "given")``),
-    a list value a sorted tuple; ``languages`` the BCP 47 tags of the
-    shipped files holding it, sorted, empty for a reading a caller
-    added. Whether the parse READ a word this way is the parse's
+    Whether the parse READ a word this way is the parse's
     question, :attr:`Token.reading`: a title reading beside a ``given``
     one is a title only inside a title phrase (rules/H9). Added in
     3.0."""
 
+    #: The word, folded as the lexicon stores it (``dr``).
     text: str
+    #: A vocabulary kind as the language files write it (``"office"``,
+    #: ``"credential"``, ``"preposition"``, ``"given"``), finer than
+    #: :class:`ReadingKind`, which is the parse's.
     kind: str
+    #: The kind's category (``"title"``, ``"suffix"``, ``"particle"``,
+    #: ``"conjunction"``, ``"bound_given"``, ``"relation"``,
+    #: ``"name"``).
     category: str
+    #: The behavioral properties as sorted ``(name, value)`` pairs,
+    #: spelled as the files spell them (``("addresses", "given")``), a
+    #: list value a sorted tuple.
     properties: tuple[tuple[str, Any], ...] = ()
+    #: The BCP 47 tags of the shipped files holding the reading, sorted;
+    #: empty for a reading a caller added.
     languages: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -2373,7 +2381,7 @@ class Lexicon:
         address a person by the given name). ``same_as`` matches a
         reading naming every word given among the words it is a
         spelling of (``words(kind="given", same_as="muhammad")`` lists
-        ``md``, ``mohd`` and ``moh``, each a spelling of several). A
+        ``md``, ``mohd`` and ``moh`` among others). A
         phrase the lexicon holds whole (``"z domu"``) is one entry.
         Added in 3.0."""
         k = _check_kind(kind, "words")
@@ -2445,12 +2453,12 @@ class Lexicon:
             given readings, so the word keeps no plain given reading
             and its link counts written bare, where a word the
             vocabulary also holds as a name of its own counts only
-            written with its period), and ``short_for=[...]`` on a
-            ``familiar`` reading, the longer given names a familiar
+            written with its period. ``short_for=[...]`` on a
+            ``familiar`` reading names the longer given names a familiar
             form stands for, which name matching reads as a
             ``familiar-form`` where that outcome is accepted and no
             parse reads (``add("max", kind="familiar",
-            short_for=["maxwell"])``), which EXTENDS the longer names
+            short_for=["maxwell"])``); it EXTENDS the longer names
             the word's shipped familiar readings list, in a reading of
             the caller's own that names no file, rather than replacing
             them (unlike an add of any other kind the word holds); to
@@ -2464,7 +2472,7 @@ class Lexicon:
             reads as an ``alternate-spelling`` where that outcome is
             accepted and no parse reads (``add("olha",
             kind="spelling", spelling_of=["olga"])``), extending as a
-            familiar reading does; a property
+            familiar reading does. A property
             given its unwritten value (``None``, ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no

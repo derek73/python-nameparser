@@ -1,7 +1,8 @@
 """Parser and the module-level parse() for the 2.0 API.
 
-Layering: sits on _types/_lexicon/_policy/_locale/_pipeline; never
-imports _render (enforced by tests/v2/test_layering.py).
+Layering: sits on _types/_lexicon/_policy/_locale/_pipeline, and imports
+_match, _suggest and _reading_index at call time only; never imports
+_render (enforced by tests/v2/test_layering.py).
 
 _default_parser is THE one sanctioned module-level global: a
 functools.cache'd frozen Parser over default config.
@@ -359,9 +360,9 @@ class Parser:
         letters ends at least two names and at least half of the names
         ending in letters (Nepal's ``B K``), and a group decided so
         casts no trailing-initial vote on its order; a group never turns
-        it off, nor turns it on under a base reading names family first
-        or folding every middle into the family, where it would change
-        no name. ``capitals_as_family`` (rules/O9) is turned on where
+        it off, nor turns it on under a base reading names family first,
+        where letters ending a name are never read as its family.
+        ``capitals_as_family`` (rules/O9) is turned on where
         at least two names, and more than two thirds of the names with
         evidence either way, write the family in capitals: the rule,
         asked of the name parsed with the switch on, reads as its family

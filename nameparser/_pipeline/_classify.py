@@ -13,9 +13,12 @@ plus ambiguities (CONJUNCTION_OR_INITIAL) and
 one_case -- whether the name's own words are written in one case,
 recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
-Reads: every Lexicon vocabulary field except surnames and
-honorific_tails, which script_segment consumes upstream, and
-given_names, which only post_rules reads (rules/O6); and the kinds
+Reads: every Lexicon vocabulary field except given_names, which only
+post_rules and assemble read (rules/O6) -- surnames and
+honorific_tails, which script_segment consumes upstream, only through
+helpers: the caps shape's unlisted test (`_vocab.in_any_wordlist`)
+reads both, and `_vocab.period_joined_credential` honorific_tails;
+and the kinds
 of its suffix words and particles (Lexicon's generation_words,
 credential_words, honorific_words and patronymic_particles, internal
 sets, 3.0) and the
@@ -26,7 +29,9 @@ community gives every member (shared_names) and the given names
 written behind a particle (particle_given_names, #704) and the
 two-word given names a bound word completes into (bound_phrases,
 #694) and the titles a run of single letters may spell
-(dotted_titles, rules/H10, #490); and, since
+(dotted_titles, rules/H10, #490) and the saint particles a word glued
+at its full stop is cut behind (saint_particles, through
+`_vocab.glued_saint_cut`); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -43,23 +48,25 @@ nothing: the tags this stage writes do vary by it ('씨.' is not tagged
 `initial`, which is the whole of #320).
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
-namespaced (unstable): "vocab:title", "vocab:given-title",
-"vocab:after-given-title", "vocab:title-ambiguous",
+namespaced (unstable), kept on the published token: "vocab:title",
+"vocab:given-title", "vocab:after-given-title",
+"vocab:title-ambiguous", "vocab:dotted-title" (a run of single letters
+spelling a title the lexicon marks `dotted`, rules/H10, #490),
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
-"vocab:suffix-word-ambiguous", "vocab:agnomen",
-"vocab:generation-word", "vocab:credential-word",
-"vocab:honorific-word", "vocab:patronymic", "vocab:trailing-title",
-"vocab:joined-title" and "vocab:chain-title" (read by the later stages
-and dropped by assemble, Token.reading carrying the kind out, save the
-last three, which mark no kind), "vocab:title-case-name" (a suffix word whose
-Title case leans to the name, rules/S6, kept on the published token),
+"vocab:suffix-word-ambiguous", "vocab:agnomen", "vocab:title-case-name"
+(a suffix word whose Title case leans to the name, rules/S6),
 "vocab:particle-ambiguous", "vocab:bound-given",
-"vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
-and O7 read), "vocab:particle-given" (which P10 and O6 read) and
-"vocab:bound-phrase" (on a bound word and the word after it being a
-listed pair, which P12 joins and O6 counts once, #694), each
-dropped by assemble and carrying no kind out, "vocab:maiden-marker",
-"vocab:maiden-marker-cont"; in a namespace of its own,
+"vocab:given-abbreviation", "vocab:maiden-marker" and
+"vocab:maiden-marker-cont" (a marker group drops leaves no token; one
+read as a word keeps its tag); namespaced, read by the later stages and dropped
+by assemble (`_assemble._KIND_TAGS`): "vocab:generation-word",
+"vocab:credential-word", "vocab:honorific-word" and "vocab:patronymic",
+Token.reading carrying the kind out, "vocab:trailing-title",
+"vocab:joined-title" and "vocab:chain-title", which mark no kind,
+"vocab:shared-name" (which rules/P10, O6 and O7 read),
+"vocab:particle-given" (which P10 and O6 read) and "vocab:bound-phrase"
+(on a bound word and the word after it being a listed pair, which P12
+joins and O6 counts once, #694); in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across
 a space (`_vocab.split_pair`) to name the piece the pair merges into:

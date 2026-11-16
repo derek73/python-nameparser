@@ -1,17 +1,21 @@
 """Stage: tokenize.
 
 Consumes: original, masked (regions to skip), extracted (regions that
-tokenize with a pre-set role).
+tokenize with a pre-set role), and ambiguities (extract's
+UNBALANCED_DELIMITER reports, which carry a character offset).
 Produces: tokens (span-sorted WorkTokens; text always == original
 slice), comma_offsets (segmentation points of the main stream; a comma
 there is never a token, one inside an extracted region is word text),
 interpunct_offsets (间隔号 and fullwidth-stop transcription markers, #298,
-#1312; never tokens).
+#1312; never tokens), and ambiguities, each report extract left
+carrying a character offset rewritten to the index of the token
+holding that character (no index where the offset is masked).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
-Implements rules T1, T2, T3 and T6 of docs/design/rules/, cited at
-their code below. There is NO text-rewriting normalize stage: all
-four are character-classification rules, so spans always index the
+Implements rules T1, T2, T3 and T6 of docs/design/rules/, and N1's
+comma kept inside a clause, cited at their code below. There is NO
+text-rewriting normalize stage: the four T rules are
+character-classification rules, so spans always index the
 original exactly as given (v1 contrast: decisions/T1).
 
 Beside the stage function, `_ignorable` is shared: extract asks it

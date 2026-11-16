@@ -839,7 +839,9 @@ class AmbiguityKind(StrEnum):
     #: A letter with no name word after it in its part -- nothing
     #: before a comma, a clause or the end, or only post-nominals and
     #: titles, as in "JOSE E", "rovira, i" or "jose e phd" -- connects
-    #: nothing, so it is read as an initial and not reported. Where
+    #: nothing, so it is read as an initial and not reported as this
+    #: kind (a name ending in one may still carry an ORDER report,
+    #: rules/O4, #1254). Where
     #: such a letter is a roman numeral at the end of the name the
     #: numeral fork reports it instead (SUFFIX_OR_NAME: "HENRY I",
     #: "john i phd"); one ending a comma part reports nothing
