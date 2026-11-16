@@ -5,7 +5,7 @@ When your data source or application needs different parsing behavior
 — a different name order, stricter suffix rules, extra delimiters —
 set it on :class:`~nameparser.Policy`, a small, closed set of fields.
 `Setting a field`_ shows the call, and `The fields`_ lists every field
-with its default and the section that covers it.
+with its default and, where there is one, the section that covers it.
 
 Setting a field
 ---------------
@@ -208,10 +208,9 @@ Family-first name order
 ------------------------
 
 Set ``name_order`` when your records write the family name first
-without a comma. It describes where the data came from, not the
-language of the people in it (see `The order belongs to the source,
-not the language`_), and it is the field most likely to matter for
-data that is not in Western order.
+without a comma (see `The order belongs to the source, not the
+language`_). It is the field most likely to matter for data that is
+not in Western order.
 
 Positional input is assigned in the order you declare — with the four
 vocabulary exceptions noted under :ref:`order-vocabulary-first` — so a
@@ -309,8 +308,8 @@ name before it:
 Where the vocabulary answers first
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In four places the vocabulary layer answers before ``name_order`` is
-consulted at all:
+In four places the vocabulary decides what the declared order would
+otherwise decide:
 
 - **A middle word that is also a shipped particle** is claimed by the
   vocabulary. That is why the Vietnamese example above is not the more
@@ -321,8 +320,9 @@ consulted at all:
   it the name reads middle ``Van``, given ``Minh``.
 - **A never-given particle opening the name** overrides the declared
   order outright: where a particle that can never be a given name
-  stands alone as the opening piece, the whole name is the surname, in
-  every ``name_order``. ``"de Mesnil"`` is family ``de Mesnil`` under
+  stands alone as the opening piece, the surname starts there in every
+  ``name_order`` (`Where a leading particle run stops`_ shows how far
+  it reaches). ``"de Mesnil"`` is family ``de Mesnil`` under
   both family-first orders exactly as it is by default, not family
   ``de`` with ``Mesnil`` given — a word that can never be a given name
   leaves the order nothing to decide.
@@ -398,8 +398,9 @@ That pair is not a coincidence but one shape written two ways: the
 family-first form is the comma form with the comma removed and the
 family folded inline — titles included, so a title that the comma form
 writes after the comma leads the name instead. The family-first forms
-are listed in :doc:`shapes`, and the measurement over every shipped
-particle is in ``docs/design/decisions/P6-trailing-orphan-particle.md``
+are listed in :doc:`shapes`, and the measurement over every particle
+shipped when the rule landed is in
+``docs/design/decisions/P6-trailing-orphan-particle.md``
 (:issue:`467`).
 
 Where the correspondence stops
@@ -460,7 +461,7 @@ choice as a ``given-or-family`` ambiguity:
     >>> [a.kind.value for a in family_first.parse("Anh").ambiguities]
     ['given-or-family']
 
-For data whose lone words are surnames, set ``lone_name_word``:
+With the switch set:
 
 .. doctest::
 
@@ -491,7 +492,8 @@ Names with two family names
 ---------------------------
 
 Turn on ``two_family_names`` when the people in your data carry two
-family names and write both after their given names, and only then:
+family names and write both together, after the given names (or first,
+under a family-first order), and only then:
 :ref:`What it costs <two-family-names-cost>` shows what it does to
 other names. ``locales.ES`` turns it on
 together with a list of given names that it holds back (see `Keeping a
@@ -822,9 +824,7 @@ Turn on ``capitals_as_family`` when your source writes every family
 name in capitals, and only then (see
 :ref:`What it costs <capitals-as-family-cost>`). ``Parser.suggest`` suggests it for a list whose names write the family
 in capitals (see :ref:`Settings for a list of names
-<suggest-capitals>`). It cannot be set with
-``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, which reads an
-unlisted capitals word ending a name as a credential.
+<suggest-capitals>`).
 
 Some lists write every family name in capitals: France's register of
 elected officials (``DUPONT Jean``), Hong Kong's Legislative Council
@@ -860,7 +860,9 @@ order, the first the given name:
     ('Jeffrey', 'Kin-fung', 'LAM')
 
 ``capitalized()`` leaves such a name as written, since it is in mixed
-case; ``capitalized(force=True)`` recases the family too.
+case; ``capitalized(force=True)`` recases the family too. The switch
+cannot be set with ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``,
+which reads an unlisted capitals word ending a name as a credential.
 
 What it reads
 ~~~~~~~~~~~~~
@@ -1171,8 +1173,9 @@ two words before a comma and the initial of a given name after it.
 
 ``"Vega Ruiz, V"`` can be Vega Ruiz the fifth, or the surname ``Vega
 Ruiz`` with a given-name initial. The field is on by default and reads
-the first: a suffix word shaped like an initial (``V``, ``I``), alone
-after a comma behind two or more name words, is the suffix. ``False``
+the first: a suffix word shaped like an initial (``V``, ``I``),
+opening the part after a comma behind two or more name words, is the
+suffix. ``False``
 reads it as a given-name initial instead:
 
 .. doctest::
