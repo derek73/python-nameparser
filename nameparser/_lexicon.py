@@ -1190,11 +1190,16 @@ def _refuse_unpaired(props: Iterable[str]) -> None:
     lists, which only a `familiar` or a `spelling` remove names."""
     for prop in props:
         if prop not in _MATCHING_LISTS.values():
+            ri = _index_module()
+            known = any(prop in ri.indexed(k) for k in ri.CATEGORY)
             raise TypeError(
                 f"remove() got an unexpected keyword argument {prop!r}: it "
                 f"takes a property only as the pairs to drop from a "
                 f"familiar or a spelling reading, "
-                + " or ".join(_MATCHING_REMOVALS.values()))
+                + " or ".join(_MATCHING_REMOVALS.values())
+                + (f"; to take {prop} off a reading, add() it with its "
+                   f"unwritten value, add(word, kind=..., {prop}=None)"
+                   if known and prop not in ("default", "cased") else ""))
 
 
 def _removed_pairs(kind: str | None, words: tuple[str, ...],
@@ -1234,15 +1239,37 @@ def _removed_pairs(kind: str | None, words: tuple[str, ...],
     return ((own, names),)
 
 
+@functools.lru_cache(maxsize=1 << 15)
+def _name_keys(name: str) -> frozenset[str]:
+    # kept per name: a remove of pairs asks it of every listed name of
+    # the kind, once per edit of a log that every new edit replays
+    return frozenset(k for k in {name} | _forms(name) if k)
+
+
 def _pair_keys(names: Iterable[str]) -> frozenset[str]:
     """What the familiar-form index files `names` under (`_familiar_of`):
     each as stored and in every folded form (`_forms`). Two names are
     one name to the match where their keys meet."""
-    return frozenset(k for n in names for k in {n} | _forms(n) if k)
+    return frozenset(k for n in names for k in _name_keys(n))
 
 
-def _drop_pairs(pool: dict[str, tuple[Any, ...]],
-                edit: _Edit) -> tuple[str, ...]:
+#: Per matching-only kind, a key (`_name_keys`) -> the words that may
+#: hold a pair naming it: one build's index for its removes of pairs,
+#: made at the first and kept a superset after it (an add joins it, a
+#: remove leaves its entries), so a log of many removes scans the pool
+#: once and not once per edit.
+_PairIndex = dict[str, dict[str, set[str]]]
+
+
+def _index_pairs(index: dict[str, set[str]], word: str,
+                 names: Iterable[str]) -> None:
+    for name in (word, *names):
+        for key in _name_keys(name):
+            index.setdefault(key, set()).add(word)
+
+
+def _drop_pairs(pool: dict[str, tuple[Any, ...]], edit: _Edit,
+                index: _PairIndex) -> tuple[str, ...]:
     """Apply a `familiar` or `spelling` remove of words to `pool` in
     place, returning the words it touched. A pair is stored on one of
     its two words and read both ways, so the remove reaches both
@@ -1261,12 +1288,19 @@ def _drop_pairs(pool: dict[str, tuple[Any, ...]],
     words = _pair_keys(edit.words)
     listed = dict(edit.props).get(prop)
     names = None if listed is None else _pair_keys(listed)
+    held_by = index.get(edit.kind)
+    if held_by is None:
+        held_by = index[edit.kind] = {}
+        for w, rs in pool.items():
+            for r in rs:
+                if r.kind == edit.kind:
+                    _index_pairs(held_by, w, r.props.get(prop, ()))
     ri = _index_module()
     touched = []
-    for w, rs in list(pool.items()):
-        if not any(r.kind == edit.kind for r in rs):
-            continue
-        mine = _pair_keys((w,))
+    for w in sorted({w for key in words | (names or frozenset())
+                     for w in held_by.get(key, ())}):
+        rs = pool.get(w, ())
+        mine = _name_keys(w)
         # the names to cut from this word's lists: the words', where it
         # is not one of them (every name where it is, and no names were
         # given); under names, the names' where it is a word and the
@@ -1285,7 +1319,7 @@ def _drop_pairs(pool: dict[str, tuple[Any, ...]],
             elif cut is not None:
                 held = r.props.get(prop, ())
                 left = tuple(n for n in held
-                             if _pair_keys((n,)).isdisjoint(cut))
+                             if _name_keys(n).isdisjoint(cut))
                 if len(left) == len(held):
                     kept.append(r)
                 elif left:
@@ -1302,8 +1336,8 @@ def _drop_pairs(pool: dict[str, tuple[Any, ...]],
     return tuple(touched)
 
 
-def _apply_edit(pool: dict[str, tuple[Any, ...]],
-                edit: _Edit) -> tuple[str, ...]:
+def _apply_edit(pool: dict[str, tuple[Any, ...]], edit: _Edit,
+                index: _PairIndex) -> tuple[str, ...]:
     """Apply `edit` to `pool` (word -> its readings) in place, returning
     the words it touched. An add of a kind the word holds updates that
     reading's properties in every file holding it, and turns a reading
@@ -1314,7 +1348,7 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
     or `spelling` readings is one of pairs (`_drop_pairs`)."""
     ri = _index_module()
     if edit.op == "remove" and edit.words and edit.kind in _MATCHING_LISTS:
-        return _drop_pairs(pool, edit)
+        return _drop_pairs(pool, edit, index)
     words = edit.words or tuple(
         w for w, rs in pool.items()
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
@@ -1329,6 +1363,8 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
             # explicit replace is remove, then add
             prop = _MATCHING_LISTS[edit.kind]
             added = set(dict(edit.props)[prop])
+            if edit.kind in index:
+                _index_pairs(index[edit.kind], w, added)
             mine = [r for r in rs if r.kind == edit.kind and not r.tag]
             if mine:
                 added |= set(mine[0].props.get(prop, ()))
@@ -1454,7 +1490,8 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
     with a reading the choice turns on is refused, naming the edit
     (2026-11-02 #754, item 3)."""
     pool = dict(_chosen_pool(base, chosen, strict))
-    touched = [(edit, _apply_edit(pool, edit)) for edit in edits]
+    index: _PairIndex = {}
+    touched = [(edit, _apply_edit(pool, edit, index)) for edit in edits]
     for w in dict.fromkeys(w for _, ws in touched for w in ws):
         try:
             _check_pool(pool, (w,))
@@ -2464,7 +2501,13 @@ class Lexicon:
         name is compared as matching reads it, case and accents folded
         and a letter a keyboard lacks written out or not, so a pair the
         files store accented (``álex``) goes with the word written
-        plain. A pair goes from every file that lists it, under any choice of
+        plain; a pair two names reach only through a listed spelling
+        of one (``Wm`` / ``Bill``, through ``william``) is removed by
+        the name that stores it. With no `kind`, a remove takes the
+        word's own readings and not the pairs other words hold with
+        it, which are those words' readings. Many removes are cheapest
+        in one call, ``remove(*words, kind=...)``: every call replays
+        the log. A pair goes from every file that lists it, under any choice of
         languages; edits apply in the order written, so a pair added
         after the remove stands. No other kind takes a property here:
         to take a property off a reading, :meth:`add` it with its

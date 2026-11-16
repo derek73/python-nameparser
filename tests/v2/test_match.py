@@ -2246,6 +2246,34 @@ def test_a_remove_of_pairs_applies_in_the_order_written(
 
 
 @_pair_kinds
+def test_a_long_log_of_pair_removes_reads_as_each_remove_alone(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # one build keeps an index of the words that may hold a pair, made
+    # at its first remove of pairs (the code review of #1404: a loop of
+    # removes scanned the pool once per edit). A pair added after that
+    # remove, one whose reading an earlier remove emptied, and one cut
+    # twice are each still found, so the log reads as its edits in order
+    log = (_pairs(kind, prop)
+           .remove("zznone", kind=kind)
+           .add("zznew", kind=kind, **_named(prop, "zzrobert", "zzlate"))
+           .remove("zzrob", kind=kind)
+           .add("zzrob", kind=kind, **_named(prop, "zzlate"))
+           .remove("zzlate", kind=kind, **_named(prop, "zznew"))
+           .remove("zzbo", kind=kind, **_named(prop, "zzrobert"))
+           .remove("zzbo", kind=kind, **_named(prop, "zzrobert")))
+    assert paired(log, "zzrobert") == {"zznew"}
+    assert paired(log, "zzlate") == {"zzrob"}
+    assert paired(log, "zzbo") == {"zzbobak"}
+    assert _own(log, kind) == ("zzbo", "zzlong", "zznew", "zzrob")
+    # and a whole-kind remove between two removes of pairs
+    emptied = log.remove(kind=kind, every=True).add(
+        "zzbo", kind=kind, **_named(prop, "zzrobert")).remove(
+        "zzrobert", kind=kind)
+    assert emptied.words(kind=kind) == ()
+
+
+@_pair_kinds
 def test_removing_an_absent_pair_or_word_is_silent_and_changes_no_pair(
         kind: str, prop: str, outcome: Outcome,
         paired: Callable[..., frozenset[str]]) -> None:
@@ -2495,6 +2523,14 @@ def test_a_property_of_another_kind_on_remove_names_the_pair_form() -> None:
         Lexicon.default().remove("dean", kind="title", addresses="given")
     for kind in ("familiar", "spelling"):
         assert f"kind='{kind}'" in str(raised.value)
+    # a reading's property is taken off by an add, which the message says
+    assert "add(word, kind=..., addresses=None)" in str(raised.value)
+    assert Lexicon.default().add("sir", kind="title", addresses=None) != (
+        Lexicon.default())
+    # a keyword that is no property of any reading gets no such hint
+    with pytest.raises(TypeError, match="'zq'") as unknown:
+        Lexicon.default().remove("dean", kind="title", zq=1)
+    assert "add(" not in str(unknown.value)
 
 
 #: Each matching-only kind, its list property and the word it is added
