@@ -1370,16 +1370,20 @@ Two capitals between a full name and credentials, after a comma, are a
 credential, where 1.4 through 3.0 read them as the given name and the
 whole name before the comma as the family name. They are read so beside
 credentials in their own part, or alone in it before a listed
-credential in a later one. Behind one word they are still the given
-name, as are dotted initials and two capitals with no credential behind
-them. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps the 3.0
-readings:
+credential in a later one, where dotted initials are read so too.
+Behind one word they are still the given name, as are two capitals with
+no credential behind them and dotted initials with credentials in their
+own part. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps two
+capitals the given name, with every other unlisted word in capitals
+after a comma, and ``Policy(unlisted_dotted_suffixes=False)`` the
+dotted ones:
 
 .. doctest::
 
     >>> [(c.given, c.family, c.suffix) for c in map(parse, (
-    ...     "Jane Doe, BM PhD", "Jane Doe, BM, PhD"))]
-    [('Jane', 'Doe', 'BM PhD'), ('Jane', 'Doe', 'BM, PhD')]
-    >>> [parse(n).given for n in ("Doe, BM, PhD", "Jane Doe, BM",
-    ...     "Jane Doe, BM, Jr.")]
-    ['BM', 'BM', 'BM']
+    ...     "Jane Doe, BM PhD", "Jane Doe, BM, PhD",
+    ...     "Jane Doe, B.M., PhD"))]
+    [('Jane', 'Doe', 'BM PhD'), ('Jane', 'Doe', 'BM, PhD'), ('Jane', 'Doe', 'B.M., PhD')]
+    >>> [parse(n).given_names for n in ("Doe, BM, PhD", "Jane Doe, BM",
+    ...     "Jane Doe, BM, Jr.", "Jane Doe, B.M. PhD")]
+    ['BM', 'BM', 'BM', 'B.M.']

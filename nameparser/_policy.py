@@ -919,7 +919,9 @@ class Policy:
     #: for "M.J." too. Credentials behind the two letters make them one:
     #: in their own part ("Jane Doe, BM PhD"), or a listed credential
     #: in a later comma part where they stand alone in theirs ("Jane
-    #: Doe, BM, PhD"). The all-caps SURNAME convention ("Jean DUPONT",
+    #: Doe, BM, PhD"; "Jane Doe, B.M., PhD" too, which
+    #: ``unlisted_dotted_suffixes`` governs). The all-caps SURNAME
+    #: convention ("Jean DUPONT",
     #: "DUPONT, Jean") writes the capitals at the end of a name or
     #: before a comma, never after one behind a full name, which is why
     #: this position is on by default and the others are not.

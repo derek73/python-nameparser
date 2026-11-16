@@ -2,7 +2,7 @@
 
 ## Standing
 
-- Only the part after the first comma decides, and the listing form stands unless more than one word precedes the comma, so `Smith, PhD` keeps it — 2026-07 PR #288. How the words are counted is decisions/C3's; the exception for a suffix word ending the name before the comma is decisions/C12's, and the one for a listed credential in a later part speaking for two capitals alone in that part is decisions/C5's (#1392).
+- Only the part after the first comma decides, and the listing form stands unless more than one word precedes the comma, so `Smith, PhD` keeps it — 2026-07 PR #288. How the words are counted is decisions/C3's; the exception for a suffix word ending the name before the comma is decisions/C12's, and the one for a listed credential in a later part speaking for two capitals alone in the part after the first comma is decisions/C5's (#1392).
 - The decision consults the suffix vocabulary by definition — 2026-07 plan deviation #3.
 - The lenient token test is the default; `lenient_comma_suffixes=False` restores the strict one — 2026-07-12/13 PR #288.
 - The wholly-suffix predicate lives in the vocabulary layer, shared with the honorific peel's segment test — 2026-08 #319.

@@ -4405,10 +4405,13 @@ def test_two_capitals_before_a_later_credential_match_the_name_without_them() ->
     # written without them and shares its keys; read as the given name,
     # 'MH' conflicted with 'Ji' and the pair shared no key
     for left, right in (("Ji Eun Lee, MH, PhD", "Ji Eun Lee"),
-                        ("Ji Eun Lee, MH, PhD", "Ji Eun Lee, PhD")):
+                        ("Ji Eun Lee, MH, PhD", "Ji Eun Lee, PhD"),
+                        ("Ji Eun Lee, M.H., PhD", "Ji Eun Lee"),
+                        ("Ji Eun Lee, M.H., PhD", "Ji Eun Lee, MH, PhD")):
         r = m.check(left, right)
         assert r.consistent, (left, right)
         assert r["given"].outcome is Outcome.SAME, (left, right)
         assert m.keys(left) == m.keys(right) == {"lee;j"}, (left, right)
     # behind one word the capitals stay the given name (the boundary)
     assert not m.check("Lee, MH, PhD", "Lee, Ji Eun, PhD").consistent
+    assert not m.check("Lee, M.H., PhD", "Lee, Ji Eun, PhD").consistent

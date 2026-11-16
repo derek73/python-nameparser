@@ -479,9 +479,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 2026-11-15, #1392's thirteen rows of two capitals before a later
     # listed credential ('Jane Mary Doe, MH, PhD'), each reporting the
     # flip under three orders, and its EVERYWHERE boundary row, the pair
-    # kept as the given name reporting once under its declared policy.
-    assert claims == 2011, (
-        f"the field sweep checks {claims} claims, recorded as 2011 on "
+    # kept as the given name reporting once under its declared policy;
+    # 2011 -> 2077 the same day, the dotted pair joining the rule and
+    # the three reviews' rows: each row that reports (a flip, or a pair
+    # kept as the given name that reports as before) under three orders,
+    # or once where it declares a policy.
+    assert claims == 2077, (
+        f"the field sweep checks {claims} claims, recorded as 2077 on "
         f"2026-11-15")
 
 
@@ -816,6 +820,8 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
     # in the other reading, as the pair alone is ('Jane Doe, BM')
     ("Jane Mary Doe, MH, PhD", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
+    ("Jane Mary Doe, M.H., PhD", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
     # middle_as_family folds a middle alternative as it folds the middle
     ("Doe, John MA Smith", (("middle_as_family", True),)): (
         (AmbiguityKind.SUFFIX_OR_NAME, (
@@ -937,8 +943,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # #1392's thirteen rows under the three orders, a comma credential
     # run's report, whose stand-in the run reads too (two capitals,
     # alone, before the listed credential), so its field is pinned in
-    # _EXPECTED_ALTERNATIVES instead
-    assert (checked, skipped) == (594, 411), (checked, skipped)
+    # _EXPECTED_ALTERNATIVES instead; 594 -> 595 and 411 -> 453 the same
+    # day, the dotted pair's rows and the three reviews': the flips skip
+    # as the undotted ones do, and one boundary row's stand-in lands in
+    # the other field
+    assert (checked, skipped) == (595, 453), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

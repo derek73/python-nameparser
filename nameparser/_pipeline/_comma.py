@@ -419,6 +419,35 @@ def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
     return contrast[0]
 
 
+def _a_names_word(state: ParseState, token: WorkToken, text: str) -> bool:
+    """Whether one word beside a pair of capitals is a word a name
+    holds, so that it speaks for no credential (rules/C5, #1323): a
+    particle ('Mc'), a member of the ambiguous class its capitals do
+    not settle ('Ed', and a word the count gates, S11: 'Junior',
+    'Filho', 'KC', which classify tags a member and `settled_by_case`
+    never settles), or a word S3 joins with a slash or a hyphen holding
+    a generation, a gated word or an unsettled member among its chunks
+    ('MD/Jr.', 'Ma/PhD'), a word the vocabulary lists whole being one
+    word. `text` is the word less a glued delimiter."""
+    if "particle" in token.tags:
+        return True
+    if (AMBIGUOUS_ACRONYM_TAG in token.tags
+            and not settled_by_case(token, state.one_case)):
+        return True
+    lexicon = state.lexicon
+    if ("/" in text or "-" in text) and not _listed_whole(text, lexicon):
+        for chunk in _joined_chunks(text, lexicon) or ():
+            folded = _normalize(chunk)
+            if (folded in lexicon._sets.generation_words
+                    or folded in lexicon._sets.suffix_words_ambiguous
+                    or ROMAN.match(chunk.rstrip(".")) is not None
+                    or folded.replace(".", "")
+                    in lexicon._sets.suffix_acronyms_ambiguous
+                    and (state.one_case or not chunk.isupper())):
+                return True
+    return False
+
+
 def _credentials_beside(state: ParseState, seg0: Sequence[int],
                         p1: Sequence[Sequence[int]],
                         pt1: Sequence[Set[str]], k: int,
@@ -436,34 +465,14 @@ def _credentials_beside(state: ParseState, seg0: Sequence[int],
     asked chunk by chunk, as its words written apart would be ('MD/Jr.',
     'Ma/PhD'), a word the vocabulary lists whole being one word."""
     tokens = state.tokens
-    lexicon = state.lexicon
     for j, (q, qt) in enumerate(zip(p1, pt1)):
         if j == k:
             continue
         if j < k and is_title_piece(q, qt, tokens):
             return False
-        if len(q) == 1 and "split" not in qt:
-            token = tokens[q[0]]
-            if "particle" in token.tags:
-                return False
-            # a word the count gates (S11: 'Junior', 'Filho', 'KC') is
-            # refused here too: classify tags it a member of the class,
-            # and `settled_by_case` never settles a gated word
-            if (AMBIGUOUS_ACRONYM_TAG in token.tags
-                    and not settled_by_case(token, state.one_case)):
-                return False
-            text = texts[q[0]]
-            if ("/" in text or "-" in text) and not _listed_whole(
-                    text, lexicon):
-                for chunk in _joined_chunks(text, lexicon) or ():
-                    folded = _normalize(chunk)
-                    if (folded in lexicon._sets.generation_words
-                            or folded in lexicon._sets.suffix_words_ambiguous
-                            or ROMAN.match(chunk.rstrip(".")) is not None
-                            or folded.replace(".", "")
-                            in lexicon._sets.suffix_acronyms_ambiguous
-                            and (state.one_case or not chunk.isupper())):
-                        return False
+        if (len(q) == 1 and "split" not in qt
+                and _a_names_word(state, tokens[q[0]], texts[q[0]])):
+            return False
         if not _company(state, seg0, q, qt, texts, contrast):
             return False
     if not contrast:
@@ -471,35 +480,60 @@ def _credentials_beside(state: ParseState, seg0: Sequence[int],
     return contrast[0]
 
 
-def _listed_credentials_behind(state: ParseState) -> bool:
+def _capitals_in_contrast(state: ParseState, seg0: Sequence[int],
+                          text: str, contrast: bool | None) -> bool:
+    """Whether a pair, dotted or not, is two capitals in a name that
+    carries rules/C6's contrast, which a later part's credential needs
+    before it speaks for the pair (rules/C5, #1392): 'M.H.' behind
+    'Jane Doe', not 'm.h.' nor a pair behind a record in capitals. The
+    undotted pair is admitted by that contrast by default, and asked
+    here because `CapsSuffixes.EVERYWHERE` tags it without one.
+    `contrast` is C6's answer where the decision has already asked it.
+    The letters are composed first, a combining mark being no
+    capital."""
+    if not all(map(str.isupper, unicodedata.normalize(
+            "NFC", text.replace(".", "")))):
+        return False
+    return _name_contrast(state, seg0) if contrast is None else contrast
+
+
+def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
+                               cores: Set[str],
+                               contrast: list[bool]) -> bool:
     """Whether a part past the second comma is nothing but listed
-    credentials (rules/C5, #1392): every piece a suffix piece, a split
-    credential the vocabulary lists among them ('Ph. D.'), a
-    title/suffix dual only in capitals, or a listed member of the
-    ambiguous class its capitals settle ('MA', not 'Ma', nor a word the
-    count gates, 'KC'); never a generation or a word read by its shape
-    alone ('XYZ', 'X.Y.Z.': tagged a member where a setting reads it,
-    and no capitals settle a word the vocabulary does not list). Any
-    later part answers, an empty one being none."""
+    credentials (rules/C5, #1392), read word by word as the company of
+    a pair in its own part is (`_a_names_word`, then `_company`): a
+    suffix word that is no generation, a title/suffix dual only in
+    capitals, a listed member of the ambiguous class its capitals
+    settle ('MA', not 'Ma'), a credential split across a space
+    ('Ph. D.'); never a particle, a word the count gates, a joined word
+    holding one of those ('MD/Jr.'), nor a word read by its shape alone
+    ('XYZ', 'X.Y.Z.': untagged, or tagged a member no capitals
+    settle). A delimiter core standing alone is no word of the part
+    ('MD - PhD', rules/C10). Any later part answers, one with no word
+    in it being none."""
     tokens = state.tokens
     for seg in state.segments[2:]:
-        if not seg:
-            continue
+        texts = {i: tokens[i].text for i in seg}
         pieces, ptags = _reading_pieces(seg, tokens)
+        found = False
         for p, pt in zip(pieces, ptags):
-            if not is_suffix_piece(p, pt, tokens):
-                if not (len(p) == 1
-                        and AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                        and settled_by_case(tokens[p[0]], state.one_case)):
-                    break
-            elif len(p) == 1:
+            if len(p) == 1:
                 token = tokens[p[0]]
-                if (GENERATION_WORD_TAG in token.tags
-                        or "vocab:title" in token.tags
-                        and not token.text.isupper()):
+                if token.text in cores:
+                    continue
+                if ("split" not in pt
+                        and (_a_names_word(state, token, token.text)
+                             or not ("vocab:suffix" in token.tags
+                                     or AMBIGUOUS_ACRONYM_TAG
+                                     in token.tags))):
                     break
+            if not _company(state, seg0, p, pt, texts, contrast):
+                break
+            found = True
         else:
-            return True
+            if found:
+                return True
     return False
 
 
@@ -790,6 +824,9 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     caps: set[int] = set()
     licensed: set[int] = set()
     run = False
+    # a pair a later comma part's credential spoke for (rules/C5), whose
+    # flip is reported as the count's, dotted or not
+    later = False
     if maybe:
         # `_members` inline: a frame here is paid by every name with the
         # ambiguous class after its comma ('John Smith, MA')
@@ -888,15 +925,21 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                         or "." not in text and k + 1 < len(p1)
                         and _credentials_beside(state, seg0, p1, pt1, k,
                                                 texts, contrast_box)
-                        # rules/C5: "undotted and alone in its part,
-                        # two capitals with a listed credential in a
-                        # later comma part are the credential run" --
-                        # asked only where the pair is the whole part
-                        # and a later part stands, so no other name
-                        # pays a frame for it (decisions/C5 (#1392))
-                        or "." not in text and len(p1) == 1
-                        and len(state.segments) > 2
-                        and _listed_credentials_behind(state)):
+                        # rules/C5: "alone in its part, two capitals
+                        # with a listed credential in a later comma
+                        # part are the credential run, dotted or not"
+                        # -- asked only where the pair is the whole
+                        # part and a later part stands, so no other
+                        # name pays a frame for it; C6's contrast is
+                        # asked of the dotted pair, and of an undotted
+                        # one EVERYWHERE tagged without it
+                        # (decisions/C5 (#1392))
+                        or (later := len(p1) == 1
+                            and len(state.segments) > 2
+                            and _capitals_in_contrast(state, seg0, text,
+                                                      contrast)
+                            and _listed_credentials_behind(
+                                state, seg0, cores, contrast_box))):
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:
@@ -1032,7 +1075,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             f"follows {tokens[seg0[-1]].text!r}, so it is read as a "
             f"credential run; it may be a name", tuple(taken),
             alternative=_given_part(tokens[taken[0]])))
-    elif whole and run and ((listed and not settled) or caps or pair_only):
+    elif whole and run and ((listed and not settled) or caps or pair_only
+                            or later):
         part_reported = True
         if len(part) == 1:
             what = (f"{tokens[part[0]].text!r} after the comma is also an "

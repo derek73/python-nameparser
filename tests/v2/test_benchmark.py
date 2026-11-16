@@ -1192,13 +1192,15 @@ def test_two_capitals_ask_the_later_parts_only_where_one_stands() -> None:
     behind a full name costs what it did. Recorded negative control
     (2026-11-15, py3.11): with the `len(state.segments) > 2` gate
     removed no case row moves and 'Jane Mary Doe, MH' enters the helper
-    once, 288 frames against 287."""
+    once, one frame more."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     only = "_listed_credentials_behind"
     # REACHABILITY: the pair alone before a later part asks, once
     assert _frames_for("Jane Mary Doe, MH, PhD", only=only) == 1
+    assert _frames_for("Jane Mary Doe, M.H., PhD", only=only) == 1
     for text in ("Jane Mary Doe, MH", "Jane Mary Doe, MH PhD",
+                 "Jane Mary Doe, M.H.", "Jane Mary Doe, M.H. PhD",
                  "Jane Mary Doe, XYZ, PhD", "Doe, MH, PhD", "Smith, John"):
         assert _frames_for(text, only=only) == 0, text
 
