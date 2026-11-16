@@ -1185,6 +1185,18 @@ def _make_edit(op: object, words: object, kind: object,
     return _Edit(op, ws, k, p)
 
 
+def _refuse_unpaired(props: Iterable[str]) -> None:
+    """Raise for a keyword `remove` does not take: any but the two pair
+    lists, which only a `familiar` or a `spelling` remove names."""
+    for prop in props:
+        if prop not in _MATCHING_LISTS.values():
+            raise TypeError(
+                f"remove() got an unexpected keyword argument {prop!r}: it "
+                f"takes a property only as the pairs to drop from a "
+                f"familiar or a spelling reading, "
+                + " or ".join(_MATCHING_REMOVALS.values()))
+
+
 def _removed_pairs(kind: str | None, words: tuple[str, ...],
                    props: object) -> _Props:
     """A remove's properties checked and canonical: none, or the one
@@ -1198,13 +1210,7 @@ def _removed_pairs(kind: str | None, words: tuple[str, ...],
     if not isinstance(props, (tuple, Mapping)):
         raise TypeError(f"an edit's properties are pairs, got {props!r}")
     given: dict[str, object] = dict(props)
-    either = " or ".join(_MATCHING_REMOVALS.values())
-    for prop in given:
-        if prop not in _MATCHING_LISTS.values():
-            raise TypeError(
-                f"remove() got an unexpected keyword argument {prop!r}: it "
-                f"takes a property only as the pairs to drop from a "
-                f"familiar or a spelling reading, {either}")
+    _refuse_unpaired(given)
     own = _MATCHING_LISTS.get(kind) if kind is not None else None
     for prop in given:
         if prop != own:
@@ -2468,6 +2474,7 @@ class Lexicon:
                    or k == "capitalization_exceptions"}
         if removed:
             raise _refusal("remove()", removed)
+        _refuse_unpaired(pairs)
         if not isinstance(every, bool):
             raise TypeError(f"remove() takes every as True or False, got "
                             f"{every!r}")

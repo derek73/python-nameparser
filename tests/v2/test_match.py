@@ -4,12 +4,13 @@ held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Callable
 import functools
 import itertools
 import pickle
 import re
 import unicodedata
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 
@@ -2077,14 +2078,20 @@ _PAIR_KINDS = (
 _pair_kinds = pytest.mark.parametrize("kind, prop, outcome, paired", _PAIR_KINDS)
 
 
+def _named(prop: str, *names: object) -> dict[str, Any]:
+    """`prop=[names]` as keywords: the pair property a remove or an add
+    takes, typed loosely, since the property's name is a parameter here."""
+    return {prop: list(names)}
+
+
 def _pairs(kind: str, prop: str) -> Lexicon:
     """Made-up pairs beside the shipped ones: `zzbo` holds two names,
     `zzrob` one of the same, and `zzlong` holds `zzsho`, the pair
     stored on its other word."""
     return (Lexicon.default()
-            .add("zzbo", kind=kind, **{prop: ["zzrobert", "zzbobak"]})
-            .add("zzrob", kind=kind, **{prop: ["zzrobert"]})
-            .add("zzlong", kind=kind, **{prop: ["zzsho"]}))
+            .add("zzbo", kind=kind, **_named(prop, "zzrobert", "zzbobak"))
+            .add("zzrob", kind=kind, **_named(prop, "zzrobert"))
+            .add("zzlong", kind=kind, **_named(prop, "zzsho")))
 
 
 def _own(lexicon: Lexicon, kind: str) -> tuple[str, ...]:
@@ -2143,7 +2150,7 @@ def test_removing_the_word_that_holds_its_pairs_drops_them_and_no_other(
 def test_removing_one_pair_takes_either_word_first_and_keeps_the_rest(
         kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
         word: str, name: str) -> None:
-    after = _pairs(kind, prop).remove(word, kind=kind, **{prop: [name]})
+    after = _pairs(kind, prop).remove(word, kind=kind, **_named(prop, name))
     assert paired(after, "zzbo") == {"zzbobak"}
     assert paired(after, "zzrobert") == {"zzrob"}
     assert not _consistent(after, outcome, "Zzbo", "Zzrobert")
@@ -2159,7 +2166,7 @@ def test_removing_pairs_of_several_words_and_names_drops_each_of_one_with_the_ot
     # every pair of a word with a name, and no pair of two words or of
     # two names: zzbo / zzbobak stays, neither being asked with the other
     after = _pairs(kind, prop).remove(
-        "zzbo", "zzrob", kind=kind, **{prop: ["zzrobert", "zzsho"]})
+        "zzbo", "zzrob", kind=kind, **_named(prop, "zzrobert", "zzsho"))
     assert paired(after, "zzrobert") == frozenset()
     assert paired(after, "zzbo") == {"zzbobak"}
     assert paired(after, "zzlong") == {"zzsho"}
@@ -2186,10 +2193,10 @@ def test_a_pair_is_removed_by_its_names_as_the_match_reads_them(
     # pair matching (`álex` / `alejandro` for `Alex`, found by #1404's
     # several-files test)
     short, long = stored
-    lexicon = Lexicon.default().add(short, kind=kind, **{prop: [long]}).add(
-        "zzother", kind=kind, **{prop: [long]})
+    lexicon = Lexicon.default().add(short, kind=kind, **_named(prop, long)).add(
+        "zzother", kind=kind, **_named(prop, long))
     assert _consistent(lexicon, outcome, written[0], written[1]) is goes
-    one = lexicon.remove(written[0], kind=kind, **{prop: [written[1]]})
+    one = lexicon.remove(written[0], kind=kind, **_named(prop, written[1]))
     assert (short not in paired(one, long)) is goes
     assert _consistent(one, outcome, short, long) is not goes
     assert not _consistent(one, outcome, written[0], written[1])
@@ -2206,11 +2213,11 @@ def test_a_pair_is_removed_by_its_names_as_the_match_reads_them(
 def test_a_pair_each_word_holds_goes_from_both(
         kind: str, prop: str, outcome: Outcome,
         paired: Callable[..., frozenset[str]]) -> None:
-    both = (Lexicon.default().add("zzq", kind=kind, **{prop: ["zzr", "zzs"]})
-            .add("zzr", kind=kind, **{prop: ["zzq"]}))
+    both = (Lexicon.default().add("zzq", kind=kind, **_named(prop, "zzr", "zzs"))
+            .add("zzr", kind=kind, **_named(prop, "zzq")))
     assert _own(both, kind) == ("zzq", "zzr")
-    for after in (both.remove("zzq", kind=kind, **{prop: ["zzr"]}),
-                  both.remove("zzr", kind=kind, **{prop: ["zzq"]})):
+    for after in (both.remove("zzq", kind=kind, **_named(prop, "zzr")),
+                  both.remove("zzr", kind=kind, **_named(prop, "zzq"))):
         assert paired(after, "zzr") == frozenset()
         assert paired(after, "zzq") == {"zzs"}
         assert _own(after, kind) == ("zzq",)
@@ -2226,8 +2233,9 @@ def test_a_remove_of_pairs_applies_in_the_order_written(
         paired: Callable[..., frozenset[str]]) -> None:
     # a pair the caller added before the remove goes, one added after
     # it stands, for the word and for the one pair alike
-    add = {prop: ["zzrobert"]}
-    for remove in ({}, {prop: ["zzbo"]}):
+    add = _named(prop, "zzrobert")
+    remove: dict[str, Any]
+    for remove in ({}, _named(prop, "zzbo")):
         before = _pairs(kind, prop).add("zznew", kind=kind, **add).remove(
             "zzrobert", kind=kind, **remove)
         assert paired(before, "zzrobert") == (
@@ -2245,9 +2253,9 @@ def test_removing_an_absent_pair_or_word_is_silent_and_changes_no_pair(
     # in the log and no pair moves, a word paired with itself included
     before = _pairs(kind, prop)
     for after in (before.remove("zznone", kind=kind),
-                  before.remove("zzbo", kind=kind, **{prop: ["zzsho"]}),
-                  before.remove("zzbo", kind=kind, **{prop: ["zzbo"]}),
-                  before.remove("zznone", kind=kind, **{prop: ["zzabsent"]})):
+                  before.remove("zzbo", kind=kind, **_named(prop, "zzsho")),
+                  before.remove("zzbo", kind=kind, **_named(prop, "zzbo")),
+                  before.remove("zznone", kind=kind, **_named(prop, "zzabsent"))):
         assert after != before and len(after._edits) == len(before._edits) + 1
         assert after._pool() == before._pool()
         assert all(paired(after, w) == paired(before, w)
@@ -2263,10 +2271,10 @@ def test_a_remove_of_one_kinds_pairs_leaves_the_other_kinds_and_the_parse(
     other, other_prop, _, other_paired = next(
         row for row in _PAIR_KINDS if row[0] != kind)
     lexicon = (_pairs(kind, prop)
-               .add("zzbo", kind=other, **{other_prop: ["zzrobert"]})
+               .add("zzbo", kind=other, **_named(other_prop, "zzrobert"))
                .add("zzrobert", kind="title"))
     for after in (lexicon.remove("zzrobert", kind=kind),
-                  lexicon.remove("zzrobert", kind=kind, **{prop: ["zzbo"]})):
+                  lexicon.remove("zzrobert", kind=kind, **_named(prop, "zzbo"))):
         assert other_paired(after, "zzrobert") == {"zzbo"}
         assert [r.kind for r in after.readings_of("zzrobert")] == ["title"]
         assert Parser(lexicon=after).parse("Zzrobert Jane Smith").title == "Zzrobert"
@@ -2330,8 +2338,8 @@ def test_a_shipped_pair_goes_from_the_word_that_does_not_hold_it(
                    for x in default.readings_of(n)))
     assert _consistent(default, outcome, short, long)
     for after in (default.remove(long, kind=kind),
-                  default.remove(long, kind=kind, **{prop: [short]}),
-                  default.remove(short, kind=kind, **{prop: [long]})):
+                  default.remove(long, kind=kind, **_named(prop, short)),
+                  default.remove(short, kind=kind, **_named(prop, long))):
         assert short not in paired(after, long)
         assert long not in paired(after, short)
         assert not _consistent(after, outcome, short, long)
@@ -2353,7 +2361,8 @@ def test_a_remove_of_pairs_holds_under_a_choice_of_languages(
         for r in chosen.readings_of(w) if r.kind == kind
         for n in dict(r.properties)[prop])
     assert _consistent(chosen, outcome, short, long)
-    for remove in ({}, {prop: [short]}):
+    remove: dict[str, Any]
+    for remove in ({}, _named(prop, short)):
         after = chosen.remove(long, kind=kind, **remove)
         first = parser_for(locales.PT, strict=strict, base=Parser(
             lexicon=Lexicon.default().remove(long, kind=kind, **remove))).lexicon
@@ -2387,12 +2396,12 @@ def test_a_remove_of_pairs_pickles_and_is_logged_in_canonical_form(
     base = _pairs(kind, prop)
     whole = base.remove("ZZRobert.", kind=kind)
     one = base.remove("ZZBo", "zzrob", kind=kind,
-                      **{prop: ["Zzsho.", "zzrobert", "zzrobert"]})
+                      **_named(prop, "Zzsho.", "zzrobert", "zzrobert"))
     assert whole._edits[-1] == ("remove", ("zzrobert",), kind, ())
     assert one._edits[-1] == ("remove", ("zzbo", "zzrob"), kind,
                               ((prop, ("zzrobert", "zzsho")),))
     for lexicon in (whole, one, Lexicon.default().remove(
-            "zzbo", kind=kind, **{prop: ["zzrobert"]})):
+            "zzbo", kind=kind, **_named(prop, "zzrobert"))):
         loaded = pickle.loads(pickle.dumps(lexicon))
         assert loaded == lexicon and loaded._edits == lexicon._edits
         assert loaded._pool() == lexicon._pool()
@@ -2405,11 +2414,11 @@ def test_a_remove_of_pairs_pickles_and_is_logged_in_canonical_form(
     for bad in ((prop, ("Zzrobert",)), (prop, ("zzsho", "zzrobert")),
                 (prop, ()), (prop, "zzrobert"), ("same_as", "zzrobert")):
         with pytest.raises((TypeError, ValueError)):
-            dataclasses.replace(base, _edits=base._edits + (
-                ("remove", ("zzbo",), kind, (bad,)),))  # type: ignore[arg-type]
+            edits: Any = (("remove", ("zzbo",), kind, (bad,)),)
+            dataclasses.replace(base, _edits=base._edits + edits)
     with pytest.raises((TypeError, ValueError)):
-        dataclasses.replace(base, _edits=base._edits + (
-            ("remove", (), kind, ((prop, ("zzrobert",)),)),))  # type: ignore[arg-type]
+        wordless: Any = (("remove", (), kind, ((prop, ("zzrobert",)),)),)
+        dataclasses.replace(base, _edits=base._edits + wordless)
 
 
 @_pair_kinds
@@ -2462,7 +2471,7 @@ def test_a_remove_of_every_reading_of_a_word_keeps_the_pairs_other_words_hold() 
 ])
 def test_a_remove_of_pairs_refuses_a_wrong_argument_with_code_that_runs(
         kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
-        call: Callable[[Lexicon, str, str], object], error: type[Exception],
+        call: Callable[[Any, str, str], object], error: type[Exception],
         match: str) -> None:
     # the guard and the hint for the whole family (AGENTS.md), and the
     # code each message offers runs as pasted and cuts a shipped pair
