@@ -197,11 +197,12 @@ surname, or any other evidence on the order:
     >>> undecided.patch
     PolicyPatch()
 
-An empty patch says the list did not show its order, not that it is
-written given name first. Print the suggestion to see which it was:
-the ``name_order`` line says ``no evidence``, or gives the votes that
-fell short. (The ``capitals_as_family`` line counts names in mixed
-case as ``for`` the switch staying off, :ref:`suggest-report`.)
+An empty patch means only that nothing differs from the base: the
+list may have shown no order, or shown the base's own. Print the
+suggestion to see which. The ``name_order`` line says ``no evidence``,
+gives the votes that fell short, or shows the base's order decided,
+``(as the base)``. (The ``capitals_as_family`` line counts names in
+mixed case as ``for`` the switch staying off, :ref:`suggest-report`.)
 
 .. doctest::
 
