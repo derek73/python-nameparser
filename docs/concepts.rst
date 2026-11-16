@@ -112,16 +112,17 @@ can inspect:
     :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>`
     shows. A parse reads each word one way where it stands, on
     ``Token.reading`` (a :class:`~nameparser.Reading`): one of its
-    listed readings or, for a word no list holds, a reading by its
-    shape or its position. These pages
+    listed readings, or a reading by its shape or its position, which
+    is how a word no list holds is read and how a listed word can be
+    read where it stands. These pages
     also speak of the reading of a whole name, meaning the fields a
     parse gave it.
 
 **ambiguity**
     A call the parse made that could legitimately have gone the other
     way, recorded on ``ParsedName.ambiguities`` (an
-    :class:`~nameparser.Ambiguity`). Where one word could have gone
-    elsewhere, the report holds the reading it did not take.
+    :class:`~nameparser.Ambiguity`). Most reports of one word also
+    hold the reading it did not take.
 
 One name shows the last two. ``van`` may be read two ways, the parse
 takes one, and it records the other:
@@ -148,8 +149,9 @@ Vocabulary: what a word may be
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vocabulary is consulted first. It lists what a word may be: a
-title, a particle, a conjunction, a post-nominal suffix and, for some
-of those words, a given name or a surname as well. Before any of this,
+title, a particle, a conjunction, a maiden marker, a post-nominal
+suffix and, for some words, a given name or a surname, beside those
+readings or alone. Before any of this,
 text set off by nickname or maiden delimiters (a ``Policy`` setting) is
 set aside (:ref:`nicknames-and-maiden-names`).
 
@@ -490,9 +492,9 @@ two-word shape distinguishes them — so the parse records a
     ['particle-or-given']
 
 You can inspect ``ambiguities`` to decide, case by case, whether your
-data needs a second look (:ref:`parser-guesses`); a report of a word
-that could have gone elsewhere also names the reading it did not take
-(:ref:`reading-not-taken`). Which name the piece then becomes is a
+data needs a second look (:ref:`parser-guesses`); most reports of one
+word also name the reading it did not take (:ref:`reading-not-taken`
+lists those that do not). Which name the piece then becomes is a
 separate question, and ``name_order``'s: the given name under the
 default.
 
@@ -532,8 +534,9 @@ What decides whether there was a decision:
 - **A single title or a title phrase standing alone reports nothing.**
   ``"Dr."``, ``"Sir"`` and ``"Prince of Wales"`` are all title and no
   name, so there is no reading to have doubted. A word that is a title
-  only inside a phrase, such as ``Dean``, is a name when it stands
-  alone, and reports as one.
+  only inside a phrase, such as ``Dean``, is read as a name when it
+  stands alone, and reports the title it might have been
+  (``title-or-name``).
 
 An empty list is not certainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
