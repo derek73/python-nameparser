@@ -110,15 +110,18 @@ can inspect:
     One way of reading a word. The vocabulary lists the readings a
     word *may* take (a title, a particle, a given name), which
     :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>`
-    shows. A parse *takes* one of them for each word where it stands,
-    on ``Token.reading`` (a :class:`~nameparser.Reading`). These pages
+    shows. A parse reads each word one way where it stands, on
+    ``Token.reading`` (a :class:`~nameparser.Reading`): one of its
+    listed readings or, for a word no list holds, a reading by its
+    shape or its position. These pages
     also speak of the reading of a whole name, meaning the fields a
     parse gave it.
 
 **ambiguity**
     A call the parse made that could legitimately have gone the other
-    way, recorded on ``ParsedName.ambiguities`` with the reading it did
-    not take (an :class:`~nameparser.Ambiguity`).
+    way, recorded on ``ParsedName.ambiguities`` (an
+    :class:`~nameparser.Ambiguity`). Where one word could have gone
+    elsewhere, the report holds the reading it did not take.
 
 One name shows the last two. ``van`` may be read two ways, the parse
 takes one, and it records the other:
@@ -126,8 +129,8 @@ takes one, and it records the other:
 .. doctest::
 
     >>> from nameparser import Lexicon
-    >>> [van_reading.kind for van_reading in Lexicon.default().readings_of("van")]
-    ['preposition', 'given']
+    >>> [van_reading.category for van_reading in Lexicon.default().readings_of("van")]
+    ['particle', 'name']
     >>> van_quill = parse("Van Quill")
     >>> van_quill.tokens[0].reading.kind.value
     'name'
@@ -144,11 +147,11 @@ how the word is written.
 Vocabulary: what a word may be
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The vocabulary is consulted first. It lists the words that are
-something other than a plain name word: titles, particles,
-conjunctions and post-nominal suffixes. Text set off by nickname or
-maiden delimiters is set aside too, before position is asked anything
-(:ref:`nicknames-and-maiden-names`).
+The vocabulary is consulted first. It lists what a word may be: a
+title, a particle, a conjunction, a post-nominal suffix and, for some
+of those words, a given name or a surname as well. Before any of this,
+text set off by nickname or maiden delimiters (a ``Policy`` setting) is
+set aside (:ref:`nicknames-and-maiden-names`).
 
 A listed word takes its reading where a word of that kind stands, and
 the listed words join their neighbours:
@@ -193,8 +196,8 @@ That is the default arrangement. What changes "first" and "last":
 - ``name_order`` declares that your records write the family name
   first without a comma (:ref:`name-order`).
 - ``script_orders`` reads a name family-first by the script it is
-  written in, by default a name wholly in Han or Hangul, or in kanji
-  and kana other than katakana alone
+  written in, by default a name wholly in Han or Hangul, or in kana,
+  with or without kanji, unless it is katakana alone
   (:ref:`east-asian-defaults`; :ref:`east-asian-names` has the
   conventions behind it and the transcribed names it leaves alone).
 - ``two_family_names``, opt-in, reads two name words as the family
@@ -234,7 +237,8 @@ the word stands decides whether it lands. Two examples:
 - **An unlisted acronym.** One written in periods (``X.Y.Z.``) is a
   credential behind a name that can spare it. One written in capitals
   (``XYZ``) is too, by default only right after a comma behind a full
-  name (:ref:`unlisted-credentials` says exactly where).
+  name that writes a word of its own in mixed case, as ``Quill`` is
+  (:ref:`unlisted-credentials` says exactly where).
 
 .. doctest::
 
@@ -262,7 +266,7 @@ instead, in every name alike:
 
     >>> parse("Mara van Quill").family          # between two names: a particle
     'van Quill'
-    >>> parse("Van Quill").given                # opening the name: a given name
+    >>> parse("Van Quill").given                # opening the name: a name, given by default
     'Van'
 
 The second reading is one the parser cannot be sure of, and it says so
@@ -272,11 +276,12 @@ a :class:`~nameparser.Policy` field, or a locale pack (`Locale packs: a
 declared language`_).
 
 The one exception is a name in its native script, and only where the
-script itself, rather than statistics about it, settles the convention:
-a name written wholly in Han characters or Hangul is read family-first,
-because every language written in those scripts orders names that way
-(:ref:`east-asian-names`). The same name in Latin letters is read by
-position like any other:
+script itself, rather than statistics about it, settles the convention.
+A name written wholly in Han characters or Hangul, for example, is read
+family-first, because every language written in those scripts orders
+names that way, unless an interpunct ``·`` marks it as a transcribed
+foreign name (:ref:`east-asian-names` covers each such behavior). The
+same name in Latin letters is read by position like any other:
 
 .. doctest::
 
@@ -296,8 +301,9 @@ What follows from this
 
 That is the whole parser in outline, and it explains its
 character. A word nameparser has never seen still gets a sensible role,
-because position does not need to recognize anything. And nothing in a
-parse is statistical: there is no model and no training data, so
+because position does not need to recognize anything. And nothing in
+nameparser's own parse is statistical (a segmenter you pass in is the
+one part that may be): there is no model and no training data, so
 the same input always parses the same way, and a parse that is wrong is
 wrong reproducibly, which is what makes it fixable by configuration.
 
@@ -328,7 +334,8 @@ this setting vary with?
      - :class:`~nameparser.Policy` (:doc:`policy`)
      - The behavior switches: name order, patronymic rules, delimiters,
        strip flags, where unlisted credentials are read. Anything that
-       changes how words are arranged, not what words are recognized.
+       changes how the parse runs, not which words the vocabulary
+       lists.
      - Nicknames in square brackets
    * - **output destination**
      - :ref:`Rendering arguments <rendering-arguments>`
@@ -336,7 +343,7 @@ this setting vary with?
        ``initials()`` or ``capitalized()``.
      - "Family, Given" for one report
 
-Each example, run. "Dean" is a common given name, so the default reads
+Each example below is run. "Dean" is a common given name, so the default reads
 it as a title only inside a title phrase; in some data it is more
 common as a title. The right reading is a fact about the domain the
 names come from, which makes it a :class:`~nameparser.Lexicon` entry:
@@ -383,9 +390,11 @@ Locale packs: a declared language
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use a locale pack when you know which language or convention your
-names follow and the default reads them another way (:doc:`locales`
-says which names need one). The default lexicon reads every language's words at
-once, which is why it serves data whose language nobody can declare.
+names follow and the default reads them another way
+(:ref:`what-a-pack-costs` says which names a pack can change). The
+default lexicon reads every language's words at once, save a few
+readings a language's file holds off until it is chosen, which is why
+it serves data whose language nobody can declare.
 Where you can declare it, a :class:`~nameparser.Locale` carries the
 declaration, in up to three parts that
 :func:`~nameparser.parser_for` applies together:
@@ -481,8 +490,11 @@ two-word shape distinguishes them — so the parse records a
     ['particle-or-given']
 
 You can inspect ``ambiguities`` to decide, case by case, whether your
-data needs a second look (:ref:`parser-guesses`); each report also
-names the reading it did not take (:ref:`reading-not-taken`).
+data needs a second look (:ref:`parser-guesses`); a report of a word
+that could have gone elsewhere also names the reading it did not take
+(:ref:`reading-not-taken`). Which name the piece then becomes is a
+separate question, and ``name_order``'s: the given name under the
+default.
 
 An ambiguity records a decision, not a word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -517,9 +529,11 @@ What decides whether there was a decision:
   leave one last title word, which is read as the name for want of
   anything else (``"Dr. Prof."``) and reported as ``title-or-name``. A field the
   library merely had to pick is a field you can see it picked.
-- **A title standing entirely alone reports nothing.** ``"Dr."``,
-  ``"Sir"`` and ``"Prince of Wales"`` are all title and no name, so
-  there is no reading to have doubted.
+- **A single title or a title phrase standing alone reports nothing.**
+  ``"Dr."``, ``"Sir"`` and ``"Prince of Wales"`` are all title and no
+  name, so there is no reading to have doubted. A word that is a title
+  only inside a phrase, such as ``Dean``, is a name when it stands
+  alone, and reports as one.
 
 An empty list is not certainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
