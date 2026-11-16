@@ -3,28 +3,72 @@ Migrating to 3.0
 
 nameparser 3.0 removes the 1.x compatibility layer: ``HumanName``,
 ``Constants`` and everything around them, which 2.x kept working on top
-of the core parser and 2.8 deprecated. This page is for code written
-against either — 1.x code, and 2.x code that kept using ``HumanName``.
-It says what is gone and what replaces each piece, then translates a
-1.x customization or a 1.x-shaped comparison into the 3.0 API, one row
-per old name.
+of the core parser and 2.8 deprecated. This page is for code moving to
+3.0 or 3.1 from 1.x or from any 2.x release, whether it called
+``HumanName`` or the 2.x core API. It says what is gone and what
+replaces each piece, one row per old name, and lists the names whose
+reading changed, release by release.
 
 The 3.0 API is the one 2.0 introduced — ``parse``, ``Parser``,
 ``Lexicon``, ``Policy``, ``Locale`` and ``ParsedName``, with
 :mod:`nameparser.locales` — and its names and signatures carry into 3.0
 gaining additions only, save one: a ``Lexicon`` is configured by
-*reading* in 3.0, its 2.x set fields internal (`Lexicon fields →
-readings`_), and the modules in ``nameparser.config`` that exposed the
-default word lists as constants (``titles``, ``particles`` and the rest)
-are gone, a lexicon listing its words instead (`Vocabulary constants →
-Lexicon.words`_).
-Separately, the output model changes in 3.0: ``str()`` now renders a
-name in the order it was read in, with the separators it was written
-with (`Changed in 3.0`_).
+*reading* in 3.0, its 2.x set fields internal, and the modules in
+``nameparser.config`` that exposed the default word lists as constants
+(``titles``, ``particles`` and the rest) are gone, a lexicon listing its
+words instead. Separately, the output model changes in 3.0: ``str()``
+now renders a name in the order it was read in, with the separators it
+was written with.
 
 The full 1.x documentation remains the reference for ``HumanName`` and
 stays online as the 1.4.0 build on readthedocs:
 https://nameparser.readthedocs.io/en/v1.4.0/
+
+Which part is yours
+-------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Your code
+     - Read
+   * - calls ``HumanName``
+     - :ref:`migrate-removed`, then the :ref:`migrate-attribute-map`
+   * - edits ``CONSTANTS`` or builds a ``Constants``
+     - the :ref:`migrate-config-map`
+   * - uses the 2.x ``Lexicon`` and ``Policy`` and is going to 3.0 or
+       3.1
+     - :ref:`migrate-lexicon-readings`, :ref:`migrate-constants`,
+       :ref:`migrate-3-0` and :ref:`migrate-3-1`; the attribute map
+       and the ``Constants`` tables are not yours
+   * - compares names with ``==``
+     - :ref:`migrate-comparison`
+   * - pickles parsers, lexicons or parsed names
+     - :ref:`migrate-pickles`
+   * - has tests whose expected readings changed after upgrading
+     - :ref:`migrate-behavior`, which lists the changes release by
+       release
+
+Upgrade steps
+-------------
+
+1. Upgrade to 2.8.2, which warns of most of what 3.0 removes
+   (:ref:`migrate-removed`).
+2. Run your tests with deprecation warnings turned into errors
+   (:ref:`migrate-finding-sites`). The run stops at each use 3.0
+   removes, except the ones 2.8.2 does not warn on.
+3. Search your code for those: the ``grep`` under
+   :ref:`migrate-finding-sites` finds the names, and a read of a
+   ``Lexicon`` set field has to be found by hand.
+4. If you keep pickles, read :ref:`migrate-pickles` before leaving 3.0
+   behind: a ``Lexicon``, ``Parser`` or locale pack pickled by 2.7 or
+   2.8 loads under 3.0 and not under 3.1, so pickle it again under 3.0.
+5. Upgrade, and compare your fixtures with the lists under
+   :ref:`migrate-behavior` for the releases between your old version
+   and the new one.
+
+.. _migrate-removed:
 
 What 3.0 removes
 ----------------
@@ -32,7 +76,7 @@ What 3.0 removes
 2.8 warned at the line in your code that used each of these, 2.8.1
 where code reads a constant of ``nameparser.config.regexes`` or a
 vocabulary module, and 2.8.2 where it
-reads ``KOREAN_SURNAMES``, with the exceptions `Finding the sites`_
+reads ``KOREAN_SURNAMES``, with the exceptions :ref:`migrate-finding-sites`
 names:
 
 .. list-table::
@@ -45,11 +89,12 @@ names:
      - ``nameparser.parse(text)``, or ``Parser(lexicon=...,
        policy=...).parse(text)``; the fields are ``given`` and
        ``family`` where ``HumanName`` has ``first`` and ``last``. See
-       the `Attribute map`_
+       the :ref:`migrate-attribute-map`
    * - ``Constants(...)``, ``constants.copy()`` and the shared
        ``CONSTANTS``
      - ``Parser(lexicon=Lexicon.default().remove("dean",
-       kind="given"))``, and the `Config map`_ for each setting
+       kind="given"))``, and the :ref:`migrate-config-map` for each
+       setting
    * - ``SetManager``, ``TupleManager`` and ``RegexTupleManager`` in
        ``nameparser.config``
      - ``Lexicon.add`` and ``Lexicon.remove`` take words and a reading
@@ -58,8 +103,9 @@ names:
      - ``value.lower().strip(".")``
    * - Loading a pickled ``HumanName``
      - Store ``parse(text).as_dict()`` or the original string
+       (:ref:`migrate-pickles`)
    * - Loading a pickled ``Constants``
-     - Pickle the ``Parser`` instead
+     - Pickle the ``Parser`` instead (:ref:`migrate-pickles`)
    * - The 1.x names of five word lists and two of their modules,
        deprecated since 2.2
      - None in 3.0: their 2.2 names, which the 2.2.0 entry of
@@ -70,20 +116,22 @@ names:
        ``bound_given_names``, ``given_names``, ``maiden_markers`` and
        ``capitalization``, which 2.8.1 warns of
      - ``Lexicon.default().words(kind=...)``, the call or comprehension
-       for each constant in `Vocabulary constants → Lexicon.words`_
+       for each constant in :ref:`migrate-constants`
    * - ``nameparser.config.surnames`` and its ``KOREAN_SURNAMES``, which
        2.8.2 warns of
      - ``Lexicon.default().surnames``, which holds the same words
    * - ``nameparser.config.regexes`` and its ``REGEXES``, which the
        parser has not read since 2.0
      - Copy the pattern you reused into your own code; the bidi and
-       emoji strip switches are ``Policy(strip_bidi=...)`` and
-       ``Policy(strip_emoji=...)`` (:ref:`strip-flags`)
+       emoji strip switches moved to ``Policy``
+       (:ref:`migrate-policy-settings`)
 
 The 2.8 deprecation warnings go with the code they warned about. In 3.0
 importing a removed name raises ``ImportError``, reading one as an
 attribute raises ``AttributeError``, and a pickle of a ``HumanName`` or
 a ``Constants`` cannot load, because there is no class to load it into.
+
+.. _migrate-finding-sites:
 
 Finding the sites
 ~~~~~~~~~~~~~~~~~
@@ -121,16 +169,27 @@ still fails on 3.0:
   ``from nameparser.config import particles``
 * *reading* a ``Lexicon`` set field (``"dr" in lexicon.titles``), which
   2.8.1 warns of only where code writes one, and which raises
-  ``AttributeError`` in 3.0 (`Lexicon fields → readings`_)
+  ``AttributeError`` in 3.0 (:ref:`migrate-lexicon-readings`)
 
-So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
-``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
-``config.bound_first_names``, ``config.regexes`` and ``config.surnames``
-as well, and for the
-vocabulary modules: ``config.titles``, ``config.suffixes``,
-``config.particles``, ``config.conjunctions``,
-``config.bound_given_names``, ``config.given_names``,
-``config.maiden_markers`` and ``config.capitalization``.
+So search your code for those names as well: the shared ``CONSTANTS``,
+``HumanName`` and ``Constants``, the ``nameparser.parser`` and
+``nameparser.util`` modules, any import from ``nameparser.config``, and
+the removed modules of that package by name:
+
+.. code-block:: bash
+
+    grep -rnE "CONSTANTS|HumanName|Constants|nameparser\.(parser|util)|nameparser\.config import|config\.(prefixes|bound_first_names|regexes|surnames|titles|suffixes|particles|conjunctions|bound_given_names|given_names|maiden_markers|capitalization)" .
+
+A read of a ``Lexicon`` set field has no name to search for: look where
+your code holds a lexicon.
+
+.. _migrate-earlier-breaks:
+
+Earlier breaks 3.0 keeps
+------------------------
+
+Neither list below is a 3.0 removal: each break arrived in a 2.x
+release, and 3.0 keeps it.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~
@@ -139,16 +198,14 @@ Code written against 1.4 meets 2.0's removals too, since 3.0 keeps
 them. Most are moot now that ``HumanName`` and ``Constants`` are gone,
 but three still reach code moving to ``parse()``:
 
-* ``name == "John Smith"`` returned ``True`` on 1.x. ``HumanName``
-  dropped ``__eq__`` in 2.0, silently, and a ``ParsedName`` compared to
-  a string is never equal to it: use ``matches()`` (see `Comparison`_).
-  Grep for ``==`` wherever you compare names
+* ``name == "John Smith"`` returned ``True`` on 1.x, and a
+  ``ParsedName`` compared to a string is never equal to it: use
+  ``matches()`` (:ref:`migrate-comparison`)
 * bytes are not decoded for you: ``parse(b"...")`` raises
   ``TypeError``, so decode first (``raw.decode("utf-8")``)
 * ``CONSTANTS.regexes.bidi = False``, 1.3.1's opt-out for keeping
-  bidirectional marks, is ``Policy(strip_bidi=False)``, and the emoji
-  one ``Policy(strip_emoji=False)`` (`Behavior and render settings →
-  Policy`_)
+  bidirectional marks, and the emoji one are ``Policy`` fields
+  (:ref:`migrate-policy-settings`)
 
 Breaks in the 2.x core API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,20 +214,14 @@ Later 2.x releases changed the core API in ways 3.0 keeps:
 
 * editing a default word list in place — ``TITLES.add("dean")`` —
   raises ``AttributeError`` since 2.2, when the vocabulary sets became
-  ``frozenset``; 3.0 removes those constants' modules (see
-  `Vocabulary constants → Lexicon.words`_)
+  ``frozenset``; 3.0 removes those constants' modules
+  (:ref:`migrate-constants`)
 * a ``capitalization_exceptions`` value that is not a case mask of its
   key — ``{"md": "Doc"}`` — raises ``ValueError`` since 2.4
-* a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
-  raises ``ValueError`` on load since 2.6, each having gained a field;
-  re-pickle after upgrading. A ``Lexicon``, ``Parser`` or locale pack
-  pickled by 2.6 raises the same way since 2.7
+* a pickle written by an earlier 2.x release raises ``ValueError`` on
+  load since 2.6 or 2.7, by the object (:ref:`migrate-pickles`)
 
-Finally, if you want to see the difference on your own data rather than
-ours, ``tools/differential/compare.py`` in the source repository diffs
-any released version's parses against the source tree over the corpora
-beside it, or over a file of your own names (``--corpus``). It is development
-tooling, not part of the installed package — see its README.
+.. _migrate-attribute-map:
 
 Attribute map
 -------------
@@ -250,8 +301,7 @@ returns, like this:
    * - ``suffix_delimiter``
      - ``Policy(extra_suffix_delimiters=frozenset({...}))``
      - Now a ``Policy`` set field, so several delimiters can be
-       active; passing the old scalar through raises
-       (:ref:`suffix-delimiters`)
+       active (:ref:`suffix-delimiters`)
    * - ``capitalize(force=...)``
      - ``capitalized(force=...)``
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value
@@ -323,6 +373,8 @@ Editing a field, and building a name from fields:
     >>> built.family, built.family_particles
     ('de la Vega', 'de la')
 
+.. _migrate-config-map:
+
 Config map
 ----------
 
@@ -332,7 +384,7 @@ Vocabulary sets → Lexicon
 The vocabulary sets of a 1.x or 2.x ``Constants`` (and so of the shared
 ``CONSTANTS``) map onto the 2.x :class:`~nameparser.Lexicon` field of
 the second column, and each of those onto the readings of
-`Lexicon fields → readings`_ below:
+:ref:`migrate-lexicon-readings` below:
 
 .. list-table::
    :header-rows: 1
@@ -385,6 +437,8 @@ the second column, and each of those onto the readings of
    otherwise. So a 1.x ``non_first_name_prefixes`` entry is
    ``remove(word, kind="given")``, and a word missing from it
    ``add(word, kind="given")``.
+
+.. _migrate-lexicon-readings:
 
 Lexicon fields → readings
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -464,16 +518,10 @@ Each 2.x spelling raises where it is written:
        two lists, which join with ``lexicon | Lexicon(surnames={...})``
 
 A ``Lexicon`` pickled by 2.x holds the compiled sets, and 3.1 refuses
-it, as it refuses a ``Parser`` or a locale pack holding one, with a
-``ValueError`` saying which releases wrote it. One written by 2.7 or
-2.8 loads under 3.0, which translates it onto readings: pickle the
-loaded object again there (``pickle.dumps(obj)``). If 3.0 refuses the
-pickle too, as it refused an edited ``Lexicon`` whose sets no readings
-express, build the object again. No 3.x release loads one written by
-2.6 or earlier, which the error says by naming the fields its layout
-lacks, so build that object again. A re-pickled object keeps the
-vocabulary it was first pickled with, not this release's; build a new
-``Parser()`` for that.
+it, as it refuses a ``Parser`` or a locale pack holding one:
+:ref:`migrate-pickles` says which release loads which pickle.
+
+.. _migrate-constants:
 
 Vocabulary constants → Lexicon.words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -550,7 +598,6 @@ vocabulary module 3.0 makes private rather than removes, which 2.8.2
 warns of: ``Lexicon.default().surnames`` holds the same words, on 2.x as
 in 3.0.
 
-
 To change a default word list, configure a lexicon and hand it to a
 parser:
 
@@ -564,6 +611,8 @@ parser:
     'Dean'
 
 See :doc:`customize` for the full set of knobs.
+
+.. _migrate-policy-settings:
 
 Behavior and render settings → Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -590,8 +639,8 @@ rendering argument, where the 3.0 equivalent isn't config at all):
    * - ``nickname_delimiters``
      - ``Policy.nickname_delimiters``
      - Was a dict of named sentinels; now a plain ``frozenset`` of
-       ``(open, close)`` pairs. The defaults gained the #273
-       typographic pairs (smart quotes, guillemets, CJK brackets, ...)
+       ``(open, close)`` pairs. The defaults gained the
+       typographic pairs of :issue:`273` (smart quotes, guillemets, CJK brackets, ...)
        in 2.0 (:ref:`brackets`)
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
@@ -621,14 +670,117 @@ Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
 the compiled-pattern proxy) has no 3.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
 handing the parser a regex — and the ``nameparser.config.regexes``
-module those entries came from is gone too (`What 3.0 removes`_).
+module those entries came from is gone too (:ref:`migrate-removed`).
+
+.. _migrate-pickles:
+
+Pickles
+-------
+
+Which release loads a pickle depends on the object and on the release
+that wrote it:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 14 18 18 28
+
+   * - Pickled object
+     - Written by
+     - Under 3.0
+     - Under 3.1
+     - What to do
+   * - ``HumanName`` or ``Constants``
+     - 1.x or 2.x
+     - does not load
+     - does not load
+     - Store ``parse(text).as_dict()`` or the original string; pickle
+       the ``Parser`` in place of a ``Constants``
+   * - ``Lexicon``, ``Parser`` or locale pack
+     - 2.6 or earlier
+     - ``ValueError``
+     - ``ValueError``
+     - Build the object again
+   * - ``Lexicon``, ``Parser`` or locale pack
+     - 2.7 or 2.8
+     - loads
+     - ``ValueError``
+     - Load it under 3.0 and pickle it again there
+   * - ``Policy``
+     - 2.5 or earlier
+     - ``ValueError``
+     - ``ValueError``
+     - Build the object again
+   * - ``Policy``
+     - 2.6 to 2.8
+     - loads
+     - loads
+     - Nothing
+   * - ``ParsedName``
+     - 2.x
+     - loads, rendering as 2.x did
+     - loads, rendering as 2.x did
+     - Parse the text again to render it as written
+   * - any of the rows above but the first
+     - 3.0
+     - loads
+     - loads
+     - Nothing
+
+A ``HumanName`` or a ``Constants``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Neither class exists in 3.0, so a pickle of one has nothing to load
+into and fails. Store what a ``HumanName`` was read
+from or read as, and pickle the ``Parser`` where 2.x code pickled a
+``Constants``.
+
+A ``Lexicon``, ``Parser`` or locale pack from 2.x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A 2.x ``Lexicon`` pickle holds the compiled sets, where a 3.0 one holds
+readings, and a ``Parser`` or a locale pack holds a ``Lexicon``. What
+loads it depends on the release that wrote it:
+
+- **Written by 2.7 or 2.8.** 3.0 loads it, translating it onto
+  readings, and 3.1 refuses it with a ``ValueError`` saying which
+  releases wrote it. Load it under 3.0 and pickle the loaded object
+  again there (``pickle.dumps(obj)``). If 3.0 refuses the pickle too,
+  as it refused an edited ``Lexicon`` whose sets no readings express,
+  build the object again.
+- **Written by 2.6 or earlier.** No 3.x release loads it, which the
+  error says by naming the fields its layout lacks, so build that
+  object again.
+
+A re-pickled object keeps the vocabulary it was first pickled with, not
+this release's; build a new ``Parser()`` for that.
+
+Pickles between 2.x releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The same refusals arrived inside 2.x. A ``Lexicon``, ``Policy`` or
+``Parser`` pickled by 2.5 or earlier raises ``ValueError`` on load
+since 2.6, each having gained a field; re-pickle after upgrading. A
+``Lexicon``, ``Parser`` or locale pack pickled by 2.6 raises the same
+way since 2.7.
+
+A ``ParsedName`` from 2.x
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A :class:`~nameparser.ParsedName` pickled by 2.x has no ``order`` and
+renders exactly as it did under 2.x, while a fresh parse of the same text
+renders as written (:ref:`migrate-3-0-rendering`); the two still
+compare equal, since ``order`` is left out of ``==`` and
+:meth:`~nameparser.ParsedName.comparison_key`.
+
+.. _migrate-comparison:
 
 Comparison
 ----------
 
 ``HumanName.__eq__``/``__hash__`` were deprecated in 1.3.0 and removed
-in 2.0, and 3.0 has no ``HumanName`` at all. A
-:class:`~nameparser.ParsedName` is never equal to a string, so use
+in 2.0, silently, and 3.0 has no ``HumanName`` at all. A
+:class:`~nameparser.ParsedName` is never equal to a string, so grep for
+``==`` wherever you compare names, and use
 ``matches()`` for "is this the same name?" and ``comparison_key()`` for
 dedup, dict keys, and sorting — both work as ``HumanName``'s did:
 
@@ -655,12 +807,78 @@ more permissive — anything 1.4 matched still matches:
     >>> parse("Anna STRASSE").matches("Anna Straße")
     True
 
+.. _migrate-behavior:
+
 Behavior changes
 -----------------
 
-Beyond the API surface mapped above, a handful of parse *outputs*
-differ between 1.4 and 3.0 for specific input shapes. The full list,
-with reasoning, is in each 2.x section of :doc:`release_log`.
+Beyond the API surface mapped above, parse *outputs* differ between 1.4
+and 3.1 for the input shapes listed here, release by release. The
+reasoning for each is in that release's section of :doc:`release_log`,
+the 3.0 and 3.1 ones included.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 12 60 28
+
+   * - Release
+     - What moved
+     - List
+   * - 2.0
+     - A recognized suffix or title stays in its own field; maiden
+       names
+     - :ref:`migrate-2-0`
+   * - 2.1
+     - Names in East Asian script: family first, Korean names split,
+       the middle dot
+     - :ref:`migrate-2-1`
+   * - 2.3
+     - Titles that address by given name; a trailing title
+     - :ref:`2.3 <migrate-2-3>`
+   * - 2.4
+     - Unlisted credentials, one-letter connectives, salutations, the
+       case of credentials
+     - :ref:`2.4 <migrate-2-4>`
+   * - 2.5
+     - A title before a family comma, junior and senior words, a
+       particle after the given name
+     - :ref:`2.5 <migrate-2-5>`
+   * - 2.6
+     - Given names written short, a salutation after the given name,
+       invisible characters
+     - :ref:`2.6 <migrate-2-6>`
+   * - 2.7
+     - A title that is also a given name, title phrases, joined
+       credentials
+     - :ref:`2.7 <migrate-2-7>`
+   * - 2.8
+     - More titles that are also names, the royal title phrases
+     - :ref:`2.8 <migrate-2-8>`
+   * - 3.0
+     - Rendering as written, initials in East Asian script, particles,
+       credentials and titles
+     - :ref:`migrate-3-0`
+   * - 3.1
+     - Case repair, initials, ``Md``, Maghrebi and Hebrew particles,
+       capitals and initials after a comma
+     - :ref:`migrate-3-1`
+
+Each entry says what it compares with. The lists of readings through
+3.0 give what 1.4 read, so they are written for code coming from 1.x: a
+release between may have read the name a third way, which the release
+log gives. 3.0's rendering and initials sections compare with 2.8, and
+each 3.1 entry names the releases that read the name the old way. Coming
+from 2.8, read the 3.0 and 3.1 lists, and the release log's 3.0 section
+too: a reading that a 2.x release moved and 3.0 moved back to 1.4's is
+in the log and not in these lists.
+
+If you want to see the difference on your own data rather than
+ours, ``tools/differential/compare.py`` in the source repository diffs
+any released version's parses against the source tree over the corpora
+beside it, or over a file of your own names (``--corpus``). It is development
+tooling, not part of the installed package — see its README.
+
+.. _migrate-2-0:
 
 Changed in 2.0
 ~~~~~~~~~~~~~~
@@ -678,17 +896,21 @@ landing in the given or family name:
 
 Under 1.4 those read ``title="MD"``/``first="Andrews"`` and
 ``first="Johnson"``/``last="PhD"`` respectively. The dotted
-``"Andrews, M.D."`` read suffix ``M.D.`` from 2.0 through 3.0 and,
-since 3.1, reads given ``M.``, middle ``D.``, as the initials it may be
-(1.4 read ``first="M.D."``), reporting the credential. Two more to check for:
+``"Andrews, M.D."`` read suffix ``M.D.`` from 2.0 through 3.0, where
+1.4 read ``first="M.D."``, and moved again in 3.1
+(:ref:`migrate-3-1-initials-credential`).
+
+Two more to check for:
 a maiden marker now fills the ``maiden`` field rather than being folded
 into the middle or family name (``"Jane Smith née Jones"``), and with a
 custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
 
-East Asian names (2.1)
-~~~~~~~~~~~~~~~~~~~~~~
+.. _migrate-2-1:
+
+Changed in 2.1: East Asian names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 2.1 adds three more: a name written in East Asian script is read
 family-first, an unspaced Korean name is split into surname and given
@@ -703,11 +925,10 @@ does (:ref:`east-asian-names` explains the conventions).
     ('김', '민준')
 
 1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
-second whole in ``first``. Through 2.8 the Korean one also changed what
-the name *rendered* as — ``str(parse("김민준"))`` was ``"민준 김"``,
-where 1.4's ``str(HumanName("김민준"))`` was ``"김민준"`` — because the
-split inserted a token boundary that the default format then wrote
-given-name-first. 3.0 renders ``"김민준"`` again (`Changed in 3.0`_).
+second whole in ``first``.
+
+An unspaced Chinese or Japanese name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A third shape changes even though nothing splits it. 1.4 routed a lone
 token to ``first`` whatever it was, so an unspaced Chinese or Japanese
@@ -727,6 +948,9 @@ Both were ``first`` under 1.4. If you parse unspaced CJK and read the
 given name, that is the change most likely to reach you, and it is
 silent — the string is intact, just in the other field.
 
+Japanese kana
+^^^^^^^^^^^^^
+
 Japanese kana carries the same order rule, which widens both shapes
 past the wholly-Han text described above. A name that mixes kanji with
 hiragana or katakana is read family-first, and a lone kana-bearing
@@ -744,14 +968,17 @@ token moves from the given name to the family name exactly as
 
 1.4 read the spaced ones as ``first="高橋"``/``last="みなみ"`` and
 ``first="山田"``/``last="エミ"``, and put the unspaced one whole in
-``first``. Through 2.8 the spaced shapes changed what the name rendered
-as too: ``str(parse("高橋 みなみ"))`` was ``"みなみ 高橋"``, where 1.4
-and 3.0 write ``"高橋 みなみ"``. A name written *wholly* in katakana is deliberately
+``first``.
+
+A name written *wholly* in katakana is deliberately
 left alone — it may be a transcribed foreign name already in
 given-first order or a Japanese name's reading written family-first,
 and the script cannot tell which (see :ref:`east-asian-names` to opt
 in) — so ``parse("マイケル ジャクソン")`` reads given ``マイケル``,
 family ``ジャクソン``, as 1.4 did.
+
+The katakana middle dot
+^^^^^^^^^^^^^^^^^^^^^^^
 
 One more shape changes for a different reason: the katakana middle dot
 ``・``, which divides the parts of such a transcription, is now a token
@@ -772,13 +999,32 @@ katakana pair keeps its source order while the kanji pair takes the
 family-first rule. Separating also changes the ``nickname`` and
 other fields, which join their words with a space: the nickname in
 ``"山田 太郎 (マイケル・ジャクソン)"`` was ``"マイケル・ジャクソン"``
-under 1.4 and is ``"マイケル ジャクソン"`` now. Through 2.8 the dot came
-back as a space in the rendered string as well
-(``str(parse("マイケル・ジャクソン"))`` was ``"マイケル ジャクソン"``);
-3.0 renders it with its dot, as 1.4 did (`Changed in 3.0`_).
+under 1.4 and is ``"マイケル ジャクソン"`` now.
+
+What 2.1 through 2.8 rendered
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Through 2.8 three of these shapes also changed what the name *rendered*
+as, which 3.0 undid (:ref:`migrate-3-0-rendering`):
+
+- **The split Korean name.** ``str(parse("김민준"))`` was ``"민준 김"``,
+  where 1.4's ``str(HumanName("김민준"))`` was ``"김민준"``, because
+  the split inserted a token boundary that the default format then
+  wrote given-name-first. 3.0 renders ``"김민준"`` again.
+- **The spaced kanji and kana names.** ``str(parse("高橋 みなみ"))``
+  was ``"みなみ 高橋"``, where 1.4 and 3.0 write ``"高橋 みなみ"``.
+- **The middle dots.** The dot came back as a space
+  (``str(parse("マイケル・ジャクソン"))`` was ``"マイケル ジャクソン"``),
+  the Chinese interpunct of the next section included; 3.0 renders it
+  with its dot, as 1.4 did.
+
+.. doctest::
+
+    >>> str(parse("高橋 みなみ")), str(parse("マイケル・ジャクソン"))
+    ('高橋 みなみ', 'マイケル・ジャクソン')
 
 Turning the East Asian readings off
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The switch is on the ``Policy`` (:ref:`east-asian-defaults`):
 ``Parser(policy=Policy(script_orders=(), segment_scripts=frozenset()))``
@@ -789,8 +1035,9 @@ like ``威廉·莎士比亚``, and a separator only between classified-script
 characters — each side judged on its own — where the katakana dot is
 unconditional) are decided
 in tokenization rather than by policy, so a name written with either
-still divides at the dot whatever those two fields are set to (and
-through 2.8 rendered with a space there).
+still divides at the dot whatever those two fields are set to.
+
+.. _migrate-2-3-to-2-8:
 
 Changed in 2.3 through 2.8
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -798,161 +1045,29 @@ Changed in 2.3 through 2.8
 Later releases moved more 1.4 readings; 2.1 and 2.2 read every one of
 them as 1.4 did. The release
 log's 2.3 to 2.8 sections carry the reasoning; these are the shapes to
-grep your fixtures for, with what 1.4 read:
+grep your fixtures for, with what 1.4 read, under the release that
+moved each. A release's examples follow its list, in the list's order.
 
-- ``"Her Majesty Queen Elizabeth"``, ``"His Royal Highness Prince Harry"`` (2.3) — a lone
+.. _migrate-2-3:
+
+2.3
+^^^
+
+- ``"Her Majesty Queen Elizabeth"``, ``"His Royal Highness Prince Harry"`` — a lone
   name after a title that addresses by given name is the given name:
   1.4 read last ``Elizabeth`` and ``Harry``. 2.3 matched a run of titles
   by its last one (``Her Majesty Queen``, ``Rev Sir``) and added titles
   that address that way (``Prince``, ``Princess``, ``Swami``, ``Guru``
   and others). Other titles still leave the name the family name
   (``"Dr Harry"``). Since 2.7 a bare ``Prince`` or ``Princess`` is a
-  given name (below); behind a style, as here, it is still a title.
-- ``"Dr King Jr"`` (2.3) — 1.4 read title ``Dr King``, last ``Jr``.
-- ``"John Smith Prof."`` (2.3) — a trailing period-marked title: 1.4
+  given name (:ref:`2.7 <migrate-2-7>`); behind a style, as here, it is
+  still a title.
+- ``"Dr King Jr"`` — 1.4 read title ``Dr King``, last ``Jr``.
+- ``"John Smith Prof."`` — a trailing period-marked title: 1.4
   read last ``Prof.``, middle ``Smith``.
-- ``"Jack MA"`` (2.4) — an ambiguous acronym in capitals in a mixed-case
-  name is a credential: 1.4 read last ``MA``. ``"Jack Ma"`` and
-  ``"JACK MA"`` are unchanged.
-- ``"jose e maria santos"`` (2.4) — ``e`` in a name written wholly in
-  one case is an initial (``y`` still joins): 1.4 read first ``jose e
-  maria``.
-- ``"van der Berg, PhD"`` (2.4) — 1.4 read first ``van``, last ``der
-  Berg``.
-- ``"Josep Carod i Rovira"`` (2.4) — ``i`` links two surnames in a
-  mixed-case name: 1.4 read middle ``Carod i``, last ``Rovira``.
-- ``"Jane Smith N.C.C."`` (2.4) — an unlisted dotted credential after a
-  full name: 1.4 read last ``N.C.C.``, middle ``Smith``. ``"Jack
-  X.Y.Z."`` is unchanged.
-- ``"Jane Smith, LEED AP"`` (2.4) — an unlisted all-caps credential
-  after a comma: 1.4 read first ``LEED``, middle ``AP``, last ``Jane
-  Smith``.
-- ``"Eric H. Holder Jr. Attorney General"`` and ``"Eric H. Holder, Jr.,
-  Attorney General"`` (2.4) — a title after a credential is a title:
-  1.4 read middle ``H. Holder Jr. Attorney``, last ``General``, and
-  suffix ``Jr., Attorney General``.
-- ``"Steven Hardman, RN - CRNA"`` (2.4) — a credential after a comma
-  starts a run of credentials, and since 2.7 the hyphen standing alone
-  parts it as a comma (suffix ``RN, CRNA``): 1.4 read first ``RN``,
-  middle ``-``, last ``Steven Hardman``, suffix ``CRNA``.
-- ``"John van der Berg Prof."`` (2.4) — 1.4 read last ``van der Berg
-  Prof.``.
-- ``"Liam Ó Murchú"`` (2.4) — the Irish particles ``Ó``, ``Ní`` and
-  ``Ua`` join the surname: 1.4 read middle ``Ó``, last ``Murchú``.
-- ``"Herra Väinö Johansson"`` (2.4) — salutations in Finnish,
-  Icelandic, Malay and other languages are titles: 1.4 read first
-  ``Herra``, middle ``Väinö``.
-- ``"山田 ﾀﾛｳ"`` (2.4) — halfwidth katakana reads as katakana: 1.4 read
-  first ``山田``, last ``ﾀﾛｳ``.
-- capitalizing ``"john smith md"``, ``"john smith phd"`` and
-  ``"JANE DOE MBA"`` (2.4) — 1.4 wrote ``M.D.``, ``Ph.D.`` and ``Mba``;
-  credentials are now written the usual way (``MD``, ``PhD``, ``MBA``).
-- ``initials()`` on ``"john e smith"`` (2.4) — 1.4 gave ``j. s.``; a
-  one-letter connective read as an initial now contributes one.
-- ``"Dr. Smith, John"`` (2.5) — a listed title before a family comma is
-  a title: 1.4 read last ``Dr. Smith``. ``"Gov Smith"`` (2.5) — ``Gov``
-  is a title: 1.4 read first ``Gov``.
-- ``"Antonio Pavlović mlađi"`` (2.5) — junior and senior in 45
-  languages are suffixes: 1.4 read middle ``Pavlović``, last ``mlađi``.
-- ``"John Smith II, AD"`` (2.5) — a credential after a generational
-  suffix and a comma: 1.4 read first ``AD``, last ``John Smith``.
-- ``"John III, Sir"`` and ``"Smith, Sir"`` (2.5) — the name before
-  a comma and a given-name title is the given name: 1.4 read last
-  ``John`` and ``Smith``.
-- ``"Ivoi, Paul d'"`` (2.5) — a particle after the given name joins the
-  surname: 1.4 read middle ``d'``.
-- ``"jose j y lopez"`` (2.5) — a lone letter in a one-case name reads as
-  in capitals: 1.4 read last ``j y lopez``.
-- ``"Bapak Dwi Putro"`` (2.5) — the salutations ``bapak`` and ``owura``
-  are titles: 1.4 read first ``Bapak``, middle ``Dwi``.
-- capitalizing ``"jacobus henricus van 't hoff"`` (2.5) — 1.4
-  wrote ``van 'T Hoff``.
-- ``"Maria de Sa"`` and ``"John Smith SA"`` (2.6) — ``Sa`` is no longer
-  a credential: 1.4 read last ``de``, suffix ``Sa``, and suffix ``SA``.
-- ``"Cllr John Smith"`` and ``"Dott.ssa Anna Bianchi"`` (2.6) — ``Cllr``
-  and the Italian abbreviated salutations are titles: 1.4 read first
-  ``Cllr`` and ``Dott.ssa``, middle ``John`` and ``Anna``.
-- ``"José Silva Júnior"`` (2.6) — 1.4 read middle ``Silva``, last
-  ``Júnior``.
-- ``"John Smith, MD; PhD"`` (2.6) — a semicolon between post-nominals
-  reads as a comma: 1.4 read first ``MD;``, last ``John Smith``.
-- ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` (2.6) — ``Md`` and ``Wm``
-  are the given names they abbreviate: 1.4 read title ``Mr Md`` and
-  ``Wm``.
-- ``"Doe, Jane Mrs"`` (2.6) — a salutation ending the given name after a
-  family comma is the title: 1.4 read middle ``Mrs``.
-- A zero-width space or byte-order mark (2.6) divides words as a space
-  does: 1.4 kept it in the word beside it, so ``"\u200bDr. John Smith"``
-  read first ``Dr.``.
-- capitalizing ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
-  repair now capitalizes after a full stop or an ayn.
-- ``"King Curtis"``, ``"Prince Fielder"``, ``"Sultan Khan"`` and
-  ``"Sheikh Ahmed Khan"`` (2.7) — a title that is also a given name is a
-  title only inside a title phrase or behind a style (``"His Majesty
-  King Henry"``), so a bare one opening the name is the first name: 1.4
-  read title ``King``, ``Prince``, ``Sultan`` and ``Sheikh``. The same
-  holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
-  ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
-  ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
-  ``Lexicon.default().remove("king", kind="given")`` makes one a title
-  everywhere.
-- ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
-  (2.7) — a title phrase is one title: 1.4 read title ``Chief``, first
-  ``Justice``, and first ``Major``, middle ``General John``.
-- ``"Chas. Smith"`` and ``"Ma. Cristina Reyes"`` (2.7) — a given name
-  written short is the first name: 1.4 read title ``Chas.`` and ``Ma.``.
-- ``"John Smith VI MD"`` and ``"Smith, John VI"`` (2.7) — the numerals
-  ``VI`` to ``X`` are suffixes as ``III`` is: 1.4 read last ``VI``,
-  suffix ``MD``, and middle ``VI``.
-- ``"John Smith, MD/PhD"`` and ``"John Smith, Pharm D"`` (2.7) — a
-  credential joined by a hyphen or slash, or split by a space, after a
-  comma is a suffix: 1.4 read first ``MD/PhD``, and first ``Pharm``,
-  middle ``D``, each with last ``John Smith``.
-- ``"John Smith Ph. D. Jones"`` (2.7) — 1.4 read last ``Jones``, suffix
-  ``Ph. D.``.
-- ``"Smith, John MA Jones"`` (2.7) — a listed credential in capitals in
-  a mixed-case name starts the suffix: 1.4 read middle ``Jones``, suffix
-  ``MA``.
-- ``"Pedro Alves Filho"`` and ``"Alexandre Dumas fils"`` (2.7) — the
-  Brazilian agnomens and ``fils`` are suffixes where the name has a word
-  to spare: 1.4 read middle ``Alves`` and ``Dumas``, last ``Filho`` and
-  ``fils``.
-- ``"Andrew Perkins (JD)"`` (2.7) — a bracketed credential its writing
-  settles is a suffix: 1.4 read nickname ``JD``.
-- ``"Jane Smith, Dr. / MD"`` (2.7) — a hyphen or slash standing alone
-  between post-nominals reads as a comma: 1.4 read first ``/``, last
-  ``Jane Smith``.
-- ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
-  and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
-  titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
-- ``"Marquis Johnson"`` and ``"Johnson, Marquise"`` (2.8) — ``Marquis``
-  and ``Marquise`` are titles only inside a title phrase, as ``King`` is
-  since 2.7 (``"Marquis of Queensberry"`` keeps the title): 1.4 read
-  title ``Marquis`` and ``Marquise``.
-- ``"Deacon Jones"``, ``"Burgess Meredith"`` and ``"Ranger Smith"``
-  (2.8) — ``Deacon``, ``Burgess`` and ``Ranger`` are titles only inside a
-  title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
-  Smith"`` keeps the title): 1.4 read title ``Deacon``, ``Burgess`` and
-  ``Ranger``.
-- ``"Queen Latifah"`` and ``"Elizabeth II, Queen"`` (2.8) — ``Queen`` is
-  a title only inside a title phrase or behind a style (``"Her Majesty
-  Queen Elizabeth"``), as ``King`` is since 2.7: 1.4 read title
-  ``Queen``, first ``Latifah``, and last ``Elizabeth``.
-- ``"Prince Consort Albert"``, ``"Princess Royal Anne"`` and ``"Bales,
-  Royal"`` (2.8) — the royal title phrases are one title, and ``Royal``
-  after a family comma is the first name: 1.4 read title ``Prince``,
-  first ``Consort``; title ``Princess Royal``, last ``Anne``; and title
-  ``Royal``, first ``Bales``.
-- ``"Chancellor Smith"`` and ``"Lord Justice Leveson"`` (2.8) —
-  ``Chancellor`` is a title only inside a title phrase (``"Lord
-  Chancellor John Smith"``), and ``Lord Justice`` and ``Lady Justice`` are
-  one title: 1.4 read title ``Chancellor``, and title ``Lord``, first
-  ``Justice``.
 
 .. doctest::
 
-    >>> parse("Jack MA").suffix
-    'MA'
     >>> parse("Her Majesty Queen Elizabeth").given
     'Elizabeth'
     >>> parse("His Royal Highness Prince Harry").given
@@ -962,6 +1077,55 @@ grep your fixtures for, with what 1.4 read:
     ('Dr', 'King', 'Jr')
     >>> parse("John Smith Prof.").title
     'Prof.'
+
+.. _migrate-2-4:
+
+2.4
+^^^
+
+- ``"Jack MA"`` — an ambiguous acronym in capitals in a mixed-case
+  name is a credential: 1.4 read last ``MA``. ``"Jack Ma"`` and
+  ``"JACK MA"`` are unchanged.
+- ``"jose e maria santos"`` — ``e`` in a name written wholly in
+  one case is an initial (``y`` still joins): 1.4 read first ``jose e
+  maria``.
+- ``"van der Berg, PhD"`` — 1.4 read first ``van``, last ``der
+  Berg``.
+- ``"Josep Carod i Rovira"`` — ``i`` links two surnames in a
+  mixed-case name: 1.4 read middle ``Carod i``, last ``Rovira``.
+- ``"Jane Smith N.C.C."`` — an unlisted dotted credential after a
+  full name: 1.4 read last ``N.C.C.``, middle ``Smith``. ``"Jack
+  X.Y.Z."`` is unchanged.
+- ``"Jane Smith, LEED AP"`` — an unlisted all-caps credential
+  after a comma: 1.4 read first ``LEED``, middle ``AP``, last ``Jane
+  Smith``.
+- ``"Eric H. Holder Jr. Attorney General"`` and ``"Eric H. Holder, Jr.,
+  Attorney General"`` — a title after a credential is a title:
+  1.4 read middle ``H. Holder Jr. Attorney``, last ``General``, and
+  suffix ``Jr., Attorney General``.
+- ``"Steven Hardman, RN - CRNA"`` — a credential after a comma
+  starts a run of credentials, and since 2.7 the hyphen standing alone
+  parts it as a comma (suffix ``RN, CRNA``): 1.4 read first ``RN``,
+  middle ``-``, last ``Steven Hardman``, suffix ``CRNA``.
+- ``"John van der Berg Prof."`` — 1.4 read last ``van der Berg
+  Prof.``.
+- ``"Liam Ó Murchú"`` — the Irish particles ``Ó``, ``Ní`` and
+  ``Ua`` join the surname: 1.4 read middle ``Ó``, last ``Murchú``.
+- ``"Herra Väinö Johansson"`` — salutations in Finnish,
+  Icelandic, Malay and other languages are titles: 1.4 read first
+  ``Herra``, middle ``Väinö``.
+- ``"山田 ﾀﾛｳ"`` — halfwidth katakana reads as katakana: 1.4 read
+  first ``山田``, last ``ﾀﾛｳ``.
+- capitalizing ``"john smith md"``, ``"john smith phd"`` and
+  ``"JANE DOE MBA"`` — 1.4 wrote ``M.D.``, ``Ph.D.`` and ``Mba``;
+  credentials are now written the usual way (``MD``, ``PhD``, ``MBA``).
+- ``initials()`` on ``"john e smith"`` — 1.4 gave ``j. s.``; a
+  one-letter connective read as an initial now contributes one.
+
+.. doctest::
+
+    >>> parse("Jack MA").suffix
+    'MA'
     >>> parse("jose e maria santos").middle
     'e maria'
     >>> parse("van der Berg, PhD").family
@@ -995,6 +1159,33 @@ grep your fixtures for, with what 1.4 read:
     'Jane Doe MBA'
     >>> parse("john e smith").initials()
     'j. e. s.'
+
+.. _migrate-2-5:
+
+2.5
+^^^
+
+- ``"Dr. Smith, John"`` — a listed title before a family comma is
+  a title: 1.4 read last ``Dr. Smith``. ``"Gov Smith"`` — ``Gov``
+  is a title: 1.4 read first ``Gov``.
+- ``"Antonio Pavlović mlađi"`` — junior and senior in more than
+  forty languages are suffixes: 1.4 read middle ``Pavlović``, last ``mlađi``.
+- ``"John Smith II, AD"`` — a credential after a generational
+  suffix and a comma: 1.4 read first ``AD``, last ``John Smith``.
+- ``"John III, Sir"`` and ``"Smith, Sir"`` — the name before
+  a comma and a given-name title is the given name: 1.4 read last
+  ``John`` and ``Smith``.
+- ``"Ivoi, Paul d'"`` — a particle after the given name joins the
+  surname: 1.4 read middle ``d'``.
+- ``"jose j y lopez"`` — a lone letter in a one-case name reads as
+  in capitals: 1.4 read last ``j y lopez``.
+- ``"Bapak Dwi Putro"`` — the salutations ``bapak`` and ``owura``
+  are titles: 1.4 read first ``Bapak``, middle ``Dwi``.
+- capitalizing ``"jacobus henricus van 't hoff"`` — 1.4
+  wrote ``van 'T Hoff``.
+
+.. doctest::
+
     >>> dr = parse("Dr. Smith, John")
     >>> dr.title, dr.given, dr.family
     ('Dr.', 'John', 'Smith')
@@ -1016,6 +1207,34 @@ grep your fixtures for, with what 1.4 read:
     'Bapak'
     >>> str(parse("jacobus henricus van 't hoff").capitalized(force=True))
     "Jacobus Henricus van 't Hoff"
+
+.. _migrate-2-6:
+
+2.6
+^^^
+
+- ``"Maria de Sa"`` and ``"John Smith SA"`` — ``Sa`` is no longer
+  a credential: 1.4 read last ``de``, suffix ``Sa``, and suffix ``SA``.
+- ``"Cllr John Smith"`` and ``"Dott.ssa Anna Bianchi"`` — ``Cllr``
+  and the Italian abbreviated salutations are titles: 1.4 read first
+  ``Cllr`` and ``Dott.ssa``, middle ``John`` and ``Anna``.
+- ``"José Silva Júnior"`` — 1.4 read middle ``Silva``, last
+  ``Júnior``.
+- ``"John Smith, MD; PhD"`` — a semicolon between post-nominals
+  reads as a comma: 1.4 read first ``MD;``, last ``John Smith``.
+- ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` — ``Md`` and ``Wm``
+  are the given names they abbreviate: 1.4 read title ``Mr Md`` and
+  ``Wm``.
+- ``"Doe, Jane Mrs"`` — a salutation ending the given name after a
+  family comma is the title: 1.4 read middle ``Mrs``.
+- A zero-width space or byte-order mark divides words as a space
+  does: 1.4 kept it in the word beside it, so ``"\u200bDr. John Smith"``
+  read first ``Dr.``.
+- capitalizing ``"j.r.r. tolkien"`` — 1.4 wrote ``J.r.r.``;
+  repair now capitalizes after a full stop or an ayn.
+
+.. doctest::
+
     >>> parse("Maria de Sa").family
     'de Sa'
     >>> parse("John Smith SA").family
@@ -1039,6 +1258,54 @@ grep your fixtures for, with what 1.4 read:
     'Dr.'
     >>> str(parse("j.r.r. tolkien").capitalized())
     'J.R.R. Tolkien'
+
+.. _migrate-2-7:
+
+2.7
+^^^
+
+- ``"King Curtis"``, ``"Prince Fielder"``, ``"Sultan Khan"`` and
+  ``"Sheikh Ahmed Khan"`` — a title that is also a given name is a
+  title only inside a title phrase or behind a style (``"His Majesty
+  King Henry"``), so a bare one opening the name is the first name: 1.4
+  read title ``King``, ``Prince``, ``Sultan`` and ``Sheikh``. The same
+  holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
+  ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
+  ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
+  ``Lexicon.default().remove("king", kind="given")`` makes one a title
+  everywhere.
+- ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
+  — a title phrase is one title: 1.4 read title ``Chief``, first
+  ``Justice``, and first ``Major``, middle ``General John``.
+- ``"Chas. Smith"`` and ``"Ma. Cristina Reyes"`` — a given name
+  written short is the first name: 1.4 read title ``Chas.`` and ``Ma.``.
+- ``"John Smith VI MD"`` and ``"Smith, John VI"`` — the numerals
+  ``VI`` to ``X`` are suffixes as ``III`` is: 1.4 read last ``VI``,
+  suffix ``MD``, and middle ``VI``.
+- ``"John Smith, MD/PhD"`` and ``"John Smith, Pharm D"`` — a
+  credential joined by a hyphen or slash, or split by a space, after a
+  comma is a suffix: 1.4 read first ``MD/PhD``, and first ``Pharm``,
+  middle ``D``, each with last ``John Smith``.
+- ``"John Smith Ph. D. Jones"`` — 1.4 read last ``Jones``, suffix
+  ``Ph. D.``.
+- ``"Smith, John MA Jones"`` — a listed credential in capitals in
+  a mixed-case name starts the suffix: 1.4 read middle ``Jones``, suffix
+  ``MA``.
+- ``"Pedro Alves Filho"`` and ``"Alexandre Dumas fils"`` — the
+  Brazilian agnomens and ``fils`` are suffixes where the name has a word
+  to spare: 1.4 read middle ``Alves`` and ``Dumas``, last ``Filho`` and
+  ``fils``.
+- ``"Andrew Perkins (JD)"`` — a bracketed credential its writing
+  settles is a suffix: 1.4 read nickname ``JD``.
+- ``"Jane Smith, Dr. / MD"`` — a hyphen or slash standing alone
+  between post-nominals reads as a comma: 1.4 read first ``/``, last
+  ``Jane Smith``.
+- ``"Marie Bon Durand"`` and ``"Herren Hans"`` — ``Bon``, ``Dí``
+  and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
+  titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
+
+.. doctest::
+
     >>> [parse(n).given for n in ("King Curtis", "Prince Fielder",
     ...     "Princess Diana", "Sultan Khan", "Sultana Begum",
     ...     "Sheikh Ahmed Khan", "Shaikh Ahmed Khan", "Sheik Ahmed",
@@ -1079,6 +1346,38 @@ grep your fixtures for, with what 1.4 read:
     'Durand'
     >>> parse("Herren Hans").given
     'Herren'
+
+.. _migrate-2-8:
+
+2.8
+^^^
+
+- ``"Marquis Johnson"`` and ``"Johnson, Marquise"`` — ``Marquis``
+  and ``Marquise`` are titles only inside a title phrase, as ``King`` is
+  since 2.7 (``"Marquis of Queensberry"`` keeps the title): 1.4 read
+  title ``Marquis`` and ``Marquise``.
+- ``"Deacon Jones"``, ``"Burgess Meredith"`` and ``"Ranger Smith"``
+  — ``Deacon``, ``Burgess`` and ``Ranger`` are titles only inside a
+  title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
+  Smith"`` keeps the title): 1.4 read title ``Deacon``, ``Burgess`` and
+  ``Ranger``.
+- ``"Queen Latifah"`` and ``"Elizabeth II, Queen"`` — ``Queen`` is
+  a title only inside a title phrase or behind a style (``"Her Majesty
+  Queen Elizabeth"``), as ``King`` is since 2.7: 1.4 read title
+  ``Queen``, first ``Latifah``, and last ``Elizabeth``.
+- ``"Prince Consort Albert"``, ``"Princess Royal Anne"`` and ``"Bales,
+  Royal"`` — the royal title phrases are one title, and ``Royal``
+  after a family comma is the first name: 1.4 read title ``Prince``,
+  first ``Consort``; title ``Princess Royal``, last ``Anne``; and title
+  ``Royal``, first ``Bales``.
+- ``"Chancellor Smith"`` and ``"Lord Justice Leveson"`` —
+  ``Chancellor`` is a title only inside a title phrase (``"Lord
+  Chancellor John Smith"``), and ``Lord Justice`` and ``Lady Justice`` are
+  one title: 1.4 read title ``Chancellor``, and title ``Lord``, first
+  ``Justice``.
+
+.. doctest::
+
     >>> parse("Marquis Johnson").given, parse("Johnson, Marquise").given
     ('Marquis', 'Marquise')
     >>> parse("Marquis of Queensberry").title
@@ -1102,8 +1401,15 @@ grep your fixtures for, with what 1.4 read:
     >>> parse("Lord Justice Leveson").title
     'Lord Justice'
 
+.. _migrate-3-0:
+
 Changed in 3.0
 ~~~~~~~~~~~~~~
+
+.. _migrate-3-0-rendering:
+
+Rendering order and separators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``str()`` and :meth:`~nameparser.ParsedName.render` with no argument
 lay a name out in the order it was read in, recorded as
@@ -1136,11 +1442,13 @@ as written, in its order and with its joiners.
     >>> parse("김민준").render(v2_spec)
     '민준 김'
 
-A :class:`~nameparser.ParsedName` pickled by 2.x has no ``order`` and
-renders exactly as it did under 2.x, while a fresh parse of the same text
-renders as written; the two still compare equal, since ``order`` is
-left out of ``==`` and :meth:`~nameparser.ParsedName.comparison_key`.
-And :meth:`~nameparser.ParsedName.initials` gives nothing for a word
+A :class:`~nameparser.ParsedName` pickled by 2.x keeps 2.x's rendering
+(:ref:`migrate-pickles`).
+
+Initials in scripts without them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:meth:`~nameparser.ParsedName.initials` gives nothing for a word
 in Han, Hangul or kana, scripts with no initials, where 2.8 gave its
 first character:
 
@@ -1149,9 +1457,60 @@ first character:
     >>> parse("김민준").initials(), parse("Kim Minjun").initials()
     ('', 'K. M.')
 
+Readings that moved
+^^^^^^^^^^^^^^^^^^^
+
 3.0 moved these 1.4 readings too. The release log's 3.0 section
 carries the reasoning; these are the shapes to grep your fixtures for,
-with what 1.4 read:
+with what 1.4 read, by what moved. Each group's examples follow its
+list, in the list's order.
+
+Titles and given names written short
+""""""""""""""""""""""""""""""""""""
+
+- ``"Jean Dupont, Pr"`` and ``"Juan Pérez, Profesor"`` — the French and
+  Spanish professor titles are titles: 1.4 read first ``Pr`` and
+  ``Profesor``, last ``Jean Dupont`` and ``Juan Pérez``.
+- ``"Maj Sjöwall"``, ``"Gen Goto"``, ``"Pharaoh Mwale"`` and ``"Saint
+  Clair Soares"`` — a bare rank or ``Pharaoh``, ``Saint``, ``Sailor`` or
+  ``Majesty`` opening a name is the given name: 1.4 read title ``Maj``,
+  ``Gen``, ``Pharaoh`` and ``Saint``. ``"Brig Gen Mark Kimmitt"`` is one
+  title: 1.4 read first ``Brig``.
+- ``"Silva, Junior Carlos"`` — 1.4 read title ``Junior``, first
+  ``Carlos``.
+- ``"Hans Meier Priv.-Doz."`` — a listed title with a period or hyphen
+  inside it ending a name is a title: 1.4 read middle ``Meier``, last
+  ``Priv.-Doz.``.
+- ``"Mohd. Shameem Khan"`` — Muhammad, Achmad, Francisco and Sheikh
+  written short are given names: 1.4 read title ``Mohd.``, first
+  ``Shameem``.
+- ``"Jan Novák, MUDr"``, ``"Licenciado Juan Pérez"``, ``"Esra Oz, Assist
+  Prof"``, ``"Engr Ahsen Ali"`` and ``"Anselm Crombach, Dipl.-Psych."``
+  — titles no name bears are titles: 1.4 read first ``MUDr``,
+  ``Licenciado``, ``Assist``, ``Engr`` and ``Dipl.-Psych.``.
+
+.. doctest::
+
+    >>> parse("Jean Dupont, Pr").title, parse("Juan Pérez, Profesor").title
+    ('Pr', 'Profesor')
+    >>> [parse(n).given for n in ("Maj Sjöwall", "Gen Goto", "Pharaoh Mwale",
+    ...     "Saint Clair Soares")]
+    ['Maj', 'Gen', 'Pharaoh', 'Saint']
+    >>> parse("Brig Gen Mark Kimmitt").title
+    'Brig Gen'
+    >>> parse("Silva, Junior Carlos").given
+    'Junior'
+    >>> parse("Hans Meier Priv.-Doz.").title
+    'Priv.-Doz.'
+    >>> parse("Mohd. Shameem Khan").given
+    'Mohd.'
+    >>> [parse(n).title for n in ("Jan Novák, MUDr", "Licenciado Juan Pérez",
+    ...     "Esra Oz, Assist Prof", "Engr Ahsen Ali",
+    ...     "Anselm Crombach, Dipl.-Psych.")]
+    ['MUDr', 'Licenciado', 'Assist Prof', 'Engr', 'Dipl.-Psych.']
+
+Particles and compound names
+""""""""""""""""""""""""""""
 
 - ``"Otto Graf Lambsdorff"`` — ``Graf``, ``Gräfin``, ``Fürst`` and
   ``Prinz`` inside a surname join it, as ``Freiherr`` does: 1.4 read
@@ -1164,58 +1523,8 @@ with what 1.4 read:
   particle is a middle name: 1.4 read last ``del Carmen García``.
 - ``"طارق عبد العزيز"`` — ``عبد`` joins a listed name of God after it:
   1.4 read middle ``عبد``, last ``العزيز``.
-- ``"Ortega y Gasset VI"`` — 1.4 read first ``Ortega y Gasset``, last
-  ``VI``.
-- ``"John Smith (PhD, MBA)"`` and ``"Justin (JP) Stearns"`` — a
-  bracketed clause of credentials is the suffix, and initials in
-  brackets the nickname: 1.4 read nickname ``PhD, MBA`` and middle
-  ``JP``.
-- ``"Alexandre Dumas père"`` — 1.4 read middle ``Dumas``, last
-  ``père``.
-- ``"Jean Dupont, Pr"`` and ``"Juan Pérez, Profesor"`` — the French and
-  Spanish professor titles are titles: 1.4 read first ``Pr`` and
-  ``Profesor``, last ``Jean Dupont`` and ``Juan Pérez``.
-- ``"Jane Doe KC"`` and ``"Jane Doe MSW"`` — British post-nominals and
-  77 common US credentials are suffixes: 1.4 read middle ``Doe``, last
-  ``KC`` and ``MSW``.
-- ``"John⁣Smith"`` — the invisible separator divides words: 1.4
-  read first ``John⁣Smith``.
-- ``"Maj Sjöwall"``, ``"Gen Goto"``, ``"Pharaoh Mwale"`` and ``"Saint
-  Clair Soares"`` — a bare rank or ``Pharaoh``, ``Saint``, ``Sailor`` or
-  ``Majesty`` opening a name is the given name: 1.4 read title ``Maj``,
-  ``Gen``, ``Pharaoh`` and ``Saint``. ``"Brig Gen Mark Kimmitt"`` is one
-  title: 1.4 read first ``Brig``.
-- ``"Silva, Junior Carlos"`` — 1.4 read title ``Junior``, first
-  ``Carlos``.
-- capitalizing ``"JOHN ST CLAIR"``, ``"JUAN DELA CRUZ"`` and ``"JOHN
-  MACHADO"`` — 1.4 wrote ``st``, ``dela`` and ``MacHado``; saint and
-  rank particles keep their capital, and a name opening Mac is
-  title-cased unless the vocabulary records its casing (``MacDonald``).
 - ``"John Smith y V"`` — a lone letter after a connective is part of
   the family: 1.4 read middle ``Smith``, last ``y``, suffix ``V``.
-- ``"이서연·김민준"`` typed decomposed (NFD) — the interpunct divides
-  it as it does the composed spelling: 1.4 read first
-  ``이서연·김민준``.
-- ``"Hans Meier Priv.-Doz."`` — a listed title with a period or hyphen
-  inside it ending a name is a title: 1.4 read middle ``Meier``, last
-  ``Priv.-Doz.``.
-- ``"Jane Smith PhD/NP-C"`` and ``"John Smith MA/PhD"`` — a joined
-  credential is the suffix, a credential listed with its own joiner and
-  a credential that is also a name beside one that is not included: 1.4
-  read middle ``Smith``, last ``PhD/NP-C`` and ``MA/PhD``.
-- ``"John Smith (Ma, PhD)"`` and ``"John Smith (Msc.Ed)"`` — 1.4 read
-  nickname ``Ma, PhD`` and ``Msc.Ed``.
-- ``"'Smitty' Jones Jr."`` — a nickname, one name word and a suffix read
-  the word as the family: 1.4 read first ``Jones``, last ``Jr.``.
-- ``"Mohd. Shameem Khan"`` — Muhammad, Achmad, Francisco and Sheikh
-  written short are given names: 1.4 read title ``Mohd.``, first
-  ``Shameem``.
-- ``"Jan Novák, MUDr"``, ``"Licenciado Juan Pérez"``, ``"Esra Oz, Assist
-  Prof"``, ``"Engr Ahsen Ali"`` and ``"Anselm Crombach, Dipl.-Psych."``
-  — titles no name bears are titles: 1.4 read first ``MUDr``,
-  ``Licenciado``, ``Assist``, ``Engr`` and ``Dipl.-Psych.``.
-- ``"Mary Smith, Mst"`` — ``Mst`` after a name is a credential: 1.4
-  read first ``Mst``, last ``Mary Smith``.
 
 .. doctest::
 
@@ -1227,53 +1536,87 @@ with what 1.4 read:
     'del Carmen'
     >>> parse("طارق عبد العزيز").family
     'عبد العزيز'
+    >>> parse("John Smith y V").family
+    'Smith y V'
+
+Suffixes and credentials
+""""""""""""""""""""""""
+
+- ``"Ortega y Gasset VI"`` — 1.4 read first ``Ortega y Gasset``, last
+  ``VI``.
+- ``"John Smith (PhD, MBA)"`` and ``"Justin (JP) Stearns"`` — a
+  bracketed clause of credentials is the suffix, and initials in
+  brackets the nickname: 1.4 read nickname ``PhD, MBA`` and middle
+  ``JP``.
+- ``"Alexandre Dumas père"`` — 1.4 read middle ``Dumas``, last
+  ``père``.
+- ``"Jane Doe KC"`` and ``"Jane Doe MSW"`` — British post-nominals and
+  several dozen common US credentials are suffixes: 1.4 read middle ``Doe``, last
+  ``KC`` and ``MSW``.
+- ``"Jane Smith PhD/NP-C"`` and ``"John Smith MA/PhD"`` — a joined
+  credential is the suffix, a credential listed with its own joiner and
+  a credential that is also a name beside one that is not included: 1.4
+  read middle ``Smith``, last ``PhD/NP-C`` and ``MA/PhD``.
+- ``"John Smith (Ma, PhD)"`` and ``"John Smith (Msc.Ed)"`` — 1.4 read
+  nickname ``Ma, PhD`` and ``Msc.Ed``.
+- ``"'Smitty' Jones Jr."`` — a nickname, one name word and a suffix read
+  the word as the family: 1.4 read first ``Jones``, last ``Jr.``.
+- ``"Mary Smith, Mst"`` — ``Mst`` after a name is a credential: 1.4
+  read first ``Mst``, last ``Mary Smith``.
+
+.. doctest::
+
     >>> parse("Ortega y Gasset VI").family
     'Gasset'
     >>> parse("John Smith (PhD, MBA)").suffix, parse("Justin (JP) Stearns").nickname
     ('PhD, MBA', 'JP')
     >>> parse("Alexandre Dumas père").suffix
     'père'
-    >>> parse("Jean Dupont, Pr").title, parse("Juan Pérez, Profesor").title
-    ('Pr', 'Profesor')
     >>> parse("Jane Doe KC").suffix, parse("Jane Doe MSW").suffix
     ('KC', 'MSW')
-    >>> parse("John⁣Smith").family
-    'Smith'
-    >>> [parse(n).given for n in ("Maj Sjöwall", "Gen Goto", "Pharaoh Mwale",
-    ...     "Saint Clair Soares")]
-    ['Maj', 'Gen', 'Pharaoh', 'Saint']
-    >>> parse("Brig Gen Mark Kimmitt").title
-    'Brig Gen'
-    >>> parse("Silva, Junior Carlos").given
-    'Junior'
-    >>> [str(parse(n).capitalized()) for n in ("JOHN ST CLAIR",
-    ...     "JUAN DELA CRUZ", "JOHN MACHADO", "RONALD MACDONALD")]
-    ['John St Clair', 'Juan Dela Cruz', 'John Machado', 'Ronald MacDonald']
-    >>> parse("John Smith y V").family
-    'Smith y V'
-    >>> import unicodedata
-    >>> nfd = parse(unicodedata.normalize("NFD", "이서연·김민준"))
-    >>> nfd.given == unicodedata.normalize("NFD", "이서연")
-    True
-    >>> parse("Hans Meier Priv.-Doz.").title
-    'Priv.-Doz.'
     >>> parse("Jane Smith PhD/NP-C").suffix, parse("John Smith MA/PhD").suffix
     ('PhD/NP-C', 'MA/PhD')
     >>> parse("John Smith (Ma, PhD)").suffix, parse("John Smith (Msc.Ed)").suffix
     ('Ma, PhD', 'Msc.Ed')
     >>> parse("'Smitty' Jones Jr.").family
     'Jones'
-    >>> parse("Mohd. Shameem Khan").given
-    'Mohd.'
-    >>> [parse(n).title for n in ("Jan Novák, MUDr", "Licenciado Juan Pérez",
-    ...     "Esra Oz, Assist Prof", "Engr Ahsen Ali",
-    ...     "Anselm Crombach, Dipl.-Psych.")]
-    ['MUDr', 'Licenciado', 'Assist Prof', 'Engr', 'Dipl.-Psych.']
     >>> parse("Mary Smith, Mst").suffix
     'Mst'
 
+Separators and case repair
+""""""""""""""""""""""""""
+
+- ``"John⁣Smith"`` — the invisible separator divides words: 1.4
+  read first ``John⁣Smith``.
+- ``"이서연·김민준"`` typed decomposed (NFD) — the interpunct divides
+  it as it does the composed spelling: 1.4 read first
+  ``이서연·김민준``.
+- capitalizing ``"JOHN ST CLAIR"``, ``"JUAN DELA CRUZ"`` and ``"JOHN
+  MACHADO"`` — 1.4 wrote ``st``, ``dela`` and ``MacHado``; saint and
+  rank particles keep their capital, and a name opening Mac is
+  title-cased unless the vocabulary records its casing (``MacDonald``).
+
+.. doctest::
+
+    >>> parse("John⁣Smith").family
+    'Smith'
+    >>> import unicodedata
+    >>> nfd = parse(unicodedata.normalize("NFD", "이서연·김민준"))
+    >>> nfd.given == unicodedata.normalize("NFD", "이서연")
+    True
+    >>> [str(parse(n).capitalized()) for n in ("JOHN ST CLAIR",
+    ...     "JUAN DELA CRUZ", "JOHN MACHADO", "RONALD MACDONALD")]
+    ['John St Clair', 'Juan Dela Cruz', 'John Machado', 'Ronald MacDonald']
+
+.. _migrate-3-1:
+
 Changed in 3.1
 ~~~~~~~~~~~~~~
+
+Each entry names the releases that read the name the old way.
+
+Case repair: apostrophes, Georgian and hyphenated particles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Case repair keeps a Ukrainian or Belarusian apostrophe inside its word,
 writes Georgian set in Mtavruli capitals in plain Mkhedruli, and
@@ -1299,6 +1642,9 @@ capitals in a name of mixed case is still kept:
     ...     "Უჩა გოგოლაძე", "Jean DUPONT")]
     ['ნინო ბურჯანაძე', 'უჩა გოგოლაძე', 'Jean DUPONT']
 
+Initials in Thai and Burmese
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 :meth:`~nameparser.ParsedName.initials` gives nothing for a word in
 Thai or Burmese, scripts that shorten no name to a letter, as for Han,
 Hangul and kana, where 1.4 through 3.0 gave its first character:
@@ -1307,6 +1653,9 @@ Hangul and kana, where 1.4 through 3.0 gave its first character:
 
     >>> [parse(n).initials() for n in ("สมชาย ใจดี", "ကြည် ကြည် ဌေး")]
     ['', '']
+
+Transliteration digraphs
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 A transliteration digraph opening a name, the Latin spelling of one
 Cyrillic letter (``Yu.``, ``Ya.``, ``Ye.``, ``Yo.``, ``Zh.``, ``Kh.``,
@@ -1322,6 +1671,9 @@ of Congress ``Iu.``) are unchanged:
     ('', 'Yu.', 'A.')
     >>> parse("Ts. Sandag-Ochir").title
     'Ts.'
+
+``Md`` as a given name
+^^^^^^^^^^^^^^^^^^^^^^
 
 ``Md.`` opening a name, Muhammad written short in Bangladesh and India,
 is the given name, where 1.4 through 3.0 read it as a title; ``MD``
@@ -1349,6 +1701,9 @@ remove ``md``'s given reading (:ref:`customize-md-title`):
     >>> parse("UDDIN, MD").suffix
     'MD'
 
+Maghrebi and Hebrew particles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 ``El``, ``Ait``, ``Aït``, ``Nait``, ``Ould`` and ``Ouled`` start the
 family name they open, where 1.4 through 3.0 left them in the middle
 name (``El`` opening a name stays the given name), and
@@ -1366,6 +1721,9 @@ longer fills ``patronymic``:
     >>> hebrew_ben.given, hebrew_ben.family
     ('בן', 'כהן')
 
+Two capitals before a later credential
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Two capitals between a full name and credentials, after a comma, are a
 credential, where 1.4 through 3.0 read them as the given name and the
 whole name before the comma as the family name. They are read so beside
@@ -1374,7 +1732,8 @@ credential in a later one, where dotted initials are read so too.
 
 Behind one word they are still the given name, as are two capitals
 alone after the comma with no listed credential in a later part, and
-dotted initials with credentials in their own part. ``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps two
+dotted initials with credentials in their own part.
+``Policy(unlisted_caps_suffixes=CapsSuffixes.OFF)`` keeps two
 capitals the given name, with every other unlisted word in capitals
 after a comma, and ``Policy(unlisted_dotted_suffixes=False)`` the
 dotted ones:
@@ -1388,3 +1747,27 @@ dotted ones:
     >>> [parse(n).given_names for n in ("Doe, BM, PhD", "Jane Doe, BM",
     ...     "Jane Doe, BM, Jr.", "Jane Doe, B.M. PhD")]
     ['BM', 'BM', 'BM', 'B.M.']
+
+.. _migrate-3-1-initials-credential:
+
+Initials that spell a credential
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dotted initials that spell a listed credential, after a one-word
+surname and a comma, are the given and middle names, as the initials
+they may be, where 1.4 read them as one given name and 2.0 through 3.0
+as the credential (:ref:`migrate-2-0`).
+The parse reports the credential it did not read. Two name words before
+the comma, another credential beside the initials, or the undotted
+spelling keep the credential:
+
+.. doctest::
+
+    >>> dotted = parse("Andrews, M.D.")
+    >>> dotted.given, dotted.middle, dotted.suffix
+    ('M.', 'D.', '')
+    >>> [str(report.kind) for report in dotted.ambiguities]
+    ['suffix-or-name']
+    >>> [parse(n).suffix for n in ("Bin Zhang, M.D.",
+    ...     "Andrews, M.D. Ph.D.", "Andrews, MD")]
+    ['M.D.', 'M.D. Ph.D.', 'MD']
