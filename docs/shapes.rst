@@ -516,10 +516,7 @@ delimiters, it keeps the nickname reading unless the way it is written
 settles it after the name: in capitals in a name written in mixed case,
 or with a period inside it. A name written all in capitals says
 nothing about the word, and inside the name the word in capitals is a
-nickname too (``Justin (JD) Stearns``). With periods inside the name it
-is neither: it is content ending in a period, read as if written
-without its brackets, so ``Justin (J.D.) Stearns`` reads as
-``Justin J.D. Stearns`` does:
+nickname too (``Justin (JD) Stearns``):
 
 .. doctest::
 
@@ -529,6 +526,14 @@ without its brackets, so ``Justin (J.D.) Stearns`` reads as
     'Jd'
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
+
+Written with periods inside the name, an ambiguous acronym is neither
+a credential nor a nickname: it is content ending in a period, read as
+if written without its brackets, so ``Justin (J.D.) Stearns`` reads as
+``Justin J.D. Stearns`` does:
+
+.. doctest::
+
     >>> parse("Justin (J.D.) Stearns").middle, parse("Justin J.D. Stearns").middle
     ('J.D.', 'J.D.')
 
