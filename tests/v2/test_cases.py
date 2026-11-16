@@ -487,9 +487,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # code review's 'Jane Doe, MH, MD/PhD;' under three orders; 2080 ->
     # 2086, the coordinator's review: 'Jane Doe, MH, Mc, PhD' and 'Jane
     # Doe, VI, PhD' under three orders (the vi row is not swept); 2086
-    # -> 2098, the third review's four rows under three orders.
-    assert claims == 2098, (
-        f"the field sweep checks {claims} claims, recorded as 2098 on "
+    # -> 2098, the third review's four rows under three orders; 2098 ->
+    # 2101, 'Jane Doe, A.L., PhD' under three orders.
+    assert claims == 2101, (
+        f"the field sweep checks {claims} claims, recorded as 2101 on "
         f"2026-11-15")
 
 
@@ -952,8 +953,8 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # as the undotted ones do, and one boundary row's stand-in lands in
     # the other field; 453 -> 456, the second code review's glued row;
     # 456 -> 462, the coordinator's review's two rows; 462 -> 474, the
-    # third review's four
-    assert (checked, skipped) == (595, 474), (checked, skipped)
+    # third review's four; 474 -> 477, the 'A.L.' row
+    assert (checked, skipped) == (595, 477), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

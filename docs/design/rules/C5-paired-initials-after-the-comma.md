@@ -106,15 +106,31 @@
   "García Márquez, M.J., PhD"  →  suffix="M.J., PhD"
   ```
 
-- A given name or a surname that two capitals spell, dotted or not, is not held back there: the pair is read by its shape, and a word listed as a name in another writing is unlisted in this one. Undotted capitals that spell a particle or a connective are a listed word and stay a name, or read as the credential or the title the vocabulary also lists them as; dotted, the same letters are a pair like any other. Nor is a later part's credential that a given name written short also spells, in whatever case, as in the pair's own part.
+- A given name or a surname that two capitals spell, dotted or not, is not held back there: the pair is read by its shape, and a word listed as a name in another writing is unlisted in this one. Undotted capitals that spell a particle or a connective are a listed word and stay a name, or read as the credential or the title the vocabulary also lists them as.
   ```
   "Ana Ruiz, JO, MD"          →  suffix="JO, MD"
   "Ram Bahadur, BK, MD"       →  suffix="BK, MD"
   "Ram Bahadur, BK, MD"  [ne]  →  suffix="BK, MD"
   "Ram Bahadur, B.K., MD"     →  suffix="B.K., MD"
   "Ram Bahadur, B.K., MD"  [ne]  →  suffix="B.K., MD"
-  "Jane Doe, MH, Md"          →  suffix="MH, Md"
+  ```
+
+- A dotted pair whose letters spell a particle or a connective reads as a credential, where the same letters undotted are a listed word and stay a name.
+  ```
   "Jane Doe, A.L., PhD"       →  suffix="A.L., PhD"
+  "Jane Doe, AL, PhD"         →  given="AL"
+  ```
+
+- A later part that is a credential a given name written short also spells speaks for the pair in whatever case it is written, as it does in the pair's own part.
+  ```
+  "Jane Doe, MH, Md"          →  suffix="MH, Md"
+  ```
+
+- Two capitals that spell a numeral the vocabulary does not list read as a credential through the pair and are reported, where a listed numeral in the same place is a suffix and is not.
+  ```
+  "Jane Doe, VI, PhD"         →  suffix="VI, PhD"
+  "Jane Doe, VI, PhD"         →  ambiguities=("suffix-or-name",)
+  "Jane Doe, II, PhD"         →  ambiguities=()
   ```
 
 - A part between the two capitals and the listed credential is taken with them whatever it holds, a name word included, and keeps C2's flag.

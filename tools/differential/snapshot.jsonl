@@ -1828,6 +1828,7 @@
 {"name": "Jane Doe, BM PhD", "given": "Jane", "family": "Doe", "suffix": "BM PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, BM, BCh, PhD", "given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD", "ambiguities": ["COMMA_STRUCTURE", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe, BM, Bch, PhD"}
 {"name": "Jane Doe, DL", "given": "Jane", "family": "Doe", "suffix": "DL", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
+{"name": "Jane Doe, II, PhD", "given": "Jane", "family": "Doe", "suffix": "II, PhD", "initials": "J. D.", "generation": "II", "credentials": "PhD"}
 {"name": "Jane Doe, KC", "given": "Jane", "family": "Doe", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
 {"name": "Jane Doe, M.H, PhD", "given": "Jane", "family": "Doe", "suffix": "M.H, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, M.H. PhD", "given": "M.", "middle": "H.", "family": "Jane Doe", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. H. J. D."}
@@ -1859,6 +1860,7 @@
 {"name": "Jane Doe, Mh, PhD", "given": "Mh", "family": "Jane Doe", "suffix": "PhD", "initials": "M. J. D."}
 {"name": "Jane Doe, Ms MH, PhD", "title": "Ms", "given": "MH", "family": "Jane Doe", "suffix": "PhD", "initials": "M. J. D.", "capitalized_force": "Ms Mh Jane Doe PhD"}
 {"name": "Jane Doe, ST, PhD", "title": "ST", "given": "Jane", "family": "Doe", "suffix": "PhD", "initials": "J. D.", "capitalized_force": "St Jane Doe PhD"}
+{"name": "Jane Doe, VI, PhD", "given": "Jane", "family": "Doe", "suffix": "VI, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "generation": "VI", "credentials": "PhD"}
 {"name": "Jane Doe, m.h., PhD", "given": "m.h.", "family": "Jane Doe", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "m. J. D.", "capitalized_force": "M.H. Jane Doe PhD"}
 {"name": "Jane Mac Beth", "given": "Jane", "family": "Mac Beth", "initials": "J. B.", "capitalized_force": "Jane mac Beth"}
 {"name": "Jane Mary Doe, M.H., PhD", "given": "Jane", "middle": "Mary", "family": "Doe", "suffix": "M.H., PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. M. D."}

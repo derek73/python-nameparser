@@ -6952,10 +6952,10 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "suffix": "MH, Md"},
          classification="fix(#1392)",
          ambiguities=("suffix-or-name",),
-         notes="#1392, open (put to the maintainer 2026-11-15, "
-               "decisions/C5): 'Md' in a part of its own behind a full "
-               "name is the credential in any case, as beside the pair "
-               "('Jane Doe, BM Md'). 1.4.0 through 3.0.1 read given 'MH'"),
+         notes="#1392 accepted cost (decisions/C5): 'Md' in a part of "
+               "its own behind a full name is the credential in any "
+               "case, as beside the pair ('Jane Doe, BM Md'). 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
     Case("two_caps_alone_before_a_listed_credential_that_is_not_the_last_part",
          "Jane Doe, MH, PhD, Jr.",
          {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, Jr."},
@@ -7082,10 +7082,19 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "suffix": "VI, PhD"},
          classification="fix(#1392)",
          ambiguities=("suffix-or-name",),
-         notes="#1392, open (put to the maintainer 2026-11-15, "
-               "decisions/C5): 'VI' is unlisted two capitals and reads "
-               "through the pair, reported, where the listed 'II' reads "
-               "suffix unreported. 1.4.0 through 3.0.1 read given 'VI'"),
+         notes="#1392 accepted cost (decisions/C5): 'VI' is unlisted "
+               "two capitals and reads through the pair, reported, "
+               "where the listed 'II' reads suffix unreported. 1.4.0 "
+               "through 3.0.1 read given 'VI'"),
+    Case("a_dotted_pair_that_spells_a_particle_before_a_later_credential",
+         "Jane Doe, A.L., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "A.L., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost (decisions/C5): dotted, letters "
+               "that spell a particle are a pair like any other, where "
+               "'Jane Doe, AL, PhD' keeps given 'AL'. 1.4.0 through "
+               "3.0.1 read given 'A.L.'"),
     Case("two_caps_alone_before_a_lowercase_particle_part_and_a_credential",
          "Jane Doe, MH, de, PhD",
          {"given": "Jane", "family": "Doe", "suffix": "MH, de, PhD"},
