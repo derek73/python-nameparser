@@ -880,6 +880,9 @@ def assemble(state: ParseState) -> ParsedName:
                       order=order)
 
 
+_INITIAL_TAGS = frozenset({"initial"})
+
+
 # rules/T7: "it reads as its letters written with a space between
 # them would: the letter in the given name's place in the order is the
 # given name, and the others are middle names" -- decisions/T7 (#1296)
@@ -914,9 +917,6 @@ def _part_letter_run(whole: Token, tokens: tuple[Token, ...],
         tuple(p for t in a.tokens for p in (parts if t == whole else (t,))),
         a.alternative) for a in ambiguities]
     return tokens[:at] + tuple(parts) + tokens[at + 1:], reported
-
-
-_INITIAL_TAGS = frozenset({"initial"})
 
 
 def _listed_run(text: str, lexicon: Lexicon) -> bool:

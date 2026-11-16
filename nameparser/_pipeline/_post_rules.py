@@ -9,7 +9,7 @@ extracted, one_case and original, which S1's set-apart pass reads,
 settling S13's members with its own (#810, #792), original also read
 by R1's entry pass for a comma a set-apart clause kept; and order,
 the order assign read the name under, which H1, P1's fold, P6's
-attachment, P10, O1, O2, O6, O7, O8 and W5's surname pair key on rather than
+attachment, P10, O1, O2, O6, O7 and W5's surname pair key on rather than
 Policy.name_order (#395).
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
@@ -48,7 +48,7 @@ Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
 title_modifiers, title_styles and after_given_titles.
 
 Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
-O6, O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
+O6, O7, O8, O9, O3 and R1 of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -598,8 +598,7 @@ def _family_in_capitals(state: ParseState, tokens: list[WorkToken],
     return True
 
 
-def _take_trailing_initials(state: ParseState,
-                            tokens: list[WorkToken]) -> None:
+def _take_trailing_initials(tokens: list[WorkToken]) -> None:
     # rules/O8: "the letters ending the name are its family name" --
     # under the given-first order, with no family comma, the middle
     # initials standing right before a family name written as one
@@ -1429,56 +1428,15 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, middles[0], Role.FAMILY)
             _, givens, middles, families = _positions(tokens)
     # rules/P6: "a particle ending the name attaches to that family
-    # name and is written before it" -- the no-comma site (#467).
-    # A comma is not the only thing that names the family; a declared
-    # family-first order does too, and the same listing is written
-    # both ways ("Jong, Anke de" and "Jong Anke de" under
-    # FAMILY_FIRST both give family "de Jong").
-    #
-    # Keyed on the SLOT the run landed in, not on its vocabulary.
-    # MIDDLE is the one position that means nothing here: middles are
-    # further given names, and a particle is not one. Only
-    # FAMILY_FIRST puts a trailing piece there --
-    # FAMILY_FIRST_GIVEN_LAST puts it in GIVEN, where the caller's own
-    # declaration says it IS the given name, and P1's site above no
-    # longer overrides that either.
-    #
-    # Which is why no vocabulary test appears here and none is wanted.
-    # The comma path needs one because a comma cannot separate the
-    # Dutch reading from the Vietnamese; the declared ORDER can, when
-    # the caller declares the right one for the name: "Beethoven
-    # Ludwig van" under FAMILY_FIRST gives family "van Beethoven"
-    # though `van` is ambiguous vocabulary, and "Nguyen Thi Van" under
-    # FAMILY_FIRST_GIVEN_LAST keeps given "Van" though the same word
-    # is in the same set. (Under the WRONG order each loses: the
-    # Vietnamese name read as FAMILY_FIRST gives family "Van Nguyen".
-    # rules/P6 records that as accepted -- it is one order, not
-    # both.) A never-given test here would have excluded every
-    # ambiguous particle -- von, di, da, del, le and `van` itself,
-    # the flagship word of the listing this rule is named for.
-    #
-    # NO RE-LAYOUT, and that is a property of ONE order rather than a
-    # simplification: under FAMILY_FIRST the roles run family, given,
-    # middle, middle..., so dropping a trailing MIDDLE leaves every
-    # other piece's role untouched. It is not true of
-    # FAMILY_FIRST_GIVEN_LAST (family, middle..., given) and not true
-    # of the default order, which is why this site tests the order
-    # rather than trusting the slot to imply it -- review found the
-    # first draft firing on 52 default-order names, where a
-    # conjunction stops a particle's forward chain and leaves it
-    # standing in a middle ("Maria Luisa y de la Cruz"). An earlier
-    # draft still (#466) removed a piece and re-laid the leftover out,
-    # which lost a given name outright on "van Berg Jan de" and
-    # promoted a post-nominal into the given slot on
-    # "Berg Jan Jr. de"; neither is reachable without a re-layout.
-    #
-    # The family must still hold a base of its own -- R2's invariant,
-    # that a non-empty family has a non-empty base, not a ban on
-    # particle-before-particle. Without it "van Berg Jan de" reports
-    # family 'de van', whose words R2 reads as ordinary name words,
-    # and no rule reorders those. It does NOT stop a second particle
-    # joining a family that merely OPENS with one: "de Mesnil Jan de"
-    # gives 'de de Mesnil', which keeps its base and is accepted.
+    # name and is written before it" -- the no-comma site, where a
+    # declared family-first order names the family as a comma does.
+    # Keyed on the slot, not the vocabulary: a MIDDLE is the one slot
+    # meaning nothing here, and dropping a particle from it moves no
+    # other role, so no re-layout is needed; the run must also end the
+    # name (below). And rules/P6: "Without
+    # a comma, the family must hold a base of its own" -- R2's
+    # invariant, not a ban on a second particle ("de Mesnil Jan de"
+    # gives 'de de Mesnil') (decisions/P6 (#466, #467))
     # every retagging block above recomputes the lists, so they are
     # current here (a stale index list is the bug shape #359 fixed)
     names = givens + middles + families
@@ -1565,7 +1523,7 @@ def post_rules(state: ParseState) -> ParseState:
     capitals = (state.policy.capitals_as_family
                 and _family_in_capitals(state, tokens, ambiguities))
     if state.policy.initials_as_family:
-        _take_trailing_initials(state, tokens)
+        _take_trailing_initials(tokens)
     if state.policy.two_family_names and not capitals:
         _take_second_family_name(state, tokens)
     if state.policy.two_given_names:
