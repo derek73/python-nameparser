@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import dataclasses
 import functools
-import sys
 import itertools
+import sys
 import unicodedata
 import warnings
+from collections import Counter
 from collections.abc import Iterable, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType, ModuleType
@@ -491,19 +492,10 @@ _LIST_FIELDS = ("surnames", "given_names")
 #: `Lexicon._sets`, and the names an old spelling is refused by.
 _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 
-#: What those sets do not record: the kinds the views read (rules/R8,
-#: rules/R9), and the titles written short that rules/H5's trailing
-#: chain and rules/H9's article partner read where one may also be a
-#: given name (#999), which is no
-#: kind; the name is the tuple's first use.
-#: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
-#: compiled constant of its own.
-_KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
-                "patronymic_particles", "title_abbreviations",
-                "title_case_name_words", "shared_names",
-                "particle_given_names", "saint_particles",
-                "capitalized_particles", "capital_opening_particles",
-                "dotted_titles", "glued_titles", "bound_phrases")
+#: The 2.x spellings a call is refused by (`_refusal`): every 2.x
+#: `Lexicon` field, the masks among them.
+_2X_FIELDS = frozenset(_VOCAB_FIELDS) | {"capitalization_exceptions"}
+
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -641,6 +633,14 @@ _COMPILED_FIELDS = {
     "glued_titles": "GLUED_TITLES",
     "bound_phrases": "BOUND_PHRASES",
 }
+
+#: What the 2.x sets do not record: the kinds the views read (rules/R8,
+#: rules/R9), and the titles written short that rules/H5's trailing
+#: chain and rules/H9's article partner read where one may also be a
+#: given name (#999), which is no kind; the name is the tuple's first
+#: use. `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each
+#: a compiled constant of its own: the tail of `_COMPILED_FIELDS`.
+_KIND_FIELDS = tuple(f for f in _COMPILED_FIELDS if f not in _VOCAB_FIELDS)
 
 
 #: The groups `SAME_AS` is keyed by, one per kind of role a name match
@@ -798,8 +798,7 @@ def _forms(text: str) -> frozenset[str]:
 Familiar = Mapping[str, frozenset[str]]
 
 
-def _familiar_of(compiled: Mapping[str, Any],
-                 key: str = "FAMILIAR") -> Familiar:
+def _familiar_of(pairs: Mapping[str, Iterable[str]]) -> Familiar:
     """The compile's `FAMILIAR`, a familiar form -> the longer names its
     `short_for` lists, read both ways: each word with every name it is
     paired with directly, as the shorter name or the longer. A caller
@@ -809,12 +808,12 @@ def _familiar_of(compiled: Mapping[str, Any],
     FAMILIAR FORMS). Each name is indexed under its fold too (`_fold`,
     the match's own), and under every transcription of it (`_forms`),
     so a pair written accented (`józsi`, `józsef`) is found from either
-    name written without its accents or written out (`günni`, `guenni`). With
-    `key="ALTERNATE_SPELLINGS"` the same index of the alternate
+    name written without its accents or written out (`günni`, `guenni`).
+    Given `ALTERNATE_SPELLINGS`, the same index of the alternate
     spellings, which pair alike (decisions/name-matching, 2026-11-12
     ALTERNATE SPELLINGS ARE OPT-IN)."""
     paired: dict[str, set[str]] = {}
-    for short, longs in compiled[key].items():
+    for short, longs in pairs.items():
         for long in longs:
             for key in {short} | _forms(short):
                 paired.setdefault(key, set()).add(long)
@@ -834,8 +833,8 @@ _Compiled = tuple[Mapping[str, frozenset[str]], SameAs, SameAsNamed,
 def _compiled_of(compiled: Mapping[str, Any]) -> _Compiled:
     return (MappingProxyType(_vocab_fields(compiled)), _same_as_of(compiled),
             MappingProxyType(dict(compiled["SAME_AS_NAMED"])),
-            _familiar_of(compiled),
-            _familiar_of(compiled, "ALTERNATE_SPELLINGS"))
+            _familiar_of(compiled["FAMILIAR"]),
+            _familiar_of(compiled["ALTERNATE_SPELLINGS"]))
 
 
 @functools.cache
@@ -862,6 +861,17 @@ _NOTHING_COMPILED: _Compiled = (_NO_SETS, MappingProxyType(
 #: A reading's properties as the log and the repr compare them: sorted
 #: (key, value) pairs, a list value a sorted tuple.
 _Props = tuple[tuple[str, Any], ...]
+
+#: The properties a caller never states on a reading: `default` (a
+#: caller's reading is on) and `cased` (a case mask, configured through
+#: `capitalization_exceptions`).
+_UNSTATED = frozenset({"default", "cased"})
+
+#: The properties that are true or false.
+_FLAG_PROPS = frozenset({
+    "abbreviation", "acronym", "after_given", "may_be_initial",
+    "title_case_is_name", "shared", "after_particle", "capital_opening",
+    "dotted"})
 
 
 class _Edit(NamedTuple):
@@ -890,11 +900,10 @@ def _index_module() -> ModuleType:
 
 
 def _clean(props: Mapping[str, Any]) -> _Props:
-    """A reading's properties as a caller states them: `default` (a
-    caller's reading is on) and `cased` (a case mask, configured through
-    `capitalization_exceptions`) left out."""
+    """A reading's properties as a caller states them, `_UNSTATED`
+    left out."""
     return tuple(sorted((k, v) for k, v in props.items()
-                        if k not in ("default", "cased")))
+                        if k not in _UNSTATED))
 
 
 def _unwritten(kind: str, prop: str) -> object:
@@ -923,6 +932,8 @@ _LIST_PROPS: Mapping[str, str] = MappingProxyType({
 #: caller's add of one EXTENDS the word's names in a reading of its own
 #: (decisions/name-matching, 2026-11-08 FAMILIAR FORMS and 2026-11-12
 #: ALTERNATE SPELLINGS ARE OPT-IN).
+#: `_reading_index.MATCHING_LISTS`, written here because this module
+#: reads that one only at call time (tests/v2/test_layering.py).
 _MATCHING_LISTS: Mapping[str, str] = MappingProxyType({
     "familiar": "short_for", "spelling": "spelling_of"})
 #: Each matching-only category's example add, offered by the messages
@@ -943,9 +954,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     if value is None or (isinstance(value, (bool, str))
                          and value == _unwritten(kind, prop)):
         return None
-    if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
-                "title_case_is_name", "shared", "after_particle",
-                "capital_opening", "dotted"):
+    if prop in _FLAG_PROPS:
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1096,7 +1105,7 @@ def _edit_words(words: tuple[object, ...], op: str,
 
 def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
     ri = _index_module()
-    allowed = ri.indexed(kind) - {"default", "cased"}
+    allowed = ri.indexed(kind) - _UNSTATED
     if kind == "family":
         # a name category's property that only a given name takes: the
         # raise below names it, so the generic message leaves it out
@@ -1199,7 +1208,7 @@ def _refuse_unpaired(props: Iterable[str]) -> None:
                 + " or ".join(_MATCHING_REMOVALS.values())
                 + (f"; to take {prop} off a reading, add() it with its "
                    f"unwritten value, add(word, kind=..., {prop}=None)"
-                   if known and prop not in ("default", "cased") else ""))
+                   if known and prop not in _UNSTATED else ""))
 
 
 def _removed_pairs(kind: str | None, words: tuple[str, ...],
@@ -1336,6 +1345,31 @@ def _drop_pairs(pool: dict[str, tuple[Any, ...]], edit: _Edit,
     return tuple(touched)
 
 
+def _extend_pairs(pool: dict[str, tuple[Any, ...]], edit: _Edit,
+                  index: _PairIndex) -> tuple[str, ...]:
+    """Apply a `familiar` or `spelling` add to `pool` in place,
+    returning its words. It EXTENDS: the caller's names go in a reading
+    of the caller's own, attributed to the edit and to no file, and the
+    compile unions it with each file's, which stay as they are
+    (decisions/name-matching, 2026-11-08 FAMILIAR FORMS); an explicit
+    replace is remove, then add."""
+    assert edit.kind is not None
+    ri = _index_module()
+    prop = _MATCHING_LISTS[edit.kind]
+    for w in edit.words:
+        rs = pool.get(w, ())
+        added = set(dict(edit.props)[prop])
+        if edit.kind in index:
+            _index_pairs(index[edit.kind], w, added)
+        mine = [r for r in rs if r.kind == edit.kind and not r.tag]
+        if mine:
+            added |= set(mine[0].props.get(prop, ()))
+        reading = ri.IndexReading(w, "", edit.kind, MappingProxyType(
+            {prop: tuple(sorted(added))}))
+        pool[w] = tuple(r for r in rs if r not in mine) + (reading,)
+    return edit.words
+
+
 def _apply_edit(pool: dict[str, tuple[Any, ...]], edit: _Edit,
                 index: _PairIndex) -> tuple[str, ...]:
     """Apply `edit` to `pool` (word -> its readings) in place, returning
@@ -1344,34 +1378,18 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]], edit: _Edit,
     written `default = false` on; otherwise it adds the caller's own
     reading, which names no file. A remove with no words is one of a
     whole kind, reaching every word in the pool that holds a reading of
-    it, whatever turned the reading on. A remove of words' `familiar`
-    or `spelling` readings is one of pairs (`_drop_pairs`)."""
+    it, whatever turned the reading on. An add or a remove of words'
+    `familiar` or `spelling` readings is one of pairs (`_extend_pairs`,
+    `_drop_pairs`)."""
+    if edit.words and edit.kind in _MATCHING_LISTS:
+        return (_drop_pairs if edit.op == "remove" else _extend_pairs)(
+            pool, edit, index)
     ri = _index_module()
-    if edit.op == "remove" and edit.words and edit.kind in _MATCHING_LISTS:
-        return _drop_pairs(pool, edit, index)
     words = edit.words or tuple(
         w for w, rs in pool.items()
         if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
     for w in words:
         rs = pool.get(w, ())
-        if (edit.op == "add" and edit.kind is not None
-                and edit.kind in _MATCHING_LISTS):
-            # EXTENDS: the caller's names go in a reading of the caller's
-            # own, attributed to the edit and to no file, and the compile
-            # unions it with each file's, which stay as they are
-            # (decisions/name-matching, 2026-11-08 FAMILIAR FORMS); an
-            # explicit replace is remove, then add
-            prop = _MATCHING_LISTS[edit.kind]
-            added = set(dict(edit.props)[prop])
-            if edit.kind in index:
-                _index_pairs(index[edit.kind], w, added)
-            mine = [r for r in rs if r.kind == edit.kind and not r.tag]
-            if mine:
-                added |= set(mine[0].props.get(prop, ()))
-            reading = ri.IndexReading(w, "", edit.kind, MappingProxyType(
-                {prop: tuple(sorted(added))}))
-            pool[w] = tuple(r for r in rs if r not in mine) + (reading,)
-            continue
         if edit.op == "remove":
             kept = tuple(r for r in rs if edit.kind is not None
                          and r.kind != edit.kind and r.category != edit.kind)
@@ -1410,47 +1428,51 @@ def _base_pool(base: object) -> Pool:
     if base == "empty":
         return MappingProxyType({})
     ri = _index_module()
-    rows = ri._by_text().items() if base == "default" else base
+    if base == "default":
+        # the readings `index()` keeps, so a lexicon under a choice,
+        # which compiles from them too, holds one copy
+        return MappingProxyType({
+            text: tuple(rs) for text, rs in itertools.groupby(
+                ri.index(), key=lambda r: r.text)})
     return MappingProxyType({
         text: tuple(ri.from_row(text, row) for row in rs)
-        for text, rs in rows})  # type: ignore[union-attr]
+        for text, rs in cast("Iterable[tuple[str, Any]]", base)})
 
 
-def _check_pool(pool: Pool, words: Iterable[str]) -> None:
-    """The build's checks a caller's edits can reach, over the words
-    they touch (checks 3 and 8 run per edit, in _make_edit): one suffix
+def _check_pool(pool: Pool, w: str) -> None:
+    """The build's checks a caller's edits can reach, over a word they
+    touch (checks 3 and 8 run per edit, in _make_edit): one suffix
     kind per word (check 4), an agnomen has a name reading (check 11's
     agnomen clause), and a bound given name that is also a particle has
     a given reading (check 9)."""
-    for w in dict.fromkeys(words):
-        on = [r for r in pool.get(w, ()) if r.on_by_default]
-        suffix = {r.kind: r for r in on if r.category == "suffix"}
-        if len(suffix) > 1:
-            held = sorted(k for k, r in suffix.items() if r.tag)
-            drop = held[0] if held else sorted(suffix)[0]
-            raise ValueError(
-                f"{w!r} would hold two suffix kinds, "
-                f"{' and '.join(sorted(suffix))}, and a word holds one; "
-                f"remove the one it holds first: .remove({w!r}, "
-                f"kind={drop!r})")
-        kinds = {r.category for r in on} | {r.kind for r in on}
-        # check 11's agnomen clause: an agnomen is written in the case of
-        # the name around it, so only the count gates it, and the gate is
-        # a name reading beside it (rules/S11), one that marks a clash (a
-        # given name written short gates nothing, #1383)
-        if "agnomen" in kinds and not any(r.marks_a_clash for r in on):
-            raise ValueError(
-                f"{w!r} is an agnomen with no name reading that gates it, "
-                f"and an agnomen is read as the suffix only where a name "
-                f"reading gates it by the count (a given name written "
-                f"short, carrying same_as, gates nothing): write "
-                f".add({w!r}, kind='family') first, then the agnomen")
-        if {"bound_given", "particle"} <= kinds and "given" not in kinds:
-            raise ValueError(
-                f"{w!r} is a bound given name and a particle with no given "
-                f"reading, and a particle that never starts a given name "
-                f"cannot bind one: .add({w!r}, kind='given'), or "
-                f".remove({w!r}, kind='bound_given')")
+    on = [r for r in pool.get(w, ()) if r.on_by_default]
+    suffix = {r.kind: r for r in on if r.category == "suffix"}
+    if len(suffix) > 1:
+        held = sorted(k for k, r in suffix.items() if r.tag)
+        drop = held[0] if held else sorted(suffix)[0]
+        raise ValueError(
+            f"{w!r} would hold two suffix kinds, "
+            f"{' and '.join(sorted(suffix))}, and a word holds one; "
+            f"remove the one it holds first: .remove({w!r}, "
+            f"kind={drop!r})")
+    kinds = {r.category for r in on} | {r.kind for r in on}
+    # check 11's agnomen clause: an agnomen is written in the case of
+    # the name around it, so only the count gates it, and the gate is
+    # a name reading beside it (rules/S11), one that marks a clash (a
+    # given name written short gates nothing, #1383)
+    if "agnomen" in kinds and not any(r.marks_a_clash for r in on):
+        raise ValueError(
+            f"{w!r} is an agnomen with no name reading that gates it, "
+            f"and an agnomen is read as the suffix only where a name "
+            f"reading gates it by the count (a given name written "
+            f"short, carrying same_as, gates nothing): write "
+            f".add({w!r}, kind='family') first, then the agnomen")
+    if {"bound_given", "particle"} <= kinds and "given" not in kinds:
+        raise ValueError(
+            f"{w!r} is a bound given name and a particle with no given "
+            f"reading, and a particle that never starts a given name "
+            f"cannot bind one: .add({w!r}, kind='given'), or "
+            f".remove({w!r}, kind='bound_given')")
 
 
 @functools.lru_cache(maxsize=32)
@@ -1494,7 +1516,7 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
     touched = [(edit, _apply_edit(pool, edit, index)) for edit in edits]
     for w in dict.fromkeys(w for _, ws in touched for w in ws):
         try:
-            _check_pool(pool, (w,))
+            _check_pool(pool, w)
         except ValueError as exc:
             if not chosen or _clashes_unchosen(base, edits):
                 raise
@@ -1522,8 +1544,7 @@ def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
 
 
 def _compiled_for(base: object, edits: tuple[_Edit, ...],
-                  chosen: frozenset[str] = frozenset(),
-                  strict: bool = False) -> _Compiled:
+                  chosen: frozenset[str], strict: bool) -> _Compiled:
     if not edits and base == "default":
         # under a choice, the shipped index compiled once per choice by
         # the reader every pack shares
@@ -1531,9 +1552,7 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
                 else _default_compiled())
     if not edits and not chosen and base == "empty":
         return _NOTHING_COMPILED
-    _, sets, same_as, named, familiar, alternate = _built(
-        base, edits, chosen, strict)
-    return sets, same_as, named, familiar, alternate
+    return _built(base, edits, chosen, strict)[1:]
 
 
 @functools.lru_cache(maxsize=32)
@@ -1574,15 +1593,16 @@ class _ReadingFiles:
         """The tags of the files holding a reading of `text` (as the
         vocabulary stores it) of one of `kinds`, on in this lexicon,
         sorted; a caller's own reading names none."""
-        ri = _index_module()
         readings: Iterable[Any]
         if self._edits or self._base not in ("default", "empty"):
             readings = self.pool().get(text, ())
         elif self._base == "empty":
             return ()
-        elif not self._chosen:
-            return cast("tuple[str, ...]", ri.languages_of(text, kinds))
         else:
+            ri = _index_module()
+            if not self._chosen:
+                tags: tuple[str, ...] = ri.languages_of(text, kinds)
+                return tags
             readings = ri.chosen_readings(ri.readings_of(text), self._chosen,
                                           self._strict)
         return tuple(sorted({r.tag for r in readings
@@ -1709,7 +1729,7 @@ def _check_base(base: object) -> object:
 
 
 @functools.cache
-def _choice_masks(chosen: frozenset[str], strict: bool = False) -> tuple[
+def _choice_masks(chosen: frozenset[str], strict: bool) -> tuple[
         frozenset[str], tuple[tuple[str, str], ...]]:
     """The case masks the choice of the file tags `chosen` moves against
     the default's compile: the ones that leave and the ones set. A mask
@@ -1781,10 +1801,8 @@ def _rendered(edits: Iterable[_Edit]) -> list[str]:
 def _shown_value(kind: str | None, prop: str, value: object) -> str:
     """A logged property value as a caller writes it: a removed one as
     its unwritten value where it has one (`may_be_initial=False`)."""
-    if value is None and kind is not None and prop in (
-            "abbreviation", "acronym", "addresses", "after_given",
-            "may_be_initial", "title_case_is_name", "shared",
-            "after_particle", "capital_opening", "dotted"):
+    if value is None and kind is not None and (
+            prop in _FLAG_PROPS or prop == "addresses"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a reading's list may name every title word it
@@ -1803,9 +1821,7 @@ def _refusal(where: str, removed: Mapping[str, object]) -> TypeError:
     call that changes them, a set field with docs/migrate.rst's table,
     which names the kind of each (decisions/vocabulary-model,
     2026-11-08 #1003)."""
-    unknown = [k for k in removed
-               if k not in _SET_FIELDS + _LIST_FIELDS
-               and k != "capitalization_exceptions"]
+    unknown = [k for k in removed if k not in _2X_FIELDS]
     if unknown:
         return TypeError(f"{where} got an unexpected keyword argument "
                          f"{unknown[0]!r}")
@@ -1835,6 +1851,13 @@ def _refusal(where: str, removed: Mapping[str, object]) -> TypeError:
         f"configured by reading, add(*words, kind=..., **properties) and "
         f"remove(*words, kind=...); docs/migrate.rst's Lexicon table "
         f"gives the kind for each 2.x field")
+
+
+def _refuse_2x(where: str, keywords: Mapping[str, object]) -> None:
+    """Raise `_refusal` where `keywords` name a 2.x field."""
+    old = {k: v for k, v in keywords.items() if k in _2X_FIELDS}
+    if old:
+        raise _refusal(where, old)
 
 
 #: The keys of the one 2.x `Lexicon` layout 3.0 loaded, 2.7's and
@@ -2448,11 +2471,7 @@ class Lexicon:
             file. Warns where it makes a title reading that a ``given``
             reading keeps a title only inside a title phrase (rules/H9),
             naming the ``remove`` that makes it a title everywhere."""
-            old = {k: properties.pop(k) for k in list(properties)
-                   if k in _SET_FIELDS + _LIST_FIELDS
-                   or k == "capitalization_exceptions"}
-            if old:
-                raise _refusal("add()", old)
+            _refuse_2x("add()", properties)
             if kind is None:
                 raise TypeError("add() missing required keyword argument "
                                 "'kind', e.g. add('leed', kind='credential')")
@@ -2512,11 +2531,7 @@ class Lexicon:
         after the remove stands. No other kind takes a property here:
         to take a property off a reading, :meth:`add` it with its
         unwritten value."""
-        removed = {k: pairs.pop(k) for k in list(pairs)
-                   if k in _SET_FIELDS + _LIST_FIELDS
-                   or k == "capitalization_exceptions"}
-        if removed:
-            raise _refusal("remove()", removed)
+        _refuse_2x("remove()", pairs)
         _refuse_unpaired(pairs)
         if not isinstance(every, bool):
             raise TypeError(f"remove() takes every as True or False, got "
@@ -2601,12 +2616,10 @@ class Lexicon:
             list[tuple[str, int, int]], list[tuple[str, int, int]]]:
         ri = _index_module()
         mine, theirs = _keyed(self._pool()), _keyed(other._pool())
-        kinds = []
-        for kind in ri.CATEGORY:
-            a = sum(1 for key in mine - theirs if key[1] == kind)
-            r = sum(1 for key in theirs - mine if key[1] == kind)
-            if a or r:
-                kinds.append((kind, a, r))
+        added = Counter(key[1] for key in mine - theirs)
+        gone = Counter(key[1] for key in theirs - mine)
+        kinds = [(kind, added[kind], gone[kind]) for kind in ri.CATEGORY
+                 if added[kind] or gone[kind]]
         lists = []
         for name in _LIST_FIELDS + ("capitalization_exceptions",):
             m, t = set(getattr(self, name)), set(getattr(other, name))
