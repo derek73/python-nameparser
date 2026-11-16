@@ -159,22 +159,19 @@ names parsed under different policies compare correctly:
 What the default accepts
 ------------------------
 
-The outcomes, in the order ``check()`` ranks them, strongest first.
-``Outcome.strength`` gives that rank as an ordinal, larger for a
-stronger outcome and 0 for ``conflict``; compare outcomes by it, since
-``<`` on an :class:`~nameparser.Outcome` compares the names as strings
-(``folded`` sorts before ``same``), but never store one: the values
-change when an outcome is added. A row reports the strongest outcome
-that holds and is accepted, and where none of those holding is
-accepted, the strongest that holds, so an unaccepted one shows what
-the pair needed. The default accepts the writing
-variants a hand-built comparison usually forgives; the rest count as a
-conflict until you accept them. ``alternate-spelling``,
+The default accepts the writing variants a hand-built comparison
+usually forgives; the rest count as a conflict until you accept them
+(:ref:`matching-accepting-more`). The table lists the outcomes in the
+order ``check()`` ranks them, strongest first.
+
+A row reports the strongest outcome that holds and is accepted, and
+where none of those holding is accepted, the strongest that holds, so
+an unaccepted one shows what the pair needed. ``alternate-spelling``,
 ``familiar-form``, ``family-initial``, ``given-one-side`` and
-``hyphenated-part`` are reported in the table
-either way, so an unaccepted one shows what the pair needed. ``across-roles`` is
-searched only where accepted, and each side's other readings only where
-the search is switched on (below): otherwise the table shows the names
+``hyphenated-part`` are reported in the table either way.
+``across-roles`` is searched only where accepted, and each side's other
+readings only where the search is switched on
+(:ref:`matching-other-readings`): otherwise the table shows the names
 as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
 
 .. list-table::
@@ -188,7 +185,10 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
      - | ``Smith`` /
        | ``Smith``
      - yes
-   * - ``folded``: equal once case, accents, full stops and apostrophes (typed or typographic) are folded away, and each hyphen the parser joins two names with (U+2010, the en dash and others) read as the hyphen-minus wherever the parser reads the name alike, which it does not for a credential joined by one (``MD‐PhD``); and a letter a keyboard lacks written as one types it or as its standard transcription (``Łukasz`` / ``Lukasz``, ``Müller`` / ``Mueller``)
+   * - ``folded``: equal once case, accents, full stops and
+       apostrophes are folded away, each joining hyphen is read as the
+       hyphen-minus, and a letter a keyboard lacks is read as typed
+       (:ref:`matching-fold`)
      - | ``María García`` /
        | ``MARIA GARCIA``
      - yes
@@ -196,7 +196,8 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
      - | ``Ignazio LaRussa`` /
        | ``Ignazio La Russa``
      - yes
-   * - ``listed-spelling``: spellings the vocabulary lists as one, in the role's own kind of word, a short form that is a name of its own too only written with its period
+   * - ``listed-spelling``: spellings the vocabulary lists as one
+       (:ref:`matching-listed-spellings`)
      - | ``Wm. Smith`` /
        | ``William Smith``
      - yes
@@ -208,38 +209,48 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
      - | ``Ana de Melo Schmitt`` /
        | ``Ana de Melo Schmitt e Braga``
      - yes
-   * - ``initial``: an initial against a name, outside the family name, and a given name of capitals against the names that spell it
+   * - ``initial``: an initial against a name, outside the family
+       name, and a given name of capitals against the names that spell
+       it (:ref:`matching-initials`)
      - | ``J. Smith`` /
        | ``John Smith``
        |
        | ``JP Smith`` /
        | ``John Paul Smith``
      - yes
-   * - ``initials-agree``: one role written in initials alone on both sides, the same initials in the same order once spaces and hyphens are set aside; a family or maiden name of initials alone on both sides reads no other leniency, so ``J. P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict
+   * - ``initials-agree``: one role written in initials alone on both
+       sides, the same initials in the same order
+       (:ref:`matching-initials`)
      - | ``Jane Doe (née J.-P.)`` /
        | ``Jane Doe (née J. P.)``
      - yes
-   * - ``one-side``: a middle name, nickname or maiden name on one side only
+   * - ``one-side``: a middle name, nickname or maiden name on one side
+       only (:ref:`matching-middle-names`)
      - | ``John A. Smith`` /
        | ``John Smith``
      - yes
    * - ``generation-one-side``: a generation on one side only
+       (:ref:`matching-generations`)
      - | ``John Smith`` /
        | ``John Smith Jr.``
      - yes
    * - ``noted``: titles and credentials, which never conflict
+       (:ref:`matching-generations`)
      - | ``Dr. John Smith`` /
        | ``John Smith, PhD``
      - yes
-   * - ``alternate-spelling``: two given names the vocabulary lists as one name spelled two ways, either way round, never chained
+   * - ``alternate-spelling``: two given names the vocabulary lists as
+       one name spelled two ways (:ref:`matching-alternate-spellings`)
      - | ``Yuliya Ivanova`` /
        | ``Iuliia Ivanova``
      - no
-   * - ``familiar-form``: two given names the vocabulary lists as a familiar-form pair, either way round, never chained
+   * - ``familiar-form``: two given names the vocabulary lists as a
+       familiar-form pair (:ref:`matching-familiar-forms`)
      - | ``Bill Smith`` /
        | ``William Smith``
      - no
    * - ``family-initial``: the family name written as an initial
+       (:ref:`matching-family-initial`)
      - | ``John S.`` /
        | ``John Stallbaum``
      - no
@@ -252,6 +263,7 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
        | ``Hong-Yi Guo``
      - no
    * - ``across-roles``: a name in a different role on each side
+       (:ref:`matching-across-roles`)
      - | ``J. Edgar Hoover`` /
        | ``Edgar Hoover``
      - no
@@ -260,60 +272,132 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
        | ``Jane Smith``
      - never
 
+Comparing two outcomes
+~~~~~~~~~~~~~~~~~~~~~~
+
+``Outcome.strength`` gives an outcome's rank as an ordinal, larger for
+a stronger outcome and 0 for ``conflict``. Compare outcomes by it,
+since ``<`` on an :class:`~nameparser.Outcome` compares the names as
+strings (``folded`` sorts before ``same``), but never store one: the
+values change when an outcome is added.
+
+.. _matching-listed-spellings:
+
+Listed spellings
+~~~~~~~~~~~~~~~~
+
 A listed spelling is read in the role's own kind of word: given names
 for the given name, middle name and nickname, surnames and particles
 for the family and maiden names, titles and suffixes for theirs. So
 ``Ma.`` (María written short) agrees with ``María`` as a given name,
 while the surname Ma is another word, ``Ma, Jack`` / ``María, Jack``.
+
 A short form that is also a name of its own, as ``Ma``, ``Jo`` (José)
-and ``Jas`` (James) are, is read as its long form only written with
-its period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia``
-/ ``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while
-``Wm Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm``
-being no name of its own. A short form may stand for several
-spellings: ``Md``, ``Mohd`` and ``Moh``, Muhammad written short, agree
-with ``Muhammad``, ``Mohammad``, ``Mohammed`` and ``Mohamed`` and with
-each other, while two of the long spellings agree at most as an
-``alternate-spelling``. It is read with accents folded too, so
-``Jo. Garcia`` / ``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A
-listed spelling counts inside a family name word by word as it does
-whole: with ``smyth`` added to a lexicon as a spelling of ``smith``,
-``Ann de Smyth`` / ``Ann Smith`` read ``particles-aside`` and
-``Ann Smyth-Jones`` / ``Ann Smith`` ``part-of-other``. A middle name
-is compared word by word, in order, and takes the weakest of its
-words' outcomes; where one side holds more words, the shorter side's
-words need only agree, in order, with some of the longer side's, the
-rest one-sided, so ``John Beth Smith`` / ``John Anne Beth Smith``
+and ``Jas`` (James) are, is read as its long form only written with its
+period: ``Jo. Garcia`` / ``José Garcia`` agree, and ``Jo Garcia`` /
+``José Garcia`` conflict, the bare ``Jo`` being the name Jo, while ``Wm
+Smith`` and ``WM SMITH`` agree with ``William Smith``, ``Wm`` being no
+name of its own.
+
+A short form may stand for several spellings: ``Md``, ``Mohd`` and
+``Moh``, Muhammad written short, agree with ``Muhammad``, ``Mohammad``,
+``Mohammed`` and ``Mohamed`` and with each other, while two of the long
+spellings agree at most as an ``alternate-spelling``.
+
+A listed spelling is read with accents folded too, so ``Jo. Garcia`` /
+``Jose Garcia`` agree as ``Jo.`` / ``José`` do. A listed spelling
+counts inside a family name word by word as it does whole: with
+``smyth`` added to a lexicon as a spelling of ``smith``, ``Ann de
+Smyth`` / ``Ann Smith`` read ``particles-aside`` and ``Ann
+Smyth-Jones`` / ``Ann Smith`` ``part-of-other``.
+
+.. _matching-middle-names:
+
+Middle names
+~~~~~~~~~~~~
+
+A middle name is compared word by word, in order, and takes the weakest
+of its words' outcomes; where one side holds more words, the shorter
+side's words need only agree, in order, with some of the longer side's,
+the rest one-sided, so ``John Beth Smith`` / ``John Anne Beth Smith``
 reads ``one-side``.
-A different generation conflicts
-(``Jr.`` / ``Sr.``), and a generation on one side only reads
-``generation-one-side`` whatever credentials either side carries
-(``John Smith Jr.`` / ``John Smith, PhD``); a credential or title
-never conflicts, so a career from ``Mr.`` to ``Dr.`` does not separate
-a person's records. The fold drops accents only from Latin, Greek and
-Cyrillic letters; a mark on another script's letter, such as a
-Devanagari vowel sign, is spelling and stays. Initials written joined
-into one word agree with the same letters written apart as ``joined``
-(``J.P. Smith`` / ``J.-P. Smith``). A given name of two or three
-capitals with no middle name beside it, whose given or family name
-holds a lower-case letter, reads as initials where the other side's given and middle
-names spell those letters exactly, in order (``JP Smith`` / ``John
-Paul Smith``), a capitals word there spelling no letter (``JR Paul
-Smith`` spells J, R, P), and only where that makes the pair consistent; it is
-not read so against fewer or more names than letters (``JP Smith`` /
-``John Smith``), which ``J. P. Smith`` matches, so a pair can still
-be consistent through ``J. P. Smith`` and not directly. Typos (``Slvatore`` / ``Salvatore``) and
-transliterations (``Igor`` / ``Ihor``) are conflicts. A familiar form
-(``Peggy`` / ``Margaret``, below) you have not accepted keeps the pair
-inconsistent though its row reads ``familiar-form``. The rows that kept a pair inconsistent are the
-ones whose outcome you did not accept, and the table names their
-roles, so you can run your own fuzzy comparison on those alone:
+
+.. _matching-generations:
+
+Generations, credentials and titles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A different generation conflicts (``Jr.`` / ``Sr.``), and a generation
+on one side only reads ``generation-one-side`` whatever credentials
+either side carries (``John Smith Jr.`` / ``John Smith, PhD``); a
+credential or title never conflicts, so a career from ``Mr.`` to
+``Dr.`` does not separate a person's records.
+
+.. _matching-fold:
+
+What the fold covers
+~~~~~~~~~~~~~~~~~~~~
+
+Two names read ``folded`` where they are equal once case, accents, full
+stops and apostrophes (typed or typographic) are folded away, and each
+hyphen the parser joins two names with (U+2010, the en dash and others)
+read as the hyphen-minus wherever the parser reads the name alike,
+which it does not for a credential joined by one (``MD‐PhD``). A letter
+a keyboard lacks, written as one types it or as its standard
+transcription, reads ``folded`` too (``Łukasz`` / ``Lukasz``,
+``Müller`` / ``Mueller``).
+
+The fold drops accents only from Latin, Greek and Cyrillic letters; a
+mark on another script's letter, such as a Devanagari vowel sign, is
+spelling and stays.
+
+.. _matching-initials:
+
+Initials
+~~~~~~~~
+
+One role written in initials alone on both sides reads
+``initials-agree`` where they are the same initials in the same order.
+In a family or maiden name, spaces and hyphens are set aside (``Jane
+Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``), and a family or maiden
+name of initials alone on both sides reads no other leniency, so ``J.
+P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict.
+
+Initials written joined into one word agree with the same letters
+written apart as ``joined`` (``JP Smith`` / ``J.-P. Smith``).
+
+A given name of two or three capitals with no middle name beside it,
+whose given or family name holds a lower-case letter, reads as initials
+where the other side's given and middle names spell those letters
+exactly, in order (``JP Smith`` / ``John Paul Smith``), a capitals word
+there counting as its own letters and spelling none of them (``JR Paul
+Smith`` holds J, R and P, so ``JP Smith`` conflicts with it), and only
+where that makes the pair consistent; it is not read so against fewer
+or more names than letters (``JP Smith`` / ``John Smith``), which ``J.
+P. Smith`` matches, so a pair can still be consistent through ``J. P.
+Smith`` and not directly.
+
+.. _matching-conflicts:
+
+What stays a conflict
+~~~~~~~~~~~~~~~~~~~~~
+
+Typos (``Slvatore`` / ``Salvatore``) and transliterations (``Igor`` /
+``Ihor``) are conflicts. A familiar form (``Peggy`` / ``Margaret``,
+below) you have not accepted keeps the pair inconsistent though its row
+reads ``familiar-form``.
+
+The rows that kept a pair inconsistent are the ones whose outcome you
+did not accept, and the table names their roles, so you can run your
+own fuzzy comparison on those alone:
 
 .. doctest::
 
     >>> peggy = matcher.check("Peggy Smith", "Margaret Smith")
     >>> [(r.role.value, r.outcome.value) for r in peggy.roles if r.outcome not in matcher.accept]
     [('given', 'familiar-form')]
+
+.. _matching-accepting-more:
 
 Accepting more
 --------------
@@ -337,15 +421,26 @@ matcher and check with another:
     >>> sorted(with_family_initial.keys("John Stallbaum"))
     ['s;j', 'stallbaum;j']
 
+An unknown outcome name raises ``ValueError`` listing the valid ones,
+and ``conflict`` cannot be accepted.
+
+.. _matching-family-initial:
+
+A family name written as an initial
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 A family initial is outside the default because its key, one letter of
 the family name, gathers very large groups. It stands for a word on the
 other side, so against another family name of initials alone it never
 holds: ``J.-P., Ann`` / ``J., Ann`` conflicts under every setting.
 Initials written together are one word, not initials alone, so
 ``J.P., Ann`` / ``J., Ann`` still reads ``family-initial``, and
-``J.P., Ann`` / ``J. P., Ann`` ``joined``. An unknown outcome name
-raises ``ValueError`` listing the valid ones, and ``conflict`` cannot
-be accepted.
+``J.P., Ann`` / ``J. P., Ann`` ``joined``.
+
+.. _matching-other-readings:
+
+Trying each side's other reading
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``other_readings=True``, a switch beside ``accept`` rather than an
 outcome, tries each side's other reading where the names as parsed are
@@ -374,15 +469,23 @@ An alternative that would move words into the title or the suffix is
 not tried, so a given name cannot vanish into one of them to agree
 with another.
 
+.. _matching-familiar-forms:
+
+Familiar forms
+~~~~~~~~~~~~~~
+
 ``familiar-form`` reads a short given name as standing for the longer
 ones the vocabulary lists it under: ``Max`` for Maximilian and
 Maxwell, ``Bill`` for William, ``Peggy`` for Margaret. It is read in the
-given name, middle name and nickname, never the family name. A pair
-is read whichever way the vocabulary wrote it, since the vocabulary
+given name, middle name and nickname, never the family name.
+
+A pair is read whichever way the vocabulary wrote it, since the vocabulary
 writes a pair on its shorter name, which is not always the familiar
 form (``Charles`` / ``Charlie``), and a caller may write one either
 way round, but never chained, so two longer names paired with one short name do not
-agree with each other. The keys follow: a name is keyed by the first
+agree with each other.
+
+The keys follow: a name is keyed by the first
 letters of the names it is paired with too, so ``Bill Smith`` meets
 ``William Smith`` in a group:
 
@@ -399,22 +502,37 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
     >>> sorted(with_familiar.keys("Bill Smith"))
     ['smith;b', 'smith;w']
 
+A familiar form is outside the default because it is many-valued and
+often a name of its own: ``Max`` is a given name in its own right, as
+``Bill`` and ``Peggy`` are.
+
+Where the shipped pairs come from
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The shipped familiar forms, about a thousand pairs, are pairs people
-wrote both ways for themselves, each read by two
-reviewers: mostly ORCID's researchers, who wrote one in the given-name
-box and the other in a published name, in many languages (``Peggy`` /
-``Margaret``, ``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``,
-``Kostas`` / ``Konstantinos``, ``Seun`` / ``Oluwaseun``), and a few
-common English ones that US political donors and members of Congress
-gave as their nicknames (``Betty`` / ``Elizabeth``). Each is in the
-file of the languages written where its holders work. A plain choice of
-languages keeps every file's pairs, and a strict one keeps its own
-files' and the shared ones. A pair whose short name reads as a title in
-front of a name is never compared as a given name, so it stays inert
-while the title reading stands. It is a selection and has gaps, among
-them common English pairs researchers rarely publish under (``Kathy`` /
+wrote both ways for themselves, each read by two reviewers: mostly
+ORCID's researchers, who wrote one in the given-name box and the other
+in a published name, in many languages (``Peggy`` / ``Margaret``,
+``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``, ``Kostas`` /
+``Konstantinos``, ``Seun`` / ``Oluwaseun``), and a few common English
+ones that US political donors and members of Congress gave as their
+nicknames (``Betty`` / ``Elizabeth``).
+
+Each is in the file of the languages written where its holders work. A
+plain choice of languages keeps every file's pairs, and a strict one
+keeps its own files' and the shared ones. A pair whose short name reads
+as a title in front of a name is never compared as a given name, so it
+stays inert while the title reading stands.
+
+.. _matching-editing-familiar-forms:
+
+Adding and removing pairs
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The shipped pairs are a selection and have gaps, among them common
+English pairs researchers rarely publish under (``Kathy`` /
 ``Catherine``, ``Lisa`` / ``Melissa``, ``Jeff`` / ``Geoffrey``) and
-``Sepp`` / ``Josef``; add your own with a ``familiar`` reading, which
+``Sepp`` / ``Josef``. Add your own with a ``familiar`` reading, which
 extends the names the word's shipped readings list:
 
 .. doctest::
@@ -461,6 +579,11 @@ kind="familiar")``, then ``add``). An alternate spelling is removed the
 same way, ``remove("sarah", kind="spelling", spelling_of=["sara"])`` or
 ``remove("sara", kind="spelling")``.
 
+.. _matching-alternate-spellings:
+
+Alternate spellings
+~~~~~~~~~~~~~~~~~~~
+
 ``alternate-spelling`` reads two given names as one name spelled two
 ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
 ``Aleksey`` / ``Alexey``, ``Saeed`` / ``Saeid``, ``Olga`` / ``Olha``. A
@@ -470,17 +593,23 @@ Latin letters in its own language is one name where that language uses
 both spellings (``Sara`` / ``Sarah`` in English). A different spelling in
 the source script (``Nataliia`` / ``Natalya``, ``Наталія`` / ``Наталья``)
 or another language's form (``Lydia`` / ``Lidia``) is a translation,
-which no outcome reads yet. It is read as a familiar form is, in the
-same roles, either way round and never chained, and the keys follow it
-where it is accepted. The same review as the familiar forms gives its
-pairs, about three hundred, each called a spelling of one name by
-both reviewers or by the maintainer, and read again against that test,
-less the spellings a keyboard forces,
-which the default reads ``folded`` (``Łukasz`` / ``Lukasz``, ``Jürgen``
-/ ``Juergen``, ``Srđan`` / ``Srdjan``, from either side). It is outside the default because people
-sometimes spell a name differently on purpose, to be told apart from
-someone of the same name, so two spellings are evidence of a match
-only for a caller who knows their sources write one name several ways:
+which no outcome reads yet.
+
+``alternate-spelling`` is read as a familiar form is, in the same
+roles, either way round
+and never chained, and the keys follow it where it is accepted. The
+same review as the familiar forms gives its pairs, about three hundred,
+each called a spelling of one name by both reviewers or by the
+maintainer, and read again against that test, less the spellings a
+keyboard forces, which the default reads ``folded`` (``Łukasz`` /
+``Lukasz``, ``Jürgen`` / ``Juergen``, ``Srđan`` / ``Srdjan``, from
+either side).
+
+An alternate spelling is outside the default because people sometimes
+spell a name
+differently on purpose, to be told apart from someone of the same name,
+so two spellings are evidence of a match only for a caller who knows
+their sources write one name several ways:
 
 .. doctest::
 
@@ -491,9 +620,10 @@ only for a caller who knows their sources write one name several ways:
     >>> matcher.check("Yuliya Ivanova", "Iuliia Ivanova").consistent
     False
 
-A familiar form is outside the default because it is many-valued and
-often a name of its own: ``Max`` is a given name in its own right, as
-``Bill`` and ``Peggy`` are.
+.. _matching-across-roles:
+
+A name in a different role on each side
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``across-roles`` compares a given name with each word of the other
 name's middle name and with its nickname, and a family name with the
