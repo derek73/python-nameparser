@@ -203,12 +203,13 @@ meant:
   (:ref:`name-order`).
 - **A name word after a second comma** lands in ``suffix``:
   ``Tilby, Rowan, Quill`` reads suffix ``Quill`` (:ref:`comma-forms`).
-- **A title written bare at the end of a name, with no comma before
-  it,** is a name word, since many title words are also surnames:
-  ``Rowan Tilby Judge`` reads family ``Judge``. A word that is also a
-  post-nominal (``Ms``) is the suffix there instead.
-  :ref:`trailing-titles` gives the cases where a bare title is read as
-  the title.
+- **A title written bare at the end of a name** is a name word, since
+  many title words are also surnames: ``Rowan Tilby Judge`` reads
+  family ``Judge``, and ``Tilby, Rowan Judge`` middle ``Judge``. A
+  word that is also a post-nominal (``Ms``) is the suffix there
+  instead, and after a suffix comma the bare word is the title
+  (``Rowan Tilby, Judge``). :ref:`trailing-titles` gives the other
+  cases where a bare title is read as the title.
 
 Only the second is reported on ``ambiguities`` (see
 :ref:`parser-guesses`). The other two look like any other name, so
@@ -471,9 +472,8 @@ can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
     >>> parse("Cherice J. (Johnson) Williams").nickname
     'Johnson'
 
-Credentials and titles in brackets are read as such, with one
-exception, the ambiguous acronym below. If every word
-inside is a known
+Credentials and titles in brackets are mostly read as such. If every
+word inside is a known
 credential, generation or title, the clause is set apart from the name
 instead, each word read as the suffix or the title it is — that reading
 is taken before the maiden one, and parenthesized credentials, titles
@@ -489,6 +489,15 @@ happen to be credentials:
     >>> parse("John Smith (Dr)").title
     'Dr'
 
+Some such words stay the nickname all the same, among them initials
+inside a name (``Justin (JP) Stearns``) and, after one, a bare
+``Sir``, ``Mrs`` or ``Junior``:
+
+.. doctest::
+
+    >>> parse("John Smith (Sir)").nickname
+    'Sir'
+
 Content ending in a period that is not such a word is read as if
 written without its brackets:
 
@@ -498,14 +507,12 @@ written without its brackets:
     'Xyz.'
 
 The exception to the credential reading is an *ambiguous* acronym — one
-that is
-also a plausible name or set of initials. Standing alone inside
+that is also a plausible name or set of initials. Standing alone inside
 delimiters, it keeps the nickname reading unless the way it is written
 settles it after the name: in capitals in a name written in mixed case,
 or with a period inside it. A name written all in capitals says
-nothing about the word, and inside the name the delimiters are read as
-a nickname however it is written, so initials inside a name stay the
-nickname (``Justin (JP) Stearns``):
+nothing about the word, and inside the name the word in capitals is a
+nickname too (``Justin (JD) Stearns``):
 
 .. doctest::
 
