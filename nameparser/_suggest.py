@@ -81,7 +81,8 @@ from ._policy import (
     apply_patch, initials_as_family_may_move,
 )
 from ._types import (
-    ADDED_IN, FAMILY_FIRST, GIVEN_FIRST, ReadingSource, Role,
+    ADDED_IN, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+    ReadingSource, Role,
     _guarded_getstate, _guarded_setstate,
 )
 from .config._order_names import COMMON_GIVEN_NAMES, ROMANIZED_SURNAMES
@@ -137,6 +138,10 @@ class Signal(StrEnum):
     #: A patronymic one rule reads (Russian ``Petrovich``, Azerbaijani
     #: ``Huseyn oglu``), the evidence on ``patronymic_rules``.
     PATRONYMIC = "patronymic"
+    #: MEASURING (#1442 candidate B): where an East Slavic patronymic
+    #: of rules/O1's three words is written: last votes family-first,
+    #: in the middle given-first.
+    PATRONYMIC_POSITION = "patronymic-position"
 
 
 _INITIAL_JOINS = re.compile(r"[.-]+")
@@ -440,6 +445,12 @@ def _read(text: str, lexicon: Lexicon
     patronymic = _patronymic(words)
     if patronymic is not None:
         votes[Signal.PATRONYMIC] = patronymic
+        if _PATRONYMIC_ORDER_VOTES and patronymic is PatronymicRule.EAST_SLAVIC:
+            # as _keeps_family_first counts it: the ending on the middle
+            # word is the given-first shape, else the family-first one
+            votes[Signal.PATRONYMIC_POSITION] = (
+                GIVEN_FIRST if has_patronymic_ending(
+                    words[1].rstrip(".") or words[1]) else FAMILY_FIRST)
     return votes, False, words
 
 
@@ -480,6 +491,8 @@ _MIN_SHARE = 2 / 3
 #: than _MIN_VOTES does (decisions/group-suggestion, 2026-11-16
 #: ORDER FLOOR, #1442).
 _MIN_ORDER_GROUP_SHARE = 0.01
+#: MEASURING (#1442 candidate B): 1 casts Signal.PATRONYMIC_POSITION.
+_PATRONYMIC_ORDER_VOTES = 0
 #: The share of the names casting any vote that one patronymic rule
 #: (East Slavic or Turkic) must hold strictly more than to decide it,
 #: higher than _MIN_SHARE because a decided East Slavic rule brought a
@@ -1242,6 +1255,11 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     # the order tally holds orders alone
     order = base_order if _end(base_order) == end else cast(
         "tuple[Role, Role, Role]", end)
+    if (_PATRONYMIC_ORDER_VOTES == 2 and rule_needs_given_first
+            and order == FAMILY_FIRST_GIVEN_LAST):
+        # MEASURING (#1442 candidate B'): that order takes the
+        # patronymic of a name written family first for its given name
+        order = FAMILY_FIRST
     fields: dict[str, object] = (
         {} if order == base_order else {_NAME_ORDER: order})
     return (tally.evidence(_NAME_ORDER, order, True,
