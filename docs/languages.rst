@@ -676,9 +676,13 @@ before the name: the salutations ``นาย`` (Mr.), ``นาง`` (Mrs.) and
 police ranks, and royal lineage titles. A title is written out
 (``รองศาสตราจารย์``, associate professor) or short with full stops
 (``รศ.``), and it is often glued to the given name with no space; the
-salutations are glued more often than written apart. Thai shortens no
-name to an initial. A few noble family names open with the particle
-``ณ`` (``ณ อยุธยา``).
+salutations are glued more often than written apart. Thai does not
+write names as initials. A few noble family names open with the
+particle ``ณ`` (``ณ อยุธยา``).
+
+Thai script sets no order of its own, so the examples below are read
+given name first, the default; a parser set to a family-first order
+(:ref:`name-order`) reads Thai names family name first too.
 
 Titles glued to the given name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -721,7 +725,7 @@ Titles written short, ranks and royal titles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A listed title written short with its full stops is read glued to the
-name or apart, alone or in a chain:
+name's first word or apart, alone or in a chain:
 
 .. doctest::
 
@@ -734,8 +738,8 @@ name or apart, alone or in a chain:
     >>> parse("รองศาสตราจารย์ ดร.สุดา ใจดี").title
     'รองศาสตราจารย์ ดร.'
 
-Military and police ranks are read written out or short, each with its
-feminine form (``พ.อ.หญิง``), and so are the royal lineage titles
+Military and police ranks are read written out or short, feminine
+forms among them (``พ.อ.หญิง``), and so are the royal lineage titles
 (``หม่อมราชวงศ์``, short ``ม.ร.ว.``):
 
 .. doctest::
@@ -755,7 +759,7 @@ A title before one name word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After a title, one name word is read as the family name in most
-languages (``Dr. Smith``). After a Thai title it is the given name,
+languages (``Dr. Smith``). After a listed Thai title it is the given name,
 since that is the name a Thai title is used with:
 
 .. doctest::
@@ -784,7 +788,7 @@ Initials
 
 :meth:`~nameparser.ParsedName.initials` gives an empty string for a
 name in Thai script, as it does for Chinese, Japanese and Korean ones,
-since no Thai name is shortened to a letter. A word in another script
+since Thai does not write names as initials. A word in another script
 beside it still gives its own:
 
 .. doctest::
@@ -799,16 +803,22 @@ beside it still gives its own:
 Where the Thai reading stops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Five things are left as written:
+Six things are left as written:
 
-- **A short title glued with no full stop.** ``ดร``, ``นพ`` and the
-  other short forms stay part of the given name when nothing separates
-  them from it, because Thai given names open with the same letters
-  (``นพพร``, ``นพดล``). With the full stop, or a space, they are read
-  (``docs/design/decisions/W6-glued-title-peel.md``, :issue:`317`).
-- **A second glued title.** One title is split off a word; a second
-  glued behind it stays in the given name. Written apart, both are
-  read.
+- **A short title glued with no full stop at all.** ``ดร``, ``นพ`` and
+  the other short forms written without stops stay part of the given
+  name when nothing separates them from it, because Thai given names
+  open with the same letters (``นพพร``, ``นพดล``). With the full stop,
+  or a space, they are read
+  (``docs/design/decisions/W6-glued-title-peel.md``, :issue:`317`). A
+  short form with stops inside it needs its last one too.
+- **Two titles glued with no full stop between them.** Only the first
+  is split off, and the second stays in the given name. A full stop
+  between them (``รศ.ดร.สุดา``), or a space, lets both be read.
+- **A short academic title glued after a family comma.** After a comma
+  that marks the family name, a word such as ``ดร.สุดา`` is kept whole
+  and read as the title; written apart it divides. Salutations and
+  ranks are split off there as elsewhere.
 - **A word the vocabulary does not list.** ``คุณ`` (Khun) and ``พระ``
   are not titles by default, each also opening ordinary names. A
   caller adds one (`Adding a Thai title`_).
@@ -824,6 +834,13 @@ Five things are left as written:
 
     >>> parse("ดรสุดา ใจดี").given
     'ดรสุดา'
+    >>> thai_comma = parse("ใจดี, ดร.สุดา")
+    >>> thai_comma.title, thai_comma.given
+    ('ดร.สุดา', '')
+    >>> parse("ใจดี, ดร. สุดา").given
+    'สุดา'
+    >>> parse("ใจดี, นายสมชาย").given
+    'สมชาย'
     >>> thai_two = parse("รองศาสตราจารย์นายแพทย์สมชาย ใจดี")
     >>> thai_two.title, thai_two.given
     ('รองศาสตราจารย์', 'นายแพทย์สมชาย')
@@ -850,14 +867,19 @@ default lacks is added to a :class:`~nameparser.Lexicon`
 
     >>> parse("คุณ สมชาย ใจดี").given
     'คุณ'
-    >>> with_khun = Parser(lexicon=Lexicon.default().add("คุณ", kind="title"))
+    >>> with_khun = Parser(lexicon=Lexicon.default().add(
+    ...     "คุณ", kind="title", addresses="given"))
     >>> khun_apart = with_khun.parse("คุณ สมชาย ใจดี")
     >>> khun_apart.title, khun_apart.given
     ('คุณ', 'สมชาย')
+    >>> with_khun.parse("คุณ สมชาย").given
+    'สมชาย'
     >>> with_khun.parse("คุณสมชาย ใจดี").given
     'คุณสมชาย'
 
-The added title is read written apart. Glued, it stays in the given
+``addresses="given"`` makes the title read as the shipped Thai ones
+do, one name word after it being the given name. The added title is
+read written apart. Glued, it stays in the given
 name unless it is added with ``attached="before"``, which is for a
 word that opens no name; ``คุณ`` opens several given names.
 
