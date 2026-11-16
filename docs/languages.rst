@@ -1,7 +1,36 @@
 Notes by language
 =================
 
-What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spanish and Portuguese titles, romanized Indic titles, Vietnamese and Mongolian names, and Maghrebi, Amazigh and Hebrew particles.
+This page is the detail behind the :ref:`shipped packs <shipped-packs>`
+table: for each language, how its names are written, what the default
+reads already, what the pack adds, what it costs and, where that was
+measured, how much it gains. :doc:`locales` says how packs and choices
+of language work, and lists every pack.
+
+Every pack here is used the same way, folded onto a parser with
+:func:`~nameparser.parser_for`: ``parser_for(locales.CS)`` is a parser
+for Czech names. A pack is for data that is mostly in its language,
+since it cannot tell whose name it is reading
+(:ref:`what-a-pack-costs`). Where your data mixes languages, parse each
+subset with its own parser, or pass several packs to ``parser_for``:
+"Stacking packs" in :doc:`locales` says how they combine, and
+:ref:`choosing-languages` what a choice of several languages reads.
+
+The sections below cover Czech, Slovak, Slovenian and Croatian names,
+Spanish and Portuguese titles and family names, romanized Indic titles,
+Vietnamese and Mongolian names, and Maghrebi, Amazigh and Hebrew
+particles. Other languages are described where their mechanism is:
+
+- **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
+- **Turkic patronymic markers** (``tr_az``):
+  :ref:`turkic-patronymic-markers`.
+- **Nepali** (``ne``): :ref:`nepali-given-names`.
+- **Irish and Scottish Gaelic** (``ga``, ``gd``):
+  :ref:`gaelic-clan-particles`.
+- **The words the Portuguese packs turn on** (``pt``, ``pt_br``):
+  :ref:`portuguese-packs`.
+- **Chinese, Japanese and Korean** (``zh``, ``ja``, and Korean with no
+  pack): :ref:`east-asian-names`.
 
 
 .. _west-south-slavic-packs:
@@ -9,21 +38,34 @@ What the shipped packs do for Czech, Slovak, Slovenian and Croatian names, Spani
 Czech, Slovak, Slovenian and Croatian names
 -------------------------------------------
 
+Turn on ``cs``, ``sk``, ``sl`` or ``hr`` when your data is names in
+that language. Each of the four languages is a pack of its own, which
+chooses that one language; the Czech and Slovak packs also read two
+family names (`Double surnames`_).
+
 These four languages tell a father from a son of the same name with a
 word written after the name: ``ml.`` for the younger and ``st.`` for
 the elder (Czech *mladší* and *starší*, Croatian *mlađi* and
 *stariji*). Czech and Slovak also write academic degrees as titles
 before the name, run together in their own capitalization (``MUDr.``,
 ``JUDr.``, ``PhDr.``, ``Mgr.``), and a few degrees after it
-(``DrSc.``, Slovak ``ArtD.``). The default reads the doctorates
-before the name, but cannot read the other words: ``ml.`` is also a
-pair of initials, ``st.`` is Saint in English and French, ``Pan`` and
-``Roz`` are names in other languages, ``MgA.`` and the rank ``mjr.``
-(major) are written as initials too and ``BcA.`` is an English
-credential. So they wait for a pack,
-and each of the
-four languages is a pack of its own, which chooses that one language;
-the Czech and Slovak packs also read two family names (below):
+(``DrSc.``, Slovak ``ArtD.``).
+
+What the default reads and what waits for a pack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default reads the doctorates before the name (``MUDr.``,
+``JUDr.``, ``PhDr.``, ``RNDr.`` and the rest), and ``Mgr.``, which it
+lists as Monsignor. It cannot read the other words, each of which
+another reading claims:
+
+- ``ml.`` is also a pair of initials.
+- ``st.`` is Saint in English and French.
+- ``Pan`` and ``Roz`` are names in other languages.
+- ``MgA.`` and the rank ``mjr.`` (major) are written as initials too.
+- ``BcA.`` is an English credential.
+
+So they wait for a pack:
 
 .. list-table::
    :header-rows: 1
@@ -43,17 +85,6 @@ the Czech and Slovak packs also read two family names (below):
    * - ``locales.SL``, ``locales.HR``
      - ``ml.``, ``st.``
 
-The doctorates (``MUDr.``, ``JUDr.``, ``PhDr.``, ``RNDr.`` and the
-rest) are titles without a pack, bare or dotted before the name or
-after a comma, and dotted at the end of it, and so is ``Mgr.``, which
-the default lists as Monsignor; written bare at the end of a name, as
-any title is, each is a name word (``Jan Novák MUDr`` → family
-``MUDr``). For ``MgA.``, ``BcA.`` and ``mjr.``, which the default does not list,
-what a pack changes is the bare spelling before the name or after a
-comma, and the dotted one at the end of it, where the default reads
-each as a name word; at the head of a name the dotted spelling is a
-title by its shape without one.
-
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, Parser, locales, parse, parser_for
@@ -62,29 +93,80 @@ title by its shape without one.
     'ml.'
     >>> czech.parse("Jiří Dienstbier ml.").suffix
     'ml.'
+    >>> czech.parse("Jana Nováková roz. Svobodová").maiden
+    'Svobodová'
+
+Where a title is read, by spelling and position
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Whether a degree written as a title is read depends on whether it is
+written with its period and on where it stands. The doctorates and
+``Mgr.`` read the same with or without ``cs`` or ``sk``. ``MgA.``,
+``BcA.`` and ``mjr.``, which the default does not list as titles, are
+titles under ``cs`` wherever a doctorate is one:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 18 18 18 18
+
+   * - Written
+     - A doctorate, ``Mgr.``
+     - ``MgA.``, ``mjr.`` by default
+     - ``BcA.`` by default
+     - All three under ``cs``
+   * - Bare, before the name: ``MgA Jana Malá``
+     - title
+     - name word
+     - name word
+     - title
+   * - Dotted, before the name: ``MgA. Jana Malá``
+     - title
+     - title, by its shape
+     - title, by its shape
+     - title
+   * - Bare, after a comma: ``Jana Malá, MgA``
+     - title
+     - name word
+     - suffix
+     - title
+   * - Dotted, after a comma: ``Jana Malá, MgA.``
+     - title
+     - title, by its shape
+     - suffix
+     - title
+   * - Dotted, at the end: ``Jana Malá MgA.``
+     - title
+     - name word
+     - suffix
+     - title
+   * - Bare, at the end: ``Jana Malá MgA``
+     - name word
+     - name word
+     - suffix
+     - name word
+
+Written bare at the end of a name, as any title is, a doctorate or
+``Mgr.`` is a name word (``Jan Novák MUDr`` → family ``MUDr``), and so
+are ``MgA``, ``BcA`` and ``mjr`` under ``cs``. "By its shape" is the
+default's reading of any unlisted abbreviation written with a period
+at the head of a name or of the part after a comma (see
+:ref:`abbreviated-titles`).
+
+.. doctest::
+
     >>> parse("Jan Novák, MUDr").title
     'MUDr'
     >>> parse("Jana Malá, MgA").family
     'Jana Malá'
     >>> czech.parse("Jana Malá, MgA").title
     'MgA'
-    >>> czech.parse("Jana Nováková roz. Svobodová").maiden
-    'Svobodová'
+    >>> parse("Jana Malá, BcA").suffix
+    'BcA'
+    >>> czech.parse("Jana Malá, BcA").title
+    'BcA'
 
-A word's :attr:`~nameparser.Reading.languages` names the files whose
-reading is on under the parser's choice: ``ml.`` above names ``cs``,
-whose reading the choice turns on, and ``Mgr.`` names ``cs`` alone, the
-Czech choice having dropped the Monsignor reading of ``en`` and ``fr``
-for its own, which the default names:
-
-.. doctest::
-
-    >>> czech.parse("Jiří Dienstbier ml.").tokens[-1].reading.languages
-    ('cs',)
-    >>> parse("Mgr. Jan Novák").tokens[0].reading.languages
-    ('en', 'fr')
-    >>> czech.parse("Mgr. Jan Novák").tokens[0].reading.languages
-    ('cs',)
+Double surnames
+~~~~~~~~~~~~~~~
 
 A Czech or Slovak woman who keeps her own surname beside her
 husband's writes the two without a hyphen, ``Alena Pešová Řehořová``,
@@ -92,9 +174,10 @@ which the default reads as a middle name and a family name. The two
 packs read two family names (``two_family_names``, see
 :ref:`two-family-names`), so the double surname stays whole, each
 name in its own view (``surname1`` ``Pešová``, ``surname2``
-``Řehořová``). Two given
-names pay for it: with no Czech or Slovak given-name list to keep a
-given name out of the family (none is published for the whole
+``Řehořová``).
+
+Two given names pay for it: with no Czech or Slovak given-name list to
+keep a given name out of the family (none is published for the whole
 population), ``Petr Pavel Novák`` reads family ``Pavel Novák``. A family
 comma keeps both as the default reads them:
 
@@ -107,14 +190,9 @@ comma keeps both as the default reads them:
     >>> czech.parse("Novák, Petr Pavel").middle
     'Pavel'
 
-It gains more names than it costs. Among ORCID's researchers, who split
-their own names into a given and a family box, the names agreeing in
-both rise from 95.0% to 96.4% in Czechia and from 94.8% to 96.4% in
-Slovakia; among the 170,181 records of the 2022 municipal and 2025
-Chamber elections' candidates, each a distinct set of the boxes the
-Czech registers file a name in, from 97.0% to 97.5% (measured
-2026-10-30). To keep the packs' vocabulary and
-turn the switch off, rebuild the policy:
+The switch gains more names than it costs (`Measured effect: Czech and
+Slovak`_). To keep the packs' vocabulary and turn the switch off,
+rebuild the policy:
 
 .. doctest::
 
@@ -124,27 +202,43 @@ turn the switch off, rebuild the policy:
     >>> one_family.parse("Petr Pavel Novák").family
     'Novák'
 
-Stacked with another pack, the switch reads that pack's names too.
-With ``locales.RU`` a patronymic written after the given name joins the
-family (``Ivan Petrovich Sidorov`` → family ``Petrovich Sidorov``, where
-``locales.RU`` alone reads the patronymic ``Petrovich``), as it does
-stacked with ``locales.ES``. With ``locales.ES``, the Spanish given-name
-list is applied to Czech and Slovak names and keeps the given names it
-holds out of the family, many of them names borne in both countries
-(``Jan``, ``Marie``, ``Anna``): over the Czech registers it moved 186
-records against ``locales.CS`` alone, 134 of them to agreeing (measured
-2026-10-30).
+Stacking with another pack
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Stacked with another pack, the switch reads that pack's names too:
+
+- **With locales.RU,** a patronymic written after the given name joins
+  the family (``Ivan Petrovich Sidorov`` → family ``Petrovich
+  Sidorov``, where ``locales.RU`` alone reads the patronymic
+  ``Petrovich``), as it does where ``locales.RU`` is stacked with
+  ``locales.ES``.
+- **With locales.ES,** the Spanish given-name list is applied to Czech
+  and Slovak names and keeps the given names it holds out of the
+  family, many of them names borne in both countries (``Jan``,
+  ``Marie``, ``Anna``).
 
 .. doctest::
 
     >>> parser_for(locales.CS, locales.RU).parse("Ivan Petrovich Sidorov").family
     'Petrovich Sidorov'
+    >>> czech.parse("Jan Marie Novák").family
+    'Marie Novák'
+    >>> parser_for(locales.CS, locales.ES).parse("Jan Marie Novák").family
+    'Novák'
 
-Choosing the language costs the other readings of these words. ``Pan
-Wei`` reads title ``Pan``, ``Rosalind Roz Smith`` takes ``Smith`` for
-a maiden name, and ``st`` loses its Saint readings, so ``St Clair
-Smith`` reads given ``St``. A caller whose names also hold the English
-Saint chooses French too, a choice that changes no other word:
+What choosing the language costs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Choosing the language costs the other readings of the words it turns
+on:
+
+- **Under cs,** ``Pan Wei`` reads title ``Pan``, and ``Rosalind Roz
+  Smith`` takes ``Smith`` for a maiden name.
+- **Under all four packs,** ``st`` loses its Saint readings, so ``St
+  Clair Smith`` reads given ``St``.
+
+A caller whose names also hold the English Saint chooses French too, a
+choice that changes no other word:
 
 .. doctest::
 
@@ -155,20 +249,66 @@ Saint chooses French too, a choice that changes no other word:
     >>> parser_for(locales.CS, french).parse("St Clair Smith").title
     'St'
 
+A word's :attr:`~nameparser.Reading.languages` names the files whose
+reading is on under the parser's choice (see :ref:`reading-taken`), so
+it shows which reading a word took. ``ml.`` under the Czech choice
+names ``cs``, and so does ``Mgr.``, the choice having dropped the
+Monsignor reading of ``en`` and ``fr``, which the default names:
+
+.. doctest::
+
+    >>> czech.parse("Jiří Dienstbier ml.").tokens[-1].reading.languages
+    ('cs',)
+    >>> parse("Mgr. Jan Novák").tokens[0].reading.languages
+    ('en', 'fr')
+    >>> czech.parse("Mgr. Jan Novák").tokens[0].reading.languages
+    ('cs',)
+
+Measured effect: Czech and Slovak
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Among ORCID's researchers, who split their own names into a given and
+a family box, reading two family names raises the names agreeing in
+both from 95.0% to 96.4% in Czechia and from 94.8% to 96.4% in
+Slovakia. Among the candidates of the 2022 municipal and 2025 Chamber
+elections, about 170,000 records, each a distinct set of the boxes the
+Czech registers file a name in, it raises them from 97.0% to 97.5%.
+The Spanish given-name list carried beside ``locales.CS`` moved fewer
+than two hundred of those register records, about seven in ten of them
+to agreeing. The
+dated figures are in
+``docs/design/decisions/O6-two-family-names.md`` and
+``docs/design/decisions/vocabulary-model.md``.
+
+
 .. _spanish-portuguese-titles:
 
 Spanish and Portuguese titles
 -----------------------------
 
+Turn on ``es`` when your data is Spanish names, ``es_ar`` when it is
+Argentine ones, and ``pt`` when it is Portuguese ones. The default
+already reads the titles described below, save two that ``es`` turns
+on; the larger change is two family names, which the Spanish packs
+read and ``pt`` leaves off.
+
+Titles
+~~~~~~
+
 Spanish and Latin American usage puts an academic or professional title
 in front of a name (*Licenciado*, *Ingeniero*, *Mtro.*), and Portuguese
 does the same with *Doutor* and *Professora*. These words are borne
 as names hardly at all, so the default reads them as titles, written
-out, abbreviated or dotted; a family name written first that is one
-(``Doctora``, ``Licenciado`` and ``Lic`` are each borne once in ORCID
-or PatentsView) reads as the title. ``es`` turns on the two it leaves off, ``Maestra``, which is
-also a family name and the word for a schoolteacher, and ``Doña``, a
-family name too:
+out, abbreviated or dotted. A family name that is one of them, opening
+a name written family name first without a comma, reads as the title
+too (``Doctora Ruiz Ana`` → title ``Doctora``): ``Doctora``,
+``Licenciado`` and ``Lic`` are each a family name almost nowhere in
+ORCID or PatentsView (``docs/design/decisions/vocabulary-model.md``,
+:issue:`1115`).
+
+``es`` turns on the two titles the default leaves off: ``Maestra``,
+which is also a family name and the word for a schoolteacher, and
+``Doña``, a family name too.
 
 .. doctest::
 
@@ -180,16 +320,23 @@ family name too:
     >>> spanish.title, spanish.given
     ('Maestra', 'Ana')
 
-``Don``, ``Dona`` and ``Dom`` are not among them: names open with each
-as a given name more often than as the title, Spanish and Portuguese
-data included. Nor is ``Maestro``, a Spanish family name, though
-``Maestra`` is (``Maestra Ana Ruiz Paz`` → title ``Maestra``). An office written before a name with its complement
-(``Ministro de Hacienda Juan Pérez``) is not read either. Names are
-written that way so rarely that the packs leave it alone, and a
-particle behind a title starts the family as it does by default
+Some words stay name words under the packs:
+
+- ``Don``, ``Dona`` and ``Dom``: names open with each as a given name
+  more often than as the title, Spanish and Portuguese data included.
+- ``Maestro``, a Spanish family name, though ``Maestra`` is a title
+  under ``es`` (``Maestra Ana Ruiz Paz`` → title ``Maestra``).
+- An office written before a name with its complement (``Ministro de
+  Hacienda Juan Pérez``). Names are written that way so rarely that
+  the packs leave it alone.
+
+A particle behind a title starts the family as it does by default
 (``Doctora de la Vega`` → family ``de la Vega``).
 
-``es`` also reads a name as Spanish names are written, with two family
+Two family names under ``es``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``es`` reads a name as Spanish names are written, with two family
 names, the father's and then the mother's (``two_family_names``, see
 :ref:`two-family-names`). It carries a list of 1,000 Spanish given
 names, the ones INE's 2025 census tables count as given names in at
@@ -198,6 +345,8 @@ stays out of it:
 
 .. doctest::
 
+    >>> parse("Gabriel García Márquez").family
+    'Márquez'
     >>> spain = parser_for(locales.ES)
     >>> spain.parse("Gabriel García Márquez").family
     'García Márquez'
@@ -230,19 +379,25 @@ is never taken for one written with n: ``Oña`` is a surname, though
     >>> spain.parse("Juan Oña Pérez").family
     'Oña Pérez'
 
-Among ORCID's researchers in the 11 Spanish-speaking countries
-measured, the names that agree in every box with the filer rise from
-13.5% (Peru) to 82.5% (Argentina) by default to 89.3% (Argentina) to
-97.3% (Chile) under the pack (measured 2026-10-30).
+A compound given name stays opt-in under the Spanish packs and ``pt``
+alike (``two_given_names``, see :ref:`two-given-names`): people filling
+a form with a middle-name box put the second given name there.
 
-Two family names are less settled in Argentina than in Spain and most
-of Latin America, and many of its commonest second given names, ``Sebastián``, ``Nicolás``,
-``Matías``, ``Andrés``, are given names Spain also bears as surnames
-in a fifth to a quarter of their uses, so ``es``'s list, which keeps
-only words given in at least 90% of their uses, leaves them out and the
-switch takes them into the family.
-``es_ar`` is ``es`` with 5,000 given names from the same census tables,
-the ones counted as given names in at least half their uses:
+.. _argentine-spanish-pack:
+
+Argentina: ``es_ar``
+~~~~~~~~~~~~~~~~~~~~
+
+Turn on ``es_ar`` in place of ``es`` for Argentine names. Two family
+names are less settled in Argentina than in Spain and most of Latin
+America, and many of its commonest second given names, ``Sebastián``,
+``Nicolás``, ``Matías``, ``Andrés``, are given names Spain also bears
+as surnames in a fifth to a quarter of their uses. So ``es``'s list,
+which keeps only words given in at least 90% of their uses, leaves
+them out and the switch takes them into the family.
+
+``es_ar`` is ``es`` with about 5,000 given names from the same census
+tables, the ones counted as given names in at least half their uses:
 
 .. doctest::
 
@@ -254,14 +409,8 @@ the ones counted as given names in at least half their uses:
     >>> argentina.parse("Gabriel García Márquez").family
     'García Márquez'
 
-Measured again on 2026-11-04, after later changes to the parser and
-without the records whose given box opens with a title, the Argentine
-researchers' names that agree in every box rise from 83.4% by default
-and 90.2% under ``es`` to 96.1% under ``es_ar``; among Argentine inventors on US patents, 93.8% by
-default, 86.2% under ``es`` and 92.7% under ``es_ar``, since most of
-them write one family name. A word Spain bears mostly as a surname,
-``Martín``, ``Esteban``, is on neither list, so the switch still takes
-it. Choosing ``es`` and
+A word Spain bears mostly as a surname, ``Martín``, ``Esteban``, is on
+neither list, so the switch still takes it. Choosing ``es`` and
 ``es_ar`` together reads as ``es_ar``.
 
 The longer list costs a name written with two family names whose first
@@ -279,23 +428,63 @@ in Spain, so ``es_ar`` lists it and reads it as a middle name, where
 That cost is why ``es`` keeps its shorter list: in Spain, Mexico,
 Peru, Bolivia, Ecuador, Costa Rica, Guatemala, Cuba, the Dominican
 Republic and Puerto Rico, the longer list
-reads fewer researchers' names right than ``es``'s does (measured
-2026-11-04).
+reads fewer researchers' names right than ``es``'s does.
 
-A compound given name stays opt-in
-(``two_given_names``): people filling a form with a middle-name box put
-the second given name there. ``pt`` turns neither switch on, because it serves every
-Portuguese-speaking country: among ORCID's researchers the switch
-mends about two names for each it breaks in Portugal (71.5% → 83.2%)
-and three in Brazil (49.5% → 74.4%), but sinks Angola (75.9% → 57.3%)
-and Mozambique (85.2% → 50.2%), and a Portuguese given-name list to
-guard it does not exist yet. Whether it helps Portuguese or Brazilian
-data depends on who split the names: it gains on names their bearers
-split themselves, as ORCID's are, and costs about 5 points on names
-filed through a form, as the UK company register's Portuguese filers
-are (61.1% → 56.1%). Where it helps your data, turn it on beside the
-pack: ``parser_for(locales.PT,
-base=Parser(policy=Policy(two_family_names=True)))``.
+.. _portuguese-two-family-names:
+
+Portuguese: why ``pt`` leaves the switch off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Where reading two family names helps your Portuguese data, turn it on
+beside the pack, on the base parser:
+
+.. doctest::
+
+    >>> from nameparser import Policy
+    >>> parser_for(locales.PT).parse("Tiago Barros Queiroz").family
+    'Queiroz'
+    >>> pt_two = parser_for(locales.PT,
+    ...                     base=Parser(policy=Policy(two_family_names=True)))
+    >>> pt_two.parse("Tiago Barros Queiroz").family
+    'Barros Queiroz'
+
+``pt`` does not turn it on, because it serves every
+Portuguese-speaking country and the switch helps some and sinks
+others: among ORCID's researchers it mends about two names for each it
+breaks in Portugal (71.5% → 83.2%) and three in Brazil (49.5% →
+74.4%), but sinks Angola (75.9% → 57.3%) and Mozambique (85.2% →
+50.2%), and a Portuguese given-name list to guard it does not exist
+yet.
+
+Whether it helps Portuguese or Brazilian data depends on who split the
+names: it gains on names their bearers split themselves, as ORCID's
+are, and costs about 5 points on names filed through a form, as the UK
+company register's Portuguese filers are (61.1% → 56.1%).
+:ref:`portuguese-packs` says what ``pt`` and ``pt_br`` do turn on.
+
+Measured effect: Spanish
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The figures are of ORCID's researchers, who split their own names into
+a given and a family box, and count the names that agree in every box
+with the filer:
+
+- **Under es, outside Argentina,** each country of one measurement
+  gains (Spain, Mexico, Colombia, Peru, Chile, Venezuela, Ecuador,
+  Bolivia, Cuba and Uruguay): by default they read between 13.5%
+  (Peru) and 61.8% (Uruguay) of names right, and under the pack
+  between 93.2% (Venezuela) and 97.3% (Chile).
+- **In Argentina,** 83.4% by default, 90.2% under ``es`` and 96.1%
+  under ``es_ar``. Among Argentine inventors on US patents the figures
+  are 93.8% by default, 86.2% under ``es`` and 92.7% under ``es_ar``,
+  since most of them write one family name. The Argentine figures
+  are from a separate, later measurement, which leaves out the records
+  whose given box opens with a title.
+
+The dated figures, and those for Portuguese above, are in
+``docs/design/decisions/O6-two-family-names.md``; the Argentine ones
+are from its entry on ``locales.ES_AR``.
+
 
 .. _romanized-indic-titles:
 
@@ -336,20 +525,27 @@ of a name by default, packs or no. ``Pandit``, ``Sardar``, ``Kumari``,
 ``Babu``, ``Acharya`` and ``Begum`` are titles under no pack: each opens
 far more names as a given name or a surname than as the title.
 
+
 .. _vietnamese-names:
 
 Vietnamese names
 ----------------
 
+Turn on ``vi`` when your data is Vietnamese names, and only then: it
+reads every name of two words or more family name first, unless a
+comma marks the family name.
+
 A Vietnamese name is written family name first, then the middle name,
 then the given name, and the default, reading given-first, reads it the
-other way round, diacritics or none. ``vi`` reads it in its own order,
-keeps syllables such as ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name
-words where other languages' particles and connectives would join them
-to the words beside them, keeps ``Chi``, ``Ba`` and ``Do`` from being
-read as a credential ending a name written in capitals
-(``NGUYEN LINH CHI``), and reads the academic titles written before a
-name:
+other way round, diacritics or none. ``vi`` does four things:
+
+- It reads the name in its own order.
+- It keeps syllables such as ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ)
+  and ``The`` (Thế) as name words where other languages' particles and
+  connectives would join them to the words beside them.
+- It keeps ``Chi``, ``Ba`` and ``Do`` from being read as a credential
+  ending a name written in capitals (``NGUYEN LINH CHI``).
+- It reads the academic titles written before a name.
 
 .. doctest::
 
@@ -364,24 +560,41 @@ name:
     >>> vietnamese.parse("PGS.TS. Nguyen Van Anh").title
     'PGS.TS.'
 
-The order holds for every name of two words or more the pack reads
-without a family comma, so keep it for Vietnamese data:
-``vietnamese.parse("John Smith")`` gives family ``John``. A one-word
-name reads as the given name, the name a Vietnamese person goes by, as
-it does under every order (``Policy.lone_name_word``, see
-:ref:`lone-name-word`). A family
-comma fixes the family name whatever the order, and the part after it
-reads given-first, as under every order (``Nguyen, Van Anh`` → family
-``Nguyen``, given ``Van``, middle ``Anh``), so ``Smith, John`` reads
-under ``vi`` as it does by default; but the syllables ``vi`` keeps as
-name words are name words there too (``Beethoven, Ludwig van`` gives
-middle ``van``). ``DO`` or ``BA`` written after a Vietnamese name as a
-credential, for English-language readers, reads as a name word, with a
-comma or without (``Nguyen Van Anh, DO`` gives family ``Nguyen Van
-Anh``, given ``DO``), and ``CHI`` without a comma or in a name written
-wholly in capitals (``NGUYEN VAN ANH, CHI`` gives given ``CHI``); other
-credentials, and ``CHI`` after a comma in a name written in mixed case,
-stay suffixes (``Nguyen Van Anh, PhD``).
+What the pack does to other names:
+
+- **Keep it for Vietnamese data.** The order holds for every name of
+  two words or more the pack reads without a family comma:
+  ``vietnamese.parse("John Smith")`` gives family ``John``.
+- **One-word names.** A one-word name reads as the given name, the name
+  a Vietnamese person goes by, as it does under every order
+  (``Policy.lone_name_word``, see :ref:`lone-name-word`).
+- **After a family comma.** A family comma fixes the family name
+  whatever the order, and the part after it reads given-first, as under
+  every order (``Nguyen, Van Anh`` → family ``Nguyen``, given ``Van``,
+  middle ``Anh``), so ``Smith, John`` reads under ``vi`` as it does by
+  default. The syllables ``vi`` keeps as name words are name words
+  there too (``Beethoven, Ludwig van`` gives middle ``van``).
+- **DO, BA and CHI after the name.** ``DO`` or ``BA`` written after a
+  Vietnamese name as a credential, for English-language readers, reads
+  as a name word, with a comma or without (``Nguyen Van Anh, DO`` gives
+  family ``Nguyen Van Anh``, given ``DO``). So does ``CHI`` without a
+  comma, or in a name written wholly in capitals (``NGUYEN VAN ANH,
+  CHI`` gives given ``CHI``). Other credentials, and ``CHI`` in
+  capitals after a comma in a name written in mixed case, stay
+  suffixes (``Nguyen Van Anh, PhD``).
+
+.. doctest::
+
+    >>> vietnamese.parse("John Smith").family
+    'John'
+    >>> vietnamese.parse("Beethoven, Ludwig van").middle
+    'van'
+    >>> vietnamese.parse("Nguyen Van Anh, DO").given
+    'DO'
+    >>> vietnamese.parse("Nguyen Van Anh, CHI").suffix
+    'CHI'
+    >>> vietnamese.parse("Nguyen Van Anh, PhD").suffix
+    'PhD'
 
 
 .. _mongolian-names:
@@ -451,6 +664,14 @@ Accept ``family-initial`` to match them under the pack:
 Maghrebi, Amazigh and Hebrew particles
 --------------------------------------
 
+Turn on ``locales.AR`` or ``locales.HE`` when your data holds Tunisian
+or Israeli family names written with ``Ben`` in Latin letters. The
+other particles described here, and ``בן`` in Hebrew script, are read
+by default.
+
+Read by default: ``Ait``, ``Ould``, ``El``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Family names in Morocco, Algeria, Tunisia and Mauritania, written in
 French spelling, often open with a word that joins the next one: the
 Amazigh ``Ait`` and ``Nait`` ("the people of"), the Hassaniya ``Ould``
@@ -458,9 +679,7 @@ Amazigh ``Ait`` and ``Nait`` ("the people of"), the Hassaniya ``Ould``
 names), and ``El``, the article ``al`` as
 Morocco, Algeria and Egypt spell it. The default reads each as part of the
 family name, and ``Ould``, with which a Mauritanian name still forms the
-father's name, fills ``patronymic`` too. ``El``, like ``Al``, is also a
-given name where it opens one (``El Mehdi``), so there it stays the
-given name and reports the fork:
+father's name, fills ``patronymic`` too:
 
 .. doctest::
 
@@ -472,15 +691,32 @@ given name and reports the fork:
     >>> haddou.family, haddou.patronymic
     ('Ould Haddou', 'Ould Haddou')
 
+``El`` has two limits:
+
+- **Opening a name.** ``El``, like ``Al``, is also a given name where
+  it opens one (``El Mehdi``), so there it stays the given name and
+  reports the fork.
+- **Inside a compound given name.** A compound given name written with
+  ``El`` inside it, as Algerian names are, gives the article and the
+  rest to the family name (``Nour El Houda Haddou`` gives family ``El
+  Houda Haddou``). Among ORCID's Algerian researchers ``El`` read this
+  way breaks between three and four names for each it fixes, where in
+  Morocco, Egypt and Lebanon it fixes more than ten for each it breaks
+  (``docs/design/decisions/vocabulary-collisions.md``, :issue:`1257`).
+
+A listing written family name first without a comma reads whole as the
+family name (``Ait Haddou Karim``), as one opening with ``de`` does;
+write the comma or declare the order.
+
+``Ben``: the Arabic and Hebrew packs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``Ben`` ("son of") opens Tunisian and Israeli family names the same way
 (``Ben Haddad``), but it is also the given name Ben, and a British
 middle name, standing where the particle would claim it, so the default
 leaves it to position. The Arabic and Hebrew packs, ``locales.AR`` and
 ``locales.HE``, each choose their one language and read it as the
-family name; a ``Ben`` opening a name stays the given name and reports
-the fork, save under a strict Arabic choice (``strict=True``), which
-drops English's given name Ben and reads a leading ``Ben`` as the family
-name:
+family name:
 
 .. doctest::
 
@@ -492,31 +728,35 @@ name:
     >>> arabic.parse("Ben Haddad").given
     'Ben'
 
-Among ORCID's researchers, who split their own names into a given and a
-family box, the names agreeing in both boxes rise from 87.6% by default
-to 96.1% under either pack in Tunisia, and from 92.7% to 93.5% in
-Israel (measured 2026-11-12; decisions/vocabulary-collisions gives the
-command). A listing written family name first without a
-comma reads whole as the family name (``Ait Haddou Karim``), as one
-opening with ``de`` does; write the comma or declare the order. And a
-compound given name written with ``El`` inside it, as Algerian names
-are, gives the article and the rest to the family name (``Nour El Houda
-Haddou`` gives family ``El Houda Haddou``): among ORCID's Algerian
-researchers ``El`` read this way breaks 135 names for 37 it fixes,
-where it fixes 2,001 for 26 in Morocco, 286 for 20 in Egypt and 432 for
-6 in Lebanon (measured 2026-11-12).
+A ``Ben`` opening a name stays the given name and reports the fork,
+save under a strict Arabic choice (``strict=True``), which drops
+English's given name Ben and reads a leading ``Ben`` as the family
+name.
 
-The packs are for family names written with ``Ben``, not for a civil
-register's chain of fathers' names: ``Karim ben Ali ben Salah Haddad``
-gives middle ``ben Ali``, family ``ben Salah Haddad`` under either pack,
-where the default keeps the chain in the middle name and reads the
-family right (a Tunisian register-style list read 140 of its 158 names
-right by default and 24 with ``ben`` read, :issue:`1248`).
+What the packs cost
+~~~~~~~~~~~~~~~~~~~
 
-Choosing Arabic also costs English's reading of ``abd``, which Arabic
-reads as a given name (``Abd Rahman``), so the credential ABD (All But
-Dissertation) is a name word under ``locales.AR``: ``Jane Smith, ABD``
-gives given ``ABD``, family ``Jane Smith``. Choose ``en`` too to keep it:
+- **A chain of fathers' names.** The packs are for family names written
+  with ``Ben``, not for a civil register's chain of fathers' names:
+  ``Karim ben Ali ben Salah Haddad`` gives middle ``ben Ali``, family
+  ``ben Salah Haddad`` under either pack, where the default keeps the
+  chain in the middle name and reads the family right (a Tunisian
+  register-style list read nearly nine names in ten right by default
+  and fewer than one in six with ``ben`` read, :issue:`1248`).
+- **The credential ABD, under locales.AR.** Choosing Arabic costs
+  English's reading of ``abd``, which Arabic reads as a given name
+  (``Abd Rahman``), so the credential ABD (All But Dissertation) is a
+  name word under ``locales.AR``: ``Jane Smith, ABD`` gives given
+  ``ABD``, family ``Jane Smith``. Choose ``en`` too to keep it.
+- **Ait and Nait, under a strict Arabic choice.** A strict Arabic
+  choice also drops the Amazigh ``Ait`` and ``Nait``, which are
+  ``ber``'s (Berber), so for Moroccan and Algerian data choose ``ber``
+  too.
+- **Other languages' particles, under a strict Hebrew choice.** A
+  strict Hebrew choice keeps ``Ben`` and the particles written in
+  Hebrew script, and drops the particles of other languages written in
+  Latin letters, ``Ait``, ``Nait``, ``Ould``, ``Ouled`` and ``El``
+  among them (``Sara El Haddou`` gives middle ``El``).
 
 .. doctest::
 
@@ -524,11 +764,16 @@ gives given ``ABD``, family ``Jane Smith``. Choose ``en`` too to keep it:
     ...                  languages=frozenset({"en"}))
     >>> parser_for(locales.AR, english).parse("Jane Smith, ABD").suffix
     'ABD'
+    >>> parser_for(locales.AR, strict=True).parse("Youssef Ait Haddou").family
+    'Haddou'
+    >>> berber = Locale(code="ber", lexicon=Lexicon.empty(),
+    ...                 languages=frozenset({"ber"}))
+    >>> parser_for(locales.AR, berber, strict=True).parse(
+    ...     "Youssef Ait Haddou").family
+    'Ait Haddou'
 
-A strict Arabic choice also drops the Amazigh ``Ait`` and ``Nait``, which
-are ``ber``'s (Berber), so for Moroccan and Algerian data choose ``ber``
-too: ``parser_for(locales.AR, Locale(code="ber", lexicon=Lexicon.empty(),
-languages=frozenset({"ber"})), strict=True)``.
+Hebrew script
+~~~~~~~~~~~~~
 
 In Hebrew script ``בן`` is read by default: opening a name it is the
 given name Ben, the fork reported, and inside a name it starts the
@@ -555,3 +800,12 @@ An Arab name written in Hebrew with ``בן`` for the father therefore
 leaves ``patronymic`` empty, and a given name written with ``אל``
 inside it (``עבד אל עזיז``, Abd al-Aziz) gives the article and the rest
 to the family name.
+
+Measured effect: ``Ben``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Among ORCID's researchers, who split their own names into a given and a
+family box, the names agreeing in both boxes rise from 87.6% by default
+to 96.1% under either pack in Tunisia, and from 92.7% to 93.5% in
+Israel. The dated figures are in
+``docs/design/decisions/vocabulary-collisions.md``.
