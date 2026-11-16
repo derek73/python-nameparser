@@ -183,7 +183,7 @@ the removed modules of that package by name:
 
 .. code-block:: bash
 
-    grep -rnE "CONSTANTS|HumanName|Constants|nameparser\.(parser|util)|nameparser\.config import|config\.(prefixes|bound_first_names|regexes|surnames|titles|suffixes|particles|conjunctions|bound_given_names|given_names|maiden_markers|capitalization)" .
+    grep -rnE "CONSTANTS|HumanName|Constants|nameparser\.(parser|util)\b|nameparser\.config import|config\.(prefixes|bound_first_names|regexes|surnames|titles|suffixes|particles|conjunctions|bound_given_names|given_names|maiden_markers|capitalization)" .
 
 A read of a ``Lexicon`` set field has no name to search for: look where
 your code holds a lexicon.
@@ -707,7 +707,8 @@ that wrote it:
      - Build the object again
    * - ``Lexicon``, ``Parser`` or locale pack
      - 2.7 or 2.8
-     - loads, with a ``DeprecationWarning``
+     - loads, with a ``DeprecationWarning``, unless edited in a way
+       no readings express (below)
      - ``ValueError``
      - Load it under 3.0 and pickle it again there
    * - ``Policy``
@@ -774,9 +775,17 @@ A ``ParsedName`` from 2.x
 
 A :class:`~nameparser.ParsedName` pickled by 2.x has no ``order`` and
 renders exactly as it did under 2.x, while a fresh parse of the same text
-renders as written (:ref:`migrate-3-0-rendering`); the two still
-compare equal, since ``order`` is left out of ``==`` and
-:meth:`~nameparser.ParsedName.comparison_key`.
+renders as written (:ref:`migrate-3-0-rendering`). ``order`` is left
+out of ``==`` and :meth:`~nameparser.ParsedName.comparison_key`, so it
+never makes the two differ.
+
+What else can: the loaded name is the reading of the release that
+pickled it. Where that release read the name as this one does, the
+fields and ``comparison_key()`` agree, and ``==`` holds too where the
+words carry the same vocabulary tags, which it compares. A
+``parse("Dr. John Smith, Jr.")`` pickled by 2.0 has the same fields and
+key as a fresh parse and is not ``==`` to it, 2.0 having tagged ``Dr.``
+with its suffix readings as well; one pickled by 2.3 or later is.
 
 .. _migrate-comparison:
 
