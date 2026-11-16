@@ -12,7 +12,8 @@ and COMMA_STRUCTURE ambiguities for unrecognized extra segments (a
 part of title and suffix words is recognized, #603).
 Reads: for C2's flag on a part past the second comma only: Lexicon
 suffix vocabulary (the four suffix sets; generation_words and
-honorific_words, which settle a joined member; title_case_name_words,
+honorific_words, the suffix words that do not settle a joined member;
+title_case_name_words,
 whose Title case leans to the name; and honorific_tails, through
 _vocab.period_joined_credential) and Policy through _vocab.is_wholly_suffix
 (Policy.lenient_comma_suffixes picks the lenient or strict token test;

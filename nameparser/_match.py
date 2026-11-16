@@ -120,7 +120,7 @@ class Outcome(StrEnum):
     #: (``Hong`` / ``Hong-Yi``). Not accepted by default.
     HYPHENATED_PART = "hyphenated-part"
     #: A name in a different role on each side, recorded in
-    #: `MatchResult.across`. Not accepted by default.
+    #: :attr:`MatchResult.across`. Not accepted by default.
     ACROSS_ROLES = "across-roles"
     #: The two texts contradict each other; never accepted.
     CONFLICT = "conflict"
@@ -192,9 +192,9 @@ class CrossRoleMatch:
     right_role: Role
     #: The outcome of comparing the two texts.
     outcome: Outcome
-    #: The left name's text in `left_role`.
+    #: The left name's text in ``left_role``.
     left: str
-    #: The right name's text in `right_role`.
+    #: The right name's text in ``right_role``.
     right: str
 
     __getstate__ = _guarded_getstate
@@ -231,15 +231,15 @@ class MatchResult:
     #: Whether nothing in the two names contradicts the match under
     #: the accepted outcomes.
     consistent: bool
-    #: One `RoleMatch` per `Role`, in `Role` order.
+    #: One :class:`RoleMatch` per :class:`Role`, in ``Role`` order.
     roles: tuple[RoleMatch, ...]
-    #: The `CrossRoleMatch` behind each role read `across-roles`, in
-    #: `Role` order of the role it resolved; empty unless
-    #: `across-roles` is accepted.
+    #: The :class:`CrossRoleMatch` behind each role read
+    #: ``across-roles``, in ``Role`` order of the role it resolved;
+    #: empty unless ``across-roles`` is accepted.
     across: tuple[CrossRoleMatch, ...] = ()
-    #: The `Ambiguity` whose other reading the table used for the left
-    #: name, or None where it is read as parsed (always None unless
-    #: `other_readings` is on).
+    #: The :class:`Ambiguity` whose other reading the table used for the
+    #: left name, or ``None`` where it is read as parsed (always ``None``
+    #: unless ``other_readings`` is on).
     left_alternative: Ambiguity | None = None
     #: The same for the right name.
     right_alternative: Ambiguity | None = None

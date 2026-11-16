@@ -361,7 +361,8 @@ class Parser:
         ending in letters (Nepal's ``B K``), and a group decided so
         casts no trailing-initial vote on its order; a group never turns
         it off, nor turns it on under a base reading names family first,
-        where letters ending a name are never read as its family. ``capitals_as_family`` (rules/O9) is turned on where
+        where letters ending a name are never read as its family.
+        ``capitals_as_family`` (rules/O9) is turned on where
         at least two names, and more than two thirds of the names with
         evidence either way, write the family in capitals: the rule,
         asked of the name parsed with the switch on, reads as its family

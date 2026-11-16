@@ -804,9 +804,9 @@ class Suggestion:
     base: Parser
     #: The settings the group decided that differ from the base's.
     patch: PolicyPatch
-    #: One `SettingEvidence` per setting considered.
+    #: One :class:`SettingEvidence` per setting considered.
     evidence: tuple[SettingEvidence, ...]
-    #: One `NameEvidence` per input name, in input order, blanks and
+    #: One :class:`NameEvidence` per input name, in input order, blanks and
     #: duplicates included.
     names: tuple[NameEvidence, ...]
 

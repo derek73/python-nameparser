@@ -1934,7 +1934,7 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     here, and provably the same answer for UNDOTTED text: the Lexicon
     invariant that an ambiguous acronym is never also a suffix WORD
     (one suffix kind per word: the vocabulary build's check 4, which
-    `_lexicon._make_edit` runs on a caller's reading too) and is never
+    `_lexicon._check_pool` runs on a caller's reading too) and is never
     counted
     without periods once it IS one (`suffix_as_written`'s own
     exclusion) together kill that predicate's two disjuncts once text

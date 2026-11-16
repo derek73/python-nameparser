@@ -23,11 +23,13 @@ from types import FrameType, MappingProxyType, ModuleType
 from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 #: Vocabulary set fields, in declaration order: the 2.x `Lexicon`
-#: fields but the masks. Since 3.0's 4i-b (#754) only the two lists
-#: (`_LIST_FIELDS`) are still fields, the rest being the sets a compile
-#: of readings gives (`_SET_FIELDS`); add() and remove() take a word
-#: and its reading's kind, never one of these names, and ``|`` unions
-#: the lists and merges capitalization_exceptions right-biased.
+#: fields but the masks, and `given_names` (3.0). Since 3.0's 4i-b
+#: (#754) only the two lists (`_LIST_FIELDS`) are still fields, the
+#: rest being the sets a compile of readings gives (`_SET_FIELDS`);
+#: add() and remove() take a word and its reading's kind, never one of
+#: these names, and ``|`` unions the lists, concatenates the edit logs
+#: (which is how every other set is joined) and merges
+#: capitalization_exceptions right-biased.
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
@@ -2379,8 +2381,7 @@ class Lexicon:
         address a person by the given name). ``same_as`` matches a
         reading naming every word given among the words it is a
         spelling of (``words(kind="given", same_as="muhammad")`` lists
-        ``md``, ``mhd``, ``moch``, ``moh``, ``mohd`` and ``muh``, the
-        words that are a spelling of several names among them). A
+        ``md``, ``mohd`` and ``moh`` among others). A
         phrase the lexicon holds whole (``"z domu"``) is one entry.
         Added in 3.0."""
         k = _check_kind(kind, "words")

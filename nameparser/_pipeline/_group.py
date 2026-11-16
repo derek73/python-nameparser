@@ -12,9 +12,10 @@ segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAM
 ambiguities that decision reports, those the particle chain and a
 maiden clause report on a trailing member they take into the name
 (an ambiguous acronym, or since #718 a declined numeral), the
-PARTICLE_OR_GIVEN report the particle chain makes where it claims an
-ambiguous particle that is not the name's leading piece (`St van
-Johnson`, `Dr. St van Johnson`), and the
+PARTICLE_OR_GIVEN report the particle chain makes where it chains an
+ambiguous particle with nothing but leading titles in front of it
+(`St van Johnson`, `Freiherr von der Berg`; `Vincent van Gogh` and
+`Dr. Van Johnson` report nothing here), and the
 caps shape's acronym tags on
 a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the

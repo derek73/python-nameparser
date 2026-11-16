@@ -219,7 +219,7 @@ def test_the_mask_error_offers_a_spelling_that_works_and_type_checks(
     run and to type-check. The field is annotated with what it STORES,
     a tuple of pairs, so a dict literal there is an arg-type error --
     AGENTS.md's rule for actionable messages. The offered spelling is
-    the offending KEY recased upper, not a fixed example, so the two
+    the offending KEY recased upper, not a fixed example, so the
     construction below uses the spelling the 'jr' key's own error
     offers, verbatim; mypy checks this file."""
     offered = ("dataclasses.replace(lexicon, capitalization_exceptions=("
@@ -228,8 +228,9 @@ def test_the_mask_error_offers_a_spelling_that_works_and_type_checks(
         Lexicon(capitalization_exceptions=(("jr", "Junior"),))
     assert offered in str(caught.value)
     lexicon = Lexicon.default()
-    assert dataclasses.replace(lexicon, capitalization_exceptions=(*lexicon.capitalization_exceptions, ('jr', 'JR'))) \
-        .capitalization_exceptions_map["jr"] == "JR"
+    pasted = dataclasses.replace(lexicon, capitalization_exceptions=(
+        *lexicon.capitalization_exceptions, ('jr', 'JR')))
+    assert pasted.capitalization_exceptions_map["jr"] == "JR"
 
 
 def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
@@ -246,8 +247,9 @@ def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
     assert offered in str(caught.value)
     # pasted, the offered spelling constructs
     lexicon = Lexicon.default()
-    assert dataclasses.replace(lexicon, capitalization_exceptions=(*lexicon.capitalization_exceptions, ('straße', 'straße'))) \
-        .capitalization_exceptions_map["straße"] == "straße"
+    pasted = dataclasses.replace(lexicon, capitalization_exceptions=(
+        *lexicon.capitalization_exceptions, ('straße', 'straße')))
+    assert pasted.capitalization_exceptions_map["straße"] == "straße"
 
 
 def test_the_mask_error_echoes_the_callers_own_spelling_not_the_composed_one(

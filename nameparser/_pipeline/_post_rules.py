@@ -47,7 +47,8 @@ Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
 `set_apart`, Lexicon.suffix_words_ambiguous, suffix_acronyms, titles,
 title_modifiers, title_styles, after_given_titles and honorific_tails
 (through `_vocab.period_joined_credential`), with generation_words
-and honorific_words, which settle a member (`_vocab.settles_a_member`).
+and honorific_words, the suffix words that do not settle a member
+(`_vocab.settles_a_member`).
 
 Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, P11,
 O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's surname pair of

@@ -567,11 +567,11 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     other is the vocabulary-against-shape split nameparser/AGENTS.md's
     spelling sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
     middle 'Jones' where 'Smith, John PhD Jones' reads suffix
-    'PhD Jones'). The no-comma spelling is not reached here: `run_start`
-    asks only of the pieces `peel_walk` keeps, and the walk drops the
-    merged piece, so `run_start` starts the run at the piece behind
-    it itself (#827): 'John Smith Ph. D. Jones' reads suffix
-    'Ph. D. Jones' as 'John Smith PhD Jones' reads 'PhD Jones'.
+    'PhD Jones'). Without a comma `peel_walk` leaves the merged piece
+    out of the pieces `run_start` walks, so `run_start` asks this of
+    the piece in front of a kept one itself (#827): 'John Smith Ph. D.
+    Jones' reads suffix 'Ph. D. Jones' as 'John Smith PhD Jones' reads
+    'PhD Jones'.
 
     A roman numeral of two or more letters starts it where
     `_vocab.reads_as_generation` reads it as the generation, with
