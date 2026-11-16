@@ -93,8 +93,8 @@ More shapes the parser reads
 ----------------------------
 
 **Titles, suffixes and commas.** Runs of titles, listing forms and
-credentials are read without configuration; a guess is reported, and
-each word says which language's vocabulary read it:
+credentials are read without configuration; a guess is reported, and a
+word the vocabulary read says which languages' vocabulary it came from:
 
 .. code-block:: python
 
@@ -277,9 +277,9 @@ Speed and testing
   Japanese kanji names.
 * **Build one Parser and reuse it.** The first parser for a choice of
   languages in a process costs tens of milliseconds, another choice
-  after it a few, and building the same choice again about one, some
-  ten parses: a parse costs roughly a tenth of a millisecond on a
-  recent laptop.
+  after it under ten, and building the same choice again about one
+  millisecond, some ten parses; a parse costs roughly a tenth of a
+  millisecond on a recent laptop.
 * **A parser can be shared.** Its ``Lexicon`` and ``Policy`` are frozen
   and a parse never writes to them, so one parser can be shared across
   threads without locking, and it pickles for ``multiprocessing``. A

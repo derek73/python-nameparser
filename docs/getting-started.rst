@@ -13,8 +13,8 @@ Install it with ``pip install nameparser``. It needs Python 3.11 or
 later and no other package.
 
 The parser reads a name by the position of its words and the words it
-knows, such as titles and particles, and never guesses its language. A Chinese, Japanese or Korean name written in its own
-script is read family name first without configuration, save a name in
+knows, such as titles and particles, and never guesses its language. A
+Chinese, Japanese or Korean name written in its own script is read family name first without configuration, save a name in
 katakana alone, which keeps the order it is written in. Where such a
 name is written with no space between its parts, a Korean one is
 divided by default, a Chinese one by the ``zh`` pack, and a Japanese
