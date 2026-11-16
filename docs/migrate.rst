@@ -1761,8 +1761,9 @@ Initials that spell a credential
 Dotted initials that spell a listed credential, after a comma and a
 surname of one word, or of one word behind its particles (``de
 Waart``), are the given and middle names, as the initials they may be,
-where 1.4 read them as one given name and 2.0 through 3.0 as the
-credential (:ref:`migrate-2-0`). The parse reports the credential it
+where 2.0 through 3.0 read them as the credential
+(:ref:`migrate-2-0`); 1.4 read them as one given name after a surname
+of one word. The parse reports the credential it
 did not read. Two name words before the comma, another credential in
 the same part as the initials, or the undotted spelling keep the
 credential:
