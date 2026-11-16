@@ -19,9 +19,53 @@ Parse a name
     >>> name.title, name.middle, name.suffix
     ('Dr.', 'Q. Xavier', 'III')
 
-A parsed name has seven fields: ``title``, ``given``, ``middle``,
-``family``, ``suffix``, ``nickname``, and ``maiden``. Parsing never
-raises; unparseable input yields a :class:`~nameparser.ParsedName` with
+A parsed name has seven fields, each a string, empty where the name has
+no such part. The examples are the fields of
+``Dr. Mara "Mimi" Lee Quill née Brandt, PhD``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 60 22
+
+   * - Field
+     - Holds
+     - Example
+   * - ``title``
+     - A title or form of address, usually written before the name
+     - ``Dr.``
+   * - ``given``
+     - The given name
+     - ``Mara``
+   * - ``middle``
+     - The name words that are neither the given name nor the family
+       name
+     - ``Lee``
+   * - ``family``
+     - The family name, with any particles (``de la Vega``)
+     - ``Quill``
+   * - ``suffix``
+     - Words written after the name, such as a generation (``III``)
+       or a credential
+     - ``PhD``
+   * - ``nickname``
+     - A nickname written in quotes or parentheses
+       (:ref:`nicknames-and-maiden-names`)
+     - ``Mimi``
+   * - ``maiden``
+     - A birth name written after a marker such as ``née``
+       (:ref:`nicknames-and-maiden-names`)
+     - ``Brandt``
+
+.. doctest::
+
+    >>> all_seven = parse('Dr. Mara "Mimi" Lee Quill née Brandt, PhD')
+    >>> all_seven.title, all_seven.given, all_seven.middle, all_seven.family
+    ('Dr.', 'Mara', 'Lee', 'Quill')
+    >>> all_seven.suffix, all_seven.nickname, all_seven.maiden
+    ('PhD', 'Mimi', 'Brandt')
+
+Parsing never raises; unparseable input yields a
+:class:`~nameparser.ParsedName` with
 empty fields plus any ``ambiguities`` the parser noticed along the way
 (see `When the parser had to guess`_ below, and :doc:`concepts` for why
 they exist). A name with no fields set is falsy, which is how you tell
@@ -32,29 +76,90 @@ they exist). A name with no fields set is falsy, which is how you tell
     >>> bool(parse("")), bool(parse("   ")), bool(parse("John"))
     (False, False, True)
 
-.. raw:: html
-
-   <span id="east-asian-names"></span>
-
-East Asian names have a page of their own: :ref:`east-asian-names`.
-
 .. _aggregate-views:
 
 Aggregate views
 ----------------
 
+A view combines or splits the seven fields for one task: a form's
+"given names" box, a sort key, the generation apart from the degrees.
+Each is a property of the parsed name and a key of a ``render()`` spec,
+and none changes a field. Each example below is from the name its
+section parses.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 46 28
+
+   * - View
+     - What it holds
+     - Example
+   * - ``given_names``
+     - ``given`` and ``middle`` together
+       (:ref:`usage-given-names-and-surnames`)
+     - ``Juan Q. Xavier``
+   * - ``surnames``
+     - ``middle`` and ``family`` together
+       (:ref:`usage-given-names-and-surnames`)
+     - ``Q. Xavier de la Vega``
+   * - ``family_base``, ``family_particles``
+     - The family name without its particles, and the particles
+       (:ref:`usage-sorting-by-family-name`)
+     - | ``Vega``
+       | ``de la``
+   * - ``generation``
+     - The suffix words read as a generation
+       (:ref:`usage-splitting-the-suffix`)
+     - ``Jr.``
+   * - ``honorifics``
+     - A form of address written after the name
+       (:ref:`usage-splitting-the-suffix`)
+     - ``さん``
+   * - ``credentials``
+     - The rest of the suffix (:ref:`usage-splitting-the-suffix`)
+     - ``MD, Esq.``
+   * - ``patronymic``
+     - The words that say whose child the bearer is, where a particle
+       marks them (:ref:`usage-finding-a-patronymic`)
+     - ``bin Mohamad``
+   * - ``surname1``, ``surname2``
+     - The first and second family names, where the family was read as
+       two (:ref:`usage-surname1-and-surname2`)
+     - | ``García``
+       | ``Márquez``
+   * - ``surname1_base``, ``surname1_particles``
+     - ``surname1`` split as ``family_base`` and ``family_particles``
+       split the family (:ref:`usage-surname1-and-surname2`)
+     - | ``Vega``
+       | ``de la``
+
+.. _usage-given-names-and-surnames:
+
+Given names and surnames together
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. doctest::
 
     >>> name.given_names          # given + middle
     'Juan Q. Xavier'
-    >>> name.family_base, name.family_particles   # family, split apart
-    ('Vega', 'de la')
+    >>> name.surnames             # middle + family
+    'Q. Xavier de la Vega'
 
 ``surnames`` (``middle`` + ``family``) is the mirror-image aggregate.
 The plural is the tell: ``given`` and ``family`` are single fields,
 while ``given_names`` and ``surnames`` roll several fields together —
 the same sense in which a passport form asks for your "given names" as
 one blank that can hold more than one word.
+
+.. _usage-sorting-by-family-name:
+
+Sorting by family name
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. doctest::
+
+    >>> name.family_base, name.family_particles   # family, split apart
+    ('Vega', 'de la')
 
 ``family_base`` is the one to sort on. Dutch and Belgian directories
 file a name under the base surname and ignore the *tussenvoegsel* — the
@@ -76,6 +181,11 @@ is the problem the split exists to solve:
     >>> [n.family for n in sorted(names, key=lambda n: n.family.lower())]
     ['de la Vega', 'Smith', 'van Gogh']
 
+.. _usage-splitting-the-suffix:
+
+Splitting the suffix: generation, credentials, honorifics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``generation`` and ``credentials`` split the suffix the way a name
 form's "Jr., III" and "PhD, MD" boxes do: a generation numbers the
 bearer among relatives of the same name, and every other word after
@@ -95,6 +205,11 @@ and ``suffix`` itself is unchanged:
     >>> addressed.credentials, addressed.honorifics, addressed.suffix
     ('PhD', 'さん', 'さん, PhD')
 
+.. _usage-finding-a-patronymic:
+
+Finding a patronymic
+~~~~~~~~~~~~~~~~~~~~
+
 ``patronymic`` names the words that say whose child the bearer is, a
 particle such as ``bin`` with the parent's name after it, in whatever
 field the parse put them, which keeps them. It reads no position, so a
@@ -107,6 +222,11 @@ name written without the particle has none:
     ('bin Mohamad', 'bin Mohamad')
     >>> parse("Anwar Ibrahim").patronymic
     ''
+
+.. _usage-no-inherited-family-name:
+
+What ``family`` holds where no family name is inherited
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some conventions have no inherited family name. There ``family`` holds
 the name the convention files a person under, the word that stands where
@@ -128,6 +248,11 @@ so ``patronymic`` stays empty:
 To match the two spellings of one such name, see
 :ref:`matching-without-an-inherited-family-name`.
 
+.. _usage-surname1-and-surname2:
+
+Two family names: ``surname1`` and ``surname2``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``surname2`` is the family's second name, where the parse read the
 family as two: with ``two_family_names`` on
 (:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs`` and ``sk``
@@ -141,8 +266,8 @@ hyphenated one included:
     >>> from nameparser import Parser, Policy
     >>> marquez = Parser(policy=Policy(two_family_names=True)).parse(
     ...     "Gabriel García Márquez")
-    >>> marquez.family, marquez.surname2
-    ('García Márquez', 'Márquez')
+    >>> marquez.family, marquez.surname1, marquez.surname2
+    ('García Márquez', 'García', 'Márquez')
     >>> parse("Gabriel García Márquez").surname2
     ''
 
@@ -166,16 +291,33 @@ middle names ``middle_as_family`` folds into it:
 Dicts and strings
 ------------------
 
+A parsed name writes itself out three ways: ``as_dict()`` for a record,
+``str()`` and ``render()`` for a string, and ``initials()``.
+
+As a dict
+~~~~~~~~~
+
+``as_dict()`` gives the seven fields by name, and
+``include_empty=False`` leaves out the empty ones. The views are not in
+it:
+
 .. doctest::
 
     >>> name.as_dict(include_empty=False)
     {'title': 'Dr.', 'given': 'Juan', 'middle': 'Q. Xavier', 'family': 'de la Vega', 'suffix': 'III'}
+
+As a string, in another order
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``str()`` writes the name whole, and ``render()`` takes a format spec
+naming the fields and views you want, in the order you want them:
+
+.. doctest::
+
     >>> str(name)
     'Dr. Juan Q. Xavier de la Vega III'
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
-    >>> name.initials()
-    'J. Q. X. V.'
 
 ``str()``, like ``render()`` with no spec, lays the name out in the
 order it was read in (:attr:`ParsedName.order
@@ -191,6 +333,30 @@ stays. A spec you pass renders exactly as written, in its own order:
     >>> parse("김민준").render("{given} {family}")
     '민준 김'
 
+:ref:`rendering-arguments` has more on specs, and on a string meant to
+be parsed again.
+
+As initials
+~~~~~~~~~~~
+
+``initials()`` gives the initials of the given, middle and family
+names. Its ``spec`` chooses and orders those three groups,
+``delimiter`` is written after each initial, and ``separator`` joins
+the initials within one group (:ref:`rendering-arguments`):
+
+.. doctest::
+
+    >>> name.initials()
+    'J. Q. X. V.'
+    >>> name.initials(spec="{given} {family}")
+    'J. V.'
+    >>> name.initials(spec="{given}{middle}{family}", delimiter="", separator="")
+    'JQXV'
+
+Initials written together in the name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is how such a name is parsed, whatever you render from it.
 A given name written as initials run together with full stops, in
 capitals, reads as those initials: the first is the given name and the
 rest are middle names, as they would be written apart, and ``str()``
@@ -207,10 +373,29 @@ keeps them as written (since 3.1):
 Fixing case
 -----------
 
+Use ``capitalized()`` when your data arrives in one case, all capitals
+or all lowercase. It returns a new parsed name with the case repaired:
+
 .. doctest::
 
+    >>> str(parse("TEO VAN BRANDT, PHD").capitalized())
+    'Teo van Brandt, PhD'
     >>> str(parse("juan de la vega").capitalized())
     'Juan de la Vega'
+
+A name whose words, its suffix aside, are written in more than one case
+is left as it is, on the assumption that someone cased it on purpose;
+pass ``force=True`` to repair it anyway:
+
+.. doctest::
+
+    >>> str(parse("Mara QUILL").capitalized())
+    'Mara QUILL'
+    >>> str(parse("Mara QUILL").capitalized(force=True))
+    'Mara Quill'
+
+:ref:`rendering-arguments` has the rules that decide what is touched,
+and :ref:`case-exceptions` says how to give a word a casing of its own.
 
 The no-argument form above uses the DEFAULT lexicon; for a name parsed
 with a custom :class:`~nameparser.Parser`, call
@@ -220,20 +405,41 @@ parser's own vocabulary decides the exceptions.
 Comparing names
 ----------------
 
-``==`` is strict value equality — two :class:`~nameparser.ParsedName`
-instances are equal only if every field matches exactly. For "is this
-the same name, allowing for order and case?" use ``matches()`` or
-``comparison_key()`` instead. ``matches()`` parses a str argument with
-the DEFAULT parser; to compare against a string using a custom
-:class:`~nameparser.Parser`'s vocabulary, call
-:meth:`Parser.matches() <nameparser.Parser.matches>`.
+``matches()`` asks whether two writings are the same name: every field
+the same, whatever the case and whichever way round it was written. It
+does not accept an initial for a name, so ``J. Smith`` does not match
+``John Smith``. To join records from several sources, where one writes
+the initial and another the name, use
+:meth:`Parser.matching() <nameparser.Parser.matching>`
+(:ref:`matching-names`):
 
 .. doctest::
 
     >>> parse("de la Vega, Juan").matches("Juan de la Vega")
     True
+    >>> parse("John Smith").matches("J. Smith")
+    False
+    >>> Parser().matching().check(parse("John Smith"), parse("J. Smith")).consistent
+    True
+
+``comparison_key()`` is the tuple ``matches()`` compares, one casefolded
+string per field. Use it as a dictionary key, or to remove duplicates:
+
+.. doctest::
+
     >>> parse("JUAN DE LA VEGA").comparison_key() == parse("Juan de la Vega").comparison_key()
     True
+    >>> records = ["Mara Quill", "QUILL, MARA", "Teo Brandt"]
+    >>> list({parse(r).comparison_key(): r for r in records}.values())
+    ['QUILL, MARA', 'Teo Brandt']
+
+``==`` is strict value equality — two :class:`~nameparser.ParsedName`
+instances are equal only if every field matches exactly.
+
+``matches()`` parses a str argument with
+the DEFAULT parser; to compare against a string using a custom
+:class:`~nameparser.Parser`'s vocabulary, call
+:meth:`Parser.matches() <nameparser.Parser.matches>`.
 
 .. _parser-guesses:
 
@@ -275,14 +481,12 @@ Credentials that are also surnames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The post-nominals that double as ordinary surnames report an ambiguity
-the same way. For an acronym such as ``MA`` the writing usually settles
-which reading a bare one gets: capitals in a name written in more than
-one case read the credential (``Jack MA``) and settle it, as periods
-do, so no ``suffix-or-name`` fork is reported. Any other cased spelling
-that is not wholly lowercase leans to the surname (``Jack Ma``), and
-where the writing gives no signal, all lowercase or a name written
-wholly in one case, the count of words before it decides. Both choices
-are recorded:
+the same way, as ``suffix-or-name``. A bare acronym such as ``MA`` is
+read by how it is written and, where the writing gives no signal, by
+the count of words before it. A reading by the count, or by a lean to
+the surname (``Jack Ma``), is recorded. Capitals in a name written in
+more than one case settle it as the credential (``Jack MA``), as periods
+do, so no ``suffix-or-name`` fork is reported:
 
 .. doctest::
 
@@ -307,16 +511,16 @@ reported:
 :ref:`ambiguous-words` has the full rules, including how a comma
 changes them.
 
-Two ``Policy`` switches extend the same class to words the vocabulary
-does not hold. ``unlisted_dotted_suffixes`` (on by default) reads a
-token of two or more period-separated chunks the same way —
-``parse("John Smith X.Y.Z.").suffix`` is ``'X.Y.Z.'`` — and
-``unlisted_caps_suffixes`` does the same for an unlisted all-caps word,
-by default only after a comma behind a full name, where an all-caps
-surname is never written — ``parse("John Smith, XYZ").suffix`` is
-``'XYZ'`` — and at the end of a name only on request, since an
-all-caps surname is written there. See :ref:`unlisted-credentials`
-for both.
+Two ``Policy`` switches read a word the vocabulary does not hold as a
+credential from how it is written: ``unlisted_dotted_suffixes`` (on by
+default) one in periods, and ``unlisted_caps_suffixes`` one in
+capitals, by default only after a comma behind a full name. :ref:`unlisted-credentials` says where each applies
+and what it reports:
+
+.. doctest::
+
+    >>> parse("John Smith X.Y.Z.").suffix, parse("John Smith, XYZ").suffix
+    ('X.Y.Z.', 'XYZ')
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:
@@ -349,10 +553,9 @@ a word as a title everywhere.
 The reading it did not take
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since 2.7 a report of a fork also says what the other reading was.
-``Ambiguity.alternative`` is a :class:`~nameparser.Reading` with three
-parts, and since 3.0 a fourth, its ``languages`` (see
-:ref:`reading-taken`):
+A report of a fork also says what the other reading was.
+``Ambiguity.alternative`` is a :class:`~nameparser.Reading` with four
+parts, these three and its ``languages`` (see :ref:`reading-taken`):
 
 - **kind** — what the word would have been read as: a ``name``, an
   ``initial``, a ``credential``, a ``generation``, a ``particle``, a
@@ -380,23 +583,29 @@ by position alone:
     John Smith PhD Jones: name as family (position)
     Van Buren: particle as family (vocabulary)
 
-A report of a shape rather than a fork — ``comma-structure``,
-``unbalanced-delimiter``, ``segmentation`` — carries no alternative,
-nor does ``order``, whose other reading lays out the whole name rather
-than moving one word (its detail says it in words), and neither does
-one whose other reading no field could hold: a
-connective letter opening the name (``E SMITH JONES``) has no word
-before it to join. Check for ``None`` before reading one.
-The alternative is not compared: two names that differ only in it are
-equal, as before 2.7, and a ``ParsedName`` pickled by an earlier
-release loads with no alternative on its reports.
+Check for ``None`` before reading one. Three sorts of report carry no
+alternative:
+
+- A report of a shape rather than a fork: ``comma-structure``,
+  ``unbalanced-delimiter``, ``segmentation``.
+- ``order``, whose other reading lays out the whole name rather than
+  moving one word (its detail says it in words).
+- One whose other reading no field could hold: a connective letter
+  opening the name (``E SMITH JONES``) has no word before it to join.
+
+.. note::
+
+   The alternative is not compared: two names that differ only in it
+   are equal. It was added in 2.7, and a ``ParsedName`` pickled by an
+   earlier release loads with no alternative on its reports; its
+   ``languages`` were added in 3.0.
 
 .. _reading-taken:
 
 The reading each word took
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since 3.0 every token also says how the parse read it, whether or not
+Every token also says how the parse read it, whether or not
 a fork was reported. ``Token.reading`` is a :class:`~nameparser.Reading`
 with the same parts, its role the token's own field, and two flags
 besides, ``first_surname`` and ``second_surname``, marking the words
@@ -446,16 +655,19 @@ file does hold turns that file's reading on, and names it:
     Vega: ()
     III: ('mul',)
 
-``mul`` is the file of words shared across languages on purpose. The
-first parse in a process that meets a listed word loads the index of
-those files once: about a millisecond, or about 20 ms where Python
-writes no bytecode cache (``PYTHONDONTWRITEBYTECODE``).
+``mul`` is the file of words shared across languages on purpose.
 
 A token the parse did not read has no reading: one that
 :meth:`~nameparser.ParsedName.replace` or
-:meth:`~nameparser.Parser.revise` builds, and one loaded from a pickle
-written before 3.0. Like the alternative, the reading is not compared,
-so it never makes two names unequal.
+:meth:`~nameparser.Parser.revise` builds.
+
+.. note::
+
+   Like the alternative, the reading is not compared, so it never makes
+   two names unequal. It was added in 3.0 (:doc:`migrate` has what else
+   changed), and a token loaded from a pickle written before 3.0 has
+   none. The first parse in a process that meets a listed word loads
+   the index of the language files, once.
 
 Tokens and spans
 ------------------
@@ -495,6 +707,21 @@ value. There are two ways to make one: ``replace()`` splices the new
 text in as written, and :meth:`Parser.revise()
 <nameparser.Parser.revise>` reads it the way a parse would.
 
+Use ``revise()`` unless you want the text taken literally. It knows the
+new words as a parse would, so their particles, initials and case
+repair work as they do in a parsed name, and delimiters and marker
+words in the value are consumed as they would be in a parse.
+``replace()`` keeps every character you give it and knows nothing about
+the words:
+
+.. doctest::
+
+    >>> bare = parse("Mara Quill")
+    >>> bare.replace(family="Quill née Brandt").family
+    'Quill née Brandt'
+    >>> Parser().revise(bare, family="Quill née Brandt").family
+    'Quill Brandt'
+
 Splicing a value in with ``replace()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -521,33 +748,34 @@ while correcting an unrelated field keeps it.
 What a spliced value loses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``replace()`` splits values on whitespace into plain, untagged
+Use ``revise()``, below, if you want the views in this table to work
+on the new value. ``replace()`` splits values on whitespace into plain,
+untagged
 tokens — the vocabulary knowledge a parse would have about the new
 text is not there. A token the parse never saw carries no decision to
 honor, so each view falls back on what it can answer without one:
 
-- :meth:`~nameparser.ParsedName.capitalized` is handed a vocabulary,
-  so it asks that whether a word is a conjunction or an initial, which
-  a word answers on its own. Its other special cases never needed a
-  reading: an exceptions-map mask applies wherever its word stands,
-  and a listed credential acronym or a roman numeral is written in
-  capitals wherever the field is the suffix, so ``replace(suffix="mba")``
-  repairs to ``MBA`` and ``suffix="vi"`` to ``VI``. A credential
-  recognised only by its dotted shape is the exception, since the shape
-  is something the parse records. Particles are a second exception:
-  whether a particle is acting as one is a fact about the whole part,
-  and no word of a spliced field carries a reading to derive it from,
-  so a family set to ``de la`` stays lowercase where the same words
-  parsed are repaired to ``De La``.
-- :meth:`~nameparser.ParsedName.initials` takes no vocabulary at all,
-  so every word of a spliced field contributes an initial.
-- ``family_particles`` and ``family_base`` are properties on the
-  parsed name, which holds no vocabulary of its own either:
-  ``family_particles`` empties and ``family_base`` takes the whole
-  field.
+.. list-table::
+   :header-rows: 1
+   :widths: 24 46 30
 
-Of the parsed name's own views, ``capitalized()`` is the only one
-handed a vocabulary.
+   * - View
+     - On a spliced field
+     - Example
+   * - :meth:`~nameparser.ParsedName.initials`
+     - Every word contributes an initial, a particle included
+     - ``J. d. l. V. S.``, not ``J. V. S.``
+   * - ``family_particles``
+     - Empty
+     - ``''``, not ``de la``
+   * - ``family_base``
+     - The whole field
+     - ``de la Vega Smith``, not ``Vega Smith``
+   * - :meth:`~nameparser.ParsedName.capitalized`
+     - Repairs what a word answers on its own, and misses the two
+       things only a parse records, below
+     - | ``xy.z.`` to ``Xy.Z.``, not ``XY.Z.``
+       | ``de la`` kept, not ``De La``
 
 .. doctest::
 
@@ -560,8 +788,54 @@ handed a vocabulary.
     'de la Vega Smith'
     >>> replaced.initials()
     'J. d. l. V. S.'
+
+``initials()`` takes no vocabulary at all, and ``family_particles`` and
+``family_base`` are properties on the parsed name, which holds no
+vocabulary of its own either. Of the parsed name's own views,
+``capitalized()`` is the only one handed a vocabulary, so it still asks
+that what a word answers on its own:
+
+- whether the word is a conjunction or an initial;
+- whether the exceptions map holds a mask for it, which applies
+  wherever the word stands;
+- in the suffix, whether it is a listed credential acronym or a roman
+  numeral, which is written in capitals.
+
+.. doctest::
+
+    >>> lowercase = parse("juan de la vega")
+    >>> lowercase.replace(suffix="mba").capitalized().suffix
+    'MBA'
+    >>> lowercase.replace(suffix="vi").capitalized().suffix
+    'VI'
+
+It misses two things, each a fact the parse records and a spliced word
+does not carry. A credential recognised only by its dotted shape is
+repaired as an ordinary word. And whether a particle is acting as one
+is a fact about the whole part, so a family set to ``de la`` stays
+lowercase where the same words parsed are repaired to ``De La``:
+
+.. doctest::
+
+    >>> lowercase.replace(suffix="xy.z.").capitalized().suffix
+    'Xy.Z.'
+    >>> Parser().revise(lowercase, suffix="xy.z.").capitalized().suffix
+    'XY.Z.'
     >>> name.replace(family="de la").capitalized(force=True).family
     'de la'
+    >>> parse("Juan de la").capitalized(force=True).family
+    'De La'
+
+The views that read how the parse read each word are empty for a field
+either method rewrote, ``revise()`` included: ``generation``,
+``honorifics``, ``patronymic`` and ``surname2``. ``credentials`` then
+holds every word of a rewritten suffix:
+
+.. doctest::
+
+    >>> junior = Parser().revise(parse("Teo Brandt"), suffix="Jr.")
+    >>> junior.suffix, junior.generation, junior.credentials
+    ('Jr.', '', 'Jr.')
 
 Reading a value with ``Parser.revise()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -625,13 +899,20 @@ form to pipe somewhere:
     $ python -m nameparser --json "Doe, John"
     {"title": "", "given": "John", "middle": "", "family": "Doe", "suffix": "", "nickname": "", "maiden": ""}
 
+Choosing a locale
+~~~~~~~~~~~~~~~~~
+
 Add ``--locale`` to parse with a locale pack (for example ``--locale
-ru``); see :doc:`locales`. A code no pack has that is a language whose
-vocabulary file holds readings (``--locale ko``) chooses that language
-alone; one whose file holds no reading a parse reads yet (``hu``)
-needs ``--strict``, and
-a pack's language with a region or script subtag (``zh-CN``,
-``zh-Hant``) exits naming the pack to use.
+ru``); see :doc:`locales`. What a code does depends on what holds it:
+
+- **A pack's code** (``ru``) parses with that pack.
+- **A code no pack has, that is a language whose vocabulary file holds
+  readings** (``ko``) chooses that language alone.
+- **A language whose file holds no reading a parse reads yet** (``hu``)
+  needs ``--strict``.
+- **A pack's language with a region or script subtag** (``zh-CN``,
+  ``zh-Hant``) exits naming the pack to use.
+
 ``--strict`` reads only that language's words and the shared ones (see
 :ref:`strict-choice`), and needs ``--locale``:
 
@@ -639,6 +920,9 @@ a pack's language with a region or script subtag (``zh-CN``,
 
     $ python -m nameparser --locale ko --strict --json "Kim Do Hyun"
     {"title": "", "given": "Kim", "middle": "Do", "family": "Hyun", "suffix": "", "nickname": "", "maiden": ""}
+
+Setting the name order
+~~~~~~~~~~~~~~~~~~~~~~
 
 ``--order`` reads the name in another order
 — ``given-first`` (the default), ``family-first`` or
@@ -652,6 +936,9 @@ fixes the order whatever the flag:
     $ python -m nameparser --order family-first --json "Kovács János Péter"
     {"title": "", "given": "János", "middle": "Péter", "family": "Kovács", "suffix": "", "nickname": "", "maiden": ""}
 
+Reading a one-word name as the family
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``--lone-name-word`` takes ``given`` (the default) or ``family``, the
 field a name of one name word reads as under every order
 (:ref:`lone-name-word`):
@@ -661,14 +948,38 @@ field a name of one name word reads as under every order
     $ python -m nameparser --lone-name-word family --json "Anh"
     {"title": "", "given": "", "middle": "", "family": "Anh", "suffix": "", "nickname": "", "maiden": ""}
 
+Policy switches
+~~~~~~~~~~~~~~~
+
 The ``Policy`` switches that turn a reading on or off have a flag each,
-spelled as the field: ``--two-given-names``, ``--two-family-names``,
-``--middle-as-family``, ``--initials-as-family``,
-``--capitals-as-family``,
-``--lenient-comma-suffixes`` and ``--unlisted-dotted-suffixes``, each
-with a ``--no-`` form, and
-``--unlisted-caps-suffixes`` taking ``off``, ``after-comma`` or
-``everywhere``. Like ``--order``, each replaces the setting of a pack
+spelled as the field. The first seven have a ``--no-`` form each, and
+``--unlisted-caps-suffixes`` takes ``off``, ``after-comma`` or
+``everywhere``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Flag
+     - ``Policy`` field
+   * - ``--two-given-names``
+     - ``two_given_names`` (:ref:`two-given-names`)
+   * - ``--two-family-names``
+     - ``two_family_names`` (:ref:`two-family-names`)
+   * - ``--middle-as-family``
+     - ``middle_as_family``
+   * - ``--initials-as-family``
+     - ``initials_as_family`` (:ref:`initials-as-family`)
+   * - ``--capitals-as-family``
+     - ``capitals_as_family`` (:ref:`capitals-as-family`)
+   * - ``--lenient-comma-suffixes``
+     - ``lenient_comma_suffixes`` (:ref:`lenient-comma-suffixes`)
+   * - ``--unlisted-dotted-suffixes``
+     - ``unlisted_dotted_suffixes`` (:ref:`unlisted-credentials`)
+   * - ``--unlisted-caps-suffixes``
+     - ``unlisted_caps_suffixes`` (:ref:`unlisted-credentials`)
+
+Like ``--order``, each replaces the setting of a pack
 given with ``--locale``, keeping the pack's vocabulary, and one left
 out keeps the pack's setting. ``es`` reads ``Maestra`` as a title,
 which the default reads as a given name, and two family names, and the
@@ -683,6 +994,10 @@ flag turns only the second off:
 
 Where next
 ----------
+
+.. raw:: html
+
+   <span id="east-asian-names"></span>
 
 * :doc:`shapes` — the input forms the parser reads, and
   :doc:`east-asian` for Chinese, Japanese and Korean names
