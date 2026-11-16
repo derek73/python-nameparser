@@ -475,10 +475,23 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # XYZ', 'SMITH, MD SHEIKH', 'SMITH, MD DEAN'), each under three orders;
     # 1950 -> 1971 the same day, #1395's third review's five rows ('Md and
     # Karim' and 'Md Sheikh Karim' two reports each, 'Md Dean', 'Md
-    # KARIM' and 'Md ABDUL' one) under three orders.
-    assert claims == 1971, (
-        f"the field sweep checks {claims} claims, recorded as 1971 on "
-        f"2026-11-14")
+    # KARIM' and 'Md ABDUL' one) under three orders; 1971 -> 2011 on
+    # 2026-11-15, #1392's thirteen rows of two capitals before a later
+    # listed credential ('Jane Mary Doe, MH, PhD'), each reporting the
+    # flip under three orders, and its EVERYWHERE boundary row, the pair
+    # kept as the given name reporting once under its declared policy;
+    # 2011 -> 2077 the same day, the dotted pair joining the rule and
+    # the three reviews' rows: each row that reports (a flip, or a pair
+    # kept as the given name that reports as before) under three orders,
+    # or once where it declares a policy; 2077 -> 2080, the second
+    # code review's 'Jane Doe, MH, MD/PhD;' under three orders; 2080 ->
+    # 2086, the coordinator's review: 'Jane Doe, MH, Mc, PhD' and 'Jane
+    # Doe, VI, PhD' under three orders (the vi row is not swept); 2086
+    # -> 2098, the third review's four rows under three orders; 2098 ->
+    # 2101, 'Jane Doe, A.L., PhD' under three orders.
+    assert claims == 2101, (
+        f"the field sweep checks {claims} claims, recorded as 2101 on "
+        f"2026-11-15")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -808,6 +821,12 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
     ("SMITH E JONES, JOHN", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
         ReadingKind.CONJUNCTION, Role.FAMILY, ReadingSource.VOCABULARY)),),
     ("E SMITH JONES", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, None),),
+    # #1392: the pair a later credential speaks for is the given name
+    # in the other reading, as the pair alone is ('Jane Doe, BM')
+    ("Jane Mary Doe, MH, PhD", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
+    ("Jane Mary Doe, M.H., PhD", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
     # middle_as_family folds a middle alternative as it folds the middle
     ("Doe, John MA Smith", (("middle_as_family", True),)): (
         (AmbiguityKind.SUFFIX_OR_NAME, (
@@ -925,8 +944,17 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # same day, #1395's second review's 'Smith, Md XYZ' under the three
     # orders, whose stand-in keeps the taken field; 366 -> 372 the same
     # day, #1395's third review's 'Rahman, Md KARIM' and 'Rahman, Md
-    # ABDUL' under the three orders, likewise
-    assert (checked, skipped) == (594, 372), (checked, skipped)
+    # ABDUL' under the three orders, likewise; 372 -> 411 on 2026-11-15,
+    # #1392's thirteen rows under the three orders, a comma credential
+    # run's report, whose stand-in the run reads too (two capitals,
+    # alone, before the listed credential), so its field is pinned in
+    # _EXPECTED_ALTERNATIVES instead; 594 -> 595 and 411 -> 453 the same
+    # day, the dotted pair's rows and the three reviews': the flips skip
+    # as the undotted ones do, and one boundary row's stand-in lands in
+    # the other field; 453 -> 456, the second code review's glued row;
+    # 456 -> 462, the coordinator's review's two rows; 462 -> 474, the
+    # third review's four; 474 -> 477, the 'A.L.' row
+    assert (checked, skipped) == (595, 477), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

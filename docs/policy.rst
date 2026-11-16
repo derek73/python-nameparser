@@ -1226,8 +1226,13 @@ or another unlisted dotted or all-caps word beside them that its own
 field reads as a credential. The capitals give way to one more: written
 undotted, the letters are a credential when credentials follow them and
 nothing else stands beside them (``"Jane Doe, BM PhD"``), where the
-dotted spelling keeps its given name (``"John Smith, A.B. Ph.D."``). A
-title in front of them says the opposite:
+dotted spelling keeps its given name (``"John Smith, A.B. Ph.D."``).
+
+Either spelling, in capitals in a name of mixed case, is a credential
+when it stands alone in its part and a later part holds nothing but
+credentials the vocabulary lists as that alone (``"Jane Doe, BM,
+PhD"``, ``"Jane Doe, B.M., PhD"``). A title in front of them says the
+opposite:
 
 .. doctest::
 
@@ -1239,6 +1244,10 @@ title in front of them says the opposite:
     'MJ XYZ'
     >>> parse("Jane Doe, BM PhD").suffix
     'BM PhD'
+    >>> parse("Jane Doe, BM, PhD").suffix
+    'BM, PhD'
+    >>> parse("Jane Doe, B.M., PhD").suffix
+    'B.M., PhD'
     >>> parse("John Smith, A.B. Ph.D.").given_names
     'A.B.'
     >>> cred = parse("García Márquez, Ms G.J.")
@@ -1255,11 +1264,14 @@ or more period-separated chunks as a credential at the end of a name,
 right after a comma behind two or more name words, at the end of the
 given part after a family comma, and at the end of a maiden marker's
 clause. Case is irrelevant; the periods are the signal.
-With nothing to spare in front of it, the word stays a name. At the end
+With nothing to spare in front of it, the word stays a name.
+
+At the end
 of a name, given part or clause, either reading reports the fork as a
 ``suffix-or-name`` ambiguity, so a record that reads wrong can still be
 found; right after a comma behind a full name, the credential reading
-is taken silently:
+is taken silently, save for two letters that only other such pairs,
+or a later part, speak for (above):
 
 .. doctest::
 

@@ -156,8 +156,8 @@
   ```
   "Jane Doe MA R.T."          →  suffix="MA R.T."
   ```
-- **Paired initials at the first slot after a comma** ("García Márquez, G.J."): they read as the given name unless something in the part speaks for them (C5).
-- **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): where no listed member of the class takes part it is not reported, unless paired initials speak only for each other (C11).
+- **Paired initials at the first slot after a comma** ("García Márquez, G.J."): they read as the given name unless something in the part, or a listed credential in a later part where they stand alone in theirs, speaks for them (C5).
+- **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): where no listed member of the class takes part it is not reported, unless paired initials speak only for each other or a later part's credential speaks for a pair (C11).
 
 **Accepted:**
 

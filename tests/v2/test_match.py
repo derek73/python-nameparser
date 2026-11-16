@@ -4397,3 +4397,21 @@ def test_muhammad_written_short_keys_by_its_letter() -> None:
     for name in ("Md Rahman", "Md. Rahman", "Mohd Rahman", "Moh Rahman",
                  "Mohammad Rahman", "Muhammad Rahman"):
         assert m.keys(name) == {"rahman;m"}, name
+
+
+def test_two_capitals_before_a_later_credential_match_the_name_without_them() -> None:
+    # #1392: the capitals between a full name and a listed credential are
+    # a credential (rules/C5), so the name is consistent with itself
+    # written without them and shares its keys; read as the given name,
+    # 'MH' conflicted with 'Ji' and the pair shared no key
+    for left, right in (("Ji Eun Lee, MH, PhD", "Ji Eun Lee"),
+                        ("Ji Eun Lee, MH, PhD", "Ji Eun Lee, PhD"),
+                        ("Ji Eun Lee, M.H., PhD", "Ji Eun Lee"),
+                        ("Ji Eun Lee, M.H., PhD", "Ji Eun Lee, MH, PhD")):
+        r = m.check(left, right)
+        assert r.consistent, (left, right)
+        assert r["given"].outcome is Outcome.SAME, (left, right)
+        assert m.keys(left) == m.keys(right) == {"lee;j"}, (left, right)
+    # behind one word the capitals stay the given name (the boundary)
+    assert not m.check("Lee, MH, PhD", "Lee, Ji Eun, PhD").consistent
+    assert not m.check("Lee, M.H., PhD", "Lee, Ji Eun, PhD").consistent

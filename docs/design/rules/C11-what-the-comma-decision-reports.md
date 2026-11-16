@@ -33,7 +33,7 @@
   "John Smith, MA"            →  ambiguities=()
   "JOHN SMITH, MA"            →  ambiguities=("suffix-or-name",)
   ```
-- **A flip in which no listed word of the ambiguous credential class (C4) takes part is the exception and is made in silence**, since only paired initials among such words are ever taken for a name, and the flip reaches them only where something else in the part has said otherwise — unless what said so is nothing but other paired initials: each of those is a word a reader takes for a name, and that flip is reported.
+- **A flip in which no listed word of the ambiguous credential class (C4) takes part is the exception and is made in silence**, since only paired initials among such words are ever taken for a name, and the flip reaches them only where something else in the part has said otherwise — unless what said so is nothing but other paired initials, or a listed credential in a later comma part (C5): each such pair is a word a reader takes for a name, and that flip is reported.
   ```
   "John Smith, Jr vd"         →  ambiguities=()
   "John Smith, Jr do"         →  ambiguities=("suffix-or-name",)

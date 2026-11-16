@@ -1186,6 +1186,25 @@ def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
     assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
+def test_two_capitals_ask_the_later_parts_only_where_one_stands() -> None:
+    """rules/C5's later credential (#1392) is read only where the pair
+    is the whole part and a part stands behind it, so a pair alone
+    behind a full name costs what it did. Recorded negative control
+    (2026-11-15, py3.11): with the `len(state.segments) > 2` gate
+    removed no case row moves and a pair with no later part enters the
+    helper once, to walk no part."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    only = "_listed_credentials_behind"
+    # REACHABILITY: the pair alone before a later part asks, once
+    assert _frames_for("Jane Mary Doe, MH, PhD", only=only) == 1
+    assert _frames_for("Jane Mary Doe, M.H., PhD", only=only) == 1
+    for text in ("Jane Mary Doe, MH", "Jane Mary Doe, MH PhD",
+                 "Jane Mary Doe, M.H.", "Jane Mary Doe, M.H. PhD",
+                 "Jane Mary Doe, XYZ, PhD", "Doe, MH, PhD", "Smith, John"):
+        assert _frames_for(text, only=only) == 0, text
+
+
 def test_a_comma_part_with_no_free_connective_skips_the_join() -> None:
     """`_comma._reading_pieces` enters the shared connective loop only
     where the part holds a connective left free: the loop asks

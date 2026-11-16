@@ -6543,6 +6543,604 @@ CASES: tuple[Case, ...] = (
                "behind the pair is a credential's writing, as rules/C16's "
                "company reads it; in front it would be the given part's "
                "title. 1.4.0 through 3.0.1 read given 'MJ'"),
+    Case("two_caps_alone_before_a_later_listed_credential_are_a_credential",
+         "Jane Mary Doe, MH, PhD",
+         {"given": "Jane", "middle": "Mary", "family": "Doe",
+          "suffix": "MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the pair alone in its part, a listed "
+               "credential in a later comma part speaking for it as one "
+               "in its own part does ('Jane Doe, BM PhD'). 1.4.0 through "
+               "3.0.1 read given 'MH', family 'Jane Mary Doe'"),
+    Case("two_caps_alone_before_an_unlisted_part_and_a_listed_credential",
+         "Jane Doe, BM, BCh, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="rules/C5 (#1392): any later part answers, not only the "
+               "next; 'BCh' is unlisted and keeps rules/C2's flag. 1.4.0 "
+               "through 3.0.1 read given 'BM', family 'Jane Doe'"),
+    Case("two_caps_alone_before_a_generation_and_a_listed_credential",
+         "Jane Doe, MH, Jr., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Jr., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the generation part is no credential, "
+               "the part behind it is. 1.4.0 through 3.0.1 read given "
+               "'MH'"),
+    Case("two_caps_alone_before_a_credential_split_across_a_space",
+         "Jane Doe, MH, Ph. D.",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Ph. D."},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): a later part is read in pieces, so a "
+               "split credential (rules/S12) is a listed one. 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_member_its_capitals_settle",
+         "Jane Doe, MH, MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MA"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): a listed member of the ambiguous class "
+               "in capitals is a credential (rules/S6). 1.4.0 through "
+               "3.0.1 read given 'MH'"),
+    Case("two_caps_alone_behind_a_credential_ending_the_name",
+         "Jane Doe MD, MH, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MD, MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): a credential before the comma takes "
+               "nothing from it. 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("a_given_name_in_two_caps_before_a_later_credential_is_a_credential",
+         "Ana Ruiz, JO, MD",
+         {"given": "Ana", "family": "Ruiz", "suffix": "JO, MD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: a listed given name written in two "
+               "capitals is not held back. 1.4.0 through 3.0.1 read "
+               "given 'JO', family 'Ana Ruiz'"),
+    Case("two_caps_behind_a_two_word_surname_before_a_later_credential",
+         "García Márquez, MJ, PhD",
+         {"given": "García", "family": "Márquez", "suffix": "MJ, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost, the one rules/C5 takes for 'García "
+               "Márquez, MJ PhD': the count cannot tell a surname of two "
+               "words from a full name. 1.4.0 through 3.0.1 read given "
+               "'MJ', family 'García Márquez'"),
+    Case("two_caps_behind_a_connective_surname_before_a_later_credential",
+         "Ortega y Gasset, MJ, PhD",
+         {"given": "Ortega", "middle": "y", "family": "Gasset",
+          "suffix": "MJ, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: a connective surname counts as its "
+               "words (rules/C3). 1.4.0 through 3.0.1 read given 'MJ', "
+               "family 'Ortega y Gasset'"),
+    Case("a_surname_in_two_caps_after_a_comma_before_a_later_credential",
+         "Ram Bahadur, BK, MD",
+         {"given": "Ram", "family": "Bahadur", "suffix": "BK, MD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: a surname written as two capitals "
+               "behind a comma. 1.4.0 through 3.0.1 read given 'BK', "
+               "family 'Ram Bahadur'"),
+    Case("a_surname_in_two_caps_after_a_comma_under_the_nepali_pack",
+         "Ram Bahadur, BK, MD",
+         {"given": "Ram", "family": "Bahadur", "suffix": "BK, MD"},
+         locale="ne", classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: rules/O8 reads spaced letters, and "
+               "the comma's decision comes first"),
+    Case("two_caps_alone_before_a_name_word_part_and_a_listed_credential",
+         "Jane Doe, MH, John, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, John, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392 accepted cost: any later part answers, so a name "
+               "word in a part between is taken with the rest, flagged "
+               "as before. 1.4.0 through 3.0.1 read given 'MH', suffix "
+               "'John, PhD'"),
+    Case("two_caps_behind_one_word_stay_the_given_name_before_a_later_credential",
+         "Smith, JO, MD",
+         {"given": "JO", "family": "Smith", "suffix": "MD"},
+         notes="#1392 boundary: behind one word the pair is the given "
+               "name, as 'Doe, BM PhD' is"),
+    Case("two_caps_behind_a_particle_surname_stay_the_given_name",
+         "de la Vega, JO, MD",
+         {"given": "JO", "family": "de la Vega", "suffix": "MD"},
+         notes="#1392 boundary: a particle run and its word are one name "
+               "word (rules/C3)"),
+    Case("two_caps_behind_an_empty_head_stay_the_given_name",
+         ", MH, PhD",
+         {"given": "MH", "suffix": "PhD"},
+         notes="#1392 boundary: rules/C15, as 'Doe, MH, PhD' less the "
+               "surname"),
+    Case("two_caps_behind_a_nickname_only_head_stay_the_given_name",
+         "(Bob), MH, PhD",
+         {"given": "MH", "nickname": "Bob", "suffix": "PhD"},
+         notes="#1392 boundary: no name word before the comma"),
+    Case("two_caps_alone_before_a_generation_part_stay_the_given_name",
+         "Jane Doe, MH, Jr.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Jr."},
+         notes="#1392 boundary: a generation is no credential, in a "
+               "later part as in the pair's own ('Jane Doe, BM Jr.')"),
+    Case("two_caps_in_a_name_in_capitals_stay_the_given_name",
+         "JANE DOE, MH, PHD",
+         {"given": "MH", "family": "JANE DOE", "suffix": "PHD"},
+         notes="#1392 boundary: no case contrast (rules/C6), so the "
+               "listing form stands"),
+    Case("two_caps_with_the_caps_shape_off_stay_the_given_name",
+         "Jane Doe, MH, PhD",
+         {"given": "MH", "family": "Jane Doe", "suffix": "PhD"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF),
+         notes="#1392 boundary: the caps shape admits nothing, as for "
+               "'García Márquez, MJ PhD'"),
+    Case("two_caps_beside_a_generation_stay_the_given_name_before_a_later_credential",
+         "Jane Doe, MH Jr., PhD",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Jr., PhD"},
+         notes="#1392 boundary: the pair is not alone in its part, so "
+               "its own part decides ('Jane Doe, BM Jr.')"),
+    Case("two_caps_behind_a_title_dual_stay_initials_before_a_later_credential",
+         "Jane Doe, Ms MH, PhD",
+         {"title": "Ms", "given": "MH", "family": "Jane Doe",
+          "suffix": "PhD"},
+         notes="#1392 boundary: not alone in its part ('García Márquez, "
+               "Ms MJ PhD')"),
+    Case("two_caps_alone_before_a_title_case_member_stay_the_given_name",
+         "Jane Doe, MH, Ma",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Ma"},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary: a member of the ambiguous class in "
+               "Title case is no listed credential (rules/S6)"),
+    Case("two_caps_alone_before_an_unlisted_caps_word_stay_the_given_name",
+         "Jane Doe, MH, XYZ",
+         {"given": "MH", "family": "Jane Doe", "suffix": "XYZ"},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary: a word read by its shape alone is no "
+               "listed credential"),
+    Case("two_caps_alone_before_a_gated_word_stay_the_given_name",
+         "Jane Doe, MH, KC",
+         {"given": "MH", "family": "Jane Doe", "suffix": "KC"},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary: a word the count gates (rules/S11) is "
+               "no listed credential"),
+    Case("two_caps_alone_before_a_numeral_stay_the_given_name",
+         "Jane Doe, MH, V",
+         {"given": "MH", "family": "Jane Doe", "suffix": "V"},
+         notes="#1392 boundary: a numeral is a generation"),
+    Case("two_caps_alone_before_a_listed_generation_stay_the_given_name",
+         "Jane Doe, MH, III",
+         {"given": "MH", "family": "Jane Doe", "suffix": "III"},
+         notes="#1392 boundary: a listed numeral is a generation, a "
+               "suffix word and no credential"),
+    Case("two_caps_alone_before_a_title_dual_as_a_title_stay_the_given_name",
+         "Jane Doe, MH, Ms",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Ms"},
+         notes="#1392 boundary: a title/suffix dual outside capitals is "
+               "a title's writing (rules/C16's company)"),
+    Case("two_caps_alone_before_a_title_dual_in_capitals_are_a_credential",
+         "Jane Doe, MH, MS",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MS"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): in capitals the dual is a credential's "
+               "writing. 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_dotted_shape_word_stay_the_given_name",
+         "Jane Doe, MH, X.Y.Z.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "X.Y.Z."},
+         notes="#1392 boundary: a word read by its dotted shape "
+               "(rules/S3) is no listed credential"),
+    Case("two_caps_alone_before_a_credential_and_a_name_word_stay_the_given_name",
+         "Jane Doe, MH, PhD Jones",
+         {"given": "MH", "family": "Jane Doe", "suffix": "PhD Jones"},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary: every word of the later part has to be "
+               "a listed credential"),
+    Case("two_caps_alone_before_an_empty_part_and_a_listed_credential",
+         "Jane Doe, MH,, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): an empty part between is none "
+               "(rules/C2). 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_caps_word_read_everywhere_stay_the_given_name",
+         "Jane Doe, MH, XYZ",
+         {"given": "MH", "family": "Jane Doe", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392 boundary: EVERYWHERE tags the caps word a member "
+               "of the class, and one read by its shape is still no "
+               "listed credential; the pair kept as the given name "
+               "reports there as before"),
+    Case("two_caps_alone_before_an_empty_part_and_a_generation_stay_the_given_name",
+         "Jane Doe, MH,, Jr.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Jr."},
+         notes="#1392 boundary: an empty part answers nothing"),
+    Case("a_dotted_pair_alone_before_a_later_listed_credential_is_a_credential",
+         "Jane Mary Doe, M.H., PhD",
+         {"given": "Jane", "middle": "Mary", "family": "Doe",
+          "suffix": "M.H., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): dotted, the pair reads as the undotted one "
+               "does where it stands alone before a later listed "
+               "credential. 1.4.0 through 3.0.1 read given 'M.H.', family "
+               "'Jane Mary Doe'"),
+    Case("a_dotted_pair_with_no_closing_stop_before_a_later_credential",
+         "Jane Doe, M.H, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "M.H, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the pair's shape with or without its last "
+               "stop. 1.4.0 through 3.0.1 read given 'M.H'"),
+    Case("a_dotted_pair_behind_a_generation_before_a_later_credential",
+         "Jane Doe Jr., M.H., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "Jr., M.H., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the later credential speaks where rules/C12 "
+               "keeps the dotted pair alone a name ('John Smith Jr., "
+               "M.J.'). 1.4.0 through 3.0.1 read given 'M.H.', family "
+               "'Jane Doe'"),
+    Case("a_dotted_pair_behind_a_two_word_surname_before_a_later_credential",
+         "García Márquez, M.J., PhD",
+         {"given": "García", "family": "Márquez", "suffix": "M.J., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: dotted initials behind a surname of two "
+               "words read as a credential before a later one. 1.4.0 "
+               "through 3.0.1 read given 'M.J.', family 'García Márquez'"),
+    Case("a_surname_of_dotted_letters_after_a_comma_before_a_later_credential",
+         "Ram Bahadur, B.K., MD",
+         {"given": "Ram", "family": "Bahadur", "suffix": "B.K., MD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: a surname written as dotted letters "
+               "behind a comma. 1.4.0 through 3.0.1 read given 'B.K.', "
+               "family 'Ram Bahadur'"),
+    Case("a_surname_of_dotted_letters_after_a_comma_under_the_nepali_pack",
+         "Ram Bahadur, B.K., MD",
+         {"given": "Ram", "family": "Bahadur", "suffix": "B.K., MD"},
+         locale="ne", classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost: the comma's decision comes before "
+               "rules/O8"),
+    Case("a_decomposed_dotted_pair_before_a_later_credential_is_a_credential",
+         "Jane Doe, A\u0301.E\u0301., PhD",
+         {"given": "Jane", "family": "Doe",
+          "suffix": "A\u0301.E\u0301., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): capitals are read after composing, so the "
+               "decomposed pair reads as its composed twin"),
+    Case("a_dotted_pair_alone_with_no_later_part_stays_the_given_name",
+         "Jane Mary Doe, M.H.",
+         {"given": "M.", "middle": "H.", "family": "Jane Mary Doe"},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: nothing behind the pair (rules/C5)"),
+    Case("a_dotted_pair_behind_one_word_stays_the_given_name_before_a_credential",
+         "Smith, J.O., MD",
+         {"given": "J.", "middle": "O.", "family": "Smith", "suffix": "MD"},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: one name word before the comma"),
+    Case("a_dotted_pair_alone_before_a_generation_part_stays_the_given_name",
+         "Jane Doe, M.H., Jr.",
+         {"given": "M.", "middle": "H.", "family": "Jane Doe",
+          "suffix": "Jr."},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: a generation is no credential"),
+    Case("a_dotted_pair_beside_a_generation_stays_the_given_name",
+         "Jane Doe, M.H. Jr., PhD",
+         {"given": "M.", "middle": "H.", "family": "Jane Doe",
+          "suffix": "Jr., PhD"},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: not alone in its part"),
+    Case("a_dotted_pair_before_a_credential_in_its_own_part_stays_the_given_name",
+         "Jane Doe, M.H. PhD",
+         {"given": "M.", "middle": "H.", "family": "Jane Doe",
+          "suffix": "PhD"},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: in its own part the dotted pair keeps "
+               "rules/C5's reading ('John Smith, A.B. Ph.D.'); only alone "
+               "before a later part does it give way"),
+    Case("a_single_dotted_initial_before_a_later_credential_stays_the_given_name",
+         "Jane Doe, M., PhD",
+         {"given": "M.", "family": "Jane Doe", "suffix": "PhD"},
+         notes="#1392 boundary: one initial is no pair"),
+    Case("dotted_initials_written_apart_before_a_later_credential_stay_the_given_name",
+         "Jane Doe, M. H., PhD",
+         {"given": "M.", "middle": "H.", "family": "Jane Doe",
+          "suffix": "PhD"},
+         notes="#1392 boundary: written apart they are two initials, and "
+               "not alone in the part"),
+    Case("three_dotted_letters_before_a_later_credential_are_a_credential",
+         "Jane Doe, M.H.S., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "M.H.S., PhD"},
+         classification="fix(#516)",
+         notes="#1392 control: three letters are a credential by their shape "
+               "(rules/C5's Accepted, rules/S3) with or without the later "
+               "part, as since 2.4.0"),
+    Case("a_pair_with_fullwidth_stops_before_a_later_credential_stays_the_given_name",
+         "Jane Doe, M\uff0eH\uff0e, PhD",
+         {"given": "M\uff0eH\uff0e", "family": "Jane Doe",
+          "suffix": "PhD"},
+         notes="#1392 boundary: the fullwidth full stop is no period of the "
+               "pair's shape, here as everywhere"),
+    Case("a_lowercase_dotted_pair_before_a_later_credential_stays_the_given_name",
+         "Jane Doe, m.h., PhD",
+         {"given": "m.h.", "family": "Jane Doe", "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: two capitals, not two letters"),
+    Case("a_dotted_pair_in_a_name_in_capitals_stays_the_given_name",
+         "JANE DOE, M.H., PHD",
+         {"given": "M.", "middle": "H.", "family": "JANE DOE",
+          "suffix": "PHD"},
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: no case contrast, as for the undotted pair"),
+    Case("a_dotted_pair_with_the_dotted_shape_off_stays_the_given_name",
+         "Jane Doe, M.H., PhD",
+         {"given": "M.", "middle": "H.", "family": "Jane Doe",
+          "suffix": "PhD"},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         classification="fix(#1296)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary: unlisted_dotted_suffixes governs the dotted "
+               "pair, as unlisted_caps_suffixes the undotted one"),
+    Case("a_dotted_pair_with_the_caps_shape_off_is_still_a_credential",
+         "Jane Doe, M.H., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "M.H., PhD"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF),
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the caps switch does not reach the dotted "
+               "pair"),
+    Case("two_caps_alone_before_a_joined_word_holding_a_generation_stay_the_given_name",
+         "Jane Doe, MH, MD/Jr.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "MD/Jr."},
+         notes="#1392 boundary, its code review: a joined word is asked "
+               "chunk by chunk, as in the pair's own part ('Jane Doe, MJ "
+               "MD/Jr.')"),
+    Case("two_caps_alone_before_a_joined_word_holding_a_title_case_member",
+         "Jane Doe, MH, Ma/PhD",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Ma/PhD"},
+         notes="#1392 boundary, its code review: a member in Title case "
+               "inside a joined word is no listed credential"),
+    Case("two_caps_alone_before_joined_listed_credentials_are_a_credential",
+         "Jane Doe, MH, MD/PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MD/PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): every chunk a listed credential. "
+               "1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_credential_listed_with_its_hyphen",
+         "Jane Doe, MH, NP-C",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, NP-C"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): a word the vocabulary lists whole is "
+               "one word, not cut at its hyphen. 1.4.0 through 3.0.1 "
+               "read given 'MH'"),
+    Case("two_caps_alone_before_a_particle_stay_the_given_name",
+         "Jane Doe, MH, Mc",
+         {"given": "MH", "family": "Jane Doe", "suffix": "Mc"},
+         notes="#1392 boundary, its code review: a particle that is also "
+               "an acronym is a name's word, as beside the pair ('Jane "
+               "Doe, MJ Mc')"),
+    Case("two_caps_alone_before_credentials_a_spaced_delimiter_parts",
+         "Jane Doe, MH, MD - PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MD, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392), its code review: a delimiter standing "
+               "alone is no word of the later part (rules/C10). 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_lone_delimiter_stay_the_given_name",
+         "Jane Doe, MH, -",
+         {"given": "MH", "family": "Jane Doe", "suffix": "-"},
+         notes="#1392 boundary: a part of a delimiter alone holds no "
+               "credential"),
+    Case("two_caps_alone_before_a_credential_a_given_name_also_spells",
+         "Jane Doe, MH, Md",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Md"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost (decisions/C5): 'Md' in a part of "
+               "its own behind a full name is the credential in any "
+               "case, as beside the pair ('Jane Doe, BM Md'). 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_listed_credential_that_is_not_the_last_part",
+         "Jane Doe, MH, PhD, Jr.",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, Jr."},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392), its test review: any later part "
+               "answers, the last one or not. 1.4.0 through 3.0.1 read "
+               "given 'MH'"),
+    Case("two_caps_alone_before_a_listed_credential_and_a_name_word_part",
+         "Jane Doe, MH, PhD, John",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, John"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392 accepted cost, as 'MH, John, PhD': the part "
+               "behind keeps rules/C2's flag"),
+    Case("two_caps_before_a_later_credential_read_family_first",
+         "Jane Mary Doe, MH, PhD",
+         {"family": "Jane", "given": "Mary", "middle": "Doe",
+          "suffix": "MH, PhD"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the comma is a suffix comma, so the "
+               "name before it is laid out by the declared order"),
+    Case("two_caps_before_a_later_credential_read_family_first_given_last",
+         "Jane Mary Doe, MH, PhD",
+         {"family": "Jane", "given": "Doe", "middle": "Mary",
+          "suffix": "MH, PhD"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): as under FAMILY_FIRST"),
+    Case("two_caps_alone_before_credentials_a_connective_joins_stay_the_given_name",
+         "Jane Doe, MH, MA and PhD",
+         {"given": "MH", "family": "Jane Doe", "suffix": "MA and PhD"},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary, its test review: a connective is no "
+               "listed credential"),
+    Case("two_caps_alone_before_a_split_member_of_the_class_stay_the_given_name",
+         "Jane Doe, MH, M. A.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "M. A."},
+         ambiguities=("comma-structure",),
+         notes="#1392 boundary, its test review: two single letters "
+               "written apart are no split credential (rules/S12), so "
+               "'M. D.' keeps the given name too, as beside the pair "
+               "('Jane Doe, BM M. A.')"),
+    Case("two_caps_alone_before_a_credential_and_a_generation_in_one_part",
+         "Jane Doe, MH, PhD Jr.",
+         {"given": "MH", "family": "Jane Doe", "suffix": "PhD Jr."},
+         notes="#1392 boundary, its test review: a generation in the "
+               "later part makes it none"),
+    Case("two_caps_behind_a_lowercase_particle_surname_before_a_later_credential",
+         "Jane van der Berg, MH, PhD",
+         {"given": "Jane", "family": "van der Berg", "suffix": "MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): a given name and a particle surname "
+               "are two name words (rules/C3). 1.4.0 through 3.0.1 read "
+               "given 'MH'"),
+    Case("two_caps_read_everywhere_in_a_name_without_contrast_stay_the_given_name",
+         "JANE DOE, MH, PhD",
+         {"given": "MH", "family": "JANE DOE", "suffix": "PhD"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+         ambiguities=("suffix-or-name",),
+         notes="#1392 boundary, its test review: EVERYWHERE tags the "
+               "pair with no contrast asked, and the later credential "
+               "asks it, as the pair's own part does ('JANE DOE, MH "
+               "PhD')"),
+    Case("two_caps_read_everywhere_before_a_later_credential_are_a_credential",
+         "Jane Doe, MH, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): EVERYWHERE reads the pair as the "
+               "default does where the name carries the contrast"),
+    Case("two_caps_alone_before_a_joined_word_with_a_glued_delimiter",
+         "Jane Doe, MH, MD/Jr.;",
+         {"given": "MH", "family": "Jane Doe", "suffix": "MD/Jr.;"},
+         notes="#1392 boundary, its second code review: a later part's "
+               "word is read without a glued delimiter, as the pair's "
+               "own part is ('Jane Doe, BM MD/Jr.;'), so the generation "
+               "chunk still refuses"),
+    Case("two_caps_alone_before_joined_credentials_with_a_glued_delimiter",
+         "Jane Doe, MH, MD/PhD;",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MD/PhD;"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the glued delimiter is no part of the "
+               "word (rules/C10). 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_credential_that_is_also_a_particle",
+         "Jane Doe, BM, DO",
+         {"given": "BM", "family": "Jane Doe", "suffix": "DO"},
+         notes="#1392, left as it was: 'DO' is a particle too, and a "
+               "particle speaks for no credential, in a later part as "
+               "beside the pair ('Jane Doe, BM DO')"),
+    Case("two_caps_behind_a_particle_head_under_the_vietnamese_pack",
+         "de la Vega, MH, PhD",
+         {"given": "Vega", "family": "de la", "suffix": "MH, PhD"},
+         locale="vi", classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, a limit: the vi choice drops the particle "
+               "readings of 'la' and 'van', so the head counts two name "
+               "words and the pair is a credential, as 'de la Vega, MH "
+               "PhD' reads there since #1323; so does any choice of "
+               "languages that drops the head's particle reading, and "
+               "under the default a particle head keeps the given name"),
+    Case("two_caps_alone_before_a_later_part_in_fullwidth_capitals",
+         "Jane Doe, MH, \uff2d\uff24",
+         {"given": "MH", "family": "Jane Doe", "suffix": "\uff2d\uff24"},
+         ambiguities=("comma-structure",),
+         notes="#1392, an unwritten shape left as it was: fullwidth "
+               "capitals are no listed credential in a later part"),
+    Case("two_caps_alone_before_a_particle_part_and_a_listed_credential",
+         "Jane Doe, MH, Mc, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Mc, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost, the class of 'MH, John, PhD': any "
+               "later part answers, whatever stands between. 1.4.0 "
+               "through 3.0.1 read given 'MH'"),
+    Case("two_caps_that_spell_a_numeral_before_a_later_credential",
+         "Jane Doe, VI, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "VI, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost (decisions/C5): 'VI' is unlisted "
+               "two capitals and reads through the pair, reported, "
+               "where the listed 'II' reads suffix unreported. 1.4.0 "
+               "through 3.0.1 read given 'VI'"),
+    Case("a_dotted_pair_that_spells_a_particle_before_a_later_credential",
+         "Jane Doe, A.L., PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "A.L., PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392 accepted cost (decisions/C5): dotted, letters "
+               "that spell a particle are a pair like any other, where "
+               "'Jane Doe, AL, PhD' keeps given 'AL'. 1.4.0 through "
+               "3.0.1 read given 'A.L.'"),
+    Case("two_caps_alone_before_a_lowercase_particle_part_and_a_credential",
+         "Jane Doe, MH, de, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, de, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392, what 'any later part' gives, the class of 'MH, "
+               "John, PhD'. 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_credential_and_a_trailing_name_part",
+         "Jane Doe, MH, PhD, Smith",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, PhD, Smith"},
+         classification="fix(#1392)",
+         ambiguities=("comma-structure", "suffix-or-name"),
+         notes="#1392, what 'any later part' gives, as 'MH, PhD, John'"),
+    Case("two_caps_alone_before_a_title_part_and_a_listed_credential",
+         "Jane Doe, MH, Dr., PhD",
+         {"title": "Dr.", "given": "Jane", "family": "Doe",
+          "suffix": "MH, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, what 'any later part' gives: the title part "
+               "between is a title (rules/C2). 3.0.1 read given 'MH', "
+               "title 'Dr.'"),
+    Case("two_caps_alone_before_a_particle_with_a_glued_delimiter",
+         "Jane Doe, MH, Mc;",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, Mc;"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="#1392, a recorded gap and not the intent (decisions/C5, "
+               "third review): classify tags no particle on a word with "
+               "a delimiter glued to it, so 'Mc;' speaks where 'Mc' "
+               "does not, as beside the pair ('Jane Doe, BM Mc;'). "
+               "1.4.0 through 3.0.1 read given 'MH'"),
+    Case("a_mixed_case_pair_before_a_later_credential_stays_the_given_name",
+         "Jane Doe, Mh, PhD",
+         {"given": "Mh", "family": "Jane Doe", "suffix": "PhD"},
+         notes="#1392 boundary: Title case is a name's writing"),
+    Case("two_caps_behind_a_capitalized_particle_head_stay_the_given_name",
+         "Bin Zhang, MH, PhD",
+         {"given": "MH", "family": "Bin Zhang", "suffix": "PhD"},
+         notes="#1392, left as it was: rules/C3 counts a capitalized "
+               "particle with its surname as one name word, so a full "
+               "name that opens with one keeps the listing form"),
+    Case("two_caps_behind_a_title_particle_head_stay_the_given_name",
+         "Freiherr von Berg, MH, PhD",
+         {"given": "MH", "family": "Freiherr von Berg", "suffix": "PhD"},
+         notes="#1392, left as it was: one name word before the comma"),
     Case("two_caps_behind_a_capitals_dual_alone_stay_initials",
          "Jane Doe, MS BM",
          {"title": "MS", "given": "BM", "family": "Jane Doe"},
