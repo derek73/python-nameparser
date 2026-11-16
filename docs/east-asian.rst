@@ -30,10 +30,44 @@ knowledge of which language the name is in:
     >>> parse("山田 太郎").family
     '山田'
 
+.. _splitting-unspaced-names:
+
 Splitting an unspaced name
 --------------------------
 
-Splitting an unspaced name is also automatic, but only for Korean.
+A name written with no space arrives as one word, and has to be
+divided before its two parts can be assigned. Whether that happens
+without configuration depends on the script, because the script decides
+whether the language is known:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 16 50
+
+   * - Written in
+     - Example
+     - To divide it
+   * - Hangul
+     - 김민준
+     - Nothing: a Korean name divides by default
+       (:ref:`splitting-korean-names`).
+   * - Han characters, a Chinese name
+     - 毛泽东
+     - Turn on the ``zh`` pack (:ref:`splitting-chinese-names`).
+   * - Kanji, or kanji and kana, a Japanese name
+     - 山田太郎
+     - Turn on the ``ja`` pack and pass a segmenter
+       (:ref:`japanese-segmenter`).
+
+Without its pack an unspaced Han name stays one word, read whole as the
+family name. A name written with a space between its parts needs none
+of this (`Which name comes first`_).
+
+.. _splitting-korean-names:
+
+Korean: divided by default
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Hangul is written by exactly one language, and Korean family names are
 limited to a small closed set: the census surname list is part of the
 default vocabulary, and the longest listed surname at the start of an
@@ -45,18 +79,32 @@ unspaced hangul token becomes the family name:
     >>> minjun.family, minjun.given
     ('김', '민준')
 
-The same split is not automatic for Han text, because there the script
-does not identify the language: 高橋一郎 is a Japanese name whose
-family name is 高橋, but 高 alone is a common Chinese surname, so a
-Chinese surname list would split it in the wrong place. Declaring the
-language is up to you. When you know the data is Chinese, apply the
-``zh`` locale pack, which carries the surname list the split needs:
+.. _splitting-chinese-names:
+
+Chinese: turn on the ``zh`` pack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``parser_for(locales.ZH)`` when your data holds Chinese names
+written in Han characters with no space between the surname and the
+given name. The pack carries the surname list the split needs:
 
 .. doctest::
 
     >>> from nameparser import locales, parser_for
-    >>> parser_for(locales.ZH).parse("毛泽东").family
-    '毛'
+    >>> unsplit = parse("毛泽东")
+    >>> unsplit.family, unsplit.given
+    ('毛泽东', '')
+    >>> zedong = parser_for(locales.ZH).parse("毛泽东")
+    >>> zedong.family, zedong.given
+    ('毛', '泽东')
+
+The split is not a default because Han characters do not identify the
+language: 高橋一郎 is a Japanese name whose family name is 高橋, but 高
+alone is a common Chinese surname, so a Chinese surname list splits it
+in the wrong place. Declaring the language is up to you: use ``zh`` for
+data you know is Chinese, and the ``ja`` pack for Japanese data
+(:ref:`japanese-segmenter`). A name whose surname is not on the pack's
+list stays whole.
 
 A Chinese name can carry two surnames. In Taiwan a married woman
 wrote her husband's surname before her own (冠夫姓) — the Civil Code's
@@ -163,6 +211,8 @@ katakana, keep the order they were written in:
     >>> michael = parse("マイケル・ジャクソン")
     >>> michael.given, michael.family
     ('マイケル', 'ジャクソン')
+
+.. _japanese-segmenter:
 
 Dividing an unspaced name: the segmenter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
