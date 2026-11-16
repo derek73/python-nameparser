@@ -126,10 +126,10 @@ particles in several scripts besides Latin. Chinese, Japanese and
 Korean names written in their own scripts are read family-first (save a
 name in katakana alone, often a transcribed foreign name), unspaced
 Korean names are split against the census surname list, and CJK
-honorifics are recognized. See `East Asian names
-<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__. Thai
+honorifics are recognized (see `East Asian names
+<https://nameparser.readthedocs.io/en/latest/east-asian.html>`__). Thai
 writes a salutation joined to the given name with no space, and the
-parser splits it off.
+parser splits it off, with no configuration.
 
 .. code-block:: python
 
@@ -266,8 +266,9 @@ and yours will probably match none of them.
   surname boxes: all four agree for about 97%.
 * **Czech election candidates**, with degrees before and after the
   name: all four boxes agree for about 97%.
-* **Choosing the language** closes most of the gap where a convention
-  differs. The default reads one family name, so for researchers in
+* **Choosing the language** closes most of the gap. Most of what the
+  default misses is a convention rather than a misreading: it reads
+  one family name, so for researchers in
   Spain it agrees with the two boxes of their ORCID record for about
   half of the names, and ``parser_for(locales.ES)`` for about 97%. The
   Spanish pack costs where people file a single surname: Argentine patent
