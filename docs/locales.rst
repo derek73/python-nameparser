@@ -100,7 +100,7 @@ Using a pack
 Most packs carry one of two things: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express, or words that are
 right in one language and wrong as a default (`Packs that choose a
-language`_). The other two, ``zh`` and ``ja``, divide a name written
+language`_). Two of them, ``zh`` and ``ja``, divide a name written
 with no space (:ref:`east-asian-packs`).
 
 :func:`~nameparser.parser_for` folds one or more packs onto a base
@@ -116,8 +116,9 @@ formal Russian document intends:
     >>> ru.parse("Сидоров Иван Петрович").given
     'Иван'
 
-Enable a pack only for data that is predominantly in the order it
-detects. If your input mixes traditions, parse the subsets separately
+Enable a pack only for data that is predominantly in the shape or the
+language it is for: for ``ru``, names in the order it detects. If your
+input mixes traditions, parse the subsets separately
 with different parsers rather than enabling a pack over all of it.
 `Shipped packs`_ lists every pack and what it is for.
 
@@ -290,8 +291,9 @@ says which parts each pack is made of.
    * - ``ne``
      - Nepali
      - Chooses ``ne``, which reads ``श्री``, ``गुरु`` and ``Guru`` as
-       name words where the default reads titles, and turns on
-       ``initials_as_family``. See :ref:`nepali-given-names`.
+       name words where the default reads titles, each staying a title
+       inside a title phrase (``His Holiness Guru Prasad``), and turns
+       on ``initials_as_family``. See :ref:`nepali-given-names`.
      - | ``श्री कृष्ण श्रेष्ठ`` → given ``श्री``
        | ``Ram Bahadur B K`` → family ``B K``
    * - ``pt``
@@ -314,8 +316,9 @@ says which parts each pack is made of.
      - ``Сидоров Иван Петрович`` → given ``Иван``
    * - ``tr_az``
      - Turkic names ending in a patronymic marker
-     - Detects a name ending in a marker word (``oglu``, ``qizi``,
-       ``uulu``) and reads its first word as the family name. See
+     - Detects a name of three or four words ending in a marker word
+       (``oglu``, ``qizi``, ``uulu``) and reads a four-word name's
+       first word as the family name. See
        :ref:`turkic-patronymic-markers`.
      - ``Aliyev Ilham Heydar oglu`` → family ``Aliyev``
    * - ``vi``
@@ -575,8 +578,9 @@ a choice settles every clash its language has a reading for, and that
 costs the other languages' readings of those words.
 
 Most of these packs are described in :doc:`languages`, where the table
-above links each. The Irish, Scottish Gaelic and Portuguese ones are
-described here.
+above links each. Two groups are described here: the Irish and Scottish
+Gaelic packs (:ref:`gaelic-clan-particles`), and the Portuguese ones,
+which turn on ``da Piedade`` and ``SB`` (:ref:`portuguese-packs`).
 
 .. _gaelic-clan-particles:
 
@@ -740,8 +744,9 @@ default is turned on. Under Portuguese, ``E`` is the connective:
     >>> parser_for(pt).parse("ANA SILVA E SOUZA").family
     'SILVA E SOUZA'
 
-A pack that chooses no language leaves the base parser's vocabulary
-exactly as it was.
+A pack that chooses no language turns no shipped reading on or off:
+it leaves the base parser's vocabulary as it was, save for a word list
+of its own (``zh``'s surnames).
 
 What a choice costs
 ~~~~~~~~~~~~~~~~~~~
@@ -962,8 +967,9 @@ given ``De``, family ``Xu``.
 What a strict choice keeps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A strict choice reads three things, and a word none of them holds is
-read as a name word:
+A strict choice reads three things. A word none of them holds is read
+as a name word, unless you listed it yourself (below) or its shape
+reads as it does by default: ``Mx.``, with its period, is a title.
 
 - **The chosen languages' files**, each tag selecting its own and its
   ancestors' (`Which tags are accepted`_).
@@ -997,8 +1003,7 @@ What a strict choice drops it drops from every name:
   stay (``Kim Min Jun, PhD, MSc`` keeps both credentials), but the rest
   of the English credentials (``Kim Min Jun, RN`` reads given ``RN``;
   ``MD``, shared with ``Md`` for Muhammad, is kept), a bare ``Mx``, and an immigrant's particle from another language are
-  read as name words. A shape still reads as it does by default:
-  ``Mx.``, with its period, is a title. Where English context is part
+  read as name words. Where English context is part
   of the data, choose ``en`` too, which brings back its words and its
   costs alike:
 
