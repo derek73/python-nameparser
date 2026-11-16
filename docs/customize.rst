@@ -32,17 +32,15 @@ why the split is drawn there.
 Vocabulary: Lexicon
 --------------------
 
-When your data is in a known language, choosing it is the first thing
-to try, before editing words one at a time. A choice of languages
-(:ref:`choosing-languages`) makes the chosen language's reading win on
-a word it lists as vocabulary, switching off another language's
-(Portuguese ``do`` the particle over English ``DO`` the credential),
-and turns on the readings its file holds off by default; a strict
-choice (:ref:`strict-choice`) also drops the readings other languages'
-files hold of words written in Latin letters, name readings included,
-keeping the readings of the shared ``mul`` file. The edits below are for what a choice
-leaves open, and for data whose language you cannot declare, which the
-default vocabulary, reading every language at once, already serves.
+When your data is in a known language, choose the language before
+editing words one at a time: a choice of languages
+(:ref:`choosing-languages`) makes that language's reading win on a word
+it lists as vocabulary (Portuguese ``do`` the particle over English
+``DO`` the credential), and a strict choice (:ref:`strict-choice`) also
+drops the readings other languages' files hold of words written in
+Latin letters. The edits below are for what a choice leaves open, and
+for data whose language you cannot declare, which the default
+vocabulary, reading every language at once, already serves.
 
 Configuring by reading
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,22 +68,15 @@ it a title wherever it stands. Adding a title reading instead would
 change nothing outside a phrase, so ``add("dean", kind="title")`` warns
 and names the ``remove`` above.
 
-:meth:`~nameparser.Lexicon.add` takes the words and a ``kind``, and
-:meth:`~nameparser.Lexicon.remove` the words and, optionally, a kind;
-both return a new :class:`~nameparser.Lexicon`, the one you started
-from (here, ``Lexicon.default()``) never being mutated. Where a word
-holds a reading of the kind added, ``add`` updates that reading in every
-file holding it; otherwise it adds a reading of the caller's own.
-``remove`` with no kind takes out every reading of the word, with a
-category (``"title"``, ``"name"``) every reading of that category, and
-with a kind and ``every=True`` every word's readings of that kind.
-:meth:`~nameparser.Lexicon.readings_of` answers what a word may be read
-as here, each :class:`~nameparser.LexiconReading` naming the shipped
-files that hold it, and :meth:`~nameparser.Lexicon.words` lists the
-words holding a reading of a kind; whether a parse *read* a word that
-way is :attr:`Token.reading <nameparser.Token.reading>`'s question.
+Both calls return a new :class:`~nameparser.Lexicon`, the one you
+started from (here, ``Lexicon.default()``) never being mutated.
 
-A credential the defaults do not list is one reading per word:
+Adding a word
+^^^^^^^^^^^^^
+
+:meth:`~nameparser.Lexicon.add` takes the words and a ``kind``, one of
+those `Kinds and properties`_ lists. A credential the defaults do not
+list is one reading per word:
 
 .. doctest::
 
@@ -95,8 +86,50 @@ A credential the defaults do not list is one reading per word:
     >>> Parser(lexicon=lex).parse("John Smith LEED AP").suffix
     'LEED AP'
 
-Removing works the same way, and a category takes out every reading of
-it:
+A surname particle is added the same way. The defaults leave out the
+Dutch ``ten`` of ``ten Brink``, which as a default would take a middle
+name spelled like it into the surname of names in every language; add
+it when your data is Dutch:
+
+.. doctest::
+
+    >>> parse("Marieke ten Brink").middle, parse("Marieke ten Brink").family
+    ('ten', 'Brink')
+    >>> dutch_ten = Lexicon.default().add("ten", kind="preposition")
+    >>> Parser(lexicon=dutch_ten).parse("Marieke ten Brink").family
+    'ten Brink'
+    >>> Parser(lexicon=dutch_ten).parse("Park Ten Hwan").family
+    'Ten Hwan'
+
+The last line is the cost: an edit applies to every name the parser
+reads. A particle added this way holds no ``given`` reading, so it is
+never read as a given name (`Particles that are also given names`_).
+
+Where a word already holds a reading of the kind added, ``add`` updates
+that reading in every file holding it (`Updating a reading the word
+already holds`_); otherwise it adds a reading of the caller's own.
+
+Two lists are not readings, and are joined to a lexicon rather than
+added to it: ``surnames``, which divides an unspaced name
+(:ref:`east-asian-defaults`), and ``given_names``, which the
+two-family-name switch reads (:ref:`two-family-names`).
+
+Removing a word
+^^^^^^^^^^^^^^^
+
+:meth:`~nameparser.Lexicon.remove` takes the words and, optionally, a
+kind. What it takes out depends on what you pass:
+
+- **No kind**: every reading of the word.
+- **A kind** (``kind="given"``, as in the first example): the word's
+  readings of that kind.
+- **A category** (``kind="title"``, ``kind="name"``): every reading of
+  the word in that category, whatever its kind.
+- **A kind or a category, no words, and** ``every=True``: every word's
+  readings of it (:ref:`title-detection-off`).
+
+``professor`` holds an ``academic`` reading, and ``"title"`` here names
+its category:
 
 .. doctest::
 
@@ -104,22 +137,52 @@ it:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
+Seeing what the vocabulary says about a word
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:meth:`~nameparser.Lexicon.readings_of` answers what a word may be read
+as in a lexicon. Each :class:`~nameparser.LexiconReading` gives its
+kind, its category, its properties and the shipped files that hold it,
+named by language, which a reading you added leaves empty:
+
+.. doctest::
+
+    >>> for van_reading in Lexicon.default().readings_of("van"):
+    ...     print(van_reading.kind, van_reading.category, van_reading.languages)
+    preposition particle ('nl',)
+    given name ('nl',)
+    >>> dutch_ten.readings_of("ten")[0].languages
+    ()
+
+:meth:`~nameparser.Lexicon.words` goes the other way: it lists the
+words holding a reading of a kind or a category, and of a property
+where you pass one. The examples under :ref:`title-detection-off` use
+it too:
+
+.. doctest::
+
+    >>> Lexicon.default().words(kind="conjunction", may_be_initial=True)
+    ('e', 'i')
+
+Both say what a word *may* be read as. Whether a parse read a word that
+way is :attr:`Token.reading <nameparser.Token.reading>`'s question
+(:ref:`reading-taken`).
+
+Coming from 2.x
+^^^^^^^^^^^^^^^
+
 The 2.x set fields (``titles``, ``suffix_acronyms``,
 ``particles_ambiguous``, ...) are internal since 3.0, compiled from the
 readings: ``add(titles=...)``, ``Lexicon(titles=...)`` and
 ``lexicon.titles`` each raise, the error naming the calls that configure
-the same words, and :doc:`migrate` has the table.
-
-The default word lists are asked of a lexicon too:
-:meth:`~nameparser.Lexicon.words` lists the words holding a reading of a
-kind, as the examples under :ref:`title-detection-off` do, and
-:meth:`~nameparser.Lexicon.readings_of` answers for one word. The
-modules that exposed them as constants in 2.x (``nameparser.config.titles``,
-``particles``, ``suffixes`` and the rest) are gone in 3.0, and
-:doc:`migrate` gives the call or comprehension for each constant.
-The Korean surname list, ``nameparser.config.surnames`` through 2.x
-and private in 3.0, is the default lexicon's ``surnames``:
-``Lexicon.default().surnames``.
+the same words. The modules that exposed the default word lists as
+constants in 2.x (``nameparser.config.titles``, ``particles``,
+``suffixes`` and the rest) are gone in 3.0, ``words`` and
+``readings_of`` answering for them, and the Korean surname list,
+``nameparser.config.surnames`` through 2.x and private in 3.0, is the
+default lexicon's ``surnames``: ``Lexicon.default().surnames``.
+:doc:`migrate` has the table of fields and the call or comprehension
+for each constant.
 
 Kinds and properties
 ~~~~~~~~~~~~~~~~~~~~~
@@ -128,88 +191,162 @@ A kind belongs to a category, which decides what the reading does:
 
 .. list-table::
    :header-rows: 1
-   :widths: 18 52 30
+   :widths: 14 46 40
 
    * - Category
+     - What a reading of it does
      - Kinds
-     - Properties
    * - title
+     - The word is a title in front of the name, and written with its
+       period at the end of one (:ref:`trailing-titles`).
      - ``title``, ``salutation``, ``style``, ``academic``, ``religious``,
        ``nobility``, ``military``, ``office``, ``occupation``,
        ``kinship``, ``modifier``
-     - ``addresses="given"``, ``after_given=True``,
-       ``abbreviation=True``, ``attaches=[...]``, ``dotted=True``
    * - suffix
+     - The word is a suffix at the end of the name or after a comma.
      - ``suffix``, ``generation``, ``agnomen``, ``credential``,
        ``honorific``, ``professional_honorific``, ``status``,
        ``courtesy``
-     - ``acronym=...``, ``attached="after"``, ``title_case_is_name=True``
    * - particle
+     - The word joins the family name that follows it (``de la Vega``).
      - ``particle``, ``preposition``, ``article``, ``patronymic``,
        ``teknonymic``, ``clan``, ``rank``, ``saint``, ``alias``
-     - ``capital_opening=True``
    * - conjunction
+     - The word joins the name parts, or the titles, on either side of
+       it (``Garcia y Lopez``, ``Mr. and Mrs.``).
      - ``conjunction``
-     - ``may_be_initial=True``
    * - bound_given
+     - The word joins the word after it into one given name
+       (`Bound given names`_).
      - ``bound_given``
-     - ``completed_by=[...]``
    * - relation
+     - The name after the word is the maiden name (``née``).
      - ``birth_marker``
-     - none
    * - name
+     - The word is borne as a name. With no property it moves a parse
+       only beside another reading of the word (`Name readings`_).
      - ``given``, ``family``
-     - ``after_particle=True`` on ``given``; ``shared=True`` on either
    * - familiar
+     - The word is a short given name standing for longer ones, read by
+       name matching alone (`Familiar forms`_).
      - ``familiar``
-     - ``short_for=[...]``, read by name matching alone
+   * - spelling
+     - The word is another spelling of a given name, read by name
+       matching alone (`Alternate spellings and listed spellings`_).
+     - ``spelling``
 
-``nameparser/vocab/README.md`` in the repository says what each kind
-and property means. A ``familiar`` reading is a short given name
-standing for the longer ones its ``short_for`` lists (``max`` for
-Maximilian): no parse reads it, and :ref:`name matching
-<matching-names>` reads it as the opt-in ``familiar-form``.
-``add("max", kind="familiar", short_for=["maxim"])`` *extends* the
-longer names the shipped vocabulary lists for ``max`` (Maximilian,
-Maxwell and others), in a reading of your own that names no file, unlike an
-add of any other kind the word holds, which updates that reading. A
-pair is stored on the word whose reading lists the other, as
-``readings_of("max")`` shows, and is removed from either: to cut
-``Max`` / ``Maximilian``, ``remove("max", kind="familiar",
-short_for=["maximilian"])``, either name first, and
-``remove("maximilian", kind="familiar")`` drops every pair naming that
-word, whichever name holds it (:ref:`matching-names` shows both). A
-familiar reading needs at least one name, and none may be the word
-itself.
-``same_as="..."`` is accepted on a reading of every kind but
-``familiar``: it names the word this one is a spelling of (``jnr`` is
-``jr``), or a list of them where it is a spelling of several
-(``same_as=["muhammad", "mohammad"]``), and :ref:`name matching <matching-names>` reads two words
-whose ``same_as`` links reach a common word as a ``listed-spelling``
-and gives them the same grouping key. A short form that is also a
-given name of its own in the vocabulary (``jo``, José written short
-and the name Jo) counts only where it is written with its period.
-That rule reads the vocabulary as you edited it: your ``same_as`` on
-a word applies to its given readings, so the word then has no plain
-reading and its link counts written bare
-(``add("dean", kind="given", same_as="deanna")`` makes ``Dean Smith``
-and ``Deanna Smith`` a listed spelling), and you cannot currently mark
-a word of your own as a name of its own. ``same_as`` moves no word
-between kinds, save on a ``given`` reading, where it also marks the word as a given
-name written short (``chas`` is ``charles``), so ``Chas. Smith`` reads
-given ``Chas.`` rather than a title. Such a reading is no name a credential
-of the same spelling clashes with: where the word is also a credential
-read only where the name has words to spare because it may be a name,
-the given name written short takes that doubt away, so with
-``add("jd", kind="given", same_as="zachary")``, ``Smith Jd`` ends in
-the credential ``Jd`` rather than the family name.
+For title, suffix, particle and conjunction the category's own name is
+also a kind, for a word you have no finer kind for. Most kinds only
+classify the word. The ones that do more than their category:
+
+- ``modifier`` and ``style`` make a title phrase with the title after
+  them (:ref:`titles-also-given-names`).
+- ``generation``, ``credential``, and ``honorific`` and
+  ``professional_honorific``, choose which of the ``generation``,
+  ``credentials`` and ``honorifics`` views a suffix shows in, and
+  ``patronymic`` fills the ``patronymic`` view.
+- ``agnomen`` needs a name reading on its word, which decides where it
+  is a suffix (`Generation words that are also surnames`_).
+- ``saint`` and ``rank`` are written with a capital by case repair
+  (:ref:`case-exceptions`).
+
+A reading takes the properties of its category, written as keyword
+arguments to ``add``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 16 60
+
+   * - Property
+     - On
+     - What it does
+   * - ``addresses="given"``
+     - title
+     - The lone name after the title is a given name, as after ``Sir``
+       (`Phrases`_).
+   * - ``after_given=True``
+     - title
+     - Written bare at the end of the given names after a family comma,
+       the word is the title, as ``Mrs`` is in ``Doe, Jane Mrs``.
+   * - ``abbreviation=True``
+     - title
+     - On a title that is also a given name: written with its period
+       at the end of the name, it is the title (``SMITH, JOHN B. MAJ.``).
+   * - ``attaches=[...]``
+     - title
+     - The title kinds, or title words, it makes a two-word phrase with
+       (:ref:`titles-also-given-names`).
+   * - ``dotted=True``
+     - title
+     - The title is also read from single letters joined by full stops,
+       before another title (``U.S. District Judge``).
+   * - ``attached="before"``
+     - title
+     - The title is split off the start of a name it is glued to
+       (Thai ``นายสมชาย``).
+   * - ``attached="after"``
+     - suffix
+     - The word is split off the end of a name it is glued to
+       (``田中さん``).
+   * - ``acronym=...``
+     - suffix
+     - True, a ``credential``'s unwritten value: matched with every
+       period removed, so ``M.D.`` is ``md``. False: a suffix written as
+       a word.
+   * - ``title_case_is_name=True``
+     - suffix
+     - On a word that is also a name: Title case reads the name, lower
+       case the suffix (`Generation words that are also surnames`_).
+   * - ``capital_opening=True``
+     - particle
+     - Case repair writes the particle with a capital where it opens
+       the family name (``Levon Ter Petrosyan``).
+   * - ``may_be_initial=True``
+     - conjunction
+     - A single letter reads as an initial in a name written wholly in
+       one case (:ref:`connectives-also-initials`).
+   * - ``completed_by=[...]``
+     - bound_given
+     - The words it joins past the first name word
+       (`Bound given names`_).
+   * - ``after_particle=True``
+     - ``given``
+     - Behind a particle the word completes a given name, so
+       ``María del Carmen García`` reads middle ``del Carmen``.
+   * - ``shared=True``
+     - ``given``, ``family``
+     - A name a community shares (Sikh ``Kaur``), which the
+       two-family-name and two-given-name switches leave a middle name
+       (:ref:`two-family-names`).
+   * - ``short_for=[...]``
+     - familiar
+     - The longer given names the word stands for (`Familiar forms`_).
+   * - ``spelling_of=[...]``
+     - spelling
+     - The given names the word is another spelling of (`Alternate
+       spellings and listed spellings`_).
+   * - ``same_as=...``
+     - every kind but ``familiar`` and ``spelling``
+     - The word, or words, this one is a spelling of (`Alternate
+       spellings and listed spellings`_).
+
+``nameparser/vocab/README.md`` in the repository is the full reference
+for each kind and property.
+
+Updating a reading the word already holds
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``add`` on a reading the word already holds updates only the
-properties you pass, so ``add("md", kind="given")`` keeps the shipped
-reading, ``md`` being Muhammad written short since 3.1, and changes
-nothing. Through 3.0.1 the same call gave ``md`` a plain given
-reading, which made the credential ``MD`` one read only where the
-name has words to spare; that reading now takes ``same_as=None``:
+properties you pass. A property given its unwritten value (``None``,
+``False``) is removed; ``acronym`` is unwritten-true on a
+``credential`` alone. Two things are not properties: whether a reading
+is on (a caller's always is) and its case mask (:ref:`case-exceptions`).
+
+So ``add("md", kind="given")`` keeps the shipped reading, ``md`` being
+Muhammad written short since 3.1, and changes nothing. Through 3.0.1
+the same call gave ``md`` a plain given reading, which made the
+credential ``MD`` one read only where the name has words to spare;
+that reading now takes ``same_as=None``:
 
 .. doctest::
 
@@ -221,6 +358,9 @@ name has words to spare; that reading now takes ``same_as=None``:
     'Md'
 
 .. _customize-md-title:
+
+Keeping Md. a title
+^^^^^^^^^^^^^^^^^^^
 
 Through 3.0.1 a leading ``Md.`` read as a title, and ``Md`` after a
 family comma as the credential. To keep those readings, remove the
@@ -235,10 +375,8 @@ long spellings of Muhammad:
     >>> md_title.parse("Rahman, Md").suffix
     'Md'
 
-A property given its unwritten
-value (``None``, ``False``) is removed; ``acronym`` is unwritten-true
-on a ``credential`` alone. Two things are not properties: whether a reading
-is on (a caller's always is) and its case mask (:ref:`case-exceptions`).
+Name readings
+^^^^^^^^^^^^^
 
 A **name** reading beside another reading is what makes a word
 ambiguous, as the vocabulary files mark it: a title with a ``given``
@@ -246,9 +384,72 @@ reading is a title only inside a phrase, a particle with one may be a
 given name, and a credential or a generation word with a name reading
 is read as the suffix only where the writing or the count says so
 (:ref:`ambiguous-words`). So ``add("guru", kind="given")``
-keeps ``Guru`` a title only inside a phrase, and
+makes ``Guru`` a title only inside a phrase, and
 ``remove("van", kind="given")`` makes ``van`` a particle that is never
 a given name.
+
+Familiar forms
+^^^^^^^^^^^^^^
+
+A ``familiar`` reading is a short given name standing for the longer
+ones its ``short_for`` lists (``max`` for Maximilian). No parse reads
+it: :ref:`name matching <matching-names>` reads it as the opt-in
+``familiar-form``, and that page has the recipes for adding and
+removing one. Three things differ from a reading of any other kind:
+
+- **An add extends.** ``add("max", kind="familiar",
+  short_for=["maxine"])`` adds to the longer names the shipped
+  vocabulary lists for ``max`` (Maximilian, Maxwell and others), in a
+  reading of your own that names no file, where an add of any other
+  kind the word holds updates that reading.
+- **A pair is removed from either name.** It is stored on the word
+  whose reading lists the other, as ``readings_of("max")`` shows:
+  ``remove("max", kind="familiar", short_for=["maximilian"])`` cuts
+  ``Max`` / ``Maximilian``, either name first, and
+  ``remove("maximilian", kind="familiar")`` drops every pair naming
+  that word, whichever name holds it.
+- **It names other words.** A familiar reading needs at least one name
+  in ``short_for``, and none may be the word itself.
+
+Alternate spellings and listed spellings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``spelling`` reading is a given name written another way (``olha``
+for Olga), its ``spelling_of`` listing the names. It is edited as a
+familiar form is, and :ref:`name matching <matching-names>` reads it
+as the opt-in ``alternate-spelling``.
+
+``same_as="..."``, accepted on a reading of every kind but ``familiar``
+and ``spelling``, names the word this one is a spelling of (``jnr`` is
+``jr``), or a list of them where it is a spelling of several
+(``same_as=["muhammad", "mohammad"]``). :ref:`Name matching
+<matching-names>` reads two words whose ``same_as`` links reach a
+common word as a ``listed-spelling`` and gives them the same grouping
+key. ``same_as`` moves no word between kinds, save on a ``given``
+reading, where it also marks the word as a given name written short
+(``chas`` is ``charles``), so ``Chas. Smith`` reads given ``Chas.``
+rather than a title.
+
+Two rules follow for a given name written short:
+
+- **One that is also a given name of its own** in the vocabulary
+  (``jo``, José written short and the name Jo) counts as a listed
+  spelling only where it is written with its period. That rule reads
+  the vocabulary as you edited it: your ``same_as`` on a word applies
+  to its given readings, so the word then has no plain reading and its
+  link counts written bare (``add("dean", kind="given",
+  same_as="deanna")`` makes ``Dean Smith`` and ``Deanna Smith`` a
+  listed spelling), and you cannot currently mark a word of your own
+  as a name of its own.
+- **It is no name a credential of the same spelling clashes with.**
+  Where the word is also a credential read only where the name has
+  words to spare because it may be a name, the given name written
+  short takes that doubt away, so with ``add("jd", kind="given",
+  same_as="zachary")``, ``Smith Jd`` ends in the credential ``Jd``
+  rather than the family name.
+
+Phrases
+^^^^^^^
 
 A reading is of one word, with two exceptions, so ``add`` refuses a
 phrase of any other kind: a title addressing the given name
@@ -274,17 +475,13 @@ credential is reachable as its component words:
     >>> parse("John Smith, MD PhD").suffix
     'MD PhD'
 
-That has held since 1.4.0.
-
 .. _title-detection-off:
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``every=True`` with a kind and no words takes out every word's readings
-of it, and the category ``"title"`` matches every title kind, so every
-title reading goes at once. (A call with no words and no ``every``
-raises, so an empty ``remove(*words, kind=...)`` never does this.)
+To stop the vocabulary reading any word as a title, remove every title
+reading:
 
 .. doctest::
 
@@ -297,6 +494,11 @@ raises, so an empty ``remove(*words, kind=...)`` never does this.)
     ''
     >>> Parser(lexicon=lean).parse("Hon Solo").given
     'Hon'
+
+``every=True`` with a kind and no words takes out every word's readings
+of it, and the category ``"title"`` matches every title kind, so every
+title reading goes at once. A call with no words and no ``every``
+raises, so an empty ``remove(*words, kind=...)`` never does this.
 
 Emptying the title vocabulary does not switch titles off entirely,
 though. A word ending in a period, standing at the front of the part
@@ -490,9 +692,7 @@ a shipped mask (``DSc``, ``PsyD``, ``PharmD``, ``MDiv`` and others):
 The exception is an acronym that is also a name word, such as ``meng``
 or ``edd``. A mask applies wherever its word stands, so it would
 re-spell a person called Meng or Edd, and these get none: they repair
-in plain capitals. The reasoning is the Excluded block for
-``CAPITALIZATION_EXCEPTIONS`` (meng, edd, lac, ded) in
-``docs/design/decisions/vocabulary-exclusions.md``.
+in plain capitals.
 
 .. doctest::
 
@@ -530,23 +730,28 @@ when it appears alone, and the parse reports the fork as an ambiguity.
 A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
-A plain choice of languages keeps every name reading, and a strict one
-(:ref:`strict-choice`) every reading its chosen files and the shared
-``mul`` file hold, so neither settles these words where the chosen
-language's own file, or the ``mul`` file, holds both readings. English
-lists ``ma`` as a credential and as a surname, so a strict English
-choice still reads ``JOHN SMITH MA`` by the count and reports it, and
-Dutch lists ``van`` as a particle and as a given name. A choice ends
-such a fork where it switches off another language's vocabulary
-reading of the word (below), and a strict choice also wherever one of
-the two readings of a word in Latin letters sits in another language's
-file: it keeps only the chosen files' and the ``mul`` file's readings
-of such a word, dropping the others, name readings included (a word
-written in another script keeps the readings a plain choice of the
-same languages gives it). A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
-and a strict Portuguese one ``Do Smith`` family ``Do Smith``, both
-unreported. The recipes in this
-section are the way to settle the rest.
+A choice of languages can settle one of these words only where one of
+its two readings sits in another language's file:
+:ref:`choosing-languages` and :ref:`strict-choice` say which of those
+readings a plain and a strict choice switch off, and the ``DO`` example
+under `Mark a word, or leave it out`_ shows one settled. Where the
+chosen language's own file, or the shared ``mul`` file, holds both
+readings, no choice settles the word. English lists ``ma`` as a
+credential and as a surname, so even a strict English choice reads
+``JOHN SMITH MA`` by the count and reports it:
+
+.. doctest::
+
+    >>> from nameparser import Locale, parser_for
+    >>> english = Locale(code="en", lexicon=Lexicon.empty(),
+    ...                  languages=frozenset({"en"}))
+    >>> english_ma = parser_for(english, strict=True).parse("JOHN SMITH MA")
+    >>> english_ma.suffix, english_ma.ambiguities
+    ('MA', (Ambiguity('suffix-or-name': 'MA'),))
+
+A strict choice of a language whose files hold neither reading drops
+both: a strict Dutch one reads the same name family ``MA`` and reports
+nothing. The recipes in this section are the way to settle the rest.
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -567,36 +772,40 @@ capitalization decides:
     >>> parse("John Smith Ma").family
     'Ma'
 
-The full reading of a bare marked acronym, in order (where the parse
-reads it by the count or by a Title-case lean, it reports a
+A bare marked acronym with no comma before it and no brackets around
+it is read by the first of these that applies (where the parse reads
+it by the count or by a Title-case lean, it reports a
 ``suffix-or-name`` ambiguity, :ref:`credentials-also-surnames`):
 
-- **ALL CAPITALS** in a mixed-case name leans to the credential: it is
-  a suffix even with no words to spare (``"Jack MA"``). The capitals
-  settle it as the periods do, so no ambiguity is reported, and a word
-  after it in the given part after a family comma reads as part of
-  the suffix (``"Smith, John MA Jones"`` gives suffix ``MA Jones``).
-- **Title-case** in a mixed-case name leans to the surname: it stays
-  the family name even WITH words to spare (``"John Smith Ma"``).
-- **No signal** — all lowercase in a mixed-case name, or any spelling
-  in a name written wholly in one case — falls back to the count: a
-  suffix with two or more words before it, not counting a title or a
-  nickname (``"John Smith ma"``), the family name otherwise
-  (``"JACK MA"``).
-- **After a comma** the count of name words before the comma decides
-  FIRST, and the case is read only where the count leaves the word a
-  name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
-  ``"Smith, BA"`` reads suffix ``BA`` on the capitals lean. What still
-  reads as the given name is ``"Smith, Ba"`` (one word, and Title-case
-  has no credential lean) and ``"smith, ba"`` (one word, one case, no
-  lean at all).
-- **In brackets after the name**, the capitals in a mixed-case name
-  settle it as the credential too, and so does a period inside the word:
-  ``"John Smith (BA)"`` and ``"John Smith (B.A)"`` give suffix ``BA`` and
-  ``B.A``. Any other spelling there, and any spelling inside the name,
-  falls through to nickname parsing (``"John Smith (Ba)"``,
-  ``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
-  ambiguity.
+#. **ALL CAPITALS** in a mixed-case name leans to the credential: it is
+   a suffix even with no words to spare (``"Jack MA"``). The capitals
+   settle it as the periods do, so no ``suffix-or-name`` ambiguity is
+   reported, and a word after it in the given part after a family
+   comma reads as part of the suffix (``"Smith, John MA Jones"`` gives
+   suffix ``MA Jones``).
+#. **Title-case** in a mixed-case name leans to the surname: it stays
+   the family name even WITH words to spare (``"John Smith Ma"``).
+#. **No signal** — all lowercase in a mixed-case name, or any spelling
+   in a name written wholly in one case — falls back to the count: a
+   suffix with two or more words before it, not counting a title or a
+   nickname (``"John Smith ma"``), the family name otherwise
+   (``"JACK MA"``).
+
+**After a comma** the count of name words before the comma decides
+FIRST, and the case is read only where the count leaves the word a
+name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
+``"Smith, BA"`` reads suffix ``BA`` on the capitals lean. What still
+reads as the given name is ``"Smith, Ba"`` (one word, and Title-case
+has no credential lean) and ``"smith, ba"`` (one word, one case, no
+lean at all).
+
+**In brackets after the name**, the capitals in a mixed-case name
+settle it as the credential too, and so does a period inside the word:
+``"John Smith (BA)"`` and ``"John Smith (B.A)"`` give suffix ``BA`` and
+``B.A``. Any other spelling there, and any spelling inside the name,
+falls through to nickname parsing (``"John Smith (Ba)"``,
+``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
+ambiguity.
 
 Generation words that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -640,10 +849,9 @@ free:
   writing as above, and every bare reading reports the fork.
 - **No credential reading at all**: right when the name reading is far
   more common, as for an acronym whose credential is tenuous or
-  specialized beside a common surname. That is what the default
-  vocabulary did with ``rai`` and ``cha`` in 2.3; a caller who needs
-  one adds it back with ``Lexicon.default().add("cha",
-  kind="credential")``.
+  specialized beside a common surname. The default vocabulary leaves
+  out ``rai`` and ``cha`` for that reason; a caller who needs one adds
+  it back with ``Lexicon.default().add("cha", kind="credential")``.
 
 Where the credential reading is another language's, choosing the
 language settles the word with no edit. English lists ``DO`` as a
@@ -741,17 +949,18 @@ Four things in the readings make this vocabulary:
 Particles that are also given names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A ``given`` reading is the same idea for surname particles. A particle
-holding one may also be a given name, which is what makes a leading
-one a decision to take; a particle *without* one never is, so there is
-nothing to decide. That shows up in what a particle
-standing *alone* at the front of a name does: a listed one is a name
-part in its own right, while one without pulls the rest of the
-name into the surname and leaves no given name at all. Which field a
-particle that may be given lands in is ``name_order``'s question,
-covered below; one that may not, opening the name, is the surname
-under every order, because a word that can never be a given name leaves the order
-nothing to decide.
+A ``given`` reading is the same idea for surname particles. It shows
+in what a particle standing alone at the front of a name does:
+
+- **A particle holding a** ``given`` **reading** may also be a given
+  name, so a leading one is a decision to take. By default it is the
+  given name; which field it lands in is ``name_order``'s question
+  (:ref:`order-vocabulary-first`).
+- **A particle holding none** is never a given name, so there is
+  nothing to decide. Opening the name, it starts the surname under
+  every ``name_order``, because a word that can never be a given name
+  leaves the order nothing to decide, and by default it pulls the rest
+  of the name into the surname and leaves no given name at all.
 
 .. doctest::
 
@@ -785,7 +994,7 @@ ambiguity is recorded and it becomes part of the surname — under any
 
 For particles the default runs the other way from credentials: a
 particle that is not borne as a given name holds no ``given`` reading,
-which is where ``mc`` and ``ste`` were moved (#360).
+which is where ``mc`` and ``ste`` were moved (:issue:`360`).
 
 .. _connectives-also-initials:
 
@@ -921,15 +1130,19 @@ signatures:
 * :meth:`~nameparser.ParsedName.initials` is the same idea narrowed to
   first letters, with its own ``delimiter``/``separator`` arguments.
 * :meth:`~nameparser.ParsedName.capitalized` returns a new, case-fixed
-  :class:`~nameparser.ParsedName` instead of a string. It only touches
-  a name whose words are written in a single case (all lower, all
-  upper) unless you pass ``force=True`` — mixed case is left alone by
-  default on the assumption that someone already capitalized it on
-  purpose. The suffixes don't count toward that: ``III`` or ``PhD``
-  written the usual way says nothing about how the name was cased.
-  A suffix written in more than one case is the writer's spelling
-  and is kept as written (``john smith EdD`` gives ``John Smith
-  EdD``) unless you pass ``force=True``.
+  :class:`~nameparser.ParsedName` instead of a string.
+
+``capitalized()`` decides what to touch by three rules:
+
+- It only touches a name whose words are written in a single case (all
+  lower, all upper) unless you pass ``force=True``. Mixed case is left
+  alone by default on the assumption that someone already capitalized
+  it on purpose.
+- The suffixes don't count toward that: ``III`` or ``PhD`` written the
+  usual way says nothing about how the name was cased.
+- A suffix written in more than one case is the writer's spelling and
+  is kept as written (``john smith EdD`` gives ``John Smith EdD``)
+  unless you pass ``force=True``.
 
 .. doctest::
 
