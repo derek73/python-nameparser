@@ -185,9 +185,10 @@ as parsed, and ``Suharto`` / ``Suharto`` reads family ``conflict``.
      - | ``Smith`` /
        | ``Smith``
      - yes
-   * - ``folded``: equal once case, accents, full stops, apostrophes
-       and hyphens are folded away, and a letter a keyboard lacks is
-       read as typed (:ref:`matching-fold`)
+   * - ``folded``: equal once case, accents, full stops and
+       apostrophes are folded away, each joining hyphen is read as the
+       hyphen-minus, and a letter a keyboard lacks is read as typed
+       (:ref:`matching-fold`)
      - | ``María García`` /
        | ``MARIA GARCIA``
      - yes
@@ -355,20 +356,22 @@ spelling and stays.
 Initials
 ~~~~~~~~
 
-A role written in initials alone on both sides reads ``initials-agree``
-where they are the same initials in the same order once spaces and
-hyphens are set aside. A family or maiden name of initials alone on
-both sides reads no other leniency, so ``J. P., Ann`` / ``P. J., Ann``
-and ``J., Ann`` / ``J. P., Ann`` conflict.
+One role written in initials alone on both sides reads
+``initials-agree`` where they are the same initials in the same order.
+In a family or maiden name, spaces and hyphens are set aside (``Jane
+Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``), and a family or maiden
+name of initials alone on both sides reads no other leniency, so ``J.
+P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict.
 
 Initials written joined into one word agree with the same letters
-written apart as ``joined`` (``J.P. Smith`` / ``J.-P. Smith``).
+written apart as ``joined`` (``JP Smith`` / ``J.-P. Smith``).
 
 A given name of two or three capitals with no middle name beside it,
 whose given or family name holds a lower-case letter, reads as initials
 where the other side's given and middle names spell those letters
 exactly, in order (``JP Smith`` / ``John Paul Smith``), a capitals word
-there spelling no letter (``JR Paul Smith`` spells J, R, P), and only
+there counting as its own letters and spelling none of them (``JR Paul
+Smith`` holds J, R and P, so ``JP Smith`` conflicts with it), and only
 where that makes the pair consistent; it is not read so against fewer
 or more names than letters (``JP Smith`` / ``John Smith``), which ``J.
 P. Smith`` matches, so a pair can still be consistent through ``J. P.
@@ -404,9 +407,7 @@ members, and *replaces* the default set rather than adding to it, so
 extend the default with the ``accept`` of a default matcher. The keys
 follow what is accepted and the ``other_readings`` switch, so one
 matcher's ``keys()`` and ``check()`` always agree; never group with one
-matcher and check with another. An unknown outcome name raises
-``ValueError`` listing the valid ones, and ``conflict`` cannot be
-accepted:
+matcher and check with another:
 
 .. doctest::
 
@@ -419,6 +420,9 @@ accepted:
     True
     >>> sorted(with_family_initial.keys("John Stallbaum"))
     ['s;j', 'stallbaum;j']
+
+An unknown outcome name raises ``ValueError`` listing the valid ones,
+and ``conflict`` cannot be accepted.
 
 .. _matching-family-initial:
 
@@ -591,7 +595,8 @@ the source script (``Nataliia`` / ``Natalya``, ``Наталія`` / ``Натал
 or another language's form (``Lydia`` / ``Lidia``) is a translation,
 which no outcome reads yet.
 
-It is read as a familiar form is, in the same roles, either way round
+``alternate-spelling`` is read as a familiar form is, in the same
+roles, either way round
 and never chained, and the keys follow it where it is accepted. The
 same review as the familiar forms gives its pairs, about three hundred,
 each called a spelling of one name by both reviewers or by the
@@ -600,7 +605,8 @@ keyboard forces, which the default reads ``folded`` (``Łukasz`` /
 ``Lukasz``, ``Jürgen`` / ``Juergen``, ``Srđan`` / ``Srdjan``, from
 either side).
 
-It is outside the default because people sometimes spell a name
+An alternate spelling is outside the default because people sometimes
+spell a name
 differently on purpose, to be told apart from someone of the same name,
 so two spellings are evidence of a match only for a caller who knows
 their sources write one name several ways:
