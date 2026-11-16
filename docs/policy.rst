@@ -955,7 +955,7 @@ no brackets and nothing configured:
     >>> parse("Jane Smith née Jones").maiden
     'Jones'
 
-:ref:`nicknames-and-maiden-names` on the name shapes page covers how the
+:ref:`nicknames-and-maiden-names` in :doc:`shapes` covers how the
 marked forms read. The marker words themselves are the
 ``birth_marker`` readings of a ``Lexicon``, shipped in several
 languages (``Lexicon.default().words(kind="birth_marker")`` lists them).

@@ -370,7 +370,7 @@ This is how such a name is parsed, whatever you render from it.
 A given name written as initials run together with full stops, in
 capitals, reads as those initials: the first is the given name and the
 rest are middle names, as they would be written apart, and ``str()``
-keeps them as written (since 3.1):
+keeps them as written:
 
 .. doctest::
 
@@ -552,7 +552,7 @@ Titles that are also given names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A title that is also borne as a given name, such as ``Dean``, ``King``
-or ``Major``, is a title only inside a title phrase (since 2.7), and
+or ``Major``, is a title only inside a title phrase, and
 otherwise a name word (``Dean of Students`` is a title). Where it opens
 the name and a phrase could have held it, the choice is recorded as
 ``title-or-name``:
