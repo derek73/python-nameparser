@@ -1191,10 +1191,8 @@ def test_two_capitals_ask_the_later_parts_only_where_one_stands() -> None:
     is the whole part and a part stands behind it, so a pair alone
     behind a full name costs what it did. Recorded negative control
     (2026-11-15, py3.11): with the `len(state.segments) > 2` gate
-    removed no case row moves, 'Jane Mary Doe, MH' enters the helper
-    once and the contrast test before it (290 frames against 288), and
-    'Jane Mary Doe, M.H.' pays the contrast asked afresh (410 against
-    388); the differences are the measurement."""
+    removed no case row moves and a pair with no later part enters the
+    helper once, to walk no part."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     only = "_listed_credentials_behind"

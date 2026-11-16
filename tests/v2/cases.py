@@ -7032,6 +7032,26 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="rules/C5 (#1392): EVERYWHERE reads the pair as the "
                "default does where the name carries the contrast"),
+    Case("two_caps_alone_before_a_joined_word_with_a_glued_delimiter",
+         "Jane Doe, MH, MD/Jr.;",
+         {"given": "MH", "family": "Jane Doe", "suffix": "MD/Jr.;"},
+         notes="#1392 boundary, its second code review: a later part's "
+               "word is read without a glued delimiter, as the pair's "
+               "own part is ('Jane Doe, BM MD/Jr.;'), so the generation "
+               "chunk still refuses"),
+    Case("two_caps_alone_before_joined_credentials_with_a_glued_delimiter",
+         "Jane Doe, MH, MD/PhD;",
+         {"given": "Jane", "family": "Doe", "suffix": "MH, MD/PhD;"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392): the glued delimiter is no part of the "
+               "word (rules/C10). 1.4.0 through 3.0.1 read given 'MH'"),
+    Case("two_caps_alone_before_a_credential_that_is_also_a_particle",
+         "Jane Doe, BM, DO",
+         {"given": "BM", "family": "Jane Doe", "suffix": "DO"},
+         notes="#1392, left as it was: 'DO' is a particle too, and a "
+               "particle speaks for no credential, in a later part as "
+               "beside the pair ('Jane Doe, BM DO')"),
     Case("a_mixed_case_pair_before_a_later_credential_stays_the_given_name",
          "Jane Doe, Mh, PhD",
          {"given": "Mh", "family": "Jane Doe", "suffix": "PhD"},

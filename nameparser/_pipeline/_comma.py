@@ -498,7 +498,7 @@ def _capitals_in_contrast(state: ParseState, seg0: Sequence[int],
 
 
 def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
-                               cores: Set[str],
+                               cores: Set[str], inner: frozenset[str],
                                contrast: list[bool]) -> bool:
     """Whether a part past the second comma is nothing but listed
     credentials (rules/C5, #1392), read word by word as the company of
@@ -508,14 +508,24 @@ def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
     settle ('MA', not 'Ma'), a credential split across a space
     ('Ph. D.'); never a particle standing as a word, a word the count
     gates, a joined word holding a generation or a gated or unsettled
-    chunk ('MD/Jr.'), nor a word read by its shape alone
-    ('XYZ', 'X.Y.Z.': untagged, or tagged a member no capitals
-    settle). A delimiter core standing alone is no word of the part
-    ('MD - PhD', rules/C10). Any later part answers, one with no word
-    in it being none."""
+    chunk ('MD/Jr.'), nor a word read by its shape alone ('XYZ',
+    'X.Y.Z.': untagged, or tagged a member no capitals settle). A
+    delimiter core standing alone is no word of the part ('MD - PhD',
+    rules/C10), and a word with one glued is read without it, as the
+    decision reads the pair's own part ('MD/Jr.;'). Any later part
+    answers, one with no word in it being none."""
     tokens = state.tokens
     for seg in state.segments[2:]:
-        texts = {i: tokens[i].text for i in seg}
+        texts: dict[int, str] = {}
+        for i in seg:
+            text = tokens[i].text
+            # the stem asked for only where a core is glued, a C-level
+            # test, so a plain word pays no frame for it
+            for core in inner:
+                if core in text and glues(core):
+                    text = glued_stem(text, inner) or text
+                    break
+            texts[i] = text
         pieces, ptags = _reading_pieces(seg, tokens)
         found = False
         for p, pt in zip(pieces, ptags):
@@ -523,11 +533,9 @@ def _listed_credentials_behind(state: ParseState, seg0: Sequence[int],
                 token = tokens[p[0]]
                 if token.text in cores:
                     continue
-                if ("split" not in pt
-                        and (_a_names_word(state, token, token.text)
-                             or not ("vocab:suffix" in token.tags
-                                     or AMBIGUOUS_ACRONYM_TAG
-                                     in token.tags))):
+                if (_a_names_word(state, token, texts[p[0]])
+                        or not ("vocab:suffix" in token.tags
+                                or AMBIGUOUS_ACRONYM_TAG in token.tags)):
                     break
             if not _company(state, seg0, p, pt, texts, contrast):
                 break
@@ -932,15 +940,16 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                         # -- asked only where the pair is the whole
                         # part and a later part stands, so no other
                         # name pays a frame for it; C6's contrast is
-                        # asked of the dotted pair, and of an undotted
-                        # one EVERYWHERE tagged without it
-                        # (decisions/C5 (#1392))
+                        # asked last, of the dotted pair and of an
+                        # undotted one EVERYWHERE tagged without it,
+                        # so a pair no later part speaks for does not
+                        # pay for it (decisions/C5 (#1392))
                         or (later := len(p1) == 1
                             and len(state.segments) > 2
-                            and _capitals_in_contrast(state, seg0, text,
-                                                      contrast)
                             and _listed_credentials_behind(
-                                state, seg0, cores, contrast_box))):
+                                state, seg0, cores, inner, contrast_box)
+                            and _capitals_in_contrast(state, seg0, text,
+                                                      contrast))):
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:
