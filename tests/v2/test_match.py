@@ -2454,6 +2454,13 @@ def test_a_remove_of_pairs_holds_under_a_choice_of_languages(
         for r in chosen.readings_of(w) if r.kind == kind
         for n in dict(r.properties)[prop])
     assert _consistent(chosen, outcome, short, long)
+    # a pair of two other words, which every remove below leaves alone
+    other = next(
+        (w, n) for w in chosen.words(kind=kind)
+        for r in chosen.readings_of(w) if r.kind == kind
+        for n in dict(r.properties)[prop]
+        if not {w, n} & ({short, long} | paired(chosen, long)
+                         | paired(chosen, short)))
     remove: dict[str, Any]
     for remove in ({}, _named(prop, short)):
         after = chosen.remove(long, kind=kind, **remove)
@@ -2463,6 +2470,8 @@ def test_a_remove_of_pairs_holds_under_a_choice_of_languages(
         assert (after.languages, after.strict) == (chosen.languages, strict)
         assert short not in paired(after, long)
         assert not _consistent(after, outcome, short, long)
+        assert _consistent(after, outcome, *other)
+        assert paired(after, other[0]) == paired(chosen, other[0])
 
 
 def test_a_remove_of_pairs_written_on_the_default_holds_under_a_strict_choice() -> None:
