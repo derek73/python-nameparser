@@ -811,14 +811,19 @@ Six things are left as written:
   open with the same letters (``นพพร``, ``นพดล``). With the full stop,
   or a space, they are read
   (``docs/design/decisions/W6-glued-title-peel.md``, :issue:`317`). A
-  short form with stops inside it needs its last one too.
-- **Two titles glued with no full stop between them.** Only the first
-  is split off, and the second stays in the given name. A full stop
-  between them (``รศ.ดร.สุดา``), or a space, lets both be read.
+  short form with stops inside it needs its last one too: glued
+  without it, the word is not read as that title, and a form of three
+  parts or more is cut at its last stop (``พ.ต.ทสมชาย`` reads the
+  shorter rank ``พ.ต.``).
+- **Two spelled-out titles glued together.** Only the first is split
+  off, and the second stays in the given name. Both are read where one
+  of them is written short with its full stops (``รศ.นายแพทย์สมชาย``,
+  ``รองศาสตราจารย์ดร.สุดา``), or where a space stands between them.
 - **A short academic title glued after a family comma.** After a comma
   that marks the family name, a word such as ``ดร.สุดา`` is kept whole
-  and read as the title; written apart it divides. Salutations and
-  ranks are split off there as elsewhere.
+  and read as the title, as is a glued chain that holds such a title
+  (``นายดร.สุดา``); written apart it divides. A salutation or a rank
+  glued alone is split off there as elsewhere.
 - **A word the vocabulary does not list.** ``คุณ`` (Khun) and ``พระ``
   are not titles by default, each also opening ordinary names. A
   caller adds one (`Adding a Thai title`_).
@@ -834,6 +839,9 @@ Six things are left as written:
 
     >>> parse("ดรสุดา ใจดี").given
     'ดรสุดา'
+    >>> thai_cut = parse("พ.ต.ทสมชาย ใจดี")
+    >>> thai_cut.title, thai_cut.given
+    ('พ.ต.', 'ทสมชาย')
     >>> thai_comma = parse("ใจดี, ดร.สุดา")
     >>> thai_comma.title, thai_comma.given
     ('ดร.สุดา', '')
@@ -846,6 +854,8 @@ Six things are left as written:
     ('รองศาสตราจารย์', 'นายแพทย์สมชาย')
     >>> parse("รองศาสตราจารย์ นายแพทย์สมชาย ใจดี").title
     'รองศาสตราจารย์ นายแพทย์'
+    >>> parse("รองศาสตราจารย์ดร.สุดา ใจดี").title
+    'รองศาสตราจารย์ดร.'
     >>> parse("ปฐมพร อินทรางกูร ณ อยุธยา").middle
     'อินทรางกูร'
     >>> parse("Suda na Ayutthaya").family
