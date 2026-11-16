@@ -90,6 +90,9 @@ def test_a_suffix_differing_only_by_its_commas_is_the_same_reading(
     ("VI Ph. D.", "Ph. D., VI"),   # reordered
     ("PhD Jones", "PhD"),          # a word left out
     ("MD, PhD", "PhD"),
+    ("Jr.,", "Jr."),               # a trailing comma is no join
+    ("Jr.", "Jr.,"),
+    ("MD,PhD", "MD PhD"),          # nor a comma with no space after it
 ])
 def test_a_suffix_with_other_words_or_order_differs(want: str, have: str) -> None:
     row = parity.Row("r", "x", {**dict.fromkeys(parity.FIELDS, ""), "suffix": want})

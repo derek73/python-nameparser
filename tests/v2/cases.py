@@ -11816,7 +11816,11 @@ CASES: tuple[Case, ...] = (
                "and the entry the writer drew ends at each of them. "
                "The core is gone before the render sees it, so the "
                "boundary is read off the dropped indices rather than "
-               "off a surviving token. Parity at every baseline"),
+               "off a surviving token. The classification names the "
+               "change this row guards, not a change in its reading: "
+               "1.4.0, with its counterpart CONSTANTS.suffix_delimiter "
+               "= ' | ', and every release from 2.0.0 read these "
+               "fields"),
     Case("suffix_delimiter_core_parts_a_connective_join",
          "Doe, John, PhD | and MD",
          {"given": "John", "family": "Doe", "suffix": "PhD, and MD"},

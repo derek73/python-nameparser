@@ -18,11 +18,13 @@ What it compares, exactly:
   field the row does not list is expected empty, as the suite reads
   it. Nothing else: not ambiguities, which 1.4.0 has none of, nor
   `initials()` or the case views.
-- The suffix by its words, in order, with the commas between them
-  dropped on both sides. 1.4.0 renders a suffix of several words joined
-  with ", " (`PhD, I.`) where the tree keeps the separators written in
-  the name (`PhD I.`); the same words in the same order are the same
-  reading, and a separator is how it renders. A word moved into or out
+- The suffix with its ", " joins read as spaces on both sides, and
+  nothing else of its punctuation dropped. 1.4.0 renders a suffix of
+  several words joined with ", " (`PhD, I.`) where the tree keeps the
+  separators written in the name (`PhD I.`); the same words in the same
+  order are the same reading, and a separator is how it renders. A
+  comma that ends a word in only one of them (`Jr.,` against `Jr.`) is
+  no join, and counts. A word moved into or out
   of the suffix, or reordered, still counts.
 - Only the rows with neither a `policy` nor a `locale`. 1.4.0 has no
   `Policy`, so no switch on a row has a counterpart there to translate
@@ -140,9 +142,11 @@ def from_v1(reading: Mapping[str, str]) -> dict[str, str]:
 
 
 def suffix_words(text: str) -> tuple[str, ...]:
-    """A suffix as its words in order, the commas between them dropped:
-    `PhD, I.` and `PhD I.` are one reading (the docstring says why)."""
-    return tuple(w for w in (w.strip(",") for w in text.split()) if w)
+    """A suffix as its words in order, each ", " join read as a space:
+    `PhD, I.` and `PhD I.` are one reading (the docstring says why),
+    while a comma ending the suffix, or a word not followed by a space
+    (`Jr.,`, `MD,PhD`), stays part of its word."""
+    return tuple(text.replace(", ", " ").split())
 
 
 def differ(row: Row, got: Mapping[str, str]) -> dict[str, tuple[str, str]]:
