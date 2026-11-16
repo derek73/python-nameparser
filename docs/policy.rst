@@ -308,8 +308,8 @@ name before it:
 Where the vocabulary answers first
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In four places the vocabulary decides what the declared order would
-otherwise decide:
+In four places the reading comes from the vocabulary rather than from
+the position the order assigns:
 
 - **A middle word that is also a shipped particle** is claimed by the
   vocabulary. That is why the Vietnamese example above is not the more
@@ -1174,8 +1174,8 @@ two words before a comma and the initial of a given name after it.
 ``"Vega Ruiz, V"`` can be Vega Ruiz the fifth, or the surname ``Vega
 Ruiz`` with a given-name initial. The field is on by default and reads
 the first: a suffix word shaped like an initial (``V``, ``I``),
-opening the part after a comma behind two or more name words, is the
-suffix. ``False``
+alone after a comma or followed only by other suffixes (``V PhD``),
+behind two or more name words, is the suffix. ``False``
 reads it as a given-name initial instead:
 
 .. doctest::
@@ -1196,7 +1196,8 @@ reads it as a given-name initial instead:
 ``False``, since a name written all in one case reads as its capitals.
 Multi-letter suffixes (``III``, ``MD``) are unaffected. Behind a single
 word the letter is the given name under either setting
-(``"Smith, V"``).
+(``"Smith, V"``), and so is one with a name word after it
+(``"Vega Ruiz, V Maria"``).
 
 .. _unlisted-credentials:
 
