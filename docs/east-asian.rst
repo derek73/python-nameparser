@@ -106,6 +106,9 @@ data you know is Chinese, and the ``ja`` pack for Japanese data
 (:ref:`japanese-segmenter`). A name whose surname is not on the pack's
 list stays whole.
 
+The list holds the commonest surnames of the mainland and Taiwan, in
+both scripts, and the compound surnames still borne.
+
 A Chinese name can carry two surnames. In Taiwan a married woman
 wrote her husband's surname before her own (冠夫姓) — the Civil Code's
 default until 1998, and still a choice — and a mainland child may carry
@@ -420,6 +423,8 @@ family 王, given 小明 and suffix 先生 for the same reason. Spacing the
 honorific is no lever there, and for Korean data there is no pack to
 decline either, hangul segmentation being on by default.
 
+.. _glued-honorifics:
+
 Which honorifics peel when glued
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -437,6 +442,10 @@ settles what the glued form leaves ambiguous. 君 is recognized in
 neither form by default, since 王君 is a complete Chinese name, though
 its kana spelling くん peels. ``parser_for(locales.JA)`` turns 君 on, glued
 and spaced, as the Diet writes it (``逢沢　一郎君`` gives suffix ``君``).
+
+A Chinese name read under ``locales.JA`` loses its ``君`` the same way
+(``王君`` gives family ``王``, suffix ``君``), so keep the pack for
+Japanese data.
 
 Exactly one honorific peels off a token, and the entries are whole
 honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,
