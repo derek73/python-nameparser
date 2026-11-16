@@ -15,7 +15,7 @@
 - Mixed case is read over the words no run took, after the peel: a word other than a title, a suffix, or a particle or conjunction written in lowercase holds a lowercase letter — 2026-11-12 #659, the SECOND FIX REVIEW.
 - An `order` report, and a report on a word the peel took, are dropped where the rule acts — 2026-11-12 #659, the THIRD REVIEW.
 
-Open: #659 (a bare `DR` in capitals at the head reads as the family under the switch, `DR Anna Berg`; whether a title that is never a surname should stand is undecided).
+Open: [#1402](https://github.com/derek73/python-nameparser/issues/1402) (a bare `DR` in capitals at the head reads as the family under the switch, `DR Anna Berg`; whether a title that is never a surname should stand is undecided).
 
 ## Log
 

@@ -107,7 +107,7 @@
 
 **Accepted:**
 
-- The fullwidth-colon spelling arrives as one word, so the marker inside it goes unrecognized; #317 tracks whether it should peel.
+- The fullwidth-colon spelling arrives as one word, so the marker inside it goes unrecognized; #1359 tracks whether it should peel.
   ```
   "山田 花子 旧姓：佐藤"                 →  maiden=""
   ```

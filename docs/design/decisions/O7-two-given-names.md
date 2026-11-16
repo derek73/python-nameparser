@@ -10,7 +10,7 @@
 - An English given name written beside a Chinese one (`Lim Mei Ling Jessica`) is not read: it is the same shape as a middle name, and the caller who writes it in delimiters with the declared order gets it as the nickname (`Lim Mei Ling (Jessica)` under `FAMILY_FIRST` with the switch reads given `Mei Ling`, family `Lim`, nickname `Jessica`) — 2026-11-03 #704, recorded as accepted.
 - The switch reports nothing — 2026-10-30 #704.
 - No shipped pack turns the switch on; `locales.ES` and `locales.PT` leave it opt-in, decided in chat — 2026-10-30 #753, phase 3g.
-- With O6's switch on, a listed given name O6 leaves where it is (decisions/O6's 2026-10-30 #959 entry) is a middle this rule takes where it stands beside the given name, so `José Luis Pérez` reads given `José Luis` with both on — 2026-10-30 #959.
+- With O6's switch on, a listed given name O6 leaves where it is (decisions/O6's 2026-10-30 #959 entry) is a middle this rule takes where it stands beside the given name, so `José Luis Pérez` reads given `José Luis` with both on under `locales.ES`, whose given names list `Luis` — 2026-10-30 #959. Under the default lexicon `Luis` is no listed given name and O6 takes it (family `Luis Pérez`).
 
 ## Log
 

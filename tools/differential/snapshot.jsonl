@@ -3962,6 +3962,7 @@
 {"name": "Sir John", "title": "Sir", "given": "John", "initials": "J."}
 {"name": "Sir John Prof.", "title": "Sir Prof.", "given": "John", "initials": "J."}
 {"name": "Sir Ph. D. Van Johnson", "title": "Sir", "given": "Van Johnson", "suffix": "Ph. D.", "initials": "V. J."}
+{"name": "Sir PhD Van Johnson", "title": "Sir", "given": "PhD", "family": "Van Johnson", "initials": "P. J.", "capitalized_force": "Sir PhD van Johnson"}
 {"name": "Sir Smith, John", "title": "Sir", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sir Van Johnson", "title": "Sir", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. J."}
 {"name": "Sir abdul Jr Smith", "title": "Sir", "given": "abdul", "middle": "Jr", "family": "Smith", "initials": "a. J. S.", "capitalized_force": "Sir Abdul Jr Smith"}
