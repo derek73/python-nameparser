@@ -163,6 +163,11 @@ the listed words join their neighbours:
 - **A title that is also a given name**, such as ``Dean``, is a title
   only inside such a phrase (``"Dean of Students"``).
 - **Particles join forward**, so ``de la`` attaches to ``Vega``.
+- **A bound given name joins the name after it**, so ``Abdul Rahman
+  Khan`` has the given name ``Abdul Rahman`` (:doc:`shapes`).
+- **A given name written behind a particle keeps it**, so ``Mara del
+  Carmen Quill`` has the middle name ``del Carmen``, where ``Mara de
+  Quill`` has the family name ``de Quill`` (:ref:`two-given-names`).
 
 A listing is not a role, though. The same word can play different parts
 in different places: ``Lt.`` is a title before a name and a post-nominal
@@ -202,6 +207,11 @@ That is the default arrangement. What changes "first" and "last":
   with or without kanji, unless it is katakana alone
   (:ref:`east-asian-defaults`; :ref:`east-asian-names` has the
   conventions behind it and the transcribed names it leaves alone).
+- ``segment_scripts`` splits an unspaced name into a surname and a
+  given name before position is asked anything, by default a name in
+  Hangul (:ref:`splitting-unspaced-names`).
+- ``middle_as_family``, opt-in, folds the words between the given name
+  and the family name into the family name (its row in :doc:`policy`).
 - ``two_family_names``, opt-in, reads two name words as the family
   name (:ref:`two-family-names`).
 - ``two_given_names``, opt-in, gives the given name the middle name
@@ -262,7 +272,7 @@ The parser never detects the language of a name. A name written in
 Latin letters does not say which language it is in, and the same word
 is a particle in one language and a given name in another, so a guess
 would misread real people. The same word is read by where it stands
-instead, in every name alike:
+instead:
 
 .. doctest::
 
@@ -282,8 +292,9 @@ script itself, rather than statistics about it, settles the convention.
 A name written wholly in Han characters or Hangul, for example, is read
 family-first, because every language written in those scripts orders
 names that way, unless an interpunct ``·`` marks it as a transcribed
-foreign name (:ref:`east-asian-names` covers each such behavior). The
-same name in Latin letters is read by position like any other:
+foreign name (:ref:`east-asian-names` covers the East Asian scripts,
+where most of this applies). The same name in Latin letters is read by
+position like any other:
 
 .. doctest::
 
@@ -291,6 +302,13 @@ same name in Latin letters is read by position like any other:
     '김'
     >>> parse("Kim Minjun").family
     'Minjun'
+
+Two more default behaviors are licensed by a word rather than by a
+script: a listed honorific glued to the end of a name and a listed
+title glued to the start of one are split off, and only where the
+vocabulary entry is one vetted as never ending, or never opening, a
+name (:ref:`glued-honorifics` for the East Asian honorifics,
+:ref:`thai-names` for the Thai titles).
 
 A whole list is a different question. :meth:`Parser.suggest()
 <nameparser.Parser.suggest>` may detect a convention over a group of
@@ -326,7 +344,7 @@ this setting vary with?
      - Container
      - Holds
      - Example
-   * - **language**
+   * - **language**, or the domain's own words
      - :class:`~nameparser.Lexicon` (:ref:`vocabulary-lexicon`)
      - The vocabulary, written as readings: what each word may be read
        as, each held in the file of the language whose names it occurs
@@ -531,12 +549,13 @@ What decides whether there was a decision:
   leave one last title word, which is read as the name for want of
   anything else (``"Dr. Prof."``) and reported as ``title-or-name``. A field the
   library merely had to pick is a field you can see it picked.
-- **A single title or a title phrase standing alone reports nothing.**
-  ``"Dr."``, ``"Sir"`` and ``"Prince of Wales"`` are all title and no
-  name, so there is no reading to have doubted. A word that is a title
-  only inside a phrase, such as ``Dean``, is read as a name when it
-  stands alone, and reports the title it might have been
-  (``title-or-name``).
+- **A single title standing alone reports nothing.** ``"Dr."`` and
+  ``"Sir"`` are all title and no name, so there is no reading to have
+  doubted. The same holds for a title phrase joined by a connective
+  (``"Prince of Wales"``); any other run of title words is the case
+  above. A word that is a title only inside a phrase, such as ``Dean``,
+  is read as a name when it stands alone, and reports the title it
+  might have been (``title-or-name``).
 
 An empty list is not certainty
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
