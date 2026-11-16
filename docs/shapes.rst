@@ -11,7 +11,7 @@ Input shapes
 
 Three arrangements are understood by default, two more when you
 declare a family-first order, and two more by how they are written.
-Each has a number and a name, and both are used below.
+Each has a number and a name.
 
 Understood by default
 ~~~~~~~~~~~~~~~~~~~~~
@@ -37,7 +37,7 @@ there reads as.
 Names written with a comma
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Data written ``Last, First`` needs no configuration. The comma names
+Data written ``Last, First`` is read by default. The comma names
 the family, and the part after it holds the given and middle names,
 with a suffix behind them or after a further comma:
 
@@ -86,8 +86,8 @@ after the comma written as a name, or an initial, keeps form 2:
     >>> parse("Garcia Lopez Jr., Juan").given
     'Juan'
 
-After a second comma
-^^^^^^^^^^^^^^^^^^^^
+Suffixes and titles after a comma
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A part after the comma in form 3, or after a further comma in either
 form, holds suffixes and titles. A word there that is a title rather
@@ -203,10 +203,12 @@ meant:
   (:ref:`name-order`).
 - **A name word after a second comma** lands in ``suffix``:
   ``Tilby, Rowan, Quill`` reads suffix ``Quill`` (:ref:`comma-forms`).
-- **A title written bare at the end of a name** is a name word, since
-  many title words are also surnames: ``Rowan Tilby Judge`` reads
-  family ``Judge``. :ref:`trailing-titles` gives the cases where it is
-  read as the title.
+- **A title written bare at the end of a name, with no comma before
+  it,** is a name word, since many title words are also surnames:
+  ``Rowan Tilby Judge`` reads family ``Judge``. A word that is also a
+  post-nominal (``Ms``) is the suffix there instead.
+  :ref:`trailing-titles` gives the cases where a bare title is read as
+  the title.
 
 Only the second is reported on ``ambiguities`` (see
 :ref:`parser-guesses`). The other two look like any other name, so
@@ -231,13 +233,11 @@ Most words stand alone. A few pull in a neighbor, and each kind pulls
 into one particular field — so this table is also a map of which fields
 get built by attachment rather than by position.
 
-Titles and suffixes
-attach only to *adjacent words of their own kind* (a run of titles
-chains into one, but a title never swallows a plain name); the rest
-reach forward to pull in the next word, whatever it is.
+Titles and suffixes attach only to *adjacent words of their own kind*
+(a run of titles chains into one, but a title never swallows a plain
+name); the rest reach forward to pull in the next word, whatever it is.
 
-Each row's
-reading kind is what :meth:`Lexicon.words(kind=...)
+Each row's reading kind is what :meth:`Lexicon.words(kind=...)
 <nameparser.Lexicon.words>` takes to list its words:
 
 .. list-table::
@@ -289,9 +289,9 @@ names together as easily as two surnames:
     >>> parse("Juan de la Vega y Rodriguez").family
     'de la Vega y Rodriguez'
 
-A particle does not build the surname in one case: before a given
-name's second half (``del Carmen``), where the two are ``middle``
-(see :ref:`two-given-names`):
+A particle before a given name's second half (``del Carmen``), with a
+surname behind the pair, does not build the surname: under the default
+order the two are ``middle`` (see :ref:`two-given-names`):
 
 .. doctest::
 
@@ -471,7 +471,8 @@ can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
     >>> parse("Cherice J. (Johnson) Williams").nickname
     'Johnson'
 
-Credentials and titles in brackets are read as such. If every word
+Credentials and titles in brackets are read as such, with one
+exception, the ambiguous acronym below. If every word
 inside is a known
 credential, generation or title, the clause is set apart from the name
 instead, each word read as the suffix or the title it is — that reading
@@ -488,10 +489,13 @@ happen to be credentials:
     >>> parse("John Smith (Dr)").title
     'Dr'
 
-Initials inside a name stay the nickname (``Justin (JP) Stearns``).
+Content ending in a period that is not such a word is read as if
+written without its brackets:
 
-Other content ending in a period is read as if written without its
-brackets.
+.. doctest::
+
+    >>> parse("Jane (Xyz.) Smith").middle
+    'Xyz.'
 
 The exception to the credential reading is an *ambiguous* acronym — one
 that is
@@ -500,7 +504,8 @@ delimiters, it keeps the nickname reading unless the way it is written
 settles it after the name: in capitals in a name written in mixed case,
 or with a period inside it. A name written all in capitals says
 nothing about the word, and inside the name the delimiters are read as
-a nickname however it is written:
+a nickname however it is written, so initials inside a name stay the
+nickname (``Justin (JP) Stearns``):
 
 .. doctest::
 
@@ -636,8 +641,7 @@ behind it is a title:
     ('Prof', 'PhD')
 
 After a family comma (form 2) the end of the name is the end of the
-given name, and the same rules apply there: a title with a period is
-the title, and a bare one is a name word. One kind of word is the
+given name, and the same rules apply there. One kind of word is the
 title there even written bare: a listed salutation such as ``Mrs``,
 the comma having already said where the surname is.
 ``Lexicon.default().words(kind="salutation", after_given=True)`` lists
