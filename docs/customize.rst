@@ -173,10 +173,12 @@ Maximilian): no parse reads it, and :ref:`name matching
 longer names the shipped vocabulary lists for ``max`` (Maximilian,
 Maxwell and others), in a reading of your own that names no file, unlike an
 add of any other kind the word holds, which updates that reading. A
-pair lives on the word whose reading lists the other, as
-``readings_of("max")`` shows: to cut ``Max`` / ``Maximilian``,
-``remove("max", kind="familiar")`` and add back the names to keep,
-``add("max", kind="familiar", short_for=["maxwell"])``. A
+pair is stored on the word whose reading lists the other, as
+``readings_of("max")`` shows, and is removed from either: to cut
+``Max`` / ``Maximilian``, ``remove("max", kind="familiar",
+short_for=["maximilian"])``, either name first, and
+``remove("maximilian", kind="familiar")`` drops every pair naming that
+word, whichever name holds it (:ref:`matching-names` shows both). A
 familiar reading needs at least one name, and none may be the word
 itself.
 ``same_as="..."`` is accepted on a reading of every kind but

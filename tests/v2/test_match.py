@@ -3,6 +3,8 @@ and the grouping keys, with the symmetry and key-guarantee properties
 held over one shared parsed grid (NAMES)."""
 from __future__ import annotations
 
+from typing import Any
+
 import dataclasses
 import functools
 import itertools
@@ -2115,18 +2117,563 @@ def test_a_callers_familiar_form_extends_the_shipped_ones() -> None:
 
 
 def test_a_callers_familiar_form_is_replaced_by_remove_then_add() -> None:
-    # a pair lives on its short side: cutting Max / Maximilian is
-    # removing max's readings and adding back the names to keep; a
-    # reading on Maxie pairing it with Max (added here; none ships) stays
+    # a remove of the word drops every pair naming it, on either side
+    # (#1404), so the pair a reading on Maxie held with Max (added here;
+    # none ships) goes too; the names added after it stand
     cut = Lexicon.default().add(
         "maxie", kind="familiar", short_for=["max"]).remove(
         "max", kind="familiar").add(
         "max", kind="familiar", short_for=["maxim", "maksim"])
-    assert cut._familiar_forms("max") == {"maksim", "maxim", "maxie"}
+    assert cut._familiar_forms("max") == {"maksim", "maxim"}
     matching = Matching(Parser(lexicon=cut),
                         DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
     assert not matching.check("Max Smith", "Maximilian Smith").consistent
+    assert not matching.check("Max Smith", "Maxie Smith").consistent
     assert matching.check("Max Smith", "Maxim Smith").consistent
+
+
+#: Each matching-only kind with its list property, the outcome that
+#: reads it and the lexicon's reader of its pairs: what a remove of
+#: pairs is tested over, one row per kind (#1404).
+_PAIR_KINDS = (
+    ("familiar", "short_for", Outcome.FAMILIAR_FORM, Lexicon._familiar_forms),
+    ("spelling", "spelling_of", Outcome.ALTERNATE_SPELLING,
+     Lexicon._alternate_spellings))
+_pair_kinds = pytest.mark.parametrize("kind, prop, outcome, paired", _PAIR_KINDS)
+_OTHER_PROP = {"short_for": "spelling_of", "spelling_of": "short_for"}
+
+
+def _named(prop: str, *names: object) -> dict[str, Any]:
+    """`prop=[names]` as keywords: the pair property a remove or an add
+    takes, typed loosely, since the property's name is a parameter here."""
+    return {prop: list(names)}
+
+
+def _pairs(kind: str, prop: str) -> Lexicon:
+    """Made-up pairs beside the shipped ones: `zzbo` holds two names,
+    `zzrob` one of the same, and `zzlong` holds `zzsho`, the pair
+    stored on its other word."""
+    return (Lexicon.default()
+            .add("zzbo", kind=kind, **_named(prop, "zzrobert", "zzbobak"))
+            .add("zzrob", kind=kind, **_named(prop, "zzrobert"))
+            .add("zzlong", kind=kind, **_named(prop, "zzsho")))
+
+
+def _own(lexicon: Lexicon, kind: str) -> tuple[str, ...]:
+    """The words holding a reading of `kind` that no shipped word does."""
+    shipped = set(Lexicon.default().words(kind=kind))
+    return tuple(w for w in lexicon.words(kind=kind) if w not in shipped)
+
+
+def _consistent(lexicon: Lexicon, outcome: Outcome, a: str, b: str) -> bool:
+    matching = Matching(Parser(lexicon=lexicon), DEFAULT_ACCEPT | {outcome})
+    result = matching.check(f"{a} Smith", f"{b} Smith")
+    shared = bool(matching.keys(f"{a} Smith") & matching.keys(f"{b} Smith"))
+    # a consistent pair shares a key; a pair this remove cut shares none
+    # (the made-up names share no initial-free key otherwise)
+    assert result.consistent <= shared
+    return result.consistent
+
+
+@_pair_kinds
+@pytest.mark.parametrize("word", ["zzrobert", "ZZRobert."])
+def test_removing_a_word_drops_every_pair_naming_it_on_either_side(
+        kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
+        word: str) -> None:
+    # the pairs are stored on zzbo and zzrob, not on zzrobert: the
+    # remove reaches them all the same, and leaves zzbo's other pair
+    before = _pairs(kind, prop)
+    assert _consistent(before, outcome, "Zzbo", "Zzrobert")
+    after = before.remove(word, kind=kind)
+    assert paired(after, "zzrobert") == frozenset()
+    assert paired(after, "zzbo") == {"zzbobak"}
+    assert paired(after, "zzrob") == frozenset()
+    assert not _consistent(after, outcome, "Zzbo", "Zzrobert")
+    assert not _consistent(after, outcome, "Zzrob", "Zzrobert")
+    assert _consistent(after, outcome, "Zzbo", "Zzbobak")
+    assert _consistent(after, outcome, "Zzlong", "Zzsho")
+    # a reading left listing no name goes with its last one
+    assert _own(after, kind) == ("zzbo", "zzlong")
+    assert [dict(r.properties)[prop] for r in after.readings_of("zzbo")] == [
+        ("zzbobak",)]
+
+
+@_pair_kinds
+def test_removing_the_word_that_holds_its_pairs_drops_them_and_no_other(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    after = _pairs(kind, prop).remove("zzbo", kind=kind)
+    assert paired(after, "zzbo") == frozenset()
+    assert paired(after, "zzrobert") == {"zzrob"}
+    assert not _consistent(after, outcome, "Zzbo", "Zzbobak")
+    assert _consistent(after, outcome, "Zzrob", "Zzrobert")
+
+
+@_pair_kinds
+@pytest.mark.parametrize("word, name", [
+    ("zzbo", "zzrobert"), ("zzrobert", "zzbo"), ("ZZBo.", "Zzrobert")])
+def test_removing_one_pair_takes_either_word_first_and_keeps_the_rest(
+        kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
+        word: str, name: str) -> None:
+    after = _pairs(kind, prop).remove(word, kind=kind, **_named(prop, name))
+    assert paired(after, "zzbo") == {"zzbobak"}
+    assert paired(after, "zzrobert") == {"zzrob"}
+    assert not _consistent(after, outcome, "Zzbo", "Zzrobert")
+    assert _consistent(after, outcome, "Zzbo", "Zzbobak")
+    assert _consistent(after, outcome, "Zzrob", "Zzrobert")
+    assert _consistent(after, outcome, "Zzlong", "Zzsho")
+
+
+@_pair_kinds
+def test_removing_pairs_of_several_words_and_names_drops_each_of_one_with_the_other(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # every pair of a word with a name, and no pair of two words or of
+    # two names: zzbo / zzbobak stays, neither being asked with the other
+    after = _pairs(kind, prop).remove(
+        "zzbo", "zzrob", kind=kind, **_named(prop, "zzrobert", "zzsho"))
+    assert paired(after, "zzrobert") == frozenset()
+    assert paired(after, "zzbo") == {"zzbobak"}
+    assert paired(after, "zzlong") == {"zzsho"}
+
+
+@_pair_kinds
+@pytest.mark.parametrize("stored, written, goes", [
+    # as the match reads a name: accents folded, either way
+    (("zzjózsi", "zzjózsef"), ("zzjozsi", "zzjozsef"), True),
+    (("zzjozsi", "zzjozsef"), ("zzjózsi", "zzjózsef"), True),
+    (("zzjózsi", "zzjózsef"), ("ZZJOZSEF", "zzjózsi"), True),
+    # a keyboard's transcription meets the letter, and the decomposed letter
+    (("zzgünni", "zzgünther"), ("zzguenni", "zzgunther"), True),
+    (("zzgünni", "zzgünther"), ("zzgu\u0308nni", "zzgu\u0308nther"), True),
+    # the plain and the written-out spellings do not meet each other
+    (("zzgunni", "zzgunther"), ("zzguenni", "zzgunther"), False),
+    (("zzgunni", "zzgunther"), ("zzgunni", "zzguenther"), False),
+])
+def test_a_pair_is_removed_by_its_names_as_the_match_reads_them(
+        kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
+        stored: tuple[str, str], written: tuple[str, str], goes: bool) -> None:
+    # the match reads a stored pair for either name's folded forms, so a
+    # remove that compared the stored spelling alone would leave the
+    # pair matching (`álex` / `alejandro` for `Alex`, found by #1404's
+    # several-files test)
+    short, long = stored
+    lexicon = Lexicon.default().add(short, kind=kind, **_named(prop, long)).add(
+        "zzother", kind=kind, **_named(prop, long))
+    assert _consistent(lexicon, outcome, written[0], written[1]) is goes
+    one = lexicon.remove(written[0], kind=kind, **_named(prop, written[1]))
+    assert (short not in paired(one, long)) is goes
+    assert _consistent(one, outcome, short, long) is not goes
+    assert not _consistent(one, outcome, written[0], written[1])
+    assert paired(one, "zzother") == {long}
+    if goes:
+        # and by either name alone, every pair naming it
+        for word in written:
+            whole = lexicon.remove(word, kind=kind)
+            assert short not in paired(whole, long)
+            assert not _consistent(whole, outcome, short, long)
+
+
+@_pair_kinds
+def test_a_pair_each_word_holds_goes_from_both(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    both = (Lexicon.default().add("zzq", kind=kind, **_named(prop, "zzr", "zzs"))
+            .add("zzr", kind=kind, **_named(prop, "zzq")))
+    assert _own(both, kind) == ("zzq", "zzr")
+    for after in (both.remove("zzq", kind=kind, **_named(prop, "zzr")),
+                  both.remove("zzr", kind=kind, **_named(prop, "zzq"))):
+        assert paired(after, "zzr") == frozenset()
+        assert paired(after, "zzq") == {"zzs"}
+        assert _own(after, kind) == ("zzq",)
+        assert not _consistent(after, outcome, "Zzq", "Zzr")
+    gone = both.remove("zzr", kind=kind)
+    assert paired(gone, "zzq") == {"zzs"}
+    assert _own(gone, kind) == ("zzq",)
+
+
+@_pair_kinds
+def test_a_remove_of_pairs_applies_in_the_order_written(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # a pair the caller added before the remove goes, one added after
+    # it stands, for the word and for the one pair alike
+    add = _named(prop, "zzrobert")
+    remove: dict[str, Any]
+    for remove in ({}, _named(prop, "zzbo")):
+        before = _pairs(kind, prop).add("zznew", kind=kind, **add).remove(
+            "zzrobert", kind=kind, **remove)
+        assert paired(before, "zzrobert") == (
+            frozenset() if not remove else {"zzrob", "zznew"})
+        after = before.add("zzbo", kind=kind, **add)
+        assert "zzbo" in paired(after, "zzrobert")
+        assert _consistent(after, outcome, "Zzbo", "Zzrobert")
+
+
+@_pair_kinds
+def test_a_long_log_of_pair_removes_reads_as_each_remove_alone(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # one build keeps an index of the words that may hold a pair, made
+    # at its first remove of pairs (the code review of #1404: a loop of
+    # removes scanned the pool once per edit). A pair added after that
+    # remove, one whose reading an earlier remove emptied, and one cut
+    # twice are each still found, so the log reads as its edits in order
+    log = (_pairs(kind, prop)
+           .remove("zznone", kind=kind)
+           .add("zznew", kind=kind, **_named(prop, "zzrobert", "zzlate"))
+           .remove("zzrob", kind=kind)
+           .add("zzrob", kind=kind, **_named(prop, "zzlate"))
+           .remove("zzlate", kind=kind, **_named(prop, "zznew"))
+           .remove("zzbo", kind=kind, **_named(prop, "zzrobert"))
+           .remove("zzbo", kind=kind, **_named(prop, "zzrobert")))
+    assert paired(log, "zzrobert") == {"zznew"}
+    assert paired(log, "zzlate") == {"zzrob"}
+    assert paired(log, "zzbo") == {"zzbobak"}
+    assert _own(log, kind) == ("zzbo", "zzlong", "zznew", "zzrob")
+    # and a whole-kind remove between two removes of pairs
+    emptied = log.remove(kind=kind, every=True).add(
+        "zzbo", kind=kind, **_named(prop, "zzrobert")).remove(
+        "zzrobert", kind=kind)
+    assert emptied.words(kind=kind) == ()
+
+
+@_pair_kinds
+def test_removing_an_absent_pair_or_word_is_silent_and_changes_no_pair(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # an inert configuration is not an error (#1404): the edit is kept
+    # in the log and no pair moves, a word paired with itself included
+    before = _pairs(kind, prop)
+    for after in (before.remove("zznone", kind=kind),
+                  before.remove("zzbo", kind=kind, **_named(prop, "zzsho")),
+                  before.remove("zzbo", kind=kind, **_named(prop, "zzbo")),
+                  before.remove("zznone", kind=kind, **_named(prop, "zzabsent"))):
+        assert after != before and len(after._edits) == len(before._edits) + 1
+        assert after._pool() == before._pool()
+        assert all(paired(after, w) == paired(before, w)
+                   for w in ("zzbo", "zzrob", "zzrobert", "zzlong", "zzsho"))
+
+
+@_pair_kinds
+def test_a_remove_of_one_kinds_pairs_leaves_the_other_kinds_and_the_parse(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # the word's readings of every other kind stay: the other matching
+    # kind's pair of the same two words, and a title reading a parse reads
+    other, other_prop, _, other_paired = next(
+        row for row in _PAIR_KINDS if row[0] != kind)
+    lexicon = (_pairs(kind, prop)
+               .add("zzbo", kind=other, **_named(other_prop, "zzrobert"))
+               .add("zzrobert", kind="title"))
+    for after in (lexicon.remove("zzrobert", kind=kind),
+                  lexicon.remove("zzrobert", kind=kind, **_named(prop, "zzbo"))):
+        assert other_paired(after, "zzrobert") == {"zzbo"}
+        assert [r.kind for r in after.readings_of("zzrobert")] == ["title"]
+        assert Parser(lexicon=after).parse("Zzrobert Jane Smith").title == "Zzrobert"
+
+
+@_pair_kinds
+def test_a_removed_words_readings_of_other_kinds_stay(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # the word removed holds the pair itself, beside a title reading
+    # and the other matching kind's pair: only its readings of the kind go
+    other, other_prop, _, other_paired = next(
+        row for row in _PAIR_KINDS if row[0] != kind)
+    lexicon = (_pairs(kind, prop).add("zzbo", kind="title")
+               .add("zzbo", kind=other, **_named(other_prop, "zzx")))
+    after = lexicon.remove("zzbo", kind=kind)
+    assert sorted(r.kind for r in after.readings_of("zzbo")) == sorted(
+        ["title", other])
+    assert other_paired(after, "zzbo") == {"zzx"}
+    assert paired(after, "zzbo") == frozenset()
+    assert Parser(lexicon=after).parse("Zzbo Jane Smith").title == "Zzbo"
+    # a phrase is no word of any pair: silent, as an absent word is
+    assert lexicon.remove("zz bo", kind=kind)._pool() == lexicon._pool()
+
+
+@_pair_kinds
+def test_a_cut_reading_keeps_its_file_its_other_properties_and_whether_it_is_on(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # no shipped familiar or spelling reading is written `default =
+    # false` (2026-11-15), so the pool is planted: a file's reading
+    # written off is cut as one on is, and stays off, in its file
+    from nameparser import _lexicon, _reading_index as ri
+    from types import MappingProxyType
+    off = ri.IndexReading("zzq", "xx", kind, MappingProxyType(
+        {prop: ("zzr", "zzs"), "default": False}))
+    on = ri.IndexReading("zzq", "yy", kind, MappingProxyType({prop: ("zzr",)}))
+    for edit, left in ((("zzr",), ("zzs",)), (("zzq",), None)):
+        pool: dict[str, tuple[Any, ...]] = {"zzq": (off, on)}
+        touched = _lexicon._drop_pairs(pool, _lexicon._make_edit(
+            "remove", edit, kind, ()), {})
+        assert touched == ("zzq",)
+        if left is None:
+            assert pool == {}
+            continue
+        (kept,) = pool["zzq"]
+        assert (kept.tag, kept.kind, dict(kept.props)) == (
+            "xx", kind, {prop: left, "default": False})
+        assert not kept.on_by_default
+
+
+def test_a_clash_message_names_a_remove_of_pairs_as_its_call_bounded() -> None:
+    # the words a remove of pairs touched are what a clash under a
+    # choice names its edits by, and the call is rendered with its list
+    # bounded: `st` is a generation under cs, which the caller's
+    # credential clashes with
+    names = [f"zzn{i}" for i in range(12)]
+    lexicon = (Lexicon.default()
+               .add("st", kind="familiar", short_for=["zzlong", *names])
+               .remove("st", kind="familiar", short_for=names)
+               .add("st", kind="credential"))
+    with pytest.raises(ValueError, match=re.escape(
+            ".remove('st', kind='familiar', short_for=['zzn0', ")) as raised:
+        parser_for(locales.CS, base=Parser(lexicon=lexicon))
+    assert "... 6 more]" in str(raised.value)
+    assert "zzn9" not in str(raised.value)
+
+
+def _shipped_pair_in_several_files(kind: str, prop: str) -> tuple[str, str]:
+    """A shipped word and a name that two or more of its readings of
+    `kind`, from different files, both list."""
+    default = Lexicon.default()
+    for word in default.words(kind=kind):
+        lists = [dict(r.properties)[prop] for r in default.readings_of(word)
+                 if r.kind == kind]
+        for name in sorted(set().union(*lists)):
+            if sum(name in names for names in lists) > 1:
+                return word, name
+    raise AssertionError(f"no shipped {kind} pair is listed by two files")
+
+
+@pytest.mark.parametrize("either", [False, True])
+def test_a_pair_several_files_list_goes_from_each_and_the_rest_stay(
+        either: bool) -> None:
+    # `alex` holds a familiar reading in five files (2026-11-15), two
+    # of them listing one name: the pair goes from both, each reading
+    # keeps its file, and every other name of the word stands
+    word, name = _shipped_pair_in_several_files("familiar", "short_for")
+    default = Lexicon.default()
+    before = [r for r in default.readings_of(word) if r.kind == "familiar"]
+    first, second = (name, word) if either else (word, name)
+    cut = default.remove(first, kind="familiar", short_for=[second])
+    after = [r for r in cut.readings_of(word) if r.kind == "familiar"]
+    assert cut._familiar_forms(word) == default._familiar_forms(word) - {name}
+    assert word not in cut._familiar_forms(name)
+    assert all(name not in dict(r.properties)["short_for"] for r in after)
+    files = {tag for r in before for tag in r.languages
+             if dict(r.properties)["short_for"] != (name,)}
+    assert {tag for r in after for tag in r.languages} == files
+    matching = Matching(Parser(lexicon=cut),
+                        DEFAULT_ACCEPT | {Outcome.FAMILIAR_FORM})
+    assert not matching.check(f"{word} Smith", f"{name} Smith").consistent
+    for kept in sorted(default._familiar_forms(word) - {name})[:3]:
+        assert matching.check(f"{word} Smith", f"{kept} Smith").consistent
+    # the whole word, from its other side: every file's pair with it
+    gone = default.remove(name, kind="familiar")
+    assert gone._familiar_forms(name) == frozenset()
+    assert gone._familiar_forms(word) == default._familiar_forms(word) - {name}
+
+
+@_pair_kinds
+def test_a_shipped_pair_goes_from_the_word_that_does_not_hold_it(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # #1404's report: the pair is stored on one word, and removing it
+    # from the other changed nothing. Any shipped pair, read off the
+    # lexicon: its long side holds no reading of the kind naming the short
+    default = Lexicon.default()
+    short, long = next(
+        (w, n) for w in default.words(kind=kind)
+        for r in default.readings_of(w) if r.kind == kind
+        for n in dict(r.properties)[prop]
+        if not any(x.kind == kind and w in dict(x.properties)[prop]
+                   for x in default.readings_of(n)))
+    assert _consistent(default, outcome, short, long)
+    for after in (default.remove(long, kind=kind),
+                  default.remove(long, kind=kind, **_named(prop, short)),
+                  default.remove(short, kind=kind, **_named(prop, long))):
+        assert short not in paired(after, long)
+        assert long not in paired(after, short)
+        assert not _consistent(after, outcome, short, long)
+        # bounded, naming no word (the repr's rule)
+        assert short not in repr(after) and len(repr(after)) < 80
+
+
+@_pair_kinds
+@pytest.mark.parametrize("strict", [False, True])
+def test_a_remove_of_pairs_holds_under_a_choice_of_languages(
+        kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
+        strict: bool) -> None:
+    # the choice filters the shipped readings and the log applies after
+    # it, whichever was made first: a pair the choice keeps goes, from
+    # either word, and the choice's other pairs stand
+    chosen = parser_for(locales.PT, strict=strict).lexicon
+    short, long = next(
+        (w, n) for w in chosen.words(kind=kind)
+        for r in chosen.readings_of(w) if r.kind == kind
+        for n in dict(r.properties)[prop])
+    assert _consistent(chosen, outcome, short, long)
+    # a pair of two other words, which every remove below leaves alone
+    other = next(
+        (w, n) for w in chosen.words(kind=kind)
+        for r in chosen.readings_of(w) if r.kind == kind
+        for n in dict(r.properties)[prop]
+        if not {w, n} & ({short, long} | paired(chosen, long)
+                         | paired(chosen, short)))
+    remove: dict[str, Any]
+    for remove in ({}, _named(prop, short)):
+        after = chosen.remove(long, kind=kind, **remove)
+        first = parser_for(locales.PT, strict=strict, base=Parser(
+            lexicon=Lexicon.default().remove(long, kind=kind, **remove))).lexicon
+        assert after == first
+        assert (after.languages, after.strict) == (chosen.languages, strict)
+        assert short not in paired(after, long)
+        assert not _consistent(after, outcome, short, long)
+        assert _consistent(after, outcome, *other)
+        assert paired(after, other[0]) == paired(chosen, other[0])
+
+
+def test_a_remove_of_pairs_written_on_the_default_holds_under_a_strict_choice() -> None:
+    # under a strict choice only the chosen files' pairs are read; a
+    # remove written on the default still cuts them once chosen, and a
+    # pair no chosen file lists is absent either way
+    default = Lexicon.default()
+    strict = parser_for(locales.PT, strict=True).lexicon
+    word, name = _shipped_pair_in_several_files("familiar", "short_for")
+    assert strict._familiar_forms(word) < default._familiar_forms(word)
+    kept = sorted(strict._familiar_forms(word))[0]
+    cut = default.remove(word, kind="familiar", short_for=[kept])
+    rechosen = parser_for(locales.PT, strict=True,
+                          base=Parser(lexicon=cut)).lexicon
+    assert rechosen._familiar_forms(word) == strict._familiar_forms(word) - {kept}
+
+
+@_pair_kinds
+def test_a_remove_of_pairs_pickles_and_is_logged_in_canonical_form(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    base = _pairs(kind, prop)
+    whole = base.remove("ZZRobert.", kind=kind)
+    one = base.remove("ZZBo", "zzrob", kind=kind,
+                      **_named(prop, "Zzsho.", "zzrobert", "zzrobert"))
+    assert whole._edits[-1] == ("remove", ("zzrobert",), kind, ())
+    assert one._edits[-1] == ("remove", ("zzbo", "zzrob"), kind,
+                              ((prop, ("zzrobert", "zzsho")),))
+    for lexicon in (whole, one, Lexicon.default().remove(
+            "zzbo", kind=kind, **_named(prop, "zzrobert"))):
+        loaded = pickle.loads(pickle.dumps(lexicon))
+        assert loaded == lexicon and loaded._edits == lexicon._edits
+        assert loaded._pool() == lexicon._pool()
+        parser = pickle.loads(pickle.dumps(Parser(lexicon=lexicon)))
+        assert parser.lexicon == lexicon
+        # the log rebuilt as the constructor takes it, and as `|` joins it
+        assert dataclasses.replace(lexicon, _edits=lexicon._edits) == lexicon
+    assert (base | Lexicon.empty().remove("zzrobert", kind=kind)) == whole
+    # an edit remove() would not have written is refused, as an add's is
+    for bad in ((prop, ("Zzrobert",)), (prop, ("zzsho", "zzrobert")),
+                (prop, ()), (prop, "zzrobert"), ("same_as", "zzrobert")):
+        with pytest.raises((TypeError, ValueError)):
+            edits: Any = (("remove", ("zzbo",), kind, (bad,)),)
+            dataclasses.replace(base, _edits=base._edits + edits)
+    with pytest.raises((TypeError, ValueError)):
+        wordless: Any = (("remove", (), kind, ((prop, ("zzrobert",)),)),)
+        dataclasses.replace(base, _edits=base._edits + wordless)
+
+
+@_pair_kinds
+def test_a_whole_kind_remove_still_takes_every_pair(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    after = _pairs(kind, prop).remove(kind=kind, every=True)
+    assert after.words(kind=kind) == ()
+    assert paired(after, "zzbo") == frozenset()
+
+
+def test_a_remove_of_every_reading_of_a_word_keeps_the_pairs_other_words_hold() -> None:
+    # with no kind the word's own readings go, its familiar and
+    # spelling ones among them; a pair another word holds with it is
+    # that word's reading, and takes a remove of the kind (#1404)
+    lexicon = _pairs("familiar", "short_for").add("zzbo", kind="title")
+    after = lexicon.remove("zzbo").remove("zzrobert")
+    assert after.readings_of("zzbo") == ()
+    assert after._familiar_forms("zzrobert") == {"zzrob"}
+
+
+@_pair_kinds
+@pytest.mark.parametrize("call, error, match", [
+    # a bare string is not a list of names, as on add
+    (lambda L, k, p: L.remove("max", kind=k, **{p: "maxwell"}), TypeError,
+     "{prop} must be an iterable of given names, e.g. {prop}="),
+    (lambda L, k, p: L.remove("max", kind=k, **{p: [1]}), TypeError,
+     "{prop} entries must be strings"),
+    (lambda L, k, p: L.remove("max", kind=k, **{p: []}), ValueError,
+     "non-empty list of given names"),
+    (lambda L, k, p: L.remove("max", kind=k, **{p: None}), ValueError,
+     "leave {prop} out to drop every pair naming the word"),
+    (lambda L, k, p: L.remove("max", kind=k, **{p: ["zz r"]}), ValueError,
+     "single given names"),
+    # the pair's property with no kind, another kind or a category
+    (lambda L, k, p: L.remove("max", **{p: ["maxwell"]}), ValueError,
+     "{prop} names the pairs of a {kind} reading"),
+    (lambda L, k, p: L.remove("max", kind="title", **{p: ["maxwell"]}),
+     ValueError, "{prop} names the pairs of a {kind} reading"),
+    (lambda L, k, p: L.remove("max", kind="name", **{p: ["maxwell"]}),
+     ValueError, "{prop} names the pairs of a {kind} reading"),
+    # a whole-kind remove names no pair
+    (lambda L, k, p: L.remove(kind=k, every=True, **{p: ["maxwell"]}), TypeError,
+     "takes no {prop}"),
+    # the other matching kind's property, alone and beside this one's
+    (lambda L, k, p: L.remove("max", kind=k, **{_OTHER_PROP[p]: ["maxwell"]}),
+     ValueError, "names the pairs of a {other} reading"),
+    (lambda L, k, p: L.remove("max", kind=k, **{
+        p: ["maxwell"], _OTHER_PROP[p]: ["maxwell"]}),
+     ValueError, "names the pairs of a {other} reading"),
+    # a property no remove takes, with the kind or without
+    (lambda L, k, p: L.remove("max", kind=k, same_as="maxwell"), TypeError,
+     "unexpected keyword argument 'same_as'"),
+    (lambda L, k, p: L.remove("max", kind=k, default=False), TypeError,
+     "unexpected keyword argument 'default'"),
+])
+def test_a_remove_of_pairs_refuses_a_wrong_argument_with_code_that_runs(
+        kind: str, prop: str, outcome: Outcome, paired: Callable[..., frozenset[str]],
+        call: Callable[[Any, str, str], object], error: type[Exception],
+        match: str) -> None:
+    # the guard and the hint for the whole family (AGENTS.md), and the
+    # code each message offers runs as pasted and cuts a shipped pair
+    other = next(row[0] for row in _PAIR_KINDS if row[0] != kind)
+    with pytest.raises(error, match=match.format(
+            kind=kind, prop=prop, other=other)) as raised:
+        call(Lexicon.default(), kind, prop)
+    offered = re.findall(r"remove\('\w+', kind='\w+', \w+=\['\w+'\]\)",
+                         str(raised.value))
+    if "must be an iterable" in match or "entries must" in match or (
+            "single given" in match or "non-empty list of given names" == match):
+        return
+    assert offered
+    for code in offered:
+        default = Lexicon.default()
+        pasted = eval(f"lexicon.{code}", {"lexicon": default})  # noqa: S307
+        assert isinstance(pasted, Lexicon) and pasted._pool() != default._pool()
+
+
+def test_a_property_of_another_kind_on_remove_names_the_pair_form() -> None:
+    with pytest.raises(TypeError, match="unexpected keyword argument "
+                       "'addresses'.*pairs to drop") as raised:
+        Lexicon.default().remove("dean", kind="title", addresses="given")
+    for kind in ("familiar", "spelling"):
+        assert f"kind='{kind}'" in str(raised.value)
+    # a reading's property is taken off by an add, which the message says
+    assert "add(word, kind=..., addresses=None)" in str(raised.value)
+    assert Lexicon.default().add("sir", kind="title", addresses=None) != (
+        Lexicon.default())
+    # a keyword that is no property of any reading gets no such hint
+    with pytest.raises(TypeError, match="'zq'") as unknown:
+        Lexicon.default().remove("dean", kind="title", zq=1)
+    assert "add(" not in str(unknown.value)
 
 
 #: Each matching-only kind, its list property and the word it is added

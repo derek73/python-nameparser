@@ -394,8 +394,7 @@ while the title reading stands. It is a selection and has gaps, among
 them common English pairs researchers rarely publish under (``Kathy`` /
 ``Catherine``, ``Lisa`` / ``Melissa``, ``Jeff`` / ``Geoffrey``) and
 ``Sepp`` / ``Josef``; add your own with a ``familiar`` reading, which
-extends the names the word's shipped readings list (to replace them,
-``remove(word, kind="familiar")`` first):
+extends the names the word's shipped readings list:
 
 .. doctest::
 
@@ -403,6 +402,43 @@ extends the names the word's shipped readings list (to replace them,
     >>> mine = Parser(lexicon=kathy).matching(accept=matcher.accept | {"familiar-form"})
     >>> mine.check("Kathy Smith", "Catherine Smith").consistent, mine.check("Kathy Smith", "Katherine Smith").consistent
     (True, True)
+
+To drop a pair you do not want, name it in a ``remove``. A pair is
+stored on one of its two names and read both ways, so either name may
+come first, and the other pairs of both names stay:
+
+.. doctest::
+
+    >>> no_alexis = Lexicon.default().remove("alex", kind="familiar", short_for=["alexis"])
+    >>> cut_pair = Parser(lexicon=no_alexis).matching(accept=matcher.accept | {"familiar-form"})
+    >>> with_familiar.check("Alex Smith", "Alexis Smith").consistent, cut_pair.check("Alex Smith", "Alexis Smith").consistent
+    (True, False)
+    >>> cut_pair.check("Alex Smith", "Alexander Smith").consistent
+    True
+    >>> alexis_first = Lexicon.default().remove("alexis", kind="familiar", short_for=["alex"])
+    >>> Parser(lexicon=alexis_first).matching(accept=matcher.accept | {"familiar-form"}).check("Alex Smith", "Alexis Smith").consistent
+    False
+
+With no ``short_for``, ``remove(word, kind="familiar")`` drops every
+pair naming the word, whichever name holds it: removing ``robert`` cuts
+``Bob``, ``Rob`` and ``Robbie`` from ``Robert``, and each of those names
+keeps its pairs with other names.
+
+.. doctest::
+
+    >>> no_robert = Lexicon.default().remove("robert", kind="familiar")
+    >>> cut_word = Parser(lexicon=no_robert).matching(accept=matcher.accept | {"familiar-form"})
+    >>> with_familiar.check("Bob Smith", "Robert Smith").consistent, cut_word.check("Bob Smith", "Robert Smith").consistent
+    (True, False)
+
+A name is compared as matching reads it, with case and accents folded,
+so removing ``alex`` / ``alejandro`` also drops the pair the vocabulary
+stores as ``Álex`` / ``Alejandro``. Edits apply in the order written: a
+``remove`` drops a pair you added before it, and a pair added after it
+stands, which is how to replace a word's names (``remove(word,
+kind="familiar")``, then ``add``). An alternate spelling is removed the
+same way, ``remove("sarah", kind="spelling", spelling_of=["sara"])`` or
+``remove("sara", kind="spelling")``.
 
 ``alternate-spelling`` reads two given names as one name spelled two
 ways, by the person or by a romanization: ``Yuliya`` / ``Iuliia``,
