@@ -494,26 +494,16 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # title 'Prince of Wales', family 'Jr', not given 'Prince of Wales'
     # with no title at all.
     #
-    # Two residuals. A run whose last word IS suffix vocabulary is not
-    # given back, so 'Dr Pope RA PhD' still reads title 'Dr Pope RA',
-    # family 'PhD'. And the floor asks is_suffix_piece, which vetoes a
-    # bare initial-shaped numeral, so 'Dr Pope V' keeps the whole run
-    # as the title and reads the numeral as the name -- given 'V',
-    # 'pope' being a given-name title and the run's last word, where
-    # 'Dr Smith V' reads family 'V' (a title being no word to spare
-    # for a one-letter numeral, #718). That numeral fork is outside
-    # this floor (decisions/H3).
+    # The residuals the floor does not reach (a run ending in suffix
+    # vocabulary, a bare numeral behind the run) are decisions/H3's.
     #
     # The two inline tag reads are the cheapest NECESSARY condition for
     # the piece behind the run to be a suffix piece at all --
     # is_suffix_piece cannot answer yes without one of them -- so the
     # ordinary titled name, whose next piece is no kind of suffix,
-    # leaves this branch without entering a frame. Measured on the
-    # plan's ordering rather than the shape below: asking the
-    # authoritative predicate first cost 8 calls per parse of the
-    # reference name (leading_titles runs four times), against a band
-    # with room for two (decisions/parse-cost). is_suffix_piece
-    # stays the predicate that ANSWERS, here and in the walk.
+    # leaves this branch without entering a frame (decisions/H3,
+    # decisions/parse-cost). is_suffix_piece stays the predicate that
+    # ANSWERS, here and in the walk.
     if (n and n < len(pieces)
             and ("suffix" in ptags[n]
                  or "vocab:suffix" in tokens[pieces[n][0]].tags)
@@ -2449,9 +2439,7 @@ def _chain_units(pieces: Sequence[Sequence[int]],
             # word behind it inside the chain's run is one the chain
             # took because S8 starts no run there or declines one, so
             # the peel cannot reach it and it is no word of its own
-            # (rules/P2, #1177's
-            # review: 'Freiherr von Md Berg V' as 'Freiherr von Abdul
-            # Berg V')
+            # (rules/P2, decisions/P2 (#1177))
             while (q < j and "split" not in ptags[q]
                    and (not _weighed(pieces[q], tokens)
                         or q + 1 < j

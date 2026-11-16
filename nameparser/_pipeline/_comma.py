@@ -22,6 +22,9 @@ _vocab.is_wholly_suffix; every Lexicon wordlist through
 _vocab.caps_shape_candidate (to know an all-caps word is unlisted) and
 _vocab.claimed_as_non_name (the name's contrast); Lexicon
 .maiden_markers through _pieces.own_words, for the name's contrast;
+Lexicon.generation_words, Lexicon.suffix_words_ambiguous and
+Lexicon.suffix_acronyms_ambiguous, for a chunk of a joined word beside
+a pair of capitals (rules/C5);
 Lexicon.capitalization_exceptions, a credential's case mask, for rules/C13's
 given-name Except; Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters,
 Policy.unlisted_caps_suffixes and Policy.unlisted_dotted_suffixes.
@@ -558,12 +561,18 @@ def _run_read_as_initials(state: ParseState, i: int) -> ParseState:
     token = tokens[i]
     tokens[i] = copy_with(token, tags=token.tags | {"initial"})
     return copy_with(state, tokens=tuple(tokens), ambiguities=(
-        *state.ambiguities,
-        PendingAmbiguity(
-            AmbiguityKind.SUFFIX_OR_NAME,
-            f"{token.text!r} after the comma also spells a credential; "
-            f"read as ", (i,), field_tail="",
-            alternative=suffix_reading(token))))
+        *state.ambiguities, _credential_fork(token, i)))
+
+
+def _credential_fork(token: WorkToken, i: int) -> PendingAmbiguity:
+    """The report of the word at `i` after the comma read as a name
+    where the other branch is the credential it spells (rules/C13,
+    rules/C16)."""
+    return PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{token.text!r} after the comma also spells a credential; "
+        f"read as ", (i,), field_tail="",
+        alternative=suffix_reading(token))
 
 
 def _given_name_written_short(part: Sequence[int],
@@ -588,7 +597,7 @@ def _given_name_written_short(part: Sequence[int],
     if k + 1 == len(part):
         # alone: a title in front leaves the given part's walk nothing
         # but the title to read as the name, so the part stays the
-        # postnominal one there (#1395's second review)
+        # postnominal one there (decisions/C13 (#1395))
         if k or one_case or not any(map(str.islower, token.text)):
             return None
         bare = token.text.replace(".", "")
@@ -680,16 +689,15 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # it is taken, as a word of the ambiguous class reports it (C4)
     for i in part:
         if GIVEN_ABBREVIATION_TAG in tokens[i].tags:
-            at = _given_name_written_short(part, tokens, state.one_case, lex)
-            if at is not None and not _whole_name(seg0, tokens, state.one_case):
-                token = tokens[at]
-                return copy_with(state, ambiguities=(
-                    *state.ambiguities,
-                    PendingAmbiguity(
-                        AmbiguityKind.SUFFIX_OR_NAME,
-                        f"{token.text!r} after the comma also spells a "
-                        f"credential; read as ", (at,), field_tail="",
-                        alternative=suffix_reading(token))))
+            short = _given_name_written_short(part, tokens, state.one_case,
+                                              lex)
+            if short is not None:
+                if whole is None:
+                    whole = _whole_name(seg0, tokens, state.one_case)
+                if not whole:
+                    return copy_with(state, ambiguities=(
+                        *state.ambiguities,
+                        _credential_fork(tokens[short], short)))
             break
     if pol.unlisted_dotted_suffixes:
         # rules/S3: "Paired initials are the exception [...] where S4
@@ -758,8 +766,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # where the part holds a full stop, so 'Smith, John' pays no frame;
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
-    runs: set[int] = set()
-    at = -1
+    initials_at: int | None = None
     for at, p in enumerate(p1):
         if len(p) == 1 and "." in (text := texts[p[0]]):
             tags = tokens[p[0]].tags
@@ -777,11 +784,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 # the first run is the one asked about; another run
                 # beside it is company like any credential ('Anderson,
                 # M.T. B.A.')
-                runs.add(p[0])
+                initials_at = p[0]
                 break
     contrast_box: list[bool] = []
-    if runs:
-        first = p1[at][0]
+    if initials_at is not None:
         # titles in front of the run are the given part's (C16);
         # behind it a credential is company: a title/suffix dual only in
         # capitals ('Smith, M.D. MS', but 'Smith, J.P. Ms.'), never a
@@ -793,9 +799,9 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 and not (len(p) == 1 and texts[p[0]] in cores)]
         if rest and all(_company(state, seg0, p, pt, texts, contrast_box)
                         for p, pt in rest):
-            runs.clear()
-        elif first not in maybe:
-            maybe.append(first)
+            initials_at = None
+        elif initials_at not in maybe:
+            maybe.append(initials_at)
     # rules/C8: "a part that is nothing but suffix words is the
     # credential run and reads as suffixes, whole" -- the reading below.
     # The part is read ONCE: here where it holds no word of the class,
@@ -864,6 +870,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                     and caps_shape_candidate(text, lex, pol, one_case=False)):
                 if contrast is None:
                     contrast = _name_contrast(state, seg0)
+                    # the box the helpers below read, empty until now
+                    contrast_box.append(contrast)
                 # a two-capital word is how initials are written: the
                 # paired-initials rule below discards one nothing speaks
                 # for, a lone one included ('John Smith, XY')
@@ -950,16 +958,20 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                             and len(state.segments) > 2
                             and _listed_credentials_behind(
                                 state, seg0, cores, inner, contrast_box)
-                            and _capitals_in_contrast(state, seg0, text,
-                                                      contrast))):
+                            and _capitals_in_contrast(
+                                state, seg0, text,
+                                contrast_box[0] if contrast_box
+                                else contrast))):
                     licensed.discard(i)
                     caps.discard(i)
     if maybe:
-        lone = bool(runs) and names < 2 and _lone_word(state, seg0)
+        lone = (initials_at is not None and names < 2
+                and _lone_word(state, seg0))
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
             anchored, absorbed, licensed, head_named=names >= 2,
-            runs=runs if lone else ())
+            runs=(initials_at,) if lone and initials_at is not None
+            else ())
         if reading is None and lone:
             # rules/C16: "behind one word, initials run together are the
             # given name whatever they spell" -- the run the reading
@@ -970,7 +982,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             # its unlisted twin 'Smith, X.Q.;' is
             k = next((j for j, p in enumerate(p1)
                       if not is_title_piece(p, pt1[j], tokens)), -1)
-            if k >= 0 and p1[k][0] in runs:
+            if k >= 0 and p1[k][0] == initials_at:
                 return _run_read_as_initials(state, p1[k][0])
     if not listing:
         if whole is None:

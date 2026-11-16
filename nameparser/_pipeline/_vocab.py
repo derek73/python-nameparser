@@ -54,9 +54,9 @@ import unicodedata
 from collections.abc import Callable, Iterable, Sequence, Set
 from typing import Literal
 
-from nameparser._lexicon import _HYPHEN_CHARS  # rules/O6's hyphens, one definition
 from nameparser._lexicon import (
-    FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize, _spells_an_initial,
+    FULL_STOPS, Lexicon, _HYPHEN_CHARS, _VOCAB_FIELDS, _normalize,
+    _spells_an_initial,
 )
 from nameparser._policy import (
     CapsSuffixes, Policy, Script, _CASELESS_LETTERS, _EAST_ASIAN_SCRIPTS,
@@ -125,15 +125,17 @@ _EAST_ASIAN_MATCHERS = tuple((script, _SCRIPT_MATCHERS[script])
 _CYRILLIC_LETTERS = frozenset(chr(c) for lo, hi in _SCRIPT_RANGES[Script.CYRILLIC]
                               for c in range(lo, hi + 1))
 
-#: The joiners a Cyrillic name word is written with inside it, hyphens
-#: and the apostrophes Ukrainian and Belarusian write (`Оюун-Эрдэнэ`,
-#: `Мар'яна`), deleted from the classified copy of a word that neither
-#: opens nor ends with one,
-#: so a hyphenated Cyrillic word keys a declared Cyrillic order as a
-#: plain one does (#1237); the shared table stays letters only, since
-#: the East Asian readers of it never see these.
-_CYRILLIC_JOINERS = "-\u2010\u2011'\u2019\u02bc"
-_DROP_CYRILLIC_JOINERS = str.maketrans("", "", _CYRILLIC_JOINERS)
+#: The joiners a name word is written with inside it: hyphens and the
+#: apostrophes a surname writes (`O'BRIEN`, `ALLIOT-MARIE`) and
+#: Ukrainian and Belarusian write (`Оюун-Эрдэнэ`, `Мар'яна`). Read by
+#: rules/O9's capitals word (`is_capitals_word`) and by the Cyrillic
+#: order key, which deletes them from the classified copy of a word that
+#: neither opens nor ends with one, so a hyphenated Cyrillic word keys a
+#: declared Cyrillic order as a plain one does (#1237); the shared table
+#: stays letters only, since the East Asian readers of it never see
+#: these.
+_NAME_JOINERS = "-\u2010\u2011'\u2019\u02bc"
+_DROP_NAME_JOINERS = str.maketrans("", "", _NAME_JOINERS)
 
 # The whole-token matcher over _policy's _JA_SCRIPTS union, backing
 # effective_script's kana license.
@@ -265,7 +267,8 @@ _SPELLED_INITIAL = _ranges_pattern(_SPELLED_INITIAL_RANGES)
 _DIGRAPH_INITIALS = frozenset({"yu", "ya", "ye", "yo", "zh", "kh",
                                "shch", "dzh"})
 
-#: The hyphens and the dashes that join two family names in one written
+#: `_lexicon._HYPHEN_CHARS`, defined once there, matched as a class:
+#: the hyphens and the dashes that join two family names in one written
 #: word (rules/O6), and the parts of an abbreviation written hyphenated
 #: (rules/H5, 'Dipl.‐Ing.' as a word processor writes it): hyphen-minus,
 #: hyphen, non-breaking hyphen, figure dash, en dash, minus sign (a word
@@ -996,6 +999,18 @@ def _reads_alone(chunk: str, lexicon: Lexicon) -> bool:
     return is_title_chunk(chunk, lexicon)
 
 
+def _claimed_after_the_stop(w: str, lexicon: Lexicon) -> bool:
+    """Whether the folded word W after a glued full stop is an
+    unambiguous title or suffix word, and so no name (rules/T8): the
+    one test `glued_cuts` and `glued_saint_cut` ask of it."""
+    sets = lexicon._sets
+    return w in sets.titles or (
+        w in sets.suffix_acronyms
+        and w not in sets.suffix_acronyms_ambiguous) or (
+        (w in sets.suffix_words or w in sets.credential_words)
+        and w not in sets.suffix_words_ambiguous)
+
+
 def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     """Where a word glued to the next at a full stop divides (T8,
     #1230, #1235): the offset after each stop at which a chunk the
@@ -1012,6 +1027,10 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
     ('Dr.med', 'G.ppe'), at one closed by its own stop or followed by
     another chunk ('Dr.Med.', 'J.Smith.', 'Dr.John.Smith'), and at an
     unambiguous title or credential after the stop ('Dr.MD')."""
+    # a run of single letters alone is the walk's first answer below,
+    # `titled` being false there ('J.R.R.'), asked before the fold's frame
+    if _LETTER_RUN.fullmatch(text):
+        return ()
     sets = lexicon._sets
     n = _normalize(text)
     bare = n.replace(".", "")
@@ -1102,11 +1121,7 @@ def glued_cuts(text: str, lexicon: Lexicon) -> tuple[int, ...]:
         if len(tail) > 1 and not initial:
             return ()
         w = _normalize(word.group())
-        if w in sets.titles or (
-                w in sets.suffix_acronyms
-                and w not in sets.suffix_acronyms_ambiguous) or (
-                (w in sets.suffix_words or w in sets.credential_words)
-                and w not in sets.suffix_words_ambiguous):
+        if _claimed_after_the_stop(w, lexicon):
             return ()
         cuts.append(end)
         at = end
@@ -1168,23 +1183,22 @@ def glued_saint_cut(text: str, lexicon: Lexicon) -> int | None:
     (rules/T8, #1071). The word is one name word wherever it stands,
     and divides here only as the last word of a part (`_script_segment`
     asks that)."""
+    # the C-level matches first, which turn away nearly every word
+    # ('J.R.R.', 'Lt.Gov.'), before the fold's frame
     m = _GLUED_CHUNK.match(text)
-    if m is None or _normalize(m.group(1)) not in lexicon._sets.saint_particles:
+    if m is None:
         return None
     word = _GLUED_WORD.fullmatch(text, m.end())
-    if word is None or next(
-            (c.islower() for c in word.group() if c.upper() != c.lower()),
-            True):
+    if (word is None
+            or _normalize(m.group(1)) not in lexicon._sets.saint_particles
+            or next(
+                (c.islower() for c in word.group()
+                 if c.upper() != c.lower()),
+                True)):
         return None
     # an unambiguous title or suffix word after the stop is no name
     # ('St.MD', 'St.Jr')
-    sets = lexicon._sets
-    w = _normalize(word.group())
-    if w in sets.titles or (
-            w in sets.suffix_acronyms
-            and w not in sets.suffix_acronyms_ambiguous) or (
-            (w in sets.suffix_words or w in sets.credential_words)
-            and w not in sets.suffix_words_ambiguous):
+    if _claimed_after_the_stop(_normalize(word.group()), lexicon):
         return None
     return m.end()
 
@@ -1197,11 +1211,8 @@ def is_initial_chunk(chunk: str) -> bool:
     parts = chunk.split(".")
     if len(parts) == 1 and _normalize(chunk) in _DIGRAPH_INITIALS:
         return True
-    for part in parts:
-        part = unicodedata.normalize("NFC", part)
-        if len(part) != 1 or part.upper() == part.lower():
-            return False
-    return True
+    return all(_is_cased_letter(unicodedata.normalize("NFC", part))
+               for part in parts)
 
 
 def is_title_chunk(chunk: str, lexicon: Lexicon) -> bool:
@@ -2134,20 +2145,13 @@ _NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
 
-#: What a word written in capitals may hold besides its letters: the
-#: apostrophes and hyphens a surname writes inside it (`O'BRIEN`,
-#: `ALLIOT-MARIE`). Anything else -- a full stop, a slash, a digit, a
-#: bracket or quotation mark -- says the word is no name written in
-#: capitals (`DR.`, `N/A`, `GS.TS.`), rules/O9.
-_CAPITALS_JOINERS = frozenset("'’ʼ-‐‑")
-
 
 def is_capitals_word(text: str) -> bool:
     """Whether TEXT is a name written in capitals, as rules/O9 reads
     one: two or more letters in capitals ending the word, after any
     lowercase prefix glued in front (`DUPONT`, `O'BRIEN`, `McDONALD`,
     `d'ESTAING`), with nothing in it but letters, their combining marks
-    and `_CAPITALS_JOINERS`. Single letters joined by a hyphen are
+    and `_NAME_JOINERS`. Single letters joined by a hyphen are
     initials (`J-P`), and a word whose capitals are one letter is a
     name in mixed case (`PhD`, `McD`). A combining mark is passed over
     in the letter's run, so a capital typed as its base and an accent
@@ -2157,35 +2161,31 @@ def is_capitals_word(text: str) -> bool:
     word = text
     # a joiner at either end is a quotation mark or a dash, not a name
     # written with one inside it ('MBA', -AB)
-    if not word or word[0] in _CAPITALS_JOINERS or word[-1] in _CAPITALS_JOINERS:
+    if not word or word[0] in _NAME_JOINERS or word[-1] in _NAME_JOINERS:
         return False
-    capitals = 0
     chunk = longest = 0
     i = len(word)
     while i:
         i -= 1
         ch = word[i]
         if ch.isupper() or ch.islower() and len(ch.upper()) != 1:
-            capitals += 1
             chunk += 1
             continue
         if ch.islower():
             break  # the prefix glued in front: McDONALD, d'ESTAING
-        if ch in _CAPITALS_JOINERS:
+        if ch in _NAME_JOINERS:
             longest = max(longest, chunk)
             chunk = 0
             continue
         if unicodedata.category(ch) in ("Mn", "Mc", "Me"):
             continue
         return False  # a full stop, slash, digit, bracket or caseless letter
-    else:
-        i = -1
-    if i >= 0 and not all(c.isalpha() or c in _CAPITALS_JOINERS
+    # i is 0 where no lowercase prefix stopped the walk
+    if i and not all(c.isalpha() or c in _NAME_JOINERS
                           or unicodedata.category(c) in ("Mn", "Mc", "Me")
                           for c in word[:i]):
         return False
-    longest = max(longest, chunk)
-    return capitals >= 2 and longest >= 2
+    return max(longest, chunk) >= 2
 
 
 def written_as_a_name(text: str) -> bool:
@@ -2389,7 +2389,7 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
 #: particle starts a surname unit, and a suffix word stops it -- any
 #: suffix word, a wider stop than group's particle chain makes, which
 #: a suffix word ends only where a suffix run would start at it
-#: (decisions/P2, #1177); #1259 left this count as it was. A word
+#: (decisions/P2, #1177). A word
 #: that is ALSO title vocabulary ('Freiherr', 'St') LEADING the part is
 #: not a particle here: in front of a name it reads as the title it
 #: also is (rules/H1), so 'Freiherr von Berg, PhD' keeps its title,
@@ -3227,9 +3227,9 @@ def effective_script(text: str) -> Script | None:
         return Script.HIRAGANA
     # a Cyrillic word with a hyphen or an apostrophe inside it (#1237);
     # translate is C-level, so a token with no joiner costs no frame
-    joined = normalized.translate(_DROP_CYRILLIC_JOINERS)
+    joined = normalized.translate(_DROP_NAME_JOINERS)
     if (joined != normalized and normalized[0] in _CYRILLIC_LETTERS
-            and normalized[-1] not in _CYRILLIC_JOINERS
+            and normalized[-1] not in _NAME_JOINERS
             and _SCRIPT_MATCHERS[Script.CYRILLIC](joined)):
         return Script.CYRILLIC
     return None
