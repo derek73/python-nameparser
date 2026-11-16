@@ -118,8 +118,8 @@ formal Russian document intends:
 
 Enable a pack only for data that is predominantly in the shape or the
 language it is for: for ``ru``, East Slavic names, since it reorders
-any name whose last word has a patronymic ending (`What a pack
-costs`_). If your input mixes traditions, parse the subsets separately
+any name of exactly three name words whose last has a patronymic
+ending and whose middle one does not (`What a pack costs`_). If your input mixes traditions, parse the subsets separately
 with different parsers rather than enabling a pack over all of it.
 `Shipped packs`_ lists every pack and what it is for.
 
@@ -250,7 +250,8 @@ says which parts each pack is made of.
      - ``es`` with a longer given-name list, for a second given name
        written before a single surname. See :ref:`Spanish and
        Portuguese titles <spanish-portuguese-titles>`.
-     - ``Pablo Sebastián Rosales`` → family ``Rosales``
+     - ``Pablo Sebastián Rosales`` → family ``Rosales``, where ``es``
+       gives ``Sebastián Rosales``
    * - ``ga``
      - Irish
      - Chooses ``ga``, which turns on the clan particles ``Nic``,
@@ -974,7 +975,7 @@ What a strict choice keeps
 A strict choice reads three things. A word none of them holds is read
 as a name word, unless you listed it yourself (below) or its shape
 alone gives it a role, as a shape gives an unlisted word one by
-default: ``Mx.``, with its period, is a title.
+default: ``Mx.`` opening a name, with its period, is a title.
 
 - **The chosen languages' files**, each tag selecting its own and its
   ancestors' (`Which tags are accepted`_).
