@@ -80,8 +80,7 @@ inherited family name under
 How large the groups get
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-A key is a family name and the given name's first letter, so a common
-surname makes a
+A key is a family name and a given letter, so a common surname makes a
 large group, and the pairs to check grow with the square of a group's
 size: every Smith whose given name starts with J is in ``smith;j``.
 It is the family names your data holds most of that set the cost.
@@ -1088,8 +1087,10 @@ To grade the consistent pairs rather than refuse some, keep the
 default and filter on ``weakest``, comparing by ``Outcome.strength``
 (:ref:`matching-comparing-outcomes`). This keeps a pair whose weakest
 row is at least ``initial``, and so sets aside every pair with a row
-ranked below it: a middle name or a generation on one side only, or a
-title or credential (``noted``):
+ranked below it: a middle name, nickname, maiden name or generation on
+one side only (``one-side``, ``generation-one-side``), a title or
+credential (``noted``), or a role written in initials alone on both
+sides (``initials-agree``):
 
 .. doctest::
 
