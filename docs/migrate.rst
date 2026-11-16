@@ -721,6 +721,11 @@ that wrote it:
      - loads
      - loads
      - Nothing
+   * - ``Policy``, ``PolicyPatch``, and anything holding a ``Lexicon``
+     - 3.1
+     - ``ValueError``
+     - loads
+     - Keep a 3.0 copy while 3.0 must read it (below)
    * - ``ParsedName``
      - 2.x
      - loads, rendering as 2.x did
@@ -729,8 +734,9 @@ that wrote it:
    * - any of the rows above but the first
      - 3.0
      - loads
-     - loads
-     - Nothing
+     - loads, keeping 3.0's vocabulary, save a caller's word written with a
+       tatweel (below)
+     - Build a new ``Parser()`` for 3.1's readings
 
 A ``HumanName`` or a ``Constants``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -760,6 +766,29 @@ loads it depends on the release that wrote it:
 
 A re-pickled object keeps the vocabulary it was first pickled with, not
 this release's; build a new ``Parser()`` for that.
+
+Between 3.0 and 3.1
+~~~~~~~~~~~~~~~~~~~
+
+A pickle keeps the vocabulary of the release that wrote it. A
+``Parser`` or locale pack pickled by 3.0 loads under 3.1 and reads and
+matches as 3.0 did: it reads ``Md. Rahim Uddin`` with the title
+``Md.``, does not split the Thai title off ``นายสมชาย``, finds no
+familiar form between ``Bill`` and ``William``, and a pickled
+``locales.NE`` lacks the ``initials_as_family`` 3.1 gives it. Build the
+object again under 3.1 to read the 3.1 way.
+
+A 3.0 ``Lexicon`` or ``Parser`` holding a word a caller added with an
+Arabic tatweel (``ـ``) raises ``ValueError`` under 3.1, which deletes
+the tatweel when it normalizes a word (:issue:`1151`): build it again
+with the same ``add()`` calls.
+
+The other way, 3.0.x refuses with ``ValueError`` anything holding a
+``Lexicon``, ``Policy`` or ``PolicyPatch`` pickled by 3.1, a bare
+``Policy()`` and a locale pack included: 3.1's vocabulary has readings
+3.0 does not take, its ``Policy`` has two new fields, and
+``Script.CYRILLIC`` is new. A ``ParsedName`` or ``Ambiguity`` loads
+both ways.
 
 Pickles between 2.x releases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
