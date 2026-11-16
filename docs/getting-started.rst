@@ -12,14 +12,14 @@ data.
 Install it with ``pip install nameparser``. It needs Python 3.11 or
 later and no other package.
 
-The parser reads a name by the position of its words and never guesses
-its language. A Chinese, Japanese or Korean name written in its own
+The parser reads a name by the position of its words and the words it
+knows, such as titles and particles, and never guesses its language. A Chinese, Japanese or Korean name written in its own
 script is read family name first without configuration, save a name in
 katakana alone, which keeps the order it is written in. Where such a
 name is written with no space between its parts, a Korean one is
 divided by default, a Chinese one by the ``zh`` pack, and a Japanese
-one by the ``ja`` pack with a segmenter, which the optional extra
-``nameparser[ja]`` installs (:ref:`splitting-unspaced-names`).
+one by the ``ja`` pack with ``locales.ja_segmenter()``, which needs the
+optional extra ``nameparser[ja]`` (:ref:`splitting-unspaced-names`).
 
 The conventions of one language, such as two family names in Spanish or
 the patronymic in Russian, are packs you turn on when you know your
@@ -201,13 +201,16 @@ is also a surname), and one name does not decide a list:
     >>> Parser().suggest(["Smith James", "Jones Mary"]).patch
     PolicyPatch()
 
-So a short list may get no suggestion, a short list of bylines
-included:
+Bylines vote only where enough of a list's names end in initials
+(:ref:`suggest-evidence`), so a short list of them may get no
+suggestion either:
 
 .. doctest::
 
     >>> Parser().suggest(["Smith J", "Jones M"]).patch
     PolicyPatch()
+    >>> Parser().suggest(["Smith J", "Jones M", "Brown K"]).patch
+    PolicyPatch(name_order=FAMILY_FIRST)
 
 :ref:`suggest-limits` says how many names each kind of list took to be
 read right, and :doc:`suggest` has the full rules and the evidence it
@@ -278,7 +281,8 @@ Try these in order:
 #. **Let the list choose** where the names come from one source (`A
    list of names: let suggest choose the settings`_).
 #. **Choose the language** where you know it: a pack reads its
-   conventions (:doc:`locales`).
+   conventions (:doc:`locales`). Call ``suggest`` on the pack's parser
+   to have both (`Choose the language first`_).
 #. **Change one setting or one word**: a :class:`~nameparser.Policy`
    field says how positions and punctuation are read (:doc:`policy`),
    and a :class:`~nameparser.Lexicon` edit how one word is read
@@ -301,7 +305,7 @@ Where to go next
      - :doc:`usage`
    * - know what the parser does with a given input form
      - :doc:`shapes`
-   * - see why a name was read the way it was
+   * - see whether the parser had to guess at a name
      - :ref:`parser-guesses`
    * - read Chinese, Japanese or Korean names
      - :doc:`east-asian`

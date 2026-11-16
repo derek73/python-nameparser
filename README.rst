@@ -93,7 +93,8 @@ More shapes the parser reads
 ----------------------------
 
 **Titles, suffixes and commas.** Runs of titles, listing forms and
-credentials are read without configuration, and a guess is reported:
+credentials are read without configuration; a guess is reported, and
+each word says which language's vocabulary read it:
 
 .. code-block:: python
 
@@ -225,11 +226,11 @@ named ``given`` and ``family`` where ``HumanName`` had ``first`` and
 ``last``, and a ``Lexicon`` and ``Policy`` handed to a ``Parser``
 replace ``Constants``. To find what your code has to change:
 
-1. Upgrade to 2.8.2, which warns of what 3.0 removes.
+1. Upgrade to 2.8.2, which warns of most of what 3.0 removes.
 2. Run your tests under ``python -W error::DeprecationWarning``. The run
-   stops at each use 3.0 removes, with three exceptions that 2.8.2 does
-   not warn on.
-3. Search your code by hand for those three: a read of the shared
+   stops at each use 3.0 removes, except the ones 2.8.2 does not warn
+   on.
+3. Search your code by hand for those: a read of the shared
    ``CONSTANTS``, a read of a ``Lexicon`` set field, and the imports
    `Finding the sites`_ lists.
 
@@ -246,11 +247,13 @@ How well it reads names
 
 These figures give a general idea of what to expect and of how much a
 setting can change it. Each compares the parser's fields with the boxes
-a name was filed in on one large public dataset, which is agreement
-with someone else's convention and not ground truth, so they will
-differ for every dataset and yours will probably match none of them.
+a name was filed in on one large public dataset, after folding case,
+periods, commas and spacing. That is agreement with someone else's
+convention and not ground truth, so they will differ for every dataset
+and yours will probably match none of them.
 
-* **US patent inventors**, filed in a given-name and a family-name box:
+* **US patent inventors**, at most 20,000 from each country, filed in a
+  given-name and a family-name box:
   both agree for about 95% of names, and for about 98% outside Spanish-
   and Portuguese-speaking countries.
 * **UK company filings**, typed into title, forename, middle-name and
@@ -260,8 +263,8 @@ differ for every dataset and yours will probably match none of them.
 * **Choosing the language** closes most of the gap where a convention
   differs. The default reads one family name, so for researchers in
   Spain it agrees with the two boxes of their ORCID record for about
-  half of the names, and ``parser_for(locales.ES)`` for about 97%. A
-  pack costs where people file a single surname: Argentine patent
+  half of the names, and ``parser_for(locales.ES)`` for about 97%. The
+  Spanish pack costs where people file a single surname: Argentine patent
   inventors agree for about 94% by default, 86% under ``ES`` and 93%
   under ``ES_AR``.
 
@@ -273,8 +276,10 @@ Speed and testing
   pandas, scipy and lightgbm among them), for dividing unspaced
   Japanese kanji names.
 * **Build one Parser and reuse it.** The first parser for a choice of
-  languages costs tens of milliseconds, once in a process; a parse
-  costs roughly a tenth of a millisecond on a recent laptop.
+  languages in a process costs tens of milliseconds, another choice
+  after it a few, and building the same choice again about one, some
+  ten parses: a parse costs roughly a tenth of a millisecond on a
+  recent laptop.
 * **A parser can be shared.** Its ``Lexicon`` and ``Policy`` are frozen
   and a parse never writes to them, so one parser can be shared across
   threads without locking, and it pickles for ``multiprocessing``. A
