@@ -378,9 +378,10 @@ would also work, but it reverses every name, Latin ones included.
 When the script rules don't apply
 ---------------------------------
 
-The script settles the order only for a name written wholly in an
-East Asian script. Any other name keeps the ordinary positional rules,
-among them:
+The script settles the order where every word of the name itself is
+written in the script. A title, credential or nickname in Latin beside
+the name does not count: ``Dr. 毛 泽东`` reads family ``毛``. These
+names keep the ordinary positional rules:
 
 - **A romanized name** (``Kim Min-jun``, ``Yamada Taro``) is Latin
   script. Order genuinely varies in romanized data, so nothing
@@ -389,8 +390,8 @@ among them:
   :ref:`suggest-settings` can suggest the order from a whole list.
 - **A name written wholly in katakana**, which may be a transcription
   (`Katakana names you know are Japanese`_).
-- **A name that mixes an East Asian script with another**: ``山田 Taro``
-  reads given ``山田``, family ``Taro``.
+- **A name whose own words mix an East Asian script with another**:
+  ``山田 Taro`` reads given ``山田``, family ``Taro``.
 
 .. doctest::
 
@@ -401,6 +402,8 @@ among them:
     >>> kim_family_first = family_first_parser.parse("Kim Min-jun")
     >>> kim_family_first.given, kim_family_first.family
     ('Min-jun', 'Kim')
+    >>> parse("山田 Taro").family, parse("Dr. 毛 泽东").family
+    ('Taro', '毛')
 
 Honorifics after a name
 -----------------------
@@ -627,8 +630,8 @@ they read its composed twin:
   ``capitalized()`` gives a decomposed ``josé garcía`` the same
   ``José García`` as the composed spelling, still decomposed.
 
-Splitting an unspaced name and peeling a glued honorific are the
-exceptions. An unspaced decomposed hangul name is
+Hangul is the exception, in two places. An unspaced decomposed hangul
+name is
 ordered correctly but not split, because surname matching runs against
 the text as given and a decomposed name matches no entry in the census
 list. That is the deliberate choice: being unsplit is recoverable,
@@ -799,8 +802,8 @@ leaving the token whole:
     ('山田', '太郎')
     >>> toy_parser.parse("山田太").family
     '山田太'
-    >>> toy_parser.parse("やまだたろ").family
-    'やまだたろ'
+    >>> toy_parser.parse("山田たろ").family
+    '山田たろ'
 
 Declining is the load-bearing half of the
 contract, because ``segment_scripts`` unions across packs: your
