@@ -120,11 +120,12 @@ section parses.
      - ``MD, Esq.``
    * - ``patronymic``
      - The words that say whose child the bearer is, where a particle
-       marks them (:ref:`usage-finding-a-patronymic`)
+       or a pack's rule marks them (:ref:`usage-finding-a-patronymic`)
      - ``bin Mohamad``
    * - ``surname1``, ``surname2``
-     - The first and second family names, where the family was read as
-       two (:ref:`usage-surname1-and-surname2`)
+     - The first family name and the second, where the family was read
+       as two; elsewhere ``surname1`` is the whole family and
+       ``surname2`` is empty (:ref:`usage-surname1-and-surname2`)
      - | ``García``
        | ``Márquez``
    * - ``surname1_base``, ``surname1_particles``
@@ -213,7 +214,8 @@ Finding a patronymic
 ``patronymic`` names the words that say whose child the bearer is, a
 particle such as ``bin`` with the parent's name after it, in whatever
 field the parse put them, which keeps them. It reads no position, so a
-name written without the particle has none:
+name written without the particle has none, unless a pack's rule reads
+a patronymic by its ending, as ``ru`` does (:doc:`locales`):
 
 .. doctest::
 
@@ -222,6 +224,9 @@ name written without the particle has none:
     ('bin Mohamad', 'bin Mohamad')
     >>> parse("Anwar Ibrahim").patronymic
     ''
+    >>> from nameparser import locales, parser_for
+    >>> parser_for(locales.RU).parse("Ivan Petrovich Sidorov").patronymic
+    'Petrovich'
 
 .. _usage-no-inherited-family-name:
 
@@ -324,7 +329,9 @@ order it was read in (:attr:`ParsedName.order
 <nameparser.ParsedName.order>`) and keeps the separator written between
 two words that stay side by side, normalized: nothing stays nothing,
 any run of whitespace becomes one space, and a comma before a suffix
-stays. A spec you pass renders exactly as written, in its own order:
+stays. Where the layout puts quotes or parentheses between two fields,
+around a nickname or a maiden name, those stand between them instead.
+A spec you pass renders exactly as written, in its own order:
 
 .. doctest::
 
@@ -406,7 +413,8 @@ Comparing names
 ----------------
 
 ``matches()`` asks whether two writings are the same name: every field
-the same, whatever the case and whichever way round it was written. It
+the same, whatever the case, and whether written with a family comma
+or without one. It
 does not accept an initial for a name, so ``J. Smith`` does not match
 ``John Smith``. To join records from several sources, where one writes
 the initial and another the name, use
@@ -482,9 +490,10 @@ Credentials that are also surnames
 
 The post-nominals that double as ordinary surnames report an ambiguity
 the same way, as ``suffix-or-name``. A bare acronym such as ``MA`` is
-read by how it is written and, where the writing gives no signal, by
-the count of words before it. A reading by the count, or by a lean to
-the surname (``Jack Ma``), is recorded. Capitals in a name written in
+read by how it is written and, where the writing gives no signal (all
+lowercase, or a name written wholly in one case), by the count of words
+before it. A reading by the count, or by the lean to the surname that
+any other cased spelling gives (``Jack Ma``), is recorded. Capitals in a name written in
 more than one case settle it as the credential (``Jack MA``), as periods
 do, so no ``suffix-or-name`` fork is reported:
 
@@ -512,15 +521,20 @@ reported:
 changes them.
 
 Two ``Policy`` switches read a word the vocabulary does not hold as a
-credential from how it is written: ``unlisted_dotted_suffixes`` (on by
-default) one in periods, and ``unlisted_caps_suffixes`` one in
-capitals, by default only after a comma behind a full name. :ref:`unlisted-credentials` says where each applies
-and what it reports:
+credential from how it is written. ``unlisted_dotted_suffixes`` (on by
+default) reads a token of two or more period-separated chunks, and
+``unlisted_caps_suffixes`` an all-caps word: by default only after a
+comma behind a full name, and at the end of a name only on request,
+since an all-caps surname is written there.
+:ref:`unlisted-credentials` says where each applies and what it
+reports:
 
 .. doctest::
 
     >>> parse("John Smith X.Y.Z.").suffix, parse("John Smith, XYZ").suffix
     ('X.Y.Z.', 'XYZ')
+    >>> parse("John Smith XYZ").family
+    'XYZ'
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:
@@ -709,18 +723,16 @@ text in as written, and :meth:`Parser.revise()
 
 Use ``revise()`` unless you want the text taken literally. It knows the
 new words as a parse would, so their particles, initials and case
-repair work as they do in a parsed name, and delimiters and marker
-words in the value are consumed as they would be in a parse.
-``replace()`` keeps every character you give it and knows nothing about
-the words:
+repair work as they do in a parsed name. ``replace()`` keeps the words
+you give it and knows nothing about them:
 
 .. doctest::
 
     >>> bare = parse("Mara Quill")
-    >>> bare.replace(family="Quill née Brandt").family
-    'Quill née Brandt'
-    >>> Parser().revise(bare, family="Quill née Brandt").family
-    'Quill Brandt'
+    >>> bare.replace(family="van Quill").family_base
+    'van Quill'
+    >>> Parser().revise(bare, family="van Quill").family_base
+    'Quill'
 
 Splicing a value in with ``replace()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -792,8 +804,8 @@ honor, so each view falls back on what it can answer without one:
 ``initials()`` takes no vocabulary at all, and ``family_particles`` and
 ``family_base`` are properties on the parsed name, which holds no
 vocabulary of its own either. Of the parsed name's own views,
-``capitalized()`` is the only one handed a vocabulary, so it still asks
-that what a word answers on its own:
+``capitalized()`` is the only one handed a vocabulary, and it still asks
+the vocabulary what a word answers on its own:
 
 - whether the word is a conjunction or an initial;
 - whether the exceptions map holds a mask for it, which applies
@@ -952,8 +964,8 @@ Policy switches
 ~~~~~~~~~~~~~~~
 
 The ``Policy`` switches that turn a reading on or off have a flag each,
-spelled as the field. The first seven have a ``--no-`` form each, and
-``--unlisted-caps-suffixes`` takes ``off``, ``after-comma`` or
+spelled as the field. Each has a ``--no-`` form, save
+``--unlisted-caps-suffixes``, which takes ``off``, ``after-comma`` or
 ``everywhere``:
 
 .. list-table::
