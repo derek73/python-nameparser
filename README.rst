@@ -129,7 +129,8 @@ Korean names are split against the census surname list, and CJK
 honorifics are recognized (see `East Asian names
 <https://nameparser.readthedocs.io/en/latest/east-asian.html>`__). Thai
 writes a salutation joined to the given name with no space, and the
-parser splits it off, with no configuration.
+parser splits it off, with no configuration (see `Thai names
+<https://nameparser.readthedocs.io/en/latest/languages.html#thai-names>`__).
 
 .. code-block:: python
 
