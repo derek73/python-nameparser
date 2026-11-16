@@ -378,7 +378,9 @@ Declaring the order settles where a surname ends
 
 If your records are family-first without commas,
 ``Policy(name_order=FAMILY_FIRST)`` reads them the way the comma format
-is already read, a particle that ends the name included.
+is already read, a particle that ends the name included, except where
+that particle is also a suffix (see `Where the correspondence
+stops`_).
 
 A surname particle joins forward, onto the word after it. Where a
 particle *ends* the name there is nothing ahead of it to join, and what
@@ -599,7 +601,7 @@ listed in the lexicon's ``given_names`` where it stands, under any
 The field is empty by default, so you supply the list for your data,
 or choose ``locales.ES``, which turns the switch on and carries 1,000
 Spanish given names, a name written with ñ listed with n too
-(``locales.ES_AR``, for Argentine names, carries 5,000; see
+(``locales.ES_AR``, for Argentine names, carries about 5,000; see
 :ref:`spanish-portuguese-titles`). An entry written without accents
 matches the word with them:
 
