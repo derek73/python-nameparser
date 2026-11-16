@@ -37,16 +37,39 @@ You are welcome to review the pull request that fixes your issue. Comments on
 it are open to everyone, and that is where your knowledge of the names counts
 most.
 
+Proposing a pack or another large change
+------------------------------------------
+
+For anything significant, open an issue first, so it can be discussed there before anyone builds it. A locale pack is the clearest case; a batch of vocabulary, a new rule and a change to how a kind of name reads are others.
+
+A pack or a vocabulary change is measured against the large local corpora described above, which a contributor is unlikely to have downloaded. So it is usually quicker, and gives a better result, for the maintainer to build it and for the person who proposed it to review it.
+
+What helps most is the report itself:
+
+- the names, as they are written where you met them;
+- the reading you expect of each;
+- the convention behind it: who writes names that way, and where;
+- where that convention is documented, if it is (a style guide, a government form, a standard, a reference work).
+
+None of this is a bar to reporting. A single name that reads wrong is a welcome issue.
+
 If you already have a fix
 ---------------------------
 
 Push it to a branch on your fork and link the branch in the issue. The
 maintainer may build on it, or take a different route once the corpora show
-what it moves. Working with an AI agent is fine; most of this repository is
+what it moves.
+
+Working with an AI agent
+--------------------------
+
+Working with an AI agent is fine; most of this repository is
 written that way. Every commit an agent helped write names it in a
 `Co-Authored-By:` line, here and in yours, so that a commit without one can
 be read as written by a person alone. If your commits do, you will be
 credited the same way on the commit that lands your work.
+
+An agent working here reads `AGENTS.md` at the root of the repository first. It holds the same rule on pull requests, and the conventions the code, tests and docs are written to.
 
 Development Environment Setup
 --------------------------------
@@ -68,9 +91,14 @@ Run a single test file or test:
     uv run pytest tests/test_titles.py
     uv run pytest tests/test_titles.py::TitleTestCase
 
+Type check and lint, as CI does:
+
+    uv run mypy
+    uv run ruff check
+
 You can also pass a name string to see how it will be parsed:
 
-    $ python -m nameparser "secretary of state hillary rodham-clinton"
+    $ uv run python -m nameparser "secretary of state hillary rodham-clinton"
     Parsed:
     <ParsedName: [
         title: 'secretary of state'
@@ -102,18 +130,39 @@ detect: a typo in a kind or property, an unnormalized spelling, a reading a
 word is recorded as refused. `tools/vocab/query.py` looks words up
 (`--word`, `--kind`, `--issue`, `--excluded`).
 
+[`nameparser/vocab/README.md`](nameparser/vocab/README.md) is the reference for these files: what a file means, how an entry is built, the kinds and properties, and the steps for adding a word.
+
+A word that is right in one language and wrong as a default for everyone may belong in a locale pack instead: it is written in its language's file with `default = false`, and read only by a caller who chooses that language. Say which you expect in the issue, per "Proposing a pack or another large change" above.
+
 Writing Tests
 ----------------
 
-If you make changes, please include tests with example names that should parse correctly.
+If you make changes on your fork branch, please include tests with example names that should parse correctly.
 
-It's a good idea to include tests of alternate comma placement formats of the name to ensure that the 3 code paths for the 3 formats work in the same way.
+Prefer a row in `tests/v2/cases.py`, the table of names and their expected readings. A test in a `tests/test_*.py` file is fine where the table cannot express the case.
 
-Unless you add better coverage someplace else, add a few examples of your names to `TEST_NAMES`. A test attempts to try the 3 different comma variations of these names automatically and make sure things don't blow up, so it can be a helpful regression indicator.
+A name can reach the parser in four comma shapes, each a different code path, so try yours in each:
 
-New Releases
-------------
+- no comma (`John Smith Jr.`);
+- a full name before the comma (`John Smith, Jr.`);
+- a one-word name before the comma (`Smith, John`);
+- nothing before the comma (`, John`, as a CSV file with an empty surname field writes it).
 
-Releases are published automatically to PyPI via GitHub Actions. To cut a release,
-create and publish a new GitHub Release — the workflow will build and upload the
-package using trusted publishing (no API token or twine needed).
+The last two are the ones most often missed. Then try each under the three name orders (`uv run python -m nameparser --help` lists `--order`).
+
+You may also add the base form of your names to `TEST_NAMES` in `tests/test_variations.py`. A test rewrites each of those names with its commas moved and checks that the readings agree, so it can be a helpful regression indicator.
+
+Building the Docs
+-------------------
+
+The user documentation is the Sphinx pages in `docs/*.rst`, and their examples are doctests. Build both and read the output, not only the exit code:
+
+    uv run sphinx-build -q -b doctest docs /tmp/doctest
+    uv run sphinx-build -q -b html docs /tmp/html
+
+Both should print nothing. The HTML build prints an unresolved link as a warning and still exits 0.
+
+Releases
+----------
+
+Releases are cut by the maintainer; the checklist is in `AGENTS.md`, under Commands.
