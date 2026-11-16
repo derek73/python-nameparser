@@ -128,6 +128,17 @@ setting's evidence and the names that disagree with it.
 ``disagreeing()`` lists the names whose vote is against a decided
 setting, the ones to check by hand.
 
+.. _suggest-across-releases:
+
+A suggestion is one nameparser release's reading of a list, not a
+fixed answer: the word tables and thresholds behind it are tuned
+between releases, so a later release may suggest other settings for
+the same names. Keep the settings you applied with your data
+(``suggestion.patch``, or ``suggestion.parser.policy``, the ``Policy``
+it made) and parse with those, rather than calling ``suggest()`` again
+and expecting the same patch. Grouping keys are cut by one release the
+same way (:ref:`matching-grouping-keys`).
+
 A list of South Asian names often ends each name in letters that are
 the family name, and repeats them: Nepal's ``B K`` and ``K C`` are
 surnames written short. Where one run of letters ends at least two of
