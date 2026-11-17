@@ -47,14 +47,14 @@ the base parser's value.
 How many names to give it
 -------------------------
 
-Give it names from one source, written one way, and a few hundred of
-them at most:
+Give it names from one source, written one way. A few hundred is
+enough:
 
 - **Under five names** often gets no suggestion. That is safe: a list
   short of evidence keeps the parser it was given.
 - **Fifty names** settles most kinds of list.
 - **A few hundred** settles nearly every kind measured. More rarely
-  helps, and can hurt.
+  helps.
 
 For a large dataset, take a sample from each source instead of passing
 everything:
@@ -69,10 +69,19 @@ everything:
     PolicyPatch(name_order=FAMILY_FIRST)
 
 A sample is quicker, a suggestion costing about what parsing the same
-names does, but that is not the main reason. A very long list can be
-read less well than a sample of it, because the order is decided among
-the names that vote, and in a list where few names vote a handful of
-stray votes weigh more the longer the list is.
+names does. The order's own votes are not read worse in a long list:
+they must be at least 1% of the names (:ref:`suggest-deciding`), so a
+few stray order votes in a list where few names vote decide nothing,
+and every kind of list measured that was written in its base's own
+order kept it as well at 2,000 names as at a few hundred.
+
+The other settings have no such floor. In a long list where almost no
+name carries their evidence, a handful of names can still decide
+``patronymic_rules``, ``initials_as_family`` or ``capitals_as_family``:
+five names written given name, patronymic, family name among a
+thousand written family first without one decide the East Slavic rule,
+and with it a given-first order for all of them. A sample of a few
+hundred names makes that rarer.
 
 The one kind of list measured that more names kept helping is bylines
 written initials first (``AM Hoy``) under a family-first base, where
@@ -196,7 +205,8 @@ and enough of them agree:
      - Section
    * - ``name_order``
      - 2 voting for one end
-     - more than two thirds of the names that cast an order vote
+     - more than two thirds of the names that cast an order vote, and
+       at least 1% of the list's names
      - this one
    * - ``patronymic_rules``
      - 5 carrying one rule's patronymic
@@ -216,6 +226,16 @@ end and they are more than two thirds of the names that cast an order
 vote: a tie, or two names against one, decides nothing. A name with no
 evidence on the order, and a name whose evidence is contested, casts no
 order vote and is outside that share.
+
+The names voting for one end must also be at least 1% of the list's
+names, voting or not, save the names a comma leaves out, which state
+their own order. A list of 200 names or fewer needs no more than the
+two names it needs anyway; in a longer list where few names vote, it
+keeps a handful of stray votes (a surname that is also a given name,
+written first) from deciding the order for every name. Where this alone
+holds the order back, the order evidence's note says so, and it says
+so too where the votes it holds back are against the given-first order
+a decided East Slavic rule sets.
 
 Two is the floor, not what a typical list needs. Two names decide a
 list only where no other name votes against them, and how many names a
@@ -635,8 +655,9 @@ The figures below were measured on groups drawn from real names
 written in a known order. They give a general idea of what to expect
 and how it varies, and will differ for every dataset.
 
-- **A list written in the base's own order** keeps it in at least 97%
-  of groups from 2 to 200 names, save the two kinds of list below.
+- **A list written in the base's own order** keeps it in at least 95%
+  of groups from 2 to 2,000 names, and 97% for nearly every kind, save
+  the two kinds of list below.
 - **A list written the other way round** takes more names to move the
   base, from 5 for Chinese, Taiwanese, Korean, Czech, Polish and
   Italian names to 50 for Russian and Indian ones. A group whose votes
@@ -652,10 +673,10 @@ Two kinds of list keep their order less often:
 - **Two or three capitals at one end** cast no capitals vote
   (:ref:`suggest-evidence`), so a list of such names carries little
   evidence either way. Researchers' bylines written initials first kept a
-  given-first base in at least 97% of groups, but a list of nothing
+  given-first base in at least 95% of groups, but a list of nothing
   but two or three joined initials (``AM Hoy``) kept it in just under
-  95% of groups of 50. Where you know how such a list is written, set
-  ``name_order`` yourself.
+  95% of groups of 50 and 93% of groups of 100. Where you know how such
+  a list is written, set ``name_order`` yourself.
 
 ``capitals_as_family`` was suggested in at least 95% of groups from 4
 names for researchers who typed their family name in capitals, and

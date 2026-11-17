@@ -473,6 +473,14 @@ _MIN_VOTES = 2
 #: STRICTLY MORE THAN to decide the order: more than two thirds, so a
 #: tie, or two names against one, decides nothing.
 _MIN_SHARE = 2 / 3
+#: The share of ALL the group's names, voting or not, save those a
+#: comma left out (which state their own order, and which the order
+#: decided reads none of), that the names voting for one end must be at
+#: least to decide the order: in a long list where few names vote, two
+#: stray votes are more than two thirds of the voters and would decide
+#: it. At 200 names or fewer it asks no more than _MIN_VOTES does
+#: (decisions/group-suggestion, 2026-11-16 ORDER FLOOR, #1442).
+_MIN_ORDER_GROUP_SHARE = 0.01
 #: The share of the names casting any vote that one patronymic rule
 #: (East Slavic or Turkic) must hold strictly more than to decide it,
 #: higher than _MIN_SHARE because a decided East Slavic rule brought a
@@ -1004,20 +1012,25 @@ class _Tally:
     pass. A plain class rather than a dataclass: it is never pickled or
     returned."""
 
-    __slots__ = ("names", "contested", "by_name", "by_signal")
+    __slots__ = ("names", "left_out", "contested", "by_name", "by_signal")
 
     def __init__(self) -> None:
         self.names = 0
+        #: names a comma left out (`_comma_note`), which cast no vote
+        self.left_out = 0
         self.contested = 0
         #: names per value voted for
         self.by_name: Counter[Vote] = Counter()
         #: signal votes per (signal, value)
         self.by_signal: Counter[tuple[Signal, Vote]] = Counter()
 
-    def add(self, pairs: list[tuple[Signal, Vote]]) -> None:
+    def add(self, pairs: list[tuple[Signal, Vote]], left_out: bool = False
+            ) -> None:
         """One name's votes on this setting: its signals' votes, and
-        one name vote where they agree."""
+        one name vote where they agree. ``left_out`` is a name a comma
+        left out."""
         self.names += 1
+        self.left_out += left_out
         for pair in pairs:
             self.by_signal[pair] += 1
         values = {vote for _, vote in pairs}
@@ -1027,10 +1040,24 @@ class _Tally:
             self.contested += 1
 
     def winner(self) -> Vote | None:
-        """The value whose names are at least _MIN_VOTES and strictly
-        more than _MIN_SHARE of the names that cast a vote, if one
-        is."""
-        return self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        """The value whose names are at least _MIN_VOTES, strictly
+        more than _MIN_SHARE of the names that cast a vote and at least
+        _MIN_ORDER_GROUP_SHARE of the group's names a comma did not
+        leave out, if one is."""
+        end = self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        return None if end is None or self._short_of_group(end) else end
+
+    def held_back(self) -> Vote | None:
+        """The value the votes would decide but for
+        _MIN_ORDER_GROUP_SHARE, if one is."""
+        end = self.top(_MIN_VOTES, _MIN_SHARE, sum(self.by_name.values()))
+        return end if end is not None and self._short_of_group(end) else None
+
+    def _short_of_group(self, end: Vote) -> bool:
+        # a name a comma left out states its own order, and the order
+        # decided reads none of them, so it is no name of the floor's
+        return (self.by_name[end]
+                < _MIN_ORDER_GROUP_SHARE * (self.names - self.left_out))
 
     def top(self, min_votes: int, min_share: float, total: int
             ) -> Vote | None:
@@ -1183,6 +1210,26 @@ def _comma_note(left_out: int) -> str:
             f"so only a comma followed by post-nominals alone is read past")
 
 
+def _floor_note(tally: _Tally, rule_decides: bool) -> str:
+    """The note on votes _MIN_ORDER_GROUP_SHARE held back: where they
+    alone leave the order undecided, and where a decided East Slavic
+    rule sets the given-first order they voted against. None where the
+    rule sets the order they voted for, which they did not decide."""
+    end = tally.held_back()
+    if end is None or (rule_decides and end == GIVEN_FIRST):
+        return ""
+    counted = tally.names - tally.left_out
+    whose = (f"of the group's {counted} names" if not tally.left_out else
+             f"of the {counted} names no comma left out")
+    floor = (f"an order is decided where the names voting for one end are "
+             f"at least {_MIN_ORDER_GROUP_SHARE:.0%} of those names")
+    if rule_decides:
+        return (f"{tally.by_name[end]} {whose} vote {_label(end)}, too few "
+                f"to decide that order against the rule: {floor}")
+    return (f"{tally.by_name[end]} {whose} vote {_label(end)}, too few to "
+            f"decide the order: {floor}")
+
+
 def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
                   rule_needs_given_first: bool, comma_left_out: int,
                   trailing_note: str = ""
@@ -1196,8 +1243,10 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     rule that keeps a ``FAMILY_FIRST`` base's order
     (`_keeps_family_first`) is not passed here: the order is then the
     votes' or the base's."""
-    notes = [_comma_note(comma_left_out), trailing_note]
     end = tally.winner()
+    notes = [_comma_note(comma_left_out),
+             _floor_note(tally, rule_needs_given_first and end is None),
+             trailing_note]
     if rule_needs_given_first and end != FAMILY_FIRST:
         end = GIVEN_FIRST
         notes.insert(0, "the East Slavic rule reorders each name; it needs "
@@ -1539,7 +1588,7 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         for signal, vote in votes.items():
             per_setting[_setting_of(signal)].append((signal, vote))
         for setting, tally in tallies.items():
-            tally.add(per_setting[setting])
+            tally.add(per_setting[setting], comma)
     policy = parser.policy
     # a FAMILY_FIRST base keeps its order where the group's East Slavic
     # patronymics are mostly written last (#1356)

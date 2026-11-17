@@ -3,7 +3,7 @@
 `Parser.suggest(names)` reads a group of names a caller declares to share
 one convention and suggests a `name_order` (and `patronymic_rules`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
-`_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
+`_MIN_ORDER_GROUP_SHARE`, `_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
 signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`, and for
 `initials_as_family`, `_MIN_RUN_NAMES` and `_MIN_RUN_SHARE`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
@@ -173,7 +173,7 @@ GF, FF, FFGL = "GF", "FF", "FFGL"
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
             "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
             "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE",
-            "_MIN_CAPITALS_LETTERS")
+            "_MIN_CAPITALS_LETTERS", "_MIN_ORDER_GROUP_SHARE")
 #: The thresholds that count names (or letters), read as int.
 _COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
            "_MIN_RUN_NAMES", "_MIN_CAPITALS_LETTERS")
