@@ -2083,8 +2083,9 @@ default parse is unchanged:
   (``oğlu`` with ``g`` and U+0306), where 2.0 through 3.0 did not.
 - ``locales.RU`` keeps an initial before a surname ending like a
   patronymic in given-first order, where 2.0 through 3.0 rotated it.
-- ``locales.ZH`` no longer divides seven simplified surnames no Wikidata
-  family-name item writes (``谌龙``), which 2.5 through 3.0 divided.
+- ``locales.ZH`` no longer divides a name opening with ``厐``
+  (``厐建国``), which 2.5 through 3.0 divided; written ``龎`` it still
+  divides.
 - ``locales.MN`` is new, and reads a name written in Cyrillic father's
   name first; ``PolicyPatch.script_orders`` merges by script, where 2.1
   through 3.0 replaced the whole table.
@@ -2106,8 +2107,8 @@ default parse is unchanged:
     'Mamedov'
     >>> parser_for(locales.RU).parse("И. Б. Зубкевич").family
     'Зубкевич'
-    >>> parser_for(locales.ZH).parse("谌龙").family
-    '谌龙'
+    >>> parser_for(locales.ZH).parse("厐建国").family
+    '厐建国'
     >>> parser_for(locales.MN).parse("Батын Сүхээ").family
     'Батын'
     >>> parser_for(locales.AR).parse("Karim Ben Haddad").family

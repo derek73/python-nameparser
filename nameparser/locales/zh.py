@@ -17,11 +17,19 @@ Ministry of the Interior surname ranking (內政部戶政司, 2023, used under
 the Open Government Data License, version 1) and Wikidata's Chinese
 family names ranked by bearers (CC0), with the simplified form of a
 traditional surname from the simplified-Chinese labels of Wikidata's
-family-name items (CC0). tools/zh_surnames.py derives that block and
-writes it below; do not edit it by hand. 2.5.0 to 3.0.1 took the
-simplified forms from the Unicode Consortium's Unihan variant table
-instead, under the Unicode License v3; seven of them no Wikidata item
-attests, and 3.1 dropped them (decisions/shipped-data-licences). Five mainland
+family-name items (CC0), and, where those labels give a ranked
+traditional form none, six simplified forms entered by hand as facts
+of the script (买, 盖, 篮, 诸, 谌 and 芈, of 買, 蓋, 籃, 諸, 諶 and 羋):
+five a pairing that the PRC's 通用规范汉字表 (2013, 附件1) and
+简化字总表 (1986) state, and 芈 a standard character of the 2013 table
+whose traditional printed shape is 羋, each cited in the tool's
+BY_HAND. tools/zh_surnames.py
+derives that block and writes it below; do not edit it by hand. 2.5.0
+to 3.0.1 took the simplified forms from the Unicode Consortium's Unihan
+variant table instead, under the Unicode License v3; no Unihan data
+ships since 3.1, and one form it gave that neither the labels nor the
+standards write (厐, of 龎) left the list
+(decisions/shipped-data-licences, 2026-11-16 #1445). Five mainland
 surnames that neither ranking reaches are added by hand at the census
 block's tail (#952), each annotated there with its mainland rank.
 Traditional-script variant forms are included for names written in
@@ -118,23 +126,24 @@ _SINGLE_RANKED = (
     "塗", "申", "穆", "应", "應", "瞿", "蒲", "柴", "谷", "臧",
     "季", "練", "练", "苗", "边", "邊", "邬", "鄔", "查", "阳",
     "陽", "楼", "樓", "岳", "符", "尚", "解", "屠", "繆", "宗",
-    "屈", "乐", "樂", "单", "單", "曲", "籃", "閔", "闵", "滕",
-    "戚", "靳", "留", "桂", "鄞", "諸", "卜", "缪", "龎", "車",
-    "车", "艾", "郎", "封", "鹿", "𡍼", "岑", "商", "时", "時",
-    "買", "卞", "祁", "力", "景", "云", "雲", "郁", "吉", "席",
-    "茅", "仇", "巴", "牟", "荆", "荊", "司", "晏", "甄", "幸",
-    "來", "来", "寇", "晁", "諶", "邝", "鄺", "南", "储", "儲",
-    "沙", "談", "谈", "栾", "欒", "狄", "奚", "宫", "宮", "榮",
-    "荣", "敬", "刁", "桑", "权", "權", "和", "师", "師", "支",
-    "松", "佟", "柏", "宁", "寧", "甯", "祖", "冉", "麻", "隋",
-    "冷", "風", "风", "子", "聞", "闻", "鄂", "髙", "浦", "仲",
-    "裘", "燕", "庾", "湛", "迟", "遲", "东", "東", "米", "劳",
-    "勞", "匡", "昌", "党", "兰", "蘭", "阴", "陰", "娄", "婁",
-    "敖", "惠", "戈", "羊", "伊", "蓋", "茹", "強", "强", "平",
-    "丛", "叢", "蒙", "羋", "桓", "区", "區", "源", "偕", "栗",
-    "初", "恽", "阿", "兵", "冀", "計", "计", "索", "明", "蔺",
-    "藺", "危", "鞠", "廉", "茆", "雍", "蹇", "苻", "宣", "盘",
-    "盤", "𨶒", "厉", "厲", "机", "归", "歸",
+    "屈", "乐", "樂", "单", "單", "曲", "篮", "籃", "閔", "闵",
+    "滕", "戚", "靳", "留", "桂", "鄞", "諸", "诸", "卜", "缪",
+    "龎", "車", "车", "艾", "郎", "封", "鹿", "𡍼", "岑", "商",
+    "时", "時", "买", "買", "卞", "祁", "力", "景", "云", "雲",
+    "郁", "吉", "席", "茅", "仇", "巴", "牟", "荆", "荊", "司",
+    "晏", "甄", "幸", "來", "来", "寇", "晁", "諶", "谌", "邝",
+    "鄺", "南", "储", "儲", "沙", "談", "谈", "栾", "欒", "狄",
+    "奚", "宫", "宮", "榮", "荣", "敬", "刁", "桑", "权", "權",
+    "和", "师", "師", "支", "松", "佟", "柏", "宁", "寧", "甯",
+    "祖", "冉", "麻", "隋", "冷", "風", "风", "子", "聞", "闻",
+    "鄂", "髙", "浦", "仲", "裘", "燕", "庾", "湛", "迟", "遲",
+    "东", "東", "米", "劳", "勞", "匡", "昌", "党", "兰", "蘭",
+    "阴", "陰", "娄", "婁", "敖", "惠", "戈", "羊", "伊", "盖",
+    "蓋", "茹", "強", "强", "平", "丛", "叢", "蒙", "羋", "芈",
+    "桓", "区", "區", "源", "偕", "栗", "初", "恽", "阿", "兵",
+    "冀", "計", "计", "索", "明", "蔺", "藺", "危", "鞠", "廉",
+    "茆", "雍", "蹇", "苻", "宣", "盘", "盤", "𨶒", "厉", "厲",
+    "机", "归", "歸",
 )
 # -- END generated --
 # Two-character surnames, simplified. The first 34 rows are the

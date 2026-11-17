@@ -160,6 +160,50 @@ def test_a_simplified_form_never_gains_an_unattested_traditional_one() -> None:
     assert _forms(tool.select(["余"], [], variants)) == [{"余"}]
 
 
+@pytest.mark.parametrize("variants", [
+    {},  # no item labels 諶
+    {"諶": set()},  # an item labels 諶 with no simplified label
+    {"諶": {"諶"}},  # an item writes 諶 the same in simplified labels
+    {"諶": {"谌", "諶"}},  # two forms: the rule gives none
+])
+def test_a_hand_entry_joins_where_the_rule_gives_none(
+        variants: dict[str, set[str]]) -> None:
+    surnames = tool.select(["諶", "陳"], [], variants, by_hand={"諶": "谌"})
+    assert _forms(surnames) == [{"諶", "谌"}, {"陳"}]
+
+
+@pytest.mark.parametrize("items, variants", [
+    # the simplified labels give the hand entry's form, or another
+    ([], {"諶": {"谌"}}),
+    ([], {"諶": {"沈"}}),
+    # a ranked item labelled with both joins the pair before the label
+    # rule runs, so the rule adds nothing, and the entry is still refused
+    (_item("Q1", 10, "諶", "谌"), {"諶": {"谌"}, "谌": {"谌"}}),
+    (_item("Q1", 10, "諶", "沈"), {"諶": {"沈"}, "沈": {"沈"}}),
+    # ... and so with no simplified label at all
+    (_item("Q1", 10, "諶", "沈"), {}),
+])
+def test_a_hand_entry_the_data_now_states_is_refused(
+        items: list[dict[str, str]], variants: dict[str, set[str]]) -> None:
+    # The same form or another: either way the data now speaks for the
+    # form, and the entry is to be removed, never to override it.
+    with pytest.raises(ValueError, match="already gives 諶"):
+        tool.select(["諶"], tool.read_wikidata(items), variants,
+                    by_hand={"諶": "谌"})
+
+
+def test_a_hand_entry_for_a_form_no_ranking_selects_is_refused() -> None:
+    with pytest.raises(ValueError, match="no ranking's top 1 selects"):
+        tool.select(["陳", "諶"], [], {}, top=1, by_hand={"諶": "谌"})
+
+
+def test_the_hand_entries_pair_a_traditional_form_with_another_character() -> None:
+    assert all(tool.is_han(t) and tool.is_han(s) and t != s
+               for t, s in tool.BY_HAND.items())
+    assert set(tool.BY_HAND.values()) <= set(zh._SINGLE_RANKED)
+    assert set(tool.BY_HAND) <= set(zh._SINGLE_RANKED)
+
+
 _W = "http://www.wikidata.org/entity/"
 
 
