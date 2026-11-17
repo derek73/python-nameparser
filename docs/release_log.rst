@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 3.2.0 - Unreleased
+
+    nameparser 3.2 is under development.
+
 * 3.1.0 - November 16, 2026
 
     **nameparser 3.1** introduces two new tools for working with lists of names: one for configuration and one for matching. ``Parser.suggest()`` suggests the ``Policy`` settings for the list of names you give it, and ``Parser.matching()`` provides tools for joining records from different sources. It also reads family names written in capitals (``DUPONT Jean``), Thai titles, and a given name written as a run of initials, and adds Mongolian, Arabic and Hebrew packs. :doc:`migrate` lists the names whose reading moved, and which pickles load where. Highlights:
