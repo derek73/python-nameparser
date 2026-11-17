@@ -7,8 +7,21 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 3.1 reads lists of names, not just one name at a
-time:**
+📣 **nameparser 3.0 removes HumanName and the rest of the 1.x
+compatibility layer:**
+
+* ``HumanName``, ``Constants``, the shared ``CONSTANTS`` and
+  ``nameparser.util`` are gone, along with the 1.x names of the word
+  lists; ``parse()`` and ``Parser`` are the replacement. 2.8 is the
+  last release that has them, and it warns at each use 3.0 removes;
+  `Coming from 1.x or 2.x`_ below says where to start.
+* 3.0 also configures a ``Lexicon`` `by reading
+  <https://nameparser.readthedocs.io/en/latest/customize.html#configuring-by-reading>`__
+  (``Lexicon.default().add("leed", kind="credential")``), renders a
+  name in the order it was written (``str(parse("김민준"))`` is
+  ``'김민준'``), and adds packs that choose the languages a parse reads.
+
+📣 **nameparser 3.1 adds two tools for working with lists of names:**
 
 * ``Parser.suggest()`` reads a list from one source and returns a
   parser configured for how it is written: its name order, its
@@ -19,12 +32,9 @@ time:**
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
 takes you through both, and the `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details. 3.1 also reads Thai titles, a salutation written joined to
-the given name included (``นายสมชาย ใจดี``).
-
-**Upgrading from 1.x or 2.x?** 3.0 removed ``HumanName`` and the rest
-of the 1.x compatibility layer: `Coming from 1.x or 2.x`_ below says
-where to start.
+the details. Please `open an issue
+<https://github.com/derek73/python-nameparser/issues>`__ for anything
+that parses wrong.
 
 Installation
 ------------
