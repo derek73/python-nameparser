@@ -21,8 +21,7 @@ and adds packs that choose the languages a parse reads. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
 that parses wrong.
 
-📣 **nameparser 3.1 reads lists of names, not just one name at a
-time:**
+📣 **nameparser 3.1 adds two tools for working with lists of names:**
 
 * ``Parser.suggest()`` reads a list from one source and returns a
   parser configured for how it is written: its name order, its
