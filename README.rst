@@ -32,8 +32,7 @@ that parses wrong.
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
 takes you through both, and the `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details. 3.1 also reads Thai titles, a salutation written joined to
-the given name included (``นายสมชาย ใจดี``).
+the details.
 
 Installation
 ------------
