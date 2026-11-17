@@ -21,10 +21,6 @@ compatibility layer:**
   name in the order it was written (``str(parse("김민준"))`` is
   ``'김민준'``), and adds packs that choose the languages a parse reads.
 
-Please `open an issue
-<https://github.com/derek73/python-nameparser/issues>`__ for anything
-that parses wrong.
-
 📣 **nameparser 3.1 adds two tools for working with lists of names:**
 
 * ``Parser.suggest()`` reads a list from one source and returns a
@@ -36,7 +32,9 @@ that parses wrong.
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
 takes you through both, and the `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details.
+the details. Please `open an issue
+<https://github.com/derek73/python-nameparser/issues>`__ for anything
+that parses wrong.
 
 Installation
 ------------
