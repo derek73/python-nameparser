@@ -18,15 +18,17 @@ the Open Government Data License, version 1) and Wikidata's Chinese
 family names ranked by bearers (CC0), with the simplified form of a
 traditional surname from the simplified-Chinese labels of Wikidata's
 family-name items (CC0), and, where those labels give a ranked
-traditional form none, five simplified forms entered by hand as facts
-of the script (买, 盖, 篮, 诸 and 谌, of 買, 蓋, 籃, 諸 and 諶), each a
-pairing that the PRC's 通用规范汉字表 (2013, 附件1) and 简化字总表
-(1986) state, cited per pair in the tool's BY_HAND. tools/zh_surnames.py
+traditional form none, six simplified forms entered by hand as facts
+of the script (买, 盖, 篮, 诸, 谌 and 芈, of 買, 蓋, 籃, 諸, 諶 and 羋):
+five a pairing that the PRC's 通用规范汉字表 (2013, 附件1) and
+简化字总表 (1986) state, and 芈 a standard character of the 2013 table
+whose traditional printed shape is 羋, each cited in the tool's
+BY_HAND. tools/zh_surnames.py
 derives that block and writes it below; do not edit it by hand. 2.5.0
 to 3.0.1 took the simplified forms from the Unicode Consortium's Unihan
 variant table instead, under the Unicode License v3; no Unihan data
-ships since 3.1, and two forms it gave that neither the labels nor the
-standards pair (厐 of 龎, 芈 of 羋) left the list
+ships since 3.1, and one form it gave that neither the labels nor the
+standards write (厐, of 龎) left the list
 (decisions/shipped-data-licences, 2026-11-16 #1445). Five mainland
 surnames that neither ranking reaches are added by hand at the census
 block's tail (#952), each annotated there with its mainland rank.
@@ -137,11 +139,11 @@ _SINGLE_RANKED = (
     "鄂", "髙", "浦", "仲", "裘", "燕", "庾", "湛", "迟", "遲",
     "东", "東", "米", "劳", "勞", "匡", "昌", "党", "兰", "蘭",
     "阴", "陰", "娄", "婁", "敖", "惠", "戈", "羊", "伊", "盖",
-    "蓋", "茹", "強", "强", "平", "丛", "叢", "蒙", "羋", "桓",
-    "区", "區", "源", "偕", "栗", "初", "恽", "阿", "兵", "冀",
-    "計", "计", "索", "明", "蔺", "藺", "危", "鞠", "廉", "茆",
-    "雍", "蹇", "苻", "宣", "盘", "盤", "𨶒", "厉", "厲", "机",
-    "归", "歸",
+    "蓋", "茹", "強", "强", "平", "丛", "叢", "蒙", "羋", "芈",
+    "桓", "区", "區", "源", "偕", "栗", "初", "恽", "阿", "兵",
+    "冀", "計", "计", "索", "明", "蔺", "藺", "危", "鞠", "廉",
+    "茆", "雍", "蹇", "苻", "宣", "盘", "盤", "𨶒", "厉", "厲",
+    "机", "归", "歸",
 )
 # -- END generated --
 # Two-character surnames, simplified. The first 34 rows are the
