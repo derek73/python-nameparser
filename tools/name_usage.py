@@ -124,10 +124,10 @@ What a number means depends on its source, and the report says so:
   name and how many after a comma, and the spellings as written. Words
   are matched ignoring case, periods and edge punctuation
   (local_corpora.word_key); a spaced word ('Ph. D.') is matched as its
-  words in a row, with the joined spelling's count beside it. The first is
-  ClinicalTrials.gov's study officials, where `MD` after a comma is the
-  usual case and a credential before it is the noise worth seeing; the
-  second the FEC's individual contributors, nearly every name written
+  words in a row, with the joined spelling's count beside it. Among them
+  are ClinicalTrials.gov's study officials and site contacts, where `MD`
+  after a comma is the usual case and a credential before it is the noise
+  worth seeing, and the FEC's individual contributors, nearly every name written
   family, comma, given in capitals by a filer's form, so a count there is
   a word typed into a field rather than into a whole name.
   Not a census of anyone: it counts what each source holds.

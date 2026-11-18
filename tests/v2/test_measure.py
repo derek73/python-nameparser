@@ -101,7 +101,7 @@ def test_a_failed_step_fails_the_run_and_one_with_moves_does_not(
     assert "Zyx" not in summary
     assert "none failed" in summary
     assert "== committed snapshot (against this branch's committed record): moves" in summary
-    assert "not measured, not fetched: ctgov-officials," in summary
+    assert "not measured, not fetched: ctgov-contacts, ctgov-officials," in summary
     assert (out / "01-committed-snapshot.txt").read_text().endswith("Ann Zyx\n")
     codes["CLDR and GND agreement"] = 2
     assert measure.main(["--base", str(base), "--out", str(out)]) == 1

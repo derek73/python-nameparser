@@ -8,6 +8,7 @@ corpus counts' positions and readings, and that no corpus name reaches
 the output. The corpus names are invented, and each carries a word no
 grid shape holds, so that one in the output is a quoted name.
 """
+import importlib
 import importlib.util
 import sys
 from collections import Counter
@@ -60,7 +61,8 @@ _NAMES = ["Sir Zyx", "Sir Zyx", "Mr Sir Qwv", "Zyx, Sir", "SIR, ANN",
 def _plant(monkeypatch: pytest.MonkeyPatch, names: list[str] = _NAMES) -> None:
     plant_corpus(monkeypatch, corpora, "ctgov-officials",
                  [{"name": n, "nct": str(i)} for i, n in enumerate(names)],
-                 "2026-10-21T09:00:05", "officials")
+                 "2026-10-21T09:00:05", "officials",
+                 {"read_version": importlib.import_module("local_ctgov").CTGOV_READ_VERSION})
 
 
 def test_the_grid_spells_every_shape_three_ways_under_every_order() -> None:
