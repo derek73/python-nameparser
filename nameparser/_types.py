@@ -422,8 +422,11 @@ class Token:
             )
         if not self.text:
             raise ValueError("Token.text must be a non-empty string")
-        object.__setattr__(
-            self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
+        # _coerce_enum returns a Role unchanged; asked only of what may
+        # need coercing, the parse's own tokens pay no frame for it
+        if not isinstance(self.role, Role):
+            object.__setattr__(
+                self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
         if self.reading is not None:
             if not isinstance(self.reading, Reading):
                 raise TypeError(
