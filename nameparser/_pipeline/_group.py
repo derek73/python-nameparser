@@ -1539,9 +1539,12 @@ def group(state: ParseState) -> ParseState:
     # tokens, which land in `dropped` as the maiden marker does; the
     # built-in cores, which no v1 release read, cut them too (#889)
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
-    tail_start = {Structure.SUFFIX_COMMA: 1,
-                  Structure.FAMILY_COMMA: 2}.get(state.structure)
+    # identity tests, not a dict keyed by the enum: Enum.__hash__ is a
+    # Python method, a frame per key on every parse
     family_comma = state.structure is Structure.FAMILY_COMMA
+    tail_start = (2 if family_comma
+                  else 1 if state.structure is Structure.SUFFIX_COMMA
+                  else None)
     for seg_idx, seg in enumerate(state.segments):
         if family_comma:
             bound_join = (BoundJoin.LENIENT if seg_idx == 1
