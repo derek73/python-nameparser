@@ -25,6 +25,7 @@ stages cannot disagree about which characters separate a word.
 from __future__ import annotations
 
 import bisect
+import operator
 import re
 
 from nameparser._pipeline._state import (
@@ -240,7 +241,9 @@ def tokenize(state: ParseState) -> ParseState:
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas, interpuncts)
-    tokens.sort(key=lambda t: t.span)
+    # attrgetter, not a lambda: the key is read in C, with no frame
+    # per token
+    tokens.sort(key=operator.attrgetter("span"))
     # extract_delimited runs before tokens exist, so its ambiguities
     # carry a character offset instead of an index. Resolve them now
     # that the stray character has landed in a token ('"Nick', 'Smith)')
