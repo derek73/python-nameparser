@@ -767,8 +767,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
     initials_at: int | None = None
-    # whether the run is the part's only word of the class, and whether
-    # the head is one word as C16 reads it (`_lone_word`, asked once)
+    # whether the run is the part's only entry in `maybe` (no word of
+    # the class and no caps-shape candidate beside it), and, asked only
+    # then, whether the head is one word as C16 reads it (`_lone_word`;
+    # None where not asked, the reading's own test asking it instead)
     run_alone = False
     lone_head: bool | None = None
     for at, p in enumerate(p1):
@@ -849,10 +851,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # a pair a later comma part's credential spoke for (rules/C5), whose
     # flip is reported as the count's, dotted or not
     later = False
-    # C16's run alone, behind a head that is not one word, asks no
-    # count and keeps no books (#1435): the run reads as initials only
-    # behind one word, and with no other word of the class the count
-    # licenses nothing, `head_named` meets no member and the books find
+    # C16's run alone in `maybe`, behind a head that is not one word,
+    # asks no count and keeps no books (#1435): the run reads as
+    # initials only behind one word, and with nothing else in `maybe`
+    # the count licenses nothing, `head_named` meets no member and the books find
     # none, so the reading is the one the count would give ('John
     # Smith, M.D.'). The run stays in `maybe`, so the part is still read
     # below as the count's part, never the listing form's

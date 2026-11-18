@@ -690,3 +690,32 @@ def test_the_written_short_except_reads_past_a_credentials_own_case_mask() -> No
     # condition, whatever the mask (#1395's third review)
     got = parser.parse("Smith, PHD")
     assert (got.given, got.suffix) == ("", "PHD")
+
+
+@pytest.mark.parametrize("text, fields, kinds", [
+    # behind a full name: the count is skipped and the run reads as the
+    # credential it spells
+    ("John Smith, M.D.", ("", "John", "Smith", "M.D."), ()),
+    # a head `_lone_word` reads as one word where the count finds two
+    # (a trailing lower-case particle): the count is still taken, and
+    # decides the reading. Recorded as it reads before and after #1435,
+    # not endorsed
+    ("Smith van, M.D.", ("", "Smith", "van", "M.D."), ()),
+    ("Smith van, J.P.", ("", "Smith", "van", "J.P."), ()),
+    # the run beside another entry of `maybe` (a dotted member not read
+    # as company): the count is taken for that member
+    ("John Smith, M.D. M.A", ("", "John", "Smith", "M.D. M.A"), ()),
+    ("John Smith, M.A M.A M.D.", ("", "John", "Smith", "M.A M.A M.D."),
+     ("suffix-or-name",)),
+])
+def test_the_count_c16_skips_decides_no_reading(
+        text: str, fields: tuple[str, str, str, str],
+        kinds: tuple[str, ...]) -> None:
+    # #1435: `decide` skips C4's count only where C16's run is alone in
+    # `maybe` behind a head that is not one word. Each row is read the
+    # same with and without the skip; a gate that skipped the count
+    # behind a one-word head too ('Smith van'), or beside another
+    # member, moves them
+    got = parse(text)
+    assert (got.middle, got.given, got.family, got.suffix) == fields, text
+    assert tuple(str(a.kind) for a in got.ambiguities) == kinds, text
