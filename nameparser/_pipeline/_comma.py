@@ -762,7 +762,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # rules/C16: "behind one word, initials run together are the given
     # name whatever they spell" -- the runs that spell a listed
     # credential ('J.P.', 'M.A.'), joined to the class so C4's count is
-    # taken (decisions/C16 (#1238)). Gathered only
+    # taken where the head may be one word (decisions/C16 (#1238),
+    # #1435). Gathered only
     # where the part holds a full stop, so 'Smith, John' pays no frame;
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
