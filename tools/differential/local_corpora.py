@@ -36,7 +36,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 
 - raw.jsonl -- one record per name as the source gave it, with where it
   came from where the source says: a ClinicalTrials.gov official, with
-  the study, role and the country every site of the study is in; a
+  the study, role and the country every site of the study is in, or
+  none where they differ, one states none or there are none; a
   ClinicalTrials.gov site contact, with the study, role and site's
   country; one distinct FEC, Taiwan or UK donor name, alone;
   one distinct pair of a TSE donor's filed name and the tax registry's

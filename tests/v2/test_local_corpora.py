@@ -69,10 +69,12 @@ def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPat
 
 
 def _study(nct: str, *officials: str) -> dict[str, Any]:
+    """A study with one site, in the United States."""
     return {"protocolSection": {
         "identificationModule": {"nctId": nct},
         "contactsLocationsModule": {"overallOfficials": [
-            {"name": name, "role": "PRINCIPAL_INVESTIGATOR"} for name in officials]}}}
+            {"name": name, "role": "PRINCIPAL_INVESTIGATOR"} for name in officials],
+            "locations": [{"country": "United States"}]}}}
 
 
 #: Two pages holding three studies, one study without officials.
@@ -148,7 +150,7 @@ def test_a_fetch_pages_through_and_writes_the_three_files(
     assert [r["name"] for r in corpus.records] == [
         "Ann Lee, MD, PhD", "BOB ROE MD", "Ann Lee, MD, PhD", "Cy Doe,M.D."]
     assert corpus.records[0] == {"name": "Ann Lee, MD, PhD", "study": "NCT1",
-                                 "role": "PRINCIPAL_INVESTIGATOR", "country": ""}
+                                 "role": "PRINCIPAL_INVESTIGATOR", "country": "US"}
     assert [json.loads(line) for line in
             (_folder(tmp_path) / "corpus.jsonl").read_text().splitlines()] == [
         "Ann Lee, MD, PhD", "BOB ROE MD", "Cy Doe,M.D."]
@@ -157,7 +159,7 @@ def test_a_fetch_pages_through_and_writes_the_three_files(
     assert meta["detail"] == {"api_version": "2.0.5", "studies": 3,
                               "read_version": ctgov.CTGOV_READ_VERSION,
                               "officials_without_a_name": 0,
-                              "officials_by_sites": {"no_site": 4}}
+                              "officials_by_sites": {"one_country": 4}}
     assert local.load(_SOURCE) == corpus
     assert corpus.header().startswith(
         f"ClinicalTrials.gov (NLM) study officials, data as of {_DATE}; 4 officials")
@@ -227,11 +229,14 @@ def test_an_official_without_a_name_is_counted_not_dropped_in_silence(
     page = {"totalCount": 1, "studies": [{"protocolSection": {
         "identificationModule": {"nctId": "NCT1"},
         "contactsLocationsModule": {"overallOfficials": [
-            {"role": "STUDY_CHAIR"}, {"name": "Ann Lee, MD"}]}}}]}
+            {"role": "STUDY_CHAIR"}, {"name": "Ann Lee, MD"}],
+            "locations": [{"country": "United States"}]}}}]}
     _serve(monkeypatch, tmp_path, pages=[page])
     corpus = local.fetch(_SOURCE)
     assert [r["name"] for r in corpus.records] == ["Ann Lee, MD"]
     assert corpus.meta["detail"]["officials_without_a_name"] == 1
+    # The officials kept, by sites: the nameless one is in no bucket.
+    assert corpus.meta["detail"]["officials_by_sites"] == {"one_country": 1}
 
 
 def _sited(nct: str, countries: list[str | None], *officials: str,
@@ -262,6 +267,9 @@ def _sited(nct: str, countries: list[str | None], *officials: str,
 def test_an_official_takes_the_country_only_where_every_site_is_in_it(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, countries: list[str | None],
         country: str, where: str) -> None:
+    # The gates off: a study of two officials is the whole registry here,
+    # and the gates are tested on their own below.
+    monkeypatch.setattr(ctgov, "_gated", lambda records, counted: None)
     page = {"totalCount": 1, "studies": [_sited("NCT1", countries, "Ann Lee", "Bo Wu")]}
     _serve(monkeypatch, tmp_path, pages=[page])
     corpus = local.fetch(_SOURCE)
@@ -292,6 +300,106 @@ def test_a_country_the_map_does_not_hold_fails_the_fetch_naming_it(
     with pytest.raises(ValueError, match=r"NCT1 lists a site in 'Freedonia'.*CTGOV_COUNTRIES"):
         local.fetch(source)
     assert local.load(source) is None
+
+
+def test_a_contact_is_kept_once_per_name_role_study_and_country_only(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Each repeat dropped is one of the same name, role, study and country;
+    # any of the four differing keeps a record. The countryless count is
+    # of records kept, after the repeats are dropped.
+    monkeypatch.setattr(ctgov, "CTGOV_MAX_COUNTRYLESS", 1.0)
+    ann = {"name": "Ann Lee", "role": "PRINCIPAL_INVESTIGATOR"}
+    ann_contact = {"name": "Ann Lee", "role": "CONTACT"}
+    page = {"totalCount": 2, "studies": [
+        _sited("NCT1", ["United States", "United States", None, None],
+               contacts=[[ann], [ann_contact], [ann], [ann]]),
+        _sited("NCT2", ["United States"], contacts=[[ann]])]}
+    _serve(monkeypatch, tmp_path, pages=[page])
+    corpus = local.fetch(ctgov.CTGOV_CONTACTS)
+    assert [(r["study"], r["role"], r["country"]) for r in corpus.records] == [
+        ("NCT1", "PRINCIPAL_INVESTIGATOR", "US"), ("NCT1", "CONTACT", "US"),
+        ("NCT1", "PRINCIPAL_INVESTIGATOR", ""), ("NCT2", "PRINCIPAL_INVESTIGATOR", "US")]
+    detail = corpus.meta["detail"]
+    assert (detail["repeated_in_study_and_country"],
+            detail["at_a_site_without_a_country"]) == (1, 1)
+
+
+def _studies(n: int, countries: list[str | None],
+             contacts: list[list[dict[str, Any]]] | None = None) -> dict[str, Any]:
+    """One page of `n` studies, each with one official ("Ann Lee") and
+    sites in `countries` holding `contacts`."""
+    return {"totalCount": n, "studies": [
+        _sited(f"NCT{i}", countries, "Ann Lee", contacts=contacts) for i in range(n)]}
+
+
+@pytest.mark.parametrize("source", [ctgov.CTGOV_OFFICIALS, ctgov.CTGOV_CONTACTS])
+def test_a_fetch_whose_records_hold_no_country_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str) -> None:
+    # The "country" key renamed: every site reads as stating none.
+    page = _studies(3, ["United States"],
+                    contacts=[[{"name": "Bo Wu", "role": "CONTACT"}]])
+    for study in page["studies"]:
+        for site in study["protocolSection"]["contactsLocationsModule"]["locations"]:
+            site["countryName"] = site.pop("country")
+    monkeypatch.setattr(ctgov, "CTGOV_MAX_COUNTRYLESS", 1.0)
+    _serve(monkeypatch, tmp_path, pages=[page])
+    with pytest.raises(ValueError, match="none of 3 records holds a country"):
+        local.fetch(source)
+    assert local.load(source) is None
+
+
+@pytest.mark.parametrize(("source", "countries", "limit", "what"), [
+    (ctgov.CTGOV_OFFICIALS, [], "CTGOV_MAX_NO_SITE", "officials of a study listing no site"),
+    (ctgov.CTGOV_OFFICIALS, ["United States", None], "CTGOV_MAX_COUNTRYLESS",
+     "officials of a study with a site stating no country"),
+    (ctgov.CTGOV_CONTACTS, [None], "CTGOV_MAX_COUNTRYLESS",
+     "contacts at a site stating no country"),
+], ids=["officials with no site", "officials at a countryless site",
+        "contacts at a countryless site"])
+def test_a_fetch_past_a_share_of_records_without_a_country_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str,
+        countries: list[str | None], limit: str, what: str) -> None:
+    # Two studies of four read right, one of each other share: 2 of 4
+    # (one share past) against 1 of 4 (at it). A partial rename of the
+    # key shows as a rising share before it empties every record.
+    contacts: list[list[dict[str, Any]]] = [[{"name": "Bo Wu", "role": "CONTACT"}]] * len(countries)
+    right = _studies(1, ["United States"],
+                     contacts=[[{"name": "Bo Wu", "role": "CONTACT"}]])["studies"][0]
+    monkeypatch.setattr(ctgov, limit, 0.25)
+    for bad, refused in ((2, True), (1, False)):
+        studies = [_sited(f"NCTB{i}", countries, "Ann Lee", contacts=contacts)
+                   for i in range(bad)]
+        studies += [{**right, "protocolSection": {
+            **right["protocolSection"],
+            "identificationModule": {"nctId": f"NCTR{i}"}}} for i in range(4 - bad)]
+        _serve(monkeypatch, tmp_path, pages=[{"totalCount": 4, "studies": studies}])
+        if refused:
+            with pytest.raises(ValueError, match=f"{bad} of 4 {what}"):
+                local.fetch(source)
+        else:
+            local.fetch(source)
+
+
+@pytest.mark.parametrize("source", [ctgov.CTGOV_OFFICIALS, ctgov.CTGOV_CONTACTS])
+@pytest.mark.parametrize(("key", "value"), [
+    ("country", {"name": "France"}), ("country", 0), ("role", None), ("role", 3)],
+    ids=["a country object", "a country number", "a null role", "a role number"])
+def test_a_country_or_role_that_is_not_text_fails_the_fetch_naming_the_study(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str, key: str,
+        value: object) -> None:
+    # Written as it came, a role of null would make a corpus every reader
+    # refuses, and a fetch again would write it again.
+    contact: dict[str, Any] = {"name": "Bo Wu", "role": "CONTACT"}
+    page = _studies(1, ["United States"], contacts=[[contact]])
+    module = page["studies"][0]["protocolSection"]["contactsLocationsModule"]
+    if key == "country":
+        module["locations"][0]["country"] = value
+    else:
+        contact["role"] = value
+        module["overallOfficials"][0]["role"] = value
+    _serve(monkeypatch, tmp_path, pages=[page])
+    with pytest.raises(ValueError, match=rf"NCT0 lists a .*{key}.* not text"):
+        local.fetch(source)
 
 
 def test_every_mapped_code_is_two_capitals_and_names_one_country() -> None:
@@ -335,6 +443,7 @@ def test_the_contacts_corpus_keeps_each_site_contact_with_its_site_s_country(
     pages: list[dict[str, Any]] = [
         {"totalCount": 2, "nextPageToken": "t2", "studies": [first]},
         {"studies": [_sited("NCT2", ["South Korea"], contacts=[[ann]])]}]
+    monkeypatch.setattr(ctgov, "CTGOV_MAX_COUNTRYLESS", 1.0)
     fetched = _serve(monkeypatch, tmp_path, pages=pages)
     corpus = local.fetch(ctgov.CTGOV_CONTACTS)
     assert corpus.records == [
@@ -348,13 +457,16 @@ def test_the_contacts_corpus_keeps_each_site_contact_with_its_site_s_country(
          "country": "KR"}]
     assert corpus.meta["detail"] == {
         "api_version": "2.0.5", "studies": 2, "read_version": ctgov.CTGOV_READ_VERSION,
-        "contacts_without_a_name": 1, "repeated_at_another_site": 1,
+        "contacts_without_a_name": 1, "repeated_in_study_and_country": 1,
         "at_a_site_without_a_country": 1}
     assert corpus.header().startswith(
         f"ClinicalTrials.gov (NLM) study site contacts, data as of {_DATE}; 5 contacts")
     fields = {urllib.parse.parse_qs(urllib.parse.urlsplit(u).query)["fields"][0]
               for u in fetched if "/studies" in u}
     assert fields == {ctgov.CONTACT_FIELDS}
+    # The fake server ignores the fields, so hold the list itself.
+    assert {"NCTId", "LocationCountry", "LocationContactName",
+            "LocationContactRole"} <= set(ctgov.CONTACT_FIELDS.split(","))
     # The officials' corpus is untouched by the sibling's fetch.
     assert local.load(_SOURCE) is None
     assert local.load(ctgov.CTGOV_CONTACTS) == corpus

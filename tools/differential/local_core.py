@@ -112,7 +112,7 @@ def _zip_stamp(info: zipfile.ZipInfo) -> str:
     return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
 
 
-def _pinned(key: str, wanted: Callable[[], str], says: str
+def _pinned(key: str, wanted: Callable[[], object], says: str
             ) -> Callable[[dict[str, Any]], str]:
     """A Source.check refusing a corpus whose meta.json detail `key` is
     not `wanted()` now, read at check time so that a change to the

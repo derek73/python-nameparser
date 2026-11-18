@@ -32,10 +32,9 @@ this file (snapshot.corpus_entries, each name under its shape's order);
 distinct names. With neither, the committed corpora. `--group` keeps a
 grouped local corpus's records of that country or nationality, or for
 opensanctions-parliaments that dataset, or for ctgov-officials and
-ctgov-contacts that ISO country code, a record with none in no group
-(local_agreement.FIELDED names
-the key, and Source.group for a corpus with no fields; matched exactly
-as the corpus writes it), and needs `--local`: with `--committed` beside it, which
+ctgov-contacts that ISO country code (local_agreement.FIELDED names the
+key, and Source.group for a corpus with no fields; matched exactly as
+the corpus writes it), and needs `--local`: with `--committed` beside it, which
 has no groups, it is refused, as is a group no record read holds; with
 `--local all` it reads the grouped corpora alone, saying so. `--match`
 keeps the names a regular expression finds anywhere in them, `--sample

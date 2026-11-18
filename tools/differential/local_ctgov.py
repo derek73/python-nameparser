@@ -13,10 +13,11 @@ the study ran, not where the official is from; the affiliation text is
 not read (#1451).
 
 ctgov-contacts -- the named contacts under each study's sites, the
-officials' sibling (#1451): one record per contact, study and site
-country, the same person listed at several sites of one study in one
-country kept once and counted, each with its role (CONTACT,
-PRINCIPAL_INVESTIGATOR, SUB_INVESTIGATOR) and its site's country code,
+officials' sibling (#1451): one record per contact name, role, study and
+site country, a name listed again with the same role at another site of
+one study in one country kept once and counted, each with its role
+(mostly CONTACT, PRINCIPAL_INVESTIGATOR or SUB_INVESTIGATOR, as the
+registry writes it) and its site's country code,
 "" where the site states no country. Central contacts are left out: they
 belong to no site, so they have no country of their own. A corpus of its
 own rather than more records in ctgov-officials, so the counts already
@@ -30,7 +31,8 @@ hold fails the fetch, naming it. ClinicalTrials.gov's terms ask anyone
 redistributing the data to credit it, show NLM's processing date and say
 what was changed: every report local_corpora.py prints and the
 tools/name_usage.py row carry the credit and the date, the names are
-kept unchanged, and the country is the one change, a code for the name.
+kept unchanged; the changes are the country, a code for the registry's
+name, and ctgov-contacts' repeats, kept once.
 """
 from __future__ import annotations
 
@@ -40,28 +42,39 @@ from collections import Counter
 from collections.abc import Callable, Iterator
 from typing import Any
 
-from local_core import Fetched, _get_json, _pinned
+from local_core import Fetched, _get_json, _pinned, _refuse_past
 
 
 CTGOV_API = "https://clinicaltrials.gov/api/v2"
 CTGOV_PAGE = 1000  # the API's largest page
 CTGOV_OFFICIALS = "ctgov-officials"
 CTGOV_CONTACTS = "ctgov-contacts"
+#: LocationCountry alone still returns a site stating no country, as
+#: {} (NCT00320424, 2026-11-18), so the rule sees it.
 OFFICIAL_FIELDS = "NCTId,OverallOfficialName,OverallOfficialRole,LocationCountry"
 CONTACT_FIELDS = "NCTId,LocationCountry,LocationContactName,LocationContactRole"
 #: The version of how a record is built from what the API gives (the
-#: country rule and CTGOV_COUNTRIES's codes), stored in meta.json and
+#: country rule, ctgov-contacts' repeat key and CTGOV_COUNTRIES's
+#: codes), stored in meta.json and
 #: required on load: bump it with any change to either, so a corpus read
 #: the old way is refused rather than read. 1: the country (#1451); a
 #: corpus fetched before it holds no "country" and is refused too.
 CTGOV_READ_VERSION = 1
+#: The most of the officials kept whose study lists no site, and of the
+#: officials or contacts kept at a site stating no country, before a
+#: fetch is refused: a renamed "locations" or "country" key would
+#: otherwise empty every record's country in silence. Measured
+#: 2026-11-18: 73 of 862 officials on one page of 1,000 studies had no
+#: site, and no site of 3,000 studies stated no country.
+CTGOV_MAX_NO_SITE = 0.25
+CTGOV_MAX_COUNTRYLESS = 0.01
 
 #: Every country name the registry writes, as listed by
 #: /api/v2/stats/field/values?fields=LocationCountry (226 names on
 #: 2026-11-18), with its ISO 3166-1 alpha-2 code. A territory the
 #: registry names apart (Puerto Rico, Guam, Réunion) keeps its own code,
-#: as ISO gives it one. Four names have no current code: Kosovo takes the
-#: user-assigned XK, as ORCID writes it, and Serbia and Montenegro, the
+#: as ISO gives it one (Reunion: RE). Four names have no current code: Kosovo takes the
+#: user-assigned XK, the code in common use for it, and Serbia and Montenegro, the
 #: Federal Republic of Yugoslavia and the Netherlands Antilles their
 #: former codes (CS, YU, AN, ISO 3166-3). Names are looked up with their
 #: edges stripped: the registry writes one with a trailing space.
@@ -203,9 +216,38 @@ def _ctgov_read(fields: str, take: Callable[[str, dict[str, Any]], None]
 
 
 def _site_country(site: dict[str, Any], nct: str) -> str:
-    """A site's country code, or "" where it states no country."""
-    name = site.get("country") or ""
+    """A site's country code, or "" where it states no country; a
+    country that is not text, or that CTGOV_COUNTRIES does not map,
+    raises ValueError naming the study."""
+    name = site.get("country")
+    if name is None:
+        return ""
+    if not isinstance(name, str):
+        raise ValueError(f"{nct} lists a site whose country is {name!r}, not "
+                         f"text: the API's shape has changed")
     return country_code(name, nct) if name.strip() else ""
+
+
+def _role(entry: dict[str, Any], nct: str) -> str:
+    """An official's or contact's role, "" where it states none; a role
+    that is not text raises, naming the study, rather than writing a
+    corpus every reader refuses."""
+    role = entry.get("role", "")
+    if not isinstance(role, str):
+        raise ValueError(f"{nct} lists a role {role!r}, not text: the API's "
+                         f"shape has changed")
+    return role
+
+
+def _gated(records: list[dict[str, str]], counted: list[tuple[int, float, str]]) -> None:
+    """Refuse a fetch whose records hold no country at all, or where any
+    of `counted`'s (count, share, what) is past its share of the records
+    (CTGOV_MAX_NO_SITE, CTGOV_MAX_COUNTRYLESS)."""
+    if records and not any(r["country"] for r in records):
+        raise ValueError(f"none of {len(records):,} records holds a country: "
+                         f"a location's \"country\" key may have moved")
+    _refuse_past([(count, len(records), share, what) for count, share, what in counted],
+                 "a location's key may have moved")
 
 
 def fetch_ctgov() -> Fetched:
@@ -213,9 +255,12 @@ def fetch_ctgov() -> Fetched:
     the country its study's sites share (the module docstring).
 
     An official with no name is counted rather than dropped in silence,
-    so a renamed field shows as a count in the header instead of a
-    smaller registry; the officials are counted by where their study's
-    sites are (one country, several, none listed, one stating none)."""
+    so a renamed field shows as a count in meta.json's detail, which
+    `fetch` prints, instead of a smaller registry; the officials kept are
+    counted there by where their study's sites are: none listed, then
+    a site stating none (whatever the other sites say), then several
+    countries, else one. A fetch past CTGOV_MAX_NO_SITE or
+    CTGOV_MAX_COUNTRYLESS, or holding no country at all, is refused."""
     records: list[dict[str, str]] = []
     nameless = 0
     sites: Counter[str] = Counter()
@@ -235,13 +280,16 @@ def fetch_ctgov() -> Fetched:
         for official in module.get("overallOfficials", []):
             if official.get("name"):
                 records.append({"name": official["name"], "study": nct,
-                                "role": official.get("role", ""),
-                                "country": country})
+                                "role": _role(official, nct), "country": country})
                 sites[where] += 1
             else:
                 nameless += 1
 
     date, api, total = _ctgov_read(OFFICIAL_FIELDS, take)
+    _gated(records, [
+        (sites["no_site"], CTGOV_MAX_NO_SITE, "officials of a study listing no site"),
+        (sites["a_site_without_a_country"], CTGOV_MAX_COUNTRYLESS,
+         "officials of a study with a site stating no country")])
     return Fetched(records, date, {
         "api_version": api, "studies": total, "read_version": CTGOV_READ_VERSION,
         "officials_without_a_name": nameless,
@@ -250,10 +298,11 @@ def fetch_ctgov() -> Fetched:
 
 def fetch_ctgov_contacts() -> Fetched:
     """Every named contact under every study's sites, in the API's
-    order, once per study and country (the module docstring), with the
-    contacts without a name, the repeats at another site of the same
-    study and country, and the contacts at a site stating no country
-    counted."""
+    order, once per name, role, study and country (the module
+    docstring), counting in meta.json's detail the contacts without a
+    name, the repeats dropped and the records kept at a site stating no
+    country. A fetch past CTGOV_MAX_COUNTRYLESS, or holding no country
+    at all, is refused."""
     records: list[dict[str, str]] = []
     nameless = repeated = countryless = 0
 
@@ -267,7 +316,7 @@ def fetch_ctgov_contacts() -> Fetched:
                 if not name:
                     nameless += 1
                     continue
-                role = contact.get("role", "")
+                role = _role(contact, nct)
                 if (name, role, country) in seen:
                     repeated += 1
                     continue
@@ -277,10 +326,12 @@ def fetch_ctgov_contacts() -> Fetched:
                                 "country": country})
 
     date, api, total = _ctgov_read(CONTACT_FIELDS, take)
+    _gated(records, [(countryless, CTGOV_MAX_COUNTRYLESS,
+                      "contacts at a site stating no country")])
     return Fetched(records, date, {
         "api_version": api, "studies": total, "read_version": CTGOV_READ_VERSION,
         "contacts_without_a_name": nameless,
-        "repeated_at_another_site": repeated,
+        "repeated_in_study_and_country": repeated,
         "at_a_site_without_a_country": countryless})
 
 
