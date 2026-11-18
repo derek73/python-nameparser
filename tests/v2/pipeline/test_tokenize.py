@@ -129,8 +129,11 @@ def test_the_separator_classes_hold_their_parts_over_every_code_point() -> None:
         assert matched(_tokenize._IGNORABLE[key]) == always | stripped, key
         assert matched(_tokenize._BOUNDARY[key]) == (
             always | stripped | context), key
-    # the two readers of the classes, one member of each part and a letter
-    for policy in (Policy(), _KEEP_ALL):
+    # the two readers of the classes, one member of each part and a
+    # letter, under every setting: the mixed two are where a reader
+    # picking its class by the switches in the wrong order shows
+    for strip_bidi, strip_emoji in _tokenize._SWITCHES:
+        policy = Policy(strip_bidi=strip_bidi, strip_emoji=strip_emoji)
         state = ParseState(original="", lexicon=Lexicon.empty(),
                            policy=policy)
         for ch in (" ", "\u30fb", "\u200b", "\u200f", "\U0001f600", "a"):

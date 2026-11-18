@@ -20,8 +20,10 @@ original exactly as given (v1 contrast: decisions/T1).
 
 Beside the stage function, `_ignorable` is shared: extract asks it
 where a listed particle's word ends (rules/N2, #1241). It matches the
-class tokenize's own scan is built from, so the two stages cannot
-disagree about which characters separate a word.
+ignorable class tokenize's own scan is built from, so the two stages
+agree on every character that separates in every context; the ones
+context decides (a transcription dot between classified characters,
+U+202F between Mongolian letters) are tokenize's alone.
 """
 from __future__ import annotations
 

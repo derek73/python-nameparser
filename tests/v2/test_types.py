@@ -70,11 +70,12 @@ def test_token_rejects_malformed_span_shapes() -> None:
 
 
 @pytest.mark.parametrize("span", [
-    [0, 4], (False, True), (0, True), (0, 4.0),
+    [0, 4], (False, True), (0, True), (0, 4.0), (True, 4), (0.0, 4),
     # a Span keeps its coordinates as given, so it is checked as a tuple
     # is (#1436 stopped rebuilding one, and must not stop checking it)
     Span(0.0, 4.0), Span(False, True), Span(0, True),  # type: ignore[arg-type]
-], ids=["list", "bools", "bool-end", "float-end", "span-floats",
+], ids=["list", "bools", "bool-end", "float-end", "bool-start",
+        "float-start", "span-floats",
         "span-bools", "span-bool-end"])
 def test_token_rejects_a_span_of_anything_but_two_ints(span: object) -> None:
     with pytest.raises(TypeError, match="expected a \\(start, end\\) pair"):
