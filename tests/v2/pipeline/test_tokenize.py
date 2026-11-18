@@ -94,6 +94,34 @@ def test_emoji_and_bidi_are_ignorable_by_policy() -> None:
     assert [t.text for t in out2.tokens] == ["John", "\U0001f600Smith"]
 
 
+
+@pytest.mark.parametrize("strip_bidi", [False, True])
+@pytest.mark.parametrize("strip_emoji", [False, True])
+def test_the_separator_classes_hold_their_parts_over_every_code_point(
+        strip_bidi: bool, strip_emoji: bool) -> None:
+    # #1436: the ignorable set is a regex class built from its parts, so
+    # a region is scanned in C; held here, code point by code point, to
+    # the parts as their own predicates state them (str.isspace, the two
+    # sets, _BIDI, the emoji ranges), and the boundary class to the
+    # ignorable one plus the commas and transcription dots
+    from nameparser._pipeline._state import COMMA_CHARS
+    policy = Policy(strip_bidi=strip_bidi, strip_emoji=strip_emoji)
+    state = ParseState(original="", lexicon=Lexicon.empty(), policy=policy)
+    boundary = _tokenize._BOUNDARY[strip_bidi, strip_emoji]
+    for c in range(0x110000):
+        ch = chr(c)
+        stripped = bool((strip_bidi and _tokenize._BIDI.match(ch))
+                        or (strip_emoji and any(
+                            lo <= c <= hi for lo, hi in _tokenize._EMOJI_RANGES)))
+        ignorable = (ch.isspace() or ch in _tokenize._NAME_DOT_SEPARATORS
+                     or ch in _tokenize._INVISIBLE_SEPARATORS or stripped)
+        assert _tokenize._stripped(ch, policy) == stripped, hex(c)
+        assert _tokenize._ignorable(ch, state) == ignorable, hex(c)
+        assert (boundary.match(ch) is not None) == (
+            ignorable or ch in COMMA_CHARS
+            or ch in _tokenize._TRANSCRIPTION_DOTS), hex(c)
+
+
 _KEEP_ALL = Policy(strip_emoji=False, strip_bidi=False)
 
 
