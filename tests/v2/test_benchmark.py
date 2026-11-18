@@ -1186,6 +1186,31 @@ def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
     assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
+def test_a_run_of_initials_behind_a_full_name_takes_no_count() -> None:
+    """rules/C16's run of initials reads as the given name only behind
+    one word, so where it is the part's only word of the ambiguous
+    class and the head is not one word, `_comma.decide` asks C4's count
+    nothing (#1435). Recorded negative control (2026-11-18, py3.11):
+    with the gate's `lone_head is not False` arm deleted no output
+    moves, and 'John Smith, M.D.' enters `name_word_count` once and
+    costs 23 more frames (210 against 187; master before the gate,
+    which did not ask `_lone_word` there, 209)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    only = "name_word_count"
+    for text in ("John Smith, M.D.", "Dr. Mr., M.D.", "Bin Zhang, J.P."):
+        # REACHABILITY: C16 found the run and asked about the head, so a
+        # zero below means the count was skipped rather than unreached
+        assert _frames_for(text, only="_lone_word") == 1, text
+        assert _frames_for(text, only=only) == 0, text
+    # behind one word the count is still taken, once, and `_lone_word`
+    # is asked once, not again for the reading
+    assert _frames_for("Smith, J.P.", only=only) == 1
+    assert _frames_for("Smith, J.P.", only="_lone_word") == 1
+    # another word of the class beside the run still takes the count
+    assert _frames_for("John Smith, M.D. MA", only=only) == 1
+
+
 def test_two_capitals_ask_the_later_parts_only_where_one_stands() -> None:
     """rules/C5's later credential (#1392) is read only where the pair
     is the whole part and a part stands behind it, so a pair alone
