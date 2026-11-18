@@ -64,8 +64,10 @@ CTGOV_READ_VERSION = 1
 #: officials or contacts kept at a site stating no country, before a
 #: fetch is refused: a renamed "locations" or "country" key would
 #: otherwise empty every record's country in silence. Measured
-#: 2026-11-18: 73 of 862 officials on one page of 1,000 studies had no
-#: site, and no site of 3,000 studies stated no country.
+#: 2026-11-18 by the API's own filters: of the 430,126 studies naming an
+#: official, 31,924 list no site country, all but 15 of them no site at
+#: all (about 7.4%), and no site of 3,000 studies paged stated no
+#: country.
 CTGOV_MAX_NO_SITE = 0.25
 CTGOV_MAX_COUNTRYLESS = 0.01
 
