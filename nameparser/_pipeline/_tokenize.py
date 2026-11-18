@@ -19,8 +19,9 @@ character-classification rules, so spans always index the
 original exactly as given (v1 contrast: decisions/T1).
 
 Beside the stage function, `_ignorable` is shared: extract asks it
-where a listed particle's word ends (rules/N2, #1241), so the two
-stages cannot disagree about which characters separate a word.
+where a listed particle's word ends (rules/N2, #1241). It matches the
+class tokenize's own scan is built from, so the two stages cannot
+disagree about which characters separate a word.
 """
 from __future__ import annotations
 
@@ -102,8 +103,11 @@ def _chars(chars: frozenset[str]) -> str:
 # match against them, and the boundary pattern _tokenize_region scans
 # with is the ignorable class plus the characters that separate only by
 # context (the commas, which record an offset, and the transcription
-# dots, whose flanks decide). `\s` matches exactly the characters
-# str.isspace() accepts (checked over every code point).
+# dots, whose flanks decide). One ignorable character is context too:
+# U+202F, whitespace, which rules/T6 has join two Mongolian letters, so
+# the scan's three branches (comma, U+202F, dot) are the whole of
+# context. `\s` matches exactly the characters str.isspace() accepts
+# (checked over every code point).
 _ALWAYS = r'\s' + _chars(_NAME_DOT_SEPARATORS | _INVISIBLE_SEPARATORS)
 _SWITCHES = ((False, False), (False, True), (True, False), (True, True))
 
@@ -133,11 +137,12 @@ def _mongolian_letter(ch: str) -> bool:
 
 
 def _stripped(ch: str, policy: Policy) -> bool:
-    """True when the strip policy removes `ch` from the token stream.
-    The ONE definition of that set, shared by _ignorable and _flank: a
-    character the strip policy removes must not occupy a flank
-    position either, so a new strip class added to _strip_class stays
-    transparent to the interpunct guard by construction. The separators
+    """True when the strip policy removes `ch` from the token stream:
+    the reader _flank asks of the set _strip_class defines, which also
+    feeds _IGNORABLE and _BOUNDARY. A character the strip policy removes
+    must not occupy a flank position either, so a new strip class added
+    to _strip_class stays transparent to the interpunct guard by
+    construction. The separators
     (whitespace, the name dots and _INVISIBLE_SEPARATORS) are not in
     this set and do occupy one."""
     pattern = _STRIPPED[policy.strip_bidi, policy.strip_emoji]
@@ -159,11 +164,12 @@ def _flank(text: str, indices: range, policy: Policy) -> str | None:
 
 
 def _ignorable(ch: str, state: ParseState) -> bool:
-    """True when `ch` separates the words beside it under every context:
-    whitespace, the name dots, _INVISIBLE_SEPARATORS (all unconditional,
-    not policy-gated: commas RECORD an offset and these must not, and
-    only the 间隔号 marks a transcription, #298), and what the strip
-    policy removes."""
+    """True when `ch` separates the words beside it: whitespace, the
+    name dots, _INVISIBLE_SEPARATORS (all unconditional, not
+    policy-gated: commas RECORD an offset and these must not, and only
+    the 间隔号 marks a transcription, #298), and what the strip policy
+    removes. The one exception is decided in _tokenize_region, by
+    context: U+202F between two Mongolian letters joins them (rules/T6)."""
     policy = state.policy
     return _IGNORABLE[policy.strip_bidi, policy.strip_emoji].match(
         ch) is not None

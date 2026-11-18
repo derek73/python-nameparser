@@ -68,6 +68,19 @@ def test_token_rejects_malformed_span_shapes() -> None:
         Token("x", 5, Role.GIVEN)  # type: ignore[arg-type]
 
 
+
+@pytest.mark.parametrize("span", [
+    [0, 4], (False, True), (0, True), (0, 4.0),
+    # a Span keeps its coordinates as given, so it is checked as a tuple
+    # is (#1436 stopped rebuilding one, and must not stop checking it)
+    Span(0.0, 4.0), Span(False, True), Span(0, True),  # type: ignore[arg-type]
+], ids=["list", "bools", "bool-end", "float-end", "span-floats",
+        "span-bools", "span-bool-end"])
+def test_token_rejects_a_span_of_anything_but_two_ints(span: object) -> None:
+    with pytest.raises(TypeError, match="expected a \\(start, end\\) pair"):
+        Token("x", span, Role.GIVEN)  # type: ignore[arg-type]
+
+
 def test_token_rejects_non_string_text() -> None:
     with pytest.raises(TypeError, match="got None"):
         Token(None, None, Role.GIVEN)  # type: ignore[arg-type]
