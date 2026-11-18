@@ -464,15 +464,17 @@ class Token:
         # The same guards _normset applies to Lexicon vocabulary: a bare
         # string would become its character set, a mapping would silently
         # contribute only its keys.
-        if isinstance(self.tags, str):
-            raise TypeError(
-                "Token.tags must be an iterable of strings, "
-                "not a bare string"
-            )
-        if isinstance(self.tags, Mapping):
-            raise TypeError(
-                "Token.tags must be an iterable of strings, not a mapping"
-            )
+        # A frozenset is neither, and asking Mapping, an ABC, is a frame
+        if type(self.tags) is not frozenset:
+            if isinstance(self.tags, str):
+                raise TypeError(
+                    "Token.tags must be an iterable of strings, "
+                    "not a bare string"
+                )
+            if isinstance(self.tags, Mapping):
+                raise TypeError(
+                    "Token.tags must be an iterable of strings, not a mapping"
+                )
         tags = frozenset(self.tags)
         for tag in tags:
             if not isinstance(tag, str):
