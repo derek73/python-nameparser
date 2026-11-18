@@ -1663,8 +1663,10 @@ def group(state: ParseState) -> ParseState:
                 for i in piece[1:]:
                     tokens[i] = copy_with(
                         tokens[i], tags=tokens[i].tags | {"joined"})
-        all_pieces.append(tuple(tuple(p) for p in pieces))
-        all_ptags.append(tuple(frozenset(t) for t in ptags))
+        # map over the type, not a generator: the conversion runs in C,
+        # where a generator cost a frame per piece
+        all_pieces.append(tuple(map(tuple, pieces)))
+        all_ptags.append(tuple(map(frozenset, ptags)))
         all_reads.append(seg_reads[0] if len(seg_reads) == 1 else None)
     # rules/M1: "a leading recognized marker is dropped where the
     # clause holds a word past it" and "a clause of nothing but its
