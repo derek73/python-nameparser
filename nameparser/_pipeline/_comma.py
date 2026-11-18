@@ -762,11 +762,18 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # rules/C16: "behind one word, initials run together are the given
     # name whatever they spell" -- the runs that spell a listed
     # credential ('J.P.', 'M.A.'), joined to the class so C4's count is
-    # taken (decisions/C16 (#1238)). Gathered only
+    # taken where the head may be one word (decisions/C16 (#1238),
+    # #1435). Gathered only
     # where the part holds a full stop, so 'Smith, John' pays no frame;
     # a part whose other words are all credentials is C8's run
     # ('Smith, M.D. Ph.D.').
     initials_at: int | None = None
+    # whether the run is the part's only entry in `maybe` (no word of
+    # the class and no caps-shape candidate beside it), and, asked only
+    # then, whether the head is one word as C16 reads it (`_lone_word`;
+    # None where not asked, the reading's own test asking it instead)
+    run_alone = False
+    lone_head: bool | None = None
     for at, p in enumerate(p1):
         if len(p) == 1 and "." in (text := texts[p[0]]):
             tags = tokens[p[0]].tags
@@ -801,6 +808,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                         for p, pt in rest):
             initials_at = None
         elif initials_at not in maybe:
+            run_alone = not maybe
             maybe.append(initials_at)
     # rules/C8: "a part that is nothing but suffix words is the
     # credential run and reads as suffixes, whole" -- the reading below.
@@ -844,7 +852,17 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # a pair a later comma part's credential spoke for (rules/C5), whose
     # flip is reported as the count's, dotted or not
     later = False
-    if maybe:
+    # C16's run alone in `maybe`, behind a head that is not one word,
+    # asks no count and keeps no books (#1435): the run reads as
+    # initials only behind one word, and with nothing else in `maybe`
+    # the count licenses nothing, `head_named` meets no member and the books find
+    # none, so the reading is the one the count would give ('John
+    # Smith, M.D.'). The run stays in `maybe`, so the part is still read
+    # below as the count's part, never the listing form's
+    if run_alone:
+        lone_head = _lone_word(state, seg0)
+    counted = bool(maybe) and lone_head is not False
+    if counted:
         # `_members` inline: a frame here is paid by every name with the
         # ambiguous class after its comma ('John Smith, MA')
         split_at: set[int] = set()
@@ -966,7 +984,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                     caps.discard(i)
     if maybe:
         lone = (initials_at is not None and names < 2
-                and _lone_word(state, seg0))
+                and (lone_head if lone_head is not None
+                     else _lone_word(state, seg0)))
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
             anchored, absorbed, licensed, head_named=names >= 2,
@@ -1060,7 +1079,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     members: list[int] = []
     listed: list[int] = []
     settled = pair_only = False
-    if maybe:
+    if counted:
         members = [p[0] for p in p1 if len(p) == 1
                    and AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags]
         listed = [i for i in members
