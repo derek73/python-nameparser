@@ -438,24 +438,29 @@ class Token:
                     f"Reading(kind, role, source) with the token's role"
                 )
         if self.span is not None:
-            if not (
-                isinstance(self.span, tuple)
-                and len(self.span) == 2
-                # bool is an int subclass: (False, True) is a comparison
-                # result leaking into a coordinate slot, not a span
-                and all(isinstance(v, int) and not isinstance(v, bool)
-                        for v in self.span)
-            ):
+            # Each coordinate tested in turn, not by all() over a
+            # generator, which cost three frames a token; the parse
+            # builds every token it returns through here
+            if not (isinstance(self.span, tuple) and len(self.span) == 2):
                 raise TypeError(
                     f"invalid span {self.span!r}: expected a (start, end) "
                     "pair of ints or None"
                 )
             start, end = self.span
+            # bool is an int subclass: (False, True) is a comparison
+            # result leaking into a coordinate slot, not a span
+            if not (isinstance(start, int) and not isinstance(start, bool)
+                    and isinstance(end, int) and not isinstance(end, bool)):
+                raise TypeError(
+                    f"invalid span {self.span!r}: expected a (start, end) "
+                    "pair of ints or None"
+                )
             if start < 0 or end < start:
                 raise ValueError(
                     f"invalid span ({start}, {end}): need 0 <= start <= end"
                 )
-            object.__setattr__(self, "span", Span(start, end))
+            if type(self.span) is not Span:
+                object.__setattr__(self, "span", Span(start, end))
         # The same guards _normset applies to Lexicon vocabulary: a bare
         # string would become its character set, a mapping would silently
         # contribute only its keys.
