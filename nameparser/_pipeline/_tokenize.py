@@ -95,8 +95,13 @@ def _mongolian_letter(ch: str) -> bool:
 
 
 def _is_emoji(ch: str) -> bool:
+    # A loop, not any() over a generator: the generator cost a frame
+    # per range tried, for every non-ASCII character under strip_emoji
     cp = ord(ch)
-    return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
+    for lo, hi in _EMOJI_RANGES:
+        if lo <= cp <= hi:
+            return True
+    return False
 
 
 # rules/T1: "an ignorable character separates its neighbors and
