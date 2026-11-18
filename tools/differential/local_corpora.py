@@ -36,7 +36,9 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 
 - raw.jsonl -- one record per name as the source gave it, with where it
   came from where the source says: a ClinicalTrials.gov official, with
-  the study and role; one distinct FEC, Taiwan or UK donor name, alone;
+  the study, role and the country every site of the study is in; a
+  ClinicalTrials.gov site contact, with the study, role and site's
+  country; one distinct FEC, Taiwan or UK donor name, alone;
   one distinct pair of a TSE donor's filed name and the tax registry's
   name for the same donor; one distinct PSC filed name, with its four
   boxes and nationality; one distinct spelling of a JRC-Names person,
@@ -89,7 +91,7 @@ pinned setting, the hooks that renew it on a refresh and refuse a corpus
 read from another version of it (tw-donors needs neither: each zip it caches is named by the version
 the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
-(ctgov-officials), local_fec.py (fec-individuals), local_tse.py
+(ctgov-officials, ctgov-contacts), local_fec.py (fec-individuals), local_tse.py
 (tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
 local_govuk.py (govuk-people),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
@@ -133,7 +135,8 @@ if _HERE not in sys.path:
 import corpus_build  # noqa: E402
 import local_core  # noqa: E402
 from local_core import Fetched as Fetched, Source, _again, fetch_command  # noqa: E402
-from local_ctgov import fetch_ctgov  # noqa: E402
+from local_ctgov import (CTGOV_CONTACTS, CTGOV_OFFICIALS, check_ctgov,  # noqa: E402
+                         fetch_ctgov, fetch_ctgov_contacts)
 import local_dof  # noqa: E402
 from local_dof import DOF, check_dof, fetch_dof, renew_dof  # noqa: E402
 import local_fec  # noqa: E402
@@ -223,9 +226,12 @@ class Local:
 
 
 SOURCES: dict[str, Source] = {
-    "ctgov-officials": Source(
+    CTGOV_OFFICIALS: Source(
         credit="ClinicalTrials.gov (NLM) study officials", unit="officials",
-        fetch=fetch_ctgov),
+        fetch=fetch_ctgov, check=check_ctgov, group="country"),
+    CTGOV_CONTACTS: Source(
+        credit="ClinicalTrials.gov (NLM) study site contacts", unit="contacts",
+        fetch=fetch_ctgov_contacts, check=check_ctgov, group="country"),
     "fec-individuals": Source(
         credit=f"FEC individual contributions, {local_fec.FEC_CYCLE} cycle "
                f"(52 U.S.C. 30111(a)(4): not for soliciting or commercial use)",

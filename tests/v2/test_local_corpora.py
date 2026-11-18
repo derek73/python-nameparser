@@ -148,14 +148,16 @@ def test_a_fetch_pages_through_and_writes_the_three_files(
     assert [r["name"] for r in corpus.records] == [
         "Ann Lee, MD, PhD", "BOB ROE MD", "Ann Lee, MD, PhD", "Cy Doe,M.D."]
     assert corpus.records[0] == {"name": "Ann Lee, MD, PhD", "study": "NCT1",
-                                 "role": "PRINCIPAL_INVESTIGATOR"}
+                                 "role": "PRINCIPAL_INVESTIGATOR", "country": ""}
     assert [json.loads(line) for line in
             (_folder(tmp_path) / "corpus.jsonl").read_text().splitlines()] == [
         "Ann Lee, MD, PhD", "BOB ROE MD", "Cy Doe,M.D."]
     meta = json.loads((_folder(tmp_path) / "meta.json").read_text())
     assert (meta["data_date"], meta["records"], meta["names"]) == (_DATE, 4, 3)
     assert meta["detail"] == {"api_version": "2.0.5", "studies": 3,
-                              "officials_without_a_name": 0}
+                              "read_version": ctgov.CTGOV_READ_VERSION,
+                              "officials_without_a_name": 0,
+                              "officials_by_sites": {"no_site": 4}}
     assert local.load(_SOURCE) == corpus
     assert corpus.header().startswith(
         f"ClinicalTrials.gov (NLM) study officials, data as of {_DATE}; 4 officials")
@@ -230,6 +232,132 @@ def test_an_official_without_a_name_is_counted_not_dropped_in_silence(
     corpus = local.fetch(_SOURCE)
     assert [r["name"] for r in corpus.records] == ["Ann Lee, MD"]
     assert corpus.meta["detail"]["officials_without_a_name"] == 1
+
+
+def _sited(nct: str, countries: list[str | None], *officials: str,
+           contacts: list[list[dict[str, str]]] | None = None) -> dict[str, Any]:
+    """A study whose sites are in `countries` (None: a site stating no
+    country), each site holding the contacts given for it."""
+    study = _study(nct, *officials)
+    sites: list[dict[str, Any]] = []
+    for n, country in enumerate(countries):
+        site: dict[str, Any] = {} if country is None else {"country": country}
+        if contacts and contacts[n]:
+            site["contacts"] = contacts[n]
+        sites.append(site)
+    study["protocolSection"]["contactsLocationsModule"]["locations"] = sites
+    return study
+
+
+@pytest.mark.parametrize(("countries", "country", "where"), [
+    (["United States"], "US", "one_country"),
+    (["Turkey (Türkiye)", "Turkey (Türkiye)"], "TR", "one_country"),
+    (["Bonaire, Saint Eustatius and Saba "], "BQ", "one_country"),
+    (["United States", "France"], "", "several_countries"),
+    ([], "", "no_site"),
+    (["United States", None], "", "a_site_without_a_country"),
+    (["United States", " "], "", "a_site_without_a_country"),
+], ids=["one site", "two sites in one country", "a name with a trailing space",
+        "two countries", "no site", "a site stating none", "a blank country"])
+def test_an_official_takes_the_country_only_where_every_site_is_in_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, countries: list[str | None],
+        country: str, where: str) -> None:
+    page = {"totalCount": 1, "studies": [_sited("NCT1", countries, "Ann Lee", "Bo Wu")]}
+    _serve(monkeypatch, tmp_path, pages=[page])
+    corpus = local.fetch(_SOURCE)
+    assert [(r["name"], r["country"]) for r in corpus.records] == [
+        ("Ann Lee", country), ("Bo Wu", country)]
+    assert corpus.meta["detail"]["officials_by_sites"] == {where: 2}
+
+
+def test_the_fetch_asks_for_the_sites_countries(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    fetched = _serve(monkeypatch, tmp_path)
+    local.fetch(_SOURCE)
+    fields = {urllib.parse.parse_qs(urllib.parse.urlsplit(u).query)["fields"][0]
+              for u in fetched if "/studies" in u}
+    assert fields == {ctgov.OFFICIAL_FIELDS}
+    assert "LocationCountry" in ctgov.OFFICIAL_FIELDS.split(",")
+
+
+@pytest.mark.parametrize("source", [ctgov.CTGOV_OFFICIALS, ctgov.CTGOV_CONTACTS])
+def test_a_country_the_map_does_not_hold_fails_the_fetch_naming_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str) -> None:
+    # Even at a site with no official or contact: an unmapped name read as
+    # no country would hide its study's officials from every group.
+    page = {"totalCount": 1, "studies": [
+        _sited("NCT1", ["United States", "Freedonia"], "Ann Lee",
+               contacts=[[{"name": "Bo Wu", "role": "CONTACT"}], []])]}
+    _serve(monkeypatch, tmp_path, pages=[page])
+    with pytest.raises(ValueError, match=r"NCT1 lists a site in 'Freedonia'.*CTGOV_COUNTRIES"):
+        local.fetch(source)
+    assert local.load(source) is None
+
+
+def test_every_mapped_code_is_two_capitals_and_names_one_country() -> None:
+    codes = list(ctgov.CTGOV_COUNTRIES.values())
+    assert all(len(c) == 2 and c.isascii() and c.isupper() for c in codes)
+    assert len(set(codes)) == len(codes)
+    assert all(name == name.strip() for name in ctgov.CTGOV_COUNTRIES)
+
+
+@pytest.mark.parametrize("source", [ctgov.CTGOV_OFFICIALS, ctgov.CTGOV_CONTACTS])
+@pytest.mark.parametrize("detail", [{}, {"read_version": 0}],
+                         ids=["fetched before the country", "read another way"])
+def test_a_ctgov_corpus_read_by_another_version_is_refused_on_load(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str,
+        detail: dict[str, int]) -> None:
+    # A corpus fetched before #1451 holds no "country": read, it would
+    # pass for a registry with no country anywhere.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    real = local.SOURCES[source]
+    plant_corpus(monkeypatch, local, source, [{"name": "Ann Lee"}], _DATE,
+                 real.unit, detail)
+    monkeypatch.setitem(local.SOURCES, source, real)
+    with pytest.raises(local.CorpusDamaged, match=(
+            rf"read by read version {detail.get('read_version')}, and this tool reads "
+            rf"version {ctgov.CTGOV_READ_VERSION}; fetch it again: "
+            rf"tools/differential/local_corpora.py fetch {source} --refresh")):
+        local.load(source)
+
+
+def test_the_contacts_corpus_keeps_each_site_contact_with_its_site_s_country(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    ann = {"name": "Ann Lee, MD", "role": "PRINCIPAL_INVESTIGATOR"}
+    bo = {"name": "Bo Wu", "role": "CONTACT"}
+    # Ann at two sites in the US (kept once) and one in France (kept); a
+    # nameless contact counted; a site stating no country; a central
+    # contact, which belongs to no site, left out.
+    first = _sited("NCT1", ["United States", "United States", "France", None], "Cy Doe",
+                   contacts=[[ann, bo], [ann, {"role": "CONTACT"}], [ann], [bo]])
+    first["protocolSection"]["contactsLocationsModule"]["centralContacts"] = [
+        {"name": "Di Central", "role": "CONTACT"}]
+    pages: list[dict[str, Any]] = [
+        {"totalCount": 2, "nextPageToken": "t2", "studies": [first]},
+        {"studies": [_sited("NCT2", ["South Korea"], contacts=[[ann]])]}]
+    fetched = _serve(monkeypatch, tmp_path, pages=pages)
+    corpus = local.fetch(ctgov.CTGOV_CONTACTS)
+    assert corpus.records == [
+        {"name": "Ann Lee, MD", "study": "NCT1", "role": "PRINCIPAL_INVESTIGATOR",
+         "country": "US"},
+        {"name": "Bo Wu", "study": "NCT1", "role": "CONTACT", "country": "US"},
+        {"name": "Ann Lee, MD", "study": "NCT1", "role": "PRINCIPAL_INVESTIGATOR",
+         "country": "FR"},
+        {"name": "Bo Wu", "study": "NCT1", "role": "CONTACT", "country": ""},
+        {"name": "Ann Lee, MD", "study": "NCT2", "role": "PRINCIPAL_INVESTIGATOR",
+         "country": "KR"}]
+    assert corpus.meta["detail"] == {
+        "api_version": "2.0.5", "studies": 2, "read_version": ctgov.CTGOV_READ_VERSION,
+        "contacts_without_a_name": 1, "repeated_at_another_site": 1,
+        "at_a_site_without_a_country": 1}
+    assert corpus.header().startswith(
+        f"ClinicalTrials.gov (NLM) study site contacts, data as of {_DATE}; 5 contacts")
+    fields = {urllib.parse.parse_qs(urllib.parse.urlsplit(u).query)["fields"][0]
+              for u in fetched if "/studies" in u}
+    assert fields == {ctgov.CONTACT_FIELDS}
+    # The officials' corpus is untouched by the sibling's fetch.
+    assert local.load(_SOURCE) is None
+    assert local.load(ctgov.CTGOV_CONTACTS) == corpus
 
 
 @pytest.mark.parametrize("answer", [
@@ -3112,7 +3240,8 @@ def _fetched(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     behind it; its folder."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     records = [{"name": n} for n in names or ("Ann Lee, MD", "Bo Wu, PhD")]
-    plant_corpus(monkeypatch, local, _SOURCE, records, date, "officials")
+    plant_corpus(monkeypatch, local, _SOURCE, records, date, "officials",
+                 {"read_version": ctgov.CTGOV_READ_VERSION})
     return _folder(tmp_path)
 
 
@@ -3353,7 +3482,8 @@ def test_no_module_imports_a_sibling_constant() -> None:
     # module. A `from local_x import CONSTANT` would bind a second name a
     # patch on local_x cannot reach, and a test could pass with its guard
     # off. The modules are SOURCES' own, so a new source is covered. PSC,
-    # JRC, ORCID, PV, VOLBY, DOF, UIT, VN and PARLIAMENTS are sources' names, keys of
+    # JRC, ORCID, PV, VOLBY, DOF, UIT, VN, PARLIAMENTS, CTGOV_OFFICIALS and
+    # CTGOV_CONTACTS are sources' names, keys of
     # SOURCES, and no fetch's setting; split is a function, not a setting.
     import ast
     sources = {source.fetch.__module__ for source in local.SOURCES.values()}
@@ -3372,7 +3502,9 @@ def test_no_module_imports_a_sibling_constant() -> None:
                         ("local_corpora", "ORCID"), ("local_corpora", "PV"),
                         ("local_corpora", "VOLBY"), ("local_corpora", "DOF"),
                         ("local_corpora", "UIT"), ("local_corpora", "VN"),
-                        ("local_corpora", "PARLIAMENTS")}
+                        ("local_corpora", "PARLIAMENTS"),
+                        ("local_corpora", "CTGOV_OFFICIALS"),
+                        ("local_corpora", "CTGOV_CONTACTS")}
 
 
 def test_the_fold_lists_everything_its_functions_call_and_read() -> None:

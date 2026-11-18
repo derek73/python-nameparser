@@ -71,7 +71,8 @@ class Source:
     boxes: Callable[[Path], Iterator[tuple[str, str, str, int]]] | None = None
     #: For a source with no fields to score (no local_agreement.FIELDED
     #: entry) whose records name a group all the same: the record key
-    #: holding it (opensanctions-parliaments' "dataset"), which
+    #: holding it (opensanctions-parliaments' "dataset", the ctgov
+    #: corpora's "country"), which
     #: config_diff.py --group keeps, as it keeps a fielded source's.
     group: str = ""
 

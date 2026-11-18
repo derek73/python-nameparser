@@ -31,7 +31,9 @@ this file (snapshot.corpus_entries, each name under its shape's order);
 `--local SOURCE` (repeatable, or `all`) a fetched local corpus's
 distinct names. With neither, the committed corpora. `--group` keeps a
 grouped local corpus's records of that country or nationality, or for
-opensanctions-parliaments that dataset (local_agreement.FIELDED names
+opensanctions-parliaments that dataset, or for ctgov-officials and
+ctgov-contacts that ISO country code, a record with none in no group
+(local_agreement.FIELDED names
 the key, and Source.group for a corpus with no fields; matched exactly
 as the corpus writes it), and needs `--local`: with `--committed` beside it, which
 has no groups, it is refused, as is a group no record read holds; with
@@ -419,7 +421,8 @@ def format_tally(spec: str, base: str, t: Tally, top: int) -> list[str]:
 def group_keys() -> dict[str, str]:
     """The record key naming each grouped local corpus's group: a fielded
     corpus's (local_agreement.FIELDED), then a source's own
-    (Source.group, opensanctions-parliaments' dataset)."""
+    (Source.group: opensanctions-parliaments' dataset, the ctgov corpora's
+    country)."""
     keys = {source: fielded.group for source, fielded in local_agreement.FIELDED.items()}
     return keys | {source: s.group for source, s in local_corpora.SOURCES.items()
                    if s.group and source not in keys}
@@ -482,7 +485,8 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
     if missing := sorted(set(args.group) - held):
         keys = "; ".join(f"{s} by {k}" for s, k in group_keys().items())
         raise SystemExit(f"--group {', '.join(missing)}: no record read holds it; a group is "
-                         f"matched as the corpus writes it, ORCID and PatentsView an ISO code "
+                         f"matched as the corpus writes it, ORCID, PatentsView and the ctgov "
+                         f"corpora an ISO code "
                          f"such as BR, PSC a nationality such as Brazilian, "
                          f"opensanctions-parliaments a dataset such as kz_mazhilis ({keys})")
     if args.spelling:

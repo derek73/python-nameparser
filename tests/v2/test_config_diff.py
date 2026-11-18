@@ -249,7 +249,7 @@ def test_a_source_holding_none_of_a_group_says_so(
 
 def test_a_group_needs_a_grouped_corpus() -> None:
     with pytest.raises(SystemExit, match="needs a grouped corpus"):
-        cd.local_names("ctgov-officials", ["US"])
+        cd.local_names("fec-individuals", ["US"])
 
 
 def test_local_all_with_a_group_reads_the_grouped_corpora_only(
@@ -274,6 +274,21 @@ def test_a_group_keeps_a_grouped_corpus_s_records_by_its_source_s_key(
     assert cd.group_keys()[source] == "dataset"
     assert cd.local_names(source, ["kz_mazhilis"]) == (["Bo Lima"], {"kz_mazhilis"})
     got = cd.gather(_args(local=[source], group=["pt_parliament"]))
+    assert [t for t, _o, _i in got] == ["Ana Souza"]
+
+
+@pytest.mark.parametrize("source", ["ctgov-officials", "ctgov-contacts"])
+def test_a_group_keeps_a_ctgov_corpus_s_records_by_country(
+        monkeypatch: pytest.MonkeyPatch, source: str) -> None:
+    # A record with no country (a study's sites in several) is in no group.
+    records = [{"name": name, "study": "NCT1", "role": "", "country": country}
+               for name, country in (("Ana Souza", "BR"), ("Bo Lima", "KR"),
+                                     ("Cy Dias", ""))]
+    plant_corpus(monkeypatch, cd.local_corpora, source, records, "2026-11-18", "officials",
+                 {"read_version": importlib.import_module("local_ctgov").CTGOV_READ_VERSION})
+    assert cd.group_keys()[source] == "country"
+    assert cd.local_names(source, ["KR"]) == (["Bo Lima"], {"KR"})
+    got = cd.gather(_args(local=[source], group=["BR"]))
     assert [t for t, _o, _i in got] == ["Ana Souza"]
 
 
