@@ -9,5 +9,90 @@ text = "u"
 salutation = { default = false, gender = "m", native = "ဦး", issue = 1231, expands = "U, the honorific written before a man's name (Mr.)", note = "a Korean surname (Wikidata 154 family, South Korea 122; 12 given, 2026-11-19) and, written with its full stop, an initial, which the reading can take as the title under the pack (U. S. Grant, Smith, U.), the accepted cost (decisions/vocabulary-collisions, the 2026-11-19 #1231 entry). Written bare by Burmese names as a rule (U Thein Sein; 1 of the 71 names opening with the honorific in the #1231 population writes U.); FEC writes U 187 times and U. 163, 320 of the 351 after a comma; ctgov-officials U 260, U. 61 (tools/name_usage.py, 2026-11-19)" }
 
 [[word]]
+text = "sir"
+nobility = { default = false, addresses = "given", gender = "m", expands = "a knight or baronet, 'Sir John'", issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. the colonial knighthoods (Sir U ..., a title run with the honorific): once in the #1231 population; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "admiral"
+military = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Admiral, the Navy's rank: once in the #1231 population (Vice Senior General's navy kin, Admiral, Vice Admiral, Rear Admiral); ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "adm"
+military = { default = false, same_as = "admiral", issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Adm, as staff lists write it; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "brigadier"
+military = { default = false, attaches = ["gen"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Brigadier General; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "brig"
+military = { default = false, same_as = "brigadier", abbreviation = true, attaches = ["gen", "general", "sir"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Brig Gen, as staff lists write it; en.toml's given reading stays out of a strict choice; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "captain"
+military = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Captain; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "capt"
+military = { default = false, same_as = "captain", issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Capt, as staff lists write it; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "colonel"
+military = { default = false, attaches = ["gen"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Colonel and Lieutenant Colonel; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "col"
+military = { default = false, same_as = "colonel", attaches = ["gen"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Col and Lt Col, as staff lists write them; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "commander"
+military = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Commander, a rank and a regional command's head; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "cdr"
+military = { default = false, same_as = "commander", issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Cdr, as staff lists write it; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "commodore"
+military = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Commodore, the Navy's rank; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "general"
+military = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. the #1231 population writes General 7 times (Senior General, Lieutenant General); ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "gen"
+military = { default = false, same_as = "general", abbreviation = true, attaches = ["sir"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Gen, as staff lists write it (Lt Gen, Maj Gen, Brig Gen); en.toml's given reading, a Japanese and Chinese name, stays out of a strict choice, so a bare Gen opening a name is the rank there; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "lieutenant"
+military = { default = false, attaches = ["gen"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Lieutenant General: 3 times in the #1231 population; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "lt"
+military = { default = false, same_as = "lieutenant", attaches = ["gen"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Lt Gen and Lt Col, as staff lists write them; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+credential = { default = false, issue = 1483, note = "en.toml's credential, copied with the rank: a choice that holds a vocabulary reading of a word drops every other file's, so without it a plain choice of Burmese would read John Smith, LT as the title" }
+
+[[word]]
+text = "maj"
+military = { default = false, expands = "Major", abbreviation = true, attaches = ["gen", "general", "sir"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Maj Gen, as staff lists write it; en.toml's given reading stays out of a strict choice; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "major"
+military = { default = false, attaches = ["gen", "general"], issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Major General and Major; en.toml's given reading stays out of a strict choice, so a bare Major opening a name is the rank there; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "rear"
+modifier = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Rear Admiral; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "senior"
+modifier = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Senior General, the Tatmadaw's highest rank: the #1231 population writes it twice; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
+text = "vice"
+modifier = { default = false, issue = 1483, note = "en.toml's reading, here so a strict choice of Burmese keeps it (#1483), which reads no en.toml; the vetting is on the en.toml entry. Vice Senior General: once in the #1231 population; ORCID's Myanmar given and family boxes hold it 0 times of 1,755 holders (tools/name_usage.py --country MM, 2026-11-19)" }
+
+[[word]]
 text = "ဂျူနီယာ"
 generation = { issue = 679 }

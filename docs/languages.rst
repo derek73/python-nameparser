@@ -1276,8 +1276,9 @@ Burmese names
 -------------
 
 Turn on ``locales.MY`` when your data is Burmese names written in Latin
-letters. ``my`` is the language tag of Burmese; Malaysia, whose region
-code is also MY, writes Malay, ``ms``, which this pack is not for.
+letters, and choose it strictly when your list holds nothing else (below).
+``my`` is the language tag of Burmese; Malaysia, whose region code is
+also MY, writes Malay, ``ms``, which this pack is not for.
 
 A Burmese name has no family name: every word is a personal name, and
 an honorific goes in front, ``U`` for a man and ``Daw`` for a woman.
@@ -1293,28 +1294,99 @@ family name, as in any name, and the honorific is the title:
     >>> thein_sein.title, thein_sein.given, thein_sein.family
     ('U', 'Thein', 'Sein')
 
-Burmese syllables such as ``San``, ``La`` and the Chin ``Van`` are
-particles in Spanish, Italian, Portuguese, French or Dutch, and the
-default takes them, and every word after them, into the family name.
-The pack keeps them name words:
+A list of nothing but Burmese names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Choose the pack strictly, ``parser_for(locales.MY, strict=True)``
+(:ref:`strict-choice`). Many Burmese syllables are spelled like
+another language's word: ``San``, ``La`` and the Chin ``Van`` like
+Spanish, Italian or Dutch particles, which take every word after them
+into the family name, and ``Pe``, ``Lat``, ``Ei``, ``Si`` and ``Pa``
+like English credentials, which end a name written in capitals, and
+``Ra`` like one that ends a name in any case.
+A strict choice reads no other language's words, so each is a name
+word:
 
 .. doctest::
 
-    >>> parse("Daw Aung San Suu Kyi").family
+    >>> strict_burmese = parser_for(locales.MY, strict=True)
+    >>> burmese.parse("Daw Aung San Suu Kyi").family
     'San Suu Kyi'
-    >>> suu_kyi = burmese.parse("Daw Aung San Suu Kyi")
+    >>> suu_kyi = strict_burmese.parse("Daw Aung San Suu Kyi")
     >>> suu_kyi.title, suu_kyi.middle, suu_kyi.family
     ('Daw', 'San Suu', 'Kyi')
+    >>> burmese.parse("THEIN AUNG PE").suffix
+    'PE'
+    >>> strict_burmese.parse("THEIN AUNG PE").family
+    'PE'
 
-The nine are ``San``, ``La``, ``Le``, ``Do``, ``Da``, ``Du``, ``Te``,
-``Di`` and ``Van``, and ``Do`` is no credential either, so a name
-written in capitals keeps a final ``DO``.
+The English military ranks such lists write, and ``Sir``, are the
+Burmese vocabulary's own, so a strict choice keeps them, written whole
+or short (``Senior General``, ``Lt Gen``, ``Maj Gen``, ``Brig Gen``,
+``Col``, ``Capt``, ``Rear Admiral``, ``Cdr``). ``Mg``, Maung written
+short, is the given name, where by default and under the plain pack
+it is read as the military abbreviation:
+
+.. doctest::
+
+    >>> strict_burmese.parse("Lt Gen Kyaw Win").title
+    'Lt Gen'
+    >>> burmese.parse("Mg Htoo Aung").title
+    'Mg'
+    >>> strict_burmese.parse("Mg Htoo Aung").given
+    'Mg'
 
 On 2,990 names of people from Myanmar, from sanctions and politically
-exposed persons lists and from Wikidata, the honorific read as the
-title and the last word as the family hold for 94.8% by default and
-99.9% under the pack (``docs/design/decisions/vocabulary-collisions.md``,
-:issue:`1231`).
+exposed persons lists and from Wikidata, read right is the honorific
+as the title and the last word as the family
+(``docs/design/decisions/vocabulary-collisions.md``, :issue:`1231`,
+:issue:`1483`):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Parser
+     - As written
+     - In capitals
+   * - ``Parser()``
+     - 94.8%
+     - 94.5%
+   * - ``parser_for(locales.MY)``
+     - 98.1%
+     - 97.8%
+   * - ``parser_for(locales.MY, strict=True)``
+     - 2,989 of 2,990
+     - 2,989 of 2,990
+
+What a strict choice costs other names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A strict choice drops every word only another language reads, from
+every name, so keep it to a list that is wholly Burmese:
+
+- **Particles, credentials and titles of other languages** are name
+  words. ``Jan van Dijk`` gives middle ``van``, and a credential after
+  a comma can become the given name (``Jane Doe, PA`` gives given
+  ``PA``, family ``Jane Doe``). The words every language
+  shares are kept, ``Dr``, ``PhD``, ``MD`` and ``MSc`` among them.
+- **A rank that is also a given name** is the rank: ``Gen``, ``Maj``,
+  ``Brig`` and ``Major`` opening a name are titles (``Gen Goto`` gives
+  title ``Gen``), where by default they are the given name unless a
+  title phrase follows.
+
+.. doctest::
+
+    >>> strict_burmese.parse("Jan van Dijk").family
+    'Dijk'
+    >>> strict_burmese.parse("Jane Doe, PA").given
+    'PA'
+    >>> burmese.parse("Jane Doe, PA").suffix
+    'PA'
+
+On the committed test corpora and ClinicalTrials.gov's officials and
+site contacts, 660,410 distinct names that are mostly not Burmese, the
+strict choice reads 58,776 differently from the plain pack in their
+fields, 8.9% of them (measured 2026-11-19, :issue:`1483`).
 
 What the pack leaves as it is
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1334,38 +1406,23 @@ What the pack leaves as it is
 When not to use it
 ~~~~~~~~~~~~~~~~~~
 
-The pack is for lists of Burmese names. On other names it costs:
-
-- **Nine particles.** Their particle readings, which Dutch, Portuguese,
-  Italian, French, Spanish, Filipino and Māori family names hold
-  (``de`` and ``del`` keep theirs, so ``Juan de la Cruz`` reads as by
-  default, but a ``de la`` in other shapes, after a comma, beside another
-  particle or under a family-first order, can read otherwise). Where one
-  stands in the family name before a comma, the given part after it
-  can read as a credential, the given name lost (``Van Buren, Ed``
-  gives suffix ``Ed``).
-- **The credential DO**, read as a name word.
-- **An initial U.** ``U`` is the honorific however it is written, so
-  an initial ``U.`` can be read as the title: ``Smith, U.`` and ``Dr.
-  U. Smith`` give no given name, though ``John U. Smith`` and ``Smith,
-  John U.`` keep it an initial.
-
-Keep it to a parser of its own for the Burmese names in your data:
+The plain pack reads names that are not Burmese as the default does,
+save two words, ``U`` and ``Daw``, read as titles wherever a title is
+read (``Daw Smith`` gives title ``Daw``), and ``U`` as a letter of a
+word joined by full stops. ``U`` is the honorific however it is
+written, so an initial ``U.`` can be read as the title. ``Smith, U.`` and ``Dr. U.
+Smith`` give no given name, though ``John U. Smith`` and ``Smith, John
+U.`` keep it an initial:
 
 .. doctest::
 
-    >>> burmese.parse("Jan van Dijk").family
-    'Dijk'
-    >>> burmese.parse("Maria da Silva").family
-    'Silva'
     >>> grant = burmese.parse("U. S. Grant")
     >>> grant.title, grant.given
     ('U.', 'S.')
 
-Measured on names that are not Burmese, the pack changes the reading of
-14% of the names of Brazilian election donors, and among researchers
-who filed their own given and family names in ORCID it lowers the
-share read right in both boxes from 94% to 83% in the Netherlands and
-from 95% to 89% in Belgium. A Korean name written with no comma and opening with the
-surname ``U`` reads ``U`` as the title under the pack (``U Minjun``),
-where ``U, Minjun`` keeps it as the family name.
+A Korean name written with no comma and opening with the surname ``U``
+reads ``U`` as the title under the pack (``U Minjun``), where ``U,
+Minjun`` keeps it as the family name. Chosen strictly, the pack also
+reads a run of initials holding ``U`` as the title (``U.S. Grant``
+gives title ``U.S.``, family ``Grant``). Keep the pack to a parser of
+its own for the Burmese names in your data.
