@@ -85,7 +85,7 @@
   "Abd El Kader Haddou"       →  family="El Kader Haddou"
   "Abu El Hassan Haddou"      →  given="Abu"
   ```
-- Under a Dutch choice `ten` is a particle (te den), and a Chinese given name written with its syllable between two words joins the family from it, as the Korean and Vietnamese syllables PR #191 kept out of the particles would: the mid-name cost that keeps the preposition off by default, two of the nine filed names the pack breaks among ORCID's, PatentsView's and PSC's records, against 66 Dutch ones it fixes (2026-11-18; decisions/vocabulary-collisions, #1455). The default reads `ten` as a name word.
+- Under a Dutch choice `ten` is a particle (te den), and a Chinese given name written with its syllable between two words joins the family from it, as the Korean and Vietnamese syllables PR #191 kept out of the particles would: the mid-name cost that keeps the preposition off by default, two of the nine filed names the pack breaks among ORCID's, PatentsView's and PSC's records, against 86 it fixes (2026-11-18; decisions/vocabulary-collisions, #1455). The default reads `ten` as a name word.
   ```
   "Kheng Ten Choo" [nl]       →  family="Ten Choo"
   "Kheng Ten Choo"            →  family="Choo"  · boundary
