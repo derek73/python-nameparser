@@ -1,12 +1,16 @@
 import dataclasses
+import functools
 import json
 import pickle
 import sys
+import unicodedata
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
-from nameparser import Locale, Parser, PolicyPatch, locales, parse, parser_for
+from nameparser import (Locale, ParsedName, Parser, PolicyPatch, locales, parse,
+                        parser_for)
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import run
 from nameparser._pipeline import _post_rules
@@ -1415,7 +1419,7 @@ def test_two_family_names_declines_a_family_first_name_whose_family_is_not_first
     roles = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
     tokens = [copy_with(t, role=r) for t, r in zip(state.tokens, roles)]
     moved = copy_with(state, policy=policy, tokens=tuple(tokens))
-    _take_second_family_name(moved, tokens)
+    _take_second_family_name(moved, tokens, capitals=False)
     assert [t.role for t in tokens] == list(roles)
 
 
@@ -2631,3 +2635,262 @@ def test_o2_three_words_needs_the_turkic_rule() -> None:
     assert parse("Aidai Mederbek kyzy").family == "kyzy"
     # and the East Slavic rule alone does not read it
     assert parser_for(locales.RU).parse("Aidai Mederbek kyzy").family == "kyzy"
+
+
+# -- one division for both writings (rules/O6, #1456, #1479) ------------
+
+#: The family heads the two writings are compared over, each written
+#: as the words before a family comma: a plain pair, a particle-led
+#: family (P2's chain), a particle inside, two particle units, a saint
+#: particle opening a unit (one surname, the vocabulary chaining it),
+#: a hyphenated family of one word and a hyphen in either unit, a
+#: connective (left whole, decisions/R10),
+#: three words, an initial, a name a community gives every member, a
+#: listed given name as the first word, a bound given-name word and
+#: the word it completes (P5, P12), and one word.
+_DIVISION_HEADS = (
+    "García Márquez", "Vega Ruiz",
+    "de la Vega Ruiz", "del Río Pérez", "van der Berg Smith",
+    "Ruiz de la Vega", "Pérez del Valle",
+    "de Miguel de la Vega",
+    "Santa María López", "San Martín Pérez", "de la Santa Cruz",
+    "García-López", "Sánchez-Cid Torres", "Torres Sánchez-Cid",
+    "Ortega y Gasset",
+    "García Márquez López", "de la Vega Ruiz Soto",
+    "García M.", "Kaur Dhillon",
+    "Martín López", "Jorge Flores",
+    "عبد الله حسن", "حسن عبد الله", "Abu Bakr Siddiq", "abdul Rahman Khan",
+    "bin Abd Rahman",
+    "García",
+)
+#: The given names: plain, two words, behind a title, and the given
+#: names rules/P10 completes behind a particle.
+_DIVISION_GIVENS = ("Juan", "Ana María", "Dr. Juan", "María del Carmen",
+                    "María de los Ángeles")
+_DIVISION_CONFIGS = {
+    f"{label}-{order_name}": Parser(lexicon=base.lexicon,
+                                    policy=dataclasses.replace(
+                                        base.policy, name_order=order))
+    for label, base in (("switch", Parser(policy=Policy(
+                            two_family_names=True))),
+                        ("es", parser_for(locales.ES)))
+    for order_name, order in (("gf", GIVEN_FIRST), ("ff", FAMILY_FIRST),
+                              ("ffgl", FAMILY_FIRST_GIVEN_LAST))
+}
+
+
+#: The spellings each pair is written in: as listed, wholly in
+#: capitals, and decomposed (NFD), the spelling and encoding sweeps.
+_DIVISION_SPELLINGS = (lambda text: text, str.upper,
+                       lambda text: unicodedata.normalize("NFD", text))
+
+
+def _division_pairs() -> list[tuple[str, str, str]]:
+    """(config, comma writing, comma-less writing) for every head,
+    given name and spelling: the comma-less writing puts the family
+    where the config's order puts it, given-first at the end, else
+    first."""
+    pairs = []
+    for config, parser in _DIVISION_CONFIGS.items():
+        given_first = parser.policy.name_order[0] is Role.GIVEN
+        for head in _DIVISION_HEADS:
+            for given in _DIVISION_GIVENS:
+                plain = (f"{given} {head}" if given_first
+                         else f"{head} {given}")
+                for spell in _DIVISION_SPELLINGS:
+                    pairs.append((config, spell(f"{head}, {given}"),
+                                  spell(plain)))
+    return pairs
+
+
+#: Each head's division where its two writings read the same family:
+#: the surname units, or None where the family is left whole. Every
+#: head is compared at least once, so none drops out of the grid.
+_DIVISION_UNITS: dict[str, tuple[str, str] | None] = {
+    "García Márquez": ("García", "Márquez"),
+    "Vega Ruiz": ("Vega", "Ruiz"),
+    "de la Vega Ruiz": ("de la Vega", "Ruiz"),
+    "del Río Pérez": ("del Río", "Pérez"),
+    "van der Berg Smith": ("van der Berg", "Smith"),
+    "Ruiz de la Vega": ("Ruiz", "de la Vega"),
+    "Pérez del Valle": ("Pérez", "del Valle"),
+    "de Miguel de la Vega": ("de Miguel", "de la Vega"),
+    "Santa María López": ("Santa María", "López"),
+    "San Martín Pérez": ("San Martín", "Pérez"),
+    "de la Santa Cruz": None,
+    "García-López": None,
+    "Sánchez-Cid Torres": ("Sánchez-Cid", "Torres"),
+    "Torres Sánchez-Cid": ("Torres", "Sánchez-Cid"),
+    "Ortega y Gasset": None,
+    "García Márquez López": None,
+    "de la Vega Ruiz Soto": None,
+    "García M.": ("García", "M."),
+    "Kaur Dhillon": None,
+    "Martín López": ("Martín", "López"),
+    "Jorge Flores": ("Jorge", "Flores"),
+    # a bound given-name word counts with the word it completes, a P12
+    # phrase with or without the tag group keeps where it joined, and
+    # whether or not the bound word is also a particle
+    "عبد الله حسن": ("عبد الله", "حسن"),
+    "حسن عبد الله": ("حسن", "عبد الله"),
+    "Abu Bakr Siddiq": ("Abu Bakr", "Siddiq"),
+    "abdul Rahman Khan": ("abdul Rahman", "Khan"),
+    # a particle the suffix word behind it stops ('abd') is no first unit
+    "bin Abd Rahman": None,
+    "García": None,
+}
+
+
+_DivisionReading = tuple[str, str, str, ParsedName, ParsedName]
+
+
+def _read_division_pairs() -> list[_DivisionReading]:
+    """Every pair of `_division_pairs`, both writings parsed."""
+    readings = []
+    for config, comma, plain in _division_pairs():
+        parser = _DIVISION_CONFIGS[config]
+        readings.append((config, comma, plain,
+                         parser.parse(comma), parser.parse(plain)))
+    return readings
+
+
+@functools.cache
+def _division_readings() -> tuple[_DivisionReading, ...]:
+    """The grid parsed once, for the tests that read it unpatched; the
+    negative control parses it again, under its patch."""
+    return tuple(_read_division_pairs())
+
+
+def _nfc_casefold(text: str) -> str:
+    return unicodedata.normalize("NFC", text).casefold()
+
+
+#: Comma heads the grid above cannot judge, each a refusal or a reading
+#: whose comma-less twin reads another family, so the grid passes it
+#: by: (parser, text, surname1, surname2). The refused rows read whole
+#: on 6560abde too, the widened-check rule's rows; the dividing ones
+#: are new (#1456).
+def _switch(**policy: object) -> Parser:
+    return Parser(policy=Policy(two_family_names=True, **policy))  # type: ignore[arg-type]
+
+
+_COMMA_HEAD_ROWS = [
+    # a word joined to the family from after the comma: P1's fold, P6
+    (_switch(), "Smith, de Mesnil", "Smith de Mesnil", ""),
+    (_switch(), "García López, Juan van", "van García López", ""),
+    # a part whose script reads another order than the declared one
+    # (W4) is left whole; where the two agree, or no order is keyed, it
+    # divides; a Cyrillic part divides unless a pack keys its order
+    (_switch(), "王 李, 小明", "王 李", ""),
+    (_switch(), "김 이, 민준", "김 이", ""),
+    (_switch(name_order=FAMILY_FIRST), "王 李, 小明", "王", "李"),
+    (_switch(name_order=FAMILY_FIRST), "김 이, 민준", "김", "이"),
+    (_switch(script_orders={}), "王 李, 小明", "王", "李"),
+    (_switch(), "Иванов Петров, Иван", "Иванов", "Петров"),
+    (parser_for(locales.MN, base=_switch()), "Батболд Дорж, Энх",
+     "Батболд Дорж", ""),
+    # a 间隔号 marks a transcription, so the script sets no order there
+    (_switch(), "王·李, 小明", "王", "李"),
+    # a unit of particles alone: two particles left whole, one ending
+    # the family its second unit, as comma-less (`Juan García de`)
+    (_switch(), "Smith van der, Juan", "Smith van der", ""),
+    (_switch(name_order=FAMILY_FIRST), "Beethoven van, Ludwig",
+     "Beethoven", "van"),
+    # a bound word counts with the word it completes, but a unit holding
+    # two name words besides is none (`named > 1`): the bound word
+    # joined to a particle surname
+    (_switch(), "Ahmad Abdul Rahman, Ali", "Ahmad", "Abdul Rahman"),
+    (_switch(), "abdul de la Vega Pérez, Juan", "abdul de la Vega Pérez",
+     ""),
+    # a bound pair behind a particle is the particle's one word, so the
+    # unit holds three (dcca25f4 left it whole)
+    (_switch(), "de Umm Ali Hasan, Smith", "de Umm Ali", "Hasan"),
+    # a particle a suffix-tagged word stops is no first unit (dcca25f4
+    # read 'de' | 'V')
+    (_switch(), "de V, Ali", "de V", ""),
+    (_switch(), "García Márquez López, Ana", "García Márquez López", ""),
+    # titles, a title/suffix dual, a suffix and a title-particle head
+    (_switch(), "Dr. Sr. García López, Ana", "García", "López"),
+    (_switch(), "García Márquez Jr., Juan", "García", "Márquez"),
+    (_switch(), "García Márquez, Juan, Jr.", "García", "Márquez"),
+    (_switch(), "Freiherr von Berg Schmidt, Hans", "Freiherr von Berg",
+     "Schmidt"),
+    (_switch(), "St. John Smith, Mary", "St. John", "Smith"),
+    # the CS pack turns the switch on as ES does
+    (parser_for(locales.CS), "Novák Svoboda, Jan", "Novák", "Svoboda"),
+]
+
+
+@pytest.mark.parametrize("parser,text,surname1,surname2", _COMMA_HEAD_ROWS,
+                         ids=[row[1] for row in _COMMA_HEAD_ROWS])
+def test_a_comma_head_divides_or_stays_whole(
+        parser: Parser, text: str, surname1: str, surname2: str) -> None:
+    name = parser.parse(text)
+    assert (name.surname1, name.surname2) == (surname1, surname2)
+
+
+def test_each_head_divides_as_recorded_in_both_writings() -> None:
+    assert tuple(_DIVISION_UNITS) == _DIVISION_HEADS
+    read: dict[str, set[tuple[str, str] | None]] = {}
+    for _, comma, _, a, b in _division_readings():
+        if a.family != b.family:
+            continue
+        seen = read.setdefault(_nfc_casefold(comma.split(",")[0]), set())
+        for name in (a, b):
+            seen.add((_nfc_casefold(name.surname1),
+                      _nfc_casefold(name.surname2))
+                     if name.surname2 else None)
+    expected: dict[str, set[tuple[str, str] | None]] = {}
+    for head, units in _DIVISION_UNITS.items():
+        expected[head.casefold()] = {
+            None if units is None
+            else (units[0].casefold(), units[1].casefold())}
+    assert read == expected
+
+
+def _division_disagreements(readings: Sequence[_DivisionReading],
+                            ) -> tuple[int, list[tuple[str, ...]]]:
+    """How many pairs read the same family in both writings, and those
+    whose surname views differ there."""
+    same = 0
+    differ: list[tuple[str, ...]] = []
+    for config, comma, plain, a, b in readings:
+        if a.family != b.family:
+            continue
+        same += 1
+        if (a.surname1, a.surname2) != (b.surname1, b.surname2):
+            differ.append((config, comma, a.surname1, a.surname2,
+                           plain, b.surname1, b.surname2))
+    return same, differ
+
+
+#: The pairs whose two writings read one family, and, the negative
+#: control, how many of them disagree with the family comma's division
+#: switched off (`_divide_comma_family` a no-op): the comma-less side
+#: still divides, so every pair it divides disagrees. Measured on the
+#: tree that added the division (#1456, #1479); on 6560abde, before
+#: it, the same grid disagreed in 941 pairs, the comma-less side of a
+#: particle-led and a P10 family undivided too (a dated figure). Re-take
+#: the first two when the grid moves.
+_DIVISION_SAME_FAMILY = 1659
+_DIVISION_UNGUARDED = 1241
+
+
+def test_both_writings_of_one_family_read_the_same_units() -> None:
+    """O6 (two family names): the two writings of one family give the
+    same units, with and without a family comma, wherever they read the same
+    family, over every head, given name, spelling, order and the bare
+    switch and locales.ES (#1456, #1479)."""
+    same, differ = _division_disagreements(_division_readings())
+    assert same == _DIVISION_SAME_FAMILY
+    assert differ == []
+
+
+def test_both_writings_disagree_with_the_comma_division_off(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the recorded negative control for the test above
+    monkeypatch.setattr(_post_rules, "_divide_comma_family",
+                        lambda state, tokens, family, turkic: None)
+    same, differ = _division_disagreements(_read_division_pairs())
+    assert (same, len(differ)) == (_DIVISION_SAME_FAMILY,
+                                   _DIVISION_UNGUARDED)

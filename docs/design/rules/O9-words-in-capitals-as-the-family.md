@@ -149,9 +149,10 @@
   "DUPONT Mary Ann"  family-first-given-last+capitals_as_family  →  given="Mary"
   ```
 - **Against the post rules that move words** (H1, M4, P1, P6, O1, O2): this rule reads after them and lays the name out by its capitals, so their moves never undo it.
-- **Against two-family-name handling and letters ending the name** (O6, O8): the capitals named the family, so those rules stand down where this one read the name.
+- **Against two-family-name handling and letters ending the name** (O6, O8): the capitals named the family, so those rules stand down where this one read the name, save that O6 divides the family the capitals named as it divides any family, by its own words.
   ```
   "Lucie Anne MARTIN"  capitals_as_family+two_family_names  →  family="MARTIN"
+  "Ana GARCÍA LÓPEZ"  capitals_as_family+two_family_names  →  surname2="LÓPEZ"
   "Lakshmi R S DUPONT"  capitals_as_family+initials_as_family  →  family="DUPONT"
   ```
 - **Against a declared order, the given name and the middle names**: "under every order" holds for the family; where a joining word chained into a unit by its neighbours ends up beside the given name, how the words outside the run divide between the given and the middle names can follow the unit and the order (below).

@@ -34,7 +34,9 @@ Policy.capitals_as_family (O9, which reads Lexicon.conjunctions for
 a run and, for its peel, Lexicon.suffix_acronyms and suffix_words),
 Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
-the script's order differs from the declared one),
+the script's order differs from the declared one, and O6 reads
+Policy.script_orders for the part before a family comma, through
+`_assign._effective_order`),
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
@@ -65,7 +67,7 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
-    _name_alt, _name_pieces, _name_positions,
+    _effective_order, _name_alt, _name_pieces, _name_positions,
 )
 from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, is_lowercase_ambiguous_particle,
@@ -634,23 +636,36 @@ def _take_trailing_initials(tokens: list[WorkToken]) -> None:
         tokens[j] = copy_with(tokens[j], role=Role.FAMILY)
 
 
-def _take_second_family_name(state: ParseState,
-                             tokens: list[WorkToken]) -> None:
+def _take_second_family_name(state: ParseState, tokens: list[WorkToken],
+                             capitals: bool) -> None:
     # rules/O6: "the family name takes the name word beside it, so
     # the last two name words are the family" -- the first two under
     # a family-first order. In place, as every post rule writes.
     # History: decisions/O6 (#754).
+    _, given, middle, family = _positions(tokens)
+    turkic = PatronymicRule.TURKIC in state.policy.patronymic_rules
+    # rules/O6: "a family comma decides by itself" -- the family is the
+    # part before it, divided where it holds two units (decisions/O6,
+    # #1456)
+    if state.structure is Structure.FAMILY_COMMA:
+        if len(family) > 1:
+            _divide_comma_family(state, tokens, family, turkic)
+        return
     # An order a name's script set (W4) other than the declared one is
     # not the caller's declaration, and no script it keys writes two
     # family names as separate words. Where the two agree nothing here
     # tells them apart, and the rule reads the name (rules/O6 Accepted).
-    if (state.structure is Structure.FAMILY_COMMA or state.order is None
+    if (not family or state.order is None
             or state.order != state.policy.name_order):
         return
-    _, given, middle, family = _positions(tokens)
-    others = sorted(given + middle)
-    if not family or _family_word_count(tokens, family) != 1:
+    # rules/O6: "a family that already holds two words keeps what it
+    # has", and so does one the capitals named (O9): nothing is taken,
+    # and the family is divided where it holds two units (decisions/O6,
+    # #1479)
+    if capitals or _family_word_count(tokens, family) != 1:
+        _divide_family(tokens, family, turkic)
         return
+    others = sorted(given + middle)
     # The rest in the units assign read them as, so a particle chain
     # (P2) or a bound given-name pair (P5) moves whole or not at all.
     units = _units(tokens, others)
@@ -713,33 +728,131 @@ def _take_second_family_name(state: ParseState,
         if take[-1] > family[0] or any(
                 tokens[i].role is not Role.MIDDLE for i in take):
             return
-        _mark_surname(tokens, take, FIRST_SURNAME_TAG)
-        _mark_surname(tokens, family, SECOND_SURNAME_TAG)
-        return
-    # family first: the unit after the family joins it, and what is
-    # left is a shorter name of the same order, laid out as the P1
-    # fold above lays its remainder -- one family already placed. A
-    # particle P6 attached at the far end is family already and keeps
-    # its place.
-    if family[0] > units[0][0]:
-        return
-    # the unit taken joins the family as its second
-    _join_second_surname(tokens, family, units, state.order)
+    else:
+        # family first: the unit after the family joins it, and what is
+        # left is a shorter name of the same order, laid out as the P1
+        # fold above lays its remainder -- one family already placed. A
+        # particle P6 attached at the far end is family already and
+        # keeps its place.
+        if family[0] > take[0]:
+            return
+        _lay_out_after_family(tokens, units, state.order)
+    # the unit taken joins the family, which is then divided, or moves
+    # in unmarked where the division declines
+    if not _divide_family(tokens, sorted(take + family), turkic):
+        for i in take:
+            _retag(tokens, i, Role.FAMILY)
 
 
-def _join_second_surname(tokens: list[WorkToken], family: list[int],
-                         units: list[list[int]],
-                         order: tuple[Role, Role, Role]) -> None:
-    """The family-first join O6 and W5's pair share, in place: `family`
-    becomes the first surname and `units[0]`, the unit after it, the
-    second, and the units left are laid out as a shorter name of the
-    same order, one family already placed."""
-    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
-    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
+def _lay_out_after_family(tokens: list[WorkToken], units: list[list[int]],
+                          order: tuple[Role, Role, Role]) -> None:
+    """The family-first layout O6 and W5's pair share, in place: the
+    units after `units[0]`, the unit joining the family, are laid out as
+    a shorter name of the same order, one family already placed. The
+    caller moves `units[0]` into the family itself: W5 marks it the
+    second unit, and O6 marks it through `_divide_family`, or moves it
+    unmarked where that declines."""
     for unit, role in zip(units[1:], _name_positions(
             order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+
+
+def _divide_family(tokens: list[WorkToken], family: list[int],
+                   turkic: bool) -> bool:
+    """rules/O6: "a family is divided by its own words" -- in place,
+    however it was read: the one place O6 divides a family, after its
+    take, for a family it takes nothing into (one already holding two
+    words, a particle chain or the family a P10 phrase leaves, and one
+    O9's capitals named) and for the part before a family comma
+    (decisions/O6, #1456, #1479).
+
+    The units are P1's fold units over the family's words in written
+    order (`unit_ends(chain=False)`): a particle run and the ONE name
+    word it attaches to, a connective join, a bound given-name pair, or
+    a plain word. Exactly two, each one word as the word O6 takes is
+    counted, are marked; a family of one unit or of three or more is
+    left whole, and so is one holding a connective (decisions/R10) or a
+    name a community gives every member, and so is a family ending in a
+    standalone patronymic marker under the Turkic rule (`turkic`): the
+    father's name and the marker, which O2 reads as one family and R9
+    as the patronymic. The shape tests O6 asks of
+    the word it takes (an initial, a mark with no letter) are not asked
+    here: a family already read is divided as written ('Gallegos G.').
+    A particle P6 attached to the family it ends is set aside and goes
+    with the first unit, the family it was attached to.
+
+    True where it marked two units, each word then FAMILY. Plain loops
+    throughout, since every parse of a family under the switch pays for
+    this; no frame band guards the switch's path (`_CALL_BASELINE`
+    measures the default), so its cost is counted in decisions/O6."""
+    if len(family) < 2:
+        return False
+    words: list[int] = []
+    tags: list[frozenset[str]] = []
+    attached: list[int] = []
+    for i in family:
+        tag = tokens[i].tags
+        if "conjunction" in tag or SHARED_NAME_TAG in tag:
+            return False
+        if ATTACHED_TAG in tag:
+            attached.append(i)
+        else:
+            words.append(i)
+            tags.append(tag)
+    ends = unit_ends(tags, chain=False)
+    if len(ends) != 2 or (turkic and is_patronymic_marker(
+            tokens[words[-1]].text)):
+        return False
+    first, second = words[:ends[0]], words[ends[0]:]
+    # each unit one name word: a particle run counts with the word it
+    # attaches to, a bound given-name word with the word it completes
+    # whether or not it is also a particle ('abdul Rahman', 'Abu Bakr',
+    # and P12's phrase, whose bound word is one too, read by this test
+    # rather than the phrase tag group keeps only where it joined the
+    # pair, so not before a comma), and a unit of particles alone counts
+    # each of them, as `_family_word_count` counts a family; and a first
+    # unit of particles alone is no first surname (`bin` where a suffix
+    # word behind it stops the particle run, 'bin Abd Rahman')
+    for unit in (first, second):
+        named = 0
+        bare = True
+        completes = False  # the word before is a bound given-name word
+        for i in unit:
+            tag = tokens[i].tags
+            if "particle" not in tag:
+                bare = False
+                if not completes:
+                    named += 1
+            completes = "vocab:bound-given" in tag
+        if named > 1 or bare and (len(unit) > 1 or unit is first):
+            return False
+    _mark_surname(tokens, sorted(first + attached), FIRST_SURNAME_TAG)
+    _mark_surname(tokens, second, SECOND_SURNAME_TAG)
+    return True
+
+
+def _divide_comma_family(state: ParseState, tokens: list[WorkToken],
+                         family: list[int], turkic: bool) -> None:
+    """rules/O6: "the part before it is the whole family, divided" --
+    where nothing after the comma joined it: the family is that part's
+    words alone, none taken in from after the comma (P1's fold, P6's
+    attachment), and the part's script sets no order other than the
+    declared one (W4), as the comma-less name is left alone there
+    (decisions/O6, #1456)."""
+    # the family's words in written order, so its last word is the one
+    # a word joined from after the comma would be
+    if tokens[family[-1]].span.start > state.comma_offsets[0]:
+        return
+    # every script an order can be keyed to (Script: Han, Hangul, kana,
+    # Cyrillic) is written from U+0400 up, so a word below it, accented
+    # Latin included, is in none (W4); a C-level test, no frame
+    if max(tokens[family[0]].text) >= "\u0400" and _effective_order(
+            state.policy, [tuple(family)], [0], tokens,
+            dot_divided=bool(state.interpunct_offsets)
+            ).order != state.policy.name_order:
+        return
+    _divide_family(tokens, family, turkic)
 
 
 def _read_surname_pair(state: ParseState,
@@ -768,7 +881,9 @@ def _read_surname_pair(state: ParseState,
             or SURNAME_PAIR_TAG not in tokens[units[0][0]].tags):
         return None
     first, second = family[0], units[0][0]
-    _join_second_surname(tokens, family, units, state.order)
+    _lay_out_after_family(tokens, units, state.order)
+    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     after = second + 1
     if (after == len(tokens) or tokens[after].span is None
             or tokens[after].span.start != tokens[second].span.end):
@@ -913,7 +1028,8 @@ def _take_second_given_name(state: ParseState,
 
 
 # rules/R10: "the family's second name unit, the one written second,
-# makes the second-surname view" -- whichever of the two O6 took
+# makes the second-surname view" -- whichever of the two units O6
+# divides the family into, a word taken or not, or W5's pair
 # (decisions/R10, #754); and rules/R11: "the family's first name unit,
 # the one written first, makes the first-surname view" -- the other one,
 # marked in the same place (decisions/R11, #1022). It moves a unit into
@@ -1528,8 +1644,8 @@ def post_rules(state: ParseState) -> ParseState:
                 and _family_in_capitals(state, tokens, ambiguities))
     if state.policy.initials_as_family:
         _take_trailing_initials(tokens)
-    if state.policy.two_family_names and not capitals:
-        _take_second_family_name(state, tokens)
+    if state.policy.two_family_names:
+        _take_second_family_name(state, tokens, capitals)
     if state.policy.two_given_names:
         _take_second_given_name(state, tokens)
 

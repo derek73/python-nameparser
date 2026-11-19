@@ -133,6 +133,9 @@ POLICIES: dict[str, Policy] = {
         name_order=FAMILY_FIRST_GIVEN_LAST, two_family_names=True),
     "two_family_names+middle_as_family": Policy(
         two_family_names=True, middle_as_family=True),
+    "two_family_names+turkic": Policy(
+        two_family_names=True,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})),
     #: rules/O8's switch (#1254), named after its field as O6's is,
     #: with each order, the rule standing down under both family-first
     #: ones, and with the switches it reads before.

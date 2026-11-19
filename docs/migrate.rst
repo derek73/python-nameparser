@@ -2217,3 +2217,32 @@ case, as it writes ``bin``:
     >>> balinese = parse("Anak Agung Made Putra")
     >>> balinese.given, [str(report.kind) for report in balinese.ambiguities]
     ('Anak', ['particle-or-given'])
+
+The second surname under two family names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Under ``two_family_names``, as the ``es``, ``es_ar``, ``cs`` and ``sk``
+packs turn it on, the ``surname1`` and ``surname2`` views divide a
+family of two surnames however the family was read, where 3.0 and 3.1
+left it whole: written before a family comma, opening with a particle,
+and behind a given name a particle completes. No field moves:
+
+.. doctest::
+
+    >>> spanish = parser_for(locales.ES)
+    >>> spanish.parse("García Márquez, Gabriel").surname2
+    'Márquez'
+    >>> de_la_vega = spanish.parse("Juan de la Vega Ruiz")
+    >>> de_la_vega.surname1, de_la_vega.surname2
+    ('de la Vega', 'Ruiz')
+    >>> spanish.parse("María del Carmen García López").surname2
+    'López'
+
+A family whose first unit is a lone particle under a family-first order
+is one unit now (``Van Gogh Vincent`` gives ``surname1`` ``Van Gogh``),
+where 3.0 and 3.1 read ``Van`` and ``Gogh`` as two, and so is a Turkic
+father's name with its marker under ``PatronymicRule.TURKIC``
+(``Ali Ahmad Vali Hasan oglu`` gives ``surname1`` ``Hasan oglu``, where
+3.0 and 3.1 gave ``Hasan`` and ``oglu``). With ``capitals_as_family``
+on too, the family the capitals name is divided (``Ana GARCÍA LÓPEZ``
+gives ``GARCÍA`` and ``LÓPEZ``), where 3.1 left it whole.

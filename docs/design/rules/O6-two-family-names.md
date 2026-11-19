@@ -1,6 +1,6 @@
 # O6 — two family names
 
-**When:** two-family-name handling is active and a name with no family comma has three or more name words, as in "Gabriel García Márquez".
+**When:** two-family-name handling is active and a name with no family comma has three or more name words, as in "Gabriel García Márquez", or the family read, with or without a family comma, holds two name units.
 
 **Then:** the family name takes the name word beside it, so the last two name words are the family — the first two under a family-first order.
 
@@ -36,6 +36,24 @@
   "Gabriel García Márquez"  two_family_names  →  surname2="Márquez"
   "García Márquez Gabriel"  family-first+two_family_names  →  surname2="Márquez"
   ```
+- **A family is divided by its own words, however it was read**: counted as P1's fold counts a unit, a particle run with the one name word it attaches to and a bound given-name word with the word it completes, and divided where it holds exactly two, a first unit of particles alone being no first surname, whether the rule took a word into it, it already held two words, or a family comma named it, so the two writings of one family give the same units.
+  ```
+  "Juan de la Vega Ruiz"  two_family_names  →  surname2="Ruiz"
+  "Juan de la Vega Ruiz"  two_family_names  →  surname1="de la Vega"
+  "María del Carmen García López"  two_family_names  →  surname2="López"
+  "García Márquez, Juan"  two_family_names  →  surname2="Márquez"
+  "de la Vega Ruiz, Juan"  two_family_names  →  surname2="Ruiz"
+  "Juan de la Vega Ruiz Soto"  two_family_names  →  surname2=""
+  "عبد الله حسن, علي"  two_family_names  →  surname2="حسن"
+  "bin Abd Rahman, Ahmad"  two_family_names  →  surname2=""
+  "García Márquez, Juan"    →  surname2=""  · boundary
+  ```
+- **A family ending in a standalone patronymic marker under the Turkic patronymic rule is one unit**: the father's name and the marker, which O2 reads as the family of a three-word name and R9 as the patronymic, before a comma too.
+  ```
+  "Ali Hasan oglu"  two_family_names+turkic  →  surname2=""
+  "Hasan oglu, Ali"  two_family_names+turkic  →  surname1="Hasan oglu"
+  "Hasan oglu, Ali"  two_family_names  →  surname2="oglu"  · boundary
+  ```
 - **Titles, suffixes and nicknames are no name words**, and a comma that sets off only suffixes leaves the name before it to this rule.
   ```
   "Gabriel García Márquez Jr."  two_family_names  →  family="García Márquez"
@@ -53,7 +71,7 @@
 
 **Except:**
 
-- **A family that already holds two words keeps what it has**: words a connective joins count as their words, a hyphen joins two words without making them one, and a particle chain counts the words it chained.
+- **A family that already holds two words keeps what it has**: words a connective joins count as their words, a hyphen joins two words without making them one, and a particle chain counts the words it chained. Nothing is taken, and the family is divided by its own words (above), a connective's and a hyphenated word's left whole.
   ```
   "José María Ortega y Gasset"  two_family_names  →  family="Ortega y Gasset"
   "Ana María García-López"  two_family_names  →  family="García-López"
@@ -61,10 +79,14 @@
   "Ana María García－López"  two_family_names  →  family="García－López"
   "Ana María de la Vega Rodríguez"  two_family_names  →  family="de la Vega Rodríguez"
   ```
-- **A family comma decides by itself**, so the part before it is the whole family.
+- **A family comma decides by itself**, so the part before it is the whole family, divided as a family is (above) where nothing after the comma joined it: no given name the caller lists vetoes a word there, the writer having marked both as family, and a part of three name words is left whole.
   ```
   "López, Ana García"  two_family_names  →  family="López"
   "García López, Ana"  two_family_names  →  family="García López"
+  "García López, Ana"  two_family_names  →  surname2="López"
+  "Martín López, Ana"  two_family_names+es_given_names  →  surname1="Martín"
+  "García Márquez López, Juan"  two_family_names  →  surname2=""
+  "Smith, de Mesnil Jean"  two_family_names  →  surname2=""
   ```
 - **A family comma with nothing before it still names no family** (C15), and the name after it reads as the default reads it.
   ```
@@ -88,9 +110,10 @@
   "Pérez de la Vega"  family-first+two_family_names  →  family="Pérez"
   "Pérez de la Vega y Santos Juan"  family-first+two_family_names  →  given="de la Vega y Santos Juan"
   ```
-- **A given name a particle completes stays where it is**: given-first, a particle run and the word behind it that the vocabulary names a given name written that way (P10), standing beside a given name of one word, are the given name's second, not a surname. Under a family-first order the unit after the family completes no given name, and is taken as before.
+- **A given name a particle completes stays where it is**: given-first, a particle run and the word behind it that the vocabulary names a given name written that way (P10), standing beside a given name of one word, are the given name's second, not a surname. Under a family-first order the unit after the family completes no given name, and is taken as before. The family the phrase leaves behind is divided as a family is (above).
   ```
   "María del Carmen de la Vega"  two_family_names  →  middle="del Carmen"
+  "María del Carmen García López"  two_family_names  →  surname1="García"
   "Ana de Miguel de la Vega"  two_family_names  →  family="de Miguel de la Vega"  · boundary
   "Juan Antonio del Valle de la Vega"  two_family_names  →  family="del Valle de la Vega"  · boundary
   "García del Valle María"  family-first+two_family_names  →  family="García del Valle"  · boundary
@@ -139,10 +162,12 @@
   ```
   "Petrov Ivan Sergeevich"  family-first+two_family_names  →  family="Petrov Ivan"
   ```
-- A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins, and so does a particle chain after it, cut as the family-first bullet cuts one: one surname written with two particles reads as two.
+- A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins, and so does a particle chain after it, cut as the family-first bullet cuts one. The family is then divided by its own words, where the particle attaches to the word after it, so it is one unit, and a second surname written after a surname opening with a particle that may be a given name, written with a capital (`Van`, `Del`), falls to the given name.
   ```
   "Van Gogh Ana María"  family-first+two_family_names  →  family="Van Gogh"
-  "Van der Merwe Jan"  family-first+two_family_names  →  surname2="der Merwe"
+  "Van Gogh Ana María"  family-first+two_family_names  →  surname2=""
+  "Van der Merwe Jan"  family-first+two_family_names  →  family="Van der Merwe"
+  "Van Gogh Pérez Ana"  family-first+two_family_names  →  given="Pérez"
   ```
 - Where a name's script order and the declared one agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other.
   ```
@@ -165,5 +190,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is, as are a given name written behind a particle and a name a community gives every member, which the family's own words are looked up for too
+**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two and where it divides; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is, as are a given name written behind a particle and a name a community gives every member, which the family's own words are looked up for too, with the bound given-name words and, under the Turkic patronymic rule, the father's-name marker
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

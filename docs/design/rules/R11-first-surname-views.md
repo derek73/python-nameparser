@@ -21,7 +21,8 @@
 "Juan de la Vega"  two_family_names  →  surname1_base="Vega"
 "Juan de la Vega"           →  surname1="de la Vega"  · boundary
 "Juan de la Vega"           →  surname1_particles="de la"
-"Pérez de la Vega, Juan"  two_family_names  →  surname1_base="Pérez Vega"
+"Pérez de la Vega, Juan"  two_family_names  →  surname1_base="Pérez"
+"Pérez de la Vega, Juan"    →  surname1_base="Pérez Vega"
 ```
 
 **Except:**
@@ -31,7 +32,7 @@
   "Ana María García López"  two_family_names+middle_as_family  →  surname1="García"
   "Ana María García López"  two_family_names+middle_as_family  →  family="María García López"
   "Ana María García López"  middle_as_family  →  surname1="López"
-  "García López, Ana María"  two_family_names+middle_as_family  →  surname1="García López"
+  "García López, Ana María"  two_family_names+middle_as_family  →  surname1="García"
   ```
 - **A particle attached at the end of a family-first name belongs to the first unit**, the family it was attached to (P6), and stands before it there as it does in the family.
   ```
@@ -45,16 +46,13 @@
   ```
   "Juan Pérez de la Vega"  two_family_names  →  initials="J. P. V."
   ```
-- A family O6 leaves whole is one unit, so where a connective, a hyphen or a family comma already joins two family names the views are the family's, as the second-surname view is empty there (R10's Accepted).
+- A family O6 leaves whole is one unit, so where a connective or a hyphen already joins two family names the views are the family's, as the second-surname view is empty there (R10's Accepted), and so where a lone particle and the word after it make the family under a family-first order.
   ```
   "Ana María García-López"  two_family_names  →  surname1="García-López"
   "José María Ortega y Gasset"  two_family_names  →  surname1_base="Ortega y Gasset"
+  "Van Gogh Vincent"  family-first+two_family_names  →  surname1_base="Gogh"
   ```
 - A family word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in no unit, so such a family reads as one and the views are the family's.
-- A first unit of a lone particle, which O6 leaves where it reads a particle and a name word after a family-first family as two surnames, splits as the family does, the particle working there, so its base is empty; the misreading is O6's, and the two units' particles and bases still add up to the family's.
-  ```
-  "Van Gogh Vincent"  family-first+two_family_names  →  surname1_base=""
-  ```
 - A fold into a family the name left empty, behind a family comma with nothing before it (C15), has no first unit to keep apart from the folded words, so they are the views.
   ```
   ", John Paul"  middle_as_family  →  surname1="Paul"

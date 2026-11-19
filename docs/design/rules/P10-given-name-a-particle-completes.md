@@ -75,9 +75,10 @@
   ```
   "María del Carmen García"  two_given_names  →  given="María del Carmen"
   ```
-- **Against two-family-name handling** (O6): this rule reads first, and O6 leaves the phrase where it stands.
+- **Against two-family-name handling** (O6): this rule reads first, and O6 leaves the phrase where it stands and divides the family behind it as it divides any family.
   ```
   "María del Carmen de la Vega"  two_family_names  →  middle="del Carmen"
+  "María del Carmen García López"  two_family_names  →  surname2="López"
   ```
 
 **Accepted:**
@@ -85,10 +86,6 @@
 - A surname written with a marked word behind its particle reads as a middle name and the rest of the family, where the vocabulary cannot tell the two apart: `del Valle`, `del Rosario` and `de Jesús` open a family box in about one ORCID record in ten of those holding them, and in Portuguese names, where `do Valle` is mostly a surname, the reading breaks more names than it fixes, kept on by default because it passes over every language's names pooled.
   ```
   "Pedro del Valle Llufrio"   →  middle="del Valle"
-  ```
-- The family a phrase leaves behind keeps the words P2 chained into one unit, so two-family-name handling reads no second surname in it.
-  ```
-  "María del Carmen García López"  two_family_names  →  surname2=""
   ```
 - The rule reports nothing: the vocabulary says which reading the word takes, and a report on every such name would teach the caller to ignore the field.
 

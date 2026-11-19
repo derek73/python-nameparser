@@ -543,16 +543,34 @@ one family has no ``surname2``, and its ``surname1`` is the family:
     >>> two_names.parse("Ana María García-López").surname2
     ''
 
+The family is divided by its own words however it was read: before a
+family comma, and where it opens with a particle, the particles going
+with the word they attach to. A family of three name words is left
+whole:
+
+.. doctest::
+
+    >>> two_names.parse("García López, Ana").surname2
+    'López'
+    >>> ruiz = two_names.parse("Juan de la Vega Ruiz")
+    >>> ruiz.surname1, ruiz.surname2
+    ('de la Vega', 'Ruiz')
+    >>> two_names.parse("Juan de la Vega Ruiz Soto").surname2
+    ''
+
 What it leaves alone
 ~~~~~~~~~~~~~~~~~~~~
 
 - **A family that already holds two names** keeps what it has, whether
   a hyphen or ``y`` joins them (``"Ana María García-López"``, ``"José
   Ortega y Gasset"``) or a particle chain took them both (``"Ana María
-  de la Vega Rodríguez"`` reads family ``de la Vega Rodríguez``).
+  de la Vega Rodríguez"`` reads family ``de la Vega Rodríguez``); the
+  particle chain's family is still divided by its own words (``surname2``
+  ``Rodríguez``), where the hyphen's and ``y``'s stay one unit.
 - **A name of two words** is unchanged.
 - **A comma naming the family** decides by itself, so ``"García López,
-  Ana"`` needs no switch at all.
+  Ana"`` needs no switch for its ``family``; the switch divides it into
+  ``surname1`` and ``surname2``.
 - **Kaur and Singh** stay where they stand (see :ref:`kaur-singh`).
 
 .. _two-family-names-cost:
