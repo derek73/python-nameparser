@@ -18,8 +18,8 @@ subset with its own parser, or pass several packs to ``parser_for``:
 
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
-Vietnamese, Mongolian and Thai names, and Maghrebi, Amazigh, Hebrew and
-Dutch particles. Other languages are described where their mechanism is:
+Vietnamese, Mongolian and Thai names, Maghrebi, Amazigh, Hebrew and
+Dutch particles, and Burmese names. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -1177,3 +1177,103 @@ What the pack costs
     ...                  languages=frozenset({"en"}))
     >>> parser_for(locales.NL, english).parse("John Smith VD").suffix
     'VD'
+
+.. _burmese-names:
+
+Burmese names
+-------------
+
+Turn on ``locales.MY`` when your data is Burmese names written in Latin
+letters. ``my`` is the language tag of Burmese; Malaysia, whose region
+code is also MY, writes Malay, ``ms``, which this pack is not for.
+
+A Burmese name has no family name: every word is a personal name, and
+an honorific goes in front, ``U`` for a man and ``Daw`` for a woman.
+The parser reads by position, so under the pack the last word is the
+family name, as in any name, and the honorific is the title:
+
+.. doctest::
+
+    >>> parse("U Thein Sein").given
+    'U'
+    >>> burmese = parser_for(locales.MY)
+    >>> thein_sein = burmese.parse("U Thein Sein")
+    >>> thein_sein.title, thein_sein.given, thein_sein.family
+    ('U', 'Thein', 'Sein')
+
+Burmese syllables such as ``San``, ``La`` and the Chin ``Van`` are
+particles in Spanish, Italian, Portuguese, French or Dutch, and the
+default takes them, and every word after them, into the family name.
+The pack keeps them name words:
+
+.. doctest::
+
+    >>> parse("Daw Aung San Suu Kyi").family
+    'San Suu Kyi'
+    >>> suu_kyi = burmese.parse("Daw Aung San Suu Kyi")
+    >>> suu_kyi.title, suu_kyi.middle, suu_kyi.family
+    ('Daw', 'San Suu', 'Kyi')
+
+The nine are ``San``, ``La``, ``Le``, ``Do``, ``Da``, ``Du``, ``Te``,
+``Di`` and ``Van``, and ``Do`` is no credential either, so a name
+written in capitals keeps a final ``DO``.
+
+On 2,990 names of people from Myanmar, from sanctions and politically
+exposed persons lists and from Wikidata, the honorific read as the
+title and the last word as the family hold for 94.8% by default and
+99.9% under the pack (``docs/design/decisions/vocabulary-collisions.md``,
+:issue:`1231`).
+
+What the pack leaves as it is
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Other honorifics and prefixes.** ``Ko``, ``Ma`` and ``Maung`` are
+  honorifics too but also name syllables (``Maung Maung Kyaw``), and the
+  ethnic prefixes ``Saw``, ``Sai``, ``Nang``, ``Naw``, ``Khun`` and
+  ``Mahn`` are part of the name, so each stays a name word.
+- **An honorific and one word.** ``U Thant`` gives title ``U``, family
+  ``Thant``, as a title and one name word reads in any name.
+- **Military and religious styles** (``Bogyoke``, ``Sayadaw``) are read
+  as name words, as by default (``Ledi Sayadaw`` gives family
+  ``Sayadaw``).
+- **Burmese script.** The pack reads Latin letters only; ``ဦး`` and
+  ``ဒေါ်`` have no reading yet.
+
+When not to use it
+~~~~~~~~~~~~~~~~~~
+
+The pack is for lists of Burmese names. On other names it costs:
+
+- **Nine particles.** Their particle readings, which Dutch, Portuguese,
+  Italian, French, Spanish, Filipino and Māori family names hold
+  (``de`` and ``del`` keep theirs, so ``Juan de la Cruz`` reads as by
+  default, but a ``de la`` in other shapes, after a comma, beside another
+  particle or under a family-first order, can read otherwise). Where one
+  stands in the family name before a comma, the given part after it
+  can read as a credential, the given name lost (``Van Buren, Ed``
+  gives suffix ``Ed``).
+- **The credential DO**, read as a name word.
+- **An initial U.** ``U`` is the honorific however it is written, so
+  an initial ``U.`` can be read as the title: ``Smith, U.`` and ``Dr.
+  U. Smith`` give no given name, though ``John U. Smith`` and ``Smith,
+  John U.`` keep it an initial.
+
+Keep it to a parser of its own for the Burmese names in your data:
+
+.. doctest::
+
+    >>> burmese.parse("Jan van Dijk").family
+    'Dijk'
+    >>> burmese.parse("Maria da Silva").family
+    'Silva'
+    >>> grant = burmese.parse("U. S. Grant")
+    >>> grant.title, grant.given
+    ('U.', 'S.')
+
+Measured on names that are not Burmese, the pack changes the reading of
+14% of the names of Brazilian election donors, and among researchers
+who filed their own given and family names in ORCID it lowers the
+share read right in both boxes from 94% to 83% in the Netherlands and
+from 95% to 89% in Belgium. A Korean name written with no comma and opening with the
+surname ``U`` reads ``U`` as the title under the pack (``U Minjun``),
+where ``U, Minjun`` keeps it as the family name.
