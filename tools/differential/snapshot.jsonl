@@ -1753,7 +1753,6 @@
 {"name": "Jan Koos Van der Merwe", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M.", "capitalized_force": "Jan Koos van der Merwe"}
 {"name": "Jan Měto Šejc", "given": "Jan", "middle": "Měto", "family": "Šejc", "initials": "J. M. Š."}
 {"name": "Jan Stephan von Calcar", "given": "Jan", "middle": "Stephan", "family": "von Calcar", "initials": "J. S. C."}
-{"name": "Jan ten Brink", "given": "Jan", "middle": "ten", "family": "Brink", "initials": "J. t. B.", "capitalized_force": "Jan Ten Brink"}
 {"name": "Jan van 't Hof 'Jantje'", "given": "Jan", "family": "van 't Hof", "nickname": "Jantje", "initials": "J. H."}
 {"name": "Jan van Dijk", "given": "Jan", "family": "van Dijk", "initials": "J. D."}
 {"name": "Jan van Eyck", "given": "Jan", "family": "van Eyck", "initials": "J. E."}
@@ -3565,7 +3564,6 @@
 {"name": "Pierre-Louis", "given": "Pierre-Louis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet", "order": "FAMILY_FIRST", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
-{"name": "Piet Oude Luttikhuis", "given": "Piet", "family": "Oude Luttikhuis", "initials": "P. L."}
 {"name": "Piet van Engelen", "given": "Piet", "family": "van Engelen", "initials": "P. E."}
 {"name": "Pieter Bruegel stariji Jones", "given": "Pieter", "middle": "Bruegel stariji", "family": "Jones", "initials": "P. B. s. J.", "capitalized_force": "Pieter Bruegel Stariji Jones"}
 {"name": "Pieter de Carpentier", "given": "Pieter", "family": "de Carpentier", "initials": "P. C."}

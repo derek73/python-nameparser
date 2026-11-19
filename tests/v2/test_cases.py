@@ -489,8 +489,8 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Doe, VI, PhD' under three orders (the vi row is not swept); 2086
     # -> 2098, the third review's four rows under three orders; 2098 ->
     # 2101, 'Jane Doe, A.L., PhD' under three orders; 2101 -> 2107 on
-    # 2026-11-18, #1455's 'Oude Luttikhuis' and 'Luttikhuis, Piet Oude'
-    # under three orders.
+    # 2026-11-18, #1455's 'Oude Luttikhuis' and 'Luttikhuis, Piet Oude',
+    # each reporting particle-or-given under three orders.
     assert claims == 2107, (
         f"the field sweep checks {claims} claims, recorded as 2107 on "
         f"2026-11-18")

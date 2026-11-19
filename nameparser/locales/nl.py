@@ -20,8 +20,9 @@ On a word nl.toml holds a vocabulary reading of, other languages'
 vocabulary readings leave: ``vd`` (van der, abbreviated) is then
 Dutch's particle alone and no longer English's credential VD (the
 Volunteer Decoration), so ``John Smith VD`` gives middle ``Smith``,
-family ``VD`` where the default gives suffix ``VD``. A caller whose
-names also carry the credential chooses ``en`` too.
+family ``VD`` where the default gives suffix ``VD``, and ``John Smith,
+VD`` reads whole as the family name, its given name lost. A caller whose names also
+carry the credential chooses ``en`` too.
 
 Data sources: the readings' own entries in nameparser/vocab/nl.toml,
 each with its issue and the vetting on its note; nothing is listed

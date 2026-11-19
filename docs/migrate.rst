@@ -4,7 +4,7 @@ Migrating to 3.0
 nameparser 3.0 removes the 1.x compatibility layer: ``HumanName``,
 ``Constants`` and everything around them, which 2.x kept working on top
 of the core parser and 2.8 deprecated. This page is for code moving to
-3.0 or 3.1 from 1.x or from any 2.x release, whether it called
+3.0, 3.1 or 3.2 from 1.x or from any 2.x release, whether it called
 ``HumanName`` or the 2.x core API. It says what is gone and what
 replaces each piece, one row per old name, and lists the names whose
 reading changed, release by release.
@@ -40,11 +40,11 @@ Which part is yours
        applies
    * - edits ``CONSTANTS`` or builds a ``Constants``
      - the :ref:`migrate-config-map`
-   * - uses the 2.x ``Lexicon`` and ``Policy`` and is going to 3.0 or
-       3.1
+   * - uses the 2.x ``Lexicon`` and ``Policy`` and is going to 3.0,
+       3.1 or 3.2
      - :ref:`migrate-lexicon-readings`, :ref:`migrate-constants`,
-       :ref:`migrate-3-0` and :ref:`migrate-3-1`; the attribute map
-       and the ``Constants`` tables are not yours
+       :ref:`migrate-3-0`, :ref:`migrate-3-1` and :ref:`migrate-3-2`;
+       the attribute map and the ``Constants`` tables are not yours
    * - compares names with ``==``
      - :ref:`migrate-comparison`
    * - pickles parsers, lexicons or parsed names
@@ -857,10 +857,10 @@ Behavior changes
 -----------------
 
 Beyond the API surface mapped above, parse *outputs* differ between 1.4
-and 3.1 for specific input shapes. The ones listed here, release by
+and 3.2 for specific input shapes. The ones listed here, release by
 release, are the shapes worth checking your fixtures for; the full
 list, with reasoning, is in each release's section of
-:doc:`release_log`, the 3.0 and 3.1 ones included.
+:doc:`release_log`, the 3.0, 3.1 and 3.2 ones included.
 
 .. list-table::
    :header-rows: 1
@@ -908,13 +908,16 @@ list, with reasoning, is in each release's section of
        scripts, case repair, titles and particles in other scripts,
        ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
+   * - 3.2
+     - Dutch ``Oude``
+     - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
 3.0 give what 1.4 read, so they are written for code coming from 1.x: a
 release between may have read the name a third way, which the release
 log gives. 3.0's rendering and initials sections compare with 2.8, and
-each 3.1 entry names the releases that read the name the old way. Coming
-from 2.8, read the 3.0 and 3.1 lists, and the release log's 3.0 section
+each 3.1 and 3.2 entry names the releases that read the name the old way.
+Coming from 2.8, read the 3.0, 3.1 and 3.2 lists, and the release log's 3.0 section
 too: a reading that a 2.x release moved and 3.0 moved back to 1.4's is
 in the log and not in these lists.
 
@@ -2139,16 +2142,18 @@ Dutch Oude
 ^^^^^^^^^^
 
 ``Oude`` starts the family name it opens, where 1.4 through 3.1 left it
-in the middle name; opening a name it stays the given name:
+in the middle name, after a family comma too (``Luttikhuis, Piet
+Oude``); opening a name it stays the given name, as before, and now
+reports the fork, as ``van`` does:
 
 .. doctest::
 
     >>> parse("Piet Oude Luttikhuis").family
     'Oude Luttikhuis'
-    >>> parse("Oude Luttikhuis").given
-    'Oude'
+    >>> oude_first = parse("Oude Luttikhuis")
+    >>> oude_first.given, [str(report.kind) for report in oude_first.ambiguities]
+    ('Oude', ['particle-or-given'])
 
 ``locales.NL``, new in 3.2, reads ``ten`` the same way (``Jan ten
 Brink`` gives family ``ten Brink``); the default parse of a name holding
 ``ten`` is unchanged.
-

@@ -71,6 +71,8 @@ and names the ``remove`` above.
 Both calls return a new :class:`~nameparser.Lexicon`, the one you
 started from (here, ``Lexicon.default()``) never being mutated.
 
+.. _adding-a-word:
+
 Adding a word
 ^^^^^^^^^^^^^
 

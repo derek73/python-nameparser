@@ -21,7 +21,7 @@ from nameparser import (
 from nameparser import _reading_index as _ri
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, UNSET, PatronymicRule, Policy,
     PolicyPatch, Script, _SCRIPT_RANGES,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -187,10 +187,49 @@ def test_nl_reads_a_leading_ten_by_its_given_reading_unless_strict(
                for a in name.ambiguities) is reported
 
 
+def test_a_strict_dutch_choice_keeps_a_leading_oude_given() -> None:
+    # #1455: oude's given reading is in nl.toml itself, so a strict Dutch
+    # choice keeps it, where ten's (in zh.toml) leaves
+    name = parser_for(locales.NL, strict=True).parse("Oude Luttikhuis")
+    assert (name.given, name.family) == ("Oude", "Luttikhuis")
+    assert [a.kind for a in name.ambiguities] == [AmbiguityKind.PARTICLE_OR_GIVEN]
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text", [
+    "Ten Kao Liu", "Kheng Ten Choo", "Ten", "Liu, Ten", "Ten, Kheng",
+    ", Ten Kao", "Ten Kao Liu, Jr.", "TEN KAO LIU", "Liu, Kheng Ten",
+    "Dr. Ten Liu", "Jan ten Brink", "Brink, Jan ten",
+])
+def test_the_given_reading_of_ten_moves_no_default_parse(
+        text: str, order: tuple[Role, Role, Role]) -> None:
+    # #1455: zh.toml's given reading of ten is on by default, but with
+    # nl.toml's preposition off a lone name reading compiles to no set,
+    # so the default reads every name holding ten as without it
+    policy = Policy(name_order=order)
+    with_it = Parser(policy=policy).parse(text)
+    without = Parser(policy=policy, lexicon=Lexicon.default().remove(
+        "ten", kind="given")).parse(text)
+    assert with_it.as_dict() == without.as_dict()
+    assert [a.kind for a in with_it.ambiguities] == [
+        a.kind for a in without.ambiguities]
+
+
+def test_the_given_reading_of_ten_moves_a_parse_where_the_particle_is_on() -> None:
+    # the negative control for the test above: the same comparison sees
+    # the reading under the pack, where the preposition is on
+    nl = parser_for(locales.NL)
+    without = parser_for(locales.NL, base=Parser(
+        lexicon=Lexicon.default().remove("ten", kind="given")))
+    assert nl.parse("Ten Kao Liu").given == "Ten"
+    assert without.parse("Ten Kao Liu").family == "Ten Kao Liu"
+
+
 @pytest.mark.parametrize("code, text, repaired", [
     # #1455: oude keeps the capital its family names are written with
     # (its `cased` mask) where case repair would lowercase a particle;
-    # ten is written lower case in Dutch family boxes, as a particle is
+    # ten takes a particle's lower case, as Dutch writes it after a given
+    # name (a family box holding the surname alone often capitalizes it)
     (None, "PIET OUDE LUTTIKHUIS", "Piet Oude Luttikhuis"),
     (None, "piet oude luttikhuis", "Piet Oude Luttikhuis"),
     (None, "Piet Oude Luttikhuis", "Piet Oude Luttikhuis"),
@@ -1962,7 +2001,9 @@ _ROTATORS["he"] = [
     "Arieh, Yael Ben",               # ben ending the given part
 ]
 # nl (#1455): ten mid-name, in each case and after a family comma (a
-# leading Ten reads as by default, test_nl_reads_a_leading_ten_...); the credential VD its choice drops for vd's particle
+# leading Ten keeps the default's fields under the plain choice, only
+# reporting the fork: test_nl_reads_a_leading_ten_by_its_given_reading_
+# unless_strict); the credential VD its choice drops for vd's particle
 _ROTATORS["nl"] = [
     "Jan ten Brink",                 # ten
     "JAN TEN BRINK",                 # ten, in one case

@@ -18,8 +18,8 @@ subset with its own parser, or pass several packs to ``parser_for``:
 
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
-Vietnamese, Mongolian and Thai names, Maghrebi, Amazigh and Hebrew
-particles, and Dutch particles. Other languages are described where their mechanism is:
+Vietnamese, Mongolian and Thai names, and Maghrebi, Amazigh, Hebrew and
+Dutch particles. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -1096,15 +1096,17 @@ Dutch particles
 ---------------
 
 Turn on ``locales.NL`` when your data is Dutch or Flemish names written
-with ``ten``. The other Dutch particles are read by default.
+with ``ten``, the one particle the pack adds. The other Dutch particles
+the vocabulary lists are read by default; one it does not list, such as
+the ``in`` of ``in 't Veld``, is added as :ref:`adding-a-word` shows.
 
 Read by default: ``van``, ``de``, ``ter``, ``Oude``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A Dutch family name often opens with prepositions and articles written
 in lower case (``van der Berg``, ``ter Horst``, ``'t Hooft``). The
-default reads them as part of the family name. So does it read
-``Oude`` ("old"), which opens the farm names of Twente and the
+default reads them as part of the family name, and reads ``Oude``
+("old") the same way, which opens the farm names of Twente and the
 Achterhoek and is written with a capital (``Oude Luttikhuis``):
 
 .. doctest::
@@ -1125,7 +1127,7 @@ stays the given name and reports the fork, as ``van`` does.
 it is also a syllable of Chinese given names, written between two words
 (``Kheng Ten Choo``), where the particle would take it into the family
 name. So the default leaves it to position, and ``locales.NL``, which
-chooses Dutch, reads it as the family name:
+chooses Dutch, reads it as the start of the family name:
 
 .. doctest::
 
@@ -1137,8 +1139,8 @@ chooses Dutch, reads it as the family name:
     >>> dutch.parse("Ten Brink").given
     'Ten'
 
-A ``Ten`` opening a name stays the given name and reports the fork,
-save under a strict Dutch choice (``strict=True``), which drops the
+Under the pack, a ``Ten`` opening a name stays the given name and
+reports the fork, save under a strict Dutch choice (``strict=True``), which drops the
 Chinese given name and reads a leading ``Ten`` as the family name.
 
 What the pack costs
@@ -1146,8 +1148,9 @@ What the pack costs
 
 - **A Chinese given-name syllable inside a name.** ``Kheng Ten Choo``
   gives family ``Ten Choo`` under the pack. Among ORCID's,
-  PatentsView's and the UK company register's records, ``ten`` read
-  this way fixes 66 Dutch names for 4 it breaks
+  PatentsView's and the UK company register's records, ``ten`` read as
+  a particle fixes 86 names for 9 it breaks, 66 to 4 among Dutch
+  records, and two of the breaks are names of this shape
   (``docs/design/decisions/vocabulary-collisions.md``, :issue:`1455`).
 - **Two particle runs.** A family name of two Dutch names, each opening
   with a particle, keeps only the second as the family name when the
@@ -1157,8 +1160,13 @@ What the pack costs
 - **The credential VD.** Choosing Dutch costs English's reading of
   ``vd``, which Dutch reads as ``van der`` written short, so the
   credential VD (the Volunteer Decoration) is a name word under
-  ``locales.NL``: ``John Smith VD`` gives family ``VD``. Choose ``en``
-  too to keep it.
+  ``locales.NL``: ``John Smith VD`` gives family ``VD``, and ``John
+  Smith, VD`` reads whole as the family name. Choose ``en`` too to keep
+  it.
+- **A leading Ten, under a strict Dutch choice.** A strict Dutch
+  choice drops the Chinese given name, so a ``Ten`` opening the name,
+  or opening the given name after a family comma, joins the family
+  (``Brink, Ten Jan`` gives family ``Brink Ten Jan``).
 - **Other languages' particles, under a strict Dutch choice.** A
   strict Dutch choice drops the particles of other languages written in
   Latin letters (``Maria da Silva`` gives middle ``da``).

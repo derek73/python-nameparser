@@ -163,4 +163,4 @@ given = { default = false, note = "a Cantonese given name (Hon Wah Yeung, Hon Ch
 
 [[word]]
 text = "ten"
-given = { note = "a Chinese given-name syllable (Ten Kao Liu): ORCID researchers open a given box with it 4 times (Singapore, Bhutan), PatentsView inventors 4 (Taiwan, Singapore), and it stands inside Malaysian and Singaporean given names; declared so that nl.toml's preposition, which a Dutch choice turns on, leaves a name opening with it the given name unless the choice is strict (2026-11-18, #1455)" }
+given = { note = "a given-name syllable of Chinese and of Bhutanese names (Ten Kao Liu, Ten Dorji; no file holds Dzongkha): ORCID researchers open a given box with it 4 times (Singapore 2, Bhutan 2), PatentsView inventors 4 (Taiwan 2, Singapore 2), and it stands inside Malaysian and Singaporean given names; declared so that nl.toml's preposition, which a Dutch choice turns on, leaves a name opening with it the given name unless the choice is strict (2026-11-18, #1455)" }

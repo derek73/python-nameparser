@@ -1004,6 +1004,34 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          notes="zh.toml's given-name syllable where the particle opens a "
                "name, the fork reported; 1.4.0 reads the same fields"),
+    Case("a_double_dutch_name_with_ten_reads_whole_by_default",
+         "Jutte van der Werff ten Bosch",
+         {"given": "Jutte", "family": "van der Werff ten Bosch"},
+         classification="parity",
+         notes="the negative control for the pack's two-run cost; 1.4.0 "
+               "reads the same"),
+    Case("the_dutch_pack_splits_a_double_name_at_ten",
+         "Jutte van der Werff ten Bosch",
+         {"given": "Jutte", "middle": "van der Werff", "family": "ten Bosch"},
+         locale="nl", classification="feat(#1455)",
+         notes="a second particle run opening with ten takes the family, as "
+               "one opening with ter does by default (docs/languages.rst's "
+               "costs); 1.4.0 through 3.1.0 read family 'van der Werff ten "
+               "Bosch'"),
+    Case("the_dutch_pack_reads_vd_as_van_der_not_the_credential",
+         "John Smith VD",
+         {"given": "John", "middle": "Smith", "family": "VD"},
+         locale="nl", classification="feat(#1455)",
+         notes="nl's choice turns off en's credential VD for its own vd "
+               "(van der); 1.4.0 through 3.1.0 read suffix 'VD'"),
+    Case("the_dutch_pack_reads_vd_after_a_comma_as_the_family",
+         "John Smith, VD",
+         {"family": "John Smith VD"},
+         locale="nl", classification="feat(#1455)",
+         notes="the never-given particle with nothing behind it after the "
+               "comma, as 'John Smith, de' reads by default; the cost the "
+               "pack's docstring and docs/languages.rst state; 1.4.0 "
+               "through 3.1.0 read suffix 'VD'"),
     Case("the_dutch_pack_takes_a_chinese_syllable_into_the_family",
          "Kheng Ten Choo",
          {"given": "Kheng", "family": "Ten Choo"},

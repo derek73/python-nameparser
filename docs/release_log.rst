@@ -5,7 +5,7 @@ Release Log
     nameparser 3.2 is under development.
 
     - **Fix Dutch Oude, which read as a middle name.** ``parse("Piet Oude Luttikhuis")`` gives family ``Oude Luttikhuis``, where 1.4.0 through 3.1.0 gave middle ``Oude``, family ``Luttikhuis``; ``Oude`` opening a name stays the given name, reported, being a rare Dutch given name too. :issue:`1455`
-    - **Add locales.NL, which reads ten as a family-name particle.** ``parser_for(locales.NL).parse("Jan ten Brink")`` gives family ``ten Brink``, where the default, as 1.4.0 through 3.1.0, gives middle ``ten``; a ``Ten`` opening a name stays the given name, reported, save under ``strict=True``. It also takes a Chinese given-name syllable inside a name into the family (``Kheng Ten Choo`` gives family ``Ten Choo``), which is why the default leaves ``ten`` alone, and choosing Dutch reads ``VD`` as ``van der`` rather than the credential (``John Smith VD`` gives family ``VD``). :issue:`1455`
+    - **Add locales.NL, which reads ten as a family-name particle.** ``parser_for(locales.NL).parse("Jan ten Brink")`` gives family ``ten Brink``, where the default, as 1.4.0 through 3.1.0, gives middle ``ten``; a ``Ten`` opening a name stays the given name, reported, save under ``strict=True``. It also takes a Chinese given-name syllable inside a name into the family (``Kheng Ten Choo`` gives family ``Ten Choo``), and choosing Dutch reads ``VD`` as ``van der`` rather than the credential (``John Smith, VD`` gives family ``John Smith VD``). See :ref:`dutch-particles`. :issue:`1455`
 
 * 3.1.0 - November 16, 2026
 
