@@ -56,10 +56,11 @@ What counts:
   as a miss: a suffix typed into the surname box after a comma
   (`Smith, Jr.`) is the parser's family and suffix rejoined. A word
   the filer wrote joined agrees with a reading that cuts it after one or
-  more of its full stops (agrees): since 3.1 (#1296, rules/T7) a box
-  holding `B.A.S.D.` is read given `B.`, middle `A.S.D.` (#1470), and
-  `Md.Karim` is read `Md.`, `Karim` (#1477), and the scorer's join of
-  the two fields puts a space where the filer typed none.
+  more of its full stops (agrees): a box holding `B.A.S.D.` is read
+  given `B.`, middle `A.S.D.` since 3.1 (#1296, rules/T7; #1470), and
+  `Md.Karim` given `Md.` (Muhammad written short), middle `Karim`
+  (#1477), and the scorer's join of the two fields puts a space where
+  the filer typed none.
 - Where a source has no suffix box, a suffix the parser peels (`Jr`,
   `OBE`) stood last in the display name, so it was typed into the last
   filled box, normally the surname: the parser's family is compared

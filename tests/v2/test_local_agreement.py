@@ -605,7 +605,8 @@ def test_a_cut_across_two_boxes_stays_a_miss() -> None:
     ("Md.Karim", "Md Karim", False),
     ("Md.Karim", "Md. Karin", False),  # other letters
     ("क.ख.", "क. ख.", True),          # letters of any script
-    ("कि.ख.", "कि. ख.", True),        # a letter with its vowel sign, a combining mark
+    ("कि.ख.", "कि. ख.", True),        # a letter with its vowel sign (a regression row)
+    ("Md.Karim", "Md. Karim Lee", False),  # a word left over after a cut word
 ])
 def test_agreement_across_a_cut_after_a_full_stop_only(box: str, got: str, same: bool) -> None:
     assert agreement.agrees(box, got) is same
@@ -624,6 +625,31 @@ _UNGUARDED_EFFECT = 25
 #: field, and the rest, read with a word of the family box in the given
 #: box's field (`A.B. Kumarasiri Silva`), which stay misses.
 _HELD, _MISREAD = 40, 40
+#: How many of the grid's held records #1470's rule, a cut forgiven only
+#: after initials, still scored a miss: the rows #1477 added
+#: (`Md.Nuwan`, `Jo.Nuwan`, `Moh.R.Nuwan`).
+_INITIALS_ONLY_EFFECT = 3
+
+
+def _joined_after_initials(joined: list[str], spaced: list[str]) -> bool:
+    """#1470's _joined, kept here as the guard's second control: a cut
+    forgiven only after a piece that is one or more initials."""
+    def initials(word: str) -> bool:
+        return word.endswith(".") and all(
+            chunk[:1].isalpha() and all(unicodedata.category(c).startswith("M") for c in chunk[1:])
+            for chunk in word[:-1].split("."))
+    i = 0
+    for word in joined:
+        if i < len(spaced) and agreement.fold(word) == agreement.fold(spaced[i]):
+            i += 1
+            continue
+        built, j = spaced[i] if i < len(spaced) else "", i + 1
+        while j < len(spaced) and len(built) < len(word) and initials(spaced[j - 1]):
+            built, j = built + spaced[j], j + 1
+        if j - i < 2 or built.casefold() != word.casefold():
+            return False
+        i = j
+    return i == len(spaced)
 
 
 def test_a_reading_cut_only_after_a_full_stop_is_never_scored_a_miss(
@@ -657,7 +683,11 @@ def test_a_reading_cut_only_after_a_full_stop_is_never_scored_a_miss(
     # The other half: a word of the family box read into the given box's
     # field stays a miss.
     assert misses(misread) == _MISREAD
-    # The negative control: compared folded alone, as before #1470.
+    # The negative controls: a cut forgiven only after initials, as
+    # #1470 had it, and compared folded alone, as before #1470.
+    with monkeypatch.context() as patch:
+        patch.setattr(agreement, "_joined", _joined_after_initials)
+        assert misses(rows) == _INITIALS_ONLY_EFFECT
     monkeypatch.setattr(agreement, "agrees", lambda box, got: agreement.fold(box) == agreement.fold(got))
     assert misses(rows) == _UNGUARDED_EFFECT
 
