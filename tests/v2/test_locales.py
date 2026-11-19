@@ -3444,6 +3444,7 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
             == changed_words(selected(locales.PT.languages)))
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
     assert pt.parse("Rui Sousa Pinto").family == "Pinto"
+    assert pt.parse("Pedro Sousa Alves Filho").family == "Alves"
     for packed, packed_pack in ((br, locales.PT_BR), (pp, locales.PT_PT)):
         # two family names where pt reads a middle name
         assert packed.parse("Rui Sousa Pinto").family == "Sousa Pinto"
@@ -3463,7 +3464,10 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
         assert packed.parse("Rui Costa dos Santos").family == "Costa dos Santos"
         assert packed.parse("Rui Pedro dos Santos").as_dict() == pt.parse(
             "Rui Pedro dos Santos").as_dict()
-        # an agnomen is peeled before the family is counted
+        # an agnomen is peeled before the family is counted: three name
+        # words left take one, two take none
+        sousa = packed.parse("Pedro Sousa Alves Filho")
+        assert (sousa.family, sousa.suffix) == ("Sousa Alves", "Filho")
         alves = packed.parse("Pedro Alves Filho")
         assert (alves.family, alves.suffix) == ("Alves", "Filho")
         # under a family-first order: the first two words, the list

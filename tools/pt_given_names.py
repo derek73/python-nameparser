@@ -164,6 +164,17 @@ def c_spellings(ranked: list[str], given: Counter[str], family: Counter[str],
             if g >= share * (g + f)]
 
 
+def build(given: Counter[str], family: Counter[str], excluded: set[str],
+          min_uses: int = MIN_USES, share: float = SHARE,
+          removed: Iterable[str] = ()) -> tuple[list[str], list[str]]:
+    """The list: the ranked words (`select`) and their c spellings
+    (`c_spellings`), a word in `removed` out of both, so a c spelling
+    the hand reading took out is no candidate either."""
+    out = set(removed)
+    ranked = select(given, family, excluded, min_uses, share, out)
+    return ranked, c_spellings(ranked, given, family, excluded | out, share)
+
+
 def render(ranked: list[str], spellings: list[str]) -> str:
     def rows(words: list[str]) -> str:
         lines = [", ".join(f'"{w}"' for w in words[i:i + 8])
@@ -222,9 +233,7 @@ def main(argv: list[str] | None = None) -> int:
         for word in map(fold, args.words):
             print(f"{word:20} given {given[word]:>7,}  family {family[word]:>7,}")
         return 0
-    ranked = select(given, family, excluded, args.min_uses, args.share, REMOVED)
-    # a c spelling the hand reading took out is no candidate either
-    spellings = c_spellings(ranked, given, family, excluded | set(REMOVED), args.share)
+    ranked, spellings = build(given, family, excluded, args.min_uses, args.share, REMOVED)
     for i, word in enumerate(ranked, 1):
         print(f"{i:5}  {word:20} given {given[word]:>7,}  family {family[word]:>7,}")
     for word, g, f in c_spelling_uses(ranked, given, family, excluded | set(REMOVED)):

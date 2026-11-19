@@ -144,7 +144,7 @@ def test_a_c_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
     # below, its c spelling standing mostly for a surname
     given = Counter({"gonçalo": 89, "goncalo": 3, "françoise": 6,
                      "constança": 11})
-    family = Counter({"gonçalo": 3, "franca": 2, "françoise": 0})
+    family = Counter({"gonçalo": 3, "françoise": 0})
     ranked = ["gonçalo", "constança", "françoise"]
     assert tool.c_spellings(ranked, given, family, set(), 0.7) == [
         "goncalo", "constanca", "francoise"]
@@ -154,6 +154,25 @@ def test_a_c_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
     surnames = Counter({"frança": 1})
     assert tool.c_spellings(["frança"], surnames, Counter({"frança": 50}),
                             set(), 0.7) == []
+
+
+def test_a_removed_word_is_out_of_the_ranks_and_the_c_spellings() -> None:
+    # a c spelling ranked on its own uses, and also the c spelling of a
+    # ranked ç word: removing it must keep it out of both, which
+    # select() alone does not (the ç word would put it back)
+    given = Counter({"gonçalo": 89, "goncalo": 9, "ana": 150})
+    family = Counter({"gonçalo": 3})
+    assert tool.build(given, family, set(), 5, 0.7) == (
+        ["ana", "gonçalo", "goncalo"], [])
+    assert tool.build(given, family, set(), 5, 0.7, removed={"goncalo"}) == (
+        ["ana", "gonçalo"], [])
+    # removing the ç word drops its c spelling too where that is no word
+    # ranked on its own uses
+    given2 = Counter({"gonçalo": 89, "ana": 150})
+    assert tool.build(given2, family, set(), 5, 0.7) == (["ana", "gonçalo"], ["goncalo"])
+    assert tool.build(given2, family, set(), 5, 0.7, removed={"gonçalo"}) == (["ana"], [])
+    assert tool.build(given2, family, set(), 5, 0.7, removed={"goncalo"}) == (
+        ["ana", "gonçalo"], [])
 
 
 @pytest.mark.parametrize(("pack", "name", "field", "value"), [
@@ -166,6 +185,7 @@ def test_a_c_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
     # an accent the fold drops, precomposed and as a combining mark
     ("PT_BR", "Pedro Luís Matos", "middle", "Luís"),
     ("PT_PT", "Ana Ine\u0302s Matos", "middle", "Ine\u0302s"),
+    # an accented word the list lacks is taken (the switch's cost)
     ("PT_PT", "Pedro Zzimão Matos", "family", "Zzimão Matos"),
     ("PT_BR", "PEDRO GONCALO MATOS", "middle", "GONCALO"),
     # a word the list lacks is taken (rules/O6's cost)
