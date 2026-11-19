@@ -381,7 +381,7 @@ is never taken for one written with n: ``Oña`` is a surname, though
     >>> spain.parse("Juan Oña Pérez").family
     'Oña Pérez'
 
-A compound given name stays opt-in under the Spanish packs and ``pt``
+A compound given name stays opt-in under the Spanish and Portuguese packs
 alike (``two_given_names``, see :ref:`two-given-names`): people filling
 a form with a middle-name box put the second given name there.
 

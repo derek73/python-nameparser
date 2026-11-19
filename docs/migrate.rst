@@ -2158,6 +2158,42 @@ reports the fork, as ``van`` does:
 Brink`` gives family ``ten Brink``); the default parse of a name holding
 ``ten`` is unchanged.
 
+Two family names under locales.PT_BR
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``locales.PT_BR`` reads two family names (``two_family_names``), where
+3.0 and 3.1 read the first as a middle name; a second given name on
+its Portuguese given-name list stays where it stands. ``locales.PT``
+is unchanged, and ``locales.PT_PT``, new in 3.2, reads names from
+Portugal as ``locales.PT_BR`` does:
+
+.. doctest::
+
+    >>> brazilian = parser_for(locales.PT_BR)
+    >>> souza = brazilian.parse("Ana Souza Lima")
+    >>> souza.middle, souza.family
+    ('', 'Souza Lima')
+    >>> brazilian.parse("Ana Beatriz Costa").family
+    'Costa'
+    >>> parser_for(locales.PT).parse("Ana Souza Lima").family
+    'Lima'
+
+To keep the 3.1 reading, turn the switch off on top of the pack:
+
+.. doctest::
+
+    >>> import dataclasses
+    >>> as_31 = parser_for(locales.PT_BR)
+    >>> as_31 = dataclasses.replace(
+    ...     as_31, policy=dataclasses.replace(as_31.policy, two_family_names=False))
+    >>> as_31.parse("Ana Souza Lima").family
+    'Lima'
+
+A ``locales.PT_BR``, or a parser built from it, pickled by 3.1 still
+loads, and reads as 3.1's pack did: a pickle holds the pack's values,
+not its name. Build the parser again from ``locales.PT_BR`` to read two
+family names.
+
 Malaysian a/l, a/p and anak
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -138,8 +138,8 @@ Read that precisely: a shape is a pattern, not a language, so a pack
 can act on a name from a tradition it was not written for. A broad
 shape covers much:
 
-- ``es``, ``es_ar``, ``cs`` and ``sk`` may read any name of three words
-  differently.
+- ``es``, ``es_ar``, ``cs``, ``sk``, ``pt_br`` and ``pt_pt`` may read
+  any name of three words differently.
 - ``vi``, whose name order is its shape, may read any name differently:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
@@ -182,7 +182,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'nl', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'nl', 'pt', 'pt_br', 'pt_pt', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -306,17 +306,25 @@ says which parts each pack is made of.
        opening the family name. See :ref:`dutch-particles`.
      - ``Jan ten Brink`` → family ``ten Brink``
    * - ``pt``
-     - Portuguese
+     - Portuguese, from any country
      - Chooses ``pt``, which settles Portuguese's clashes its way
        (``do`` a particle, not the DO credential). See
        :ref:`portuguese-packs`.
      - ``Maria da Piedade Costa`` → middle ``da Piedade``
    * - ``pt_br``
      - Brazilian Portuguese
-     - Chooses ``pt-BR``, and with it ``pt``, and turns on ``SB``, the
-       agnomen Sobrinho as Brazilian filings abbreviate it. See
-       :ref:`portuguese-packs`.
-     - ``JOSE CARLOS SILVA SB`` → suffix ``SB``
+     - Chooses ``pt-BR``, and with it ``pt``, turns on ``SB``, the
+       agnomen Sobrinho as Brazilian filings abbreviate it, and reads
+       two family names, guarded by a list of Portuguese given names.
+       See :ref:`portuguese-packs` and :ref:`portuguese-two-family-names`.
+     - | ``JOSE CARLOS SILVA SB`` → suffix ``SB``
+       | ``Tiago Barros Queiroz`` → family ``Barros Queiroz``
+   * - ``pt_pt``
+     - Portuguese from Portugal
+     - ``pt`` with two family names and ``pt_br``'s given-name list. See
+       :ref:`portuguese-two-family-names`.
+     - ``Rui Sousa Pinto`` → family ``Sousa Pinto``, where ``pt`` gives
+       ``Pinto``
    * - ``ru``
      - East Slavic names in formal order
      - Detects the family/given/patronymic shape by the patronymic's
@@ -371,7 +379,7 @@ says what it can change:
      - Policy fields
      - Word list
    * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``nl``,
-       ``pt``, ``pt_br``, ``sl``
+       ``pt``, ``sl``
      - yes
      - none
      - none
@@ -379,7 +387,7 @@ says what it can change:
      - yes
      - ``two_family_names``
      - none
-   * - ``es``, ``es_ar``
+   * - ``es``, ``es_ar``, ``pt_br``, ``pt_pt``
      - yes
      - ``two_family_names``
      - the given names that switch leaves where they stand
@@ -628,16 +636,17 @@ The choice costs English's reading of ``MC``: under ``ga`` and
 
 .. _portuguese-packs:
 
-Portuguese and Brazilian Portuguese (``pt``, ``pt_br``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Portuguese (``pt``, ``pt_br``, ``pt_pt``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Turn on ``pt`` for Portuguese names from any country, and ``pt_br`` for
-Brazilian ones: ``pt_br`` chooses ``pt-BR``, and with it ``pt``, so it
-does everything ``pt`` does. Neither reads two family names
-(:ref:`Spanish and Portuguese titles <spanish-portuguese-titles>` says
-why, and how to turn that on).
+Turn on ``pt`` for Portuguese names from any country, ``pt_br`` for
+Brazilian ones and ``pt_pt`` for names from Portugal: ``pt_br`` chooses
+``pt-BR`` and ``pt_pt`` ``pt-PT``, each with ``pt``, so each does
+everything ``pt`` does. ``pt_br`` and ``pt_pt`` also read two family
+names, and ``pt`` does not; :ref:`portuguese-two-family-names` says
+why, and how to turn the switch on beside ``pt``.
 
-``pt`` and ``pt_br`` turn on a Portuguese given name written
+The three packs turn on a Portuguese given name written
 behind a particle that is too rare to read by default (``da
 Piedade``), so the phrase reads as a middle name, as ``das Graças``
 does by default (see :ref:`two-given-names`):
@@ -660,14 +669,14 @@ where the name keeps a family name without it (``Ana SB`` keeps family
 
     >>> parse("JOSE CARLOS SILVA SB").family
     'SB'
-    >>> brazil = parser_for(locales.PT_BR).parse("JOSE CARLOS SILVA SB")
-    >>> brazil.family, brazil.suffix
+    >>> sobrinho = parser_for(locales.PT_BR).parse("JOSE CARLOS SILVA SB")
+    >>> sobrinho.family, sobrinho.suffix
     ('SILVA', 'SB')
 
 The choices cost the other languages' readings of the words they
 settle:
 
-- **Under pt and pt_br,** the words read as ``pt`` reads them: ``do`` is
+- **Under pt, pt_br and pt_pt,** the words read as ``pt`` reads them: ``do`` is
   the particle, not the DO credential, so ``John Smith DO`` gives
   family ``DO``. ``Sr`` keeps both readings, *Senhor* in front and
   "Senior" behind, as in the default, under ``es`` too.

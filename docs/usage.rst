@@ -263,8 +263,8 @@ Two family names: ``surname1`` and ``surname2``
 
 ``surname2`` is the family's second name, where the parse read the
 family as two: with ``two_family_names`` on
-(:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs`` and ``sk``
-packs turn it on (:doc:`locales`), or for a Chinese name opening with
+(:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs``, ``sk``,
+``pt_br`` and ``pt_pt`` packs turn it on (:doc:`locales`), or for a Chinese name opening with
 two surnames under ``zh`` (:ref:`east-asian-names`), and ``family``
 keeps both. Every other name has none, a family comma's and a
 hyphenated one included:

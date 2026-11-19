@@ -497,9 +497,9 @@ Turn on ``two_family_names`` when the people in your data carry two
 family names and write both together, after the given names (or first,
 under a family-first order), and only then:
 :ref:`What it costs <two-family-names-cost>` shows what it does to
-other names. ``locales.ES`` turns it on
-together with a list of given names that it holds back (see `Keeping a
-given name out of the family`_).
+other names. ``locales.ES``, ``locales.PT_BR`` and ``locales.PT_PT``
+turn it on together with a list of given names that it holds back (see
+`Keeping a given name out of the family`_).
 
 In Spain and most of Latin America a person carries two family names,
 the father's first and then the mother's, and writes both after the
@@ -602,7 +602,10 @@ The field is empty by default, so you supply the list for your data,
 or choose ``locales.ES``, which turns the switch on and carries 1,000
 Spanish given names, a name written with ñ listed with n too
 (``locales.ES_AR``, for Argentine names, carries about 5,000; see
-:ref:`spanish-portuguese-titles`). An entry written without accents
+:ref:`spanish-portuguese-titles`), or ``locales.PT_BR`` or
+``locales.PT_PT``, which carry about 700 Portuguese ones, a name
+written with ç listed with c too (see
+:ref:`portuguese-two-family-names`). An entry written without accents
 matches the word with them:
 
 .. doctest::
@@ -705,7 +708,7 @@ Which words are marked:
   ``de Cássia``, ``de Tarso``). They were chosen by how ORCID
   researchers filled their own name boxes; the criterion is in
   ``docs/design/decisions/P10-given-name-a-particle-completes.md``.
-- **Under** ``locales.PT`` **and** ``locales.PT_BR`` **only**, a
+- **Under** ``locales.PT``, ``locales.PT_BR`` **and** ``locales.PT_PT`` **only**, a
   Portuguese word too rare to measure (``da Piedade``; see
   :ref:`language-packs`).
 - **Not marked**: a phrase too often a surname, as Portuguese
