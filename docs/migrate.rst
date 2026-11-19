@@ -2165,14 +2165,17 @@ Malaysian a/l, a/p and anak
 the family name, the father's name, as ``bin`` does, where 1.4 through
 3.1 left them in the middle name and cut a father's name of two words;
 the ``patronymic`` view holds the same words. ``anak`` opening a name,
-as Balinese ``Anak Agung`` does, stays the given name and reports the
-fork:
+as Balinese ``Anak Agung`` does, is left to position, the given name by
+default, and reports the fork. Case repair writes the particles in lower
+case, as it writes ``bin``:
 
 .. doctest::
 
     >>> malaysian = parse("KUMAR A/L RAJAN NAIDU")
     >>> malaysian.middle, malaysian.family, malaysian.patronymic
     ('', 'A/L RAJAN NAIDU', 'A/L RAJAN NAIDU')
+    >>> str(malaysian.capitalized())
+    'Kumar a/l Rajan Naidu'
     >>> parse("Rita Sari anak Jerome Insol").family
     'anak Jerome Insol'
     >>> balinese = parse("Anak Agung Made Putra")

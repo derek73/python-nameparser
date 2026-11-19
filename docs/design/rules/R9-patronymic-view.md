@@ -82,6 +82,10 @@
   "Karim Ould Haddou"         →  patronymic="Ould Haddou"
   "סאמר בן חליל"              →  patronymic=""
   ```
+- A patronymic particle that also opens a title of rank reads as the particle wherever it stands inside the name, so the view holds the title and the words after it: `anak` opens Balinese `Anak Agung`, which stands at the head of a name in nearly every list measured, where a word that may be given is left to position.
+  ```
+  "I Gusti Anak Agung Made"   →  patronymic="Anak Agung Made"
+  ```
 - The particle's run is every word after it in its field, so where the parse joined more than the parent's name the view holds it too, as the family does: a never-given particle opening the name takes the rest of it by default (P1).
   ```
   "ibn Ali Hasan"             →  patronymic="ibn Ali Hasan"

@@ -23,7 +23,7 @@ issue = 1468
 expands = "anak lelaki, son of: \"Kumar a/l Rajan\""
 gender = "m"
 may_be_given = false
-note = "Malaysian Indian names, read as 'bin' is. Written only with the slash, in capitals or lower case: Malaysia's election candidates write A/L 72 times in 3,077 names, OpenSanctions' my_parliament a/l 12 times, and neither writes it spaced (A / L) or with full stops (2026-11-19). One candidate writes A/K for anak, not listed"
+note = "Malaysian Indian names, read as 'bin' is. Written only with the slash, in capitals or lower case: Malaysia's election candidates write A/L 72 times in 3,683 spellings (69 of 3,077 distinct names), OpenSanctions' my_parliament a/l 12 times, and neither writes it spaced (A / L) or with full stops (2026-11-19). One candidate writes A/K for anak, not listed"
 
 [[word]]
 text = "a/p"
@@ -39,11 +39,11 @@ text = "anak"
 [word.given]
 wikidata = 1
 as_of = 2026-11-19
-note = "#1468: Balinese names open with 'Anak Agung' (ORCID given boxes, Indonesia's DPR, DPD and 2018 regional heads), so the word at the head of a name stays the given name, by position, as a particle that may be given does (rules/P1); Wikidata is a lower bound; SSA under 5 a year; Nepal's local candidates 1 (Anak Alemagar)"
+note = "#1468: Balinese names open with 'Anak Agung' (ORCID given boxes, Indonesia's DPR, DPD and 2018 regional heads), so the word at the head of a name is left to position, the given name by default, as a particle that may be given does (rules/P1); Wikidata is a lower bound; SSA under 5 a year; Nepal's local candidates 1, as a given name"
 [word.patronymic]
 issue = 1468
 expands = "child of, Iban and Bidayuh names: \"Jerry anak Jimbun\""
-note = "Sarawak names, read as 'bin' is: ANAK 55 times among Malaysia's election candidates, anak 12 times in my_parliament, every one between the given name and the father's (2026-11-19). Also the Malay and Indonesian noun 'child'"
+note = "Sarawak names, read as 'bin' is: ANAK 55 times (43 distinct names) among Malaysia's election candidates, anak 12 times in my_parliament, every one between the given name and the father's (2026-11-19). Also the Malay and Indonesian noun 'child'"
 
 [[word]]
 text = "bin"

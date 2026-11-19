@@ -9096,8 +9096,48 @@ CASES: tuple[Case, ...] = (
          "Jesse Kofi Anak",
          {"given": "Jesse", "middle": "Kofi", "family": "Anak"},
          classification="parity",
-         notes="#1468's boundary: a particle ending its field is a family "
-               "name word (Anak is a Ghanaian surname)"),
+         notes="#1468's boundary: under the default order a particle "
+               "ending its field is a family name word"),
+    Case("anak_ending_the_name_family_first_opens_the_family_as_binti_does",
+         "Jesse Kofi Anak",
+         {"given": "Kofi", "family": "Anak Jesse"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1468)",
+         ambiguities=("particle-or-given",),
+         notes="accepted: a trailing particle under a family-first order "
+               "opens the family before the first word, as 'Binti' does "
+               "there. 3.1 read given 'Kofi', middle 'Anak', family "
+               "'Jesse'"),
+    Case("a_slashed_son_of_opening_the_name_folds_it_into_the_family",
+         "A/L Rajan",
+         {"family": "A/L Rajan"},
+         classification="fix(#1468)",
+         notes="a/l is never a given name, so P1's fold takes the name, as "
+               "it takes 'ibn Ali'. 1.4.0 through 3.1 read given 'A/L', "
+               "family 'Rajan'"),
+    Case("a_slashed_son_of_opening_the_given_part_folds_it_into_the_family",
+         "Kumar, a/l Rajan",
+         {"family": "Kumar a/l Rajan"},
+         classification="fix(#1468)",
+         notes="accepted, unwritten in the lists measured: P1's fold after a "
+               "family comma takes the rest of the part for a never-given "
+               "particle, as 'Kumar, de Rajan' reads, where 'bin', which may "
+               "be given, leaves given 'bin'. 1.4.0 through 3.1 read given "
+               "'a/l', middle 'Rajan', family 'Kumar'"),
+    Case("anak_opening_the_given_part_stays_the_given_name",
+         "Kumar, anak Jimbun",
+         {"given": "anak", "middle": "Jimbun", "family": "Kumar"},
+         classification="parity",
+         notes="#1468's boundary: anak may be given, so after a family "
+               "comma it is left to position, as binti is"),
+    Case("anak_agung_behind_a_prefix_opens_the_family",
+         "I Gusti Anak Agung Made",
+         {"given": "I", "middle": "Gusti", "family": "Anak Agung Made"},
+         classification="fix(#1468)",
+         notes="accepted (decisions/R9, #1468): mid-name anak opens the "
+               "family even where it begins the Balinese title Anak Agung, "
+               "and the patronymic view then holds the title. 1.4.0 "
+               "through 3.1 read middle 'Gusti Anak Agung', family 'Made'"),
     Case("a_credential_in_capitals_inside_the_chain_starts_the_run",
          "Mariam binti MD Salleh",
          {"given": "Mariam", "family": "binti", "suffix": "MD Salleh"},

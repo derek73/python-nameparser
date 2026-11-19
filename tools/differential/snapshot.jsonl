@@ -1553,6 +1553,7 @@
 {"name": "Håkon III.", "given": "Håkon", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H.", "generation": "III."}
 {"name": "Héctor Quintana Suárez", "given": "Héctor", "middle": "Quintana", "family": "Suárez", "initials": "H. Q. S."}
 {"name": "Hülsen-Haeseler, Georg von", "given": "Georg", "family": "von Hülsen-Haeseler", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. H."}
+{"name": "I Gusti Anak Agung Made", "given": "I", "middle": "Gusti", "family": "Anak Agung Made", "initials": "I. G. A. M.", "capitalized_force": "I Gusti anak Agung Made", "patronymic": "Anak Agung Made"}
 {"name": "I don", "given": "I", "family": "don", "initials": "I. d.", "capitalized_force": "I Don"}
 {"name": "II Van Johnson", "given": "II", "family": "Van Johnson", "initials": "I. J.", "capitalized_force": "Ii van Johnson"}
 {"name": "III van Gogh", "given": "III", "family": "van Gogh", "initials": "I. G.", "capitalized_force": "Iii van Gogh"}
