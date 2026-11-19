@@ -517,7 +517,9 @@ def classify(state: ParseState) -> ParseState:
                     and (bare := t.text.strip(COMMA_STRIP)) and bare != t.text):
                 readers[i] = copy_with(t, text=bare)
                 folded[i] = _normalize(bare)
-    tokens = tuple(
+    # a list, not a generator: tuple() over a generator cost a frame
+    # per token for each resume
+    tokens = tuple([
         copy_with(
             t, tags=_tags_for(readers[i], folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
@@ -525,7 +527,7 @@ def classify(state: ParseState) -> ParseState:
                               letter_one_case=whole_one_case or (
                                   one_case and i < clause_at
                                   and t.role is None)))
-        for i, t in enumerate(state.tokens))
+        for i, t in enumerate(state.tokens)])
     # A word with a delimiter glued to it joins no neighbour across the
     # delimiter, so the stem's joining tags stay off it: 'y;' is no
     # connective to the word after it (rules/C10: "no join, maiden
