@@ -556,6 +556,22 @@ def test_the_armenian_ter_prefix_is_a_particle_set_aside() -> None:
         "պետրոսյան;լ", "տերպետրոսյան;լ", "տեր-պետրոսյան;լ"}
 
 
+@pytest.mark.parametrize("a, b, family", [
+    ("Piet Oude Luttikhuis", "Piet Oudeluttikhuis", Outcome.JOINED),
+    ("Piet Oude Luttikhuis", "Piet Luttikhuis", Outcome.PARTICLES_ASIDE),
+])
+def test_the_dutch_oude_is_a_particle_to_the_match(
+        a: str, b: str, family: Outcome) -> None:
+    # oude reads by default as the particle it is (#1455): written apart
+    # or run together with its surname the family joins, where 3.1.0 read
+    # a conflict, and set aside against the bare surname, where 3.1.0 read
+    # a middle name on one side; neither side then holds a middle name
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r.consistent and r["family"].outcome is family, (x, y)
+        assert r["middle"].outcome is Outcome.SAME, (x, y)
+
+
 @pytest.mark.parametrize("a, b", [
     ("Juan de la Vega", "Juan Marcos Vega"),
     ("Զավեն Տեր Եղիյան", "Զավեն Մարկոս Եղիյան"),

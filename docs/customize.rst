@@ -71,6 +71,8 @@ and names the ``remove`` above.
 Both calls return a new :class:`~nameparser.Lexicon`, the one you
 started from (here, ``Lexicon.default()``) never being mutated.
 
+.. _adding-a-word:
+
 Adding a word
 ^^^^^^^^^^^^^
 
@@ -87,19 +89,19 @@ list is one reading per word:
     'LEED AP'
 
 A surname particle is added the same way. The defaults leave out the
-Dutch ``ten`` of ``ten Brink``, which as a default would take a middle
+Dutch ``in`` of ``in 't Veld``, which as a default would take a middle
 name spelled like it into the surname of names in every language; add
 it when your data is Dutch:
 
 .. doctest::
 
-    >>> parse("Marieke ten Brink").middle, parse("Marieke ten Brink").family
-    ('ten', 'Brink')
-    >>> dutch_ten = Lexicon.default().add("ten", kind="preposition")
-    >>> Parser(lexicon=dutch_ten).parse("Marieke ten Brink").family
-    'ten Brink'
-    >>> Parser(lexicon=dutch_ten).parse("Park Ten Hwan").family
-    'Ten Hwan'
+    >>> parse("Marieke in 't Veld").middle, parse("Marieke in 't Veld").family
+    ('in', "'t Veld")
+    >>> dutch_in = Lexicon.default().add("in", kind="preposition")
+    >>> Parser(lexicon=dutch_in).parse("Marieke in 't Veld").family
+    "in 't Veld"
+    >>> Parser(lexicon=dutch_in).parse("Park In Hwan").family
+    'In Hwan'
 
 The last line is the cost: an edit applies to every name the parser
 reads. A particle added this way holds no ``given`` reading, so
@@ -157,7 +159,7 @@ named by language, which a reading you added leaves empty:
     ...     print(van_reading.kind, van_reading.category, van_reading.languages)
     preposition particle ('nl',)
     given name ('nl',)
-    >>> dutch_ten.readings_of("ten")[0].languages
+    >>> dutch_in.readings_of("in")[0].languages
     ()
 
 :meth:`~nameparser.Lexicon.words` goes the other way: it lists the

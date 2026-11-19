@@ -56,6 +56,7 @@
 - **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them. So is a particle opening a hyphenated word, which the hyphen joins to the name after it (`Ter-Petrosyan`, `Al-Ahmari`): it is written as a name word is, while a particle standing apart keeps its lowercase, save one R12 gives a capital as it opens the family name (`Ter Petrosyan`).
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
+  "PIET OUDE LUTTIKHUIS"      →  capitalized="Piet Oude Luttikhuis"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
   "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"

@@ -2716,6 +2716,7 @@
 {"name": "Kevin", "order": "FAMILY_FIRST", "given": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Kh. O. Bezirdzhyan", "given": "Kh.", "middle": "O.", "family": "Bezirdzhyan", "initials": "K. O. B."}
 {"name": "Khaled el-Hassani ben el-Hachemi", "given": "Khaled", "middle": "el-Hassani ben", "family": "el-Hachemi", "initials": "K. e. b. e.", "capitalized_force": "Khaled El-Hassani Ben El-Hachemi"}
+{"name": "Kheng Ten Choo", "given": "Kheng", "middle": "Ten", "family": "Choo", "initials": "K. T. C."}
 {"name": "Kho Liang Ie", "given": "Kho", "middle": "Liang", "family": "Ie", "initials": "K. L. I."}
 {"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
 {"name": "Khun Sa", "given": "Khun", "family": "Sa", "initials": "K. S."}
@@ -3481,6 +3482,7 @@
 {"name": "PETER Okello MUWANGA", "given": "PETER", "middle": "Okello", "family": "MUWANGA", "initials": "P. O. M.", "capitalized_force": "Peter Okello Muwanga"}
 {"name": "PETROSYAN, LEVON TER", "given": "LEVON", "family": "TER PETROSYAN", "initials": "L. P.", "capitalized": "Levon Ter Petrosyan"}
 {"name": "PHUOC T DO", "given": "PHUOC", "family": "T", "suffix": "DO", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. T.", "capitalized": "Phuoc T DO"}
+{"name": "PIET OUDE LUTTIKHUIS", "given": "PIET", "family": "OUDE LUTTIKHUIS", "initials": "P. L.", "capitalized": "Piet Oude Luttikhuis"}
 {"name": "PIETER 'T-HART", "given": "PIETER", "family": "'T-HART", "initials": "P. '.", "capitalized": "Pieter 't-Hart"}
 {"name": "Pablo Emilio Riveros Reina", "given": "Pablo", "middle": "Emilio Riveros", "family": "Reina", "initials": "P. E. R. R."}
 {"name": "Pablo Pérez Miguel Ángel Juan Antonio II", "order": "FAMILY_FIRST", "given": "Pérez", "middle": "Miguel Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "P. M. Á. J. A. P.", "generation": "II"}

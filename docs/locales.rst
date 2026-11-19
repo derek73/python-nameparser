@@ -182,7 +182,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'nl', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -300,6 +300,11 @@ says which parts each pack is made of.
        on ``initials_as_family``. See :ref:`nepali-given-names`.
      - | ``श्री कृष्ण श्रेष्ठ`` → given ``श्री``
        | ``Ram Bahadur B K`` → family ``B K``
+   * - ``nl``
+     - Dutch: family names opening with ``ten``
+     - Chooses ``nl``, which reads ``ten`` inside a name as the particle
+       opening the family name. See :ref:`dutch-particles`.
+     - ``Jan ten Brink`` → family ``ten Brink``
    * - ``pt``
      - Portuguese
      - Chooses ``pt``, which settles Portuguese's clashes its way
@@ -365,8 +370,8 @@ says what it can change:
      - Chooses a language
      - Policy fields
      - Word list
-   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``pt``,
-       ``pt_br``, ``sl``
+   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``nl``,
+       ``pt``, ``pt_br``, ``sl``
      - yes
      - none
      - none
