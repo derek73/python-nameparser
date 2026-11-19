@@ -547,10 +547,14 @@ def test_a_peeled_suffix_is_compared_inside_the_family_box_of_a_joined_source() 
     "B.H. Nuwan",     # given B., middle H. Nuwan
     "V.G.Ravi",       # given V., middle G.Ravi
     "A.B.C",          # given A., middle B.C
+    "Md.Karim",       # given Md., middle Karim (#1477)
+    "Moh.Rafi Nuwan", # given Moh., middle Rafi Nuwan
+    "Jo.Ann",         # given Jo., middle Ann, no vocabulary involved
 ])
-def test_joined_initials_the_parse_spaces_at_their_full_stops_agree(given: str) -> None:
-    # #1470: the parse holds the box's letters in the box's field, a
-    # space after a full stop being all that differs.
+def test_a_box_the_parse_cuts_after_its_full_stops_agrees(given: str) -> None:
+    # #1470, #1477: the parse holds the box's letters in the box's
+    # field, a space after a full stop the filer typed being all that
+    # differs.
     record = _held(given, "Kumarasiri", "LK")
     assert agreement.read(record, _ORCID_FIELDS, Parser(), _LISTED).got == {}
     # The control: compared folded alone, as before #1470, it is a miss.
@@ -559,20 +563,26 @@ def test_joined_initials_the_parse_spaces_at_their_full_stops_agree(given: str) 
 
 
 @pytest.mark.parametrize(("given", "family", "got"), [
-    # A word before the full stop, not initials: Md is Muhammad written
-    # short, and Jo.Ann the same shape with no vocabulary involved.
-    ("Md.Karim", "Hossain", {"given+middle": "Md. Karim"}),
-    ("Jo.Ann", "Lee", {"given+middle": "Jo. Ann"}),
     # The box's letters read as a title: no field holds them.
     ("AB", "Lee", {"given+middle": ""}),
     # A word of the family box read into the given box's field.
     ("K.S", "Perera Silva", {"given+middle": "K. S Perera", "family": "Silva"}),
     # A title glued before the box's initials, peeled to a field ORCID has no box for.
     ("Dr.A.B.", "Perera", {"given+middle": "A. B."}),
+    # A word peeled out of the field at the full stop it is glued by.
+    ("Dr.Ahmed", "Hassan", {"given+middle": "Ahmed"}),
 ])
-def test_a_misreading_beside_joined_initials_stays_a_miss(
+def test_a_misreading_beside_a_cut_at_a_full_stop_stays_a_miss(
         given: str, family: str, got: dict[str, str]) -> None:
     assert agreement.read(_held(given, family), _ORCID_FIELDS, Parser(), _LISTED).got == got
+
+
+def test_a_cut_across_two_boxes_stays_a_miss() -> None:
+    # psc-individuals compares each box alone: `Md.Karim` typed in the
+    # forename box and read given `Md.`, middle `Karim` puts a word in
+    # the middle-name box the filer left empty (#1477).
+    assert _read(_filed("", "Md.Karim", surname="Hossain"))[0] == {
+        "given": "Md.", "middle": "Karim"}
 
 
 @pytest.mark.parametrize(("box", "got", "same"), [
@@ -581,45 +591,75 @@ def test_a_misreading_beside_joined_initials_stays_a_miss(
     ("A.B. Lee", "a. b. lee", True),
     ("A.B.", "A. B. Lee", False),    # a word left over
     ("A.B. Lee", "A. B. Ann Lee", False),  # a word left over in the middle
-    ("A.Bc.D.", "A. Bc. D.", False),  # a word inside the run
-    ("1.2.", "1. 2.", False),        # digits are not initials
+    ("A.Bc.D.", "A. Bc. D.", True),  # a word inside the run (#1477)
+    ("Md.Karim", "Md. Karim", True), # a word before the full stop
+    ("1.2.", "1. 2.", True),         # whatever stands before it
     ("A.B.", "A. C.", False),        # other letters
     ("A.B.", "A.", False),           # letters missing
     ("AB", "A B", False),            # no full stops: a word, not initials
     ("A B", "AB", False),
     ("MD", "M D", False),
     ("Al", "A l", False),
-    ("Jo.Ann", "Jo. Ann", False),    # a word before the full stop
+    ("Jo.Ann", "Jo. Ann", True),
     ("K.S", "K S", False),           # the reading's full stop gone
+    ("Md.Karim", "Md Karim", False),
+    ("Md.Karim", "Md. Karin", False),  # other letters
     ("क.ख.", "क. ख.", True),          # letters of any script
-    ("कि.ख.", "कि. ख.", True),        # a letter with its vowel sign, a combining mark
+    ("कि.ख.", "कि. ख.", True),        # a letter with its vowel sign (a regression row)
+    ("Md.Karim", "Md. Karim Lee", False),  # a word left over after a cut word
 ])
-def test_agreement_across_a_joint_after_initials_only(box: str, got: str, same: bool) -> None:
+def test_agreement_across_a_cut_after_a_full_stop_only(box: str, got: str, same: bool) -> None:
     assert agreement.agrees(box, got) is same
     assert agreement.agrees(got, box) is same
 
 
-#: The joined-initials grid: a run of initials, with a name word glued
-#: to it, one or two spaced from it, or none, before a one- and a
-#: two-word family.
-_INITIAL_RUNS = ("A.", "A.B.", "A.B", "A.B.C.", "A.B.C", "Т.В.", "क.ख.")
+#: The grid: a run of initials or a word ending in a full stop, with a
+#: name word glued to it, one or two spaced from it, or none, before a
+#: one- and a two-word family.
+_RUNS = ("A.", "A.B.", "A.B", "A.B.C.", "A.B.C", "Т.В.", "क.ख.", "Md.", "Jo.", "Moh.R.")
 #: How many of the grid's records the comparison before #1470 scored a
 #: miss, though the reading held the box's letters in the box's field: the
 #: guard's negative control, re-taken whenever the grid or the parse moves.
-_UNGUARDED_EFFECT = 22
+_UNGUARDED_EFFECT = 25
 #: The grid's records whose reading holds the box's letters in the box's
 #: field, and the rest, read with a word of the family box in the given
 #: box's field (`A.B. Kumarasiri Silva`), which stay misses.
-_HELD, _MISREAD = 28, 28
+_HELD, _MISREAD = 40, 40
+#: How many of the grid's held records #1470's rule, a cut forgiven only
+#: after initials, still scored a miss: the rows #1477 added
+#: (`Md.Nuwan`, `Jo.Nuwan`, `Moh.R.Nuwan`).
+_INITIALS_ONLY_EFFECT = 3
 
 
-def test_a_reading_cut_only_after_initials_is_never_scored_a_miss(
+def _joined_after_initials(joined: list[str], spaced: list[str]) -> bool:
+    """#1470's _joined, kept here as the guard's second control: a cut
+    forgiven only after a piece that is one or more initials."""
+    def initials(word: str) -> bool:
+        return word.endswith(".") and all(
+            chunk[:1].isalpha() and all(unicodedata.category(c).startswith("M") for c in chunk[1:])
+            for chunk in word[:-1].split("."))
+    i = 0
+    for word in joined:
+        if i < len(spaced) and agreement.fold(word) == agreement.fold(spaced[i]):
+            i += 1
+            continue
+        built, j = spaced[i] if i < len(spaced) else "", i + 1
+        while j < len(spaced) and len(built) < len(word) and initials(spaced[j - 1]):
+            built, j = built + spaced[j], j + 1
+        if j - i < 2 or built.casefold() != word.casefold():
+            return False
+        i = j
+    return i == len(spaced)
+
+
+def test_a_reading_cut_only_after_a_full_stop_is_never_scored_a_miss(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # #1470: 3.1's #1296 began reading `B.A.S.D.` as given `B.`, middle
     # `A.S.D.`, and the space the scorer's join puts between the two,
     # which the fold kept, scored a miss where the box was read right.
     # Wherever the box's field holds the box's letters, the cut a parse
-    # draws after initials must not decide the score.
+    # draws after a full stop the filer typed must not decide the score,
+    # whatever stands before it (#1477).
     # "The box's letters" is the fold with its spaces removed, which is
     # looser than the rule (`AB` against `A B` would pass it): every run
     # in the grid holds a full stop, so the filter never meets that case.
@@ -627,7 +667,7 @@ def test_a_reading_cut_only_after_initials_is_never_scored_a_miss(
     rows: list[dict[str, str]] = []
     misread: list[dict[str, str]] = []
     for run, rest, family in itertools.product(
-            _INITIAL_RUNS, ("", " Nuwan", "Nuwan", " Nuwan Ravi"), ("Perera", "Kumarasiri Silva")):
+            _RUNS, ("", " Nuwan", "Nuwan", " Nuwan Ravi"), ("Perera", "Kumarasiri Silva")):
         record = _held(run + rest, family, "LK")
         name = parser.parse(record["name"])
         held = " ".join(filter(None, (name.given, name.middle)))
@@ -640,10 +680,14 @@ def test_a_reading_cut_only_after_initials_is_never_scored_a_miss(
                    for r in records)
 
     assert misses(rows) == 0
-    # The other half: a word of the family box read beside the initials
-    # stays a miss.
+    # The other half: a word of the family box read into the given box's
+    # field stays a miss.
     assert misses(misread) == _MISREAD
-    # The negative control: compared folded alone, as before #1470.
+    # The negative controls: a cut forgiven only after initials, as
+    # #1470 had it, and compared folded alone, as before #1470.
+    with monkeypatch.context() as patch:
+        patch.setattr(agreement, "_joined", _joined_after_initials)
+        assert misses(rows) == _INITIALS_ONLY_EFFECT
     monkeypatch.setattr(agreement, "agrees", lambda box, got: agreement.fold(box) == agreement.fold(got))
     assert misses(rows) == _UNGUARDED_EFFECT
 

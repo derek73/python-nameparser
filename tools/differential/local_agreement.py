@@ -54,11 +54,13 @@ What counts:
   boxes joined, so the parser sees the filer's own spelling, and the
   fold only keeps a box's case, periods, commas or spacing from reading
   as a miss: a suffix typed into the surname box after a comma
-  (`Smith, Jr.`) is the parser's family and suffix rejoined. Initials
-  written joined agree with a reading that cuts them after one or more
-  of them (agrees): since 3.1 (#1296, rules/T7) a box holding `B.A.S.D.` is
-  read given `B.`, middle `A.S.D.`, and the scorer's join of the two
-  puts a space where the filer typed none (#1470).
+  (`Smith, Jr.`) is the parser's family and suffix rejoined. A word
+  the filer wrote joined agrees with a reading that cuts it after one or
+  more of its full stops (agrees): a box holding `B.A.S.D.` is read
+  given `B.`, middle `A.S.D.` since 3.1 (#1296, rules/T7; #1470), and
+  `Md.Karim` given `Md.` (Muhammad written short), middle `Karim`
+  (#1477), and the scorer's join of the two fields puts a space where
+  the filer typed none.
 - Where a source has no suffix box, a suffix the parser peels (`Jr`,
   `OBE`) stood last in the display name, so it was typed into the last
   filled box, normally the surname: the parser's family is compared
@@ -87,7 +89,6 @@ import shutil
 import subprocess
 import sys
 import types
-import unicodedata
 from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -186,10 +187,10 @@ def fold(text: str) -> str:
 def agrees(box: str, got: str) -> bool:
     """Whether a box and the parser's value for it agree: the same once
     folded (fold), or the same words save that one side writes as one
-    word what the other cuts after one or more of its initials
-    (_joined): the parser reads the box `B.A.S.D.` as given
-    `B.`, middle `A.S.D.`, and `V.G.Ravi` as `V.`, `G.Ravi`, the box's
-    letters in the box's field (#1470)."""
+    word what the other cuts after one or more of its full stops
+    (_joined): the parser reads the box `B.A.S.D.` as given `B.`, middle
+    `A.S.D.` (#1470), and `Md.Karim` as `Md.`, `Karim` (#1477), the
+    box's letters in the box's field."""
     if fold(box) == fold(got):
         return True
     box_words, got_words = _words(box), _words(got)
@@ -201,28 +202,20 @@ def _words(text: str) -> list[str]:
     return [w for w in text.split() if fold(w)]
 
 
-def _initials(word: str) -> bool:
-    """Whether `word` is one or more initials, each a letter (with any
-    combining marks) and a full stop: `B.`, `A.S.D.`, never `Md.`."""
-    return word.endswith(".") and all(
-        chunk[:1].isalpha() and all(unicodedata.category(c).startswith("M") for c in chunk[1:])
-        for chunk in word[:-1].split("."))
-
-
 def _joined(joined: list[str], spaced: list[str]) -> bool:
-    """Whether `spaced` is `joined` with some words cut after initials:
-    each word of `joined` is the next of `spaced` as fold reads them, or
-    is spelled, case aside, by the next two or more of `spaced`, each
-    but the last initials (`B.A.S.D.` by `B.` `A.S.D.`, `K.S` by `K.`
-    `S`, never `AB` by `A` `B` or `Md.Karim` by `Md.` `Karim`), and no
-    word of `spaced` is left over."""
+    """Whether `spaced` is `joined` with some words cut after a full
+    stop: each word of `joined` is the next of `spaced` as fold reads
+    them, or is spelled, case aside, by the next two or more of
+    `spaced`, each but the last ending in a full stop (`B.A.S.D.` by
+    `B.` `A.S.D.`, `Md.Karim` by `Md.` `Karim`, never `AB` by `A` `B`
+    or `K.S` by `K` `S`), and no word of `spaced` is left over."""
     i = 0
     for word in joined:
         if i < len(spaced) and fold(word) == fold(spaced[i]):
             i += 1
             continue
         built, j = spaced[i] if i < len(spaced) else "", i + 1
-        while j < len(spaced) and len(built) < len(word) and _initials(spaced[j - 1]):
+        while j < len(spaced) and len(built) < len(word) and spaced[j - 1].endswith("."):
             built, j = built + spaced[j], j + 1
         if j - i < 2 or built.casefold() != word.casefold():
             return False
@@ -467,7 +460,7 @@ def read_record(path: Path, local: local_corpora.Local, locale: str = ""
 
 #: What decides a record's reading, besides the parser: scorer_fingerprint
 #: hashes them, as local_corpora.fold_fingerprint hashes the word fold.
-_SCORER_CODE = ("fold", "agrees", "_words", "_initials", "_joined", "_title_words", "unlisted", "read", "_box", "Reading",
+_SCORER_CODE = ("fold", "agrees", "_words", "_joined", "_title_words", "unlisted", "read", "_box", "Reading",
                 "key", "score", "_read_chunk", "parser_of")
 
 
