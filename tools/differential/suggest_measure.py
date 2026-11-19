@@ -39,7 +39,18 @@ lowercase letter (rules/O9, #659): `orcid-famcaps` the family box
 are two or three letters, `orcid-famcaps-short` the ones whose family
 box is one word of two or three letters (`Zhi LI`, a list with no
 longer surname in capitals beside it), and `orcid-givcaps` the given
-box (`ANNA Smith`, the convention's other writing). A population keeps at most
+box (`ANNA Smith`, the convention's other writing), and
+`pv-surname-given`, PatentsView's inventors of PV_COUNTRIES less China,
+Taiwan, Korea and Japan whose given box opens with a word the source's
+own boxes write as a family name at least as often (`Cruz`, `Moreno`;
+not a romanized surname, `Lee`, whose cost is as old as its table), and
+`pv-listed-given`, the same inventors whose given box opens with a word
+of the ORCID surname table, each read from this script's checkout and
+less a record whose family box opens with a listed given name (boxes
+likely swapped): the lists a surname table moves the wrong way (#1364; the
+Spanish- and Portuguese-speaking countries and filers, the Filipino,
+Bangladeshi, Pakistani and Turkish ones, joined the populations with
+it). A population keeps at most
 POOL_CAP names, drawn by a seeded reservoir. A source not fetched is
 left out with a note, as is one present that yields no names and each
 population a present source yields none of; one present but unreadable
@@ -57,8 +68,10 @@ moved. The table prints the share right per population, written order,
 base and size: the anti-goal (decisions/group-suggestion) is the two
 same-order rows, which must not fall below 95%, save orcid-givcaps'
 two, which the capitals signal reads the wrong way round by design,
-and orcid-byline-joined's given-first row at 50 names (and at 200
-until #1357), where
+pv-listed-given's two, whose every given name is a surname the ORCID
+table lists, read the wrong way round, a cost left open (2026-11-19
+#1364), and orcid-byline-joined's given-first row at 50 and 100 names,
+where
 the few names the name tables still vote on decide a large group
 (decisions/group-suggestion, 2026-11-14 #1355). Under each population,
 the groups that decided the East Slavic rule and the groups that decided
@@ -144,6 +157,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+from types import ModuleType
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -165,9 +179,20 @@ POOL_CAP = 20_000
 #: The names each population's signal counts read.
 SIGNAL_NAMES = 3_000
 PV_COUNTRIES = ("US", "DE", "FR", "CN", "JP", "KR", "IN", "IT", "ES", "RU",
-                "BR", "TW", "NL")
+                "BR", "TW", "NL", "MX", "AR", "CO", "PH", "PT", "TR")
 PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
-                     "Nigerian", "Turkish", "Spanish")
+                     "Nigerian", "Turkish", "Spanish", "Filipino",
+                     "Portuguese", "Bangladeshi", "Pakistani", "Brazilian")
+#: `pv-surname-given`: the inventors of PV_COUNTRIES less these whose
+#: given box opens with a word PatentsView's own boxes write in the
+#: family box at least as often as in the given box, by at least
+#: SURNAME_GIVEN_USES inventors in the given box; `pv-listed-given`:
+#: those whose given box opens with a word of the ORCID surname table
+#: (#1364).
+SURNAME_GIVEN_SKIPPED = frozenset({"CN", "TW", "KR", "JP"})
+SURNAME_GIVEN_USES = 20
+SURNAME_GIVEN_LABEL = "pv-surname-given"
+LISTED_GIVEN_LABEL = "pv-listed-given"
 GF, FF, FFGL = "GF", "FF", "FFGL"
 #: The thresholds --set may override.
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
@@ -312,6 +337,9 @@ def _patentsview(keep: _Reservoir) -> None:
     if not path.exists():
         raise FileNotFoundError(2, "not fetched", str(path))
     wanted = frozenset(PV_COUNTRIES)
+    from nameparser._suggest import fold
+    tables = _script_tables()
+    surname_given = _surname_given_words(fold, tables)
     with gzip.open(path, "rt", encoding="utf-8", newline="\n") as lines:
         if json.loads(next(lines)).get("release") != local_patentsview.PV_RELEASE:
             raise ValueError(f"{path} is not an extract of the "
@@ -322,14 +350,74 @@ def _patentsview(keep: _Reservoir) -> None:
             if country not in wanted:
                 continue
             label = f"pv-{country}"
-            if (at := keep.slot(label)) is None:
+            at = keep.slot(label)
+            if at is None and country in SURNAME_GIVEN_SKIPPED:
                 continue
             record = json.loads(line)
             if record.get("country") != country:
                 raise ValueError(f"{path}: a line read as {country} is not: "
                                  f"{line[:60]!r}")
-            keep.put(label, at, record.get("given", ""),
-                     record.get("family", ""))
+            given, family = record.get("given", ""), record.get("family", "")
+            if at is not None:
+                keep.put(label, at, given, family)
+            if country in SURNAME_GIVEN_SKIPPED:
+                continue
+            first = [fold(w) for w in local_corpora.words(given)[:1]]
+            if not first or _swapped(family, fold, tables):
+                continue
+            if first[0] in surname_given:
+                keep.add(SURNAME_GIVEN_LABEL, given, family)
+            if first[0] in tables.COMMON_SURNAMES:
+                keep.add(LISTED_GIVEN_LABEL, given, family)
+
+
+def _script_tables() -> ModuleType:
+    """The name tables of the checkout this script stands in, loaded by
+    path, so a `--base` child, which imports another tree's nameparser,
+    draws the same `pv-surname-given` and `pv-listed-given` as the head:
+    the populations are the script's, the suggester the tree's. The
+    module is data and imports nothing internal."""
+    import importlib.util
+    path = REPO_ROOT / "nameparser" / "config" / "_order_names.py"
+    spec = importlib.util.spec_from_file_location("_script_order_names", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _swapped(family: str, fold: Callable[[str], str], tables: ModuleType) -> bool:
+    """Whether a record's family box opens with a listed given name, a
+    record the filer likely typed with its boxes swapped (`Diaz` given,
+    `Angel` family): such a record's written order is unknown, so the
+    two populations about given names that are surnames leave it out."""
+    first = local_corpora.words(family)[:1]
+    return bool(first) and fold(first[0]) in tables.COMMON_GIVEN_NAMES
+
+
+def _surname_given_words(fold: Callable[[str], str], tables: ModuleType
+                         ) -> frozenset[str]:
+    """The given names PatentsView's inventors write in the family box
+    at least as often as in the given box, written in the given box by
+    SURNAME_GIVEN_USES or more, each counted under the suggester's fold
+    (`santiago` 546 and 284 do not count, `cruz` 173 and 916 does, and
+    `chávez` counts with `chavez`), summed over every country: a given
+    name that is a surname elsewhere, found from the source's own boxes,
+    so a surname table that lists it shows its cost there (#1364). A
+    word the romanized table lists is left out (`Lee`, `Kim`): its cost
+    is as old as the table (decisions/group-suggestion, 2026-11-10
+    THRESHOLDS), and with it in, the list's given-first row read under
+    95% from four names on 6560abde, whatever a new table did."""
+    index = local_corpora.cached_box_index("patentsview-inventors")
+    given: Counter[str] = Counter()
+    family: Counter[str] = Counter()
+    for counts, box in ((given, index.given), (family, index.family)):
+        for word, by_country in box.items():
+            counts[fold(word)] += sum(by_country.values())
+    return frozenset(
+        word for word, uses in given.items()
+        if uses >= SURNAME_GIVEN_USES and family[word] >= uses
+        and word not in tables.ROMANIZED_SURNAMES)
 
 
 def _psc(keep: _Reservoir) -> None:
@@ -423,7 +511,8 @@ SOURCES = (("patentsview-inventors", _patentsview),
 
 
 #: The populations each source is read for.
-WANTED = {"patentsview-inventors": tuple(f"pv-{c}" for c in PV_COUNTRIES),
+WANTED = {"patentsview-inventors": (*(f"pv-{c}" for c in PV_COUNTRIES),
+                                    SURNAME_GIVEN_LABEL, LISTED_GIVEN_LABEL),
           "psc-individuals": tuple(f"psc-{n}" for n in PSC_NATIONALITIES),
           "cz-candidates": ("cz",), "uit-vinames": ("vi",),
           "orcid-researchers": ("orcid-byline", "orcid-byline-joined",

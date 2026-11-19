@@ -460,3 +460,135 @@ def test_a_table_below_its_floor_or_overlapping_is_refused(
         tool.check_tables(pinyin, given)
     tool.check_tables({f"p{i}" for i in range(150)},
                       {f"g{i}" for i in range(5000)})
+
+
+# -- #1364: the surname table, the given-name recipe's mirror ---------------
+def _surnames(tool: ModuleType, given: dict[str, int],
+              family: dict[str, int], *,
+              exclude: frozenset[str] = frozenset()) -> set[str]:
+    # the share and the floor are the tool's own constants, so a test of
+    # the cut fails when one moves
+    from collections import Counter
+    return tool.common_surnames(  # type: ignore[no-any-return]
+        Counter(given), Counter(family), min_uses=tool.MIN_SURNAME_USES,
+        max_given_share=tool.MAX_GIVEN_SHARE, exclude=set(exclude))
+
+
+@needs_checkout
+def test_the_given_share_cut_is_five_percent(tool: ModuleType) -> None:
+    # a surname typed in the given box 10 times in 200 is kept, 11 in
+    # 200 is not; the share counts both boxes, as the given-name table's
+    # does
+    got = _surnames(tool, {"zzfive": 10, "zzsix": 11, "zznone": 0},
+                    {"zzfive": 190, "zzsix": 189, "zznone": 100})
+    assert got == {"zzfive", "zznone"}
+
+
+@needs_checkout
+def test_the_floor_counts_the_family_box_alone(tool: ModuleType) -> None:
+    # 100 uses in the family box is the floor; 99 there and any number in
+    # the given box is under it
+    got = _surnames(tool, {"zzunder": 1}, {"zzat": 100, "zzunder": 99})
+    assert got == {"zzat"}
+
+
+@needs_checkout
+def test_a_one_letter_word_a_dotted_word_and_an_excluded_one_never_enter(
+        tool: ModuleType) -> None:
+    family = {"z": 500, "zz.qq": 500, "zzgiv": 500, "zzsur": 500}
+    got = _surnames(tool, {}, family, exclude=frozenset({"zzgiv"}))
+    assert got == {"zzsur"}
+
+
+@needs_checkout
+def test_a_name_piece_is_refused(tool: ModuleType) -> None:
+    # typed into the family box beside the surname it belongs to
+    pieces = tool.listed_name_pieces()
+    assert {"von", "der", "de", "da", "van", "y", "abou", "nee"} <= pieces
+    # the Hangul census surnames, which the parse reads by their script
+    assert tool.fold("김") in pieces
+    assert not pieces & _order_names.COMMON_SURNAMES
+
+
+@needs_checkout
+def test_the_surnames_refuse_every_other_table_and_listed_word(
+        tool: ModuleType) -> None:
+    got = tool.surname_refusals({"zzpinyin"}, {"zzgiven"})
+    assert {"zzpinyin", "zzgiven", "lee", "nguyen", "prof", "phd", "filho",
+            "von"} <= got
+
+
+@needs_checkout
+def test_the_surname_table_is_built_without_listed_words(
+        tool: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        tmp_path_factory: pytest.TempPathFactory) -> None:
+    # the refusals as the build applies them, on a planted corpus: each
+    # word is typed in the family box 120 times and never in the given
+    # box. `Filho` is a listed suffix, `Prof` a listed title, `von` a
+    # particle, `кызы` a Turkic
+    # patronymic marker refused by its shape, `Zzgiv` a given name of
+    # this run
+    from ._differential_fixtures import own_cache
+    cache = own_cache(monkeypatch, tmp_path_factory)
+    _plant_orcid(cache, [
+        {"given": "Zzanna", "family": word}
+        for word in ("Zzsur", "Filho", "von", "кызы", "Zzgiv", "Prof")
+        for _ in range(120)])
+    assert tool.load_common_surnames(
+        tool.surname_refusals(set(), {"zzgiv"})) == {"zzsur"}
+
+
+@needs_checkout
+def test_the_shipped_surname_table_is_what_the_tool_writes(
+        tool: ModuleType) -> None:
+    from nameparser import locales
+    cache = tool.name_usage.cache_dir()
+    orcid = cache / "local" / "orcid-researchers" / "raw.jsonl"
+    if not orcid.exists():
+        pytest.skip("the ORCID local corpus is not cached")
+    readings = _cached_pinyin(tool)
+    singles = [s for s in locales.ZH.lexicon._sets.surnames if len(s) == 1]
+    pinyin = tool.pinyin_surnames(singles, readings)
+    given = tool.load_common_given(tool.surname_exclusions(pinyin))
+    words = tool.load_common_surnames(tool.surname_refusals(pinyin, given))
+    tool.check_tables(pinyin, given, words)
+    block = tool.render_block("COMMON_SURNAMES", words)
+    text = Path(_order_names.__file__).read_text(encoding="utf-8")
+    assert tool.rewrite(text, "COMMON_SURNAMES", block) == text
+    assert _order_names.COMMON_SURNAMES == frozenset(words)
+    assert not words & (_order_names.ROMANIZED_SURNAMES
+                        | _order_names.COMMON_GIVEN_NAMES)
+    assert (_order_names.SURNAMES
+            == _order_names.ROMANIZED_SURNAMES | _order_names.COMMON_SURNAMES)
+
+
+@needs_checkout
+@pytest.mark.parametrize("surnames, fragment", [
+    ({f"s{i}" for i in range(399)}, "399 surnames, below the floor of 400"),
+    ({f"s{i}" for i in range(400)} | {"g1"}, "both tables: g1"),
+    ({f"s{i}" for i in range(400)} | {"p1"}, "both tables: p1"),
+    # a hand-listed romanized surname is in the surname table too
+    ({f"s{i}" for i in range(400)} | {"nguyen"}, "both tables: nguyen"),
+])
+def test_a_surname_table_below_its_floor_or_overlapping_is_refused(
+        tool: ModuleType, surnames: set[str], fragment: str) -> None:
+    pinyin = {f"p{i}" for i in range(150)}
+    given = {f"g{i}" for i in range(5000)}
+    with pytest.raises(ValueError, match=fragment):
+        tool.check_tables(pinyin, given, surnames)
+    tool.check_tables(pinyin, given, {f"s{i}" for i in range(400)})
+
+
+def test_the_three_tables_share_no_spelling_and_are_folded() -> None:
+    # read from the shipped module, so it runs where the ORCID cache is
+    # absent (CI): a hand-listed romanized spelling added later that a
+    # generated table holds would vote both ways
+    from nameparser._suggest import fold
+    surnames = _order_names.COMMON_SURNAMES
+    romanized = _order_names.ROMANIZED_SURNAMES
+    given = _order_names.COMMON_GIVEN_NAMES
+    assert not surnames & romanized
+    assert not surnames & given
+    assert not romanized & given
+    assert all(fold(w) == w and len(w) >= 2 for w in surnames)
+    assert _order_names.SURNAMES == surnames | romanized

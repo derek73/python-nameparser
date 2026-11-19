@@ -28,9 +28,9 @@ the settings its names agree on, and a parser that reads with them.
     'Morgan'
 
 Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
-the romanized surname in front, ``Garcia Emily`` by the common given
-name at the end; ``Wang Xiaoming`` carries both, so each signal's row
-counts it. ``Taylor Morgan`` gives no evidence: it is read family
+the common surname in front, ``Garcia Emily`` by the surname in front
+and the common given name at the end; ``Wang Xiaoming`` and ``Garcia
+Emily`` carry both, so each signal's row counts them. ``Taylor Morgan`` gives no evidence: it is read family
 first because the list is, and nothing in the name can confirm that.
 
 Each name votes on its order from the evidence it carries
@@ -113,7 +113,7 @@ the names that disagree with it:
     >>> print(suggestion)
     Suggested for 5 names (base: Parser(Lexicon(default), Policy())):
       name_order  FAMILY_FIRST  4 for, 0 against, 1 no evidence
-          surname FAMILY_FIRST  3
+          surname FAMILY_FIRST  4
           given-name FAMILY_FIRST  2
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
@@ -179,7 +179,7 @@ The report counts it as ``against`` and names it on its last line:
     >>> print(mixed)
     Suggested for 6 names (base: Parser(Lexicon(default), Policy())):
       name_order  FAMILY_FIRST  4 for, 1 against, 1 no evidence
-          surname FAMILY_FIRST  3
+          surname FAMILY_FIRST  4
           given-name FAMILY_FIRST  2
           given-name GIVEN_FIRST  1
       patronymic_rules  unchanged (none)  no evidence
@@ -249,7 +249,7 @@ A setting whose votes fall short of its threshold above keeps the
 base parser's value rather than a guess, whatever the other settings
 decide. Where every setting falls short, or no name in the list
 carries evidence, the patch is empty. None of these
-names holds a romanized surname, a given name that is rarely a
+names holds a listed surname, a given name that is rarely a
 surname, or any other evidence on the order:
 
 .. doctest::
@@ -310,8 +310,11 @@ Each name votes on its order from the evidence it carries:
   of bylines may get no order suggestion: where you know a list is
   bylines, set ``name_order=FAMILY_FIRST`` yourself.
 - **A lowercase particle** first or before the last word.
-- **A common romanized Chinese, Korean or Vietnamese surname** as the
-  first or last word.
+- **A common surname** as the first or last word: a romanized
+  Chinese, Korean or Vietnamese one, or one that researchers rarely
+  write as a given name (``García``, ``Quispe``, ``Popov``), most of
+  them Spanish. A name with a listed surname at both ends casts no
+  surname vote.
 - **A common given name that is rarely a surname** (``Emily``, not
   ``Taylor``) as the first or last word.
 
@@ -407,7 +410,9 @@ The names' own order votes come before the table in two cases:
 
 - **They decide a family-first order.** The rule never overrides it:
   the list gets the rule with that order, under which the rule
-  reorders no name.
+  reorders no name. A ``FAMILY_FIRST_GIVEN_LAST`` base gets
+  ``FAMILY_FIRST`` there, since its own order would read the
+  patronymic as the given name (``Popov Ivan Ivanovich``).
 - **They decide given-first under a** ``FAMILY_FIRST`` **base.** The
   second row does not apply, and the list gets ``GIVEN_FIRST`` with
   the rule.
@@ -657,14 +662,14 @@ and how it varies, and will differ for every dataset.
 
 - **A list written in the base's own order** keeps it in at least 95%
   of groups from 2 to 2,000 names, and 97% for nearly every kind, save
-  the two kinds of list below.
+  the three kinds of list below.
 - **A list written the other way round** takes more names to move the
   base, from 5 for Chinese, Taiwanese, Korean, Czech, Polish and
-  Italian names to 50 for Russian and Indian ones. A group whose votes
-  fall short of the thresholds keeps the base rather than guess
-  (:ref:`suggest-deciding`).
+  Italian names to 50 for Russian and Indian ones and 200 for
+  Bangladeshi ones. A group whose votes fall short of the thresholds
+  keeps the base rather than guess (:ref:`suggest-deciding`).
 
-Two kinds of list keep their order less often:
+Three kinds of list keep their order less often:
 
 - **Given names in capitals** (``ANNA Smith``) have their capitals read
   as a family name, and such a list is suggested ``capitals_as_family``
@@ -677,6 +682,10 @@ Two kinds of list keep their order less often:
   but two or three joined initials (``AM Hoy``) kept it in just under
   95% of groups of 50 and 93% of groups of 100. Where you know how such
   a list is written, set ``name_order`` yourself.
+- **Given names that are common surnames elsewhere** (``Cooper``,
+  ``Burke``, ``Moreno``) are read as surnames. A list of nothing but
+  such given names is read the wrong way round; mixed into a longer
+  list, they are outvoted.
 
 ``capitals_as_family`` was suggested in at least 95% of groups from 4
 names for researchers who typed their family name in capitals, and

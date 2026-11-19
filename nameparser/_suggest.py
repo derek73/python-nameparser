@@ -34,7 +34,8 @@ together, ``patronymic_rules`` first and ``name_order`` second: a
 decided East Slavic rule reorders each name itself, and reorders none
 under a family-first order, so it decides the order as given-first,
 unless the names' own votes decide family-first, which it never
-overrides, or the base reads ``FAMILY_FIRST`` and the patronymics are
+overrides (a ``FAMILY_FIRST_GIVEN_LAST`` base then gets ``FAMILY_FIRST``),
+or the base reads ``FAMILY_FIRST`` and the patronymics are
 mostly written last, whose order it keeps (decisions/group-suggestion).
 Before either it decides
 ``initials_as_family`` (rules/O8) from the runs of letters ending the
@@ -81,10 +82,11 @@ from ._policy import (
     apply_patch, initials_as_family_may_move,
 )
 from ._types import (
-    ADDED_IN, FAMILY_FIRST, GIVEN_FIRST, ReadingSource, Role,
+    ADDED_IN, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+    ReadingSource, Role,
     _guarded_getstate, _guarded_setstate,
 )
-from .config._order_names import COMMON_GIVEN_NAMES, ROMANIZED_SURNAMES
+from .config._order_names import COMMON_GIVEN_NAMES, SURNAMES
 
 if TYPE_CHECKING:
     from ._parser import Parser
@@ -128,8 +130,9 @@ class Signal(StrEnum):
     TRAILING_INITIAL = "trailing-initial"
     #: A lowercase particle first or before the last word.
     PARTICLE = "particle"
-    #: A common romanized Chinese, Korean or Vietnamese surname as the
-    #: first or last word.
+    #: A common surname as the first or last word: a romanized Chinese,
+    #: Korean or Vietnamese one, or one ORCID's holders rarely type as a
+    #: given name (``García``, #1364).
     SURNAME = "surname"
     #: A common given name that is rarely a surname (``Emily``, not
     #: ``Taylor``) as the first or last word.
@@ -238,13 +241,13 @@ def _listed(word: str, table: frozenset[str]) -> bool:
 def _a_listed_name(word: str) -> bool:
     """A word the name tables list: name evidence, which is never read
     past as a title or a post-nominal (`Law`, a Cantonese surname and a
-    listed title). The given-name table holds no listed suffix since
-    #1357, and the surname table's (`ma`, `meng`) are acronyms that may
-    be a name, which are not read past bare with or without this test,
-    so the post-nominal half acts on no shipped word; it holds for a
-    table built otherwise."""
-    return (_listed(word, ROMANIZED_SURNAMES)
-            or _listed(word, COMMON_GIVEN_NAMES))
+    listed title). The given-name and ORCID surname tables hold no
+    listed suffix or title (their builder refuses them), and the
+    romanized surname table's suffixes (`ma`, `meng`) are acronyms that
+    may be a name, which are not read past bare with or without this
+    test, so the post-nominal half acts on no shipped word; it holds for
+    a table built otherwise."""
+    return _listed(word, SURNAMES) or _listed(word, COMMON_GIVEN_NAMES)
 
 
 def _is_leading_title(word: str, lexicon: Lexicon) -> bool:
@@ -426,9 +429,9 @@ def _read(text: str, lexicon: Lexicon
     # (#1397)
     silent = _opens_in_short_capitals(words) or (
         _ends_in_short_capitals(words)
-        and _listed(words[-1], ROMANIZED_SURNAMES))
+        and _listed(words[-1], SURNAMES))
     tables = () if silent else (
-        (Signal.SURNAME, ROMANIZED_SURNAMES, FAMILY_FIRST, GIVEN_FIRST),)
+        (Signal.SURNAME, SURNAMES, FAMILY_FIRST, GIVEN_FIRST),)
     for signal, table, first_order, last_order in (
             *tables,
             (Signal.GIVEN_NAME, COMMON_GIVEN_NAMES, GIVEN_FIRST, FAMILY_FIRST)):
@@ -1239,7 +1242,11 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     decided East Slavic rule decides the order as given-first, since
     the rule reorders each name and reorders none under a family-first
     order, unless the names' own votes decide family-first: a decided
-    order is never overridden, and the rule then reorders no name. A
+    order is never overridden, and the rule then reorders no name. There
+    a ``FAMILY_FIRST_GIVEN_LAST`` base gets ``FAMILY_FIRST``, whose
+    reading the rule leaves as written (`Popov Ivan Ivanovich`, given
+    `Ivan`); its own spelling would read the patronymic as the given name
+    (decisions/group-suggestion, 2026-11-19 #1364). A
     rule that keeps a ``FAMILY_FIRST`` base's order
     (`_keeps_family_first`) is not passed here: the order is then the
     votes' or the base's."""
@@ -1262,6 +1269,8 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
     # the order tally holds orders alone
     order = base_order if _end(base_order) == end else cast(
         "tuple[Role, Role, Role]", end)
+    if rule_needs_given_first and order == FAMILY_FIRST_GIVEN_LAST:
+        order = FAMILY_FIRST
     fields: dict[str, object] = (
         {} if order == base_order else {_NAME_ORDER: order})
     return (tally.evidence(_NAME_ORDER, order, True,
