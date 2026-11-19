@@ -474,6 +474,7 @@
 {"name": "Beaury-Saurel, Amélie", "given": "Amélie", "family": "Beaury-Saurel", "initials": "A. B."}
 {"name": "Beethoven Ludwig Maria van", "given": "Beethoven", "middle": "Ludwig Maria", "family": "van", "initials": "B. L. M. v.", "capitalized_force": "Beethoven Ludwig Maria Van"}
 {"name": "Beethoven Ludwig van", "given": "Beethoven", "middle": "Ludwig", "family": "van", "initials": "B. L. v.", "capitalized_force": "Beethoven Ludwig Van"}
+{"name": "Beethoven van, Ludwig", "given": "Ludwig", "family": "Beethoven van", "initials": "L. B."}
 {"name": "Beethoven, Ludwig van", "given": "Ludwig", "family": "van Beethoven", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "L. B."}
 {"name": "Begum, Mst Amina", "family": "Begum", "suffix": "Mst Amina", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "B.", "capitalized_force": "Begum, MST Amina"}
 {"name": "Bella Cohen Spewack", "given": "Bella", "middle": "Cohen", "family": "Spewack", "initials": "B. C. S."}
@@ -4050,6 +4051,7 @@
 {"name": "Smith van der", "given": "Smith", "family": "van der", "initials": "S. v. d.", "capitalized_force": "Smith Van Der"}
 {"name": "Smith van der Berg V, John", "given": "John", "family": "Smith van der Berg", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S. B.", "generation": "V"}
 {"name": "Smith van der V, John", "given": "John", "family": "Smith van der V", "initials": "J. S. V."}
+{"name": "Smith van der, Juan", "given": "Juan", "family": "Smith van der", "initials": "J. S."}
 {"name": "Smith vd v, John", "given": "John", "family": "Smith", "suffix": "vd v", "initials": "J. S.", "capitalized_force": "John Smith VD V", "generation": "v", "credentials": "vd"}
 {"name": "Smith y V", "given": "Smith", "family": "y", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "S. y.", "generation": "V"}
 {"name": "Smith y V, John", "given": "John", "family": "Smith y V", "initials": "J. S. V."}

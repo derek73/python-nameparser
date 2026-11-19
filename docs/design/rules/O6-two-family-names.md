@@ -187,6 +187,11 @@
   "Flores Jorge Ana"  family-first+two_family_names+es_given_names  →  given="Jorge"
   "Flores Jorge Ana"  family-first-given-last+two_family_names+es_given_names  →  middle="Jorge"
   ```
+- A particle ending a family is a unit of its own where it stands alone, so it is the second surname, as the take reads `Juan García de`, before a comma too; two ending it are no unit and leave the family whole.
+  ```
+  "Beethoven van, Ludwig"  family-first+two_family_names  →  surname2="van"
+  "Smith van der, Juan"  two_family_names  →  surname2=""
+  ```
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
