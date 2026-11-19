@@ -738,7 +738,7 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         # given reading beside a particle is fine once another given
         # reading of the word is on
         {"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\nfamily = { note = "x", default = false }')},
-        {"pt-BR.toml": _w('[[word]]\ntext = "zzq"\nagnomen = { default = false }\nfamily = { note = "x", default = false }')},
+        {"pt-AO.toml": _w('[[word]]\ntext = "zzq"\nagnomen = { default = false }\nfamily = { note = "x", default = false }')},
         {"nl.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x", default = false }\npreposition = {}'),
          "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\nexcluded = { title = "x" }')},
         # check 11 met: a particle beside a given reading states nothing,
@@ -786,7 +786,7 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         # refusing the generation word leaves an acronym reading free
         {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'),
          "und.toml": _w('[[word]]\ntext = "fils"\ncredential = {}')},
-        {"pt-BR.toml": OK, "zh-Hant.toml": _w('[[word]]\ntext = "社長"\nprofessional_honorific = {}'),
+        {"pt-AO.toml": OK, "zh-Hant.toml": _w('[[word]]\ntext = "社長"\nprofessional_honorific = {}'),
          "es-419.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}')},
         # check 10's order, met: kinds in CATEGORY order, a head before
         # its spellings, a refusal under the kind it refuses, a name
@@ -1658,7 +1658,7 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, ru, sk, tr, vi"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, pt-BR, pt-PT, ru, sk, tr, vi"):
         rules_patch("en")
 
 

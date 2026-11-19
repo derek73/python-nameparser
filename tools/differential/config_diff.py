@@ -592,7 +592,7 @@ LANGUAGES_OF: dict[str, tuple[str, ...]] = {
     "NI": ("es",), "NL": ("nl",), "NO": ("nb", "nn"), "NP": ("ne",), "NZ": ("en", "mi"),
     "OM": ("ar",), "PA": ("es",), "PE": ("es",), "PF": ("fr",), "PG": ("en",),
     "PH": ("fil", "en"), "PK": ("ur", "pa", "sd", "en"), "PL": ("pl",), "PR": ("es", "en"),
-    "PS": ("ar",), "PT": ("pt",), "PY": ("es",), "QA": ("ar",), "RE": ("fr",),
+    "PS": ("ar",), "PT": ("pt-PT",), "PY": ("es",), "QA": ("ar",), "RE": ("fr",),
     "RO": ("ro",), "RS": ("sr",), "RU": ("ru",), "RW": ("fr", "en"), "SA": ("ar",),
     "SC": ("en", "fr"), "SD": ("ar",), "SE": ("sv",), "SG": ("zh", "ms", "ta", "en"),
     "SI": ("sl",), "SK": ("sk",), "SL": ("en",), "SN": ("fr", "ff"), "SO": ("ar",),
@@ -743,7 +743,9 @@ def gap_specs(tag: str) -> tuple[str, str]:
     choosing it, or else the packs choosing no language whose code is
     it stacked with the bare tag (a strict call needs a language), or
     else the bare tag. A file holding no reading is refused as a plain
-    choice (it would change nothing), so its plain side is the default."""
+    choice (it would change nothing), so its plain side is the default,
+    unless its language's file holds readings (pt-PT.toml, a [rules]
+    table alone), which a plain choice of the tag selects."""
     from nameparser import _reading_index, locales
     packs = [locales.get(c) for c in sorted(locales.available())]
     items = [p.code.upper() for p in packs if tag in p.languages]
@@ -751,8 +753,11 @@ def gap_specs(tag: str) -> tuple[str, str]:
         items = [p.code.upper() for p in packs
                  if not p.languages and _pack_tag(p.code) == tag] + [tag]
     joined = "+".join(items)
-    return (f"plain:{joined}" if tag in _reading_index.tags() else "default",
-            f"strict:{joined}")
+    try:
+        _reading_index.selected([tag])
+    except ValueError:
+        return "default", f"strict:{joined}"
+    return f"plain:{joined}", f"strict:{joined}"
 
 
 # --- gaps: the report --------------------------------------------------------------

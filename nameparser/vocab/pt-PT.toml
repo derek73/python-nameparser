@@ -1,0 +1,9 @@
+schema = 1
+
+# European Portuguese: locales.PT_PT reads its names with two family names
+# (rules/O6), its given-name list keeping a given name out of the family.
+# The file holds no word: a reading Portugal writes and Brazil does not
+# has not been needed, and pt.toml holds the language's (decisions/O6, the
+# 2026-11-19 entry)
+[rules]
+two_family_names = true

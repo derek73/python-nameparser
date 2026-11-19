@@ -114,7 +114,7 @@ def test_every_shipped_reading_is_one_the_tool_writes() -> None:
     # familiar and spelling reading is the reviewed file's
     by_kind: dict[str, list[tuple[str, str]]] = {k: [] for k in tool.KINDS}
     for path in sorted(_VOCAB.glob("*.toml")):
-        for e in tomllib.loads(path.read_text())["word"]:
+        for e in tomllib.loads(path.read_text()).get("word", []):
             for kind in tool.KINDS:
                 if kind in e:
                     by_kind[kind].append((path.name, e[kind]["note"]))

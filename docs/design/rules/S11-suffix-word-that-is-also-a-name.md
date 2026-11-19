@@ -33,7 +33,8 @@
 "JOSE CARLOS SILVA SB"  [pt_br]  →  suffix="SB"
 "JOSE CARLOS SILVA SB"      →  family="SB"  · boundary
 "Ana SB"  [pt_br]           →  family="SB"  · boundary
-"JOSE CARLOS SILVA F"  [pt_br]  →  family="F"  · boundary
+"JOSE CARLOS F"  [pt_br]      →  family="F"  · boundary
+"JOSE CARLOS SILVA F"  [pt_br]  →  family="SILVA F"  · boundary
 "Pedro Alves Sobr."         →  suffix="Sobr."
 "Pedro Alves Neto, PhD"     →  suffix="Neto, PhD"
 "Pedro Alves Neto Júnior"   →  suffix="Neto Júnior"

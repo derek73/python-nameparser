@@ -3422,6 +3422,7 @@ FILES: tuple[str, ...] = (
     'pl',
     'pt',
     'pt-BR',
+    'pt-PT',
     'ro',
     'ru',
     'sd',

@@ -1707,6 +1707,7 @@
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "capitalized": "John Smith, VD MA"}
 {"name": "JOHN ST CLAIR", "given": "JOHN", "family": "ST CLAIR", "initials": "J. C.", "capitalized": "John St Clair"}
 {"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. V.", "capitalized": "John V"}
+{"name": "JOSE CARLOS F", "given": "JOSE", "middle": "CARLOS", "family": "F", "initials": "J. C. F.", "capitalized": "Jose Carlos F"}
 {"name": "JOSE CARLOS SILVA F", "given": "JOSE", "middle": "CARLOS SILVA", "family": "F", "initials": "J. C. S. F.", "capitalized": "Jose Carlos Silva F"}
 {"name": "JOSE CARLOS SILVA SB", "given": "JOSE", "middle": "CARLOS SILVA", "family": "SB", "initials": "J. C. S. S.", "capitalized": "Jose Carlos Silva Sb"}
 {"name": "JOSE DA SILVA FH", "given": "JOSE", "family": "DA SILVA", "suffix": "FH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "capitalized": "Jose da Silva Fh", "generation": "FH"}

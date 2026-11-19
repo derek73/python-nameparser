@@ -319,14 +319,15 @@ def test_every_shipped_pack_rides_on_some_tag() -> None:
     from nameparser._reading_index import selected
     reached = {item.lower() for tag in cd.choosable() for spec in cd.gap_specs(tag)
                for item in spec.partition(":")[2].split("+") if item.isupper()}
-    # a pack choosing a region tag no file holds (es_ar's es-AR) selects
-    # its language's files and nothing more, so the strict gap the report
-    # measures for the pack choosing those files is its own
+    # a pack choosing a region tag no file holds (es_ar's es-AR), or one
+    # whose file holds no reading (pt_pt's pt-PT, a [rules] table alone),
+    # selects its language's files and nothing more, so the strict gap
+    # the report measures for the pack choosing those files is its own
     files = {code: selected(locales.get(code).languages)
              for code in locales.available() if locales.get(code).languages}
     same_files = {code for code, f in files.items()
                   if any(f == files.get(other) for other in reached - {code})}
-    assert same_files == {"es_ar"}
+    assert same_files == {"es_ar", "pt", "pt_pt"}
     assert set(locales.available()) <= reached | same_files
 
 
@@ -334,6 +335,9 @@ def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
     assert cd.gap_specs("zh") == ("plain:ZH+zh", "strict:ZH+zh")
     assert cd.gap_specs("tr") == ("plain:TR_AZ+tr", "strict:TR_AZ+tr")
     assert cd.gap_specs("pt-BR") == ("plain:PT_BR", "strict:PT_BR")
+    # pt-PT.toml holds a [rules] table and no reading: a plain choice of
+    # the tag selects pt.toml, so its plain side is the pack, not the default
+    assert cd.gap_specs("pt-PT") == ("plain:PT_PT", "strict:PT_PT")
     assert cd.gap_specs("vi") == ("plain:VI", "strict:VI")
     # hu.toml holds no reading a parse reads, only exclusions, so the
     # plain side is the default, never an inert plain choice of the tag
