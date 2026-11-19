@@ -9,6 +9,7 @@ another fetch or another scorer, and a corpus damaged under the stream. The name
 """
 import hashlib
 import importlib
+import itertools
 import json
 import sys
 import unicodedata
@@ -538,6 +539,113 @@ def test_a_source_with_no_title_box_scores_a_read_title_as_a_miss_not_filer_erro
 def test_a_peeled_suffix_is_compared_inside_the_family_box_of_a_joined_source() -> None:
     reading = agreement.read(_held("Bob", "Roe Jr"), _ORCID_FIELDS, Parser(), _LISTED)
     assert (reading.got, reading.by_suffix) == ({}, True)
+
+
+@pytest.mark.parametrize("given", [
+    "B.A.S.D.",       # given B., middle A.S.D.
+    "K.S",            # given K., middle S
+    "B.H. Nuwan",     # given B., middle H. Nuwan
+    "V.G.Ravi",       # given V., middle G.Ravi
+    "A.B.C",          # given A., middle B.C
+])
+def test_joined_initials_the_parse_spaces_at_their_full_stops_agree(given: str) -> None:
+    # #1470: the parse holds the box's letters in the box's field, a
+    # space after a full stop being all that differs.
+    record = _held(given, "Kumarasiri", "LK")
+    assert agreement.read(record, _ORCID_FIELDS, Parser(), _LISTED).got == {}
+    # The control: compared folded alone, as before #1470, it is a miss.
+    assert agreement.fold(given) != agreement.fold(
+        " ".join(filter(None, (lambda p: (p.given, p.middle))(Parser().parse(record["name"])))))
+
+
+@pytest.mark.parametrize(("given", "family", "got"), [
+    # A word before the full stop, not initials: Md is Muhammad written
+    # short, and Jo.Ann the same shape with no vocabulary involved.
+    ("Md.Karim", "Hossain", {"given+middle": "Md. Karim"}),
+    ("Jo.Ann", "Lee", {"given+middle": "Jo. Ann"}),
+    # The box's letters read as a title: no field holds them.
+    ("AB", "Lee", {"given+middle": ""}),
+    # A word of the family box read into the given box's field.
+    ("K.S", "Perera Silva", {"given+middle": "K. S Perera", "family": "Silva"}),
+    # A title glued before the box's initials, peeled to a field ORCID has no box for.
+    ("Dr.A.B.", "Perera", {"given+middle": "A. B."}),
+])
+def test_a_misreading_beside_joined_initials_stays_a_miss(
+        given: str, family: str, got: dict[str, str]) -> None:
+    assert agreement.read(_held(given, family), _ORCID_FIELDS, Parser(), _LISTED).got == got
+
+
+@pytest.mark.parametrize(("box", "got", "same"), [
+    ("a.b.", "a. b.", True),         # box joined, reading spaced
+    ("a. b.", "a.b.", True),         # box spaced, reading joined
+    ("A.B. Lee", "a. b. lee", True),
+    ("A.B.", "A. B. Lee", False),    # a word left over
+    ("A.B. Lee", "A. B. Ann Lee", False),  # a word left over in the middle
+    ("A.Bc.D.", "A. Bc. D.", False),  # a word inside the run
+    ("1.2.", "1. 2.", False),        # digits are not initials
+    ("A.B.", "A. C.", False),        # other letters
+    ("A.B.", "A.", False),           # letters missing
+    ("AB", "A B", False),            # no full stops: a word, not initials
+    ("A B", "AB", False),
+    ("MD", "M D", False),
+    ("Al", "A l", False),
+    ("Jo.Ann", "Jo. Ann", False),    # a word before the full stop
+    ("K.S", "K S", False),           # the reading's full stop gone
+    ("क.ख.", "क. ख.", True),          # letters of any script
+    ("कि.ख.", "कि. ख.", True),        # a letter with its vowel sign, a combining mark
+])
+def test_agreement_across_a_joint_after_initials_only(box: str, got: str, same: bool) -> None:
+    assert agreement.agrees(box, got) is same
+    assert agreement.agrees(got, box) is same
+
+
+#: The joined-initials grid: a run of initials, with a name word glued
+#: to it, one or two spaced from it, or none, before a one- and a
+#: two-word family.
+_INITIAL_RUNS = ("A.", "A.B.", "A.B", "A.B.C.", "A.B.C", "Т.В.", "क.ख.")
+#: How many of the grid's records the comparison before #1470 scored a
+#: miss, though the reading held the box's letters in the box's field: the
+#: guard's negative control, re-taken whenever the grid or the parse moves.
+_UNGUARDED_EFFECT = 22
+#: The grid's records whose reading holds the box's letters in the box's
+#: field, and the rest, read with a word of the family box in the given
+#: box's field (`A.B. Kumarasiri Silva`), which stay misses.
+_HELD, _MISREAD = 28, 28
+
+
+def test_a_reading_cut_only_after_initials_is_never_scored_a_miss(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # #1470: 3.1's #1296 began reading `B.A.S.D.` as given `B.`, middle
+    # `A.S.D.`, and the space the scorer's join puts between the two,
+    # which the fold kept, scored a miss where the box was read right.
+    # Wherever the box's field holds the box's letters, the cut a parse
+    # draws after initials must not decide the score.
+    # "The box's letters" is the fold with its spaces removed, which is
+    # looser than the rule (`AB` against `A B` would pass it): every run
+    # in the grid holds a full stop, so the filter never meets that case.
+    parser = Parser()
+    rows: list[dict[str, str]] = []
+    misread: list[dict[str, str]] = []
+    for run, rest, family in itertools.product(
+            _INITIAL_RUNS, ("", " Nuwan", "Nuwan", " Nuwan Ravi"), ("Perera", "Kumarasiri Silva")):
+        record = _held(run + rest, family, "LK")
+        name = parser.parse(record["name"])
+        held = " ".join(filter(None, (name.given, name.middle)))
+        same = agreement.fold(held).replace(" ", "") == agreement.fold(record["given"]).replace(" ", "")
+        (rows if same else misread).append(record)
+    assert (len(rows), len(misread)) == (_HELD, _MISREAD)
+
+    def misses(records: list[dict[str, str]]) -> int:
+        return sum("given+middle" in agreement.read(r, _ORCID_FIELDS, parser, _LISTED).got
+                   for r in records)
+
+    assert misses(rows) == 0
+    # The other half: a word of the family box read beside the initials
+    # stays a miss.
+    assert misses(misread) == _MISREAD
+    # The negative control: compared folded alone, as before #1470.
+    monkeypatch.setattr(agreement, "agrees", lambda box, got: agreement.fold(box) == agreement.fold(got))
+    assert misses(rows) == _UNGUARDED_EFFECT
 
 
 def test_a_country_code_group_prints_as_written(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -305,6 +305,8 @@
 {"name": "Ana abdul Rahman López", "given": "Ana", "middle": "abdul Rahman", "family": "López", "initials": "A. a. R. L.", "capitalized_force": "Ana Abdul Rahman López"}
 {"name": "Ana de María Pérez", "given": "Ana", "middle": "de María", "family": "Pérez", "initials": "A. M. P."}
 {"name": "Ana de Miguel de la Vega", "given": "Ana", "middle": "de Miguel", "family": "de la Vega", "initials": "A. M. V."}
+{"name": "Anak Agung Ayu, Sari", "given": "Sari", "family": "Anak Agung Ayu", "initials": "S. A. A.", "capitalized_force": "Sari anak Agung Ayu", "patronymic": "Anak Agung Ayu"}
+{"name": "Anak Agung Made Putra", "given": "Anak", "middle": "Agung Made", "family": "Putra", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "A. A. M. P."}
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
 {"name": "Andersen, Irene", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -788,6 +790,7 @@
 {"name": "Designated Judge David A. Ezra", "title": "Designated Judge", "given": "David", "middle": "A.", "family": "Ezra", "initials": "D. A. E."}
 {"name": "Desvalls i d’Ardena, Joan Antoni", "given": "Joan", "middle": "Antoni", "family": "Desvalls i d’Ardena", "initials": "J. A. D. d.", "capitalized_force": "Joan Antoni Desvalls i D’Ardena"}
 {"name": "Deventer, Willem Antonie van", "given": "Willem", "middle": "Antonie", "family": "van Deventer", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "W. A. D."}
+{"name": "Devi a/p Muthu", "given": "Devi", "family": "a/p Muthu", "initials": "D. M.", "patronymic": "a/p Muthu"}
 {"name": "Dhòmhnallach Oighrig", "order": "FAMILY_FIRST", "given": "Oighrig", "family": "Dhòmhnallach", "initials": "O. D."}
 {"name": "Dhòmhnallach, Oighrig", "given": "Oighrig", "family": "Dhòmhnallach", "initials": "O. D."}
 {"name": "Di Caprio", "given": "Di", "family": "Caprio", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "D. C."}
@@ -1551,6 +1554,7 @@
 {"name": "Håkon III.", "given": "Håkon", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H.", "generation": "III."}
 {"name": "Héctor Quintana Suárez", "given": "Héctor", "middle": "Quintana", "family": "Suárez", "initials": "H. Q. S."}
 {"name": "Hülsen-Haeseler, Georg von", "given": "Georg", "family": "von Hülsen-Haeseler", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. H."}
+{"name": "I Gusti Anak Agung Made", "given": "I", "middle": "Gusti", "family": "Anak Agung Made", "initials": "I. G. A. M.", "capitalized_force": "I Gusti anak Agung Made", "patronymic": "Anak Agung Made"}
 {"name": "I don", "given": "I", "family": "don", "initials": "I. d.", "capitalized_force": "I Don"}
 {"name": "II Van Johnson", "given": "II", "family": "Van Johnson", "initials": "I. J.", "capitalized_force": "Ii van Johnson"}
 {"name": "III van Gogh", "given": "III", "family": "van Gogh", "initials": "I. G.", "capitalized_force": "Iii van Gogh"}
@@ -1960,6 +1964,7 @@
 {"name": "Jenny Baker", "given": "Jenny", "family": "Baker", "initials": "J. B."}
 {"name": "Jenny Baker (Johnson)", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
 {"name": "Jeremy St.John Middleton", "given": "Jeremy", "middle": "St.John", "family": "Middleton", "initials": "J. S. M."}
+{"name": "Jerry anak Jimbun", "given": "Jerry", "family": "anak Jimbun", "initials": "J. J.", "patronymic": "anak Jimbun"}
 {"name": "Jesús Alcolea Fernández", "given": "Jesús", "middle": "Alcolea", "family": "Fernández", "initials": "J. A. F."}
 {"name": "Jesús Alcántara Miranda", "given": "Jesús", "middle": "Alcántara", "family": "Miranda", "initials": "J. A. M."}
 {"name": "Jesús Gallego Marquina", "given": "Jesús", "middle": "Gallego", "family": "Marquina", "initials": "J. G. M."}
@@ -2702,7 +2707,7 @@
 {"name": "Kaur del Carmen García", "given": "Kaur", "family": "del Carmen García", "initials": "K. C. G."}
 {"name": "Kavitha S", "given": "Kavitha", "family": "S", "ambiguities": ["ORDER"], "initials": "K. S."}
 {"name": "Kavitha S MA", "given": "Kavitha", "family": "S", "suffix": "MA", "ambiguities": ["ORDER"], "initials": "K. S."}
-{"name": "Kavitha a/p Raman", "given": "Kavitha", "middle": "a/p", "family": "Raman", "initials": "K. a. R.", "capitalized_force": "Kavitha A/P Raman"}
+{"name": "Kavitha a/p Raman", "given": "Kavitha", "family": "a/p Raman", "initials": "K. R.", "patronymic": "a/p Raman"}
 {"name": "Kaya Yağız Can", "order": "FAMILY_FIRST", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
 {"name": "Kaya, Yağız Can", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
 {"name": "Kazlauskienė Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Kazlauskienė", "initials": "I. K."}
@@ -2770,6 +2775,7 @@
 {"name": "Krosigk, Johann Adolf von", "given": "Johann", "middle": "Adolf", "family": "von Krosigk", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. A. K."}
 {"name": "Kulina, Hana", "given": "Hana", "family": "Kulina", "initials": "H. K."}
 {"name": "Kulina, Hana", "order": "FAMILY_FIRST", "given": "Hana", "family": "Kulina", "initials": "H. K."}
+{"name": "Kumar a/l Rajan Naidu", "given": "Kumar", "family": "a/l Rajan Naidu", "initials": "K. R. N.", "patronymic": "a/l Rajan Naidu"}
 {"name": "Kusmanek, Hermann von", "given": "Hermann", "family": "von Kusmanek", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "H. K."}
 {"name": "Kállai, Gábor", "given": "Gábor", "family": "Kállai", "initials": "G. K."}
 {"name": "Kári Árnason", "given": "Kári", "family": "Árnason", "initials": "K. Á."}
@@ -3639,6 +3645,7 @@
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M.", "capitalized_force": "Prof. Ɖr. Mɖ Fan Ɖam Ɖomiŋgo Fostɛɛŋ Samʊwɛl"}
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
 {"name": "Puig i V, Joan", "given": "Joan", "family": "Puig i V", "initials": "J. P. V."}
+{"name": "Putra, Anak Agung Made", "given": "Anak", "middle": "Agung Made", "family": "Putra", "initials": "A. A. M. P."}
 {"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. P."}
 {"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
@@ -4262,7 +4269,7 @@
 {"name": "Sultan Hassanal Bolkiah", "given": "Sultan", "middle": "Hassanal", "family": "Bolkiah", "initials": "S. H. B."}
 {"name": "Sultana Begum", "given": "Sultana", "family": "Begum", "initials": "S. B."}
 {"name": "Sumnime D.C(Oli)", "family": "Sumnime", "suffix": "D.C", "nickname": "Oli", "initials": "S."}
-{"name": "Suresh a/l Muthu", "given": "Suresh", "middle": "a/l", "family": "Muthu", "initials": "S. a. M.", "capitalized_force": "Suresh A/L Muthu"}
+{"name": "Suresh a/l Muthu", "given": "Suresh", "family": "a/l Muthu", "initials": "S. M.", "patronymic": "a/l Muthu"}
 {"name": "Surāqa Ibn-Mirdās al-Aṣġar", "given": "Surāqa", "middle": "Ibn-Mirdās", "family": "al-Aṣġar", "initials": "S. I. a.", "capitalized_force": "Surāqa Ibn-Mirdās Al-Aṣġar"}
 {"name": "Suzuki san", "order": "FAMILY_FIRST", "given": "san", "family": "Suzuki", "initials": "s. S.", "capitalized_force": "Suzuki San"}
 {"name": "Suzuki, Shōsan", "given": "Shōsan", "family": "Suzuki", "initials": "S. S."}

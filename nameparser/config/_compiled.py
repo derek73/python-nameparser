@@ -2193,6 +2193,8 @@ TITLE_PHRASES: frozenset[str] = frozenset({
 NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
     "'s",
     "'t",
+    'a/l',
+    'a/p',
     'ad-',
     'adh-',
     'af',
@@ -2278,6 +2280,8 @@ NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
 PARTICLES: frozenset[str] = frozenset({
     "'s",
     "'t",
+    'a/l',
+    'a/p',
     'aan',
     'abu',
     'ad-',
@@ -2288,6 +2292,7 @@ PARTICLES: frozenset[str] = frozenset({
     'al',
     'al-',
     'an-',
+    'anak',
     'ar-',
     'as-',
     'ash-',
@@ -3988,6 +3993,9 @@ HONORIFIC_WORDS: frozenset[str] = frozenset({
 })
 
 PATRONYMIC_PARTICLES: frozenset[str] = frozenset({
+    'a/l',
+    'a/p',
+    'anak',
     'bar',
     'bat',
     'bin',

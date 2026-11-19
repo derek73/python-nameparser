@@ -493,10 +493,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting particle-or-given under three orders; 2107 -> 2187
     # the same day, #1394's rows under three orders or once where a row
     # declares a policy: the decline's report on each moved row, and
-    # its boundary rows' run reports; 2187 -> 2190 on 2026-11-19, #1471's
-    # 'Emerita Smith' reporting title-or-name under three orders.
-    assert claims == 2190, (
-        f"the field sweep checks {claims} claims, recorded as 2190 on "
+    # its boundary rows' run reports; 2187 -> 2191 on 2026-11-19,
+    # #1468's 'Anak Agung Made Putra' reporting particle-or-given under
+    # three orders and 'Kwame Mensah Anak' under FAMILY_FIRST; 2191 -> 2192
+    # the same day, its review's FAMILY_FIRST row of that name, once under
+    # its declared policy; 2192 -> 2195 the same day, #1471's 'Emerita
+    # Smith' reporting title-or-name under three orders.
+    assert claims == 2195, (
+        f"the field sweep checks {claims} claims, recorded as 2195 on "
         f"2026-11-19")
 
 
@@ -973,8 +977,12 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # P6's report, each stand-in landing in the alternative's field;
     # 477 -> 494 and 598 -> 603 the same day, #1394's rows under the
     # three orders, the declines' reports and the boundary rows' run
-    # reports, three of them stand-in rereads
-    assert (checked, skipped) == (603, 494), (checked, skipped)
+    # reports, three of them stand-in rereads; 603 -> 604 on 2026-11-19,
+    # #1468's 'Kwame Mensah Anak' under FAMILY_FIRST, a `name` stand-in;
+    # the 'Anak Agung Made Putra' reports name a patronymic alternative,
+    # which has no stand-in; 604 -> 605 the same day, its review's
+    # FAMILY_FIRST row of that name
+    assert (checked, skipped) == (605, 494), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
