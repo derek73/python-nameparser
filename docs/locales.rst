@@ -144,6 +144,10 @@ shape covers much:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
 - ``mn`` may read any name written wholly in Cyrillic differently.
+- ``my`` may read any name holding ``San``, ``La``, ``Le``, ``Do``,
+  ``Da``, ``Du``, ``Te``, ``Di`` or ``Van`` as a word differently,
+  Spanish, Portuguese, Italian, French and Dutch family names among
+  them, and any opening with ``U`` or ``Daw``.
 
 .. warning::
 
@@ -182,7 +186,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ne', 'nl', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'my', 'ne', 'nl', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -292,6 +296,13 @@ says which parts each pack is made of.
        name last, so the father's name, written first, is the family.
        See :ref:`Mongolian names <mongolian-names>`.
      - ``Батын Сүхээ`` → family ``Батын``, given ``Сүхээ``
+   * - ``my``
+     - Burmese
+     - Chooses ``my``, which reads the honorifics ``U`` and ``Daw``
+       opening a name as titles, and keeps the syllables ``San``,
+       ``La``, ``Van`` and six more as name words where other
+       languages read particles. See :ref:`burmese-names`.
+     - ``Daw Aung San Suu Kyi`` → title ``Daw``, family ``Kyi``
    * - ``ne``
      - Nepali
      - Chooses ``ne``, which reads ``श्री``, ``गुरु`` and ``Guru`` as
@@ -395,6 +406,10 @@ says what it can change:
      - yes
      - ``initials_as_family``
      - none
+   * - ``my``
+     - yes
+     - none
+     - none; it takes readings out instead
    * - ``vi``
      - yes
      - ``name_order``
@@ -408,8 +423,8 @@ says what it can change:
      - ``segment_scripts``, for the script its list covers
      - a surname list
 
-``vi`` is the one pack whose own fragment takes readings out rather
-than adding them (`What a pack's lexicon may hold`_).
+``vi`` and ``my`` are the packs whose own fragments take readings out
+rather than adding them (`What a pack's lexicon may hold`_).
 
 See :ref:`config-containers` for how that split (language vocabulary
 vs. behavior) is drawn. Which half a new naming rule belongs in is
@@ -1121,4 +1136,6 @@ right, validated on its own, and it may hold any of these:
   where another pack would choose because a choice prefers its
   language's reading of a word only where that reading is a title, a
   particle or another vocabulary kind, never a name, so no reading
-  ``vi.toml`` could write would keep ``Van`` a name word.
+  ``vi.toml`` could write would keep ``Van`` a name word. ``my``'s
+  fragment takes out the particle readings of the Burmese syllables
+  the same way.

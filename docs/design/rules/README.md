@@ -125,6 +125,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [H8 — a salutation ending the given part](H8-salutation-ending-the-given-part.md)
 - [H9 — the title phrase](H9-title-phrase.md)
 - [H10 — a title written as a run of letters](H10-title-written-as-a-run-of-letters.md)
+- [H11 — a one-letter title against the initial it spells](H11-one-letter-title-against-the-initial-it-spells.md)
 
 ## [Particles & surname prefixes (P)](P-particles-and-surname-prefixes.md)
 

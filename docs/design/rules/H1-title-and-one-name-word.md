@@ -78,6 +78,10 @@
   "Anna Greve"                →  family="Greve"
   "Greve, Anna"               →  family="Greve"
   ```
+- A Burmese name of an honorific and one name word gives the word to the family under a Burmese choice, though a Burmese name holds no family name: the position reads it as any other name's last word (#1231).
+  ```
+  "U Thant"  [my]             →  family="Thant"
+  ```
 
 ---
 **Signal:** count: exactly one name word beside a title run, read by the run's addressing title
