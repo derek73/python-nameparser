@@ -27,14 +27,18 @@ name no surname vote (#1355), and a script the tables do not hold
 (Hangul, Han) simply matches nothing. A patronymic
 votes, Latin or Cyrillic, only where the pipeline's rule reads one
 (rules/O1's three name words, rules/O2's four), through the pipeline's
-own predicates, never a copy of them. No signal raises on any string.
+own predicates, never a copy of them, and an East Slavic one casts a
+second vote, on the order, by where it stands as rules/O1 reads it
+(``Signal.PATRONYMIC_POSITION``: last family-first, in the middle
+given-first). No signal raises on any string.
 
 ``suggest`` tallies the group's votes and decides two settings
 together, ``patronymic_rules`` first and ``name_order`` second: a
 decided East Slavic rule reorders each name itself, and reorders none
 under a family-first order, so it decides the order as given-first,
-unless the names' own votes decide family-first, which it never
-overrides (a ``FAMILY_FIRST_GIVEN_LAST`` base then gets ``FAMILY_FIRST``),
+unless the names' own votes decide family-first, as a list of
+patronymics written last does, which it never overrides (a ``FAMILY_FIRST_GIVEN_LAST`` base
+then gets ``FAMILY_FIRST``),
 or the base reads ``FAMILY_FIRST`` and the patronymics are
 mostly written last, whose order it keeps (decisions/group-suggestion).
 Before either it decides
@@ -140,6 +144,13 @@ class Signal(StrEnum):
     #: A patronymic one rule reads (Russian ``Petrovich``, Azerbaijani
     #: ``Huseyn oglu``), the evidence on ``patronymic_rules``.
     PATRONYMIC = "patronymic"
+    #: Where an East Slavic patronymic of three name words stands, read
+    #: where rules/O1 reads it, the evidence on ``name_order``: in the
+    #: middle (``Ivan Petrovich Sidorov``) the family is written last,
+    #: the middle word winning where the last ends as a patronymic too;
+    #: last (``Sidorov Ivan Petrovich``) it is written first. Cast only
+    #: beside an East Slavic ``PATRONYMIC`` vote.
+    PATRONYMIC_POSITION = "patronymic-position"
 
 
 _INITIAL_JOINS = re.compile(r"[.-]+")
@@ -361,6 +372,18 @@ def _patronymic(words: list[str]) -> PatronymicRule | None:
     return None
 
 
+def _patronymic_end(words: list[str]) -> tuple[Role, Role, Role]:
+    """The end a name casting the East Slavic vote writes its family at,
+    read where rules/O1 reads it: the ending on the middle word is the
+    given-first shape (given, patronymic, family), whatever the last
+    word ends in, and otherwise the patronymic stands last, the
+    family-first shape the rule restores (family, given, patronymic).
+    Asked only of a name `_patronymic` votes East Slavic for, three
+    words long."""
+    middle = words[1].rstrip(".") or words[1]
+    return GIVEN_FIRST if has_patronymic_ending(middle) else FAMILY_FIRST
+
+
 def _letter_run(text: str, readers: tuple[Parser, Parser]) -> str | None:
     """The letters ending `text` that are evidence of the convention
     rules/O8 reads, folded and run together (`Lakshmi R. S.` gives
@@ -443,6 +466,8 @@ def _read(text: str, lexicon: Lexicon
     patronymic = _patronymic(words)
     if patronymic is not None:
         votes[Signal.PATRONYMIC] = patronymic
+        if patronymic is PatronymicRule.EAST_SLAVIC:
+            votes[Signal.PATRONYMIC_POSITION] = _patronymic_end(words)
     return votes, False, words
 
 
@@ -1191,14 +1216,18 @@ def _keeps_family_first(
     with the ending on both its middle and its last word counts as
     middle, as rules/O1 reads it. ``FAMILY_FIRST_GIVEN_LAST`` is never
     kept: that order takes the patronymic of such a list for the given
-    name, and the given-first order with the rule reads it."""
+    name; the names' position votes give it ``FAMILY_FIRST``
+    (`_decide_order`), and where they decide no order the given-first
+    order with the rule reads it. Since the position votes (#1447) the
+    question is asked only where the votes decide no order or decide
+    the base's own."""
     if policy.name_order != FAMILY_FIRST or order_end == GIVEN_FIRST:
         return None
     last = middle = 0
     for _, votes, _, words in with_words:
         if votes.get(Signal.PATRONYMIC) is PatronymicRule.EAST_SLAVIC:
             # _patronymic votes East Slavic on three words alone
-            if has_patronymic_ending(words[1].rstrip(".") or words[1]):
+            if _patronymic_end(words) == GIVEN_FIRST:
                 middle += 1
             else:
                 last += 1
