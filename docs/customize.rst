@@ -381,9 +381,10 @@ Keeping Md. a title
 ^^^^^^^^^^^^^^^^^^^
 
 Through 3.0.1 a leading ``Md.`` read as a title, and ``Md`` after a
-family comma as the credential. To keep those readings, remove the
-given reading; the name match then no longer links ``Md`` to the
-long spellings of Muhammad:
+family comma as the credential; through 3.1, ``MD`` inside a name
+written in capitals read as the credential, taking the words behind
+it. To keep those readings, remove the given reading; the name match
+then no longer links ``Md`` to the long spellings of Muhammad:
 
 .. doctest::
 
@@ -392,6 +393,8 @@ long spellings of Muhammad:
     'Md.'
     >>> md_title.parse("Rahman, Md").suffix
     'Md'
+    >>> md_title.parse("SITI NORA MD YUSRI").suffix
+    'MD YUSRI'
 
 Name readings
 ^^^^^^^^^^^^^

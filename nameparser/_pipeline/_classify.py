@@ -305,7 +305,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # rules/H2: "an abbreviation the vocabulary reads as a given name
     # written short is that given name" -- the reading H2's shape test
     # weighs (`_pieces.is_leading_title`); a membership, so any spelling
-    # carries it and only that test acts on it
+    # carries it. Read too by rules/C13's given-name Except
+    # (`_comma._given_name_written_short`) and rules/S8's one-case
+    # clause (`_pieces.short_given_name_in_one_case`, #1394)
     if n in lex._sets.given_name_abbreviations:
         tags.add(GIVEN_ABBREVIATION_TAG)
     # rules/O6, O7 and P10 read this: a name a community gives every

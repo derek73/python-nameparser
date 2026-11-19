@@ -84,6 +84,7 @@
 {"name": "ABRAMOVICH Roman", "given": "ABRAMOVICH", "family": "Roman", "initials": "A. R.", "capitalized_force": "Abramovich Roman"}
 {"name": "ABRAMOVICH Roman MBA", "given": "ABRAMOVICH", "family": "Roman", "suffix": "MBA", "initials": "A. R.", "capitalized_force": "Abramovich Roman MBA"}
 {"name": "ABRAMOVICH Roman, MBA", "given": "ABRAMOVICH", "family": "Roman", "suffix": "MBA", "initials": "A. R.", "capitalized_force": "Abramovich Roman, MBA"}
+{"name": "AHMAD BIN MD RAHMAN", "given": "AHMAD", "family": "BIN MD RAHMAN", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. M. R.", "capitalized": "Ahmad bin Md Rahman", "patronymic": "BIN MD RAHMAN"}
 {"name": "AHMAD IBN-ʿALĪ", "given": "AHMAD", "family": "IBN-ʿALĪ", "initials": "A. I.", "capitalized": "Ahmad Ibn-ʿAlī"}
 {"name": "AHMED Kyzy", "given": "AHMED", "family": "Kyzy", "initials": "A. K.", "capitalized_force": "Ahmed Kyzy"}
 {"name": "AKIME Fuseena", "order": "FAMILY_FIRST", "given": "Fuseena", "family": "AKIME", "initials": "F. A.", "capitalized_force": "Akime Fuseena"}
@@ -1685,8 +1686,12 @@
 {"name": "JOHN SMITH (m.a) (MA)", "given": "JOHN", "family": "SMITH", "suffix": "m.a", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S.", "capitalized": "John \"Ma\" Smith M.A"}
 {"name": "JOHN SMITH JR JONES", "given": "JOHN", "middle": "SMITH JR", "family": "JONES", "initials": "J. S. J. J.", "capitalized": "John Smith Jr Jones"}
 {"name": "JOHN SMITH JR, AD", "given": "AD", "family": "JOHN SMITH", "suffix": "JR", "initials": "A. J. S.", "capitalized": "Ad John Smith Jr", "generation": "JR"}
+{"name": "JOHN SMITH M.D. JONES", "given": "JOHN", "family": "SMITH", "suffix": "M.D. JONES", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "capitalized": "John Smith M.D. Jones"}
 {"name": "JOHN SMITH MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "capitalized": "John Smith MA"}
 {"name": "JOHN SMITH MA JONES", "given": "JOHN", "middle": "SMITH MA", "family": "JONES", "initials": "J. S. M. J.", "capitalized": "John Smith Ma Jones"}
+{"name": "JOHN SMITH MD JONES", "given": "JOHN", "middle": "SMITH MD", "family": "JONES", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. S. M. J.", "capitalized": "John Smith Md Jones"}
+{"name": "JOHN SMITH MD MR", "given": "JOHN", "middle": "SMITH MD", "family": "MR", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. S. M. M.", "capitalized": "John Smith Md Mr"}
+{"name": "JOHN SMITH MD PHD", "given": "JOHN", "family": "SMITH", "suffix": "MD PHD", "initials": "J. S.", "capitalized": "John Smith MD PhD"}
 {"name": "JOHN SMITH NEE X X", "given": "JOHN", "family": "SMITH", "maiden": "X X", "initials": "J. S.", "capitalized": "John Smith (X X)"}
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S.", "capitalized": "John Smith Ph.D."}
 {"name": "JOHN SMITH SAM E.", "given": "JOHN", "family": "SMITH", "suffix": "SAM E.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "capitalized": "John Smith SAM E."}
@@ -3802,6 +3807,7 @@
 {"name": "SIR John MD", "title": "SIR", "given": "John", "suffix": "MD", "initials": "J.", "capitalized_force": "Sir John MD"}
 {"name": "SIR John SMITH", "title": "SIR", "given": "John", "family": "SMITH", "initials": "J. S.", "capitalized_force": "Sir John Smith"}
 {"name": "SIR John Smith", "title": "SIR", "given": "John", "family": "Smith", "initials": "J. S.", "capitalized_force": "Sir John Smith"}
+{"name": "SITI NORA MD YUSRI", "given": "SITI", "middle": "NORA MD", "family": "YUSRI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. N. M. Y.", "capitalized": "Siti Nora Md Yusri"}
 {"name": "SMITH CPA MST CGMA, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "CPA MST CGMA", "initials": "J. S.", "capitalized": "John Smith CPA MST CGMA"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
 {"name": "SMITH VD V, JOHN", "given": "JOHN", "family": "SMITH VD V", "initials": "J. S. V.", "capitalized": "John Smith vd V"}
@@ -3811,6 +3817,7 @@
 {"name": "SMITH, JOHN DO", "given": "JOHN", "family": "DO SMITH", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S.", "capitalized": "John do Smith"}
 {"name": "SMITH, JOHN GEN.", "title": "GEN.", "given": "JOHN", "family": "SMITH", "initials": "J. S.", "capitalized": "Gen. John Smith"}
 {"name": "SMITH, JOHN I", "given": "JOHN", "family": "SMITH", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "J. S.", "capitalized": "John Smith I", "generation": "I"}
+{"name": "SMITH, JOHN MD JONES", "given": "JOHN", "family": "SMITH", "suffix": "MD JONES", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S.", "capitalized": "John Smith MD Jones"}
 {"name": "SMITH, MA", "given": "MA", "family": "SMITH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S.", "capitalized": "Ma Smith"}
 {"name": "SMITH, MD DEAN", "family": "SMITH", "suffix": "MD DEAN", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "S.", "capitalized": "Smith, MD Dean"}
 {"name": "SMITH, SAM E.", "given": "SAM", "middle": "E.", "family": "SMITH", "initials": "S. E. S.", "capitalized": "Sam E. Smith"}
@@ -6196,6 +6203,7 @@
 {"name": "محمد عبد القريشي", "given": "محمد", "middle": "عبد", "family": "القريشي", "initials": "م. ع. ا."}
 {"name": "محمد عبد الله أحمد", "given": "محمد", "middle": "عبد الله", "family": "أحمد", "initials": "م. ع. ا. أ."}
 {"name": "محمد عطا", "given": "محمد", "family": "عطا", "initials": "م. ع."}
+{"name": "محمد علي MD حسن", "given": "محمد", "family": "علي", "suffix": "MD حسن", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "م. ع."}
 {"name": "محمد علي و", "given": "محمد", "family": "علي و", "initials": "م. ع."}
 {"name": "محمد نبيه المسيري", "given": "محمد", "middle": "نبيه", "family": "المسيري", "initials": "م. ن. ا."}
 {"name": "محمد و علي", "given": "محمد", "middle": "و", "family": "علي", "initials": "م. و. ع."}

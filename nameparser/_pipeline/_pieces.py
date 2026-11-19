@@ -66,7 +66,7 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     _CASELESS_LETTERS, _DIGRAPH_INITIALS, _PERIOD_ABBREV, _ROMAN, _SPELLED_INITIAL,
     Lean, ambiguous_lean,
-    in_unabbreviating_script,
+    in_unabbreviating_script, is_one_case,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
     numeral_settled_by_case, reads_as_generation, tag_marker_runs,
 )
@@ -1108,6 +1108,10 @@ class Peel(NamedTuple):
     #: run absorbed, which assign reports
     run_titles: tuple[int, ...] = ()
     absorbed: tuple[tuple[int, ...], ...] = ()
+    #: rules/S8 (#1394): the token indices of the given names written
+    #: short whose run a name word behind them declined in a name of one
+    #: case (`run_start`'s `declined`), which assign reports
+    declined: tuple[int, ...] = ()
 
 
 # rules/S2: "a trailing word of the suffix vocabulary reads as a
@@ -1561,28 +1565,45 @@ def behind_the_merged_credential(rest: Sequence[int], p: int,
             and "suffix" in ptags[rest[p] - 1])
 
 
-def _name_word_behind(piece: Sequence[int], ptags: Set[str],
-                      tokens: Sequence[WorkToken],
-                      one_case: bool | None) -> bool:
-    """Whether the piece behind a member its capitals settle, or behind
-    a credential acronym written in Title case, reads as a word of the
+def _name_word_behind(credential: WorkToken, piece: Sequence[int],
+                      ptags: Set[str], tokens: Sequence[WorkToken],
+                      one_case: bool | None,
+                      lower_is_name: bool = False) -> bool:
+    """Whether the piece behind `credential` (a member its capitals
+    settle, a credential acronym written in Title case, or a given name
+    written short in a name of one case) reads as a word of the
     name rather than a further credential, asked of its
     first word, since group has merged particle runs and connective
     joins by then ('de la Vega', 'Ortega y Gasset'): a particle, a word
     of a script with no case, or a cased word not written in lower case
     (Title case or capitals, title vocabulary included), that is no
     suffix word and no member its own capitals settle. A credential
-    merged across a space ('Pharm D', 'Ph. D.') is no name word. Asked
-    only through `declined_by_the_name_behind`, of a settled member or a
-    credential acronym written in Title case (`acronym_in_title_case`)."""
+    merged across a space ('Pharm D', 'Ph. D.') is no name word, nor is
+    a roman numeral S10 reads as the generation, listed or not
+    ('MD VI Jones'). Asked only through `declined_by_the_name_behind`,
+    of a settled member, a credential acronym written in Title case
+    (`acronym_in_title_case`) or a given name written short in a name
+    of one case (`short_given_name_in_one_case`); for the last alone
+    (`lower_is_name`) a word in lower case is a name word as one in
+    capitals is, lower case being the name's own writing there."""
     if "suffix" in ptags or "split" in ptags:
         return False
     tok = tokens[piece[0]]
     if "particle" in tok.tags:
         return True
     # a word of a script with no case for the contrast is no word in
-    # lower case (_policy._SCRIPT_PROPERTIES, #1222)
-    if tok.text.translate(_CASELESS_LETTERS).islower():
+    # lower case (_policy._SCRIPT_PROPERTIES, #1222), save behind a
+    # given name written short in a name of one case (#1394)
+    if (not lower_is_name
+            and tok.text.translate(_CASELESS_LETTERS).islower()):
+        return False
+    # a numeral S10 reads as the generation is the credential's
+    # company, no name word, asked of S10's predicate as
+    # `generation_word_before_a_name` asks it (decisions/S8, #1394)
+    text = tok.text.rstrip(".")
+    if (_ROMAN.match(text) is not None
+            and reads_as_generation(tok.text, tok.tags, credential.text,
+                                    one_case)):
         return False
     return ("vocab:suffix" not in tok.tags
             and SHAPE_ACRONYM_TAG not in tok.tags
@@ -1661,7 +1682,47 @@ _NOT_A_NAME_BEHIND = frozenset({"vocab:suffix", SHAPE_ACRONYM_TAG,
                                 "vocab:maiden-marker"})
 
 
-# rules/S8: "not where a name word stands behind it" -- the three
+# rules/S8: "nor, in a name written wholly in one case, does a
+# credential that is also a given name written short" -- the clause
+# this implements (decisions/S8, #1394)
+def short_given_name_in_one_case(token: WorkToken, behind_at: int,
+                                 tokens: Sequence[WorkToken]) -> bool:
+    """Whether `token`, carrying classify's GIVEN_ABBREVIATION_TAG (a
+    given name written short: 'MD', 'md', 'MD.'; the caller asks that it
+    would start the run, so it is a credential too), stands in a name
+    written wholly in one case, where its case is the name's and says
+    nothing, with `tokens[behind_at]`, the first word of the piece
+    behind it, holding a letter of a script with case (_policy._SCRIPT_PROPERTIES,
+    #1222) and being no maiden marker. The caller has asked, inline
+    ahead of the call so a credential that is no such word pays no
+    frame, that `token` carries the tag and that `one_case` holds. The
+    case asked is rules/S6's:
+    `one_case`, the name's own words, for one of them, so appending a
+    clause changes nothing about it; for a word of a maiden clause or
+    of brackets, the WHOLE name's, which `one_case` does not cover, so a
+    word of a mixed-case clause is not read as one of a name of one
+    case ('JOHN SMITH née Ann Lee MD Jones'). A word is the clause's
+    where it already holds a role (extract's brackets) or a maiden
+    marker stands before it. A word of no cased script
+    behind it ('محمد علي MD حسن') keeps the run: the capitals of a Latin
+    'MD' before it are the writer's choice of the credential's
+    spelling, not the case the words around it share. A maiden marker
+    behind it opens a clause (M2), no name word. The rest of the
+    name-word test is `_name_word_behind`'s, the caller's."""
+    behind = tokens[behind_at]
+    cased = behind.text.translate(_CASELESS_LETTERS)
+    if (cased.upper() == cased.lower()
+            or "vocab:maiden-marker" in behind.tags):
+        return False
+    # rules/S6: "The case asked of a word in a maiden clause or between
+    # brackets is the whole name's"
+    if token.role is None and not any(
+            "vocab:maiden-marker" in t.tags for t in tokens[:behind_at]):
+        return True
+    return is_one_case([t.text for t in tokens])
+
+
+# rules/S8: "not where a name word stands behind it" -- the four
 # writings that decline the run there, one predicate for `run_start`,
 # P2's chain stop (`starts_the_run_here`) and the family part's suffix
 # pass in assign, which borrows it under rules/P2 before a family comma,
@@ -1671,21 +1732,49 @@ def declined_by_the_name_behind(token: WorkToken, piece: Sequence[int],
                                 tokens: Sequence[WorkToken],
                                 one_case: bool | None) -> bool:
     """Whether a word that would start #602's run declines it because
-    of the word behind it, `piece`: a member its capitals settle, or a
-    credential acronym written in Title case, with a word of the name
-    behind it (`_name_word_behind`), or a generation word written out
+    of the word behind it, `piece`: a member its capitals settle, a
+    credential acronym written in Title case, or a given name written
+    short in a name of one case (`short_given_name_in_one_case`), with a
+    word of the name behind it (`_name_word_behind`), or a generation
+    word written out
     before a name (`generation_word_before_a_name`). The caller asks
     whether the word starts a run at all."""
-    return ((AMBIGUOUS_ACRONYM_TAG in token.tags
+    # rules/S8: "nor, in a name written wholly in one case, does a
+    # credential that is also a given name written short" -- the tag
+    # tested inline, so a credential that is no such word pays no frame
+    short = (bool(one_case) and GIVEN_ABBREVIATION_TAG in token.tags
+             and short_given_name_in_one_case(token, piece[0], tokens))
+    return ((short
+             or AMBIGUOUS_ACRONYM_TAG in token.tags
              and settled_by_case(token, one_case)
              # rules/S8: "nor does a credential acronym written in
              # Title case" -- the writing of a name word
              or acronym_in_title_case(token))
-            and _name_word_behind(piece, ptags, tokens, one_case)
+            and _name_word_behind(token, piece, ptags, tokens, one_case,
+                                  short)
             # rules/S8: "nor does a generation word written out" -- a
             # filer's middle-name box, the family name behind it
             or generation_word_before_a_name(token, piece, ptags, tokens,
                                              one_case))
+
+
+def _declined_here(token: WorkToken, i: int, piece: Sequence[int],
+                   ptags: Set[str], tokens: Sequence[WorkToken],
+                   one_case: bool | None,
+                   declined: list[int] | None) -> bool:
+    """`declined_by_the_name_behind` for `run_start`, recording in
+    `declined`, where the caller keeps one, the index `i` of a given
+    name written short whose run its own writing declined, the one
+    decline whose writing settles nothing (rules/S8's one-case clause,
+    #1394): assign reports it."""
+    if not declined_by_the_name_behind(token, piece, ptags, tokens,
+                                       one_case):
+        return False
+    if (declined is not None and one_case
+            and GIVEN_ABBREVIATION_TAG in token.tags
+            and short_given_name_in_one_case(token, piece[0], tokens)):
+        declined.append(i)
+    return True
 
 
 # rules/S8: "A credential after the name core starts a run to the
@@ -1699,7 +1788,8 @@ def run_start(rest: Sequence[int], names: int,
               tokens: Sequence[WorkToken],
               units: Sequence[int] | None = None,
               one_case: bool | None = None,
-              initials_cue: bool = True) -> int:
+              initials_cue: bool = True,
+              declined: list[int] | None = None) -> int:
     """Where #602's run starts in `rest[:names]`: the position of the
     first credential that starts one (`starts_a_credential_run`) with
     two name pieces in front of it, or `names` where none does -- with
@@ -1756,9 +1846,10 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and declined_by_the_name_behind(
-                                 tokens[pieces[q][0]], pieces[rest[p + 1]],
-                                 ptags[rest[p + 1]], tokens, one_case))):
+                             and _declined_here(
+                                 tokens[pieces[q][0]], pieces[q][0],
+                                 pieces[rest[p + 1]], ptags[rest[p + 1]],
+                                 tokens, one_case, declined))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
@@ -2170,11 +2261,14 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                            count_numeral=count_numeral)
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names, salutations=salutations)
+    declined: list[int] = []
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units,
-                      one_case, initials_cue)
-        return rest, (), (peeled if p == peeled.names else credential_run(
+                      one_case, initials_cue, declined)
+        peeled = (peeled if p == peeled.names else credential_run(
             rest, peeled, p, pieces, ptags, tokens, one_case))
+        return rest, (), (peeled._replace(declined=tuple(declined))
+                          if declined else peeled)
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -2226,10 +2320,12 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
     final = Peel(peeled.names, tuple(numerals), tuple(picks), None)
     p = run_start(rest, final.names, pieces, ptags, tokens, units,
-                  one_case, initials_cue)
+                  one_case, initials_cue, declined)
+    final = (final if p == final.names else credential_run(
+        rest, final, p, pieces, ptags, tokens, one_case))
     return (rest, tuple(j for run in reversed(titled) for j in run),
-            final if p == final.names else credential_run(
-                rest, final, p, pieces, ptags, tokens, one_case))
+            final._replace(declined=tuple(declined)) if declined
+            else final)
 
 
 class TailRead(NamedTuple):

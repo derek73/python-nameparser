@@ -233,7 +233,10 @@ DOTTED_TITLE_TAG = "vocab:dotted-title"
 #: On a word of `Lexicon.given_name_abbreviations`, a given name written
 #: short ('Chas.', 'Ma.'): rules/H2's shape test declines a word
 #: carrying it, so the given reading outranks the shape-derived title
-#: (`_pieces.is_leading_title`, `_vocab.is_title_shaped`).
+#: (`_pieces.is_leading_title`, `_vocab.is_title_shaped`); rules/C13's
+#: given-name Except (`_comma._given_name_written_short`) and rules/S8's
+#: one-case clause (`_pieces.short_given_name_in_one_case`, #1394) read
+#: it too.
 GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
 
 #: On a word of `Lexicon.shared_names`, a name a community gives every

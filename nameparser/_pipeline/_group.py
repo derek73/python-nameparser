@@ -1327,7 +1327,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 read = TailRead(read.tail, read.titles, read.run_titles, Peel(
                     peel.names, peel.numerals,
                     tuple([p for p in peel.picks if p not in took]),
-                    peel.anchors, peel.run_titles, peel.absorbed))
+                    peel.anchors, peel.run_titles, peel.absorbed,
+                    peel.declined))
         # rules/P5: "a recognized bound given-name word joins the
         # word after it into one given name" (history: decisions/P5)
         # -- bound given names: the first non-title piece joins the next

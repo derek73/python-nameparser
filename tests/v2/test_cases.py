@@ -490,9 +490,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # -> 2098, the third review's four rows under three orders; 2098 ->
     # 2101, 'Jane Doe, A.L., PhD' under three orders; 2101 -> 2107 on
     # 2026-11-18, #1455's 'Oude Luttikhuis' and 'Luttikhuis, Piet Oude',
-    # each reporting particle-or-given under three orders.
-    assert claims == 2107, (
-        f"the field sweep checks {claims} claims, recorded as 2107 on "
+    # each reporting particle-or-given under three orders; 2107 -> 2187
+    # the same day, #1394's rows under three orders or once where a row
+    # declares a policy: the decline's report on each moved row, and
+    # its boundary rows' run reports.
+    assert claims == 2187, (
+        f"the field sweep checks {claims} claims, recorded as 2187 on "
         f"2026-11-18")
 
 
@@ -567,6 +570,15 @@ _STAND_IN_REREADS = {
     ("Rahman, Md Sheikh Karim", None), ("Rahman, Md Sheikh Karim", 1),
     ("Rahman, Md Sheikh Karim", 2),
     ("Rahman, Md Dean", None), ("Rahman, Md Dean", 1), ("Rahman, Md Dean", 2),
+    # a name word in the maiden marker's or the numeral's place makes an
+    # 'MD' in capitals, or an 'Md', Muhammad written short (rules/S8,
+    # #1394)
+    ("JOHN SMITH MD NÉE JONES", None), ("JOHN SMITH MD NÉE JONES", 2),
+    ("JOHN SMITH MD VI JONES", None), ("JOHN SMITH MD VI JONES", 2),
+    ("John Smith Md VI Jones", None), ("John Smith Md VI Jones", 2),
+    ("JOHN SMITH MD (B) VI JONES", None),
+    ("JOHN SMITH MD (B) VI JONES", 2),
+    ("John Smith MA VI Jones", None), ("John Smith MA VI Jones", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -957,8 +969,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 456 -> 462, the coordinator's review's two rows; 462 -> 474, the
     # third review's four; 474 -> 477, the 'A.L.' row; 595 -> 598 on
     # 2026-11-18, #1455's 'Luttikhuis, Piet Oude' under the three orders,
-    # P6's report, each stand-in landing in the alternative's field
-    assert (checked, skipped) == (598, 477), (checked, skipped)
+    # P6's report, each stand-in landing in the alternative's field;
+    # 477 -> 494 and 598 -> 603 the same day, #1394's rows under the
+    # three orders, the declines' reports and the boundary rows' run
+    # reports, three of them stand-in rereads
+    assert (checked, skipped) == (603, 494), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

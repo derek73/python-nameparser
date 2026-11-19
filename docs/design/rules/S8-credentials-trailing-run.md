@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, numeral read as the generation (S10), initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, where behind a member its capitals settle they are one: behind that member capitals are as likely a family name or the writer's own initials as a credential, the member itself being capitals that may be initials, while a generation word is written out, so capitals behind it read as the credential that follows it as likely as a name. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. Where no family comma divides the name, nor, in a name written wholly in one case, does a credential that is also a given name written short (`md`) with a name word behind it, in lower case as in capitals, that holds a letter of a script with case and is no maiden marker or numeral read as the generation (S10): its case is the name's and says nothing, so it reads as its Title case does, the case asked of a word in a maiden clause or between brackets being the whole name's (S6), and written with its periods (`M.D.`) it is the degree's writing and no given name. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, numeral read as the generation (S10), initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, where behind a member its capitals settle they are one: behind that member capitals are as likely a family name or the writer's own initials as a credential, the member itself being capitals that may be initials, while a generation word is written out, so capitals behind it read as the credential that follows it as likely as a name. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -36,6 +36,12 @@
   "Badrul Akmal Hisham Md Yusoff"  →  family="Yusoff"
   "John Smith Md Phd"         →  suffix="Md Phd"
   "John Smith MD Jones"       →  suffix="MD Jones"
+  "SITI NORA MD YUSRI"        →  family="YUSRI"
+  "AHMAD BIN MD RAHMAN"       →  family="BIN MD RAHMAN"
+  "JOHN SMITH MD PHD"         →  suffix="MD PHD"
+  "JOHN SMITH M.D. JONES"     →  suffix="M.D. JONES"
+  "SMITH, JOHN MD JONES"      →  suffix="MD JONES"
+  "محمد علي MD حسن"           →  suffix="MD حسن"
   "Smith, John Md Jones"      →  suffix="Md Jones"
   "Guy Andre Junior Francois"  →  family="Francois"
   "John Smith Jr. Jones"      →  middle="Smith Jr."
@@ -50,9 +56,10 @@
   "John Smith Esq Jones"      →  suffix="Esq Jones"
   "राम शर्मा साहब मोहन"          →  suffix="साहब मोहन"
   ```
-- **What reports.** A name word the run absorbs is reported `suffix-or-name`.
+- **What reports.** A name word the run absorbs is reported `suffix-or-name`, and so is a given name written short whose run a name of one case declines, the credential being the reading not taken: nothing in the writing settles it.
   ```
   "John Smith PhD Jones"      →  ambiguities=("suffix-or-name",)
+  "SITI NORA MD YUSRI"        →  ambiguities=("suffix-or-name",)
   "राम शर्मा साहब मोहन"          →  ambiguities=("suffix-or-name",)
   ```
 
@@ -111,7 +118,13 @@
   "Jane Doe Rn Ccrn"          →  family="Ccrn"
   "John Smith Md Dr"          →  family="Dr"
   ```
+- With no family comma, in a name written wholly in one case, the degree written before a family name reads as Muhammad written short, reported, the name having no case to tell the two apart: `MD` with a name word behind it is a word of the middle name, where written in a name of mixed case, or with its periods, it starts the run. A title written in capitals after it becomes the family name.
+  ```
+  "JOHN SMITH MD JONES"       →  family="JONES"
+  "JOHN SMITH MD JONES"       →  middle="SMITH MD"
+  "JOHN SMITH MD MR"          →  family="MR"
+  ```
 
 ---
-**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word
+**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word, or none around a given name written short
 **history:** decisions/S8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
