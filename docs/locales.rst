@@ -144,12 +144,10 @@ shape covers much:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
 - ``mn`` may read any name written wholly in Cyrillic differently.
-- ``my`` may read any name holding ``San``, ``La``, ``Le``, ``Do``,
-  ``Da``, ``Du``, ``Te``, ``Di`` or ``Van`` as a word differently,
-  Spanish, Portuguese, Italian, French, Filipino and Dutch family names
-  among them, a name holding the credential ``DO``, and any holding
-  ``U`` or ``Daw`` as a word, with or without its full stop, or ``U``
-  as a letter of a word joined by full stops.
+- ``my`` may read any name holding ``U`` or ``Daw`` as a word
+  differently, with or without its full stop, or ``U`` as a letter of
+  a word joined by full stops. Chosen strictly, it may read any name
+  differently that holds another language's word (:ref:`strict-choice`).
 
 .. warning::
 
@@ -301,10 +299,11 @@ says which parts each pack is made of.
    * - ``my``
      - Burmese
      - Chooses ``my``, which reads the honorifics ``U`` and ``Daw``
-       as titles (``U Thein Sein``), and keeps the syllables ``San``,
-       ``La``, ``Van`` and six more as name words where other
-       languages read particles. See :ref:`burmese-names`.
-     - ``Daw Aung San Suu Kyi`` → title ``Daw``, family ``Kyi``
+       as titles (``U Thein Sein``). Choose it strictly for a list of
+       nothing but Burmese names, which keeps ``San``, ``Van`` and the
+       other syllables name words where other languages read particles
+       or credentials. See :ref:`burmese-names`.
+     - ``U Thein Sein`` → title ``U``, given ``Thein``, family ``Sein``
    * - ``ne``
      - Nepali
      - Chooses ``ne``, which reads ``श्री``, ``गुरु`` and ``Guru`` as
@@ -1148,6 +1147,7 @@ right, validated on its own, and it may hold any of these:
   where another pack would choose because a choice prefers its
   language's reading of a word only where that reading is a title, a
   particle or another vocabulary kind, never a name, so no reading
-  ``vi.toml`` could write would keep ``Van`` a name word. ``my``'s
-  fragment takes out the particle readings of the Burmese syllables,
-  and ``do``'s credential reading, the same way.
+  ``vi.toml`` could write would keep ``Van`` a name word. A strict
+  choice settles the same clashes without a list, by reading no other
+  language's words, which is how a wholly Burmese list is read
+  (:ref:`burmese-names`).

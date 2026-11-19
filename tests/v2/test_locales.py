@@ -690,97 +690,112 @@ def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> No
 
 
 def test_my_pack_contents() -> None:
-    # a choice of my, which turns on the honorifics, and a fragment that
-    # only removes particle readings (decisions/vocabulary-collisions,
-    # the 2026-11-19 #1231 entry); no policy patch
+    # a choice of my and nothing else: no fragment and no policy patch,
+    # the fragment of #1231 dropped for the strict choice (#1483;
+    # decisions/vocabulary-collisions, the 2026-11-19 #1483 entry)
     import pickle
-    assert locales.MY.languages == {"my"}
-    assert locales.MY.policy == PolicyPatch()
+    assert locales.MY == Locale(code="my", lexicon=Lexicon.empty(),
+                                languages=frozenset({"my"}))
+    assert not hasattr(_my, "DEVIATES")
     assert _ri.changed_words(_ri.selected(locales.MY.languages)) == {"u", "daw"}
     sets = _require_packed("my").lexicon._sets
-    assert not set(_my._PARTICLES) & sets.particles
-    assert not set(_my._CREDENTIALS) & sets.suffix_acronyms
-    # the particles and credentials it leaves
-    assert {"de", "von", "del", "bin", "mac"} <= sets.particles
-    assert {"md", "ma", "ba", "phd"} <= sets.suffix_acronyms
     assert {"u", "daw"} <= sets.titles
     assert not {"u", "daw"} & Lexicon.default()._sets.titles
     assert pickle.loads(pickle.dumps(locales.MY)) == locales.MY
     parser = pickle.loads(pickle.dumps(parser_for(locales.MY)))
     assert parser.parse("U Thein Sein").title == "U"
-    assert _my.DEVIATES("Aung San Win") and _my.DEVIATES("SAN-MARTIN")
-    assert not _my.DEVIATES("Sandra Lee") and not _my.DEVIATES("Thein Sein")
 
 
-#: Each reading the MY fragment removes, with a name its removal alone
-#: moves: the syllable between two name words, which its particle
-#: reading would chain into the family name, and DO ending a name
-#: written in capitals, which its credential reading would take as the
-#: suffix once SAN no longer chains it (nameparser/vocab/AGENTS.md, "A
-#: reading taken out")
-_MY_REMOVALS = [
-    ("san", "particle", "Aung San Win"), ("la", "particle", "Akyaung La Aung"),
-    ("le", "particle", "Saw Eh Le Htoo"), ("do", "particle", "Htan Do Kyint"),
-    ("da", "particle", "Thi Da Oo"), ("du", "particle", "Swam Du Naw Aung"),
-    ("te", "particle", "Kyauk Te Chan"), ("di", "particle", "Aung Di Win"),
-    ("van", "particle", "Henry Van Thio"),
-    ("do", "credential", "AUNG SAN DO"),
-]
+@pytest.mark.parametrize("text, given, middle, family, suffix", [
+    # #1483: a strict choice reads no other language's file, so a
+    # Burmese syllable another language reads as a particle or a
+    # credential is a name word, between two name words, after a comma
+    # and ending a name written in capitals; the plain pack reads each
+    # as the default does
+    ("Aung San Win", "Aung", "San", "Win", ""),
+    ("Henry Van Thio", "Henry", "Van", "Thio", ""),
+    ("KYAW, AUNG DO", "AUNG", "DO", "KYAW", ""),
+    ("THEIN AUNG PE", "THEIN", "AUNG", "PE", ""),
+    ("THEIN AUNG LAT", "THEIN", "AUNG", "LAT", ""),
+    ("Thein Aung Ra", "Thein", "Aung", "Ra", ""),
+    # #1232: Mg, a title by default, is the given name
+    ("Mg Htoo Aung", "Mg", "Htoo", "Aung", ""),
+])
+def test_my_strict_reads_the_syllables_as_name_words(
+        text: str, given: str, middle: str, family: str, suffix: str) -> None:
+    name = parser_for(locales.MY, strict=True).parse(text)
+    assert (name.given, name.middle, name.family, name.suffix) == (
+        given, middle, family, suffix)
+    assert _require_packed("my").parse(text).as_dict() == _default_parse(text)
+    assert name.as_dict() != _default_parse(text)
 
 
-def test_each_my_removal_moves_its_own_row() -> None:
-    # the negative control for the fragment, as VI's: with one removal
-    # put back, the row that witnesses it reads otherwise
-    lists = {"particle": _my._PARTICLES, "credential": _my._CREDENTIALS}
-    assert sorted((w, k) for w, k, _ in _MY_REMOVALS) == sorted(
-        (w, k) for k, words in lists.items() for w in words)
-    my = _require_packed("my")
-
-    def put_back(removal: tuple[str, str] | None) -> Parser:
-        lexicon = Lexicon.empty()
-        for k, words in lists.items():
-            if kept := [w for w in words if (w, k) != removal]:
-                lexicon = lexicon.remove(*kept, kind=k)
-        return parser_for(dataclasses.replace(locales.MY, lexicon=lexicon))
-
-    rebuilt = put_back(None)
-    for word, kind, text in _MY_REMOVALS:
-        assert rebuilt.parse(text).as_dict() == my.parse(text).as_dict(), text
-        assert put_back((word, kind)).parse(text).as_dict() != my.parse(
-            text).as_dict(), (word, kind, text)
-        assert len(my.parse(text).family.split()) == 1, text
+@pytest.mark.parametrize("text, title", [
+    # #1483: the English ranks and Sir Burmese lists write are my.toml's
+    # own readings, so a strict choice keeps them, bare and written short,
+    # at the head and after a family comma, as the default and the plain
+    # pack read them
+    ("Senior General Kyaw Win", "Senior General"),
+    ("Vice Senior General Kyaw Win", "Vice Senior General"),
+    ("Lieutenant General Kyaw Win", "Lieutenant General"),
+    ("Lt Gen Kyaw Win", "Lt Gen"),
+    ("Maj Gen Kyaw Win", "Maj Gen"),
+    ("Brig Gen Kyaw Win", "Brig Gen"),
+    ("Major General Kyaw Win", "Major General"),
+    ("Lt Col Kyaw Win", "Lt Col"),
+    ("Col Kyaw Win", "Col"),
+    ("Capt Kyaw Win", "Capt"),
+    ("Rear Admiral Kyaw Win", "Rear Admiral"),
+    ("Adm Kyaw Win", "Adm"),
+    ("Commodore Kyaw Win", "Commodore"),
+    ("Cdr Kyaw Win", "Cdr"),
+    ("Win, Lt Gen Kyaw", "Lt Gen"),
+    ("Kyaw Win, Maj Gen", "Maj Gen"),
+    ("Sir U Kyaw Win", "Sir U"),
+])
+def test_my_strict_keeps_the_ranks(text: str, title: str) -> None:
+    strict = parser_for(locales.MY, strict=True).parse(text)
+    plain = _require_packed("my").parse(text)
+    assert strict.title == plain.title == title
+    assert strict.as_dict() == plain.as_dict()
 
 
 @pytest.mark.parametrize("text, given, family, suffix", [
-    # the accepted cost of a removed particle in the family before a
-    # comma: it no longer keeps the given part after the comma from
-    # reading as a credential (decisions/vocabulary-collisions, the
-    # 2026-11-19 #1231 entry)
-    ("Van Buren, Ed", "Van", "Buren", "Ed"),
-    ("De La Cruz, Ed", "", "De La Cruz", "Ed"),
-    ("De La Cruz, M.J. K.L.", "", "De La Cruz", "M.J. K.L."),
+    # the rank readings are written default = false, so the default
+    # never reads them, and copies of en.toml's, so the plain pack, which
+    # prefers them, reads as the default does: a rank en.toml gates by a
+    # given name stays a given name, and lt's credential, copied with
+    # its rank, stays the suffix
+    ("Gen Goto", "Gen", "Goto", ""),
+    ("Major Smith", "Major", "Smith", ""),
+    ("Maj Sjöwall", "Maj", "Sjöwall", ""),
+    ("John Smith, LT", "John", "Smith", "LT"),
 ])
-def test_my_costs_a_given_name_after_a_particle_and_a_comma(
+def test_my_rank_readings_move_no_plain_parse(
         text: str, given: str, family: str, suffix: str) -> None:
     name = _require_packed("my").parse(text)
-    assert (name.given, name.family, name.suffix) == (given, family, suffix)
-    assert _default_parse(text)["given"]
+    assert (name.title, name.given, name.family, name.suffix) == (
+        "", given, family, suffix)
+    assert name.as_dict() == _default_parse(text)
 
 
-@pytest.mark.parametrize("text, middle, family", [
-    # the credential DO, which SAN's particle chain kept from ending a
-    # name written in capitals, in each comma shape, beside the mixed-case
-    # control (nameparser/vocab/AGENTS.md, "A reading taken out")
-    ("AUNG SAN DO", "SAN", "DO"),
-    ("Aung San Do", "San", "Do"),
-    ("KYAW, AUNG DO", "DO", "KYAW"),
-    ("Kyaw, Aung Do", "Do", "Kyaw"),
-    ("DAW KHIN MYA DO", "MYA", "DO"),
+@pytest.mark.parametrize("text, title, given, family, suffix", [
+    # what a strict choice costs a name that is not Burmese, the reason
+    # the plain pack stays for a mixed list (decisions/vocabulary-
+    # collisions, the 2026-11-19 #1483 entry): the given names en.toml
+    # gates the ranks by are not read, nor the credentials Burmese lists
+    # do not write, so a credential after a comma reads as a given name
+    ("Gen Goto", "Gen", "", "Goto", ""),
+    ("Major Smith", "Major", "", "Smith", ""),
+    ("Jane Doe, PA", "", "PA", "Jane Doe", ""),
+    ("Juan de la Cruz", "", "Juan", "Cruz", ""),
 ])
-def test_my_keeps_a_final_do_a_name_word(
-        text: str, middle: str, family: str) -> None:
-    name = _require_packed("my").parse(text)
-    assert (name.middle, name.family, name.suffix) == (middle, family, "")
+def test_my_strict_costs_a_name_that_is_not_burmese(
+        text: str, title: str, given: str, family: str, suffix: str) -> None:
+    name = parser_for(locales.MY, strict=True).parse(text)
+    assert (name.title, name.given, name.family, name.suffix) == (
+        title, given, family, suffix)
+    assert _require_packed("my").parse(text).as_dict() == _default_parse(text)
 
 
 @pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
@@ -849,13 +864,15 @@ def test_my_reads_u_written_with_its_full_stop_as_the_title_vocabulary_does(
 
 
 def test_my_differs_from_the_default_only_through_its_words() -> None:
-    # the honorifics and syllables move a name; a Burmese name holding
-    # none of them reads as the default reads it, its last word the family
+    # the honorifics move a name; a Burmese name holding neither reads
+    # as the default reads it, its last word the family, its syllables
+    # and ranks included (a strict choice reads those, #1483)
     my = _require_packed("my")
     for text in ("Thein Sein", "Min Aung Hlaing", "Maung Maung Kyaw",
-                 "Ko Ko Lwin", "Saw Ba Hline", "Sai Lone Hsai"):
+                 "Ko Ko Lwin", "Saw Ba Hline", "Sai Lone Hsai",
+                 "Aung San Win", "THEIN AUNG PE", "Lt Gen Kyaw Win"):
         assert my.parse(text).as_dict() == _default_parse(text), text
-    for text in ("U Thein Sein", "Daw Aung San Suu Kyi", "Aung San Win"):
+    for text in ("U Thein Sein", "Daw Aung San Suu Kyi", "Sir U Kyaw Win"):
         assert my.parse(text).as_dict() != _default_parse(text), text
 
 
@@ -2184,27 +2201,15 @@ _ROTATORS["nl"] = [
     "John Smith, VD",                # vd after a comma
 ]
 # my (#1231): each honorific at the head, in each case and after a
-# family comma; each syllable the fragment takes out, between two name
-# words, as a word of its own after a comma and in one case
+# family comma, and behind a title (the ranks my.toml copies from
+# en.toml move no plain parse, so no rotator holds them: #1483's tests)
 _ROTATORS["my"] = [
     "U Thein Sein",                  # u
     "Daw Khin Mya",                  # daw
     "DAW KHIN MYA",                  # daw, in one case
     "Sein, U Thein",                 # u after a family comma
-    "Aung San Win",                  # san
-    "Akyaung La Aung",               # la
-    "Saw Eh Le Htoo",                # le
-    "Htan Do Kyint",                 # do
-    "Thi Da Oo",                     # da
-    "Swam Du Naw Aung",              # du
-    "Kyauk Te Chan",                 # te
-    "Aung Di Win",                   # di
-    "Henry Van Thio",                # van
-    "AUNG, Saw San",                 # san ending the given part
-    "AUNG SAN WIN",                  # san, in one case
-    "AUNG SAN DO",                   # do's credential, in one case
-    "KYAW, AUNG DO",                 # do's credential after a comma
     "Thein Sein Daw.",               # daw, dotted, ending the name (rules/H5)
+    "Sir U Kyaw Win",                # u behind a title
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted

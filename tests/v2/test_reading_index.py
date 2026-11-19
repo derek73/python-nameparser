@@ -385,7 +385,8 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: choice of the same tag (decisions/vocabulary-model's 2026-10-30 #753,
 #: file-strict entry measured 16 words, 27 word-and-tag pairs over 13
 #: tags on 2026-10-31; the strict-gap batches of 2026-11-03 moved it, and
-#: #345 added hi's sushri, its Odia given name in or.toml). A
+#: #345 added hi's sushri, its Odia given name in or.toml; #1483 my's
+#: ranks, whose given names only en.toml writes). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
@@ -401,6 +402,7 @@ STRICT_UNGATED = {
     "hr": {"st"},
     "it": {"del", "la", "san", "santa"},
     "ms": {"bin", "sultan"},
+    "my": {"brig", "gen", "maj", "major"},
     "nl": {"den", "ten", "tho"},
     "pt": {"da", "do", "santa"},
     "pt-BR": {"da", "do", "santa"},
