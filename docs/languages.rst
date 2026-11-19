@@ -1234,7 +1234,8 @@ What the pack leaves as it is
 - **An honorific and one word.** ``U Thant`` gives title ``U``, family
   ``Thant``, as a title and one name word reads in any name.
 - **Military and religious styles** (``Bogyoke``, ``Sayadaw``) are read
-  as given names, as by default.
+  as name words, as by default (``Ledi Sayadaw`` gives family
+  ``Sayadaw``).
 - **Burmese script.** The pack reads Latin letters only; ``ဦး`` and
   ``ဒေါ်`` have no reading yet.
 
@@ -1245,16 +1246,17 @@ The pack is for lists of Burmese names. On other names it costs:
 
 - **Nine particles.** Their particle readings, which Dutch, Portuguese,
   Italian, French, Spanish, Filipino and Māori family names hold
-  (``de`` and ``del`` keep theirs, and ``de la`` reads as by default
-  save where it ends the given part after a family comma). Where one
+  (``de`` and ``del`` keep theirs, so ``Juan de la Cruz`` reads as by
+  default, but a ``de la`` in other shapes, after a comma, beside another
+  particle or under a family-first order, can read otherwise). Where one
   stands in the family name before a comma, the given part after it
   can read as a credential, the given name lost (``Van Buren, Ed``
   gives suffix ``Ed``).
 - **The credential DO**, read as a name word.
 - **An initial U.** ``U`` is the honorific however it is written,
-  wherever a title is read, so an initial ``U.`` opening a name or the
-  part after a comma, or standing behind a title, is the title
-  (``Smith, U.`` and ``Dr. U. Smith`` give no given name).
+  wherever the parser reads a title, so an initial ``U.`` in such a
+  place is the title (``Smith, U.`` and ``Dr. U. Smith`` give no given
+  name); only a bare ``U.`` between two name words stays an initial.
 
 Keep it to a parser of its own for the Burmese names in your data:
 

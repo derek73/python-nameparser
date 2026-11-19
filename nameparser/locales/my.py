@@ -17,12 +17,11 @@ Burmese names have no family name: every word is a personal name, and
 the last one lands in ``family`` by position as it does in any name
 read positionally. The title vocabulary reads ``U.`` with its full
 stop as it reads ``U``, wherever it reads a title, so a Western
-initial is the title under the pack too where it opens a name or the
-part after a comma, stands behind another title, is glued to one or
-stands in brackets (``U. S. Grant`` gives title ``U.``, given ``S.``;
-``Smith, U.`` and ``Dr. U. Smith`` give no given name), the accepted
-cost and the reason to keep the pack to Burmese names; a bare ``U.``
-between two name words stays an initial (``John U. Smith``). A title and one name word reads the word as the family
+initial in such a place is the title under the pack too (``U. S.
+Grant`` gives title ``U.``, given ``S.``; ``Smith, U.`` and ``Dr. U.
+Smith`` give no given name), the accepted cost and the reason to keep
+the pack to Burmese names; a bare ``U.`` between two name words stays
+an initial (``John U. Smith``). A title and one name word reads the word as the family
 name, as everywhere (rules/H1), so ``U Thant`` gives family ``Thant``.
 
 Left as name words: the honorifics ``Ko``, ``Ma`` and ``Maung``, which
