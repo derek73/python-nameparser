@@ -1245,14 +1245,16 @@ The pack is for lists of Burmese names. On other names it costs:
 
 - **Nine particles.** Their particle readings, which Dutch, Portuguese,
   Italian, French, Spanish, Filipino and Māori family names hold
-  (``de`` and ``del`` keep theirs, but ``de la`` loses its ``la``).
-  Where one opens the family name before a comma, a short given name
-  after it can read as a credential, the given name lost (``Van Buren,
-  Ed`` gives suffix ``Ed``).
+  (``de`` and ``del`` keep theirs, and ``de la`` reads as by default
+  save where it ends the given part after a family comma). Where one
+  stands in the family name before a comma, the given part after it
+  can read as a credential, the given name lost (``Van Buren, Ed``
+  gives suffix ``Ed``).
 - **The credential DO**, read as a name word.
 - **An initial U.** ``U`` is the honorific however it is written,
   wherever a title is read, so an initial ``U.`` opening a name or the
-  part after a comma is the title (``Smith, U.`` gives no given name).
+  part after a comma, or standing behind a title, is the title
+  (``Smith, U.`` and ``Dr. U. Smith`` give no given name).
 
 Keep it to a parser of its own for the Burmese names in your data:
 

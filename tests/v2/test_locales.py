@@ -752,18 +752,19 @@ def test_each_my_removal_moves_its_own_row() -> None:
 
 
 @pytest.mark.parametrize("text, given, family, suffix", [
-    # the accepted cost of a removed particle opening the family before a
-    # comma: it no longer keeps a short given name after the comma from
+    # the accepted cost of a removed particle in the family before a
+    # comma: it no longer keeps the given part after the comma from
     # reading as a credential (decisions/vocabulary-collisions, the
     # 2026-11-19 #1231 entry)
     ("Van Buren, Ed", "Van", "Buren", "Ed"),
     ("De La Cruz, Ed", "", "De La Cruz", "Ed"),
+    ("De La Cruz, M.J. K.L.", "", "De La Cruz", "M.J. K.L."),
 ])
 def test_my_costs_a_given_name_after_a_particle_and_a_comma(
         text: str, given: str, family: str, suffix: str) -> None:
     name = _require_packed("my").parse(text)
     assert (name.given, name.family, name.suffix) == (given, family, suffix)
-    assert _default_parse(text)["given"] == "Ed"
+    assert _default_parse(text)["given"]
 
 
 @pytest.mark.parametrize("text, middle, family", [
@@ -827,7 +828,7 @@ def test_my_reads_the_honorific_in_every_comma_shape(
     # with its full stop as the honorific under the pack, wherever it
     # reads a title, so a Western initial U. opening a name is the title
     # there -- the reason the docs give not to apply the pack to a mixed
-    # list. A U. inside the name is an initial, as by default
+    # list. A bare U. between two name words is an initial, as by default
     ("U. Thein Sein", "U.", "Thein", "", "Sein"),
     ("Sein, U. Thein", "U.", "Thein", "", "Sein"),
     ("U. S. Grant", "U.", "S.", "", "Grant"),
@@ -836,6 +837,7 @@ def test_my_reads_the_honorific_in_every_comma_shape(
     ("U.S. Grant", "", "U.", "S.", "Grant"),
     ("Smith, U.", "U.", "", "", "Smith"),
     ("John (U.) Smith", "U.", "John", "", "Smith"),
+    ("Dr. U. Smith", "Dr. U.", "", "", "Smith"),
     ("John U. Smith", "", "John", "U.", "Smith"),
     ("Smith, John U.", "", "John", "U.", "Smith"),
 ])
