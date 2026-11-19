@@ -957,6 +957,60 @@ CASES: tuple[Case, ...] = (
          notes="a word before the father's name (a clan name, not read "
                "as one) leaves the given name last, the reason the pack "
                "declares FAMILY_FIRST_GIVEN_LAST rather than FAMILY_FIRST"),
+    # #1455: the Dutch oude and ten, each row checked against the 1.4.0
+    # and 3.1.0 wheels on 2026-11-18
+    Case("a_dutch_oude_starts_the_family_name",
+         "Piet Oude Luttikhuis",
+         {"given": "Piet", "family": "Oude Luttikhuis"},
+         classification="fix(#1455)",
+         notes="1.4.0 through 3.1.0 read middle 'Oude'"),
+    Case("a_dutch_oude_ending_the_given_part_joins_the_family",
+         "Luttikhuis, Piet Oude",
+         {"given": "Piet", "family": "Oude Luttikhuis"},
+         classification="fix(#1455)",
+         ambiguities=("particle-or-given",),
+         notes="rules/P6's trailing attachment; 1.4.0 through 3.1.0 read "
+               "middle 'Oude'"),
+    Case("a_dutch_oude_opening_a_name_stays_given",
+         "Oude Luttikhuis",
+         {"given": "Oude", "family": "Luttikhuis"},
+         classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="nam_dict's rare Dutch given name Oude keeps it given where "
+               "it opens the name (rules/P1), the fork reported; 1.4.0 "
+               "reads the same fields"),
+    Case("ten_stays_a_middle_name_by_default",
+         "Jan ten Brink",
+         {"given": "Jan", "middle": "ten", "family": "Brink"},
+         classification="parity",
+         notes="the negative control for #1455: ten is nl.toml's "
+               "preposition written default = false; 1.4.0 reads the same"),
+    Case("the_dutch_pack_reads_ten_as_the_family",
+         "Jan ten Brink",
+         {"given": "Jan", "family": "ten Brink"},
+         locale="nl", classification="feat(#1455)",
+         notes="1.4.0 through 3.1.0 read middle 'ten'"),
+    Case("the_dutch_pack_reads_ten_ending_the_given_part",
+         "Brink, Jan ten",
+         {"given": "Jan", "family": "ten Brink"},
+         locale="nl", classification="feat(#1455)",
+         ambiguities=("particle-or-given",),
+         notes="rules/P6's trailing attachment; 1.4.0 through 3.1.0 read "
+               "middle 'ten'"),
+    Case("the_dutch_pack_keeps_ten_opening_a_name_given",
+         "Ten Kao Liu",
+         {"given": "Ten", "middle": "Kao", "family": "Liu"},
+         locale="nl", classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="zh.toml's given-name syllable where the particle opens a "
+               "name, the fork reported; 1.4.0 reads the same fields"),
+    Case("the_dutch_pack_takes_a_chinese_syllable_into_the_family",
+         "Kheng Ten Choo",
+         {"given": "Kheng", "family": "Ten Choo"},
+         locale="nl", classification="feat(#1455)",
+         notes="the mid-name cost that keeps ten off by default "
+               "(rules/P2's Accepted); 1.4.0 through 3.1.0 read middle "
+               "'Ten'"),
     # #1257: the Maghrebi and Hebrew particles, each row checked against
     # the 1.4.0 wheel and master 161ebd28 on 2026-11-12
     Case("an_amazigh_ait_starts_the_family_name",

@@ -18,8 +18,8 @@ subset with its own parser, or pass several packs to ``parser_for``:
 
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
-Vietnamese, Mongolian and Thai names, and Maghrebi, Amazigh and Hebrew
-particles. Other languages are described where their mechanism is:
+Vietnamese, Mongolian and Thai names, Maghrebi, Amazigh and Hebrew
+particles, and Dutch particles. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -1089,3 +1089,83 @@ family box, the names agreeing in both boxes rise from 87.6% by default
 to 96.1% under either pack in Tunisia, and from 92.7% to 93.5% in
 Israel. The dated figures are in
 ``docs/design/decisions/vocabulary-collisions.md``.
+
+.. _dutch-particles:
+
+Dutch particles
+---------------
+
+Turn on ``locales.NL`` when your data is Dutch or Flemish names written
+with ``ten``. The other Dutch particles are read by default.
+
+Read by default: ``van``, ``de``, ``ter``, ``Oude``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Dutch family name often opens with prepositions and articles written
+in lower case (``van der Berg``, ``ter Horst``, ``'t Hooft``). The
+default reads them as part of the family name. So does it read
+``Oude`` ("old"), which opens the farm names of Twente and the
+Achterhoek and is written with a capital (``Oude Luttikhuis``):
+
+.. doctest::
+
+    >>> parse("Jan van der Berg").family
+    'van der Berg'
+    >>> luttikhuis = parse("PIET OUDE LUTTIKHUIS")
+    >>> luttikhuis.family, str(luttikhuis.capitalized())
+    ('OUDE LUTTIKHUIS', 'Piet Oude Luttikhuis')
+
+``Oude`` is also a rare Dutch given name, so where it opens a name it
+stays the given name and reports the fork, as ``van`` does.
+
+``ten``: the Dutch pack
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``ten`` ("at the") opens family names the same way (``ten Brink``), but
+it is also a syllable of Chinese given names, written between two words
+(``Kheng Ten Choo``), where the particle would take it into the family
+name. So the default leaves it to position, and ``locales.NL``, which
+chooses Dutch, reads it as the family name:
+
+.. doctest::
+
+    >>> parse("Jan ten Brink").family
+    'Brink'
+    >>> dutch = parser_for(locales.NL)
+    >>> dutch.parse("Jan ten Brink").family
+    'ten Brink'
+    >>> dutch.parse("Ten Brink").given
+    'Ten'
+
+A ``Ten`` opening a name stays the given name and reports the fork,
+save under a strict Dutch choice (``strict=True``), which drops the
+Chinese given name and reads a leading ``Ten`` as the family name.
+
+What the pack costs
+~~~~~~~~~~~~~~~~~~~
+
+- **A Chinese given-name syllable inside a name.** ``Kheng Ten Choo``
+  gives family ``Ten Choo`` under the pack. Among ORCID's,
+  PatentsView's and the UK company register's records, ``ten`` read
+  this way fixes 66 Dutch names for 4 it breaks
+  (``docs/design/decisions/vocabulary-collisions.md``, :issue:`1455`).
+- **Two particle runs.** A family name of two Dutch names, each opening
+  with a particle, keeps only the second as the family name when the
+  second opens with ``ten`` (``Jutte van der Werff ten Bosch`` gives
+  middle ``van der Werff``, family ``ten Bosch``), as one whose second
+  name opens with ``ter`` does by default.
+- **The credential VD.** Choosing Dutch costs English's reading of
+  ``vd``, which Dutch reads as ``van der`` written short, so the
+  credential VD (the Volunteer Decoration) is a name word under
+  ``locales.NL``: ``John Smith VD`` gives family ``VD``. Choose ``en``
+  too to keep it.
+- **Other languages' particles, under a strict Dutch choice.** A
+  strict Dutch choice drops the particles of other languages written in
+  Latin letters (``Maria da Silva`` gives middle ``da``).
+
+.. doctest::
+
+    >>> english = Locale(code="en", lexicon=Lexicon.empty(),
+    ...                  languages=frozenset({"en"}))
+    >>> parser_for(locales.NL, english).parse("John Smith VD").suffix
+    'VD'

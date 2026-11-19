@@ -2127,3 +2127,28 @@ is not run here:
     >>> ja = parser_for(locales.JA, segmenter=locales.ja_segmenter())
     >>> ja.parse("あいさわいちろう").family
     'あいさわいちろう'
+
+.. _migrate-3-2:
+
+Changed in 3.2
+~~~~~~~~~~~~~~
+
+Each entry names the releases that read the name the old way.
+
+Dutch Oude
+^^^^^^^^^^
+
+``Oude`` starts the family name it opens, where 1.4 through 3.1 left it
+in the middle name; opening a name it stays the given name:
+
+.. doctest::
+
+    >>> parse("Piet Oude Luttikhuis").family
+    'Oude Luttikhuis'
+    >>> parse("Oude Luttikhuis").given
+    'Oude'
+
+``locales.NL``, new in 3.2, reads ``ten`` the same way (``Jan ten
+Brink`` gives family ``ten Brink``); the default parse of a name holding
+``ten`` is unchanged.
+
