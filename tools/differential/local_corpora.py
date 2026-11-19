@@ -57,7 +57,10 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   states, with the official name, the title, the derived parts, the
   gender and the ethnicity; one distinct spelling of a member of a
   national parliament, with the member, its script, the dataset and
-  whether it is the name or an alias. The counts are counted from here.
+  whether it is the name or an alias; one distinct spelling of a
+  Malaysian election candidate within an election, with the election,
+  the form (ballot or full name) and the ethnicity. The counts are
+  counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
@@ -99,8 +102,9 @@ local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
 (orcid-researchers), local_patentsview.py (patentsview-inventors),
 local_volby.py (cz-candidates), local_dof.py (dof-signatures),
-local_uit.py (uit-vinames), local_vnassembly.py (vn-assembly) and
-local_parliaments.py (opensanctions-parliaments).
+local_uit.py (uit-vinames), local_vnassembly.py (vn-assembly),
+local_parliaments.py (opensanctions-parliaments) and
+local_mycandidates.py (my-candidates).
 """
 from __future__ import annotations
 
@@ -145,6 +149,7 @@ import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_govuk import fetch_govuk  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
+from local_mycandidates import MY, check_my, fetch_my  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
 from local_orcid import (ORCID, check_orcid, extract_path as orcid_extract,  # noqa: E402
                          fetch_orcid, orcid_boxes, renew_orcid)
@@ -312,6 +317,11 @@ SOURCES: dict[str, Source] = {
                "parliament datasets (CC BY-NC 4.0; credit OpenSanctions)",
         unit="spellings", fetch=fetch_parliaments, check=check_parliaments,
         group="dataset"),
+    MY: Source(
+        credit="Malaysian election candidates, GE12-GE15 and the 2023 state "
+               "elections, from Thevesh Theva's analysis-election-msia "
+               "(github.com/Thevesh/analysis-election-msia, GPL-3.0)",
+        unit="spellings", fetch=fetch_my, check=check_my, group="ethnicity"),
 }
 
 
