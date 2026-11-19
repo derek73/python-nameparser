@@ -237,6 +237,9 @@ def _plant_patentsview(cache: Path, lines: list[dict[str, object]]) -> None:
     path.write_bytes(gzip.compress(body.encode("utf-8")))
 
 
+# reads the tables from the checkout's nameparser/config/_order_names.py
+# (`_script_tables`), which an installed-package layout does not hold
+@needs_checkout
 def test_patentsview_reads_the_country_whatever_the_key_order(
         _cache: Path) -> None:
     # every line carries the people it stands for, as the fetch writes
@@ -252,6 +255,9 @@ def test_patentsview_reads_the_country_whatever_the_key_order(
         ("Hiroshi", "Tanaka"), ("Kenji", "Ito"), ("Yuki", "Sato")]
 
 
+# reads the tables from the checkout's nameparser/config/_order_names.py
+# (`_script_tables`), which an installed-package layout does not hold
+@needs_checkout
 def test_surname_given_holds_a_given_name_written_mostly_as_a_family_name(
         _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # #1364: `Zzcruz` is written in the family box by more people than in
@@ -479,6 +485,9 @@ def test_the_turkic_truth_reads_a_three_word_marker_name_whole(
     assert tool._turkic_truth(dataset, name) == truth
 
 
+# reads the tables from the checkout's nameparser/config/_order_names.py
+# (`_script_tables`), which an installed-package layout does not hold
+@needs_checkout
 def test_the_populations_read_the_scripts_own_tables(
         _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # a --base child imports another tree's nameparser; pv-listed-given
