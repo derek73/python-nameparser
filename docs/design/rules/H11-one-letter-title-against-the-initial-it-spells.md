@@ -34,7 +34,15 @@
   ```
   "U. Thein Aung"  [my]       →  given="U."
   ```
+- A word holding the letter beside a title cut from it at its full stop is a title for the title it holds, not for the letter.
+  ```
+  "U.Daw Smith"  [my]         →  title="U.Daw"
+  ```
+- A letter written with a fullwidth full stop is no initial (T5), so it keeps its title reading.
+  ```
+  "U． Smith"  [my]           →  title="U．"
+  ```
 
 ---
 **Signal:** shape: a one-letter word written with its full stop, in a script with capitals
-**history:** decisions/H11 · **implemented:** nameparser/_lexicon.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_segment.py
+**history:** decisions/H11 · **implemented:** nameparser/_lexicon.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_segment.py, nameparser/_pipeline/_script_segment.py

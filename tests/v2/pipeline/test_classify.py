@@ -925,11 +925,27 @@ def test_the_veto_reaches_every_kind_of_title_reading(
 
 def test_the_veto_reaches_a_title_that_may_be_a_given_name() -> None:
     # a title reading beside a given one compiles into the ambiguous
-    # titles, read by the title phrase (rules/H9)
+    # titles, read by the title phrase (rules/H9), which reports no fork
+    # for the initial; the control lexicon holds the given name alone
     parser = Parser(lexicon=Lexicon.default().add("q", kind="office")
                     .add("q", kind="given"))
-    for text in ("Q. of Smith", "Vice Q. Smith", "Q. Smith"):
-        assert parser.parse(text).as_dict() == Parser().parse(text).as_dict(), text
+    control = Parser(lexicon=Lexicon.default().add("q", kind="given"))
+    for text in ("Q. of Smith", "Vice Q. Smith", "Q. Smith", "Dr. Q. Smith",
+                 "Q.John Smith", "(Q.) Smith"):
+        got, want = parser.parse(text), control.parse(text)
+        assert got.as_dict() == want.as_dict(), text
+        assert [a.kind for a in got.ambiguities] == [
+            a.kind for a in want.ambiguities], text
+
+
+def test_a_run_ending_in_an_initial_addresses_no_given_name() -> None:
+    # the last word of a title run a connective chained an initial into
+    # addresses nothing (rules/H1's run, read by its last word)
+    parser = Parser(lexicon=Lexicon.default().add(
+        "q", kind="nobility", addresses="given"))
+    assert parser.parse("Mr. and Q. Smith").as_dict() == Parser().parse(
+        "Mr. and Q. Smith").as_dict()
+    assert parser.parse("Mr. and Q Smith").given == "Smith"
 
 
 def test_the_veto_reaches_a_greek_capital() -> None:
@@ -965,6 +981,10 @@ _H11_SHAPES = [
     "Dr. {q} Smith", "Dr.{q} Smith", "John Smith Dr.{q}", "John ({q}) Smith",
     "({q}) Smith", "John Smith ({q})", 'John "{q}" Smith', "{q} van Berg, Ed",
     "JOHN {q} SMITH", "{q} Smith, Jr.",
+    # the fix commit's review: the glued words T8 divides, read by its
+    # own title tests, and the Thai glued-title walk past a title
+    "Juan dela {q} Sta.Maria", "{q} J.Smith", "Mr. {q} A.Smith",
+    "{q} A.Brown, PhD", "{q} นายสมชาย", "Mr. and {q} Smith",
 ]
 _H11_SPELLINGS = ["Q.", "q.", "Q.R.", "Q.John"]
 _H11_ROWS = [(shape.format(q=q), order)
@@ -973,7 +993,7 @@ _H11_ROWS = [(shape.format(q=q), order)
 #: The recorded negative control: rows of the grid that read otherwise
 #: with the veto answering no at every reader, measured 2026-11-19
 #: (re-take it when the grid moves)
-_H11_UNGUARDED_EFFECT = 228
+_H11_UNGUARDED_EFFECT = 279
 
 
 def _h11_differences() -> int:
@@ -994,14 +1014,16 @@ def _h11_differences() -> int:
 
 
 def test_a_one_letter_title_with_its_period_reads_as_no_title_at_all() -> None:
-    assert len(_H11_ROWS) == 288
+    assert len(_H11_ROWS) == 360
     assert _h11_differences() == 0
 
 
 def test_the_h11_invariant_fails_with_the_veto_off(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    from nameparser._pipeline import _segment
-    for module in (_classify_module, _vocab, _segment):
+    from nameparser import _lexicon
+    from nameparser._pipeline import _script_segment, _segment
+    for module in (_lexicon, _classify_module, _vocab, _segment,
+                   _script_segment):
         monkeypatch.setattr(module, "_spells_a_cased_initial",
                             lambda n, text: False)
     assert _h11_differences() == _H11_UNGUARDED_EFFECT

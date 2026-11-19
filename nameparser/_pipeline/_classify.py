@@ -604,6 +604,11 @@ def classify(state: ParseState) -> ParseState:
                 n = folded[i]
                 if n not in lex._sets.titles_ambiguous and n not in lex._sets.title_modifiers:
                     continue
+                # rules/H11: "a one-letter word written with its period is
+                # an initial and not a title, where the letter has a
+                # capital" -- so no fork between title and name either
+                if len(n) == 1 and _spells_a_cased_initial(n, written[i].text):
+                    continue
                 if n in lex._sets.titles_ambiguous and n not in lex._sets.titles:
                     tags = tags | {TITLE_AMBIGUOUS_TAG}
                     if title:

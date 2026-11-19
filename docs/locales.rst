@@ -147,8 +147,9 @@ shape covers much:
 - ``my`` may read any name holding ``San``, ``La``, ``Le``, ``Do``,
   ``Da``, ``Du``, ``Te``, ``Di`` or ``Van`` as a word differently,
   Spanish, Portuguese, Italian, French, Filipino and Dutch family names
-  among them, and any where ``U`` or ``Daw`` opens the name or the part
-  after a comma.
+  among them, a name holding the credential ``DO``, and any where ``U``
+  or ``Daw`` opens the name, follows a title opening it, or opens the
+  part after a comma.
 
 .. warning::
 
@@ -1138,5 +1139,5 @@ right, validated on its own, and it may hold any of these:
   language's reading of a word only where that reading is a title, a
   particle or another vocabulary kind, never a name, so no reading
   ``vi.toml`` could write would keep ``Van`` a name word. ``my``'s
-  fragment takes out the particle readings of the Burmese syllables
-  the same way.
+  fragment takes out the particle readings of the Burmese syllables,
+  and ``do``'s credential reading, the same way.

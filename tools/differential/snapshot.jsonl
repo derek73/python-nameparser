@@ -4379,6 +4379,7 @@
 {"name": "U. S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
 {"name": "U. Smith, Ed", "given": "U.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "U. S.", "capitalized_force": "U. Smith, ED"}
 {"name": "U. Thein Aung", "given": "U.", "middle": "Thein", "family": "Aung", "initials": "U. T. A."}
+{"name": "U.Daw Smith", "given": "U.", "middle": "Daw", "family": "Smith", "initials": "U. D. S."}
 {"name": "U.S. District Judge Marc Thomas Treadwell", "title": "U.S. District Judge", "given": "Marc", "middle": "Thomas", "family": "Treadwell", "initials": "M. T. T."}
 {"name": "U.S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
 {"name": "U.S. Grant Smith, John", "given": "John", "family": "U.S. Grant Smith", "initials": "J. U. S. G. S."}
@@ -4419,6 +4420,7 @@
 {"name": "Ursula von der Leyen geb. Albrecht", "given": "Ursula", "family": "von der Leyen", "maiden": "Albrecht", "initials": "U. L."}
 {"name": "Uxía", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "Uxía", "order": "FAMILY_FIRST", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
+{"name": "U． Smith", "given": "U．", "family": "Smith", "initials": "U. S."}
 {"name": "VAN DER BERG, JAN", "given": "JAN", "family": "VAN DER BERG", "initials": "J. B.", "capitalized": "Jan van der Berg"}
 {"name": "VAN DER WALT", "given": "VAN", "family": "DER WALT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W.", "capitalized": "Van der Walt"}
 {"name": "VAN GOGH VINCENT", "given": "VAN", "middle": "GOGH", "family": "VINCENT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. G. V.", "capitalized": "Van Gogh Vincent"}

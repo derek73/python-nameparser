@@ -169,12 +169,14 @@ def _spells_a_cased_initial(n: str, text: str) -> bool:
     is lower case, so a letter with a capital is one that upper-cases
     to something else.
 
-    Every reader of the title vocabulary asks it, after its membership
-    hit and its own `len(n) != 1` test at C level, so only a one-letter
-    title pays the frame: classify's tags, the period-joined
-    derivation's chunks, the set-apart clause's kind, the glued-stop
-    cut, the comma count, the title phrase, C2's third part and the
-    group suggester."""
+    Every reader of the title vocabulary whose answer such a word can
+    move asks it, after its membership hit and its own `len(n) != 1`
+    test at C level, so only a one-letter title pays the frame:
+    classify's tags, the period-joined derivation's chunks, the
+    set-apart clause's kind, the glued-stop cut and T8's tests of the
+    word before a glued one, the glued-title walk, the comma count, the
+    title phrase, C2's third part, a title run's addressing and the
+    group suggester (decisions/H11 names the reads left out)."""
     return len(n) == 1 and "." in text and n.upper() != n
 
 
@@ -264,12 +266,22 @@ def _run_addresses_by_given(words: Iterable[str],
     The vocabulary is passed in rather than read off a default: a
     caller's own Lexicon is the one that has to be consulted, and this
     module is where Lexicon is defined."""
+    words = list(words)
     folded = _fold_words(words)
     if not folded:
         # every word folded away, so there is no key and no last word:
         # the joined spelling built "" here, which matched nothing
         return False
-    return " ".join(folded) in vocabulary or folded[-1] in vocabulary
+    last = folded[-1]
+    # rules/H11: "a one-letter word written with its period is an
+    # initial and not a title, where the letter has a capital" -- the
+    # last word a connective chained into the run ('Mr. and Q. Smith')
+    # addresses nothing; the length test first, so a run of longer
+    # words pays no frame
+    if len(last) == 1 and _spells_a_cased_initial(
+            last, next(w for w in reversed(words) if _normalize(w) == last)):
+        return " ".join(folded) in vocabulary
+    return " ".join(folded) in vocabulary or last in vocabulary
 
 
 def _reject_buffer(value: object, label: str, plural: str) -> None:

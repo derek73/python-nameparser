@@ -90,7 +90,7 @@ import functools
 import unicodedata
 from collections.abc import Callable, Sequence
 
-from nameparser._lexicon import FULL_STOPS, _normalize
+from nameparser._lexicon import FULL_STOPS, _normalize, _spells_a_cased_initial
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
@@ -556,10 +556,15 @@ def _all_titles(text: str, titles: frozenset[str]) -> bool:
     written apart, which the site walk passes over; a word holding a
     name ('ดร.สมชาย') is a site, never passed over."""
     n = _normalize(text)
+    # rules/H11: "a one-letter word written with its period is an
+    # initial and not a title, where the letter has a capital" -- and
+    # so is such a letter between the stops; the length test first
     if n in titles:
-        return True
+        return len(n) != 1 or not _spells_a_cased_initial(n, text)
     chunks = [c for c in n.split(".") if c]
-    return bool(chunks) and all(c in titles for c in chunks)
+    return bool(chunks) and all(
+        c in titles and (len(c) != 1 or not _spells_a_cased_initial(c, "."))
+        for c in chunks)
 
 
 # rules/W6: "a title the vocabulary marks to peel, glued to the start of
@@ -998,8 +1003,12 @@ def _a_name_before(texts: Sequence[str], state: ParseState) -> bool:
         if _normalize(before) in sets.conjunctions:
             return False
     last = _normalize(texts[-1])
-    if (last in sets.titles or last in sets.titles_ambiguous
-            or last in sets.title_modifiers or last in sets.title_styles):
+    # rules/H11: "a one-letter word written with its period is an
+    # initial and not a title, where the letter has a capital"
+    if ((last in sets.titles or last in sets.titles_ambiguous
+            or last in sets.title_modifiers or last in sets.title_styles)
+            and (len(last) != 1
+                 or not _spells_a_cased_initial(last, texts[-1]))):
         return False
     return (period_joined_vocab(texts[-1], state.lexicon) != "title"
             or bool(glued_cuts(texts[-1], state.lexicon)))
@@ -1024,7 +1033,10 @@ def _a_word_to_spare(texts: Sequence[str], state: ParseState) -> bool:
     St.Clair', 'Dr. A.Smith')."""
     sets = state.lexicon._sets
     lexicon = state.lexicon
-    return any(_normalize(before) not in sets.titles
+    # rules/H11: "a one-letter word written with its period is an
+    # initial and not a title, where the letter has a capital"
+    return any(((n := _normalize(before)) not in sets.titles
+                or len(n) == 1 and _spells_a_cased_initial(n, before))
                and (period_joined_vocab(before, lexicon) != "title"
                     or glued_cuts(before, lexicon))
                for before in texts)
