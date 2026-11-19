@@ -198,10 +198,11 @@
   "Hon CHAN Kin-por GBS JP"  capitals_as_family  →  family="GBS"
   ```
 - `capitalized()` leaves a name in mixed case as written, so the family keeps its capitals; `capitalized(force=True)` recases them, the family being named by its field by then (R5).
-- A bare `DR` in capitals at the head of a name is a capitals word, so it reads as the family (204 given boxes of the 2025-10 ORCID dump open with it, counted 2026-11-12); whether a title that is never a surname should stand is open (decisions/O9).
+- A title written in capitals with no full stop is a capitals word, so where no other word of the name is in capitals it reads as the family: such a name writes no family in capitals and is not in the convention the switch is for, a name that marks its family in capitals writing its title in mixed case about 650 times to 8 (counted 2026-11-19, decisions/O9). Where the family is in capitals too, the title keeps its place.
   ```
-  "DR Anna BERG"  capitals_as_family  →  family="BERG"
   "DR Anna Berg"  capitals_as_family  →  family="DR"
+  "DR Anna BERG"  capitals_as_family  →  title="DR"
+  "DR Anna BERG"  capitals_as_family  →  family="BERG"
   ```
 - A numeral is one the generation reading knows, II to X, so a longer one is a word of the run, and one standing before the family name is read with it.
   ```
