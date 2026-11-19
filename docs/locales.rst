@@ -301,7 +301,7 @@ says which parts each pack is made of.
    * - ``my``
      - Burmese
      - Chooses ``my``, which reads the honorifics ``U`` and ``Daw``
-       opening a name as titles, and keeps the syllables ``San``,
+       as titles wherever a title is read, and keeps the syllables ``San``,
        ``La``, ``Van`` and six more as name words where other
        languages read particles. See :ref:`burmese-names`.
      - ``Daw Aung San Suu Kyi`` → title ``Daw``, family ``Kyi``

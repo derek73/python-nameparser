@@ -1256,7 +1256,8 @@ The pack is for lists of Burmese names. On other names it costs:
 - **An initial U.** ``U`` is the honorific however it is written,
   wherever the parser reads a title, so an initial ``U.`` in such a
   place is the title (``Smith, U.`` and ``Dr. U. Smith`` give no given
-  name); only a bare ``U.`` between two name words stays an initial.
+  name); a ``U.`` among or ending the given names stays an initial
+  (``John U. Smith``, ``Smith, John U.``).
 
 Keep it to a parser of its own for the Burmese names in your data:
 
@@ -1274,5 +1275,6 @@ Measured on names that are not Burmese, the pack changes the reading of
 14% of the names of Brazilian election donors, and among researchers
 who filed their own given and family names in ORCID it lowers the
 share read right in both boxes from 94% to 83% in the Netherlands and
-from 95% to 89% in Belgium. A Korean name opening with the surname ``U`` written bare
-reads ``U`` as the title under the pack.
+from 95% to 89% in Belgium. A Korean name written with no comma and opening with the
+surname ``U`` reads ``U`` as the title under the pack (``U Minjun``),
+where ``U, Minjun`` keeps it as the family name.
