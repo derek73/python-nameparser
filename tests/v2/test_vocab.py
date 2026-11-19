@@ -296,10 +296,11 @@ def test_the_shipped_short_forms_of_muhammad() -> None:
 
 #: The credential `md` in the shapes a plain given reading moved (#1383's
 #: measurement, the committed corpora and ClinicalTrials.gov), each read
-#: as on master 3dadc263 save the glued `MD.NOOR` (below), which is
-#: left wrong as before (#1394), and `Md` opening the part after a family
-#: comma, which #1393 reads as the given name (the case table's `md_*`
-#: rows, rules/C13).
+#: as on master 3dadc263 save `Md` opening the part after a family
+#: comma, which #1393 reads as the given name, and `MD` before a name
+#: word in a name of one case (the glued `MD.NOOR` among them), which
+#: #1394 reads as one (the case table's `md_*` rows, rules/C13 and
+#: rules/S8).
 #: (Accepted, decisions/vocabulary-model 2026-11-13 #1383).
 _MD_KEEPS_ITS_CREDENTIAL = (
     ("BERGER, MD", {"family": "BERGER", "suffix": "MD"}),
@@ -316,9 +317,6 @@ _MD_KEEPS_ITS_CREDENTIAL = (
      {"given": "John", "family": "Smith", "suffix": "MD Jones"}),
     ("Dr. Pope MD", {"title": "Dr.", "family": "Pope", "suffix": "MD"}),
     ("Md Rahman, PhD", {"given": "Md", "family": "Rahman", "suffix": "PhD"}),
-    # left wrong as before, not moved by #1383 (#1394)
-    ("SITI AMINAH MD.NOOR",
-     {"given": "SITI", "family": "AMINAH", "suffix": "MD. NOOR"}),
 )
 
 
@@ -330,9 +328,10 @@ def test_md_written_short_leaves_its_credential_reading(
     # on 2026-11-13): with `md` put back among the ambiguous acronyms
     # (the plain given reading of #1383's shape (a)), 10 of the 11 rows
     # move, all but `Md Rahman, PhD`; so do the case table's `John Smith
-    # Md` and `Smith (MD), John`. The glued `MD.NOOR` is the one shape
-    # the change moves (its stop now divides the word, the suffix still
-    # holding both halves)
+    # Md` and `Smith (MD), John`. 9 of 10 on 2026-11-18, the glued
+    # `SITI AMINAH MD.NOOR` gone to the case table, which #1394 reads as
+    # a name word (`Lexicon.default().add("md", kind="given",
+    # same_as=None)` as the mutation)
     got = {k: v for k, v in parse(text).as_dict().items() if v}
     assert got == fields, text
 

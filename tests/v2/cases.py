@@ -9249,15 +9249,18 @@ CASES: tuple[Case, ...] = (
          notes="S8 (#1019): a joiner inside the word is a credential's "
                "writing whatever the case. 1.4.0 through 2.3.0 read "
                "middle 'Smith Pa-c', family 'Jones'"),
-    Case("one_case_credential_before_a_name_word_starts_the_run",
+    Case("one_case_given_name_written_short_before_a_name_word_stays_a_name",
          "BADRUL AKMAL HISHAM MD YUSOFF",
-         {"given": "BADRUL", "middle": "AKMAL", "family": "HISHAM",
-          "suffix": "MD YUSOFF"},
-         classification="fix(#602)",
+         {"given": "BADRUL", "middle": "AKMAL HISHAM MD",
+          "family": "YUSOFF"},
          ambiguities=("suffix-or-name",),
-         notes="S8 (#1019): a name written in one case carries no Title "
-               "case to read, so the run starts. 1.4.0 through 2.3.0 "
-               "read middle 'AKMAL HISHAM MD', family 'YUSOFF'"),
+         notes="S8 (#1394): in a name written in one case, Muhammad "
+               "written short reads before a name word as its Title case "
+               "does, reported, the credential the reading not taken; "
+               "#1019 had read the run here, the name carrying no "
+               "Title case, before #1383 gave md its given reading. 1.4.0 "
+               "through 2.3.0 read the same; 2.4.0 through 3.1 read "
+               "family 'HISHAM', suffix 'MD YUSOFF' (#602's run)"),
     Case("capitals_before_a_title_word_surname_stay_a_name",
          "Mary Jane MA Pope",
          {"given": "Mary", "middle": "Jane MA", "family": "Pope"},
@@ -16400,6 +16403,220 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="boundary: two words before the comma are a whole name, "
                "and C13's run stands, as for 'John Smith, PhD Jones'"),
+    # -- #1394: in a name written wholly in one case, a credential that
+    # is also a given name written short (md) with a name word behind
+    # it starts no credential's run (rules/S8), as its Title case does
+    # not; 3175314d read each fix row's MD and the rest of the name as
+    # the suffix, reported. Names invented, of the measured shape.
+    Case("md_in_capitals_before_a_name_word_is_a_name_word",
+         "SITI NORA MD YUSRI",
+         {"given": "SITI", "middle": "NORA MD", "family": "YUSRI"},
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): the father's name opening with Muhammad "
+               "written short, as 'Siti Nora Md Yusri' reads"),
+    Case("md_dotted_in_capitals_before_a_name_word_is_a_name_word",
+         "SITI NORA MD. YUSRI",
+         {"given": "SITI", "middle": "NORA MD.", "family": "YUSRI"},
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): its trailing period leaves it the given name "
+               "written short"),
+    Case("md_glued_in_capitals_before_a_name_word_is_a_name_word",
+         "SITI NORA MD.YUSRI",
+         {"given": "SITI", "middle": "NORA MD.", "family": "YUSRI"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1394)",
+         notes="S8 (#1394): divided at its full stop (T8), it reads as "
+               "the spaced form does. 1.4.0 read middle 'NORA', family "
+               "'MD.YUSRI'"),
+    Case("md_in_lower_case_before_a_name_word_is_a_name_word",
+         "siti nora md yusri",
+         {"given": "siti", "middle": "nora md", "family": "yusri"},
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): a name wholly in lower case is one case too, "
+               "and lower case is its name words' writing"),
+    Case("md_in_capitals_ending_the_name_under_family_first",
+         "YUSRI SITI NORA MD",
+         {"given": "SITI", "middle": "NORA", "family": "YUSRI",
+          "suffix": "MD"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="boundary: with no name word behind it, it ends the name "
+               "as the credential under every order"),
+    Case("md_in_capitals_before_a_name_word_is_placed_by_the_order",
+         "SITI NORA MD YUSRI",
+         {"given": "NORA", "middle": "MD YUSRI", "family": "SITI"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1394)",
+         notes="S8 (#1394): out of the run, the words are name words the "
+               "declared order places"),
+    Case("md_in_capitals_behind_bin_joins_the_family",
+         "AHMAD BIN MD RAHMAN",
+         {"given": "AHMAD", "family": "BIN MD RAHMAN"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1394)",
+         notes="S8 (#1394) through P2's chain stop: the chain takes it "
+               "as it takes 'Ahmad bin Md Rahman'. 1.4.0 read middle "
+               "'BIN MD', family 'RAHMAN'"),
+    Case("md_in_capitals_in_a_family_part_before_a_comma",
+         "BIN MD RAHMAN, AHMAD",
+         {"given": "AHMAD", "family": "BIN MD RAHMAN"},
+         classification="fix(#1394)",
+         notes="S8 (#1394) through assign's family-part pass behind a "
+               "particle, which borrows the decline (rules/P2). 1.4.0 "
+               "read family 'BIN RAHMAN', suffix 'MD'"),
+    Case("md_in_capitals_before_a_western_surname_reads_as_a_name",
+         "JOHN SMITH MD JONES",
+         {"given": "JOHN", "middle": "SMITH MD", "family": "JONES"},
+         ambiguities=("suffix-or-name",),
+         notes="Accepted (rules/S8): in one case the degree before a "
+               "surname cannot be told from Muhammad written short; "
+               "'John Smith MD Jones' and 'JOHN SMITH M.D. JONES' keep "
+               "the run"),
+    Case("md_in_capitals_before_a_name_word_under_family_first_given_last",
+         "SITI NORA MD YUSRI",
+         {"given": "YUSRI", "middle": "NORA MD", "family": "SITI"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): the order whose given name moves to the end"),
+    Case("md_in_capitals_before_a_name_word_and_a_suffix_comma",
+         "SITI NORA MD YUSRI, JR",
+         {"given": "SITI", "middle": "NORA MD", "family": "YUSRI",
+          "suffix": "JR"},
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): before a suffix comma the run's start asks "
+               "the same, as 'Badrul Hisham Md Yusoff, Jr.' does"),
+    Case("md_in_capitals_before_a_cyrillic_name_word_is_a_name_word",
+         "ИВАН ПЕТРОВ MD СИДОРОВ",
+         {"given": "ИВАН", "middle": "ПЕТРОВ MD", "family": "СИДОРОВ"},
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): the word behind is asked for a letter of a "
+               "script with case, not for a Latin one"),
+    Case("md_in_capitals_before_a_title_word_reads_it_as_the_family",
+         "JOHN SMITH MD PROF",
+         {"given": "JOHN", "middle": "SMITH MD", "family": "PROF"},
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name",),
+         notes="Accepted (rules/S8): a title behind it is a name word, as "
+               "behind a Title-case acronym ('John Smith Md Dr'); 3175314d "
+               "read title 'PROF', suffix 'MD'"),
+    Case("md_in_capitals_before_a_dotted_title_keeps_the_title",
+         "JOHN SMITH MD PROF.",
+         {"given": "JOHN", "family": "SMITH", "title": "PROF.",
+          "suffix": "MD"},
+         classification="fix(#316)",
+         notes="boundary: a period-marked title ending the name comes off "
+               "first (rules/H5), so nothing stands behind the MD"),
+    Case("md_in_capitals_before_a_shape_numeral_starts_the_run",
+         "JOHN SMITH MD VI JONES",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD VI JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="boundary: a numeral S10 reads as the generation, listed or "
+               "not, is the credential's company, no name word (#1394's "
+               "review: the first build read family 'MD')"),
+    Case("md_title_case_before_a_shape_numeral_starts_the_run",
+         "John Smith Md VI Jones",
+         {"given": "John", "family": "Smith", "suffix": "Md VI Jones"},
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8 (#1394's review): the same predicate for the Title-case "
+               "acronym; 3175314d read middle 'Smith', family 'Md', "
+               "suffix 'VI Jones'"),
+    Case("md_in_capitals_before_a_nickname_and_a_shape_numeral",
+         "JOHN SMITH MD (B) VI JONES",
+         {"given": "JOHN", "family": "SMITH", "nickname": "B",
+          "suffix": "MD VI JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="boundary: the numeral is weighed behind the credential, "
+               "not behind the nickname between them (#1394's second "
+               "review: the first fix read family 'MD')"),
+    Case("capitals_member_before_a_shape_numeral_starts_the_run",
+         "John Smith MA VI Jones",
+         {"given": "John", "family": "Smith", "suffix": "MA VI Jones"},
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8 (#1394's review): a numeral S10 reads as the "
+               "generation is no name word behind a settled member "
+               "either; 3175314d read family 'MA', suffix 'VI Jones'"),
+    Case("md_in_capitals_behind_a_particle_chain_still_reports",
+         "JOHN VAN MD MA DE",
+         {"given": "JOHN", "middle": "VAN MD MA", "family": "DE"},
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8 (#1394's second review): the decline's report survives "
+               "group's rebuilt read where the chain took a member the "
+               "read had picked; 3175314d read suffix 'MD MA DE'"),
+    Case("md_in_a_mixed_case_maiden_clause_keeps_the_run",
+         "JOHN SMITH née Ann Lee MD Jones",
+         {"given": "JOHN", "family": "SMITH", "maiden": "Ann Lee",
+          "suffix": "MD Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="boundary: the case asked of a word in a maiden clause is "
+               "the whole name's (rules/S6), which is mixed here, though "
+               "the name's own words are in one case (#1394's review)"),
+    Case("md_in_one_case_own_words_before_a_mixed_case_clause",
+         "JOHN SMITH MD JONES née Xyz",
+         {"given": "JOHN", "middle": "SMITH MD", "family": "JONES",
+          "maiden": "Xyz"},
+         classification="fix(#1394)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1394): a word of the name's own words asks their "
+               "case, so a clause appended changes nothing about it "
+               "(rules/P3's own words)"),
+    Case("md_title_case_in_a_mixed_case_maiden_clause_keeps_the_run",
+         "JOHN SMITH née Ann Lee Md jones",
+         {"given": "JOHN", "family": "SMITH", "maiden": "Ann Lee",
+          "suffix": "Md jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="boundary: a word in lower case behind a Title-case acronym "
+               "is no name word in a name of mixed case, the one-case "
+               "reading of lower case being asked only behind a given name "
+               "written short (#1394's review)"),
+    Case("md_in_capitals_ending_the_name_stays_the_credential",
+         "JOHN SMITH MD",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD"},
+         notes="boundary: no word behind it, so nothing declines it"),
+    Case("md_in_capitals_before_a_credential_stays_the_credential",
+         "JOHN SMITH MD PHD",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD PHD"},
+         notes="boundary: a credential behind it is no name word"),
+    Case("md_in_capitals_before_a_generation_stays_the_credential",
+         "JOHN SMITH MD JR",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD JR"},
+         notes="boundary: a suffix word behind it is no name word"),
+    Case("md_in_capitals_with_its_periods_starts_the_run",
+         "JOHN SMITH M.D. JONES",
+         {"given": "JOHN", "family": "SMITH", "suffix": "M.D. JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="boundary: written with its periods it is the degree's "
+               "writing, no given name written short"),
+    Case("md_in_capitals_after_the_given_word_after_a_comma_starts_the_run",
+         "SMITH, JOHN MD JONES",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="boundary: after a family comma the cue does not reach, "
+               "as 'Smith, John Md Jones' keeps the run"),
+    Case("md_in_capitals_before_a_maiden_marker_starts_the_run",
+         "JOHN SMITH MD NÉE JONES",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MD NÉE JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="boundary: a maiden marker behind it is no name word; "
+               "read as on 3175314d"),
+    Case("md_in_capitals_before_a_caseless_word_starts_the_run",
+         "محمد علي MD حسن",
+         {"given": "محمد", "family": "علي", "suffix": "MD حسن"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="boundary: a Latin MD in a name of a script with no case "
+               "shares no case with it, so its capitals stay the "
+               "credential's; read as on 3175314d"),
     Case("wm_dotted_trailing_is_a_name_word", "John Smith Wm.",
          {"given": "John", "middle": "Smith", "family": "Wm."},
          notes="H5 read a listed `wm` as a title here from 2.3.0 "

@@ -447,7 +447,7 @@ def _placed(read: TailRead, rest: list[int],
     # built, not `_replace`d: that is two frames on every read
     return names, tuple(titled), Peel(
         count, peel.numerals, peel.picks, peel.anchors, tuple(run_titles),
-        peel.absorbed)
+        peel.absorbed, peel.declined)
 
 
 def _assign_main(seg_idx: int, state: ParseState,
@@ -690,6 +690,18 @@ def _assign_main(seg_idx: int, state: ParseState,
         report = ambiguities[r]
         ambiguities[r] = copy_with(
             report, alternative=as_a_name(report.indices[0]))
+    # rules/S8: "nor, in a name written wholly in one case, does a
+    # credential that is also a given name written short" -- the run
+    # declined where nothing in the writing settles it, so the reading
+    # not taken is the credential's run (decisions/S8, #1394)
+    for i in peeled.declined:
+        if tokens[i].role in NAME_ROLES:
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{tokens[i].text!r} is a credential and a given name "
+                f"written short, in a name written in one case; read as ",
+                (i,), field_tail=" rather than the credential",
+                alternative=suffix_reading(tokens[i])))
     # after the trailing reports are given their name reading, which
     # the order report has none of
     if order_report is not None:
