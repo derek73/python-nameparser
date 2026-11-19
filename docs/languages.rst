@@ -538,13 +538,13 @@ Whether the switch helps also depends on who split the names. It
 gains most on names their bearers split themselves, as ORCID's are.
 It costs Brazilian inventors on US patents: their filers usually give
 one surname as the family name and put the rest of the name in the
-first-name box, and against that split, over every Brazilian inventor
-in the data, 75.7% read right by default or under ``pt`` and 60.2%
+first-name box, and against that split, over all 15,029 Brazilian
+records in the data, 75.7% read right by default or under ``pt`` and 60.2%
 under ``pt_br``, while Portuguese inventors gain under ``pt_pt``
 (57.6% → 66.1%). Most of the Brazilian names it breaks hold a second
 surname among the given names (``Eder Ferreira`` / ``Rangel``, read
-family ``Ferreira Rangel``). So choose ``pt_br`` or ``pt_pt`` for
-names whose family part is written whole, and keep ``pt`` for data
+family ``Ferreira Rangel``). So choose ``pt_br`` or ``pt_pt``, by
+country, for names whose family part is written whole, and keep ``pt`` for data
 filed with a single surname as the family name.
 Among the UK company register's filers the switch gains for
 Portuguese (59.2% → 62.8%) and Brazilian (53.7% → 62.9%) nationals.
