@@ -1686,15 +1686,17 @@ _NOT_A_NAME_BEHIND = frozenset({"vocab:suffix", SHAPE_ACRONYM_TAG,
 # credential that is also a given name written short" -- the clause
 # this implements (decisions/S8, #1394)
 def short_given_name_in_one_case(token: WorkToken, behind_at: int,
-                                 tokens: Sequence[WorkToken],
-                                 one_case: bool | None) -> bool:
+                                 tokens: Sequence[WorkToken]) -> bool:
     """Whether `token`, carrying classify's GIVEN_ABBREVIATION_TAG (a
     given name written short: 'MD', 'md', 'MD.'; the caller asks that it
     would start the run, so it is a credential too), stands in a name
     written wholly in one case, where its case is the name's and says
     nothing, with `tokens[behind_at]`, the first word of the piece
     behind it, holding a letter of a script with case (_policy._SCRIPT_PROPERTIES,
-    #1222) and being no maiden marker. The case asked is rules/S6's:
+    #1222) and being no maiden marker. The caller has asked, inline
+    ahead of the call so a credential that is no such word pays no
+    frame, that `token` carries the tag and that `one_case` holds. The
+    case asked is rules/S6's:
     `one_case`, the name's own words, for one of them, so appending a
     clause changes nothing about it; for a word of a maiden clause or
     of brackets, the WHOLE name's, which `one_case` does not cover, so a
@@ -1707,8 +1709,6 @@ def short_given_name_in_one_case(token: WorkToken, behind_at: int,
     spelling, not the case the words around it share. A maiden marker
     behind it opens a clause (M2), no name word. The rest of the
     name-word test is `_name_word_behind`'s, the caller's."""
-    if not one_case or GIVEN_ABBREVIATION_TAG not in token.tags:
-        return False
     behind = tokens[behind_at]
     cased = behind.text.translate(_CASELESS_LETTERS)
     if (cased.upper() == cased.lower()
@@ -1743,8 +1743,7 @@ def declined_by_the_name_behind(token: WorkToken, piece: Sequence[int],
     # credential that is also a given name written short" -- the tag
     # tested inline, so a credential that is no such word pays no frame
     short = (bool(one_case) and GIVEN_ABBREVIATION_TAG in token.tags
-             and short_given_name_in_one_case(token, piece[0],
-                                              tokens, one_case))
+             and short_given_name_in_one_case(token, piece[0], tokens))
     return ((short
              or AMBIGUOUS_ACRONYM_TAG in token.tags
              and settled_by_case(token, one_case)
@@ -1773,8 +1772,7 @@ def _declined_here(token: WorkToken, i: int, piece: Sequence[int],
         return False
     if (declined is not None and one_case
             and GIVEN_ABBREVIATION_TAG in token.tags
-            and short_given_name_in_one_case(token, piece[0],
-                                             tokens, one_case)):
+            and short_given_name_in_one_case(token, piece[0], tokens)):
         declined.append(i)
     return True
 
