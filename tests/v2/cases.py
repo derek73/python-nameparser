@@ -1039,6 +1039,57 @@ CASES: tuple[Case, ...] = (
          notes="the mid-name cost that keeps ten off by default "
                "(rules/P2's Accepted); 1.4.0 through 3.1.0 read middle "
                "'Ten'"),
+    # #1231: the Burmese pack. Burmese names have no family name, so the
+    # last word lands in family by position. Each row's notes checked
+    # against the 1.4.0, 2.0.0, 2.4.0, 2.8.2 and 3.1.0 wheels on
+    # 2026-11-19; on master, where no `my` pack exists, every row fails
+    Case("the_burmese_pack_reads_u_as_the_title",
+         "U Thein Sein",
+         {"title": "U", "given": "Thein", "family": "Sein"},
+         locale="my", classification="feat(#1231)",
+         notes="1.4.0 through 3.1.0 read given 'U', middle 'Thein'"),
+    Case("the_burmese_pack_reads_daw_as_the_title_and_san_as_a_name_word",
+         "Daw Aung San Suu Kyi",
+         {"title": "Daw", "given": "Aung", "middle": "San Suu", "family": "Kyi"},
+         locale="my", classification="feat(#1231)",
+         notes="1.4.0 through 3.1.0 read given 'Daw', family 'San Suu Kyi'"),
+    Case("the_burmese_pack_reads_the_honorific_after_a_family_comma",
+         "Sein, U Thein",
+         {"title": "U", "given": "Thein", "family": "Sein"},
+         locale="my", classification="feat(#1231)",
+         notes="1.4.0 through 3.1.0 read given 'U', middle 'Thein'"),
+    Case("the_burmese_pack_reads_a_title_and_one_name_word_as_h1_does",
+         "U Thant",
+         {"title": "U", "family": "Thant"},
+         locale="my", classification="feat(#1231)",
+         notes="a title and one name word, the word the family (rules/H1); "
+               "1.4.0 through 3.1.0 read given 'U', family 'Thant'"),
+    Case("the_burmese_pack_keeps_a_chin_van_a_name_word",
+         "Henry Van Thio",
+         {"given": "Henry", "middle": "Van", "family": "Thio"},
+         locale="my", classification="feat(#1231)",
+         notes="the fragment takes out van's particle reading; 1.4.0 through "
+               "3.1.0 read family 'Van Thio'"),
+    Case("the_burmese_pack_keeps_san_a_name_word_after_a_family_comma",
+         "AUNG, Saw San",
+         {"given": "Saw", "middle": "San", "family": "AUNG"},
+         locale="my", classification="parity",
+         notes="rules/P6's trailing attachment has no particle to attach; "
+               "1.4.0 and 2.0.0 read the same fields, 2.4.0 through 3.1.0 "
+               "family 'San AUNG'"),
+    Case("the_burmese_pack_keeps_u_with_its_full_stop_an_initial",
+         "U. S. Grant",
+         {"given": "U.", "middle": "S.", "family": "Grant"},
+         locale="my", classification="parity",
+         notes="a one-letter cased word written with its period (rules/H11) "
+               "is an initial, never a title; the issue's simulated lexicon "
+               "read title 'U.' on master; 1.4.0 reads the same fields"),
+    Case("the_burmese_pack_costs_a_dutch_particle",
+         "Jan van Dijk",
+         {"given": "Jan", "middle": "van", "family": "Dijk"},
+         locale="my", classification="feat(#1231)",
+         notes="the cost of applying the pack to names that are not Burmese "
+               "(docs/languages.rst); the default reads family 'van Dijk'"),
     # #1257: the Maghrebi and Hebrew particles, each row checked against
     # the 1.4.0 wheel and master 161ebd28 on 2026-11-12
     Case("an_amazigh_ait_starts_the_family_name",

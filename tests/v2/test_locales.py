@@ -118,10 +118,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
-        "ne", "nl", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "my", "ne", "nl", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ne, nl, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, my, ne, nl, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -686,6 +686,129 @@ def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> No
     # a family comma fixes the family name, so it reads alike
     for text in ("Nguyen, Van Anh", "Smith, John"):
         assert vi.parse(text).as_dict() == _default_parse(text)
+
+
+def test_my_pack_contents() -> None:
+    # a choice of my, which turns on the honorifics, and a fragment that
+    # only removes particle readings (decisions/vocabulary-collisions,
+    # the 2026-11-19 #1231 entry); no policy patch
+    import pickle
+    from nameparser.locales import my as _my
+    assert locales.MY.languages == {"my"}
+    assert locales.MY.policy == PolicyPatch()
+    assert _ri.changed_words(_ri.selected(locales.MY.languages)) == {"u", "daw"}
+    sets = _require_packed("my").lexicon._sets
+    assert not set(_my._PARTICLES) & sets.particles
+    # the particles it leaves, and every other kind of the words it names
+    assert {"de", "von", "del", "bin", "mac"} <= sets.particles
+    assert "do" in sets.suffix_acronyms
+    assert {"u", "daw"} <= sets.titles
+    assert not {"u", "daw"} & Lexicon.default()._sets.titles
+    assert pickle.loads(pickle.dumps(locales.MY)) == locales.MY
+    parser = pickle.loads(pickle.dumps(parser_for(locales.MY)))
+    assert parser.parse("U Thein Sein").title == "U"
+    assert _my.DEVIATES("Aung San Win") and _my.DEVIATES("SAN-MARTIN")
+    assert not _my.DEVIATES("Sandra Lee") and not _my.DEVIATES("Thein Sein")
+
+
+#: Each particle the MY fragment removes, with a name its removal alone
+#: moves: the syllable between two name words, which its reading would
+#: chain into the family name
+_MY_REMOVALS = [
+    ("san", "Aung San Win"), ("la", "Akyaung La Aung"),
+    ("le", "Saw Eh Le Htoo"), ("do", "Htan Do Kyint"),
+    ("da", "Thi Da Oo"), ("du", "Swam Du Naw Aung"),
+    ("te", "Kyauk Te Chan"), ("di", "Aung Di Win"),
+    ("van", "Henry Van Thio"),
+]
+
+
+def test_each_my_removal_moves_its_own_row() -> None:
+    # the negative control for the fragment, as VI's: with one removal
+    # put back, the row that witnesses it reads otherwise
+    from nameparser.locales import my as _my
+    assert sorted(w for w, _ in _MY_REMOVALS) == sorted(_my._PARTICLES)
+    my = _require_packed("my")
+
+    def put_back(word: str | None) -> Parser:
+        lexicon = Lexicon.empty().remove(
+            *[w for w in _my._PARTICLES if w != word], kind="particle")
+        return parser_for(dataclasses.replace(locales.MY, lexicon=lexicon))
+
+    rebuilt = put_back(None)
+    for word, text in _MY_REMOVALS:
+        assert rebuilt.parse(text).as_dict() == my.parse(text).as_dict(), text
+        assert put_back(word).parse(text).as_dict() != my.parse(text).as_dict(), (
+            word, text)
+        assert len(my.parse(text).family.split()) == 1, text
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text, title, rest", [
+    # #1231: the honorific opening the name, in each comma shape and case,
+    # behind a listed title and before one; `rest` is the name's other
+    # words, which the order lays out
+    ("U Thein Sein", "U", ("Thein", "Sein")),
+    ("Daw Khin Mya", "Daw", ("Khin", "Mya")),
+    ("DAW KHIN MYA", "DAW", ("KHIN", "MYA")),
+    ("u thein sein", "u", ("thein", "sein")),
+    ("Dr. U Thein Sein", "Dr. U", ("Thein", "Sein")),
+    ("U Dr. Thein Sein", "U Dr.", ("Thein", "Sein")),
+    ("U Thein Sein, Jr.", "U", ("Thein", "Sein")),
+])
+def test_my_reads_the_honorific_opening_a_name_as_the_title(
+        text: str, title: str, rest: tuple[str, ...],
+        order: tuple[Role, Role, Role]) -> None:
+    my = parser_for(locales.MY, base=Parser(policy=Policy(name_order=order)))
+    name = my.parse(text)
+    assert name.title == title
+    assert sorted(w for w in (name.given, name.middle, name.family) if w) == sorted(rest)
+    assert not name.ambiguities
+
+
+@pytest.mark.parametrize("text, title, given, family", [
+    # after a family comma, with nothing before the comma, and past the
+    # second comma (rules/C2); a title and one name word (rules/H1)
+    ("Sein, U Thein", "U", "Thein", "Sein"),
+    ("Sein, Daw Thein", "Daw", "Thein", "Sein"),
+    (", U Thein", "U", "", "Thein"),
+    ("Sein, Thein, U", "U", "Thein", "Sein"),
+    ("U Thant", "U", "", "Thant"),
+    ("Thant, U", "U", "", "Thant"),
+])
+def test_my_reads_the_honorific_in_every_comma_shape(
+        text: str, title: str, given: str, family: str) -> None:
+    name = _require_packed("my").parse(text)
+    assert (name.title, name.given, name.family) == (title, given, family)
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text", [
+    # U written with its full stop is an initial under the pack (rules/H11),
+    # in every comma shape, joined to the next initial or the
+    # next name at its full stop, and in a name of one case
+    "U. S. Grant", "U.S. Grant", "Grant, U. S.", "Grant, U.S.", "U. Grant",
+    "John U. Smith", "Smith, John U.", "Smith, U.", ", U. Smith",
+    "U.Thein Sein", "U. Thein Sein", "U. S. GRANT", "u. s. grant",
+    "U.S. District Judge Jane Roe", "Dr. U. Smith",
+])
+def test_my_keeps_u_written_with_its_full_stop_an_initial(
+        text: str, order: tuple[Role, Role, Role]) -> None:
+    base = Parser(policy=Policy(name_order=order))
+    packed = parser_for(locales.MY, base=base).parse(text)
+    assert packed.as_dict() == base.parse(text).as_dict()
+    assert "U." not in packed.title.upper().split()
+
+
+def test_my_differs_from_the_default_only_through_its_words() -> None:
+    # the honorifics and syllables move a name; a Burmese name holding
+    # none of them reads as the default reads it, its last word the family
+    my = _require_packed("my")
+    for text in ("Thein Sein", "Min Aung Hlaing", "Maung Maung Kyaw",
+                 "Ko Ko Lwin", "Saw Ba Hline", "Sai Lone Hsai"):
+        assert my.parse(text).as_dict() == _default_parse(text), text
+    for text in ("U Thein Sein", "Daw Aung San Suu Kyi", "Aung San Win"):
+        assert my.parse(text).as_dict() != _default_parse(text), text
 
 
 def test_mn_pack_contents() -> None:
@@ -2011,6 +2134,26 @@ _ROTATORS["nl"] = [
     "Brink, Jan ten",                # ten ending the given part
     "John Smith VD",                 # vd, the credential leaving
     "John Smith, VD",                # vd after a comma
+]
+# my (#1231): each honorific at the head, in each case and after a
+# family comma; each syllable the fragment takes out, between two name
+# words, as a word of its own after a comma and in one case
+_ROTATORS["my"] = [
+    "U Thein Sein",                  # u
+    "Daw Khin Mya",                  # daw
+    "DAW KHIN MYA",                  # daw, in one case
+    "Sein, U Thein",                 # u after a family comma
+    "Aung San Win",                  # san
+    "Akyaung La Aung",               # la
+    "Saw Eh Le Htoo",                # le
+    "Htan Do Kyint",                 # do
+    "Thi Da Oo",                     # da
+    "Swam Du Naw Aung",              # du
+    "Kyauk Te Chan",                 # te
+    "Aung Di Win",                   # di
+    "Henry Van Thio",                # van
+    "AUNG, Saw San",                 # san ending the given part
+    "AUNG SAN WIN",                  # san, in one case
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted

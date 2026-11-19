@@ -156,6 +156,19 @@ def _spells_an_initial(n: str, text: str) -> bool:
     return len(n) == 1 and text[-1] == "."
 
 
+# rules/H11: "a one-letter word written with its period is an initial
+# and not a title, where the letter has a capital"
+def _spells_a_cased_initial(n: str, text: str) -> bool:
+    """`_spells_an_initial`, narrowed to a letter that has a capital
+    ('U.', 'h.'): such a word is an initial whatever title the letter
+    also spells (#1231). A letter of a script without case ('ড.', the
+    Bengali doctor) keeps its title reading, the full stop being how
+    that title is written. `n` is `_normalize(text)`, folded once by
+    the caller, and lower case, so a letter with a capital is one that
+    upper-cases to something else."""
+    return _spells_an_initial(n, text) and n.upper() != n
+
+
 def _fold_words(words: Iterable[str]) -> list[str]:
     """The words of a title run, folded for storage and lookup.
 

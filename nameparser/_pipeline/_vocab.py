@@ -1684,6 +1684,17 @@ def period_member(word: str, lexicon: Lexicon) -> bool:
             and _holds_a_member(bare, lexicon))
 
 
+# rules/H11: "single letter with a capital between full stops inside a
+# word is an initial too" -- 'U.S.' and 'U.Thein' are cut at their full
+# stops, and a one-letter chunk is an initial there, never the title the
+# letter spells (#1231)
+def _title_chunk(chunk: str, lexicon: Lexicon) -> bool:
+    """Whether CHUNK, one folded piece of a word cut at its periods, is
+    title vocabulary, a single letter with a capital excepted."""
+    return chunk in lexicon._sets.titles and not (
+        len(chunk) == 1 and chunk.upper() != chunk)
+
+
 # rules/H5: "a word with interior periods every one of whose chunks is
 # a title chains without a final period" -- 'Lt.Gov', where the
 # periods join nothing but titles (decisions/H5, #1131)
@@ -1693,7 +1704,7 @@ def period_joined_title(text: str, lexicon: Lexicon) -> bool:
     'Dr.PhD' or 'St.John')."""
     chunks = [_normalize(c) for c in text.split(".") if c]
     return len(chunks) >= 2 and all(
-        c in lexicon._sets.titles for c in chunks)
+        _title_chunk(c, lexicon) for c in chunks)
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
@@ -1903,7 +1914,7 @@ def period_joined_vocab(
     if glued_saint_cut(text, lexicon) is not None:
         return None
     chunks = [_normalize(c) for c in text.split(".") if c]
-    if any(c in lexicon._sets.titles for c in chunks):
+    if any(_title_chunk(c, lexicon) for c in chunks):
         return "title"
     if period_joined_credential(text, lexicon):
         return "suffix"

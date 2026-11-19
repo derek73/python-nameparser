@@ -1387,6 +1387,7 @@
 {"name": "Grandmaison, Louis de", "given": "Louis", "family": "de Grandmaison", "initials": "L. G."}
 {"name": "Granger Hermione", "order": "FAMILY_FIRST", "given": "Hermione", "family": "Granger", "initials": "H. G."}
 {"name": "Granger, Hermione", "given": "Hermione", "family": "Granger", "initials": "H. G."}
+{"name": "Grant, U.S.", "given": "U.", "middle": "S.", "family": "Grant", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "U. S. G."}
 {"name": "Gregorio Chillón de la Fuente", "given": "Gregorio", "middle": "Chillón", "family": "de la Fuente", "initials": "G. C. F."}
 {"name": "Gregorio Modrego Casaus", "given": "Gregorio", "middle": "Modrego", "family": "Casaus", "initials": "G. M. C."}
 {"name": "Grettir Björnsson", "given": "Grettir", "family": "Björnsson", "initials": "G. B."}
@@ -2411,6 +2412,7 @@
 {"name": "John Smith-Jones", "given": "John", "family": "Smith-Jones", "initials": "J. S."}
 {"name": "John Smith-Jones, MD-PhD", "given": "John", "family": "Smith-Jones", "suffix": "MD-PhD", "initials": "J. S."}
 {"name": "John Smith， Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
+{"name": "John U. Smith", "given": "John", "middle": "U.", "family": "Smith", "initials": "J. U. S."}
 {"name": "John V", "given": "John", "family": "V", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. V."}
 {"name": "John V, Dr.", "title": "Dr.", "given": "John", "family": "V", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. V."}
 {"name": "John V. Smith", "given": "John", "middle": "V.", "family": "Smith", "initials": "J. V. S."}
@@ -4182,6 +4184,7 @@
 {"name": "Smith, Sgt Major", "title": "Sgt Major", "family": "Smith", "initials": "S."}
 {"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S.", "generation": "Sr."}
+{"name": "Smith, U.", "given": "U.", "family": "Smith", "initials": "U. S."}
 {"name": "Smith, U.S. Senator John", "title": "U.S. Senator", "given": "John", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S."}
 {"name": "Smith, V; MD", "given": "V;", "family": "Smith", "suffix": "MD", "initials": "V. S."}
 {"name": "Smith, Van V", "given": "Van", "family": "Smith", "suffix": "V", "initials": "V. S.", "generation": "V"}
@@ -4368,6 +4371,9 @@
 {"name": "Tschurtschenthaler, Anton von", "given": "Anton", "family": "von Tschurtschenthaler", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. T."}
 {"name": "Tunde Seun Okeke", "given": "Tunde", "middle": "Seun", "family": "Okeke", "initials": "T. S. O."}
 {"name": "U Kyaw Win", "given": "U", "middle": "Kyaw", "family": "Win", "initials": "U. K. W."}
+{"name": "U Min Ho", "given": "U", "middle": "Min", "family": "Ho", "initials": "U. M. H."}
+{"name": "U Thant", "given": "U", "family": "Thant", "initials": "U. T."}
+{"name": "U Thein Sein", "given": "U", "middle": "Thein", "family": "Sein", "initials": "U. T. S."}
 {"name": "U. S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
 {"name": "U.S. District Judge Marc Thomas Treadwell", "title": "U.S. District Judge", "given": "Marc", "middle": "Thomas", "family": "Treadwell", "initials": "M. T. T."}
 {"name": "U.S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
@@ -4378,6 +4384,7 @@
 {"name": "U.S. Senator Smith, Ed", "title": "U.S. Senator", "given": "Ed", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. S."}
 {"name": "U.S. Senator Smith, John", "title": "U.S. Senator", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "U.S. and U.K. Ambassador Jane Doe", "given": "U.S. and U.K.", "middle": "Ambassador Jane", "family": "Doe", "initials": "U. S. U. K. A. J. D."}
+{"name": "U.Thein Sein", "given": "U.", "middle": "Thein", "family": "Sein", "initials": "U. T. S."}
 {"name": "UNILEVER LTD", "given": "UNILEVER", "family": "LTD", "initials": "U. L.", "capitalized": "Unilever Ltd"}
 {"name": "URSULA VON DER LEYEN", "given": "URSULA", "family": "VON DER LEYEN", "initials": "U. L.", "capitalized": "Ursula von der Leyen"}
 {"name": "US Magistrate Judge T Michael Putnam", "title": "US Magistrate Judge", "given": "T", "middle": "Michael", "family": "Putnam", "initials": "T. M. P.", "capitalized_force": "Us Magistrate Judge T Michael Putnam"}
@@ -6522,6 +6529,7 @@
 {"name": "জুহি চাওলা", "given": "জুহি", "family": "চাওলা", "initials": "জ. চ."}
 {"name": "জেনদায়া", "given": "জেনদায়া", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "জ."}
 {"name": "জেনদায়া", "order": "FAMILY_FIRST", "given": "জেনদায়া", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "জ."}
+{"name": "ড. রহিম উদ্দিন", "title": "ড.", "given": "রহিম", "family": "উদ্দিন", "initials": "র. উ."}
 {"name": "দেবী শর্মা", "given": "দেবী", "family": "শর্মা", "initials": "দ. শ."}
 {"name": "নগেন বৰা", "given": "নগেন", "family": "বৰা", "initials": "ন. ব."}
 {"name": "নমিতা বৰুৱা", "given": "নমিতা", "family": "বৰুৱা", "initials": "ন. ব."}

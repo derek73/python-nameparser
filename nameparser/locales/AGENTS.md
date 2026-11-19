@@ -69,5 +69,5 @@ The shipped packs are the rows of `_REGISTRY` in `nameparser/locales/__init__.py
 | Nothing but a choice of languages | `nameparser/locales/hi.py` |
 | A choice of languages beside a `[rules]` table | `nameparser/locales/cs.py` |
 | A choice that changes no word, beside a patch | `nameparser/locales/mn.py` |
-| A fragment that takes readings out | `nameparser/locales/vi.py` |
+| A fragment that takes readings out | `nameparser/locales/vi.py` (`nameparser/locales/my.py` beside a choice alone) |
 | A country pack reading its language's `[rules]` table | `nameparser/locales/es_ar.py` |

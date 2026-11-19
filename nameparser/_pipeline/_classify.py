@@ -97,7 +97,7 @@ from __future__ import annotations
 
 import unicodedata
 
-from nameparser._lexicon import _normalize, _spells_an_initial
+from nameparser._lexicon import _normalize, _spells_a_cased_initial, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_STRIP, CREDENTIAL_WORD_TAG,
@@ -173,7 +173,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     tags = set(token.tags)
     if marker_tag is not None:
         tags.add(marker_tag)
-    if n in lex._sets.titles:
+    # rules/H11: "a one-letter word written with its period is an
+    # initial and not a title, where the letter has a capital" -- the
+    # set and length tests first, at C level, so only a one-letter
+    # title pays the frame
+    if n in lex._sets.titles and not (
+            len(n) == 1 and _spells_a_cased_initial(n, token.text)):
         tags.add("vocab:title")
         # rules/H5: "a title the vocabulary lists whole with a period
         # inside it chains without a final one" -- marked here, where

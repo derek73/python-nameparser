@@ -865,3 +865,52 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
     monkeypatch.setattr(_vocab, "_spells_an_initial",
                         lambda n, text: False)
     assert _surname_unit_disagreements() == ["Ó.", "ó.", "ณ."]
+
+
+#: A caller's one-letter title in a cased script (rules/H11), each name
+#: with the reading the title gives written bare, the initial written
+#: with its period, and the letter cut from a word at its full stops
+_ONE_LETTER_TITLE = Parser(lexicon=Lexicon.default().add("q", kind="salutation")
+                           .add("ü", kind="salutation"))
+
+
+@pytest.mark.parametrize("text, title, given", [
+    ("Q Smith", "Q", ""),
+    ("Ü Smith", "Ü", ""),
+    ("Q. Smith", "", "Q."),
+    ("q. smith", "", "q."),
+    ("Ü. Smith", "", "Ü."),
+    ("Q. R. Smith", "", "Q."),
+    ("Q.R. Smith", "", "Q."),
+    ("Smith, Q.R.", "", "Q."),
+    ("Q.John Smith", "", "Q."),
+    ("Smith, Q.", "", "Q."),
+    ("Smith, Q", "Q", ""),
+])
+def test_a_one_letter_title_written_with_its_period_is_an_initial(
+        text: str, title: str, given: str) -> None:
+    # #1231: the period, not the letter, decides, for any lexicon
+    name = _ONE_LETTER_TITLE.parse(text)
+    assert (name.title, name.given) == (title, given)
+
+
+def test_the_one_letter_title_veto_needs_a_letter_with_a_capital() -> None:
+    # the Bengali doctor is written with its full stop: no capital, no veto
+    assert Parser().parse("ড. রহিম উদ্দিন").title == "ড."
+    from nameparser._pipeline import _classify
+    assert _classify._spells_a_cased_initial("q", "Q.")
+    assert not _classify._spells_a_cased_initial("ড", "ড.")
+
+
+def test_the_one_letter_title_veto_is_what_keeps_the_initial(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # negative controls for both sites, classify's tag and the period-
+    # joined derivation's chunk test: with either veto off, the dotted
+    # letter is the title, so the rows above read the veto
+    from nameparser._pipeline import _classify
+    monkeypatch.setattr(_classify, "_spells_a_cased_initial", lambda n, text: False)
+    assert _ONE_LETTER_TITLE.parse("Q. Smith").title == "Q."
+    monkeypatch.undo()
+    monkeypatch.setattr(_vocab, "_title_chunk",
+                        lambda c, lexicon: c in lexicon._sets.titles)
+    assert _ONE_LETTER_TITLE.parse("Smith, Q.R.").title == "Q.R."
