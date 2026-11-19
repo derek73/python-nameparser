@@ -2164,9 +2164,9 @@ Malaysian a/l, a/p and anak
 ``a/l`` (son of), ``a/p`` (daughter of) and ``anak`` (child of) start
 the family name, the father's name, as ``bin`` does, where 1.4 through
 3.1 left them in the middle name and cut a father's name of two words;
-the ``patronymic`` view holds the same words. ``anak`` opening a name,
-as Balinese ``Anak Agung`` does, is left to position, the given name by
-default, and reports the fork. Case repair writes the particles in lower
+the ``patronymic`` view holds the same words. ``anak`` opening a name
+written without a comma, as Balinese ``Anak Agung`` does, is left to
+position, the given name by default, and reports the fork. Case repair writes the particles in lower
 case, as it writes ``bin``:
 
 .. doctest::

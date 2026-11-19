@@ -9093,21 +9093,22 @@ CASES: tuple[Case, ...] = (
                "patronymic one, so at the head it is left to position as "
                "binti is, and the fork is reported"),
     Case("anak_ending_the_name_stays_the_family",
-         "Jesse Kofi Anak",
-         {"given": "Jesse", "middle": "Kofi", "family": "Anak"},
+         "Kwame Mensah Anak",
+         {"given": "Kwame", "middle": "Mensah", "family": "Anak"},
          classification="parity",
          notes="#1468's boundary: under the default order a particle "
                "ending its field is a family name word"),
     Case("anak_ending_the_name_family_first_opens_the_family_as_binti_does",
-         "Jesse Kofi Anak",
-         {"given": "Kofi", "family": "Anak Jesse"},
+         "Kwame Mensah Anak",
+         {"given": "Mensah", "family": "Anak Kwame"},
          policy=Policy(name_order=FAMILY_FIRST),
          classification="fix(#1468)",
          ambiguities=("particle-or-given",),
-         notes="accepted: a trailing particle under a family-first order "
-               "opens the family before the first word, as 'Binti' does "
-               "there. 3.1 read given 'Kofi', middle 'Anak', family "
-               "'Jesse'"),
+         notes="accepted: a trailing particle under FAMILY_FIRST opens the "
+               "family before the first word, as 'Binti' does there "
+               "(FAMILY_FIRST_GIVEN_LAST reads it as the given name, as "
+               "it reads 'Binti'). 3.1 read given 'Mensah', middle "
+               "'Anak', family 'Kwame'"),
     Case("a_slashed_son_of_opening_the_name_folds_it_into_the_family",
          "A/L Rajan",
          {"family": "A/L Rajan"},

@@ -495,7 +495,7 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # declares a policy: the decline's report on each moved row, and
     # its boundary rows' run reports; 2187 -> 2191 on 2026-11-19,
     # #1468's 'Anak Agung Made Putra' reporting particle-or-given under
-    # three orders and 'Jesse Kofi Anak' under FAMILY_FIRST; 2191 -> 2192
+    # three orders and 'Kwame Mensah Anak' under FAMILY_FIRST; 2191 -> 2192
     # the same day, its review's FAMILY_FIRST row of that name, once under
     # its declared policy.
     assert claims == 2192, (
@@ -977,7 +977,7 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 477 -> 494 and 598 -> 603 the same day, #1394's rows under the
     # three orders, the declines' reports and the boundary rows' run
     # reports, three of them stand-in rereads; 603 -> 604 on 2026-11-19,
-    # #1468's 'Jesse Kofi Anak' under FAMILY_FIRST, a `name` stand-in;
+    # #1468's 'Kwame Mensah Anak' under FAMILY_FIRST, a `name` stand-in;
     # the 'Anak Agung Made Putra' reports name a patronymic alternative,
     # which has no stand-in; 604 -> 605 the same day, its review's
     # FAMILY_FIRST row of that name

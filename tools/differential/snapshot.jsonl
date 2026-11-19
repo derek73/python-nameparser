@@ -305,6 +305,7 @@
 {"name": "Ana abdul Rahman López", "given": "Ana", "middle": "abdul Rahman", "family": "López", "initials": "A. a. R. L.", "capitalized_force": "Ana Abdul Rahman López"}
 {"name": "Ana de María Pérez", "given": "Ana", "middle": "de María", "family": "Pérez", "initials": "A. M. P."}
 {"name": "Ana de Miguel de la Vega", "given": "Ana", "middle": "de Miguel", "family": "de la Vega", "initials": "A. M. V."}
+{"name": "Anak Agung Ayu, Sari", "given": "Sari", "family": "Anak Agung Ayu", "initials": "S. A. A.", "capitalized_force": "Sari anak Agung Ayu", "patronymic": "Anak Agung Ayu"}
 {"name": "Anak Agung Made Putra", "given": "Anak", "middle": "Agung Made", "family": "Putra", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "A. A. M. P."}
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -3644,6 +3645,7 @@
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M.", "capitalized_force": "Prof. Ɖr. Mɖ Fan Ɖam Ɖomiŋgo Fostɛɛŋ Samʊwɛl"}
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
 {"name": "Puig i V, Joan", "given": "Joan", "family": "Puig i V", "initials": "J. P. V."}
+{"name": "Putra, Anak Agung Made", "given": "Anak", "middle": "Agung Made", "family": "Putra", "initials": "A. A. M. P."}
 {"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. P."}
 {"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
