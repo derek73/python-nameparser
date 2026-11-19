@@ -1130,7 +1130,7 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--committed", action="store_true", help="the committed corpus*.jsonl")
     d.add_argument("--local", action="append", metavar="SOURCE", help="a local corpus, or all")
     d.add_argument("--group", action="append", default=[], help="a grouped corpus's country, "
-                   "nationality or dataset, as the corpus writes it (repeatable; needs --local)")
+                   "nationality, dataset or ethnicity, as the corpus writes it (repeatable; needs --local)")
     d.add_argument("--match", help="keep the names this regular expression finds")
     d.add_argument("--sample", type=int, help="one name in N, by a hash of the name")
     d.add_argument("--spelling", type=_spellings, help="rewrite every name before it is "

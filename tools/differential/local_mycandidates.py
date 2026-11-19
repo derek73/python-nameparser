@@ -8,7 +8,7 @@ from Thevesh Theva's analysis-election-msia repository on GitHub
 file's sha256. A row is one candidacy: on 2026-11-19 the five files held
 480, 579, 687, 945 and 570 rows. The names are written in capitals, as
 the Election Commission gazettes them, save one candidate's, written in
-mixed case in each of GE12 to GE14 (`Xxx Yyy ZZZ`, family last in
+mixed case in each of GE12 to GE14 (`Xxx Yyy ZZZ`, its last word in
 capitals).
 
 Which column holds that writing differs by file, and is read so
