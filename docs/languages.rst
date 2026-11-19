@@ -1301,8 +1301,9 @@ Choose the pack strictly, ``parser_for(locales.MY, strict=True)``
 (:ref:`strict-choice`). Many Burmese syllables are spelled like
 another language's word: ``San``, ``La`` and the Chin ``Van`` like
 Spanish, Italian or Dutch particles, which take every word after them
-into the family name, and ``Pe``, ``Lat``, ``Ei``, ``Si``, ``Pa`` and
-``Ra`` like English credentials, which end a name written in capitals.
+into the family name, and ``Pe``, ``Lat``, ``Ei``, ``Si`` and ``Pa``
+like English credentials, which end a name written in capitals, and
+``Ra`` like one that ends a name in any case.
 A strict choice reads no other language's words, so each is a name
 word:
 
@@ -1354,8 +1355,8 @@ as the title and the last word as the family
      - 98.1%
      - 97.8%
    * - ``parser_for(locales.MY, strict=True)``
-     - 100.0% (2,989)
-     - 100.0% (2,989)
+     - 2,989 of 2,990
+     - 2,989 of 2,990
 
 What a strict choice costs other names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1366,8 +1367,8 @@ every name, so keep it to a list that is wholly Burmese:
 - **Particles, credentials and titles of other languages** are name
   words. ``Jan van Dijk`` gives middle ``van``, and a credential after
   a comma can become the given name (``Jane Doe, PA`` gives given
-  ``PA``, family ``Jane Doe``). The shared credentials, ``Dr``,
-  ``PhD`` and ``MBBS`` among them, are kept.
+  ``PA``, family ``Jane Doe``). The words every language
+  shares are kept, ``Dr``, ``PhD``, ``MD`` and ``MSc`` among them.
 - **A rank that is also a given name** is the rank: ``Gen``, ``Maj``,
   ``Brig`` and ``Major`` opening a name are titles (``Gen Goto`` gives
   title ``Gen``), where by default they are the given name unless a
@@ -1383,9 +1384,9 @@ every name, so keep it to a list that is wholly Burmese:
     'PA'
 
 On the committed test corpora and ClinicalTrials.gov's officials and
-site contacts, 720,837 names that are mostly not Burmese, the strict
-choice reads 58,776 differently from the plain pack in their fields,
-8.2% of them.
+site contacts, 660,410 distinct names that are mostly not Burmese, the
+strict choice reads 58,776 differently from the plain pack in their
+fields, 8.9% of them (measured 2026-11-19, :issue:`1483`).
 
 What the pack leaves as it is
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1406,8 +1407,10 @@ When not to use it
 ~~~~~~~~~~~~~~~~~~
 
 The plain pack reads names that are not Burmese as the default does,
-save one word: ``U`` is the honorific however it is written, so an
-initial ``U.`` can be read as the title. ``Smith, U.`` and ``Dr. U.
+save two words, ``U`` and ``Daw``, read as titles wherever a title is
+read (``Daw Smith`` gives title ``Daw``), and ``U`` as a letter of a
+word joined by full stops. ``U`` is the honorific however it is
+written, so an initial ``U.`` can be read as the title. ``Smith, U.`` and ``Dr. U.
 Smith`` give no given name, though ``John U. Smith`` and ``Smith, John
 U.`` keep it an initial:
 

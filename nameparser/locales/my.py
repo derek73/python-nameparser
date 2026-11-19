@@ -22,7 +22,7 @@ choice**, ``parser_for(locales.MY, strict=True)`` (#1483): it reads no
 other language's file, so the syllables Burmese names are written with
 lose the particle and credential readings Spanish, Italian, Dutch or
 English give them (``Aung San Win`` gives middle ``San``, family
-``Win``; ``THEIN AUNG PE`` keeps family ``PE``), and the English ranks
+``Win``; ``THEIN AUNG PE`` gives family ``PE``), and the English ranks
 and ``Sir`` such lists write are my.toml's own readings
 (``Lt Gen``, ``Senior General``). The plain choice reads those
 syllables as other languages do (``Aung San Win`` gives family ``San

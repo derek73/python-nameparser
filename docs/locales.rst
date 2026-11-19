@@ -414,7 +414,7 @@ says what it can change:
    * - ``my``
      - yes
      - none
-     - none; it takes readings out instead
+     - none
    * - ``ne``
      - yes
      - ``initials_as_family``
@@ -432,8 +432,8 @@ says what it can change:
      - ``segment_scripts``, for the script its list covers
      - a surname list
 
-``vi`` and ``my`` are the packs whose own fragments take readings out
-rather than adding them (`What a pack's lexicon may hold`_).
+``vi`` is the pack whose own fragment takes readings out rather than
+adding them (`What a pack's lexicon may hold`_).
 
 See :ref:`config-containers` for how that split (language vocabulary
 vs. behavior) is drawn. Which half a new naming rule belongs in is

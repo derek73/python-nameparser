@@ -717,7 +717,13 @@ def test_my_pack_contents() -> None:
     ("KYAW, AUNG DO", "AUNG", "DO", "KYAW", ""),
     ("THEIN AUNG PE", "THEIN", "AUNG", "PE", ""),
     ("THEIN AUNG LAT", "THEIN", "AUNG", "LAT", ""),
+    ("THEIN AUNG EI", "THEIN", "AUNG", "EI", ""),
+    ("THEIN AUNG SI", "THEIN", "AUNG", "SI", ""),
+    ("THEIN AUNG PA", "THEIN", "AUNG", "PA", ""),
     ("Thein Aung Ra", "Thein", "Aung", "Ra", ""),
+    ("AUNG SAN WIN", "AUNG", "SAN", "WIN", ""),
+    ("Win, Aung San", "Aung", "San", "Win", ""),
+    (", AUNG PE", "AUNG", "PE", "", ""),
     # #1232: Mg, a title by default, is the given name
     ("Mg Htoo Aung", "Mg", "Htoo", "Aung", ""),
 ])
@@ -726,15 +732,66 @@ def test_my_strict_reads_the_syllables_as_name_words(
     name = parser_for(locales.MY, strict=True).parse(text)
     assert (name.given, name.middle, name.family, name.suffix) == (
         given, middle, family, suffix)
+    assert not name.ambiguities
     assert _require_packed("my").parse(text).as_dict() == _default_parse(text)
     assert name.as_dict() != _default_parse(text)
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text, title, words", [
+    # the strict choice under each order: the syllables stay name words
+    # and the ranks titles, the order laying the name words out
+    ("Daw Aung San Suu Kyi", "Daw", ("Aung", "San", "Suu", "Kyi")),
+    ("AUNG SAN WIN", "", ("AUNG", "SAN", "WIN")),
+    ("THEIN AUNG PE", "", ("THEIN", "AUNG", "PE")),
+    ("Lt Gen Kyaw Win", "Lt Gen", ("Kyaw", "Win")),
+    ("Gen Kyaw Win", "Gen", ("Kyaw", "Win")),
+])
+def test_my_strict_reads_alike_under_every_order(
+        text: str, title: str, words: tuple[str, ...],
+        order: tuple[Role, Role, Role]) -> None:
+    strict = parser_for(locales.MY, strict=True,
+                        base=Parser(policy=Policy(name_order=order)))
+    name = strict.parse(text)
+    assert name.title == title and not name.suffix
+    assert sorted(" ".join(w for w in (name.given, name.middle, name.family)
+                           if w).split()) == sorted(words)
+    assert not name.ambiguities
+
+
+#: The words my.toml copies from en.toml's ranks (#1483)
+_MY_RANK_COPIES = (
+    "admiral", "adm", "brigadier", "brig", "captain", "capt", "cdr",
+    "col", "colonel", "commander", "commodore", "gen", "general",
+    "lieutenant", "lt", "maj", "major", "rear", "senior", "sir", "vice")
+
+
+@pytest.mark.parametrize("word", _MY_RANK_COPIES)
+def test_my_rank_copies_are_off_by_default_and_en_toml_readings(
+        word: str) -> None:
+    # written default = false, so the default never reads them, which
+    # no parse's fields would show (en.toml reads them alike): the
+    # Reading.languages view would (`General` naming my); and each a
+    # kind en.toml gives the word, with its properties
+    mine = [r for r in _ri.readings_of(word) if r.tag == "my"]
+    theirs = {r.kind: {k: v for k, v in r.props.items()
+                       if k not in ("note", "issue", "decided")}
+              for r in _ri.readings_of(word) if r.tag == "en"}
+    assert mine and all(r.props.get("default") is False for r in mine)
+    for r in mine:
+        props = {k: v for k, v in r.props.items()
+                 if k not in ("note", "issue", "decided", "default")}
+        assert theirs[r.kind] == props, (word, r.kind)
+    assert {r.kind for r in mine} == {
+        r.kind for r in _ri.readings_of(word) if r.tag == "en"
+        and _ri.CATEGORY[r.kind] not in _ri.UNPREFERRED}
 
 
 @pytest.mark.parametrize("text, title", [
     # #1483: the English ranks and Sir Burmese lists write are my.toml's
     # own readings, so a strict choice keeps them, bare and written short,
-    # at the head and after a family comma, as the default and the plain
-    # pack read them
+    # at the head, after a family comma and in a part after a full name,
+    # as the default and the plain pack read them
     ("Senior General Kyaw Win", "Senior General"),
     ("Vice Senior General Kyaw Win", "Vice Senior General"),
     ("Lieutenant General Kyaw Win", "Lieutenant General"),
@@ -743,6 +800,12 @@ def test_my_strict_reads_the_syllables_as_name_words(
     ("Brig Gen Kyaw Win", "Brig Gen"),
     ("Major General Kyaw Win", "Major General"),
     ("Lt Col Kyaw Win", "Lt Col"),
+    ("Captain Kyaw Win", "Captain"),
+    ("Colonel Kyaw Win", "Colonel"),
+    ("Commander Kyaw Win", "Commander"),
+    ("Brigadier General Kyaw Win", "Brigadier General"),
+    ("LT GEN KYAW WIN", "LT GEN"),
+    (", Lt Gen Kyaw Win", "Lt Gen"),
     ("Col Kyaw Win", "Col"),
     ("Capt Kyaw Win", "Capt"),
     ("Rear Admiral Kyaw Win", "Rear Admiral"),
@@ -758,6 +821,8 @@ def test_my_strict_keeps_the_ranks(text: str, title: str) -> None:
     plain = _require_packed("my").parse(text)
     assert strict.title == plain.title == title
     assert strict.as_dict() == plain.as_dict()
+    if "U" not in text.split():  # the honorific is the pack's own word
+        assert plain.as_dict() == _default_parse(text)
 
 
 @pytest.mark.parametrize("text, given, family, suffix", [
@@ -765,7 +830,9 @@ def test_my_strict_keeps_the_ranks(text: str, title: str) -> None:
     # never reads them, and copies of en.toml's, so the plain pack, which
     # prefers them, reads as the default does: a rank en.toml gates by a
     # given name stays a given name, and lt's credential, copied with
-    # its rank, stays the suffix
+    # its rank, stays the suffix. The fields only: Reading.languages
+    # names my under the pack, the file the choice reads (decisions/
+    # vocabulary-collisions, the 2026-11-19 #1483 entry)
     ("Gen Goto", "Gen", "Goto", ""),
     ("Major Smith", "Major", "Smith", ""),
     ("Maj Sjöwall", "Maj", "Sjöwall", ""),
@@ -779,18 +846,30 @@ def test_my_rank_readings_move_no_plain_parse(
     assert name.as_dict() == _default_parse(text)
 
 
+@pytest.mark.parametrize("text", [
+    # the words every language shares (mul.toml) are kept by a strict
+    # choice, as docs/languages.rst says
+    "Dr. Kyaw Win, PhD", "Kyaw Win MD", "Kyaw Win, MSc"])
+def test_my_strict_keeps_the_shared_words(text: str) -> None:
+    assert parser_for(locales.MY, strict=True).parse(text).as_dict() == \
+        _require_packed("my").parse(text).as_dict()
+
+
 @pytest.mark.parametrize("text, title, given, family, suffix", [
     # what a strict choice costs a name that is not Burmese, the reason
     # the plain pack stays for a mixed list (decisions/vocabulary-
     # collisions, the 2026-11-19 #1483 entry): the given names en.toml
-    # gates the ranks by are not read, nor the credentials Burmese lists
-    # do not write, so a credential after a comma reads as a given name
+    # gates the ranks by are not read, nor other languages' particles and
+    # credentials, so a credential after a comma reads as a given name
     ("Gen Goto", "Gen", "", "Goto", ""),
     ("Major Smith", "Major", "", "Smith", ""),
     ("Jane Doe, PA", "", "PA", "Jane Doe", ""),
+    # and a Burmese name with a credential syllable after a comma, the
+    # credential gone: read as the given name, as any word there
+    ("THEIN AUNG, PE", "", "PE", "THEIN AUNG", ""),
     ("Juan de la Cruz", "", "Juan", "Cruz", ""),
 ])
-def test_my_strict_costs_a_name_that_is_not_burmese(
+def test_my_strict_costs_a_name_that_is_not_burmese_or_a_comma_credential(
         text: str, title: str, given: str, family: str, suffix: str) -> None:
     name = parser_for(locales.MY, strict=True).parse(text)
     assert (name.title, name.given, name.family, name.suffix) == (
