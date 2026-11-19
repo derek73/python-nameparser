@@ -16,6 +16,7 @@ import importlib
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Sequence
 
 import pytest
 
@@ -41,7 +42,8 @@ def _csv(header: tuple[str, ...], *rows: tuple[str, ...]) -> bytes:
     return "".join(",".join(r) + "\n" for r in (header, *rows)).encode()
 
 
-def _serve(monkeypatch: pytest.MonkeyPatch, files: list[tuple[str, tuple[str, ...], bytes]], *,
+def _serve(monkeypatch: pytest.MonkeyPatch,
+           files: Sequence[tuple[str, tuple[str, ...], bytes]], *,
            pinned: dict[str, str] | None = None, rows: dict[str, int] | None = None
            ) -> list[str]:
     """Pin FILES to `files`, each (election, header, body): one ballot
@@ -192,3 +194,12 @@ def test_a_corpus_read_another_way_is_refused_on_load(
     monkeypatch.setattr(my, constant, value)
     with pytest.raises(ValueError, match=f"{match}.*fetch {_SOURCE} --refresh"):
         local.load(_SOURCE)
+
+
+def test_a_row_with_every_name_column_empty_counts_once(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Counted per cell, the one row below would be 2 of 100 and refused.
+    whole = ("CIKGU LIM", "LIM KOK WEE", "chinese")
+    _serve(monkeypatch, [("prn99", _TWO, _csv(_TWO, ("", "", "chinese"), *[whole] * 99))])
+    detail = local.fetch(_SOURCE).meta["detail"]["elections"]["prn99"]
+    assert detail["nameless"] == 1

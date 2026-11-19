@@ -31,8 +31,9 @@ this file (snapshot.corpus_entries, each name under its shape's order);
 `--local SOURCE` (repeatable, or `all`) a fetched local corpus's
 distinct names. With neither, the committed corpora. `--group` keeps a
 grouped local corpus's records of that country or nationality, or for
-opensanctions-parliaments that dataset, or for ctgov-officials and
-ctgov-contacts that ISO country code (local_agreement.FIELDED names the
+opensanctions-parliaments that dataset, for ctgov-officials and
+ctgov-contacts that ISO country code, or for my-candidates that
+ethnicity (local_agreement.FIELDED names the
 key, and Source.group for a corpus with no fields; matched exactly as
 the corpus writes it), and needs `--local`: with `--committed` beside it, which
 has no groups, it is refused, as is a group no record read holds; with
@@ -421,7 +422,7 @@ def group_keys() -> dict[str, str]:
     """The record key naming each grouped local corpus's group: a fielded
     corpus's (local_agreement.FIELDED), then a source's own
     (Source.group: opensanctions-parliaments' dataset, the ctgov corpora's
-    country)."""
+    country, my-candidates' ethnicity)."""
     keys = {source: fielded.group for source, fielded in local_agreement.FIELDED.items()}
     return keys | {source: s.group for source, s in local_corpora.SOURCES.items()
                    if s.group and source not in keys}

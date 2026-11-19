@@ -7,8 +7,9 @@ from Thevesh Theva's analysis-election-msia repository on GitHub
 (`data/candidates_<election>.csv`), pinned here by commit and by each
 file's sha256. A row is one candidacy: on 2026-11-19 the five files held
 480, 579, 687, 945 and 570 rows. The names are written in capitals, as
-the Election Commission gazettes them, save one written in mixed case
-in GE12 to GE14 (`Xxx Yyy ZZZ`, family last in capitals).
+the Election Commission gazettes them, save one candidate's, written in
+mixed case in each of GE12 to GE14 (`Xxx Yyy ZZZ`, family last in
+capitals).
 
 Which column holds that writing differs by file, and is read so
 (FILES): GE12 to GE14 have one, `name`, the name as it stood on the
@@ -31,8 +32,10 @@ joined by `A/L` and `A/P`; Iban and other Sarawak names joined by
 family first in capitals, beside a Western given name or not (#1467,
 #1468, #1164, #1183, #1179). Each record keeps the candidate's
 `ethnicity` as the file writes it, the group config_diff.py --group
-keeps (GE12 to GE15 write `bumiputera` where PRN15 writes `malay`;
-`chinese`, `indian` and `other` in all), and its `election`.
+keeps (GE12 to GE15 write `bumiputera`, which takes in Sabah's and
+Sarawak's peoples beside the Malays, and PRN15, whose six states are all
+in the peninsula, writes `malay`; `chinese`, `indian` and `other` in
+all), and its `election`.
 
 A record is one distinct spelling within an election and ethnicity: a
 candidate standing in two seats of one election is one record, and a
@@ -115,7 +118,8 @@ MY_READ_VERSION = 1
 #: its header before the file is refused: none was on 2026-11-19.
 MY_MAX_BAD = 1 / 100
 #: The share of a file's rows that may have an empty name in a column
-#: read before the file is refused: none had on 2026-11-19.
+#: read (a row counted once, however many) before the file is refused:
+#: none had on 2026-11-19.
 MY_MAX_NAMELESS = 1 / 100
 
 
@@ -159,10 +163,11 @@ def _read(file: File, text: str) -> tuple[list[dict[str, str]], Counter[str]]:
             counts["malformed"] += 1
             continue
         ethnicity = row[ethnicity_at].strip()
+        if any(not row[at].strip() for _, at in columns):
+            counts["nameless"] += 1
         for form, at in columns:
             name = " ".join(row[at].split())
             if not name:
-                counts["nameless"] += 1
                 continue
             if (name, ethnicity) in seen:
                 counts["repeated"] += 1
