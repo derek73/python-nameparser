@@ -2,7 +2,7 @@
 parliaments, as each parliament writes their names.
 
 opensanctions-parliaments -- the members OpenSanctions' crawlers read
-off twenty-three national chambers' own websites, and the regional heads
+off twenty-eight national chambers' own websites, and the regional heads
 Indonesia elected in 2018 (DATASETS), each
 dataset's `targets.simple.csv`: a row per person, the `name` column as
 the parliament writes it and `aliases` the other forms the crawler
@@ -25,11 +25,20 @@ Portuguese double surnames; Indonesian names in capitals with `H.`
 of given, father's and grandfather's name; Korean names in Hangul and
 Hanja, and Hebrew ones; and Mongolian names in Cyrillic, the father's
 name first (`mn_parliament`, added 2026-11-12: 126 members, each written
-once). Issues #1186 to #1192 were
+once). Five chambers were added 2026-11-19 (#1465): Malaysia's Dewan
+Rakyat (`my_parliament`, 276 members, 16 of them with an alias writing
+the `bin` or `a/l` the name leaves out), Pakistan's National Assembly
+and Senate (`pk_na_members`, `pk_senate_members`, 427 members, each
+written once), Egypt's House of Representatives
+(`eg_house_representatives`, 594 members in Arabic script, nearly every
+one written twice, a short name and the full chain of father's and
+grandfather's names, `X الدين` and `X الله` among them) and Somalia's
+House of the People (`so_house_people`, 275 members, 35 with an alias
+holding a nickname in brackets). Issues #1186 to #1192 were
 read from it, in a 2026-11-07/08 check of the shipped packs; the
 Indonesian datasets measure #1205 and #1206, Ethiopia's #1203, Korea's
 #1213, #1215 and #1216, Israel's #1209, #1210 and #1211, and
-Mongolia's #1237.
+Mongolia's #1237, and Malaysia's and Egypt's #1468, #1072 and #1464.
 
 A record is one distinct spelling of one member: the spelling (`name`),
 the member (`entity`, the dataset and OpenSanctions' id, so a member of
@@ -71,7 +80,9 @@ DATASETS = ("az_parliament", "kg_jogorku_kenesh", "uz_legislative_chamber", "uz_
             "si_dz_rs", "sk_nrsr_poslanci", "pt_parliament", "in_sansad", "ua_rada",
             "by_council_republic", "ru_duma_deputies", "ru_federation_council",
             "id_dpr", "id_dpd", "id_regional_2018", "et_hopr",
-            "kr_assembly", "il_knesset_members", "mn_parliament")
+            "kr_assembly", "il_knesset_members", "mn_parliament", "my_parliament",
+            "pk_na_members", "pk_senate_members", "eg_house_representatives",
+            "so_house_people")
 INDEX_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/index.json"
 RESOURCE = "targets.simple.csv"
 #: The columns read; the file holds others (birth dates, contacts), and

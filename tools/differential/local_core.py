@@ -72,7 +72,7 @@ class Source:
     #: For a source with no fields to score (no local_agreement.FIELDED
     #: entry) whose records name a group all the same: the record key
     #: holding it (opensanctions-parliaments' "dataset", the ctgov
-    #: corpora's "country"), which
+    #: corpora's "country", my-candidates' "ethnicity"), which
     #: config_diff.py --group keeps, as it keeps a fielded source's.
     group: str = ""
 

@@ -54,10 +54,11 @@ snapshot = load_tool("snapshot")
 # the module holding the name (local_core.RETRIES, local_fec.FEC_MAX_BAD).
 # A second load by path (load_tool) would be a copy nothing reads.
 (core, ctgov, fec, tse, tw, ukec, psc, jrc, nepal, orcid, patentsview, volby, dof, uit,
- vnassembly, parliaments) = (
+ vnassembly, parliaments, mycandidates) = (
     importlib.import_module(f"local_{key}")
     for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc", "jrc", "nepal", "orcid",
-                "patentsview", "volby", "dof", "uit", "vnassembly", "parliaments"))
+                "patentsview", "volby", "dof", "uit", "vnassembly", "parliaments",
+                "mycandidates"))
 
 _SOURCE = "ctgov-officials"
 _DATE = "2026-10-21T09:00:05"
@@ -3594,14 +3595,14 @@ def test_no_module_imports_a_sibling_constant() -> None:
     # module. A `from local_x import CONSTANT` would bind a second name a
     # patch on local_x cannot reach, and a test could pass with its guard
     # off. The modules are SOURCES' own, so a new source is covered. PSC,
-    # JRC, ORCID, PV, VOLBY, DOF, UIT, VN, PARLIAMENTS, CTGOV_OFFICIALS and
+    # JRC, ORCID, PV, VOLBY, DOF, UIT, VN, PARLIAMENTS, MY, CTGOV_OFFICIALS and
     # CTGOV_CONTACTS are sources' names, keys of
     # SOURCES, and no fetch's setting; split is a function, not a setting.
     import ast
     sources = {source.fetch.__module__ for source in local.SOURCES.values()}
     assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc, jrc, nepal, orcid,
                                             patentsview, volby, dof, uit, vnassembly,
-                                            parliaments)
+                                            parliaments, mycandidates)
                        } | {"local_govuk"}
     siblings = {"local_corpora", "local_core", *sources}
     imported = {(path.stem, alias.name)
@@ -3614,7 +3615,7 @@ def test_no_module_imports_a_sibling_constant() -> None:
                         ("local_corpora", "ORCID"), ("local_corpora", "PV"),
                         ("local_corpora", "VOLBY"), ("local_corpora", "DOF"),
                         ("local_corpora", "UIT"), ("local_corpora", "VN"),
-                        ("local_corpora", "PARLIAMENTS"),
+                        ("local_corpora", "PARLIAMENTS"), ("local_corpora", "MY"),
                         ("local_corpora", "CTGOV_OFFICIALS"),
                         ("local_corpora", "CTGOV_CONTACTS")}
 
