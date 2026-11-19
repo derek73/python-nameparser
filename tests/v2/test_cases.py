@@ -493,10 +493,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting particle-or-given under three orders; 2107 -> 2187
     # the same day, #1394's rows under three orders or once where a row
     # declares a policy: the decline's report on each moved row, and
-    # its boundary rows' run reports.
-    assert claims == 2187, (
-        f"the field sweep checks {claims} claims, recorded as 2187 on "
-        f"2026-11-18")
+    # its boundary rows' run reports; 2187 -> 2190 on 2026-11-19, #1471's
+    # 'Emerita Smith' reporting title-or-name under three orders.
+    assert claims == 2190, (
+        f"the field sweep checks {claims} claims, recorded as 2190 on "
+        f"2026-11-19")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

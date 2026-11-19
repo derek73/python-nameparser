@@ -17722,6 +17722,53 @@ CASES: tuple[Case, ...] = (
          classification="fix(#913)",
          notes="H9: a modifier that may be a given name is read everywhere "
                "as in its run; read title 'ROYAL' 1.4.0 through 2.7.0"),
+    Case("emeritus_before_its_head_is_in_the_title",
+         "Emeritus Professor John Smith",
+         {"title": "Emeritus Professor", "given": "John", "family": "Smith"},
+         classification="fix(#1471)",
+         notes="H9: a modifier with its head title after it in the leading "
+               "run; read given 'Emeritus', middle 'Professor John' "
+               "through 3.1"),
+    Case("emeritus_after_its_head_is_in_the_title",
+         "Professor Emeritus John Smith",
+         {"title": "Professor Emeritus", "given": "John", "family": "Smith"},
+         classification="fix(#1471)",
+         notes="H9: 'professor' attaches to 'emeritus', so the modifier "
+               "behind its head is in its phrase; read given 'Emeritus', "
+               "middle 'John' through 3.1"),
+    Case("prof_emeritus_written_short_is_in_the_title",
+         "Prof. Emeritus John Smith",
+         {"title": "Prof. Emeritus", "given": "John", "family": "Smith"},
+         classification="fix(#1471)",
+         notes="H9: 'prof' attaches to 'emeritus' as 'professor' does"),
+    Case("professor_emeritus_after_a_comma_is_the_title",
+         "John Smith, Professor Emeritus",
+         {"title": "Professor Emeritus", "given": "John", "family": "Smith"},
+         classification="fix(#1471)",
+         notes="C2: the part after the comma is the person's role once "
+               "its words are titles; read title 'Professor', given "
+               "'Emeritus', family 'John Smith' through 3.1"),
+    Case("emeritus_alone_after_a_credential_is_the_title",
+         "John Smith, PhD, Emeritus",
+         {"title": "Emeritus", "given": "John", "family": "Smith",
+          "suffix": "PhD"},
+         classification="fix(#1471)",
+         notes="C2: a lone title word in a part after the name is a "
+               "title; read suffix 'PhD, Emeritus' through 3.1"),
+    Case("professor_emerita_is_the_title", "Professor Emerita Jane Smith",
+         {"title": "Professor Emerita", "given": "Jane", "family": "Smith"},
+         classification="fix(#1471)",
+         notes="H9: 'professor' attaches to 'emerita'"),
+    Case("emerita_alone_is_a_given_name", "Emerita Smith",
+         {"given": "Emerita", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="fix(#1471)",
+         notes="H9: 'emerita' may be a given name (US SSA, nam_dict in "
+               "Spain and Greece), so it is a title only in its phrase; "
+               "'Professor Emerita' holds it, so it reports"),
+    Case("emerita_after_a_family_comma_is_the_given_name", "Smith, Emerita",
+         {"given": "Emerita", "family": "Smith"},
+         notes="H9: a modifier that may be a given name is read everywhere "
+               "as in its run"),
     Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
          {"given": "Marquis", "family": "Johnson"},
          classification="fix(#913)",

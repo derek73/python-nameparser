@@ -2006,6 +2006,15 @@ text = "edmi"
 modifier = { issue = 9, note = "from #9's list of federal judges' titles; its meaning is not recorded there" }
 
 [[word]]
+text = "emerita"
+modifier = { issue = 1471, decided = 2026-11-19, note = "a title only beside a head title (rules/H9), its given reading the clash: 'Professor Emerita Jane Smith' and 'Emerita Professor Jane Smith' read the title, 'Emerita Smith' the given name" }
+given = { us_ssa = 142, wikidata = 3, as_of = 2026-11-19, note = "US SSA: female births; Wikidata is a lower bound; nam_dict band 1 in Spain and Greece" }
+
+[[word]]
+text = "emeritus"
+modifier = { issue = 1471, decided = 2026-11-19, note = "US Census and SSA list no bearer (under 100 surnames, under 5 births a year), nam_dict and Wikidata none (2026-11-19)" }
+
+[[word]]
 text = "english"
 modifier = {}
 
