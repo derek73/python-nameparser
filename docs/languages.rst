@@ -1422,5 +1422,7 @@ U.`` keep it an initial:
 
 A Korean name written with no comma and opening with the surname ``U``
 reads ``U`` as the title under the pack (``U Minjun``), where ``U,
-Minjun`` keeps it as the family name. Keep the pack to a parser of its
-own for the Burmese names in your data.
+Minjun`` keeps it as the family name. Chosen strictly, the pack also
+reads a run of initials holding ``U`` as the title (``U.S. Grant``
+gives title ``U.S.``, family ``Grant``). Keep the pack to a parser of
+its own for the Burmese names in your data.

@@ -849,7 +849,7 @@ def test_my_rank_readings_move_no_plain_parse(
 @pytest.mark.parametrize("text", [
     # the words every language shares (mul.toml) are kept by a strict
     # choice, as docs/languages.rst says
-    "Dr. Kyaw Win, PhD", "Kyaw Win MD", "Kyaw Win, MSc"])
+    "Dr Kyaw Win, PhD", "Kyaw Win MD", "Kyaw Win, MSc"])
 def test_my_strict_keeps_the_shared_words(text: str) -> None:
     assert parser_for(locales.MY, strict=True).parse(text).as_dict() == \
         _require_packed("my").parse(text).as_dict()
@@ -867,6 +867,9 @@ def test_my_strict_keeps_the_shared_words(text: str) -> None:
     # and a Burmese name with a credential syllable after a comma, the
     # credential gone: read as the given name, as any word there
     ("THEIN AUNG, PE", "", "PE", "THEIN AUNG", ""),
+    # and a run of initials holding U, which the honorific claims once
+    # en.toml's dotted title us no longer reads it (rules/H10)
+    ("U.S. Grant", "U.S.", "", "Grant", ""),
     ("Juan de la Cruz", "", "Juan", "Cruz", ""),
 ])
 def test_my_strict_costs_a_name_that_is_not_burmese_or_a_comma_credential(
