@@ -497,9 +497,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # #1468's 'Anak Agung Made Putra' reporting particle-or-given under
     # three orders and 'Kwame Mensah Anak' under FAMILY_FIRST; 2191 -> 2192
     # the same day, its review's FAMILY_FIRST row of that name, once under
-    # its declared policy.
-    assert claims == 2192, (
-        f"the field sweep checks {claims} claims, recorded as 2192 on "
+    # its declared policy; 2192 -> 2195 the same day, #1471's 'Emerita
+    # Smith' reporting title-or-name under three orders.
+    assert claims == 2195, (
+        f"the field sweep checks {claims} claims, recorded as 2195 on "
         f"2026-11-19")
 
 

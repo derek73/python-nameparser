@@ -58,11 +58,11 @@ academic = { issue = 1115, expands = "ingenieur, the engineer's degree written b
 
 [[word]]
 text = "prof"
-academic = { expands = "Professor, abbreviated alike across the European languages" }
+academic = { expands = "Professor, abbreviated alike across the European languages", attaches = ["emeritus", "emerita"], note = "attaches: Professor Emeritus, Professor Emerita (rules/H9, #1471), the qualifier written after its head" }
 
 [[word]]
 text = "professor"
-academic = { expands = "spelled alike in English, German, Dutch, the Scandinavian languages and Portuguese" }
+academic = { expands = "spelled alike in English, German, Dutch, the Scandinavian languages and Portuguese", attaches = ["emeritus", "emerita"], note = "attaches: Professor Emeritus, Professor Emerita (rules/H9, #1471), the qualifier written after its head" }
 
 [[word]]
 text = "2"
