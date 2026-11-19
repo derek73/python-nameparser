@@ -497,8 +497,8 @@ Turn on ``two_family_names`` when the people in your data carry two
 family names and write both together, after the given names (or first,
 under a family-first order), and only then:
 :ref:`What it costs <two-family-names-cost>` shows what it does to
-other names. ``locales.ES``, ``locales.PT_BR`` and ``locales.PT_PT``
-turn it on together with a list of given names that it holds back (see
+other names. ``locales.ES``, ``locales.ES_AR``, ``locales.PT_BR`` and
+``locales.PT_PT`` turn it on together with a list of given names that it holds back (see
 `Keeping a given name out of the family`_).
 
 In Spain and most of Latin America a person carries two family names,

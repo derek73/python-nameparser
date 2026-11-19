@@ -468,7 +468,7 @@ def test_es_and_pt_pack_contents() -> None:
     # sr keeps es's and pt's generation beside the salutation, so the
     # choice leaves it a dual position decides, as the default reads it
     for packed in (_require_packed("es"), _require_packed("pt"),
-                   _require_packed("pt_br")):
+                   _require_packed("pt_br"), _require_packed("pt_pt")):
         for text in ("Gary Holloway Sr", "Sr. Juan Pérez", "J. Smith Sr."):
             assert packed.parse(text).as_dict() == parse(text).as_dict()
     # the patch's and the fragment's declaration: rules/O6's three name
@@ -3443,9 +3443,9 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
     assert (changed_words(selected(locales.PT_PT.languages))
             == changed_words(selected(locales.PT.languages)))
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
-    for packed in (br, pp):
+    assert pt.parse("Rui Sousa Pinto").family == "Pinto"
+    for packed, packed_pack in ((br, locales.PT_BR), (pp, locales.PT_PT)):
         # two family names where pt reads a middle name
-        assert pt.parse("Rui Sousa Pinto").family == "Pinto"
         assert packed.parse("Rui Sousa Pinto").family == "Sousa Pinto"
         # a listed given name stays, with its ç or with the c an ASCII
         # writer puts in its place
@@ -3454,8 +3454,30 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
             assert packed.parse(text).as_dict() == pt.parse(text).as_dict(), text
         # a word the list lacks is taken, the switch's cost (rules/O6)
         assert packed.parse("Ana Zzarita Costa").family == "Zzarita Costa"
-        # a family comma: the given part is the caller's, the family two words
-        assert packed.parse("Sousa Pinto, Rui").family == "Sousa Pinto"
+        # a family comma: the switch takes nothing from the given part
+        assert packed.parse("Pinto, Rui Sousa").as_dict() == pt.parse(
+            "Pinto, Rui Sousa").as_dict()
+        assert packed.parse("Rui Sousa Pinto, Jr.").family == "Sousa Pinto"
+        # beside a particle: the switch takes the word before the unit,
+        # and the list keeps a given name there
+        assert packed.parse("Rui Costa dos Santos").family == "Costa dos Santos"
+        assert packed.parse("Rui Pedro dos Santos").as_dict() == pt.parse(
+            "Rui Pedro dos Santos").as_dict()
+        # an agnomen is peeled before the family is counted
+        alves = packed.parse("Pedro Alves Filho")
+        assert (alves.family, alves.suffix) == ("Alves", "Filho")
+        # under a family-first order: the first two words, the list
+        # vetoing a given name standing second
+        for order, given in ((FAMILY_FIRST, "Ana"), (FAMILY_FIRST_GIVEN_LAST, "Beatriz")):
+            ordered = parser_for(packed_pack, base=Parser(policy=Policy(name_order=order)))
+            souza = ordered.parse("Sousa Pinto Ana Beatriz")
+            assert (souza.family, souza.given) == ("Sousa Pinto", given), order
+            assert ordered.parse("Costa Beatriz Ana").family == "Costa", order
+            assert ordered.parse("Costa Zzbeatriz Ana").family == "Costa Zzbeatriz", order
+    # pt_br's SB beside the switch, which pt_pt's choice does not read
+    sb = br.parse("JOSE ALVES LIMA SB")
+    assert (sb.family, sb.suffix) == ("ALVES LIMA", "SB")
+    assert pp.parse("JOSE ALVES LIMA SB").family == "LIMA SB"
     assert _pt_pt.DEVIATES("Rui Sousa Pinto")
     assert not _pt_pt.DEVIATES("Rui Pinto")
 

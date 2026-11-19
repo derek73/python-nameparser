@@ -10,7 +10,9 @@ Data source: ORCID's public data file of October 2025 (CC0,
 https://info.orcid.org/documentation/integration-guide/working-with-bulk-data/),
 each holder's given-names and family-name boxes and the country they
 work or live in. This module is derived from them: the project's own
-measurement, credited here and in README.rst. The words of at least
+measurement, credited here (CC0 asks for no credit, so README.rst's
+License section, which lists the sources whose licences ask for it,
+does not name it). The words of at least
 five uses in the boxes of researchers in Portugal and Brazil, records
 past the first 3,000 of each country, at least 70% of whose uses are
 in the given box, ranked by given uses, written lower-cased without

@@ -480,8 +480,9 @@ turn it on beside ``pt``, or choose ``pt_pt``:
 
 A family of three surnames still keeps its first as a middle name
 under both packs (``Leonardo Mirandela Gomes Paz`` gives middle
-``Mirandela``, family ``Gomes Paz``): the switch takes one word. In
-Brazil about one name in eleven is written that way.
+``Mirandela``, family ``Gomes Paz``): the switch takes one word.
+Among ORCID's Brazilian researchers about one name in ten is written
+that way.
 
 Measured effect: Portuguese
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -535,8 +536,8 @@ under ``pt``, and Angolan and Mozambican lists worse.
 
 Whether the switch helps also depends on who split the names. It
 gains most on names their bearers split themselves, as ORCID's are.
-Among inventors on US patents, whose filers put every name but the
-last in the first-name box, Portuguese inventors gain (57.5% →
+Among inventors on US patents, whose filers often put every name but
+the last in the first-name box, Portuguese inventors gain (57.5% →
 65.7%) and Brazilian ones lose (75.2% → 61.4%): most of the Brazilian
 names it breaks hold a surname in the first-name box (``Eder Ferreira``
 / ``Rangel``), which the pack reads as the first family name. Among

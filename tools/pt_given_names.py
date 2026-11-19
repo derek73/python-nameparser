@@ -6,8 +6,9 @@ moves the name word before the family into the family, and in "Ana
 Beatriz Costa" that word is a given name. A reader settles it by
 vocabulary, as tools/es_given_names.py's lists settle it for Spanish
 (#959), so O6 leaves a listed given name where it stands. No census
-table of given names by count was found for Portugal or Brazil, so
-the list is measured on the names ORCID's holders split themselves:
+table of given names by count for Portugal or Brazil has been used
+yet (decisions/O6, 2026-11-19, leaves one open), so the list is
+measured on the names ORCID's holders split themselves:
 
 - ORCID's public data file (CC0), as tools/differential/local_orcid.py
   extracts it into the `orcid-researchers` local corpus: each holder's
@@ -222,10 +223,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{word:20} given {given[word]:>7,}  family {family[word]:>7,}")
         return 0
     ranked = select(given, family, excluded, args.min_uses, args.share, REMOVED)
-    spellings = c_spellings(ranked, given, family, excluded, args.share)
+    # a c spelling the hand reading took out is no candidate either
+    spellings = c_spellings(ranked, given, family, excluded | set(REMOVED), args.share)
     for i, word in enumerate(ranked, 1):
         print(f"{i:5}  {word:20} given {given[word]:>7,}  family {family[word]:>7,}")
-    for word, g, f in c_spelling_uses(ranked, given, family, excluded):
+    for word, g, f in c_spelling_uses(ranked, given, family, excluded | set(REMOVED)):
         kept = word in spellings
         print(f"    c  {word:20} given {g:>7,}  family {f:>7,}  "
               f"{g / (g + f):.1%} given, {'kept' if kept else 'refused'}",

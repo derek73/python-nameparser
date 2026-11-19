@@ -2018,8 +2018,9 @@ class Lexicon:
     #: dropped (the tilde on n and the cedilla on c kept), so an entry
     #: written "jose" matches "José" too. No other rule reads it. Empty
     #: by default, so the switch reads as without it; a caller passes
-    #: a list of its own, and ``locales.ES`` carries a Spanish list, with
-    #: the switch on. Added in 3.0.
+    #: a list of its own; ``locales.ES`` and ``locales.ES_AR`` carry
+    #: Spanish lists and ``locales.PT_BR`` and ``locales.PT_PT`` a
+    #: Portuguese one, each with the switch on. Added in 3.0.
     given_names: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->

@@ -1,7 +1,8 @@
 """The European Portuguese locale pack: locales.PT for names from
 Portugal, with two family names. It chooses ``pt-PT``, which selects
-nameparser/vocab/pt-PT.toml, a file holding only its [rules] table,
-and its ancestor pt.toml, so it reads every word locales.PT reads
+its ancestor pt.toml (nameparser/vocab/pt-PT.toml holds only the
+[rules] table ``rules_patch`` reads, and no reading for a choice to
+select), so it reads every word locales.PT reads
 (``do`` a particle, ``da Piedade`` the second half of a compound given
 name); it reads two family names (``Policy.two_family_names``,
 rules/O6), its policy patch compiled from pt-PT.toml's [rules] table

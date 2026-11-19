@@ -2089,7 +2089,7 @@ def given_name_key(text: str) -> str:
     """`text` folded as `Lexicon.given_names` is matched: the
     `_normalize` fold, with the accents and the diaeresis dropped and
     the tilde on n and the cedilla on c kept. tools/es_given_names.py
-    writes the list with this same fold."""
+    and tools/pt_given_names.py write their lists with this same fold."""
     out: list[str] = []
     for ch in unicodedata.normalize("NFD", _normalize(text)):
         if unicodedata.combining(ch) and not (

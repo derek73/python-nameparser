@@ -601,8 +601,8 @@ costs the other languages' readings of those words.
 Most of these packs are described in :doc:`languages`, where the table
 above links each. Two groups are described here: the Irish and Scottish
 Gaelic packs (:ref:`gaelic-clan-particles`), and the Portuguese ones,
-which turn on ``da Piedade`` and, in ``pt_br``, ``SB``
-(:ref:`portuguese-packs`).
+which turn on ``da Piedade``, in ``pt_br`` ``SB``, and in ``pt_br``
+and ``pt_pt`` two family names (:ref:`portuguese-packs`).
 
 .. _gaelic-clan-particles:
 
@@ -678,7 +678,8 @@ settle:
 
 - **Under pt, pt_br and pt_pt,** the words read as ``pt`` reads them: ``do`` is
   the particle, not the DO credential, so ``John Smith DO`` gives
-  family ``DO``. ``Sr`` keeps both readings, *Senhor* in front and
+  family ``DO`` under ``pt`` (``Smith DO`` under ``pt_br`` and
+  ``pt_pt``, which read two family names). ``Sr`` keeps both readings, *Senhor* in front and
   "Senior" behind, as in the default, under ``es`` too.
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
@@ -887,7 +888,7 @@ of four ways:
 - **A tag no vocabulary file holds**, itself or any language it belongs
   to (``xx``), raises ``ValueError`` at
   :func:`~nameparser.parser_for`, naming the tags that have a file.
-- **A region or other subtag of a language that has a file** (``pt-PT``)
+- **A region or other subtag of a language that has a file** (``pt-AO``)
   is accepted and reads that language's file, there being none of its
   own.
 - **A language whose file holds no reading a parse reads yet**

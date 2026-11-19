@@ -139,9 +139,9 @@ def test_the_selection_keeps_the_mostly_given_words_over_the_floor() -> None:
 
 
 def test_a_c_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
-    # Goncalo stands for Gonçalo and for a Goncalo, so both count;
-    # Franca stands for França, mostly a surname, so a listed Françoise
-    # aside, it is refused; a listed c word is not written twice
+    # Goncalo stands for Gonçalo and for a Goncalo, so both count; an
+    # excluded spelling is no candidate; França, listed, is refused
+    # below, its c spelling standing mostly for a surname
     given = Counter({"gonçalo": 89, "goncalo": 3, "françoise": 6,
                      "constança": 11})
     family = Counter({"gonçalo": 3, "franca": 2, "françoise": 0})
@@ -160,8 +160,13 @@ def test_a_c_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
     # the c spelling an ASCII writer puts in place of the ç
     ("PT_PT", "Pedro Goncalo Matos", "middle", "Goncalo"),
     ("PT_PT", "Pedro Gonçalo Matos", "middle", "Gonçalo"),
-    # the cedilla written as a combining mark
+    # the cedilla written as a combining mark (its c spelling is listed
+    # too, so the accent rows below are what a wrong fold would fail)
     ("PT_BR", "Pedro Gonçalo Matos", "middle", "Gonçalo"),
+    # an accent the fold drops, precomposed and as a combining mark
+    ("PT_BR", "Pedro Luís Matos", "middle", "Luís"),
+    ("PT_PT", "Ana Ine\u0302s Matos", "middle", "Ine\u0302s"),
+    ("PT_PT", "Pedro Zzimão Matos", "family", "Zzimão Matos"),
     ("PT_BR", "PEDRO GONCALO MATOS", "middle", "GONCALO"),
     # a word the list lacks is taken (rules/O6's cost)
     ("PT_BR", "Pedro Zzarita Matos", "family", "Zzarita Matos"),

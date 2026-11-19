@@ -2164,8 +2164,8 @@ Two family names under locales.PT_BR
 ``locales.PT_BR`` reads two family names (``two_family_names``), where
 3.0 and 3.1 read the first as a middle name; a second given name on
 its Portuguese given-name list stays where it stands. ``locales.PT``
-is unchanged, and ``locales.PT_PT``, new in 3.2, reads names from
-Portugal as ``locales.PT_BR`` does:
+is unchanged, and ``locales.PT_PT``, new in 3.2, reads two family
+names, with the same list, as ``locales.PT_BR`` does:
 
 .. doctest::
 
