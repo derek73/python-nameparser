@@ -1543,14 +1543,13 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # `_CALL_BASELINE` above.
 #
 # THE LONG RUN AND NOT THE SHORT ONE, and the arithmetic is the whole
-# reason: +1 per link is 16 frames at `_CLAUSE_RUN_SMALL`, and 2% of
-# 859 is 17.2, so the small end's band swallows the very regression
-# this pin exists for (875 sits inside 842-876; measured 2026-10-04,
-# and the short run reads 564 on py3.11 since #1436, where 2% is
-# 11.3, so the long run is kept for its margin rather than out of
-# need). At
-# `_CLAUSE_RUN_LARGE` the same change is +64 against a 2% band of
-# 51.7, and 2,651 sits outside 2,535-2,639. A tighter band on the
+# reason, as measured 2026-09-22 on py3.11 on the clause run the pin
+# then read: +1 per link is 16 frames at `_CLAUSE_RUN_SMALL`, and 2%
+# of 859 was 17.2, so the small end's band swallowed the very
+# regression this pin exists for (875 sat inside 842-876). At
+# `_CLAUSE_RUN_LARGE` the same change was +64 against a 2% band of
+# 51.7, and 2,651 sat outside 2,535-2,639. The pin's current band is
+# given with `_LINK_BASELINE` below. A tighter band on the
 # short name would do it too and was not taken: the band is the one
 # `_CALL_BASELINE` uses, and a bespoke one here would need its own
 # argument every time the shape moved.
