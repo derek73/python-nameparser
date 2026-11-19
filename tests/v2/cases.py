@@ -139,6 +139,11 @@ class Case:
     #: argues otherwise. Its text still goes to corpus_cjk.jsonl, so
     #: the snapshot shows when its reading moves.
     tolerated: bool = False
+    #: Render views the row also asserts, view -> value, an empty one
+    #: included (`surname1`, `surname2`): views no field shows, which a
+    #: row needs where the change it pins moves a view and no field
+    #: (#1456, #1479). Absent views are not compared.
+    views: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if self.policy is not None and self.locale is not None:
@@ -474,9 +479,33 @@ CASES: tuple[Case, ...] = (
          "Ana María de la Vega Rodríguez",
          {"given": "Ana", "middle": "María",
           "family": "de la Vega Rodríguez"},
-         policy=_TWO, classification="feat(#754)",
+         policy=_TWO, classification="feat(#1479)",
+         views=(("surname1", "de la Vega"), ("surname2", "Rodríguez")),
          notes="P2's chain made 'de la Vega Rodríguez' one piece, and "
-               "O6 counts its words, not its pieces"),
+               "O6 counts its words, not its pieces, taking none; the "
+               "family is divided by its words, the particles and the "
+               "word they attach to first (#1479); 3.0 and 3.1 read "
+               "surname2 ''"),
+    Case("two_family_names_divides_a_particle_led_family",
+         "Juan de la Vega Ruiz",
+         {"given": "Juan", "family": "de la Vega Ruiz"},
+         policy=_TWO, classification="feat(#1479)",
+         views=(("surname1", "de la Vega"), ("surname2", "Ruiz")),
+         notes="3.0 and 3.1 read surname1 'de la Vega Ruiz', surname2 ''"),
+    Case("two_family_names_leaves_three_words_behind_a_particle_whole",
+         "Juan de la Vega Ruiz Soto",
+         {"given": "Juan", "family": "de la Vega Ruiz Soto"},
+         policy=_TWO, classification="feat(#754)",
+         views=(("surname1", "de la Vega Ruiz Soto"), ("surname2", "")),
+         notes="three units, left whole as a plain family of three is"),
+    Case("two_family_names_divides_the_family_a_given_name_phrase_leaves",
+         "María del Carmen García López",
+         {"given": "María", "middle": "del Carmen",
+          "family": "García López"},
+         policy=_TWO, classification="feat(#1479)",
+         views=(("surname1", "García"), ("surname2", "López")),
+         notes="rules/P10 reads the phrase as the middle name and leaves "
+               "P2's chain the family; 3.0 and 3.1 read surname2 ''"),
     Case("two_family_names_counts_a_connective_join_as_its_words",
          "José María Ortega y Gasset",
          {"given": "José", "middle": "María", "family": "Ortega y Gasset"},
@@ -500,7 +529,46 @@ CASES: tuple[Case, ...] = (
     Case("two_family_names_leaves_a_family_comma_alone",
          "López, Ana García",
          {"given": "Ana", "middle": "García", "family": "López"},
-         policy=_TWO, classification="parity"),
+         policy=_TWO, classification="parity",
+         views=(("surname1", "López"), ("surname2", ""))),
+    Case("two_family_names_divides_the_part_before_a_family_comma",
+         "García Márquez, Juan",
+         {"given": "Juan", "family": "García Márquez"},
+         policy=_TWO, classification="feat(#1456)",
+         views=(("surname1", "García"), ("surname2", "Márquez")),
+         notes="divided as 'Juan García Márquez' is; 3.0 and 3.1 read "
+               "surname1 'García Márquez', surname2 ''"),
+    Case("two_family_names_divides_a_particle_led_head_before_a_comma",
+         "de la Vega Ruiz, Juan",
+         {"given": "Juan", "family": "de la Vega Ruiz"},
+         policy=_TWO, classification="feat(#1456)",
+         views=(("surname1", "de la Vega"), ("surname2", "Ruiz"))),
+    Case("two_family_names_divides_a_head_before_a_comma_family_first",
+         "García Márquez, Gabriel",
+         {"given": "Gabriel", "family": "García Márquez"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="feat(#1456)",
+         views=(("surname1", "García"), ("surname2", "Márquez"))),
+    Case("two_family_names_leaves_a_connective_head_before_a_comma_whole",
+         "Ortega y Gasset, José",
+         {"given": "José", "family": "Ortega y Gasset"},
+         policy=_TWO, classification="feat(#754)",
+         views=(("surname1", "Ortega y Gasset"), ("surname2", "")),
+         notes="a connective is left whole, the open question "
+               "decisions/R10 holds"),
+    Case("es_divides_the_part_before_a_family_comma",
+         "García Márquez, Juan",
+         {"given": "Juan", "family": "García Márquez"},
+         locale="es", classification="feat(#1456)",
+         views=(("surname1", "García"), ("surname2", "Márquez"))),
+    Case("es_divides_a_listed_given_name_before_a_family_comma",
+         "Jorge Flores, Ana",
+         {"given": "Ana", "family": "Jorge Flores"},
+         locale="es", classification="feat(#1456)",
+         views=(("surname1", "Jorge"), ("surname2", "Flores")),
+         notes="no given-name veto before the comma: the writer marked "
+               "both words as family, where 'Ana Jorge Flores' keeps "
+               "'Jorge' a middle name"),
     Case("two_family_names_leaves_a_two_word_name_alone",
          "Ana García", {"given": "Ana", "family": "García"},
          policy=_TWO, classification="parity"),

@@ -367,6 +367,10 @@ the first surname without its particles (see :ref:`aggregate-views`):
     >>> vega_es = spain.parse("Juan de la Vega del Valle")
     >>> vega_es.surname1, vega_es.surname1_base
     ('de la Vega', 'Vega')
+    >>> spain.parse("García Márquez, Gabriel").surname2
+    'Márquez'
+    >>> spain.parse("María del Carmen García López").surname2
+    'López'
 
 Data from systems without the letter ñ writes ``Begoña`` as
 ``Begona``, so each listed name written with ñ is listed with n too,

@@ -937,7 +937,10 @@ class Policy:
     #: the word it attaches to ("Juan Pérez de la Vega" gives family
     #: ``Pérez de la Vega``), a family already holding two words keeps
     #: what it has ("José María Ortega y Gasset", "Ana María
-    #: García-López", "Ana María de la Vega Rodríguez"), titles and
+    #: García-López", "Ana María de la Vega Rodríguez"), and is divided
+    #: by its own words into ``surname1`` and ``surname2`` (``de la
+    #: Vega``, ``Rodríguez``) unless ``y`` joins it or it is one
+    #: hyphenated word, titles and
     #: suffixes count as no name word, and a name of two name words is
     #: unchanged. The word taken must be one name word a family name
     #: could be, so an initial written alone ("Ana M. García"), hyphenated
@@ -950,8 +953,9 @@ class Policy:
     #: script reads in an order other than name_order (a spaced Han or
     #: Hangul name under the default) is left alone, though under a
     #: declared FAMILY_FIRST, which the script agrees with, it moves. A
-    #: family comma decides by itself, so "García López, Ana" is
-    #: unaffected. A name with one family name behind two given names
+    #: family comma decides by itself, so "García López, Ana" keeps its
+    #: family, divided into ``surname1`` ``García`` and ``surname2``
+    #: ``López`` as the comma-less name is. A name with one family name behind two given names
     #: loses one to the family ("Juan Carlos Pérez" gives family
     #: ``Carlos Pérez``), which is most English and Argentine names of
     #: three words or more and many Portuguese and Brazilian ones as

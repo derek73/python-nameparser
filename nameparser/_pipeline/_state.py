@@ -160,15 +160,17 @@ def reported_suffix_fork(ambiguities: Sequence[PendingAmbiguity],
 ATTACHED_TAG = "vocab:attached"
 
 #: On each word of the second name unit rules/O6 reads a family as,
-#: written where O6 takes its word, and dropped from the published
+#: written by `_post_rules._divide_family` wherever O6 divides a family
+#: into two, a word taken or not (and by W5's surname pair), and
+#: dropped from the published
 #: token like the kind tags above: `Reading.second_surname` carries it
 #: out (rules/R10, 3.0's 4d).
 SECOND_SURNAME_TAG = "vocab:second-surname"
 
-#: Its twin on each word of the FIRST name unit: written where O6 reads
-#: two, on the family O6 found under a family-first order (a particle
-#: P6 attached included) and on the unit it took under the default one,
-#: and where O6 marked none, by O3 on the family it folds middles into,
+#: Its twin on each word of the FIRST name unit: written by
+#: `_post_rules._divide_family` wherever O6 divides a family into two
+#: (a particle P6 attached going with it), by W5's surname pair, and
+#: where O6 marked none, by O3 on the family it folds middles into,
 #: so a folded middle is in no unit; carried out on
 #: `Reading.first_surname` (rules/R11, #1022).
 FIRST_SURNAME_TAG = "vocab:first-surname"

@@ -424,17 +424,6 @@
   },
   "text": "Svoboda Josef Václav"
  },
- "es/foreignFull/sorting": {
-  "surname1_base": {
-   "expected": "Miller",
-   "got": "Miller Jones"
-  },
-  "surname2": {
-   "expected": "Jones",
-   "got": ""
-  },
-  "text": "von Miller Jones, Prof. Dr. Mary Sue Marie"
- },
  "es/foreignGGS/givenFirst": {
   "family": {
    "expected": "Jacobsen",
@@ -445,17 +434,6 @@
    "got": "Christopher"
   },
   "text": "Christopher Hans Jacobsen"
- },
- "es/nativeFull/sorting": {
-  "surname1_base": {
-   "expected": "Pablo",
-   "got": "Pablo Pérez"
-  },
-  "surname2": {
-   "expected": "Pérez",
-   "got": ""
-  },
-  "text": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio"
  },
  "ga/foreignFull/givenFirst": {
   "surname1_base": {

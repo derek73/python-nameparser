@@ -71,6 +71,8 @@ def test_case(case: Case) -> None:
     pn = parser.parse(case.text)
     actual = {f: getattr(pn, f) for f in _FIELDS if getattr(pn, f)}
     assert actual == case.expect, f"{case.text!r} ({case.classification})"
+    assert {view: getattr(pn, view) for view, _ in case.views} == dict(
+        case.views), f"{case.text!r} ({case.classification})"
     kinds = sorted(a.kind.value for a in pn.ambiguities)
     assert kinds == sorted(case.ambiguities), \
         f"{case.text!r} ({case.classification})"

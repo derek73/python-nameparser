@@ -266,8 +266,10 @@ family as two: with ``two_family_names`` on
 (:ref:`two-family-names`), as the ``es``, ``es_ar``, ``cs``, ``sk``,
 ``pt_br`` and ``pt_pt`` packs turn it on (:doc:`locales`), or for a Chinese name opening with
 two surnames under ``zh`` (:ref:`east-asian-names`), and ``family``
-keeps both. Every other name has none, a family comma's and a
-hyphenated one included:
+keeps both. The family is divided by its own words, so the name written
+with a family comma gives the same two, and so does a family opening
+with a particle (``de la Vega`` then ``Ruiz``). Every other name has
+none, a hyphenated family and one joined by ``y`` included:
 
 .. doctest::
 
@@ -276,6 +278,10 @@ hyphenated one included:
     ...     "Gabriel García Márquez")
     >>> marquez.family, marquez.surname1, marquez.surname2
     ('García Márquez', 'García', 'Márquez')
+    >>> marquez_comma = Parser(policy=Policy(two_family_names=True)).parse(
+    ...     "García Márquez, Gabriel")
+    >>> marquez_comma.surname1, marquez_comma.surname2
+    ('García', 'Márquez')
     >>> parse("Gabriel García Márquez").surname2
     ''
 

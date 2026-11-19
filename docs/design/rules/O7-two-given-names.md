@@ -111,10 +111,6 @@
   ```
   "Maria do Carmo Silva"  two_given_names  →  family="do Carmo Silva"
   ```
-- The family a particle phrase leaves behind keeps the words it was written with, so with both switches on it holds two words as one unit and gives no second-surname view.
-  ```
-  "María del Carmen García López"  two_family_names+two_given_names  →  surname2=""
-  ```
 - Where the declared order and a name's script agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other, as O6 reads it.
   ```
   "王 小 明"  family-first+two_given_names  →  given="小 明"

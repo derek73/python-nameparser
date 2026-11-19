@@ -17,10 +17,13 @@
 "Gabriel García Márquez Jr."  two_family_names  →  surname2="Márquez"
 "Gabriel García Márquez, PhD"  two_family_names  →  surname2="Márquez"
 "Ana García (Anita) López"  two_family_names  →  surname2="López"
+"Juan de la Vega Ruiz"  two_family_names  →  surname2="Ruiz"
+"María del Carmen García López"  two_family_names  →  surname2="López"
+"García López, Ana"  two_family_names  →  surname2="López"
+"Lloyd Webber, Andrew"  two_family_names  →  surname2="Webber"
 "Gabriel García Márquez"    →  surname2=""  · boundary
+"Lloyd Webber, Andrew"    →  surname2=""  · boundary
 "Ana García"  two_family_names  →  surname2=""
-"Lloyd Webber, Andrew"  two_family_names  →  surname2=""
-"García López, Ana"  two_family_names  →  surname2=""
 ", Ana García López"  two_family_names  →  surname2=""
 ```
 
@@ -38,13 +41,17 @@
 
 **Accepted:**
 
-- A family O6 leaves whole is one unit to the view, so where a connective, a hyphen or a particle chain already joins two family names the name has two and the view is empty, as O6 counts them.
+- A family O6 leaves whole is one unit to the view, so where a connective joins two family names, or a hyphen makes them one word, the name has two and the view is empty, as O6 counts them, with or without a family comma; a hyphenated word beside a plain one is a unit of its own.
   ```
   "José María Ortega y Gasset"  two_family_names  →  surname2=""
   "Ana María García-López"  two_family_names  →  surname2=""
-  "Ana María de la Vega Rodríguez"  two_family_names  →  surname2=""
+  "Ortega y Gasset, José"  two_family_names  →  surname2=""
   ```
-- A family comma marks nothing, even where the part before it holds two family names, since nothing in it tells them from one compound name.
+- A family of two units is divided whatever wrote them as one: a compound surname written as two words before a family comma, as without one, and one written with a particle and two name words, whose particle the vocabulary does not chain to both.
+  ```
+  "Lloyd Webber, Andrew"  two_family_names  →  surname1="Lloyd"
+  "Ana de la Torre Ugarte"  two_family_names  →  surname2="Ugarte"
+  ```
 - Where O6 reads a given name into the family, the family's own name is the view: the shape the switch cannot tell from the one it is for (O6's Accepted).
   ```
   "Juan Carlos Pérez"  two_family_names  →  surname2="Pérez"

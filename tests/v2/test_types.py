@@ -1411,7 +1411,6 @@ _SURNAME2_ROWS = [
     ("García Márquez Ana María", _FF, True, "Márquez"),
     ("García Márquez Ana María", _FFGL, True, "Márquez"),
     ("de Mesnil Jean Paul", _FF, False, "Jean"),
-    ("Van Gogh Ana María", _FF, False, "Gogh"),
     # a chain after the family is cut as P1's fold cuts it (#1024)
     ("Juan de la Vega Rodríguez", _FF, False, "de la Vega"),
     ("Pérez de la Vega Juan Carlos", _FFGL, False, "de la Vega"),
@@ -1419,11 +1418,25 @@ _SURNAME2_ROWS = [
     # P6's particle attaches to the first unit and stays out
     ("Beethoven Ludwig Maria van", _FF, False, "Ludwig"),
     ("Beethoven Ludwig Maria van", _FF, True, "Ludwig"),
-    # a family comma alone marks nothing, in every comma shape
-    ("Lloyd Webber, Andrew", _GF, False, ""),
-    ("García López, Ana", _GF, False, ""),
-    ("García López, Ana", _FF, True, ""),
+    # the part before a family comma is divided as the comma-less
+    # family is, in every order (#1456)
+    ("Lloyd Webber, Andrew", _GF, False, "Webber"),
+    ("García López, Ana", _GF, False, "López"),
+    ("García López, Ana", _FF, True, "López"),
+    ("Ruiz de la Vega, Juan", _FFGL, False, "de la Vega"),
+    ("de la Vega Ruiz, Juan", _GF, False, "Ruiz"),
+    # a family already holding two words is divided by its own words,
+    # a particle chain and the family a P10 phrase leaves (#1479)
+    ("García de la Vega López", _GF, False, "López"),
+    ("Ana María de la Vega Rodríguez", _GF, False, "Rodríguez"),
+    ("María del Carmen García López", _GF, False, "López"),
+    # a comma head of one word, of none, of three, a word joined from
+    # after the comma, a connective and a hyphen leave it whole
     ("López, Ana García", _GF, True, ""),
+    ("García Márquez López, Juan", _GF, False, ""),
+    ("Smith, de Mesnil Jean", _GF, False, ""),
+    ("Ortega y Gasset, José", _GF, False, ""),
+    ("García-López, Ana", _GF, False, ""),
     ("Ana, García López", _GF, False, ""),
     (", Ana García López", _GF, False, ""),
     (", Ana García López", _GF, True, ""),
@@ -1433,8 +1446,11 @@ _SURNAME2_ROWS = [
     ("Ana María García-López", _GF, True, ""),
     ("José María Ortega y Gasset", _GF, False, ""),
     ("Juan Pérez y Gómez", _GF, False, ""),
-    ("García de la Vega López", _GF, False, ""),
-    ("Ana María de la Vega Rodríguez", _GF, False, ""),
+    ("Juan de la Vega Ruiz Soto", _GF, False, ""),
+    # a lone particle and the word after it are one unit (rules/O6's
+    # Accepted; master read 'Gogh' here, the particle a unit alone)
+    ("Van Gogh Ana María", _FF, False, ""),
+    ("Van der Merwe Jan", _FF, False, ""),
     # O6's other declines
     ("Ana García", _GF, False, ""),
     ("Ana M.-J. López", _GF, False, ""),
@@ -1586,24 +1602,27 @@ _SURNAME1_CASES = [
     ("Beethoven Ludwig Maria van", FAMILY_FIRST, False, "van Beethoven",
      "van", "Beethoven"),
     ("Ali Hassan bin Ahmad", None, False, "Hassan", "", "Hassan"),
+    # the part before a family comma, two units as without it (#1456)
+    ("Pérez de la Vega, Juan", None, False, "Pérez", "", "Pérez"),
     # one unit: the family's own views
     ("Juan de la Vega", None, False, "de la Vega", "de la", "Vega"),
-    ("Pérez de la Vega, Juan", None, False, "Pérez de la Vega", "de la",
-     "Pérez Vega"),
+    ("Pérez de la Vega López, Juan", None, False, "Pérez de la Vega López",
+     "de la", "Pérez Vega López"),
     ("Ana María García-López", None, False, "García-López", "",
      "García-López"),
-    # a first unit O6 leaves a lone particle splits as the family does,
-    # the particle working there (R11's Accepted)
-    ("Van Gogh Vincent", FAMILY_FIRST, False, "Van", "Van", ""),
+    # a lone particle and the word after it are one unit, the family's
+    # own views (R11's Accepted, #1479)
+    ("Van Gogh Vincent", FAMILY_FIRST, False, "Van Gogh", "Van", "Gogh"),
     # a patronymic in either unit keeps the mark where assemble
     # rebuilds the reading
     ("Mammadov Hasan Ali ibn", FAMILY_FIRST, False, "ibn Mammadov", "ibn",
      "Mammadov"),
     # O3's folded middles are in neither unit, one unit or two
-    ("García López, Ana María", None, True, "García López", "",
-     "García López"),
-    ("Ana María de la Vega Rodríguez", None, True, "de la Vega Rodríguez",
-     "de la", "Vega Rodríguez"),
+    ("García López, Ana María", None, True, "García", "", "García"),
+    ("Ana María de la Vega Rodríguez", None, True, "de la Vega", "de la",
+     "Vega"),
+    ("Ana María García-López", None, True, "García-López", "",
+     "García-López"),
 ]
 
 
@@ -1656,13 +1675,21 @@ def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
         patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
             "Ali Hasan oglu")
     assert (turkic.surname1, turkic.surname2) == ("Hasan oglu", "")
-    # five name words keep the positional reading, so O6 still divides
-    # the family it reads there (the father's name and the marker)
-    five = Parser(policy=Policy(
+    # five name words keep the positional reading and O6 takes the
+    # father's name into the family, which is still one unit; so is the
+    # family before a comma (rules/O6, #1456)
+    turkic_parser = Parser(policy=Policy(
         two_family_names=True,
-        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
-            "Ali Ahmad Vali Hasan oglu")
-    assert (five.surname1, five.surname2) == ("Hasan", "oglu")
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    five = turkic_parser.parse("Ali Ahmad Vali Hasan oglu")
+    assert (five.family, five.surname1, five.surname2) == (
+        "Hasan oglu", "Hasan oglu", "")
+    comma = turkic_parser.parse("Hasan oglu, Ali")
+    assert (comma.surname1, comma.surname2) == ("Hasan oglu", "")
+    # without the Turkic rule the marker is a word like any other
+    plain = Parser(policy=Policy(two_family_names=True)).parse(
+        "Hasan oglu, Ali")
+    assert (plain.surname1, plain.surname2) == ("Hasan", "oglu")
 
 
 def test_the_surname1_views_are_render_keys_and_not_fields() -> None:
