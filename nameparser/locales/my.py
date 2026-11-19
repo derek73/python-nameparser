@@ -16,8 +16,8 @@ the name).
 Burmese names have no family name: every word is a personal name, and
 the last one lands in ``family`` by position as it does in any name
 read positionally. The title vocabulary reads ``U.`` with its full
-stop as it reads ``U``, wherever it reads a title, so a Western
-initial in such a place is the title under the pack too (``U. S.
+stop as it reads ``U``, so a Western initial can be the title under
+the pack too (``U. S.
 Grant`` gives title ``U.``, given ``S.``; ``Smith, U.`` and ``Dr. U.
 Smith`` give no given name), the accepted cost and the reason to keep
 the pack to Burmese names; a bare ``U.`` between two name words stays

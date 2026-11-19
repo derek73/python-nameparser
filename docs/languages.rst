@@ -1253,11 +1253,10 @@ The pack is for lists of Burmese names. On other names it costs:
   can read as a credential, the given name lost (``Van Buren, Ed``
   gives suffix ``Ed``).
 - **The credential DO**, read as a name word.
-- **An initial U.** ``U`` is the honorific however it is written,
-  wherever the parser reads a title, so an initial ``U.`` in such a
-  place is the title (``Smith, U.`` and ``Dr. U. Smith`` give no given
-  name); a ``U.`` among or ending the given names stays an initial
-  (``John U. Smith``, ``Smith, John U.``).
+- **An initial U.** ``U`` is the honorific however it is written, so
+  an initial ``U.`` can be read as the title: ``Smith, U.`` and ``Dr.
+  U. Smith`` give no given name, though ``John U. Smith`` and ``Smith,
+  John U.`` keep it an initial.
 
 Keep it to a parser of its own for the Burmese names in your data:
 

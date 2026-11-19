@@ -6,7 +6,7 @@ salutation = { default = false, gender = "f", native = "ဒေါ်", issue = 1
 
 [[word]]
 text = "u"
-salutation = { default = false, gender = "m", native = "ဦး", issue = 1231, expands = "U, the honorific written before a man's name (Mr.)", note = "a Korean surname (Wikidata 154 family, South Korea 122; 12 given, 2026-11-19) and, written with its full stop, an initial, which the reading takes as the title under the pack wherever the parser reads a title (U. S. Grant, Smith, U.), the accepted cost (decisions/vocabulary-collisions, the 2026-11-19 #1231 entry). Written bare by Burmese names as a rule (U Thein Sein; 1 of the 71 names opening with the honorific in the #1231 population writes U.); FEC writes U 187 times and U. 163, 320 of the 351 after a comma; ctgov-officials U 260, U. 61 (tools/name_usage.py, 2026-11-19)" }
+salutation = { default = false, gender = "m", native = "ဦး", issue = 1231, expands = "U, the honorific written before a man's name (Mr.)", note = "a Korean surname (Wikidata 154 family, South Korea 122; 12 given, 2026-11-19) and, written with its full stop, an initial, which the reading can take as the title under the pack (U. S. Grant, Smith, U.), the accepted cost (decisions/vocabulary-collisions, the 2026-11-19 #1231 entry). Written bare by Burmese names as a rule (U Thein Sein; 1 of the 71 names opening with the honorific in the #1231 population writes U.); FEC writes U 187 times and U. 163, 320 of the 351 after a comma; ctgov-officials U 260, U. 61 (tools/name_usage.py, 2026-11-19)" }
 
 [[word]]
 text = "ဂျူနီယာ"
