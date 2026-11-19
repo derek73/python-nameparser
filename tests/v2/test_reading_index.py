@@ -186,6 +186,8 @@ def test_a_tag_selects_its_own_file_and_its_ancestors_never_its_descendants() ->
     # spelling cannot silently select only the parent
     assert ri.selected(["pt-br"]) == {"pt-BR", "pt"}
     # a region no file holds selects what its language's file holds
+    assert ri.selected(["pt-AO"]) == {"pt"}
+    # nor does one whose file holds a [rules] table and no reading
     assert ri.selected(["pt-PT"]) == {"pt"}
     # no macrolanguage table: Malay does not select Indonesian
     assert ri.selected(["ms"]) == {"ms"}
@@ -331,7 +333,17 @@ def test_a_strict_pool_holds_the_chosen_files_mul_and_native_script_only() -> No
 def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
     empty = ri.files() - ri.tags()
     assert empty and ri.tags() <= ri.files()
-    for tag in sorted(empty):
+    # a region's file holding only a [rules] table (pt-PT.toml, #1453)
+    # is chosen plainly through its language's file, which holds readings,
+    # and strictly with it
+    regions = {tag for tag in empty if tag.split("-")[0] in ri.tags()}
+    assert regions == {"pt-PT"}
+    for tag in sorted(regions):
+        language = tag.split("-")[0]
+        assert ri.selected([tag]) == ri.selected([language])
+        assert ri.selected([tag], strict=True) == {tag} | ri.selected([language], strict=True)
+        assert not any(r.tag == tag for r in ri.index())
+    for tag in sorted(empty - regions):
         with pytest.raises(ValueError,
                            match=f"{tag}.toml holds no reading a parse reads"):
             ri.selected([tag])
@@ -392,6 +404,7 @@ STRICT_UNGATED = {
     "nl": {"den", "ten", "tho"},
     "pt": {"da", "do", "santa"},
     "pt-BR": {"da", "do", "santa"},
+    "pt-PT": {"da", "do", "santa"},
     "sk": {"st"},
     "sl": {"st"},
 }

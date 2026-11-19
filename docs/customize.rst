@@ -1065,8 +1065,8 @@ taken:
 If you know your data's language, choose it rather than editing the
 words one at a time: a chosen language's connective is a connective
 even in a name written in one case, and the fork is no longer reported.
-For Portuguese ``e``, use the ``pt`` pack (``locales.PT_BR`` reads it the
-same way):
+For Portuguese ``e``, use the ``pt`` pack (``locales.PT_BR`` and
+``locales.PT_PT`` read it the same way):
 
 .. doctest::
 

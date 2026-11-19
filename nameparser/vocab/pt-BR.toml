@@ -1,5 +1,12 @@
 schema = 1
 
+# locales.PT_BR reads its names with two family names (rules/O6), its given-name
+# list keeping a given name out of the family; pt.toml, which locales.PT reads
+# for Portuguese names from any country, holds no table (decisions/O6, the
+# 2026-11-19 entry)
+[rules]
+two_family_names = true
+
 [[word]]
 text = "f"
 excluded = { agnomen = { reason = "Filho written short in 15 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 152 tse-donors filed/registry pairs (measured with 'n' on too, a pair holding both counted under the letter its reading took first) that the choice of Portuguese alone does not, and in 104 of them the registry spells a surname the letter abbreviates (ANA MARIA F, registry ANA MARIA FILGUEIRAS) where in 48 it spells FILHO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }

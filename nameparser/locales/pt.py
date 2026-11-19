@@ -9,8 +9,9 @@ case, while ``Sr`` keeps both readings, Senhor in front and the
 generation behind, as the default reads it (decisions/vocabulary-model,
 the 2026-10-30 phase 3g entry); its academic titles (``Doutor``,
 ``Professora``) are read by default since #1115. locales.PT_BR
-chooses ``pt-BR``, which selects ``pt`` too, so it reads all of these
-the same way.
+and locales.PT_PT choose ``pt-BR`` and ``pt-PT``, which select ``pt``
+too, so they read all of these the same way; each also reads two
+family names, which this pack does not (decisions/O6, 2026-11-19).
 
 Data sources: the counts are on the readings in pt.toml
 (tools/name_usage.py and the local corpora). The pack carries no

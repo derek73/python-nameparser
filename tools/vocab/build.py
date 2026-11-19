@@ -361,9 +361,13 @@ RULE_DEFAULTS: dict[str, object] = {
 #: packs. TR_AZ reads tr.toml's: no az.toml exists, and the pack's rule
 #: is one rule for both languages. ES_AR reads es.toml's too, a country
 #: pack reading its language's table (decisions/O6, 2026-11-04); the
-#: roster names the one pack a file is listed for.
+#: roster names the one pack a file is listed for. pt-BR.toml and
+#: pt-PT.toml are country files holding a table their language's file
+#: does not: locales.PT, chosen for Portuguese names from any country,
+#: leaves O6 off (decisions/O6, 2026-11-19).
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
-                             "sk": "SK", "vi": "VI", "ne": "NE"}
+                             "sk": "SK", "vi": "VI", "ne": "NE",
+                             "pt-BR": "PT_BR", "pt-PT": "PT_PT"}
 
 #: The words check 13 lets hold a reading in another file beside their
 #: mul.toml one, each with why (#1005): `i` is mul.toml's numeral and

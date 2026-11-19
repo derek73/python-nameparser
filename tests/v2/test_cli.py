@@ -505,7 +505,7 @@ def test_cli_strict_with_a_pack_whose_code_is_no_language(
 @pytest.mark.parametrize("tag,pack", [
     # a bare choice would drop the pack's segmentation, two family
     # names and given-name list, and the segmenter, in silence
-    ("zh-CN", "zh"), ("es-MX", "es"), ("ja-JP", "ja"), ("pt-PT", "pt"),
+    ("zh-CN", "zh"), ("es-MX", "es"), ("ja-JP", "ja"), ("pt-AO", "pt"),
     # a script subtag is not a region, and the message says neither
     ("zh-Hant", "zh"),
 ])
@@ -521,3 +521,11 @@ def test_cli_a_tag_spelled_for_a_packs_code_is_that_pack(
     assert (_fields(capsys, "--locale", tag, "Pedro Silva Sb")
             == _fields(capsys, "--locale", "pt_br", "Pedro Silva Sb"))
     assert _fields(capsys, "--locale", tag, "Pedro Silva Sb")["suffix"] == "Sb"
+
+
+@pytest.mark.parametrize("tag", ["pt-PT", "pt_pt", "PT-PT"])
+def test_cli_the_portugal_pack_is_named_by_its_tag(
+        capsys: pytest.CaptureFixture[str], tag: str) -> None:
+    # pt_pt reads two family names where pt, the language's pack, does not
+    assert _fields(capsys, "--locale", tag, "Rui Sousa Pinto")["family"] == "Sousa Pinto"
+    assert _fields(capsys, "--locale", "pt", "Rui Sousa Pinto")["family"] == "Pinto"

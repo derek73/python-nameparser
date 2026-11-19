@@ -119,10 +119,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
-        "my", "ne", "nl", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "my", "ne", "nl", "pt", "pt_br", "pt_pt", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, my, ne, nl, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, my, ne, nl, pt, pt_br, pt_pt, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -442,7 +442,7 @@ def test_a_strict_portuguese_choice_reads_the_given_names_es_also_marks(
     # reading no es.toml keeps the default's middle name; the others
     # (carmen, pilar, rosario, ...) it leaves to the family
     assert parse(text).middle == middle
-    for pack in (locales.PT, locales.PT_BR):
+    for pack in (locales.PT, locales.PT_BR, locales.PT_PT):
         assert parser_for(pack, strict=True).parse(text).middle == middle, pack
 
 
@@ -469,7 +469,7 @@ def test_es_and_pt_pack_contents() -> None:
     # sr keeps es's and pt's generation beside the salutation, so the
     # choice leaves it a dual position decides, as the default reads it
     for packed in (_require_packed("es"), _require_packed("pt"),
-                   _require_packed("pt_br")):
+                   _require_packed("pt_br"), _require_packed("pt_pt")):
         for text in ("Gary Holloway Sr", "Sr. Juan Pérez", "J. Smith Sr."):
             assert packed.parse(text).as_dict() == parse(text).as_dict()
     # the patch's and the fragment's declaration: rules/O6's three name
@@ -1102,7 +1102,7 @@ _NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
 
 
 @pytest.mark.parametrize("name", _NARROWED)
-@pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk"])
+@pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk", "pt_br", "pt_pt"])
 def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
         code: str, name: str) -> None:
     assert _require_packed(code).parse(name).as_dict() == _default_parse(name)
@@ -2396,14 +2396,27 @@ _ROTATORS["pt"] = [
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
 ]
+# pt_br and pt_pt: the patch's rules/O6, as es's rows hold it, beside
+# their choices' words; the list's own words read as the default does,
+# so they are no rotators (held in the contents test)
+_PT_TWO_FAMILY_NAMES = [
+    "Rui Sousa Pinto",               # rules/O6, the patch
+    "Ana Beatriz Souza Lima",        # rules/O6 behind a two-word given part
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
+]
 _ROTATORS["pt_br"] = [
-    "JOSE CARLOS SILVA SB",          # sb
-    "Jose Carlos Silva Sb.",         # sb, dotted
-    "JOSE SILVA SB",                 # sb, one word to spare
+    # sb behind listed given names, which the patch and the list alone
+    # leave as the default reads them (rules/O6's veto)
+    "JOSE CARLOS PEDRO SB",          # sb
+    "Jose Carlos Pedro Sb.",         # sb, dotted
+    "JOSE CARLOS SB",                # sb, one word to spare
     *_PT_PARTICLE_GIVEN,             # pt's given names P10 completes
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
+    *_PT_TWO_FAMILY_NAMES,
 ]
+_ROTATORS["pt_pt"] = [*_ROTATORS["pt"], *_PT_TWO_FAMILY_NAMES]
 
 
 # #1115 turned these titles on by default, so no choice moves them: the
@@ -2465,6 +2478,12 @@ _READ_BY_DEFAULT_SINCE_1115: dict[str, list[str]] = {
         "Profa Maria Souza",             # profa
     ],
     "pt_br": [
+        "Doutor João Silva",             # doutor, pt's title
+        "Fernanda Lucchese, Doutora",    # doutora, pt's title
+        "Professora Rosária Lima",       # professora, pt's title
+        "Profa Maria Souza",             # profa, pt's title
+    ],
+    "pt_pt": [
         "Doutor João Silva",             # doutor, pt's title
         "Fernanda Lucchese, Doutora",    # doutora, pt's title
         "Professora Rosária Lima",       # professora, pt's title
@@ -3137,11 +3156,12 @@ _3H_ROWS = [
      ("S.", "B.", "John Smith", "", ("SUFFIX_OR_NAME",)),
      ("S.", "B.", "John Smith", "", ("SUFFIX_OR_NAME",))),
     # F and N, written as an initial is, are excluded, the pack included
-    # (pt-BR.toml): the family name they spell, by default and under it
+    # (pt-BR.toml): the family name they spell, by default and under it,
+    # where the pack's two family names (rules/O6) take the word before
     ("PT_BR", "JOSE CARLOS SILVA F",
-     ("JOSE", "CARLOS SILVA", "F", "", ()), ("JOSE", "CARLOS SILVA", "F", "", ())),
+     ("JOSE", "CARLOS SILVA", "F", "", ()), ("JOSE", "CARLOS", "SILVA F", "", ())),
     ("PT_BR", "Pedro Alves N.",
-     ("Pedro", "Alves", "N.", "", ()), ("Pedro", "Alves", "N.", "", ())),
+     ("Pedro", "Alves", "N.", "", ()), ("Pedro", "", "Alves N.", "", ())),
     # the letter as an initial: before the surname, or leading, unchanged
     ("PT_BR", "JOHN F KENNEDY",
      ("JOHN", "F", "KENNEDY", "", ()), ("JOHN", "F", "KENNEDY", "", ())),
@@ -3587,6 +3607,77 @@ def test_a_gaelic_pack_keeps_the_mac_masks(
     # reading, still writes the inner capital
     parser = parser_for(pack, strict=strict)
     assert str(parser.capitalized(parser.parse(name))) == repaired
+
+
+def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() -> None:
+    # decisions/O6, 2026-11-19: pt-BR.toml and pt-PT.toml each hold a
+    # [rules] table and pt.toml none, so the pack chosen by language
+    # leaves O6 off; both country packs carry one Portuguese list
+    from nameparser._locale import rules_patch
+    from nameparser._reading_index import changed_words, selected
+    from nameparser.locales import pt_pt as _pt_pt
+    from nameparser.locales._pt_given_names import GIVEN_NAMES
+    on = PolicyPatch(two_family_names=True)
+    assert locales.PT_BR == Locale(code="pt_br", lexicon=Lexicon(given_names=GIVEN_NAMES),
+                                   policy=on, languages=frozenset({"pt-BR"}))
+    assert locales.PT_PT == Locale(code="pt_pt", lexicon=Lexicon(given_names=GIVEN_NAMES),
+                                   policy=on, languages=frozenset({"pt-PT"}))
+    assert locales.PT.policy == PolicyPatch() and not locales.PT.lexicon.given_names
+    # no table rides along a tag's ancestors: pt holds none, and a bare
+    # choice of either country's tag turns nothing on
+    with pytest.raises(KeyError, match="no vocabulary file 'pt'"):
+        rules_patch("pt")
+    for tag in ("pt-BR", "pt-PT"):
+        bare = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                                 languages=frozenset({tag})))
+        assert not bare.policy.two_family_names, tag
+    assert not parser_for(locales.PT).policy.two_family_names
+    # pt-PT.toml holds no word, so pt_pt's choice selects pt's file alone
+    assert selected(locales.PT_PT.languages) == {"pt"}
+    assert (changed_words(selected(locales.PT_PT.languages))
+            == changed_words(selected(locales.PT.languages)))
+    pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
+    assert pt.parse("Rui Sousa Pinto").family == "Pinto"
+    assert pt.parse("Pedro Sousa Alves Filho").family == "Alves"
+    for packed, packed_pack in ((br, locales.PT_BR), (pp, locales.PT_PT)):
+        # two family names where pt reads a middle name
+        assert packed.parse("Rui Sousa Pinto").family == "Sousa Pinto"
+        # a listed given name stays, with its ç or with the c an ASCII
+        # writer puts in its place
+        for text in ("Ana Beatriz Costa", "Pedro Gonçalo Matos",
+                     "Pedro Goncalo Matos", "Maria Constanca Reis"):
+            assert packed.parse(text).as_dict() == pt.parse(text).as_dict(), text
+        # a word the list lacks is taken, the switch's cost (rules/O6)
+        assert packed.parse("Ana Zzarita Costa").family == "Zzarita Costa"
+        # a family comma: the switch takes nothing from the given part
+        assert packed.parse("Pinto, Rui Sousa").as_dict() == pt.parse(
+            "Pinto, Rui Sousa").as_dict()
+        assert packed.parse("Rui Sousa Pinto, Jr.").family == "Sousa Pinto"
+        # beside a particle: the switch takes the word before the unit,
+        # and the list keeps a given name there
+        assert packed.parse("Rui Costa dos Santos").family == "Costa dos Santos"
+        assert packed.parse("Rui Pedro dos Santos").as_dict() == pt.parse(
+            "Rui Pedro dos Santos").as_dict()
+        # an agnomen is peeled before the family is counted: three name
+        # words left take one, two take none
+        sousa = packed.parse("Pedro Sousa Alves Filho")
+        assert (sousa.family, sousa.suffix) == ("Sousa Alves", "Filho")
+        alves = packed.parse("Pedro Alves Filho")
+        assert (alves.family, alves.suffix) == ("Alves", "Filho")
+        # under a family-first order: the first two words, the list
+        # vetoing a given name standing second
+        for order, given in ((FAMILY_FIRST, "Ana"), (FAMILY_FIRST_GIVEN_LAST, "Beatriz")):
+            ordered = parser_for(packed_pack, base=Parser(policy=Policy(name_order=order)))
+            souza = ordered.parse("Sousa Pinto Ana Beatriz")
+            assert (souza.family, souza.given) == ("Sousa Pinto", given), order
+            assert ordered.parse("Costa Beatriz Ana").family == "Costa", order
+            assert ordered.parse("Costa Zzbeatriz Ana").family == "Costa Zzbeatriz", order
+    # pt_br's SB beside the switch, which pt_pt's choice does not read
+    sb = br.parse("JOSE ALVES LIMA SB")
+    assert (sb.family, sb.suffix) == ("ALVES LIMA", "SB")
+    assert pp.parse("JOSE ALVES LIMA SB").family == "LIMA SB"
+    assert _pt_pt.DEVIATES("Rui Sousa Pinto")
+    assert not _pt_pt.DEVIATES("Rui Pinto")
 
 
 def test_the_es_ar_pack_is_es_with_a_longer_given_name_list() -> None:

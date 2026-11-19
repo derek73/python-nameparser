@@ -17972,6 +17972,53 @@ CASES: tuple[Case, ...] = (
                "so the "
                "pack reads it as a first family name, as locales.ES does; "
                "read middle 'Emerita' 3.0.0 through 3.1"),
+    Case("two_family_names_under_pt_br", "Ana Souza Lima",
+         {"given": "Ana", "family": "Souza Lima"},
+         locale="pt_br", classification="feat(#1453)",
+         notes="O6, pt-BR.toml's [rules]; read middle 'Souza' 3.0.0 "
+               "through 3.1"),
+    Case("two_family_names_under_pt_br_in_capitals", "ANA SOUZA LIMA",
+         {"given": "ANA", "family": "SOUZA LIMA"},
+         locale="pt_br", classification="feat(#1453)",
+         notes="O6 reads no case; read middle 'SOUZA' 3.0.0 through 3.1"),
+    Case("two_family_names_under_pt_pt", "Rui Sousa Pinto",
+         {"given": "Rui", "family": "Sousa Pinto"},
+         locale="pt_pt", classification="feat(#1453)",
+         notes="O6, pt-PT.toml's [rules]; locales.PT_PT is new in 3.2"),
+    Case("no_two_family_names_under_pt", "Rui Sousa Pinto",
+         {"given": "Rui", "middle": "Sousa", "family": "Pinto"},
+         locale="pt", classification="parity",
+         notes="the pack chosen by language leaves O6 off: pt.toml holds "
+               "no [rules] table (decisions/O6, 2026-11-19)"),
+    Case("listed_portuguese_given_name_under_pt_br", "Ana Beatriz Costa",
+         {"given": "Ana", "middle": "Beatriz", "family": "Costa"},
+         locale="pt_br", classification="parity",
+         notes="O6: 'beatriz' is in the Portuguese given-name list, so "
+               "the switch leaves it where it stands"),
+    Case("c_spelling_of_a_listed_given_name_under_pt_pt", "Pedro Goncalo Matos",
+         {"given": "Pedro", "middle": "Goncalo", "family": "Matos"},
+         locale="pt_pt", classification="parity",
+         notes="O6: Gonçalo is listed with its ç and again with c, as data "
+               "without the letter writes it"),
+    Case("agnomen_behind_two_family_names_under_pt_br", "Pedro Alves Lima Filho",
+         {"given": "Pedro", "family": "Alves Lima", "suffix": "Filho"},
+         locale="pt_br", classification="feat(#1453)",
+         ambiguities=("suffix-or-name",),
+         notes="S11 peels the agnomen, then O6 takes 'Alves'; read middle "
+               "'Alves', family 'Lima' 3.0.0 through 3.1"),
+    Case("particle_family_under_pt_br", "Joao Pedro da Silva Santos",
+         {"given": "Joao", "middle": "Pedro", "family": "da Silva Santos"},
+         locale="pt_br", classification="parity",
+         notes="O6: the family already counts two names ('da Silva', "
+               "'Santos'), so the switch takes nothing"),
+    Case("three_family_names_read_as_two_under_pt_br",
+         "Leonardo Mirandela Gomes Paz",
+         {"given": "Leonardo", "middle": "Mirandela", "family": "Gomes Paz"},
+         locale="pt_br", classification="feat(#1453)",
+         notes="O6 takes one word, so a family of three surnames keeps its "
+               "first as a middle name, a gap #1453 leaves for #1482; "
+               "read middle 'Mirandela Gomes', family 'Paz' 3.0.0 "
+               "through 3.1"),
     Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
          {"given": "Marquis", "family": "Johnson"},
          classification="fix(#913)",

@@ -247,7 +247,10 @@ def _locale_rules() -> dict[str, tuple[str, ...]]:
     A pack (`es.py`) may import _LOCALE_PACK_ALLOWED and its own
     private data modules: `_es_given_names.py` belongs to `es.py`, the
     pack with the LONGEST stem the data module's name opens with, so
-    `_es_ar_given_names.py` is `es_ar.py`'s and not `es.py`'s. A data
+    `_es_ar_given_names.py` is `es_ar.py`'s and not `es.py`'s; and a
+    data module belongs to its pack's country packs too, a stem of the
+    pack's own and a region (`_pt_given_names.py` to `pt_br.py` and
+    `pt_pt.py`, which share one list, decisions/O6 2026-11-19). A data
     module (a leading underscore, rules/O6's given-name lists, #959)
     imports nothing internal."""
     locales_dir = pathlib.Path(nameparser.locales.__file__).parent
@@ -261,12 +264,12 @@ def _locale_rules() -> dict[str, tuple[str, ...]]:
         if stem.startswith("_"):
             rules[f"locales/{path.name}"] = ()
             continue
+        owners = {data.stem: max((s for s in stems if data.stem.startswith(f"_{s}_")),
+                                 key=len, default=None)
+                  for data in locales_dir.glob("_*.py") if data.stem != "__init__"}
         own = tuple(
-            f"nameparser.locales.{data.stem}"
-            for data in sorted(locales_dir.glob("_*.py"))
-            if data.stem != "__init__"
-            and max((s for s in stems if data.stem.startswith(f"_{s}_")),
-                    key=len, default=None) == stem)
+            f"nameparser.locales.{data}" for data, owner in sorted(owners.items())
+            if owner is not None and (stem == owner or stem.startswith(f"{owner}_")))
         rules[f"locales/{path.name}"] = _LOCALE_PACK_ALLOWED + own
     return rules
 
@@ -296,6 +299,11 @@ def test_layering_contract() -> None:
     # a data module is its longest-stemmed pack's alone
     ("es", "_es_ar_given_names", False),
     ("pt", "_es_given_names", False),
+    # and its pack's country packs', which may share one list
+    ("pt_br", "_pt_given_names", True),
+    ("pt_pt", "_pt_given_names", True),
+    ("es_ar", "_es_given_names", True),
+    ("pt_br", "_es_given_names", False),
 ])
 def test_a_pack_may_import_its_own_data_module_only(
         pack: str, data: str, allowed: bool) -> None:
@@ -388,7 +396,11 @@ def test_every_locales_module_is_checked() -> None:
             assert rule == (), name
         else:
             assert rule[:len(_LOCALE_PACK_ALLOWED)] == _LOCALE_PACK_ALLOWED
-            assert all(extra.startswith(f"nameparser.locales._{name}_")
+            # its own data modules, and its language pack's (es_ar's
+            # and pt_br's: a stem of the language's and a region)
+            stems = {name, name.rsplit("_", 1)[0]}
+            assert all(any(extra.startswith(f"nameparser.locales._{stem}_")
+                           for stem in stems)
                        for extra in rule[len(_LOCALE_PACK_ALLOWED):]), name
 
 
@@ -903,13 +915,15 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `sets =` binding and the two suffix sets it reads (the given names
 #: refusing a listed suffix, #1357), 25 -> 28 (`listed_titles`
 #: reading `title_abbreviations` too adds none, that set being no
-#: field of `_VOCAB_FIELDS`). 4i-a's own count was 114 (on
+#: field of `_VOCAB_FIELDS`); and tools/pt_given_names.py reading the
+#: default's particles, a family word after one not counted (#1453),
+#: 28 -> 29. 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 198, "tools": 28}
+_UNGUARDED_READS = {"library": 198, "tools": 29}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

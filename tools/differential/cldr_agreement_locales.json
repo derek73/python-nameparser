@@ -1576,9 +1576,33 @@
   }
  },
  "pt/foreignFull/givenFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "Martín von Brühl"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Martín Brühl"
+  },
+  "given_names": {
+   "expected": "Mary Lou Cesare Martín",
+   "got": "Mary Lou Cesare"
+  },
   "suffix": {
    "expected": "Jr. Dr. Ph.D",
    "got": "Jr., Ph.D"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Martín"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "",
+   "got": "von Brühl"
   },
   "text": "Prof. Dr. Mary Lou Cesare Martín von Brühl Jr., Dr. Ph.D",
   "title": {
@@ -1587,13 +1611,25 @@
   }
  },
  "pt/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "von Brühl Prof."
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Brühl Prof."
+  },
   "given_names": {
    "expected": "Mary Lou Cesare Martín",
-   "got": "Prof. Dr. Mary Lou Cesare Martín"
+   "got": "Dr. Mary Lou Cesare Martín"
   },
   "suffix": {
    "expected": "Jr. Dr. Ph.D",
    "got": "Jr., Ph.D"
+  },
+  "surname2": {
+   "expected": "",
+   "got": "Prof."
   },
   "text": "von Brühl Prof. Dr. Mary Lou Cesare Martín Jr., Dr. Ph.D",
   "title": {
@@ -1601,10 +1637,40 @@
    "got": "Dr."
   }
  },
- "pt/nativeFull/surnameFirst": {
+ "pt/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Hamish Stöber"
+  },
   "given_names": {
-   "expected": "José Pedro Eduardo",
-   "got": "Sr. José Pedro Eduardo"
+   "expected": "Zäzilia Hamish",
+   "got": "Zäzilia"
+  },
+  "text": "Zäzilia Hamish Stöber"
+ },
+ "pt/foreignGGS/surnameFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Stöber Zäzilia"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Hamish"
+  },
+  "text": "Stöber Zäzilia Hamish"
+ },
+ "pt/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "da Silva",
+   "got": "da Silva Sr."
+  },
+  "family_base": {
+   "expected": "Silva",
+   "got": "Silva Sr."
+  },
+  "surname2": {
+   "expected": "",
+   "got": "Sr."
   },
   "text": "da Silva Sr. José Pedro Eduardo Jr., MP",
   "title": {

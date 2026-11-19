@@ -27,8 +27,8 @@ Dutch particles, and Burmese names. Other languages are described where their me
 - **Nepali** (``ne``): :ref:`nepali-given-names`.
 - **Irish and Scottish Gaelic** (``ga``, ``gd``):
   :ref:`gaelic-clan-particles`.
-- **The words the Portuguese packs turn on** (``pt``, ``pt_br``):
-  :ref:`portuguese-packs`.
+- **The words the Portuguese packs turn on** (``pt``, ``pt_br``,
+  ``pt_pt``): :ref:`portuguese-packs`.
 - **Chinese, Japanese and Korean** (``zh``, ``ja``, and Korean with no
   pack): :ref:`east-asian-names`.
 
@@ -287,10 +287,12 @@ Spanish and Portuguese titles
 -----------------------------
 
 Turn on ``es`` when your data is Spanish names, ``es_ar`` when it is
-Argentine ones, and ``pt`` when it is Portuguese ones. The default
-already reads the titles described below, save two that ``es`` turns
-on; the larger change is two family names, which the Spanish packs
-read and ``pt`` leaves off.
+Argentine ones, ``pt_br`` when it is Brazilian ones, ``pt_pt`` when it
+is names from Portugal, and ``pt`` when it is Portuguese names from
+anywhere else or from several countries. The default already reads the
+titles described below, save two that ``es`` turns on; the larger
+change is two family names, which the Spanish packs, ``pt_br`` and
+``pt_pt`` read and ``pt`` leaves off.
 
 Titles
 ~~~~~~
@@ -379,7 +381,7 @@ is never taken for one written with n: ``Oña`` is a surname, though
     >>> spain.parse("Juan Oña Pérez").family
     'Oña Pérez'
 
-A compound given name stays opt-in under the Spanish packs and ``pt``
+A compound given name stays opt-in under the Spanish and Portuguese packs
 alike (``two_given_names``, see :ref:`two-given-names`): people filling
 a form with a middle-name box put the second given name there.
 
@@ -432,11 +434,39 @@ reads fewer researchers' names right than ``es``'s does.
 
 .. _portuguese-two-family-names:
 
-Portuguese: why ``pt`` leaves the switch off
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Portuguese: two family names in Brazil and Portugal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Where reading two family names helps your Portuguese data, turn it on
-beside the pack, on the base parser:
+Portuguese names write the mother's family name before the father's,
+and Brazilian and Portuguese names often carry both. Turn on ``pt_br``
+for Brazilian names and ``pt_pt`` for names from Portugal: each reads
+two family names, guarded by a list of about 700 Portuguese given
+names that the switch leaves where they stand:
+
+.. doctest::
+
+    >>> brazil = parser_for(locales.PT_BR)
+    >>> portugal = parser_for(locales.PT_PT)
+    >>> parse("Tiago Barros Queiroz").family
+    'Queiroz'
+    >>> brazil.parse("Tiago Barros Queiroz").family
+    'Barros Queiroz'
+    >>> portugal.parse("Ana Beatriz Costa").family
+    'Costa'
+
+The list is measured on ORCID's researchers in Portugal and Brazil,
+from the words their holders type in the given-name box at least 70%
+of the time. A word it lacks is taken all the same, which is the
+switch's cost (``Ana Zélia Costa`` gives family ``Zélia Costa`` under
+either pack).
+
+``pt``, the pack chosen by language, leaves the switch off, the
+reverse of Spanish, where the language pack carries it. ``pt`` serves
+every Portuguese-speaking country, and the switch helps some and sinks
+others: Angolan and Mozambican names lose under it, even with the
+list, which holds few of the given names written there. Where reading
+two family names helps your Portuguese data from another country,
+turn it on beside ``pt``, or choose ``pt_pt``:
 
 .. doctest::
 
@@ -448,19 +478,76 @@ beside the pack, on the base parser:
     >>> pt_two.parse("Tiago Barros Queiroz").family
     'Barros Queiroz'
 
-``pt`` does not turn it on, because it serves every
-Portuguese-speaking country and the switch helps some and sinks
-others: among ORCID's researchers it mends about two names for each it
-breaks in Portugal (71.5% → 83.2%) and three in Brazil (49.5% →
-74.4%), but sinks Angola (75.9% → 57.3%) and Mozambique (85.2% →
-50.2%), and a Portuguese given-name list to guard it does not exist
-yet.
+A family of three surnames still keeps its first as a middle name
+under both packs (``Leonardo Mirandela Gomes Paz`` gives middle
+``Mirandela``, family ``Gomes Paz``): the switch takes one word.
+Among ORCID's Brazilian researchers about one name in ten is written
+that way.
 
-Whether it helps Portuguese or Brazilian data depends on who split the
-names: it gains on names their bearers split themselves, as ORCID's
-are, and costs about 5 points on names filed through a form, as the UK
-company register's Portuguese filers are (61.1% → 56.1%).
-:ref:`portuguese-packs` says what ``pt`` and ``pt_br`` do turn on.
+Measured effect: Portuguese
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The figures are of ORCID's researchers, names agreeing in every box
+with the filer, on records the list was not built from:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 20 20 20
+
+   * - Where the researcher works
+     - Default and ``pt``
+     - ``pt_br`` or ``pt_pt``
+     - Records
+   * - Portugal
+     - 72.1%
+     - 89.7%
+     - 2,923
+   * - Brazil
+     - 50.3%
+     - 79.8%
+     - 2,850
+   * - Cape Verde
+     - 61.5%
+     - 80.5%
+     - 563
+   * - São Tomé and Príncipe
+     - 50.4%
+     - 71.1%
+     - 121
+   * - Guinea-Bissau
+     - 66.8%
+     - 72.3%
+     - 220
+   * - Timor-Leste
+     - 64.0%
+     - 67.1%
+     - 495
+   * - Angola
+     - 76.4%
+     - 65.3%
+     - 2,861
+   * - Mozambique
+     - 85.6%
+     - 67.2%
+     - 2,853
+
+So Cape Verdean and São Toméan lists read better under ``pt_pt`` than
+under ``pt``, and Angolan and Mozambican lists worse.
+
+Whether the switch helps also depends on who split the names. It
+gains most on names their bearers split themselves, as ORCID's are.
+It costs Brazilian inventors on US patents: their filers usually give
+one surname as the family name and put the rest of the name in the
+first-name box, and against that split, over all 15,029 Brazilian
+records in the data, 75.7% read right by default or under ``pt`` and 60.2%
+under ``pt_br``, while Portuguese inventors gain under ``pt_pt``
+(57.6% → 66.1%). Most of the Brazilian names it breaks hold a second
+surname among the given names (``Eder Ferreira`` / ``Rangel``, read
+family ``Ferreira Rangel``). So choose ``pt_br`` or ``pt_pt``, by
+country, for names whose family part is written whole, and keep ``pt`` for data
+filed with a single surname as the family name.
+Among the UK company register's filers the switch gains for
+Portuguese (59.2% → 62.8%) and Brazilian (53.7% → 62.9%) nationals.
 
 Measured effect: Spanish
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -483,7 +570,8 @@ with the filer:
 
 The dated figures, and those for Portuguese above, are in
 ``docs/design/decisions/O6-two-family-names.md``; the Argentine ones
-are from its entry on ``locales.ES_AR``.
+are from its entry on ``locales.ES_AR``, the Portuguese ones from its
+entry on ``locales.PT_BR`` and ``locales.PT_PT``.
 
 
 .. _romanized-indic-titles:
