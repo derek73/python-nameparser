@@ -114,7 +114,7 @@ it, and ``suggestion.base`` is the parser you started from:
     >>> print(suggestion)
     Suggested for 5 names (base: Parser(Lexicon(default), Policy())):
       name_order  FAMILY_FIRST  4 for, 0 against, 1 no evidence
-          surname FAMILY_FIRST  3
+          surname FAMILY_FIRST  4
           given-name FAMILY_FIRST  2
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
@@ -125,10 +125,10 @@ parser has: all five names are in mixed case with no word in capitals,
 so they are evidence for leaving ``capitals_as_family`` off.
 
 Four names vote for family first: ``Kim``, ``Wang`` and ``Nguyen`` by
-the romanized surname in front, ``Garcia Emily`` by the common given
-name at the end (``Garcia`` is not one of the surnames ``suggest``
-reads). ``Wang Xiaoming`` carries both kinds, so the surname and
-given-name rows count it once each.
+the common surname in front, ``Garcia Emily`` by the surname in front
+and the common given name at the end. ``Wang Xiaoming`` and ``Garcia
+Emily`` carry both kinds, so the surname and given-name rows count each
+of them once.
 
 ``Taylor Morgan`` gives no evidence, so the suggested parser reads it
 family first only because the rest of the list is written that way;
@@ -140,9 +140,10 @@ disagrees <suggest-disagreeing>`).
 What ``suggest`` decides
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The evidence is in the names themselves: a common romanized Chinese,
-Korean or Vietnamese surname, or a common given name that is rarely
-a surname (``Mary``, not ``James``), at one end; a
+The evidence is in the names themselves: a common surname (a
+romanized Chinese, Korean or Vietnamese one, or one rarely written as
+a given name, ``Garcia``), or a common given name that is rarely a
+surname (``Mary``, not ``James``), at one end; a
 family name written in capitals; a lowercase particle; initials after
 the name, as a bibliography writes them (:ref:`suggest-evidence`).
 

@@ -239,15 +239,67 @@ def _plant_patentsview(cache: Path, lines: list[dict[str, object]]) -> None:
 
 def test_patentsview_reads_the_country_whatever_the_key_order(
         _cache: Path) -> None:
+    # every line carries the people it stands for, as the fetch writes
+    # it: the box index pv-surname-given reads counts them
     _plant_patentsview(_cache, [
-        {"country": "JP", "family": "Tanaka", "given": "Hiroshi"},
+        {"country": "JP", "family": "Tanaka", "given": "Hiroshi", "people": 1},
         {"family": "Sato", "given": "Yuki", "country": "JP", "people": 2},
         {"given": "Kenji", "people": 1, "family": "Ito", "country": "JP"},
-        {"country": "ZZ", "family": "Nobody", "given": "Anyone"}])
+        {"country": "ZZ", "family": "Nobody", "given": "Anyone", "people": 1}])
     keep = tool._Reservoir(1)
     tool._patentsview(keep)
     assert sorted(keep.pools["pv-JP"]) == [
         ("Hiroshi", "Tanaka"), ("Kenji", "Ito"), ("Yuki", "Sato")]
+
+
+def test_surname_given_holds_a_given_name_written_mostly_as_a_family_name(
+        _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # #1364: `Zzcruz` is written in the family box by more people than in
+    # the given box, its spellings counted together under the fold
+    # (`Zzcrúz`); `Zzana` is not; `Lee` is, but the romanized table
+    # lists it; a Japanese inventor is left out whatever the word; and a
+    # record whose family box opens with a listed given name (`Emily`)
+    # is left out of both populations, its boxes likely swapped
+    monkeypatch.setattr(tool, "SURNAME_GIVEN_USES", 2)
+    _plant_patentsview(_cache, [
+        {"country": "MX", "family": "Zzlopez", "given": "Zzcruz Ana",
+         "people": 1},
+        {"country": "US", "family": "Zzcruz", "given": "Zzmary", "people": 9},
+        {"country": "MX", "family": "Zzlopez", "given": "Zzcrúz", "people": 1},
+        {"country": "MX", "family": "Zzcruz", "given": "Zzana", "people": 1},
+        {"country": "US", "family": "Zzsmith", "given": "Lee", "people": 2},
+        {"country": "US", "family": "Lee", "given": "Zzjohn", "people": 9},
+        {"country": "JP", "family": "Zzsato", "given": "Zzcruz", "people": 2},
+        {"country": "MX", "family": "Zzpardo", "given": "García Ana",
+         "people": 1},
+        {"country": "US", "family": "Emily", "given": "Zzcruz", "people": 1},
+        {"country": "US", "family": "Emily", "given": "García", "people": 1},
+        # the swap test reads the family box's first word only
+        {"country": "US", "family": "Zzpardo Emily", "given": "Zzcruz",
+         "people": 1},
+        {"country": "US", "family": "Emily Zzpardo", "given": "Zzcruz",
+         "people": 1},
+        # at both boundaries: given 2 (the floor), family 2 (as often)
+        {"country": "MX", "family": "Zzpardo", "given": "Zzedge", "people": 2},
+        {"country": "US", "family": "Zzedge", "given": "Zzmary", "people": 2},
+        # under the floor of uses: given 1, family 5
+        {"country": "MX", "family": "Zzpardo", "given": "Zzunder",
+         "people": 1},
+        {"country": "US", "family": "Zzunder", "given": "Zzmary", "people": 5},
+        # over the floor only with its two spellings summed under the fold
+        {"country": "MX", "family": "Zzpardo", "given": "Zzchávez",
+         "people": 1},
+        {"country": "MX", "family": "Zzpardo", "given": "Zzchavez",
+         "people": 1},
+        {"country": "US", "family": "Zzchavez", "given": "Zzmary", "people": 3}])
+    keep = tool._Reservoir(1)
+    tool._patentsview(keep)
+    assert sorted(keep.pools["pv-surname-given"]) == [
+        ("Zzchavez", "Zzpardo"), ("Zzchávez", "Zzpardo"),
+        ("Zzcruz", "Zzpardo Emily"), ("Zzcruz Ana", "Zzlopez"),
+        ("Zzcrúz", "Zzlopez"), ("Zzedge", "Zzpardo")]
+    # `García` is in the ORCID surname table
+    assert keep.pools["pv-listed-given"] == [("García Ana", "Zzpardo")]
 
 
 @needs_checkout
@@ -329,7 +381,7 @@ def test_an_orcid_file_holding_no_byline_gets_a_note(
 def test_a_wanted_population_that_yields_no_names_gets_a_note(
         _cache: Path, capsys: pytest.CaptureFixture[str]) -> None:
     _plant_patentsview(_cache, [
-        {"country": "JP", "family": "Tanaka", "given": "Hiroshi"}])
+        {"country": "JP", "family": "Tanaka", "given": "Hiroshi", "people": 1}])
     out = _run(capsys)
     # patentsview is present but holds no US name, and the planted PSC
     # rows hold no Polish one
@@ -425,3 +477,18 @@ def test_a_stale_or_edited_local_corpus_stops_the_run(
 def test_the_turkic_truth_reads_a_three_word_marker_name_whole(
         dataset: str, name: str, truth: str) -> None:
     assert tool._turkic_truth(dataset, name) == truth
+
+
+def test_the_populations_read_the_scripts_own_tables(
+        _cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # a --base child imports another tree's nameparser; pv-listed-given
+    # is drawn from the table in this script's checkout, not from the
+    # imported module, so both sides of a comparison draw it alike
+    from nameparser.config import _order_names
+    monkeypatch.setattr(_order_names, "COMMON_SURNAMES", frozenset({"zzzz"}))
+    _plant_patentsview(_cache, [
+        {"country": "MX", "family": "Zzpardo", "given": "García Ana",
+         "people": 1}])
+    keep = tool._Reservoir(1)
+    tool._patentsview(keep)
+    assert keep.pools["pv-listed-given"] == [("García Ana", "Zzpardo")]

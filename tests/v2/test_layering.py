@@ -915,15 +915,18 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `sets =` binding and the two suffix sets it reads (the given names
 #: refusing a listed suffix, #1357), 25 -> 28 (`listed_titles`
 #: reading `title_abbreviations` too adds none, that set being no
-#: field of `_VOCAB_FIELDS`); and tools/pt_given_names.py reading the
+#: field of `_VOCAB_FIELDS`); tools/pt_given_names.py reading the
 #: default's particles, a family word after one not counted (#1453),
-#: 28 -> 29. 4i-a's own count was 114 (on
+#: 28 -> 29; and order_names.py's `listed_name_pieces`, its `sets =`
+#: binding and the five sets it reads (the surnames refusing a particle,
+#: conjunction, bound given name, maiden marker or listed Hangul
+#: surname, #1364), 29 -> 35. 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 198, "tools": 29}
+_UNGUARDED_READS = {"library": 198, "tools": 35}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
