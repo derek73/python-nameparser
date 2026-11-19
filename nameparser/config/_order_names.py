@@ -1,6 +1,7 @@
-"""Romanized Chinese, Korean and Vietnamese surnames, and common given
-names, for the group
-suggester only (``Parser.suggest``); no parse reads this module.
+"""Romanized Chinese, Korean and Vietnamese surnames, common given
+names, and surnames ORCID's holders rarely type as a given name, for
+the group suggester only (``Parser.suggest``); no parse reads this
+module.
 
 Each name is read on its own: a listed surname at one end of the name
 and not at the other is evidence that the name writes the family name
@@ -32,15 +33,25 @@ Provenance and licences:
   typed at least 3 times there, that pass the filter: no full stop,
   written in the family-name box at most 10% of the 20 or more times
   ORCID's holders wrote it (5% until #1357, which left out ``John``,
-  ``David`` and ``Robert``), not a surname this table lists, not a
+  ``David`` and ``Robert``), not a romanized surname, not a
   word the default lexicon reads as a title outside
   ``titles_ambiguous``, not a title it lists as an abbreviation
   (``gen``) and not a word it lists as a suffix (``md``, which ends a
   name as a credential). See tools/vocab/order_names.py.
 
-The given-name table excludes every surname listed here, so the two
-tables never share a spelling (the tool refuses a run where they do).
-Only the surname lists share spellings, with each other: ``lee`` and
+- ``_COMMON_SURNAMES`` (generated below, ``COMMON_SURNAMES``): from
+  the same ORCID file, every word its holders typed in the family-name
+  box at least 100 times and in the given-name box at most 5% of the
+  times they typed it in either, not a word the other two tables list,
+  not a title or suffix the given names refuse, not a particle,
+  conjunction, bound given name, maiden marker or Hangul surname the
+  default lexicon lists, and not a Turkic patronymic marker (#1364).
+  Mostly Spanish surnames. See tools/vocab/order_names.py.
+
+The given-name table excludes every romanized surname, and the ORCID
+surnames exclude every word the other two tables list, so no two
+tables share a spelling (the tool refuses a run where they do).
+Only the romanized surname lists share spellings, with each other: ``lee`` and
 ``lim`` are written in Chinese and in Korean, ``ho`` and ``tang`` in
 Chinese and in Vietnamese, ``ha`` in Korean and in Vietnamese, and many
 hand-listed spellings are pinyin too. The tables list spellings, not
@@ -1122,3 +1133,85 @@ _COMMON_GIVEN = (
 # -- END generated: COMMON_GIVEN --
 
 COMMON_GIVEN_NAMES: frozenset[str] = frozenset(_COMMON_GIVEN)
+
+# -- BEGIN generated: COMMON_SURNAMES; edit tools/vocab/order_names.py, not this block --
+_COMMON_SURNAMES = (
+    "abbasi", "abdullayev", "abdullayeva", "acevedo", "acosta", "acuna", "aguila", "aguilar",
+    "aguilera", "aguirre", "agvero", "ahmadi", "akbari", "alali", "alanazi", "alarcon",
+    "alcantara", "aleman", "alghamdi", "alharbi", "aliaga", "aliyeva", "almutairi", "alomari",
+    "alotaibi", "alqahtani", "alshammari", "altamirano", "alvarado", "alvarenga", "alvarez", "alzahrani",
+    "alzoubi", "andersen", "apaza", "aponte", "aquino", "arancibia", "arango", "arce",
+    "arellano", "arenas", "argueta", "arias", "arroyo", "arteaga", "atencio", "avendano",
+    "avila", "aviles", "babic", "ballesteros", "banerjee", "barrantes", "barria", "barrientos",
+    "barrios", "bauer", "bazan", "becerra", "bedoya", "benavides", "benitez", "berger",
+    "bermudez", "blanco", "bohorquez", "bonilla", "bravo", "briones", "bueno", "buitrago",
+    "burgos", "burke", "bustamante", "byrne", "caballero", "cabezas", "cabral", "cabrera",
+    "cadena", "caicedo", "calero", "calle", "camacho", "canales", "cano", "carbajal",
+    "carballo", "cardenas", "cardozo", "carneiro", "carpio", "carranza", "carrasco", "carreno",
+    "carrera", "carrillo", "carrion", "carvajal", "casanova", "casas", "castaneda", "castano",
+    "castellanos", "castellon", "castillo", "cedeno", "cerda", "cervantes", "cespedes", "cevallos",
+    "chacon", "chamorro", "chavez", "chirinos", "choque", "christensen", "cifuentes", "cisneros",
+    "clarke", "cohen", "colque", "conde", "condori", "contreras", "cooper", "cordero",
+    "cordova", "cornejo", "coronado", "coronel", "cortes", "cortez", "crespo", "cuellar",
+    "cuenca", "cueva", "cuevas", "daza", "delgado", "diaz", "diez", "dimitrov",
+    "dimitrova", "djordjevic", "dominguez", "dube", "duenas", "duque", "duran", "ebrahimi",
+    "echeverria", "eriksson", "escalona", "espinal", "espino", "espinola", "espinosa", "espinoza",
+    "esteves", "estrada", "fajardo", "falcon", "farfan", "farkas", "fernandez", "ferrari",
+    "ferrer", "filipovic", "fischer", "flores", "forero", "frias", "fuentes", "galeano",
+    "galindo", "gallardo", "gallego", "gallegos", "gallo", "galvez", "gamarra", "gamboa",
+    "gamez", "garces", "garcia", "garrido", "garzon", "georgiev", "georgieva", "gimenez",
+    "giron", "godoy", "gomez", "gonzales", "gonzalez", "grigoryan", "guaman", "guerra",
+    "guerrero", "guevara", "guillen", "guliyeva", "gutierrez", "haddad", "hall", "hasanov",
+    "hasanova", "hashemi", "henriquez", "heredia", "hernandez", "herrera", "hinojosa", "horvat",
+    "hosseini", "hoyos", "huaman", "huamani", "huanca", "huerta", "hughes", "hurtado",
+    "huseynov", "huseynova", "ibanez", "iglesias", "ilic", "infante", "ismayilova", "ivanovic",
+    "izquierdo", "jafari", "jaimes", "jankovic", "jaramillo", "jensen", "jimenez", "johansson",
+    "johnston", "jonsson", "jorgensen", "jovanovic", "juarez", "jurado", "kaplan", "karimov",
+    "karimova", "karlsson", "khoury", "klein", "knezevic", "kobayashi", "kostic", "kovac",
+    "kovacevic", "kovacs", "kristensen", "krstic", "lagos", "lamichhane", "ledesma", "lemus",
+    "leyva", "lezcano", "linares", "londono", "lopez", "lozada", "lugo", "lukic",
+    "luque", "lynch", "lyu", "macias", "madrid", "madsen", "mahmoudi", "maldonado",
+    "mamani", "mammadov", "mammadova", "manzano", "marcano", "maric", "markovic", "marquez",
+    "marroquin", "martinez", "mayorga", "mccarthy", "mejia", "melgar", "mendez", "mendoza",
+    "meneses", "mercado", "merino", "mesa", "meza", "milosevic", "milovanovic", "mitrovic",
+    "mohammadi", "mojica", "molina", "molnar", "moncada", "monroy", "monsalve", "montalvo",
+    "montano", "montero", "montes", "monzon", "moore", "moradi", "morales", "moreno",
+    "morillo", "moscoso", "mosquera", "mousavi", "moya", "moyo", "mukherjee", "munoz",
+    "murphy", "mvller", "nakamura", "naranjo", "narvaez", "navarrete", "navas", "nazari",
+    "ndiaye", "ndlovu", "nemeth", "nepal", "nielsen", "nieto", "nikolic", "nikolova",
+    "nilsson", "noguera", "nunez", "o'brien", "o'connor", "o'neill", "o'sullivan", "obando",
+    "obeidat", "obregon", "ochoa", "ojeda", "ordonez", "orellana", "orozco", "ortega",
+    "ortiz", "osorio", "oviedo", "ozdemir", "oztvrk", "pacheco", "padilla", "padron",
+    "paez", "palacio", "palacios", "palomino", "paniagua", "pantoja", "papadopoulos", "papp",
+    "pardo", "paredes", "parra", "pathak", "patino", "paucar", "paudel", "pavlovic",
+    "pedersen", "pelaez", "pena", "peralta", "perdomo", "pereyra", "perez", "petersen",
+    "petrova", "petrovic", "phiri", "pimentel", "pineda", "pinzon", "pizarro", "plaza",
+    "polanco", "poma", "ponce", "popov", "popova", "popovic", "poudel", "pozo",
+    "prieto", "pulido", "quesada", "quevedo", "quezada", "quinones", "quintana", "quintanilla",
+    "quintero", "quiroga", "quispe", "ramirez", "rasmussen", "restrepo", "rezaei", "rincon",
+    "rios", "riquelme", "rivas", "rivero", "riveros", "roca", "rodas", "rodriguez",
+    "rojas", "romero", "rondon", "rosas", "rosero", "rueda", "ruiz", "russo",
+    "saavedra", "sadeghi", "saenz", "saez", "salas", "salazar", "salcedo", "saldana",
+    "salehi", "salinas", "salvatierra", "samaniego", "samudio", "sanabria", "sanchez", "santamaria",
+    "santillan", "sanz", "saravia", "sarmiento", "sato", "saucedo", "savic", "schmid",
+    "schmidt", "schneider", "segovia", "segura", "sepulveda", "serrano", "simic", "solano",
+    "soler", "solis", "soltani", "sorensen", "soria", "soriano", "sotelo", "soto",
+    "stankovic", "stevanovic", "stojanovic", "suarez", "suazo", "suzuki", "takahashi", "tamayo",
+    "tapia", "tellez", "tenorio", "teran", "ticona", "todorova", "todorovic", "toledo",
+    "tomic", "toro", "torre", "torres", "torrez", "toth", "toure", "trejo",
+    "tripathi", "trujillo", "turner", "uribe", "urrutia", "vaca", "valderrama", "valdes",
+    "valdez", "valdivia", "valenzuela", "valero", "valladares", "vallejo", "vallejos", "valverde",
+    "varela", "varga", "vargas", "vasquez", "vazquez", "velasquez", "velez", "veliz",
+    "vergara", "vila", "vilca", "vilchez", "villa", "villalba", "villanueva", "villar",
+    "villarroel", "villegas", "vivas", "vukovic", "walsh", "watanabe", "weber", "weiss",
+    "white", "wood", "wright", "yamada", "yamamoto", "yanez", "yepez", "yoshida",
+    "zambrano", "zapata", "zarate", "zavala", "zelaya", "zivkovic", "zuniga",
+)
+# -- END generated: COMMON_SURNAMES --
+
+COMMON_SURNAMES: frozenset[str] = frozenset(_COMMON_SURNAMES)
+
+#: Every surname the suggester looks up: the romanized table and the
+#: ORCID one, which share no spelling (the tool refuses a run where they
+#: do).
+SURNAMES: frozenset[str] = ROMANIZED_SURNAMES | COMMON_SURNAMES

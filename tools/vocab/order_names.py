@@ -50,6 +50,22 @@ recorded sha256, and it writes
 nothing where a block falls below its floor (``MIN_PINYIN``,
 ``MIN_GIVEN``) or a word lands in both tables.
 
+The third generated block, ``COMMON_SURNAMES``, is the mirror of the
+second (#1364): every word ORCID's holders typed in the family-name box
+at least ``MIN_SURNAME_USES`` times, anywhere in the box, and in the
+given-name box at most ``MAX_GIVEN_SHARE`` of the times they typed it
+in either, with two or more letters and no full stop, less every word
+of the other two tables, every title and suffix the
+given names refuse, every word the default lexicon reads as a piece of
+a name (:func:`listed_name_pieces`: a particle, a conjunction, a bound
+given name, a maiden marker, its Hangul surnames) and every Turkic
+patronymic marker. The suggester reads it beside the romanized
+surnames, as one surname signal. Most of it is Spanish, because ORCID's
+sample holds many more Spanish-speaking holders than the use floor
+needs (decisions/group-suggestion, 2026-11-19 #1364). The run writes
+nothing where the block falls below ``MIN_SURNAMES`` or a word lands in
+two tables.
+
 Wikidata's answer is cached outside the repository
 ($NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools), and asked again
 where the cache did not ask about every character the run reads.
@@ -83,6 +99,13 @@ ORCID_RAW = ("local", "orcid-researchers", "raw.jsonl")
 #: names at a family share of 10%, #1357).
 MIN_PINYIN = 150
 MIN_GIVEN = 5_000
+#: The surname table (#1364): a word ORCID holders typed in the
+#: family-name box at least ``MIN_SURNAME_USES`` times, and in the
+#: given-name box at most ``MAX_GIVEN_SHARE`` of the times they typed it
+#: in either. ``MIN_SURNAMES`` is its floor (2026-11-19 #1364: 559 words).
+MIN_SURNAME_USES = 100
+MAX_GIVEN_SHARE = 0.05
+MIN_SURNAMES = 400
 
 MODULE = Path(__file__).parents[2] / "nameparser" / "config" / "_order_names.py"
 PINYIN_FILE = "wikidata_chinese_surname_pinyin.json"
@@ -346,15 +369,85 @@ def load_common_given(exclude: set[str]) -> set[str]:
         exclude=exclude | listed_titles() | listed_suffixes())
 
 
-def check_tables(pinyin: set[str], given: set[str]) -> None:
-    """Refuse a generated block below its floor, and a given name that
-    is a surname too."""
-    for words, floor, what in ((pinyin, MIN_PINYIN, "pinyin surnames"),
-                               (given, MIN_GIVEN, "given names")):
+def common_surnames(given: Counter[str], family: Counter[str], *,
+                    min_uses: int, max_given_share: float,
+                    exclude: set[str]) -> set[str]:
+    """The mirror of :func:`common_given` (#1364): every word typed in
+    ORCID's family-name box ``min_uses`` times or more, anywhere in the
+    box, and in the given-name box at most ``max_given_share`` of the
+    times it was typed in either, with two or more letters, no full stop
+    and not in ``exclude``. No ranking per country: the holders state
+    the country they work in, which says little about where a surname
+    is from, and the use floor alone sets the size."""
+    def passes(word: str) -> bool:
+        total = given[word] + family[word]
+        return (len(word) > 1 and "." not in word and word not in exclude
+                and family[word] >= min_uses
+                and given[word] / total <= max_given_share)
+
+    return {word for word in family if passes(word)}
+
+
+def listed_name_pieces() -> set[str]:
+    """The words the default lexicon reads as a piece of a name rather
+    than a name, folded: a particle (``der``, ``von``), a conjunction, a
+    bound given name (``abou``), a maiden marker, and its own surnames,
+    the Hangul census list the parse splits unspaced names on (rules/W1)
+    and reads family-first by its script (rules/W4), which the
+    suggester's tables do not hold. A particle, a conjunction or a bound
+    given name is typed into ORCID's family box with the surname it
+    belongs to (``von Berg``, ``Abou Zeid``)
+    and rarely into the given box, so the surname recipe would admit
+    it; as a table word it would vote where it stands at an end of a
+    name, which a particle does in a family written first (``von Berg
+    Anna``, read by the particle signal already) and a given-first
+    name's last word never is."""
+    from nameparser import Lexicon
+    sets = Lexicon.default()._sets
+    return {fold(w) for w in (sets.particles | sets.conjunctions
+                              | sets.bound_given_names | sets.maiden_markers
+                              | sets.surnames)
+            if " " not in w}
+
+
+def surname_refusals(pinyin: set[str], given: set[str]) -> set[str]:
+    """Every word the surname table must not hold: the romanized
+    surnames and the given names this run writes (so no word is in two
+    tables), the listed titles, suffixes and name pieces."""
+    return (surname_exclusions(pinyin) | given | listed_titles()
+            | listed_suffixes() | listed_name_pieces())
+
+
+def load_common_surnames(exclude: set[str]) -> set[str]:
+    """The surname table, refusing ``exclude`` and a Turkic patronymic
+    marker (``кызы``, ``oglu``), which rules/O2 reads as the end of a
+    patronymic and ORCID holders type into the family box."""
+    from nameparser._pipeline._vocab import is_patronymic_marker
+    given, family, _ = orcid_box_counts(
+        name_usage.cache_dir().joinpath(*ORCID_RAW))
+    words = common_surnames(given, family, min_uses=MIN_SURNAME_USES,
+                            max_given_share=MAX_GIVEN_SHARE, exclude=exclude)
+    return {w for w in words if not is_patronymic_marker(w)}
+
+
+def check_tables(pinyin: set[str], given: set[str],
+                 surnames: set[str] | None = None) -> None:
+    """Refuse a generated block below its floor, and a word in two
+    tables."""
+    floors = [(pinyin, MIN_PINYIN, "pinyin surnames"),
+              (given, MIN_GIVEN, "given names")]
+    if surnames is not None:
+        floors.append((surnames, MIN_SURNAMES, "surnames"))
+    for words, floor, what in floors:
         if len(words) < floor:
             raise ValueError(f"the run found {len(words)} {what}, below the "
                              f"floor of {floor}: an input is cut or changed")
-    if both := pinyin & given:
+    tables = [pinyin | surname_exclusions(pinyin), given, surnames or set()]
+    both = set()
+    for i, one in enumerate(tables):
+        for other in tables[i + 1:]:
+            both |= one & other
+    if both:
         raise ValueError("a word is in both tables: "
                          + ", ".join(sorted(both)))
 
@@ -376,16 +469,18 @@ def main(argv: list[str] | None = None) -> int:
               file=sys.stderr)
     words = pinyin_surnames(singles, readings)
     given = load_common_given(surname_exclusions(words))
-    check_tables(words, given)
-    block = render_block("PINYIN", words)
-    given_block = render_block("COMMON_GIVEN", given)
-    print(block)
-    print(given_block)
+    surnames = load_common_surnames(surname_refusals(words, given))
+    check_tables(words, given, surnames)
+    blocks = {"PINYIN": render_block("PINYIN", words),
+              "COMMON_GIVEN": render_block("COMMON_GIVEN", given),
+              "COMMON_SURNAMES": render_block("COMMON_SURNAMES", surnames)}
+    for block in blocks.values():
+        print(block)
     if args.write:
         text = MODULE.read_text(encoding="utf-8")
-        text = rewrite(text, "PINYIN", block)
-        MODULE.write_text(rewrite(text, "COMMON_GIVEN", given_block),
-                          encoding="utf-8")
+        for name, block in blocks.items():
+            text = rewrite(text, name, block)
+        MODULE.write_text(text, encoding="utf-8")
         print(f"wrote {MODULE}", file=sys.stderr)
     return 0
 

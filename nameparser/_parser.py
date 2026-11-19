@@ -348,16 +348,19 @@ class Parser:
         A group decided East Slavic gets the rule and reads
         given-first, the order the rule reorders each name under,
         unless its names' own votes decide family-first, which the rule
-        never overrides. One case keeps a declared order instead: under
-        a ``FAMILY_FIRST`` parser whose names' votes do not decide
+        never overrides: there a ``FAMILY_FIRST_GIVEN_LAST`` parser gets
+        ``FAMILY_FIRST``, under which the patronymic is not read as the
+        given name (``Popov Ivan Ivanovich``). One case keeps a
+        declared order instead: under a ``FAMILY_FIRST`` parser whose names' votes do not decide
         given-first, where more of the names carrying the patronymic
         write it last (``Sidorov Ivan Petrovich``) than in the middle
         (``Ivan Petrovich Sidorov``), the group keeps that order and
         gets the rule alone, which reorders no name there and fills the
         ``patronymic`` view; the names written the other way get no
         given-first order, and the patronymic evidence's note counts
-        them. A tie, and a ``FAMILY_FIRST_GIVEN_LAST`` parser,
-        get the given-first order with the rule. A Turkic group
+        them. A tie, and a ``FAMILY_FIRST_GIVEN_LAST`` parser whose
+        names' votes do not decide family-first, get the given-first
+        order with the rule. A Turkic group
         gets the rule alone, its order decided by its names' own votes.
         ``initials_as_family`` (rules/O8) is turned on where one run of
         letters ends at least two names and at least half of the names
@@ -388,11 +391,11 @@ class Parser:
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
         Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12,
-        2026-11-14, 2026-11-15 and 2026-11-16, with
+        2026-11-14, 2026-11-15, 2026-11-16 and 2026-11-19, with
         tools/differential/suggest_measure.py on groups drawn from real
         names written in a known order, 300 groups a size
-        (decisions/group-suggestion's 2026-11-16 ORDER FLOOR entry holds
-        the table): a group written in this parser's own order kept it
+        (decisions/group-suggestion's 2026-11-19 #1364 entry holds
+        the sizes): a group written in this parser's own order kept it
         in at least 97% of groups at every size from 2 to 2,000 names,
         under either base order, save three lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
@@ -403,19 +406,22 @@ class Parser:
         (``AM Hoy``) kept it in at least 97% of groups at every size
         measured, to 500 names (it holds 644), but 50 and 100 names,
         where it kept it in 94.7% and 93.3%, the name tables voting on
-        a few of its names; ORCID's bylines of
-        every writing kept it in 95.3% and 96.7% at 100 and 200 names
-        and at least 97% at every other size.
+        a few of its names. And a list of nothing but given names that
+        ORCID's holders type as surnames (``Cooper``, ``Burke``) fell
+        below 95% at every size and was read wrong in every group from
+        5 names, the surname table voting on each of them (that file's
+        2026-11-19 #1364 entry).
         Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech, Polish or Italian names (the romanized
         surnames and the common given names) were read right in 95% of
         groups from 5 names; German, Dutch, Spanish, British, French,
-        Romanian and Vietnamese from 10; US, Japanese, Turkish,
-        Nigerian and Brazilian from 20; and Russian and Indian from
-        50. A group whose votes fall short of the thresholds keeps
-        the base rather than guess, so a smaller group moves it in fewer
-        of the draws. ``capitals_as_family``, measured 2026-11-12
+        Romanian, Vietnamese and Japanese from 10; US, Turkish,
+        Nigerian and Brazilian from 20; Russian and Indian from 50;
+        PatentsView's Philippine inventors from 100; and PSC's
+        Bangladeshi filers from 200. A group whose votes fall short of
+        the thresholds keeps the base rather than guess, so a smaller
+        group moves it in fewer of the draws. ``capitals_as_family``, measured 2026-11-12
         (decisions/group-suggestion's CAPITALS entry): ORCID holders who
         typed their family name in capitals were suggested it in at least
         95% of groups from 4 names, and from 10 where many of the
