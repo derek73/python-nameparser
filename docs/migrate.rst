@@ -909,7 +909,7 @@ list, with reasoning, is in each release's section of
        ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
    * - 3.2
-     - Dutch ``Oude``
+     - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``
      - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
@@ -2157,3 +2157,24 @@ reports the fork, as ``van`` does:
 ``locales.NL``, new in 3.2, reads ``ten`` the same way (``Jan ten
 Brink`` gives family ``ten Brink``); the default parse of a name holding
 ``ten`` is unchanged.
+
+Malaysian a/l, a/p and anak
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``a/l`` (son of), ``a/p`` (daughter of) and ``anak`` (child of) start
+the family name, the father's name, as ``bin`` does, where 1.4 through
+3.1 left them in the middle name and cut a father's name of two words;
+the ``patronymic`` view holds the same words. ``anak`` opening a name,
+as Balinese ``Anak Agung`` does, stays the given name and reports the
+fork:
+
+.. doctest::
+
+    >>> malaysian = parse("KUMAR A/L RAJAN NAIDU")
+    >>> malaysian.middle, malaysian.family, malaysian.patronymic
+    ('', 'A/L RAJAN NAIDU', 'A/L RAJAN NAIDU')
+    >>> parse("Rita Sari anak Jerome Insol").family
+    'anak Jerome Insol'
+    >>> balinese = parse("Anak Agung Made Putra")
+    >>> balinese.given, [str(report.kind) for report in balinese.ambiguities]
+    ('Anak', ['particle-or-given'])

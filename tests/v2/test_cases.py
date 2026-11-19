@@ -493,10 +493,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting particle-or-given under three orders; 2107 -> 2187
     # the same day, #1394's rows under three orders or once where a row
     # declares a policy: the decline's report on each moved row, and
-    # its boundary rows' run reports.
-    assert claims == 2187, (
-        f"the field sweep checks {claims} claims, recorded as 2187 on "
-        f"2026-11-18")
+    # its boundary rows' run reports; 2187 -> 2191 on 2026-11-19,
+    # #1468's 'Anak Agung Made Putra' reporting particle-or-given under
+    # three orders and 'Jesse Kofi Anak' under FAMILY_FIRST.
+    assert claims == 2191, (
+        f"the field sweep checks {claims} claims, recorded as 2191 on "
+        f"2026-11-19")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -972,8 +974,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # P6's report, each stand-in landing in the alternative's field;
     # 477 -> 494 and 598 -> 603 the same day, #1394's rows under the
     # three orders, the declines' reports and the boundary rows' run
-    # reports, three of them stand-in rereads
-    assert (checked, skipped) == (603, 494), (checked, skipped)
+    # reports, three of them stand-in rereads; 603 -> 604 on 2026-11-19,
+    # #1468's anak rows
+    assert (checked, skipped) == (604, 494), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

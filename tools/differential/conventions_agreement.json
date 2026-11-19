@@ -117,15 +117,11 @@
  "conventions/Kavitha a/p Raman/default": {
   "family": {
    "expected": "",
-   "got": "Raman"
+   "got": "a/p Raman"
   },
   "given_names": {
    "expected": "Kavitha a/p Raman",
-   "got": "Kavitha a/p"
-  },
-  "patronymic": {
-   "expected": "a/p Raman",
-   "got": ""
+   "got": "Kavitha"
   },
   "text": "Kavitha a/p Raman"
  },
@@ -225,15 +221,11 @@
  "conventions/Suresh a/l Muthu/default": {
   "family": {
    "expected": "",
-   "got": "Muthu"
+   "got": "a/l Muthu"
   },
   "given_names": {
    "expected": "Suresh a/l Muthu",
-   "got": "Suresh a/l"
-  },
-  "patronymic": {
-   "expected": "a/l Muthu",
-   "got": ""
+   "got": "Suresh"
   },
   "text": "Suresh a/l Muthu"
  },
