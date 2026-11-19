@@ -151,12 +151,17 @@ serial = pytest.mark.serial
 #: 3 on 3.12-3.15 (#1170), to the figures below: three post_rules
 #: helpers stopped making calls they did not need, saving 7 and 6 from
 #: a tree that had drifted up inside the band (decisions/parse-cost).
+#: Lowered 2026-11-18 by 88 on 3.11 and 89 on 3.12-3.15 (#1436), to
+#: the figures below: tokenize scans a region for its separators in C
+#: rather than asking each character, and `Token`'s validation, the
+#: generators and an enum-keyed dict stopped costing frames on the
+#: parse's own input (decisions/parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 285},
-    (3, 12): {"parse": 277},
-    (3, 13): {"parse": 277},
-    (3, 14): {"parse": 277},
-    (3, 15): {"parse": 277},
+    (3, 11): {"parse": 197},
+    (3, 12): {"parse": 188},
+    (3, 13): {"parse": 188},
+    (3, 14): {"parse": 188},
+    (3, 15): {"parse": 188},
 }
 _BAND = 0.02
 
@@ -1538,11 +1543,13 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # `_CALL_BASELINE` above.
 #
 # THE LONG RUN AND NOT THE SHORT ONE, and the arithmetic is the whole
-# reason: +1 per link is 16 frames at `_CLAUSE_RUN_SMALL`, and 2% of
-# 859 is 17.2, so the small end's band swallows the very regression
-# this pin exists for (875 sits inside 842-876). At
-# `_CLAUSE_RUN_LARGE` the same change is +64 against a 2% band of
-# 51.7, and 2,651 sits outside 2,535-2,639. A tighter band on the
+# reason, as measured 2026-09-22 on py3.11 on the clause run the pin
+# then read: +1 per link is 16 frames at `_CLAUSE_RUN_SMALL`, and 2%
+# of 859 was 17.2, so the small end's band swallowed the very
+# regression this pin exists for (875 sat inside 842-876). At
+# `_CLAUSE_RUN_LARGE` the same change was +64 against a 2% band of
+# 51.7, and 2,651 sat outside 2,535-2,639. The pin's current band is
+# given with `_LINK_BASELINE` below. A tighter band on the
 # short name would do it too and was not taken: the band is the one
 # `_CALL_BASELINE` uses, and a bespoke one here would need its own
 # argument every time the shape moved.
@@ -1585,13 +1592,18 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # `join_connectives` builds its connective runs in one pass rather
 # than through `merge_pieces`, so the 64-letter run here no longer
 # pays that function's frame per member (decisions/parse-cost,
-# 2026-11-03).
+# 2026-11-03). 1,716 (py3.11) and 1,706 (py3.12-3.15) from
+# 2026-11-18 (#1436), each measured there, against 2,404 and 2,395 on
+# the tree before the change: frames paid per token or per character
+# (`Token`'s checks 402 of the 688, tokenize's per-character call 143)
+# are paid per link here (decisions/parse-cost, 2026-11-18). A per-link regression still
+# shows: +64 against a 2% band of 34.3.
 _LINK_BASELINE = {
-    (3, 11): 2418,
-    (3, 12): 2398,
-    (3, 13): 2398,
-    (3, 14): 2398,
-    (3, 15): 2398,
+    (3, 11): 1716,
+    (3, 12): 1706,
+    (3, 13): 1706,
+    (3, 14): 1706,
+    (3, 15): 1706,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the

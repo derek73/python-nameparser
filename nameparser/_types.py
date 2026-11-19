@@ -422,8 +422,11 @@ class Token:
             )
         if not self.text:
             raise ValueError("Token.text must be a non-empty string")
-        object.__setattr__(
-            self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
+        # _coerce_enum returns a Role unchanged; asked only of what may
+        # need coercing, the parse's own tokens pay no frame for it
+        if not isinstance(self.role, Role):
+            object.__setattr__(
+                self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
         if self.reading is not None:
             if not isinstance(self.reading, Reading):
                 raise TypeError(
@@ -438,36 +441,43 @@ class Token:
                     f"Reading(kind, role, source) with the token's role"
                 )
         if self.span is not None:
-            if not (
-                isinstance(self.span, tuple)
-                and len(self.span) == 2
-                # bool is an int subclass: (False, True) is a comparison
-                # result leaking into a coordinate slot, not a span
-                and all(isinstance(v, int) and not isinstance(v, bool)
-                        for v in self.span)
-            ):
+            # Each coordinate tested in turn, not by all() over a
+            # generator, which cost three frames a token; the parse
+            # builds every token it returns through here
+            if not (isinstance(self.span, tuple) and len(self.span) == 2):
                 raise TypeError(
                     f"invalid span {self.span!r}: expected a (start, end) "
                     "pair of ints or None"
                 )
             start, end = self.span
+            # bool is an int subclass: (False, True) is a comparison
+            # result leaking into a coordinate slot, not a span
+            if not (isinstance(start, int) and not isinstance(start, bool)
+                    and isinstance(end, int) and not isinstance(end, bool)):
+                raise TypeError(
+                    f"invalid span {self.span!r}: expected a (start, end) "
+                    "pair of ints or None"
+                )
             if start < 0 or end < start:
                 raise ValueError(
                     f"invalid span ({start}, {end}): need 0 <= start <= end"
                 )
-            object.__setattr__(self, "span", Span(start, end))
+            if type(self.span) is not Span:
+                object.__setattr__(self, "span", Span(start, end))
         # The same guards _normset applies to Lexicon vocabulary: a bare
         # string would become its character set, a mapping would silently
         # contribute only its keys.
-        if isinstance(self.tags, str):
-            raise TypeError(
-                "Token.tags must be an iterable of strings, "
-                "not a bare string"
-            )
-        if isinstance(self.tags, Mapping):
-            raise TypeError(
-                "Token.tags must be an iterable of strings, not a mapping"
-            )
+        # A frozenset is neither, and asking Mapping, an ABC, is a frame
+        if type(self.tags) is not frozenset:
+            if isinstance(self.tags, str):
+                raise TypeError(
+                    "Token.tags must be an iterable of strings, "
+                    "not a bare string"
+                )
+            if isinstance(self.tags, Mapping):
+                raise TypeError(
+                    "Token.tags must be an iterable of strings, not a mapping"
+                )
         tags = frozenset(self.tags)
         for tag in tags:
             if not isinstance(tag, str):
