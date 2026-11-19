@@ -21340,4 +21340,212 @@ CASES: tuple[Case, ...] = (
          "Դոկտոր Աննա Հակոբյան",
          {"title": "Դոկտոր", "given": "Աննա", "family": "Հակոբյան"},
          classification="fix(#1225)"),
+    # #1457: job and degree words written after the name and a comma,
+    # listed as occupation titles and title modifiers.
+    Case("degree_written_out_after_a_full_name_and_a_comma_is_the_title",
+         "Nadir Qassoumi, Bachelor",
+         {"title": "Bachelor", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="C8: a part of titles alone fixes no family boundary; "
+               "read given 'Bachelor', family 'Nadir Qassoumi' 1.4.0 "
+               "through 3.1"),
+    Case("occupation_after_a_full_name_in_capitals_is_the_title",
+         "NADIR QASSOUMI, PHARMACIST",
+         {"title": "PHARMACIST", "given": "NADIR", "family": "QASSOUMI"},
+         classification="fix(#1457)",
+         notes="read given 'PHARMACIST', family 'NADIR QASSOUMI' 1.4.0 "
+               "through 3.1.0: a name wholly in capitals has no case "
+               "contrast for C6 to read"),
+    Case("occupation_in_capitals_after_a_mixed_case_name_is_the_title",
+         "Nadir Qassoumi, PHARMACIST",
+         {"title": "PHARMACIST", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="the listed title outranks C6's capitals shape; read "
+               "suffix 'PHARMACIST' by that shape, reported "
+               "suffix-or-name, 2.4.0 through 3.1.0, as an unlisted word "
+               "in capitals still reads ('Nadir Qassoumi, XYZQW'), and "
+               "given 'PHARMACIST', family 'Nadir Qassoumi' 1.4.0 "
+               "through 2.3.0"),
+    Case("modifier_and_head_after_a_comma_are_one_title",
+         "Nadir Qassoumi, Medical Doctor",
+         {"title": "Medical Doctor", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="H9: the modifier's phrase is the head after it; read "
+               "given 'Medical', middle 'Doctor' through 3.1"),
+    Case("two_modifiers_and_a_head_after_a_comma_are_one_title",
+         "Lina Farouk Saleh, Clinical Research Coordinator",
+         {"title": "Clinical Research Coordinator", "given": "Lina",
+          "middle": "Farouk", "family": "Saleh"},
+         classification="fix(#1457)",
+         notes="H9: modifiers chain into the head after them; read "
+               "given 'Clinical', middle 'Research Coordinator', family "
+               "'Lina Farouk Saleh' through 3.1"),
+    Case("modifier_alone_after_a_comma_is_the_title",
+         "Nadir Qassoumi, Doctoral",
+         {"title": "Doctoral", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="H9: a modifier outside the leading run is read as any "
+               "title is"),
+    Case("head_title_before_of_after_a_comma",
+         "Nadir Qassoumi, Head of Department",
+         {"title": "Head of Department", "given": "Nadir",
+          "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="C8: after a comma a title joins 'of' and the word after "
+               "it, as 'Professor of Medicine' does; read given 'Head of "
+               "Department', family 'Nadir Qassoumi' through 3.1"),
+    Case("modifier_before_of_in_the_leading_run",
+         "Head of Department Nadir Qassoumi",
+         {"title": "Head of Department", "given": "Nadir",
+          "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="H9: 'of' after a modifier in the leading run is its "
+               "phrase; read given 'Head of Department', middle 'Nadir' "
+               "through 3.1"),
+    Case("occupation_behind_a_title_and_a_comma_joins_the_title",
+         "Dr. Nadir Qassoumi, Specialist",
+         {"title": "Dr. Specialist", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="read title 'Dr.', given 'Specialist', family 'Nadir "
+               "Qassoumi' 2.5.0 through 3.1.0, family 'Dr. Nadir "
+               "Qassoumi' and no title 1.4.0 through 2.4.2"),
+    Case("occupation_past_a_credential_and_a_second_comma",
+         "Nadir Qassoumi, PhD, Student",
+         {"title": "Student", "given": "Nadir", "family": "Qassoumi",
+          "suffix": "PhD"},
+         classification="fix(#1457)",
+         notes="C2: a part past the second comma holds no name word; "
+               "read suffix 'PhD, Student' 1.4.0 through 3.1.0, "
+               "reported comma-structure from 2.0"),
+    Case("occupation_after_a_credential_in_one_comma_part",
+         "Nadir Qassoumi, PhD Student",
+         {"title": "Student", "given": "Nadir", "family": "Qassoumi",
+          "suffix": "PhD"},
+         classification="fix(#1457)",
+         notes="the listed title leaves the credential run; read suffix "
+               "'PhD Student', reported suffix-or-name, 2.4.0 through "
+               "3.1.0, given 'PhD', middle 'Student' in 2.2.0 and 2.3.0, "
+               "and title 'PhD', given 'Student' 1.4.0 through 2.1.0"),
+    Case("modifier_and_head_in_brackets_are_the_title",
+         "Nadir Qassoumi (Medical Doctor)",
+         {"title": "Medical Doctor", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="bracketed content that is all title vocabulary is no "
+               "nickname; read nickname 'Medical Doctor' through 3.1"),
+    Case("modifier_alone_in_brackets_stays_the_nickname",
+         "Nadir Qassoumi (Child)",
+         {"given": "Nadir", "family": "Qassoumi", "nickname": "Child"},
+         notes="boundary: a lone modifier with no head is no title there"),
+    Case("modifier_before_an_unlisted_word_after_a_comma_still_reverses",
+         "Nadir Qassoumi, Clinical Pharmacologist",
+         {"title": "Clinical", "given": "Pharmacologist",
+          "family": "Nadir Qassoumi"},
+         classification="fix(#1457)",
+         notes="the limit #1457 leaves: an unlisted job after the "
+               "modifier is read as the given name; read given "
+               "'Clinical', middle 'Pharmacologist' through 3.1"),
+    Case("occupation_after_a_comma_under_a_family_first_order",
+         "Qassoumi Nadir, Bachelor",
+         {"title": "Bachelor", "given": "Nadir", "family": "Qassoumi"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1457)",
+         notes="the part of titles alone leaves the order to read the "
+               "name before the comma; read given 'Bachelor', family "
+               "'Qassoumi Nadir' through 3.1"),
+    Case("modifier_ending_the_name_with_its_period_is_the_title",
+         "Nadir Qassoumi Medical.",
+         {"title": "Medical.", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="H5: a listed title ending the name with its period; "
+               "read middle 'Qassoumi', family 'Medical.' through 3.1"),
+    Case("bare_modifier_ending_the_name_stays_the_family",
+         "Anna Child",
+         {"given": "Anna", "family": "Child"},
+         notes="boundary: a bare title word ending a name is a name "
+               "word (H5)"),
+    Case("occupation_that_is_a_surname_before_a_family_comma_stays_family",
+         "Masters, John",
+         {"given": "John", "family": "Masters"},
+         notes="boundary: a title before a family comma with no name "
+               "word behind it stays the family (H6), as 'Judge, Mike'"),
+    Case("occupation_that_is_a_surname_ending_the_name_stays_family",
+         "John Masters",
+         {"given": "John", "family": "Masters"},
+         notes="boundary: a bare title word ending a name is a name "
+               "word (H5)"),
+    Case("modifier_opening_a_double_surname_before_a_family_comma",
+         "Head Boyd, Mary",
+         {"given": "Mary", "family": "Head Boyd"},
+         notes="boundary: a modifier is no head title, so H6 does not "
+               "peel it, where 'Masters Boyd, Helen' loses 'Masters'"),
+    Case("modifier_opening_the_name_stays_the_given_name",
+         "Child Nadir Qassoumi",
+         {"given": "Child", "middle": "Nadir", "family": "Qassoumi"},
+         notes="boundary: a modifier with no head after it in the "
+               "leading run is a name word (H9), where 'Student Mary "
+               "Jones' reads the title"),
+    Case("occupation_that_is_a_surname_ending_the_name_with_its_period",
+         "John Masters.",
+         {"title": "Masters.", "family": "John"},
+         classification="fix(#1457)",
+         notes="the accepted cost: H5 reads a listed title ending the "
+               "name with its period, as 'John Bishop.'; read given "
+               "'John', family 'Masters.' through 3.1"),
+    Case("occupation_that_is_a_surname_in_a_part_past_the_second_comma",
+         "Jones, Mary, Masters",
+         {"title": "Masters", "given": "Mary", "family": "Jones"},
+         classification="fix(#1457)",
+         notes="the accepted cost: a part past the second comma holds no "
+               "name word (C2), so a surname written there is the title; "
+               "read suffix 'Masters' through 3.1"),
+    Case("occupation_that_is_a_surname_opening_a_family_first_name",
+         "Masters John",
+         {"title": "Masters", "family": "John"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1457)",
+         notes="the accepted cost: a name the word opens reads it as the "
+               "title under every order; read family 'Masters', given "
+               "'John' through 3.1"),
+    Case("salutation_and_an_occupation_that_is_a_surname_reports",
+         "Mr Masters",
+         {"title": "Mr", "family": "Masters"},
+         ambiguities=("title-or-name",),
+         classification="fix(#1457)",
+         notes="H4: a name of title words alone reports which one names "
+               "the person, as 'Mr. Bishop' does; reported nothing "
+               "through 3.1"),
+    Case("occupation_alone_after_a_family_comma_leaves_no_given_name",
+         "Qassoumi, Student",
+         {"title": "Student", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="the accepted cost (decisions/salutation-titles): a lone "
+               "title after a family comma names no given name, as "
+               "'Smith, Dr.' does; read given 'Student' through 3.1"),
+    Case("occupation_opening_the_name_is_the_title",
+         "Student Mary Jones",
+         {"title": "Student", "given": "Mary", "family": "Jones"},
+         classification="fix(#1457)",
+         notes="the accepted cost: a name the word opens reads it as a "
+               "title; read given 'Student', middle 'Mary' through 3.1"),
+    Case("modifier_opening_the_given_part_after_a_family_comma",
+         "Qassoumi, Medical Nadir",
+         {"title": "Medical", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1457)",
+         notes="the accepted cost: a modifier that is no given name is "
+               "read as listed in the given part (H9's 'Hudson, Rock'); "
+               "read given 'Medical', middle 'Nadir' through 3.1"),
+    Case("occupation_opening_a_double_surname_before_a_family_comma",
+         "Masters Boyd, Helen",
+         {"title": "Masters", "given": "Helen", "family": "Boyd"},
+         classification="fix(#1457)",
+         notes="the accepted cost: H6 peels a listed title with a name "
+               "word behind it before a family comma; 4 of FEC's "
+               "1,893,964 names (decisions/salutation-titles); read "
+               "family 'Masters Boyd' through 3.1"),
+    Case("possessive_degree_after_a_comma_is_still_read_as_the_name",
+         "Nadir Qassoumi, Master's degree",
+         {"given": "Master's", "middle": "degree",
+          "family": "Nadir Qassoumi"},
+         notes="boundary: the possessive is left unlisted (#1457), so "
+               "the part still takes the name over"),
 )

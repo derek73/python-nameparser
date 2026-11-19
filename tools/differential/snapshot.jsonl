@@ -901,7 +901,7 @@
 {"name": "Doe, John van DO", "given": "John", "family": "van DO Doe", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. D.", "capitalized_force": "John van do Doe"}
 {"name": "Doe, John van Ma", "given": "John", "middle": "van Ma", "family": "Doe", "initials": "J. M. D."}
 {"name": "Doe, John, Jr.", "given": "John", "family": "Doe", "suffix": "Jr.", "initials": "J. D.", "generation": "Jr."}
-{"name": "Doe, John, MD PhD - FACS Fellow", "given": "John", "family": "Doe", "suffix": "MD PhD, FACS Fellow", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. D."}
+{"name": "Doe, John, MD PhD - FACS Fellow", "title": "Fellow", "given": "John", "family": "Doe", "suffix": "MD PhD, FACS", "initials": "J. D."}
 {"name": "Doe, John,, Jr.", "given": "John", "family": "Doe", "suffix": "Jr.", "initials": "J. D.", "generation": "Jr."}
 {"name": "Doe, John,, Jr.,, III", "given": "John", "family": "Doe", "suffix": "Jr., III", "initials": "J. D.", "generation": "Jr., III"}
 {"name": "Doe, John. A. Kenneth", "title": "John.", "given": "A.", "middle": "Kenneth", "family": "Doe", "initials": "A. K. D."}
@@ -3392,6 +3392,7 @@
 {"name": "Mūsā al-Kāẓīm", "given": "Mūsā", "family": "al-Kāẓīm", "initials": "M. a.", "capitalized_force": "Mūsā Al-Kāẓīm"}
 {"name": "NASCIMENTO, EDSON ARANTES DO", "given": "EDSON", "middle": "ARANTES", "family": "DO NASCIMENTO", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "E. A. N.", "capitalized": "Edson Arantes do Nascimento"}
 {"name": "NOLEN, MAJ MAUREEN", "given": "MAJ", "middle": "MAUREEN", "family": "NOLEN", "initials": "M. M. N.", "capitalized": "Maj Maureen Nolen"}
+{"name": "Nadir Qassoumi, Medical Doctor", "title": "Medical Doctor", "given": "Nadir", "family": "Qassoumi", "initials": "N. Q."}
 {"name": "Nakae, Toju", "given": "Toju", "family": "Nakae", "initials": "T. N."}
 {"name": "Nakamura, Masanao", "given": "Masanao", "family": "Nakamura", "initials": "M. N."}
 {"name": "Nalî", "given": "Nalî", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "N."}
@@ -3678,6 +3679,7 @@
 {"name": "Pīters Džims Millers", "given": "Pīters", "middle": "Džims", "family": "Millers", "initials": "P. D. M."}
 {"name": "Q  R", "given": "Q", "family": "R", "initials": "Q. R."}
 {"name": "QC MP", "given": "QC", "suffix": "MP", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "Q.", "capitalized": "Qc MP"}
+{"name": "Qassoumi, Medical Nadir", "title": "Medical", "given": "Nadir", "family": "Qassoumi", "initials": "N. Q."}
 {"name": "Qodirov Alisher Salimovich Deputat", "order": "FAMILY_FIRST", "given": "Alisher", "middle": "Salimovich Deputat", "family": "Qodirov", "initials": "A. S. D. Q."}
 {"name": "Qodirov Muhammad Yusuf", "order": "FAMILY_FIRST", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
 {"name": "Qodirov, Alisher Salimovich", "given": "Alisher", "middle": "Salimovich", "family": "Qodirov", "initials": "A. S. Q."}

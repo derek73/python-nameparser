@@ -1184,6 +1184,10 @@ text = "academic"
 occupation = {}
 
 [[word]]
+text = "academician"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 22 distinct names reading it as the title (Nadir Qassoumi, Academician) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "activist"
 occupation = {}
 
@@ -1202,6 +1206,10 @@ occupation = {}
 [[word]]
 text = "anarchist"
 occupation = {}
+
+[[word]]
+text = "anesthesiologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 23 distinct names reading it as the title (Nadir Qassoumi, Anesthesiologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "animator"
@@ -1234,6 +1242,14 @@ occupation = {}
 [[word]]
 text = "author"
 occupation = { issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 2,173 births (all male), Wikidata none, Census under 100. Given a given reading it moved 9 names: 4 the word as a role label after a comma (Bob Jones, author), 4 orcid-researchers records opening with it, 2 of them typed in the given box. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
+
+[[word]]
+text = "bachelor"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 1,309 distinct names reading it as the title (Nadir Qassoumi, Bachelor) where it was read as the given name, the name before the comma as the family; a surname: US Census 1,186, Wikidata 10 family, no given bearer in US SSA, nam_dict or Wikidata; FEC writes it 8 times, opening a surname-first name, never after a comma, and none moves (2026-11-19)" }
+
+[[word]]
+text = "bachelors"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 26 distinct names reading it as the title (Nadir Qassoumi, Bachelors) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "bandleader"
@@ -1292,6 +1308,14 @@ occupation = { gender = "m" }
 [[word]]
 text = "businesswoman"
 occupation = { gender = "f" }
+
+[[word]]
+text = "candidate"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 14 distinct names reading it as the title (Nadir Qassoumi, Candidate) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "cardiologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 74 distinct names reading it as the title (Nadir Qassoumi, Cardiologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "cartographer"
@@ -1358,6 +1382,10 @@ text = "consultant"
 occupation = {}
 
 [[word]]
+text = "coordinator"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 38 distinct names reading it as the title (Nadir Qassoumi, Coordinator) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "correspondent"
 occupation = {}
 
@@ -1386,6 +1414,18 @@ text = "dancer"
 occupation = {}
 
 [[word]]
+text = "degree"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 35 distinct names reading it as the title (Nadir Qassoumi, Degree) where it was read as the given name, the name before the comma as the family; a surname: US Census 1,139, Wikidata 1 family, no given bearer in US SSA or Wikidata; ORCID's whole extract (24,990,909 people) holds it 10 times in a given box, and 2 of orcid-researchers' 1,831,533 records open a given box with it (Nigeria, Papua New Guinea), now read as the title, the accepted cost (2026-11-19)" }
+
+[[word]]
+text = "demonstrator"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 45 distinct names reading it as the title (Nadir Qassoumi, Demonstrator) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "dentist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 47 distinct names reading it as the title (Nadir Qassoumi, Dentist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "designer"
 occupation = {}
 
@@ -1394,12 +1434,24 @@ text = "developer"
 occupation = {}
 
 [[word]]
+text = "dietitian"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 14 distinct names reading it as the title (Nadir Qassoumi, Dietitian) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "diploma"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 23 distinct names reading it as the title (Nadir Qassoumi, Diploma) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "diplomat"
 occupation = {}
 
 [[word]]
 text = "dissident"
 occupation = {}
+
+[[word]]
+text = "doctorate"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 462 distinct names reading it as the title (Nadir Qassoumi, Doctorate) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "dramatist"
@@ -1442,12 +1494,24 @@ text = "expert"
 occupation = {}
 
 [[word]]
+text = "fellow"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 62 distinct names reading it as the title (Nadir Qassoumi, Fellow) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "forester"
 occupation = {}
 
 [[word]]
 text = "founder"
 occupation = {}
+
+[[word]]
+text = "gastroenterologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 13 distinct names reading it as the title (Nadir Qassoumi, Gastroenterologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "graduate"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 105 distinct names reading it as the title (Nadir Qassoumi, Graduate) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "guitarist"
@@ -1472,6 +1536,10 @@ occupation = {}
 [[word]]
 text = "instructor"
 occupation = {}
+
+[[word]]
+text = "intern"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 24 distinct names reading it as the title (Nadir Qassoumi, Intern) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "inventor"
@@ -1534,6 +1602,10 @@ text = "manager"
 occupation = {}
 
 [[word]]
+text = "masters"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 287 distinct names reading it as the title (Nadir Qassoumi, Masters) where it was read as the given name, the name before the comma as the family; a surname: US Census 23,533, Wikidata 203 family and 2 given, US SSA none; a surname-first name keeps it after a comma (Masters, John) and so does one ending a name (John Masters), but the title takes it opening a double surname before a family comma by H6 (Masters Boyd, Helen; 4 of FEC's 1,893,964 names), in a part past the second comma by C2 (Jones, Mary, Masters; 1 FEC name), with a full stop ending the name by H5 (John Masters.), and opening a name written family-first without a comma (Masters John), and Mr Masters now reports title-or-name (no local corpus writes a salutation and the word alone); ORCID's whole extract (24,990,909 people) holds it 13 times in a given box (2026-11-19)" }
+
+[[word]]
 text = "mathematician"
 occupation = {}
 
@@ -1544,6 +1616,10 @@ occupation = {}
 [[word]]
 text = "merchant"
 occupation = {}
+
+[[word]]
+text = "midwife"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 92 distinct names reading it as the title (Nadir Qassoumi, Midwife) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "missionary"
@@ -1582,6 +1658,14 @@ text = "naturalist"
 occupation = {}
 
 [[word]]
+text = "nephrologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 24 distinct names reading it as the title (Nadir Qassoumi, Nephrologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "neurologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 53 distinct names reading it as the title (Nadir Qassoumi, Neurologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "neuroscientist"
 occupation = {}
 
@@ -1590,8 +1674,20 @@ text = "novelist"
 occupation = {}
 
 [[word]]
+text = "nutritionist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 15 distinct names reading it as the title (Nadir Qassoumi, Nutritionist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "obstetritian"
 occupation = { note = "a misspelling of obstetrician, shipped as written" }
+
+[[word]]
+text = "oncologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 104 distinct names reading it as the title (Nadir Qassoumi, Oncologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "optometrist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 13 distinct names reading it as the title (Nadir Qassoumi, Optometrist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "ornithologist"
@@ -1614,6 +1710,10 @@ text = "personality"
 occupation = {}
 
 [[word]]
+text = "pharmacist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 109 distinct names reading it as the title (Nadir Qassoumi, Pharmacist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "philantropist"
 occupation = { note = "a misspelling of philanthropist, shipped as written" }
 
@@ -1626,12 +1726,24 @@ text = "photographer"
 occupation = {}
 
 [[word]]
+text = "physiatrist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 14 distinct names reading it as the title (Nadir Qassoumi, Physiatrist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "physician"
 occupation = {}
 
 [[word]]
 text = "physicist"
 occupation = {}
+
+[[word]]
+text = "physio"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 37 distinct names reading it as the title (Nadir Qassoumi, Physio) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "physiotherapist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 125 distinct names reading it as the title (Nadir Qassoumi, Physiotherapist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "pianist"
@@ -1662,6 +1774,18 @@ text = "politician"
 occupation = {}
 
 [[word]]
+text = "postdoc"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 43 distinct names reading it as the title (Nadir Qassoumi, Postdoc) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "postdoctor"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 18 distinct names reading it as the title (Nadir Qassoumi, Postdoctor) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "postgraduate"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 144 distinct names reading it as the title (Nadir Qassoumi, Postgraduate) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "printer"
 occupation = {}
 
@@ -1684,6 +1808,10 @@ occupation = {}
 [[word]]
 text = "publisher"
 occupation = {}
+
+[[word]]
+text = "radiologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 13 distinct names reading it as the title (Nadir Qassoumi, Radiologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "ranger"
@@ -1758,6 +1886,18 @@ text = "soprano"
 occupation = {}
 
 [[word]]
+text = "specialist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 266 distinct names reading it as the title (Nadir Qassoumi, Specialist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "statistician"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 72 distinct names reading it as the title (Nadir Qassoumi, Statistician) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "student"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 238 distinct names reading it as the title (Nadir Qassoumi, Student) where it was read as the given name, the name before the comma as the family; a surname: US Census 733, Wikidata 7 family, no given bearer; ORCID's whole extract (24,990,909 people) holds it 48 times in a given box, a word typed there (psc-individuals' one filer opening with it typed it in the title box) (2026-11-19)" }
+
+[[word]]
 text = "suffragist"
 occupation = {}
 
@@ -1786,8 +1926,24 @@ text = "theorist"
 occupation = {}
 
 [[word]]
+text = "therapist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 14 distinct names reading it as the title (Nadir Qassoumi, Therapist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "trainee"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 19 distinct names reading it as the title (Nadir Qassoumi, Trainee) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "translator"
 occupation = {}
+
+[[word]]
+text = "undergraduate"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 27 distinct names reading it as the title (Nadir Qassoumi, Undergraduate) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "urologist"
+occupation = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 18 distinct names reading it as the title (Nadir Qassoumi, Urologist) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "vocalist"
@@ -1862,6 +2018,10 @@ text = "9th"
 modifier = {}
 
 [[word]]
+text = "adjunct"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 15 distinct names reading it as the title (Nadir Qassoumi, Adjunct) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "advertising"
 modifier = {}
 
@@ -1900,6 +2060,14 @@ modifier = {}
 [[word]]
 text = "assoc"
 modifier = { same_as = "associate" }
+
+[[word]]
+text = "associated"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 45 distinct names reading it as the title (Nadir Qassoumi, Associated) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "attending"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 51 distinct names reading it as the title (Nadir Qassoumi, Attending) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "award-winning"
@@ -1950,12 +2118,20 @@ text = "business"
 modifier = {}
 
 [[word]]
+text = "child"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 28 distinct names reading it as the title (Nadir Qassoumi, Child) where it was read as the given name, the name before the comma as the family; a surname: US Census 5,237, Wikidata 216 family; a rare given name, US SSA 131 births since 1880 and Wikidata 1, too few to gate it; FEC writes 53 surname-first names opening with it, none moving, and a bare modifier ending a name stays the family (Anna Child), though not one written with a full stop (Anna Child., rules/H5) (2026-11-19)" }
+
+[[word]]
 text = "civil"
 modifier = {}
 
 [[word]]
 text = "classical"
 modifier = {}
+
+[[word]]
+text = "clinical"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 371 distinct names reading it as the title (Nadir Qassoumi, Clinical) where it was read as the given name, the name before the comma as the family; it opens 5,676 ClinicalTrials.gov labels that name no person (Clinical Trials); ORCID's whole extract (24,990,909 people) holds it 65 times in a given box, a word typed there (2026-11-19)" }
 
 [[word]]
 text = "computer"
@@ -2000,6 +2176,10 @@ modifier = {}
 [[word]]
 text = "docket"
 modifier = { issue = 9, expands = "Docket Clerk" }
+
+[[word]]
+text = "doctoral"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 238 distinct names reading it as the title (Nadir Qassoumi, Doctoral) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "edmi"
@@ -2067,12 +2247,20 @@ text = "foreign"
 modifier = {}
 
 [[word]]
+text = "full"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 124 distinct names reading it as the title (Nadir Qassoumi, Full) where it was read as the given name, the name before the comma as the family; a surname: US Census 651, Wikidata 14 family, no given bearer in US SSA or Wikidata; FEC writes 13 surname-first names opening with it, none moving (2026-11-19)" }
+
+[[word]]
 text = "grand"
 modifier = {}
 
 [[word]]
 text = "group"
 modifier = {}
+
+[[word]]
+text = "head"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 84 distinct names reading it as the title (Nadir Qassoumi, Head) where it was read as the given name, the name before the comma as the family; a surname: US Census 27,292, Wikidata 461 family and 26 given, US SSA none; FEC writes 186 surname-first names opening with it, none moving, and a bare modifier ending a name stays the family (Mary Head), though not one written with a full stop (Mary Head., rules/H5) (2026-11-19)" }
 
 [[word]]
 text = "her"
@@ -2119,6 +2307,10 @@ text = "law"
 modifier = {}
 
 [[word]]
+text = "lead"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 27 distinct names reading it as the title (Nadir Qassoumi, Lead) where it was read as the given name, the name before the comma as the family; a surname: US Census 112, Wikidata 1 family, no given bearer in US SSA or Wikidata (2026-11-19)" }
+
+[[word]]
 text = "legal"
 modifier = {}
 
@@ -2137,6 +2329,10 @@ modifier = {}
 [[word]]
 text = "mathematics"
 modifier = {}
+
+[[word]]
+text = "medical"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 928 distinct names reading it as the title (Nadir Qassoumi, Medical) where it was read as the given name, the name before the comma as the family; it opens 5,859 ClinicalTrials.gov labels that name no person (Medical Director); ORCID's whole extract (24,990,909 people) holds it 160 times in a given box, a word typed there (2026-11-19)" }
 
 [[word]]
 text = "military"
@@ -2163,6 +2359,10 @@ text = "navy"
 modifier = {}
 
 [[word]]
+text = "occupational"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 19 distinct names reading it as the title (Nadir Qassoumi, Occupational) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "opera"
 modifier = {}
 
@@ -2171,8 +2371,16 @@ text = "operating"
 modifier = {}
 
 [[word]]
+text = "pediatric"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 22 distinct names reading it as the title (Nadir Qassoumi, Pediatric) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "petty"
 modifier = {}
+
+[[word]]
+text = "physical"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 84 distinct names reading it as the title (Nadir Qassoumi, Physical) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "police"
@@ -2183,12 +2391,24 @@ text = "political"
 modifier = {}
 
 [[word]]
+text = "postdoctoral"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 23 distinct names reading it as the title (Nadir Qassoumi, Postdoctoral) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
 text = "presiding"
 modifier = {}
 
 [[word]]
 text = "prime"
 modifier = {}
+
+[[word]]
+text = "principle"
+excluded = { modifier = { reason = "principal misspelled (Principle Investigator), which ClinicalTrials.gov officials and contacts write after the name and a comma in 26 distinct names; misspellings were left out of #1457 by decision, and a modifier reading would read the real word principle as a title", issue = 1457, decided = 2026-11-19 } }
+
+[[word]]
+text = "project"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 42 distinct names reading it as the title (Nadir Qassoumi, Project) where it was read as the given name, the name before the comma as the family; ORCID's whole extract (24,990,909 people) holds it 25 times in a given box, a word typed there (2026-11-19)" }
 
 [[word]]
 text = "queen's"
@@ -2201,6 +2421,14 @@ modifier = {}
 [[word]]
 text = "rear"
 modifier = {}
+
+[[word]]
+text = "registered"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 42 distinct names reading it as the title (Nadir Qassoumi, Registered) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
+
+[[word]]
+text = "research"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 232 distinct names reading it as the title (Nadir Qassoumi, Research) where it was read as the given name, the name before the comma as the family; ORCID's whole extract (24,990,909 people) holds it 374 times in a given box, a word typed there (Research Group) (2026-11-19)" }
 
 [[word]]
 text = "revenue"
@@ -2267,6 +2495,10 @@ text = "strategy"
 modifier = {}
 
 [[word]]
+text = "study"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 192 distinct names reading it as the title (Nadir Qassoumi, Study) where it was read as the given name, the name before the comma as the family; a surname: US Census 473, Wikidata 3 family, no given bearer; it opens 3,721 ClinicalTrials.gov labels that name no person (Study Director) (2026-11-19)" }
+
+[[word]]
 text = "superior"
 modifier = { expands = "'Mother Superior'" }
 
@@ -2277,6 +2509,10 @@ modifier = {}
 [[word]]
 text = "tax"
 modifier = {}
+
+[[word]]
+text = "teaching"
+modifier = { issue = 1457, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, 19 distinct names reading it as the title (Nadir Qassoumi, Teaching) where it was read as the given name, the name before the comma as the family; no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata, not in nam_dict, a miss proving nothing (2026-11-19)" }
 
 [[word]]
 text = "technical"

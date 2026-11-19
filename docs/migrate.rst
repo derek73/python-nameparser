@@ -2246,3 +2246,33 @@ father's name with its marker under ``PatronymicRule.TURKIC``
 3.0 and 3.1 gave ``Hasan`` and ``oglu``). With ``capitals_as_family``
 on too, the family the capitals name is divided (``Ana GARCÍA LÓPEZ``
 gives ``GARCÍA`` and ``LÓPEZ``), where 3.1 left it whole.
+
+A job or degree after a comma
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A job or degree written out after the name and a comma is the title,
+where 1.4 through 3.1 read it as the given name and the whole name
+before the comma as the family. A word that qualifies the job joins it
+(``Medical Doctor``, ``Clinical Research Coordinator``). The words are
+English, as ClinicalTrials.gov, where the shape was measured, fills its
+forms in English, and a misspelling (``Proffesor``) or a possessive
+(``Master's degree``) still reads the old way:
+
+.. doctest::
+
+    >>> qassoumi = parse("Nadir Qassoumi, Medical Doctor")
+    >>> qassoumi.title, qassoumi.given, qassoumi.family
+    ('Medical Doctor', 'Nadir', 'Qassoumi')
+    >>> parse("Masters, John").family
+    'Masters'
+
+A name the word opens reads it as the title too, as with any title
+(``Student Mary Jones`` gives title ``Student``), and so does one
+alone after a surname and a comma (``Qassoumi, Student`` gives no given
+name). To read such a word as a name, remove its reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("student", kind="occupation"))
+    >>> as_31.parse("Student Mary Jones").given
+    'Student'

@@ -350,10 +350,12 @@ class SuffixesTestCase(ParsedNameTestBase):
         # The suffix-comma detection check flattens on spaces after
         # expanding on the delimiter, so a multi-word token on one side of
         # the delimiter is still tokenized correctly.
-        hn = _delimited("Doe, John, MD PhD | FACS Fellow", " | ")
+        # 'FACS FRCS', not 1.x's 'FACS Fellow': 'Fellow' is a listed title
+        # since #1457, and this test is about the delimiter.
+        hn = _delimited("Doe, John, MD PhD | FACS FRCS", " | ")
         self.m(hn.given, "John", hn)
         self.m(hn.family, "Doe", hn)
-        self.m(hn.suffix, "MD PhD, FACS Fellow", hn)
+        self.m(hn.suffix, "MD PhD, FACS FRCS", hn)
 
     def test_suffix_delimiter_no_effect_when_not_suffix_comma(self) -> None:
         # When the comma format isn't recognized as suffix-comma (here the
