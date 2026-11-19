@@ -56,7 +56,7 @@ from typing import Literal
 
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _HYPHEN_CHARS, _VOCAB_FIELDS, _normalize,
-    _spells_a_cased_initial, _spells_an_initial,
+    _spells_an_initial,
 )
 from nameparser._policy import (
     CapsSuffixes, Policy, Script, _CASELESS_LETTERS, _EAST_ASIAN_SCRIPTS,
@@ -575,11 +575,8 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     # the period test asked at C level first (decisions/S3, #1131)
     joined = ("." in folded and folded not in sets.titles
               and acronym not in sets.suffix_acronyms)
-    # rules/H11: "a one-letter word written with its period is an
-    # initial and not a title, where the letter has a capital" -- '(U.)'
-    title = folded in sets.titles and (
-        len(folded) != 1 or not _spells_a_cased_initial(folded, bare)
-    ) or joined and period_joined_title(bare, lexicon)
+    title = folded in sets.titles or joined and period_joined_title(
+        bare, lexicon)
     if joined and not title and period_joined_credential(bare, lexicon):
         # rules/S3: "a joined word holding a member is a member itself"
         # -- 'Msc.Ed' as 'MA/PhD', settled by S13's position (#1138)
@@ -1009,11 +1006,7 @@ def _claimed_after_the_stop(w: str, lexicon: Lexicon) -> bool:
     unambiguous title or suffix word, and so no name (rules/T8): the
     one test `glued_cuts` and `glued_saint_cut` ask of it."""
     sets = lexicon._sets
-    # rules/H11: "single letter with a capital cut from a word at its
-    # full stops is an initial too" -- the word after a glued stop is cut
-    # at it ('Dr.U.')
-    return w in sets.titles and (
-        len(w) != 1 or not _spells_a_cased_initial(w, ".")) or (
+    return w in sets.titles or (
         w in sets.suffix_acronyms
         and w not in sets.suffix_acronyms_ambiguous) or (
         (w in sets.suffix_words or w in sets.credential_words)
@@ -1230,12 +1223,9 @@ def is_title_chunk(chunk: str, lexicon: Lexicon) -> bool:
     word, `glued_saint_cut`)."""
     sets = lexicon._sets
     n = _normalize(chunk)
-    # rules/H11: "single letter with a capital cut from a word at its
-    # full stops is an initial too" -- a chunk read before its full stop
     return n not in sets.saint_particles and (
         n in sets.titles or n in sets.titles_ambiguous
-        or n in sets.title_modifiers or n in sets.title_styles) and (
-        len(n) != 1 or not _spells_a_cased_initial(n, "."))
+        or n in sets.title_modifiers or n in sets.title_styles)
 
 
 def is_dotted_title(text: str, n: str, lexicon: Lexicon) -> bool:
@@ -1702,13 +1692,8 @@ def period_joined_title(text: str, lexicon: Lexicon) -> bool:
     one of which is title vocabulary ('Lt.Gov', 'Lt.Col'; not
     'Dr.PhD' or 'St.John')."""
     chunks = [_normalize(c) for c in text.split(".") if c]
-    titles = lexicon._sets.titles
-    # rules/H11: "single letter with a capital cut from a word at its
-    # full stops is an initial too" -- a chunk is cut at a full stop, so it
-    # is written with one; the length test first, at C level
     return len(chunks) >= 2 and all(
-        c in titles and (len(c) != 1 or not _spells_a_cased_initial(c, "."))
-        for c in chunks)
+        c in lexicon._sets.titles for c in chunks)
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
@@ -1918,11 +1903,7 @@ def period_joined_vocab(
     if glued_saint_cut(text, lexicon) is not None:
         return None
     chunks = [_normalize(c) for c in text.split(".") if c]
-    titles = lexicon._sets.titles
-    # rules/H11: "single letter with a capital cut from a word at its
-    # full stops is an initial too" -- as in `period_joined_title`
-    if any(c in titles and (len(c) != 1 or not _spells_a_cased_initial(c, "."))
-           for c in chunks):
+    if any(c in lexicon._sets.titles for c in chunks):
         return "title"
     if period_joined_credential(text, lexicon):
         return "suffix"
@@ -2564,21 +2545,14 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     # a word in titles is a title wherever it stands, whatever else it
     # is listed as; one of titles_ambiguous alone is listed as a title
     # to its neighbours and read by its phrase
-    # rules/H11: "a one-letter word written with its period is an
-    # initial and not a title, where the letter has a capital" -- read
-    # as no title here, nor by its phrase below
-    initial = [len(n) == 1 and (n in titles or n in contested)
-               and _spells_a_cased_initial(n, text)
-               for n, text in zip(folded, texts)]
-    reading = [(n in titles or n in contested) and not vetoed
-               for n, vetoed in zip(folded, initial)]
+    reading = [n in titles or n in contested for n in folded]
     if titled is not None:
         reading = [r or t for r, t in zip(reading, titled)]
     listed = list(reading)
     phrases = lexicon._sets.title_phrases
     last = len(folded) - 1
     for i, n in enumerate(folded):
-        if n in titles or n not in contested or n in modifiers or initial[i]:
+        if n in titles or n not in contested or n in modifiers:
             continue
         prev = folded[i - 1] if i else None
         nxt = folded[i + 1] if i < last else None
@@ -2705,11 +2679,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
               else title_readings(texts, folded, lexicon, head=True))
     for i, n in enumerate(folded):
         text = texts[i]
-        # rules/H11: "a one-letter word written with its period is an
-        # initial and not a title, where the letter has a capital"
-        title = (n in lexicon._sets.titles
-                 and (len(n) != 1 or not _spells_a_cased_initial(n, text))
-                 if titled is None else titled[i])
+        title = n in lexicon._sets.titles if titled is None else titled[i]
         if title and i in dotted:
             # a title only opening the part (behind any titles), and only
             # with a title, listed or by H2's shape, behind it and a word
@@ -2720,9 +2690,6 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
             nxt = i + 1
             title = (lead is None and nxt < len(folded)
                      and ((folded[nxt] in lexicon._sets.titles
-                           and (len(folded[nxt]) != 1
-                                or not _spells_a_cased_initial(
-                                    folded[nxt], texts[nxt]))
                            if titled is None else titled[nxt])
                           or is_title_shaped(texts[nxt], lexicon))
                      and nxt + 1 < len(folded))

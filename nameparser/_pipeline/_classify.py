@@ -97,7 +97,7 @@ from __future__ import annotations
 
 import unicodedata
 
-from nameparser._lexicon import _normalize, _spells_a_cased_initial, _spells_an_initial
+from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_STRIP, CREDENTIAL_WORD_TAG,
@@ -173,15 +173,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     tags = set(token.tags)
     if marker_tag is not None:
         tags.add(marker_tag)
-    # rules/H11: "a one-letter word written with its period is an
-    # initial and not a title, where the letter has a capital" -- for
-    # every title tag below; the length and set tests first, at C level,
-    # so only a one-letter title pays the frame, not every initial (the
-    # tags below read sets inside these two)
-    initial = (len(n) == 1
-               and (n in lex._sets.titles or n in lex._sets.titles_ambiguous)
-               and _spells_a_cased_initial(n, token.text))
-    if n in lex._sets.titles and not initial:
+    if n in lex._sets.titles:
         tags.add("vocab:title")
         # rules/H5: "a title the vocabulary lists whole with a period
         # inside it chains without a final one" -- marked here, where
@@ -200,18 +192,17 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     elif ("." in n and n.replace(".", "") in lex._sets.dotted_titles
           and is_dotted_title(token.text, n, lex)):
         tags.add(DOTTED_TITLE_TAG)
-    if n in lex._sets.given_name_titles and not initial:
+    if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
     # rules/H5: "a title that may be a given name is title vocabulary
     # there where its title reading is written short" -- marked here,
     # where the sets are at hand, so the chain reads a tag
     if (n in lex._sets.title_abbreviations
-            and n in lex._sets.titles_ambiguous and not initial):
+            and n in lex._sets.titles_ambiguous):
         tags.add(TRAILING_TITLE_TAG)
     # rules/H8: "the word joins the title field" -- tagged only where the
     # word is a title too, so an entry outside `titles` is inert
-    if (n in lex._sets.after_given_titles and n in lex._sets.titles
-            and not initial):
+    if n in lex._sets.after_given_titles and n in lex._sets.titles:
         tags.add("vocab:after-given-title")
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
@@ -603,11 +594,6 @@ def classify(state: ParseState) -> ParseState:
                 tags = written[i].tags
                 n = folded[i]
                 if n not in lex._sets.titles_ambiguous and n not in lex._sets.title_modifiers:
-                    continue
-                # rules/H11: "a one-letter word written with its period is
-                # an initial and not a title, where the letter has a
-                # capital" -- so no fork between title and name either
-                if len(n) == 1 and _spells_a_cased_initial(n, written[i].text):
                     continue
                 if n in lex._sets.titles_ambiguous and n not in lex._sets.titles:
                     tags = tags | {TITLE_AMBIGUOUS_TAG}

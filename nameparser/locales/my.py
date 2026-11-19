@@ -15,12 +15,13 @@ the name).
 
 Burmese names have no family name: every word is a personal name, and
 the last one lands in ``family`` by position as it does in any name
-read positionally. ``U.`` with its full stop stays an initial
-(``U. S. Grant``), a one-letter word with a capital written with its
-period being no title in any lexicon (rules/H11); a Burmese ``U.``
-written so (``U. Thein Aung``) reads as the given name. A title and one name word
-reads the word as the family name, as everywhere (rules/H1), so ``U
-Thant`` gives family ``Thant``.
+read positionally. The title vocabulary reads ``U.`` with its full
+stop as it reads ``U``, wherever it reads a title, so a Western
+initial opening a name is the title under the pack too (``U. S.
+Grant`` gives title ``U.``, given ``S.``), the accepted cost and the
+reason to keep the pack to Burmese names; a ``U.`` inside a name stays
+an initial. A title and one name word reads the word as the family
+name, as everywhere (rules/H1), so ``U Thant`` gives family ``Thant``.
 
 Left as name words: the honorifics ``Ko``, ``Ma`` and ``Maung``, which
 are also name syllables (``Maung Maung Kyaw``), and the ethnic prefixes

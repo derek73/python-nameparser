@@ -34,7 +34,7 @@ C1's decision is `_comma.decide`'s. History in decisions/C1.
 """
 from __future__ import annotations
 
-from nameparser._lexicon import _normalize, _spells_a_cased_initial
+from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import own_words
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
@@ -162,12 +162,8 @@ def segment(state: ParseState) -> ParseState:
         # reads as the title, as classify tags it (decisions/C10)
         titles = state.lexicon._sets.titles
         cores = glued_cores(state.policy.extra_suffix_delimiters)
-        # rules/H11: "a one-letter word written with its period is an
-        # initial and not a title, where the letter has a capital"
         rest = tuple([i for i in seg
-                      if ((n := _normalize(t := state.tokens[i].text))
-                          not in titles
-                          or len(n) == 1 and _spells_a_cased_initial(n, t))
+                      if _normalize(t := state.tokens[i].text) not in titles
                       and ("." not in t
                            or period_joined_vocab(t, state.lexicon)
                            != "title")

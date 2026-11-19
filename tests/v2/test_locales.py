@@ -806,42 +806,27 @@ def test_my_reads_the_honorific_in_every_comma_shape(
     assert (name.title, name.given, name.family) == (title, given, family)
 
 
-@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
-@pytest.mark.parametrize("text", [
-    # U written with its full stop is an initial under the pack (rules/H11),
-    # in every comma shape, joined to the next initial or the
-    # next name at its full stop, and in a name of one case
-    "U. S. Grant", "U.S. Grant", "Grant, U. S.", "Grant, U.S.", "U. Grant",
-    "John U. Smith", "Smith, John U.", "Smith, U.", ", U. Smith",
-    "U.Thein Sein", "U. Thein Sein", "U. S. GRANT", "u. s. grant",
-    "U.S. District Judge Jane Roe", "Dr. U. Smith",
-    # #1231's review: the comma count, the title phrase, the glued stop,
-    # the set-apart clause and C2's third part
-    "U. Smith, Ed", "U. Smith, Ma", "Smith U., Ed", "Vice U. Smith",
-    "Vice U.Thein Smith, Ed", "Smith, John, U.", "John Smith, Jr., U.",
-    "Dr.U. Smith", "John Smith Dr.U.", "John (U.) Smith", "(U.) Smith",
-    'John "U." Smith',
+@pytest.mark.parametrize("text, title, given, middle, family", [
+    # the accepted reading, decided 2026-11-19 (decisions/vocabulary-
+    # collisions, the #1231 entry): the title vocabulary reads U written
+    # with its full stop as the honorific under the pack, wherever it
+    # reads a title, so a Western initial U. opening a name is the title
+    # there -- the reason the docs give not to apply the pack to a mixed
+    # list. A U. inside the name is an initial, as by default
+    ("U. Thein Sein", "U.", "Thein", "", "Sein"),
+    ("Sein, U. Thein", "U.", "Thein", "", "Sein"),
+    ("U. S. Grant", "U.", "S.", "", "Grant"),
+    ("U. Smith, Ed", "U.", "Ed", "", "Smith"),
+    ("Grant, U.S.", "U.S.", "", "", "Grant"),
+    ("U.S. Grant", "", "U.", "S.", "Grant"),
+    ("John U. Smith", "", "John", "U.", "Smith"),
+    ("Smith, John U.", "", "John", "U.", "Smith"),
 ])
-def test_my_keeps_u_written_with_its_full_stop_an_initial(
-        text: str, order: tuple[Role, Role, Role]) -> None:
-    base = Parser(policy=Policy(name_order=order))
-    packed = parser_for(locales.MY, base=base).parse(text)
-    default = base.parse(text)
-    assert packed.as_dict() == default.as_dict()
-    assert [a.kind for a in packed.ambiguities] == [
-        a.kind for a in default.ambiguities]
-    assert "U." not in packed.title.upper().split()
-
-
-def test_my_suggests_as_the_default_over_names_opening_with_u_dotted() -> None:
-    # the group suggester reads past a leading title as the parse does,
-    # so `U.` is a given name to it under the pack too (rules/H11)
-    names = ["U. Wang Xiaoming", "U. Zhang Wei", "U. Li Na", "U. Liu Yang",
-             "U. Chen Jie", "U. Wang Fang"]
-    # the evidence, below the first line, which names the base parser
-    packed, default = (str(p.suggest(names)).split("\n", 1)[1]
-                       for p in (_require_packed("my"), Parser()))
-    assert packed == default
+def test_my_reads_u_written_with_its_full_stop_as_the_title_vocabulary_does(
+        text: str, title: str, given: str, middle: str, family: str) -> None:
+    name = _require_packed("my").parse(text)
+    assert (name.title, name.given, name.middle, name.family) == (
+        title, given, middle, family)
 
 
 def test_my_differs_from_the_default_only_through_its_words() -> None:

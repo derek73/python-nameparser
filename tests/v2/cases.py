@@ -1077,13 +1077,21 @@ CASES: tuple[Case, ...] = (
          notes="rules/P6's trailing attachment has no particle to attach; "
                "1.4.0 and 2.0.0 read the same fields, 2.4.0 through 3.1.0 "
                "family 'San AUNG'"),
-    Case("the_burmese_pack_keeps_u_with_its_full_stop_an_initial",
+    Case("the_burmese_pack_reads_u_with_its_full_stop_as_the_title",
+         "U. Thein Sein",
+         {"title": "U.", "given": "Thein", "family": "Sein"},
+         locale="my", classification="feat(#1231)",
+         notes="the title vocabulary reads the honorific written with its "
+               "full stop as it reads it bare; 1.4.0 through 3.1.0 read "
+               "given 'U.', middle 'Thein'"),
+    Case("the_burmese_pack_reads_an_initial_u_opening_a_name_as_the_title",
          "U. S. Grant",
-         {"given": "U.", "middle": "S.", "family": "Grant"},
-         locale="my", classification="parity",
-         notes="a one-letter cased word written with its period (rules/H11) "
-               "is an initial, never a title; the issue's simulated lexicon "
-               "read title 'U.' on master; 1.4.0 reads the same fields"),
+         {"title": "U.", "given": "S.", "family": "Grant"},
+         locale="my", classification="feat(#1231)",
+         notes="the accepted reading, decided 2026-11-19 "
+               "(decisions/vocabulary-collisions, the #1231 entry): the "
+               "reason not to apply the pack to a mixed list; 1.4.0 through "
+               "3.1.0 read given 'U.', middle 'S.'"),
     Case("the_burmese_pack_costs_a_dutch_particle",
          "Jan van Dijk",
          {"given": "Jan", "middle": "van", "family": "Dijk"},

@@ -68,7 +68,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING, cast
 
-from ._lexicon import Lexicon, _normalize, _spells_a_cased_initial
+from ._lexicon import Lexicon, _normalize
 from ._pipeline._state import COMMA_CHARS
 from ._pipeline._post_rules import _listed_suffix
 from ._pipeline._vocab import (
@@ -249,13 +249,9 @@ def _a_listed_name(word: str) -> bool:
 
 def _is_leading_title(word: str, lexicon: Lexicon) -> bool:
     """A word the lexicon lists as a title, or one rules/H2's shape
-    reads as a title at the head of a name (`Prof.`, `Insp.`), save a
-    one-letter one written with its period, which the parse reads as an
-    initial (rules/H11)."""
-    n = _normalize(word)
+    reads as a title at the head of a name (`Prof.`, `Insp.`)."""
     return not _a_listed_name(word) and (
-        n in lexicon._sets.titles
-        and (len(n) != 1 or not _spells_a_cased_initial(n, word))
+        _normalize(word) in lexicon._sets.titles
         or is_title_shaped(word, lexicon))
 
 
