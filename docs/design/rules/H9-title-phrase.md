@@ -57,6 +57,7 @@
   "John Smith, Vice"          →  title="Vice"
   "Lau, Wing"                 →  given="Wing"
   "Lau, Wing Commander"       →  title="Wing Commander"
+  "Nadir Qassoumi, Medical Doctor"  →  title="Medical Doctor"
   "John Smith Wing."          →  family="Wing."
   ```
 - **A title that may be a given name, read as a name word where it is the first name word after any titles and no comma has marked the given name,** is reported as `title-or-name` where a phrase the vocabulary lists holds it; inside a phrase, later in the name, or in the given part after a family comma, it is not. A word no listed phrase holds is a title only behind a style or a modifier, or before `of`, the partners every such word shares, so standing alone it is no title a reader would hesitate over.
@@ -145,6 +146,7 @@
 - In the given part after a family comma a modifier that is not also a given name is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
   ```
   "Hudson, Rock"              →  title="Rock"
+  "Qassoumi, Medical Nadir"   →  title="Medical"
   ```
 - A phrase that is the whole given part after a family comma leaves the given name empty, as a lone title there does.
   ```

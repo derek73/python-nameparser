@@ -500,9 +500,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # three orders and 'Kwame Mensah Anak' under FAMILY_FIRST; 2191 -> 2192
     # the same day, its review's FAMILY_FIRST row of that name, once under
     # its declared policy; 2192 -> 2195 the same day, #1471's 'Emerita
-    # Smith' reporting title-or-name under three orders.
-    assert claims == 2195, (
-        f"the field sweep checks {claims} claims, recorded as 2195 on "
+    # Smith' reporting title-or-name under three orders; 2195 -> 2198 the
+    # same day, #1457's 'Mr Masters' reporting title-or-name under three
+    # orders.
+    assert claims == 2198, (
+        f"the field sweep checks {claims} claims, recorded as 2198 on "
         f"2026-11-19")
 
 
