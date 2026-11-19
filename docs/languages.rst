@@ -1215,8 +1215,9 @@ The pack keeps them name words:
     ('Daw', 'San Suu', 'Kyi')
 
 The nine are ``San``, ``La``, ``Le``, ``Do``, ``Da``, ``Du``, ``Te``,
-``Di`` and ``Van``. ``U`` written with its full stop stays an initial,
-as it is in ``U. S. Grant``:
+``Di`` and ``Van``, and ``Do`` is no credential either, so a name
+written in capitals keeps a final ``DO``. ``U`` written with its full
+stop stays an initial, as it is in ``U. S. Grant``:
 
 .. doctest::
 
@@ -1240,6 +1241,8 @@ What the pack leaves as it is
   ``Thant``, as a title and one name word reads in any name.
 - **Military and religious styles** (``Bogyoke``, ``Sayadaw``) are read
   as given names, as by default.
+- **U with a full stop.** ``U.`` is read as an initial, so a Burmese
+  name written ``U. Thein Aung`` gives given ``U.``.
 - **Burmese script.** The pack reads Latin letters only; ``ဦး`` and
   ``ဒေါ်`` have no reading yet.
 
@@ -1247,9 +1250,10 @@ When not to use it
 ~~~~~~~~~~~~~~~~~~
 
 The pack is for lists of Burmese names. On other names it costs the
-particles of Spanish, Portuguese, Italian, French and Dutch family
-names, so keep it to a parser of its own for the Burmese names in your
-data:
+nine words' particle readings, which Dutch, Portuguese, Italian,
+French, Spanish, Filipino and Māori family names hold (``de`` and
+``del`` are kept), and the credential DO, so keep it to a parser of its
+own for the Burmese names in your data:
 
 .. doctest::
 

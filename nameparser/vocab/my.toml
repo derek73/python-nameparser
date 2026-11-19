@@ -2,11 +2,11 @@ schema = 1
 
 [[word]]
 text = "daw"
-salutation = { default = false, gender = "f", native = "ဒေါ်", issue = 1231, expands = "Daw, the honorific written before a woman's name (Mrs.)", note = "Burmese names have no family name and an honorific opens them, so the default reads Daw as the given name; on by default it would take the given name of the people who bear it: US Census 2010 2,670 as a surname, Wikidata 3 given (Sudan 1) and 20 family; ORCID's given box 29, MM 2, family box 118; PatentsView 9 given, 54 family (tools/name_usage.py, 2026-11-19). Written bare as a word of its own, never with a full stop" }
+salutation = { default = false, gender = "f", native = "ဒေါ်", issue = 1231, expands = "Daw, the honorific written before a woman's name (Mrs.)", note = "Burmese names have no family name and an honorific opens them, so the default reads Daw as the given name; on by default it would take the given name of the people who bear it: US Census 2010 2,670 as a surname, Wikidata 3 given (Sudan 1) and 20 family; ORCID's given box 29, MM 2, family box 118; PatentsView 9 given, 54 family (tools/name_usage.py, 2026-11-19). Written bare as a word of its own; written Daw. it is a title by its shape by default already (rules/H2)" }
 
 [[word]]
 text = "u"
-salutation = { default = false, gender = "m", native = "ဦး", issue = 1231, expands = "U, the honorific written before a man's name (Mr.)", note = "a Korean surname (Wikidata 154 family, South Korea 122; 12 given, 2026-11-19) and, written with its full stop, an initial: the full stop keeps U. an initial under the pack too, a one-letter cased word written with its period being no title (rules/H11). Written bare by Burmese names (U Thein Sein); FEC writes U 187 times and U. 163, mostly a middle initial after a comma; ctgov-officials U 260, U. 61 (tools/name_usage.py, 2026-11-19)" }
+salutation = { default = false, gender = "m", native = "ဦး", issue = 1231, expands = "U, the honorific written before a man's name (Mr.)", note = "a Korean surname (Wikidata 154 family, South Korea 122; 12 given, 2026-11-19) and, written with its full stop, an initial: the full stop keeps U. an initial under the pack too, a one-letter word with a capital written with its period being no title (rules/H11). Written bare by Burmese names as a rule (U Thein Sein; 1 of the 71 names opening with the honorific in the #1231 population writes U., which the pack reads as the given name); FEC writes U 187 times and U. 163, 320 of the 351 after a comma; ctgov-officials U 260, U. 61 (tools/name_usage.py, 2026-11-19)" }
 
 [[word]]
 text = "ဂျူနီယာ"

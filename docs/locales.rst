@@ -146,8 +146,9 @@ shape covers much:
 - ``mn`` may read any name written wholly in Cyrillic differently.
 - ``my`` may read any name holding ``San``, ``La``, ``Le``, ``Do``,
   ``Da``, ``Du``, ``Te``, ``Di`` or ``Van`` as a word differently,
-  Spanish, Portuguese, Italian, French and Dutch family names among
-  them, and any opening with ``U`` or ``Daw``.
+  Spanish, Portuguese, Italian, French, Filipino and Dutch family names
+  among them, and any where ``U`` or ``Daw`` opens the name or the part
+  after a comma.
 
 .. warning::
 
@@ -402,14 +403,14 @@ says what it can change:
      - yes (turns on nothing)
      - a ``script_orders`` entry for Cyrillic
      - none
-   * - ``ne``
-     - yes
-     - ``initials_as_family``
-     - none
    * - ``my``
      - yes
      - none
      - none; it takes readings out instead
+   * - ``ne``
+     - yes
+     - ``initials_as_family``
+     - none
    * - ``vi``
      - yes
      - ``name_order``
