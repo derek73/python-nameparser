@@ -1241,13 +1241,20 @@ What the pack leaves as it is
 When not to use it
 ~~~~~~~~~~~~~~~~~~
 
-The pack is for lists of Burmese names. On other names it costs the
-nine words' particle readings, which Dutch, Portuguese, Italian,
-French, Spanish, Filipino and Māori family names hold (``de`` and
-``del`` are kept), and the credential DO. And it reads ``U`` opening a
-name as the honorific however it is written, so an initial ``U.``
-opening a Western name becomes the title. Keep it to a parser of its
-own for the Burmese names in your data:
+The pack is for lists of Burmese names. On other names it costs:
+
+- **Nine particles.** Their particle readings, which Dutch, Portuguese,
+  Italian, French, Spanish, Filipino and Māori family names hold
+  (``de`` and ``del`` keep theirs, but ``de la`` loses its ``la``).
+  Where one opens the family name before a comma, a short given name
+  after it can read as a credential, the given name lost (``Van Buren,
+  Ed`` gives suffix ``Ed``).
+- **The credential DO**, read as a name word.
+- **An initial U.** ``U`` is the honorific however it is written,
+  wherever a title is read, so an initial ``U.`` opening a name or the
+  part after a comma is the title (``Smith, U.`` gives no given name).
+
+Keep it to a parser of its own for the Burmese names in your data:
 
 .. doctest::
 
@@ -1261,7 +1268,7 @@ own for the Burmese names in your data:
 
 Measured on names that are not Burmese, the pack changes the reading of
 14% of the names of Brazilian election donors, and among researchers
-who filed their own given and family names it lowers the share read
-right in both from 94% to 83% in the Netherlands and from 95% to 89% in
-Belgium. A Korean name opening with the surname ``U`` written bare
+who filed their own given and family names in ORCID it lowers the
+share read right in both boxes from 94% to 83% in the Netherlands and
+from 95% to 89% in Belgium. A Korean name opening with the surname ``U`` written bare
 reads ``U`` as the title under the pack.

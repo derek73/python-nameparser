@@ -97,7 +97,7 @@ Open: [#1145](https://github.com/derek73/python-nameparser/issues/1145), the dis
   3. Detailed kinds are recorded during the migration even where every kind of a category behaves alike at first; generation and credential are separate kinds (#326).
   4. A language file means "the words the parser might encounter in names in that language" — what occurs in names and records written in it, including particles common there through immigration — not words of that language's etymology.
   5. The default loads every language and keeps working for names of any language, as today; choosing a language narrows it.
-  6. Packs prefer and strict packs restrict: a pack settles only the clashes where its language has a VOCABULARY reading, and a strict variant also drops other languages' name-level readings. (Excepted for one pack, 2026-11-05 #1108, below: `locales.VI`'s fragment removes readings of Vietnamese syllables where vi.toml holds none.)
+  6. Packs prefer and strict packs restrict: a pack settles only the clashes where its language has a VOCABULARY reading, and a strict variant also drops other languages' name-level readings. (Excepted for two packs, 2026-11-05 #1108, below: `locales.VI`'s fragment removes readings of Vietnamese syllables where vi.toml holds none; and `locales.MY`'s of Burmese syllables, decisions/vocabulary-collisions' 2026-11-19 #1231 entry.)
   7. `e`/`y`/`i` stay in the default, at least to start; choosing a language settles the one-case fork.
   8. A patronymic field belongs in 3.0.
   9. Gender is recorded only where a word gives a definitive clue.
@@ -106,7 +106,7 @@ Open: [#1145](https://github.com/derek73/python-nameparser/issues/1145), the dis
   12. Bearer counts are structured provenance (source + count), never used to compute a reading: two data sets deciding one reading would make the decision unclear. A new census flags changed names for review.
   13. `Dean Smith` reads given `Dean`, as today.
   14. Order and shape are separate: a language supplies only a default order; the shapes (where titles, suffixes, particles and commas sit) belong to each order and live in the core.
-  15. Vocabulary readings settle a clash; name readings only keep the gate on. (Bent for one pack, 2026-11-05 #1108, below: `locales.VI`'s fragment removes the particle, connective and credential readings of Vietnamese syllables, the settling no reading in vi.toml can do.)
+  15. Vocabulary readings settle a clash; name readings only keep the gate on. (Bent for two packs, 2026-11-05 #1108, below: `locales.VI`'s fragment removes the particle, connective and credential readings of Vietnamese syllables, the settling no reading in vi.toml can do; and `locales.MY`'s the particle readings of Burmese syllables and `do`'s credential, decisions/vocabulary-collisions' 2026-11-19 #1231 entry.)
   16. The contested-head rule covers only words outside `titles` today (`dean`, `justice`, `major`); a title that is also a given name today is decided one word at a time, like the graf class (decisions/salutation-titles).
   17. `cased` and `same_as` replace a "canonical" spelling, and `cased` replaces `capitalization_exceptions`; both default to the word, and a reading's `native` spelling is for surfacing.
   18. `acronym` is a reading property, replacing the `suffix_acronyms`/`suffix_words` split; `expands` records the meaning an entry was added for, not every meaning.

@@ -17,10 +17,11 @@ Burmese names have no family name: every word is a personal name, and
 the last one lands in ``family`` by position as it does in any name
 read positionally. The title vocabulary reads ``U.`` with its full
 stop as it reads ``U``, wherever it reads a title, so a Western
-initial opening a name is the title under the pack too (``U. S.
-Grant`` gives title ``U.``, given ``S.``), the accepted cost and the
-reason to keep the pack to Burmese names; a ``U.`` inside a name stays
-an initial. A title and one name word reads the word as the family
+initial is the title under the pack too where it opens a name or the
+part after a comma, or stands in brackets (``U. S. Grant`` gives title
+``U.``, given ``S.``; ``Smith, U.`` gives no given name), the accepted
+cost and the reason to keep the pack to Burmese names; a bare ``U.``
+between two name words stays an initial (``John U. Smith``). A title and one name word reads the word as the family
 name, as everywhere (rules/H1), so ``U Thant`` gives family ``Thant``.
 
 Left as name words: the honorifics ``Ko``, ``Ma`` and ``Maung``, which
@@ -38,7 +39,8 @@ applies the pack to names that are not Burmese those nine words'
 particle readings in Spanish, Italian, Portuguese, French, Filipino,
 Dutch and Māori surnames (``Juan de la Cruz`` keeps ``de la Cruz``,
 ``de`` not being among them, but ``Maria la Torre``, ``Jan van Dijk``
-and ``Kiri Te Kanawa`` lose theirs) and the credential DO
+and ``Kiri Te Kanawa`` lose theirs, and ``Van Buren, Ed`` reads ``Ed``
+as a credential, its given name lost) and the credential DO
 (``Jane Doe, DO`` gives given ``DO``), the measured cost in the
 decisions entry.
 

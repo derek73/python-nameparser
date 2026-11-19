@@ -147,9 +147,9 @@ shape covers much:
 - ``my`` may read any name holding ``San``, ``La``, ``Le``, ``Do``,
   ``Da``, ``Du``, ``Te``, ``Di`` or ``Van`` as a word differently,
   Spanish, Portuguese, Italian, French, Filipino and Dutch family names
-  among them, a name holding the credential ``DO``, and any where ``U``
-  or ``Daw`` opens the name, follows a title opening it, or opens the
-  part after a comma.
+  among them, a name holding the credential ``DO``, and any holding
+  ``U`` or ``Daw`` as a word, with or without its full stop, or ``U``
+  as a letter of a word joined by full stops.
 
 .. warning::
 

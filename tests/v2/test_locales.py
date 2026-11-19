@@ -751,6 +751,21 @@ def test_each_my_removal_moves_its_own_row() -> None:
         assert len(my.parse(text).family.split()) == 1, text
 
 
+@pytest.mark.parametrize("text, given, family, suffix", [
+    # the accepted cost of a removed particle opening the family before a
+    # comma: it no longer keeps a short given name after the comma from
+    # reading as a credential (decisions/vocabulary-collisions, the
+    # 2026-11-19 #1231 entry)
+    ("Van Buren, Ed", "Van", "Buren", "Ed"),
+    ("De La Cruz, Ed", "", "De La Cruz", "Ed"),
+])
+def test_my_costs_a_given_name_after_a_particle_and_a_comma(
+        text: str, given: str, family: str, suffix: str) -> None:
+    name = _require_packed("my").parse(text)
+    assert (name.given, name.family, name.suffix) == (given, family, suffix)
+    assert _default_parse(text)["given"] == "Ed"
+
+
 @pytest.mark.parametrize("text, middle, family", [
     # the credential DO, which SAN's particle chain kept from ending a
     # name written in capitals, in each comma shape, beside the mixed-case
@@ -819,6 +834,8 @@ def test_my_reads_the_honorific_in_every_comma_shape(
     ("U. Smith, Ed", "U.", "Ed", "", "Smith"),
     ("Grant, U.S.", "U.S.", "", "", "Grant"),
     ("U.S. Grant", "", "U.", "S.", "Grant"),
+    ("Smith, U.", "U.", "", "", "Smith"),
+    ("John (U.) Smith", "U.", "John", "", "Smith"),
     ("John U. Smith", "", "John", "U.", "Smith"),
     ("Smith, John U.", "", "John", "U.", "Smith"),
 ])
@@ -2185,6 +2202,7 @@ _ROTATORS["my"] = [
     "AUNG SAN WIN",                  # san, in one case
     "AUNG SAN DO",                   # do's credential, in one case
     "KYAW, AUNG DO",                 # do's credential after a comma
+    "Thein Sein Daw.",               # daw, dotted, ending the name (rules/H5)
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
