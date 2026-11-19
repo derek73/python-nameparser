@@ -118,10 +118,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
-        "ne", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "ne", "nl", "pt", "pt_br", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ne, nl, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -147,6 +147,66 @@ def test_ne_pack_contents() -> None:
                                 languages=frozenset({"ne"}))
     assert changed_words(selected(locales.NE.languages)) == {
         "guru", "गुरु", "श्री"}
+
+
+def test_nl_pack_is_its_choice_alone() -> None:
+    # #1455: it turns on `ten`'s preposition, written default = false, and
+    # its choice drops en's credential VD for vd's particle
+    import pickle
+    from nameparser._reading_index import changed_words, selected
+    assert locales.NL == Locale(code="nl", lexicon=Lexicon.empty(),
+                                languages=frozenset({"nl"}))
+    assert changed_words(selected(locales.NL.languages)) == {"ten", "vd"}
+    assert pickle.loads(pickle.dumps(locales.NL)) == locales.NL
+    parser = pickle.loads(pickle.dumps(parser_for(locales.NL)))
+    name = parser.parse("Jan ten Brink")
+    assert (name.middle, name.family) == ("", "ten Brink")
+    name = parse("Jan ten Brink")
+    assert (name.middle, name.family) == ("ten", "Brink")
+
+
+@pytest.mark.parametrize("strict, text, given, family, reported", [
+    # #1455: a `Ten` opening a name is zh.toml's given name, so the plain
+    # choice keeps it given and reports the fork; a strict choice reads
+    # no zh.toml, and the particle opens the family name (rules/P1)
+    (False, "Ten Kao Liu", "Ten", "Liu", True),
+    (True, "Ten Kao Liu", "", "Ten Kao Liu", False),
+    (False, "Ten Brink", "Ten", "Brink", True),
+    (True, "Ten Brink", "", "Ten Brink", False),
+    # inside the name both choices read the particle, the Chinese
+    # syllable joining the family name: the cost that keeps it off by
+    # default (decisions/vocabulary-collisions, 2026-11-18 #1455)
+    (False, "Kheng Ten Choo", "Kheng", "Ten Choo", False),
+    (True, "Kheng Ten Choo", "Kheng", "Ten Choo", False),
+])
+def test_nl_reads_a_leading_ten_by_its_given_reading_unless_strict(
+        strict: bool, text: str, given: str, family: str, reported: bool) -> None:
+    name = parser_for(locales.NL, strict=strict).parse(text)
+    assert (name.given, name.family) == (given, family)
+    assert any(a.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+               for a in name.ambiguities) is reported
+
+
+@pytest.mark.parametrize("code, text, repaired", [
+    # #1455: oude keeps the capital its family names are written with
+    # (its `cased` mask) where case repair would lowercase a particle;
+    # ten is written lower case in Dutch family boxes, as a particle is
+    (None, "PIET OUDE LUTTIKHUIS", "Piet Oude Luttikhuis"),
+    (None, "piet oude luttikhuis", "Piet Oude Luttikhuis"),
+    (None, "Piet Oude Luttikhuis", "Piet Oude Luttikhuis"),
+    (None, "JAN DE OUDE BRINK", "Jan de Oude Brink"),
+    ("nl", "PIET OUDE LUTTIKHUIS", "Piet Oude Luttikhuis"),
+    ("nl", "JAN TEN BRINK", "Jan ten Brink"),
+    ("nl", "jan ten brink", "Jan ten Brink"),
+    # by default ten is a name word, title-cased
+    (None, "JAN TEN BRINK", "Jan Ten Brink"),
+])
+def test_a_dutch_particle_keeps_its_case(
+        code: str | None, text: str, repaired: str) -> None:
+    parser = parser_for(locales.get(code)) if code else Parser()
+    name = parser.parse(text)
+    assert str(parser.capitalized(name)) == repaired
+    assert str(name.capitalized(parser.lexicon, force=True)) == repaired
 
 
 def test_ar_and_he_packs_are_their_choice_alone() -> None:
@@ -1900,6 +1960,16 @@ _ROTATORS["he"] = [
     "Yael Ben Arieh",                # ben
     "YAEL BEN ARIEH",                # ben, in one case
     "Arieh, Yael Ben",               # ben ending the given part
+]
+# nl (#1455): ten mid-name, in each case and after a family comma (a
+# leading Ten reads as by default, test_nl_reads_a_leading_ten_...); the credential VD its choice drops for vd's particle
+_ROTATORS["nl"] = [
+    "Jan ten Brink",                 # ten
+    "JAN TEN BRINK",                 # ten, in one case
+    "jan ten brink",                 # ten, lower case
+    "Brink, Jan ten",                # ten ending the given part
+    "John Smith VD",                 # vd, the credential leaving
+    "John Smith, VD",                # vd after a comma
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted

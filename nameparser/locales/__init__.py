@@ -36,6 +36,7 @@ _REGISTRY = {
     "JA": ("nameparser.locales.ja", "JA"),
     "MN": ("nameparser.locales.mn", "MN"),
     "NE": ("nameparser.locales.ne", "NE"),
+    "NL": ("nameparser.locales.nl", "NL"),
     "PT": ("nameparser.locales.pt", "PT"),
     "PT_BR": ("nameparser.locales.pt_br", "PT_BR"),
     "RU": ("nameparser.locales.ru", "RU"),

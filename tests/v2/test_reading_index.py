@@ -389,7 +389,7 @@ STRICT_UNGATED = {
     "hr": {"st"},
     "it": {"del", "la", "san", "santa"},
     "ms": {"bin", "sultan"},
-    "nl": {"den", "tho"},
+    "nl": {"den", "ten", "tho"},
     "pt": {"da", "do", "santa"},
     "pt-BR": {"da", "do", "santa"},
     "sk": {"st"},

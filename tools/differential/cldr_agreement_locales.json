@@ -1438,6 +1438,28 @@
   },
   "text": "वुस्टर बर्ट्राम विलबरफोर्स हेनरी रोबर्ट एमपी"
  },
+ "nl/foreignFull/surnameFirst": {
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "mevrouw Ada Cornelia César Martín"
+  },
+  "text": "von Brühl mevrouw Ada Cornelia César Martín jr., PhD",
+  "title": {
+   "expected": "mevrouw",
+   "got": ""
+  }
+ },
+ "nl/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "Bertus Wevers Harry Robert",
+   "got": "dhr. Bertus Wevers Harry Robert"
+  },
+  "text": "de Jong dhr. Bertus Wevers Harry Robert jr., mp",
+  "title": {
+   "expected": "dhr.",
+   "got": ""
+  }
+ },
  "pt/foreignFull/givenFirst": {
   "suffix": {
    "expected": "Jr. Dr. Ph.D",

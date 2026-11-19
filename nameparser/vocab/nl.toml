@@ -54,6 +54,15 @@ reason = "a rank particle ('lord', the nobiliary 'heer van') added from #18's te
 issue = 766
 
 [[word]]
+text = "oude"
+given = { note = "nam_dict band 1 (rare) in the Netherlands, its only country; no Wikidata bearer, and no given box opens with it in ORCID, PatentsView or PSC (2026-11-18, #1455)" }
+[word.particle]
+issue = 1455
+expands = "old: \"Oude Luttikhuis\", \"Oude Elferink\", the Twente and Achterhoek farm names"
+note = "an adjective, which no particle kind names; written Oude, with a capital, in every family box that holds it (ORCID 10, PatentsView 8, PSC 1, 2026-11-18), always before another surname word and never alone. As a particle it fixes 16 filed names to 1 broken, a filer who typed Oude in the given box (config_diff.py score, ORCID, PatentsView and PSC, 20,000 records a group, 2026-11-18, #1455)"
+cased = "Oude"
+
+[[word]]
 text = "aan"
 given = { wikidata = 1, as_of = 2026-10-25, note = "Wikidata is a lower bound" }
 preposition = { issue = 18, expands = "on, at: \"aan den Toorn\"" }
@@ -76,6 +85,14 @@ given = { us_ssa = 10, wikidata = 7, as_of = 2026-10-25, note = "female births o
 issue = 18
 expands = "at: \"te Riele\""
 note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
+
+[[word]]
+text = "ten"
+[word.preposition]
+default = false
+issue = 1455
+expands = "at the, te den contracted: \"ten Brink\", \"ten Cate\""
+note = "off by default (decisions/vocabulary-collisions, 2026-11-12 #1257, rule 2): it fails the mid-name test, a Chinese given-name syllable written between two words (Kheng Ten Choo), and zh.toml declares the given name it opens (Ten Kao Liu). Under a Dutch choice it fixes ORCID's, PatentsView's and PSC's Dutch records 66 to 4 broken, 20 more Dutch-surnamed people filed under other countries left unfixed by default (2026-11-18, #1455)"
 
 [[word]]
 text = "ter"
