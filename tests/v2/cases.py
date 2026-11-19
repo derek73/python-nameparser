@@ -17957,8 +17957,8 @@ CASES: tuple[Case, ...] = (
          {"given": "Leonardo", "middle": "Mirandela", "family": "Gomes Paz"},
          locale="pt_br", classification="feat(#1453)",
          notes="O6 takes one word, so a family of three surnames keeps its "
-               "first as a middle name, a gap #1453 leaves for a question "
-               "of its own; read middle 'Mirandela Gomes', family 'Paz' 3.0.0 "
+               "first as a middle name, a gap #1453 leaves for #1482; "
+               "read middle 'Mirandela Gomes', family 'Paz' 3.0.0 "
                "through 3.1"),
     Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
          {"given": "Marquis", "family": "Johnson"},
