@@ -825,10 +825,10 @@ def test_my_reads_the_honorific_in_every_comma_shape(
 @pytest.mark.parametrize("text, title, given, middle, family", [
     # the accepted reading, decided 2026-11-19 (decisions/vocabulary-
     # collisions, the #1231 entry): the title vocabulary reads U written
-    # with its full stop as the honorific under the pack, wherever it
-    # reads a title, so a Western initial U. opening a name is the title
-    # there -- the reason the docs give not to apply the pack to a mixed
-    # list. A bare U. between two name words is an initial, as by default
+    # with its full stop as it reads U under the pack, so a Western
+    # initial U. can be the title, as these rows show -- the reason the
+    # docs give not to apply the pack to a mixed list. A bare U. between
+    # two name words is an initial, as by default
     ("U. Thein Sein", "U.", "Thein", "", "Sein"),
     ("Sein, U. Thein", "U.", "Thein", "", "Sein"),
     ("U. S. Grant", "U.", "S.", "", "Grant"),
