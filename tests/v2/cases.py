@@ -9048,6 +9048,97 @@ CASES: tuple[Case, ...] = (
          notes="a generation word written out before a name starts no "
                "run (S8), so the chain takes it. 1.4.0 through 3.0.1 "
                "read middle 'bin Ahmad Jr.', family 'Hasan'"),
+    # #1468: Malaysian a/l and a/p (son of, daughter of) and Sarawak's
+    # anak (child of) open the father's name as bin does (rules/R9)
+    Case("a_slashed_son_of_opens_the_family",
+         "Kumar a/l Rajan",
+         {"given": "Kumar", "family": "a/l Rajan"},
+         classification="fix(#1468)",
+         notes="1.4.0 through 3.1 read middle 'a/l', family 'Rajan'"),
+    Case("a_slashed_son_of_in_capitals_takes_the_fathers_whole_name",
+         "KUMAR A/L RAJAN NAIDU",
+         {"given": "KUMAR", "family": "A/L RAJAN NAIDU"},
+         classification="fix(#1468)",
+         notes="1.4.0 through 3.1 read middle 'A/L RAJAN', family 'NAIDU', "
+               "cutting the father's name"),
+    Case("a_slashed_daughter_of_opens_the_family",
+         "Devi a/p Muthu",
+         {"given": "Devi", "family": "a/p Muthu"},
+         classification="fix(#1468)",
+         notes="1.4.0 through 3.1 read middle 'a/p', family 'Muthu'"),
+    Case("anak_after_two_given_names_opens_the_family",
+         "Rita Sari anak Jerome Insol",
+         {"given": "Rita", "middle": "Sari", "family": "anak Jerome Insol"},
+         classification="fix(#1468)",
+         notes="1.4.0 through 3.1 read middle 'Sari anak Jerome', family "
+               "'Insol'"),
+    Case("a_slashed_son_of_after_a_family_comma_opens_the_family",
+         "Rajan, Kumar a/l",
+         {"given": "Kumar", "family": "a/l Rajan"},
+         classification="fix(#1468)",
+         notes="P6 attaches the trailing particle to the family before the "
+               "comma, as it does 'bin'. 1.4.0 through 3.1 read middle "
+               "'a/l'"),
+    Case("a_slashed_son_of_before_a_suffix_comma_opens_the_family",
+         "Kumar a/l Rajan, Jr.",
+         {"given": "Kumar", "family": "a/l Rajan", "suffix": "Jr."},
+         classification="fix(#1468)",
+         notes="1.4.0 through 3.1 read middle 'a/l', family 'Rajan'"),
+    Case("anak_opening_a_balinese_name_stays_the_given_name",
+         "Anak Agung Made Putra",
+         {"given": "Anak", "middle": "Agung Made", "family": "Putra"},
+         classification="parity",
+         ambiguities=("particle-or-given",),
+         notes="#1468's boundary: anak holds a given reading beside its "
+               "patronymic one, so at the head it is left to position as "
+               "binti is, and the fork is reported"),
+    Case("anak_ending_the_name_stays_the_family",
+         "Kwame Mensah Anak",
+         {"given": "Kwame", "middle": "Mensah", "family": "Anak"},
+         classification="parity",
+         notes="#1468's boundary: under the default order a particle "
+               "ending its field is a family name word"),
+    Case("anak_ending_the_name_family_first_opens_the_family_as_binti_does",
+         "Kwame Mensah Anak",
+         {"given": "Mensah", "family": "Anak Kwame"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1468)",
+         ambiguities=("particle-or-given",),
+         notes="accepted: a trailing particle under FAMILY_FIRST opens the "
+               "family before the first word, as 'Binti' does there "
+               "(FAMILY_FIRST_GIVEN_LAST reads it as the given name, as "
+               "it reads 'Binti'). 3.1 read given 'Mensah', middle "
+               "'Anak', family 'Kwame'"),
+    Case("a_slashed_son_of_opening_the_name_folds_it_into_the_family",
+         "A/L Rajan",
+         {"family": "A/L Rajan"},
+         classification="fix(#1468)",
+         notes="a/l is never a given name, so P1's fold takes the name, as "
+               "it takes 'ibn Ali'. 1.4.0 through 3.1 read given 'A/L', "
+               "family 'Rajan'"),
+    Case("a_slashed_son_of_opening_the_given_part_folds_it_into_the_family",
+         "Kumar, a/l Rajan",
+         {"family": "Kumar a/l Rajan"},
+         classification="fix(#1468)",
+         notes="accepted, unwritten in the lists measured: P1's fold after a "
+               "family comma takes the rest of the part for a never-given "
+               "particle, as 'Kumar, de Rajan' reads, where 'bin', which may "
+               "be given, leaves given 'bin'. 1.4.0 through 3.1 read given "
+               "'a/l', middle 'Rajan', family 'Kumar'"),
+    Case("anak_opening_the_given_part_stays_the_given_name",
+         "Kumar, anak Jimbun",
+         {"given": "anak", "middle": "Jimbun", "family": "Kumar"},
+         classification="parity",
+         notes="#1468's boundary: anak may be given, so after a family "
+               "comma it is left to position, as binti is"),
+    Case("anak_agung_behind_a_prefix_opens_the_family",
+         "I Gusti Anak Agung Made",
+         {"given": "I", "middle": "Gusti", "family": "Anak Agung Made"},
+         classification="fix(#1468)",
+         notes="accepted (decisions/R9, #1468): mid-name anak opens the "
+               "family even where it begins the Balinese title Anak Agung, "
+               "and the patronymic view then holds the title. 1.4.0 "
+               "through 3.1 read middle 'Gusti Anak Agung', family 'Made'"),
     Case("a_credential_in_capitals_inside_the_chain_starts_the_run",
          "Mariam binti MD Salleh",
          {"given": "Mariam", "family": "binti", "suffix": "MD Salleh"},
