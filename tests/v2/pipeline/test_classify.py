@@ -897,20 +897,111 @@ def test_a_one_letter_title_written_with_its_period_is_an_initial(
 def test_the_one_letter_title_veto_needs_a_letter_with_a_capital() -> None:
     # the Bengali doctor is written with its full stop: no capital, no veto
     assert Parser().parse("ড. রহিম উদ্দিন").title == "ড."
-    from nameparser._pipeline import _classify
-    assert _classify._spells_a_cased_initial("q", "Q.")
-    assert not _classify._spells_a_cased_initial("ড", "ড.")
+    assert _classify_module._spells_a_cased_initial("q", "Q.")
+    assert _classify_module._spells_a_cased_initial("κ", "Κ.")
+    assert not _classify_module._spells_a_cased_initial("ড", "ড.")
+    assert not _classify_module._spells_a_cased_initial("q", "Q")
+
+
+@pytest.mark.parametrize("kind, props", [
+    # every title reading a caller can write on the letter
+    ("salutation", {}),
+    ("salutation", {"after_given": True}),
+    ("nobility", {"addresses": "given"}),
+    ("style", {}),
+    ("military", {"abbreviation": True}),
+])
+@pytest.mark.parametrize("text", [
+    "Q. Smith", "Smith, John Q.", "Q. of Smith", "Vice Q. Smith",
+    "Q. Smith, Ed",
+])
+def test_the_veto_reaches_every_kind_of_title_reading(
+        kind: str, props: dict[str, object], text: str) -> None:
+    parser = Parser(lexicon=Lexicon.default().add("q", kind=kind, **props))
+    name = parser.parse(text)
+    assert not name.title
+    assert name.as_dict() == Parser().parse(text).as_dict()
+
+
+def test_the_veto_reaches_a_title_that_may_be_a_given_name() -> None:
+    # a title reading beside a given one compiles into the ambiguous
+    # titles, read by the title phrase (rules/H9)
+    parser = Parser(lexicon=Lexicon.default().add("q", kind="office")
+                    .add("q", kind="given"))
+    for text in ("Q. of Smith", "Vice Q. Smith", "Q. Smith"):
+        assert parser.parse(text).as_dict() == Parser().parse(text).as_dict(), text
+
+
+def test_the_veto_reaches_a_greek_capital() -> None:
+    parser = Parser(lexicon=Lexicon.default().add("κ", kind="salutation"))
+    assert parser.parse("Κ. Παπαδόπουλος").given == "Κ."
+    assert parser.parse("Κ Παπαδόπουλος").title == "Κ"
 
 
 def test_the_one_letter_title_veto_is_what_keeps_the_initial(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    # negative controls for both sites, classify's tag and the period-
-    # joined derivation's chunk test: with either veto off, the dotted
-    # letter is the title, so the rows above read the veto
-    from nameparser._pipeline import _classify
-    monkeypatch.setattr(_classify, "_spells_a_cased_initial", lambda n, text: False)
+    # negative controls for the tag and the chunk: with the veto off in
+    # classify, the dotted letter is the title; with it off in _vocab,
+    # a word of initials holding it is a period-joined title
+    monkeypatch.setattr(_classify_module, "_spells_a_cased_initial",
+                        lambda n, text: False)
     assert _ONE_LETTER_TITLE.parse("Q. Smith").title == "Q."
     monkeypatch.undo()
-    monkeypatch.setattr(_vocab, "_title_chunk",
-                        lambda c, lexicon: c in lexicon._sets.titles)
+    monkeypatch.setattr(_vocab, "_spells_a_cased_initial", lambda n, text: False)
     assert _ONE_LETTER_TITLE.parse("Smith, Q.R.").title == "Q.R."
+
+
+#: rules/H11's two-input invariant: under a lexicon holding the one-letter
+#: title `q`, a name holding Q written with its full stop reads exactly as
+#: under the default, which holds no such title, in every comma shape,
+#: every order and every reader of the title vocabulary (the comma count,
+#: the title phrase, the glued stop, the set-apart clause, C2's third
+#: part), the shapes #1231's review found reading it as a title
+_H11_SHAPES = [
+    "{q} S. Grant", "John {q} Smith", "Smith, John {q}", "Smith, {q}",
+    "{q} Smith", ", {q} Smith", "{q} Smith, Ed", "{q} Smith, Ma",
+    "Smith {q}, Ed", "Vice {q} Smith", "Vice {q} Smith, Ed",
+    "Associate {q} Smith", "Smith, John, {q}", "John Smith, Jr., {q}",
+    "Dr. {q} Smith", "Dr.{q} Smith", "John Smith Dr.{q}", "John ({q}) Smith",
+    "({q}) Smith", "John Smith ({q})", 'John "{q}" Smith', "{q} van Berg, Ed",
+    "JOHN {q} SMITH", "{q} Smith, Jr.",
+]
+_H11_SPELLINGS = ["Q.", "q.", "Q.R.", "Q.John"]
+_H11_ROWS = [(shape.format(q=q), order)
+             for shape in _H11_SHAPES for q in _H11_SPELLINGS
+             for order in ("given", "family", "family-given-last")]
+#: The recorded negative control: rows of the grid that read otherwise
+#: with the veto answering no at every reader, measured 2026-11-19
+#: (re-take it when the grid moves)
+_H11_UNGUARDED_EFFECT = 228
+
+
+def _h11_differences() -> int:
+    from nameparser._policy import (
+        FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST)
+    orders = {"given": GIVEN_FIRST, "family": FAMILY_FIRST,
+              "family-given-last": FAMILY_FIRST_GIVEN_LAST}
+    moved = 0
+    for text, order in _H11_ROWS:
+        policy = Policy(name_order=orders[order])
+        with_q = Parser(policy=policy, lexicon=Lexicon.default().add(
+            "q", kind="salutation")).parse(text)
+        without = Parser(policy=policy).parse(text)
+        moved += (with_q.as_dict() != without.as_dict()
+                  or [a.kind for a in with_q.ambiguities]
+                  != [a.kind for a in without.ambiguities])
+    return moved
+
+
+def test_a_one_letter_title_with_its_period_reads_as_no_title_at_all() -> None:
+    assert len(_H11_ROWS) == 288
+    assert _h11_differences() == 0
+
+
+def test_the_h11_invariant_fails_with_the_veto_off(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from nameparser._pipeline import _segment
+    for module in (_classify_module, _vocab, _segment):
+        monkeypatch.setattr(module, "_spells_a_cased_initial",
+                            lambda n, text: False)
+    assert _h11_differences() == _H11_UNGUARDED_EFFECT

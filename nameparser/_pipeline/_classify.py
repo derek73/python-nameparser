@@ -174,11 +174,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     if marker_tag is not None:
         tags.add(marker_tag)
     # rules/H11: "a one-letter word written with its period is an
-    # initial and not a title, where the letter has a capital" -- the
-    # set and length tests first, at C level, so only a one-letter
-    # title pays the frame
-    if n in lex._sets.titles and not (
-            len(n) == 1 and _spells_a_cased_initial(n, token.text)):
+    # initial and not a title, where the letter has a capital" -- for
+    # every title tag below; the length and set tests first, at C level,
+    # so only a one-letter title pays the frame, not every initial (the
+    # tags below read sets inside these two)
+    initial = (len(n) == 1
+               and (n in lex._sets.titles or n in lex._sets.titles_ambiguous)
+               and _spells_a_cased_initial(n, token.text))
+    if n in lex._sets.titles and not initial:
         tags.add("vocab:title")
         # rules/H5: "a title the vocabulary lists whole with a period
         # inside it chains without a final one" -- marked here, where
@@ -197,17 +200,18 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     elif ("." in n and n.replace(".", "") in lex._sets.dotted_titles
           and is_dotted_title(token.text, n, lex)):
         tags.add(DOTTED_TITLE_TAG)
-    if n in lex._sets.given_name_titles:
+    if n in lex._sets.given_name_titles and not initial:
         tags.add("vocab:given-title")
     # rules/H5: "a title that may be a given name is title vocabulary
     # there where its title reading is written short" -- marked here,
     # where the sets are at hand, so the chain reads a tag
     if (n in lex._sets.title_abbreviations
-            and n in lex._sets.titles_ambiguous):
+            and n in lex._sets.titles_ambiguous and not initial):
         tags.add(TRAILING_TITLE_TAG)
     # rules/H8: "the word joins the title field" -- tagged only where the
     # word is a title too, so an entry outside `titles` is inert
-    if n in lex._sets.after_given_titles and n in lex._sets.titles:
+    if (n in lex._sets.after_given_titles and n in lex._sets.titles
+            and not initial):
         tags.add("vocab:after-given-title")
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")

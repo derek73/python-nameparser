@@ -159,14 +159,23 @@ def _spells_an_initial(n: str, text: str) -> bool:
 # rules/H11: "a one-letter word written with its period is an initial
 # and not a title, where the letter has a capital"
 def _spells_a_cased_initial(n: str, text: str) -> bool:
-    """`_spells_an_initial`, narrowed to a letter that has a capital
-    ('U.', 'h.'): such a word is an initial whatever title the letter
-    also spells (#1231). A letter of a script without case ('ড.', the
-    Bengali doctor) keeps its title reading, the full stop being how
-    that title is written. `n` is `_normalize(text)`, folded once by
-    the caller, and lower case, so a letter with a capital is one that
-    upper-cases to something else."""
-    return _spells_an_initial(n, text) and n.upper() != n
+    """Whether `text`, folded to `n`, is one letter with a capital
+    written with a full stop ('U.', 'h.', the 'U.' of 'U.S.' cut at its
+    stops): an initial whatever title the letter also spells (#1231).
+    A letter of a script without case ('ড.', the Bengali doctor) keeps
+    its title reading, the full stop being how that title is written.
+    `n` is `_normalize(text)`, so its edge stops are gone and a full
+    stop left in `text` beside a one-letter `n` is one of them; and it
+    is lower case, so a letter with a capital is one that upper-cases
+    to something else.
+
+    Every reader of the title vocabulary asks it, after its membership
+    hit and its own `len(n) != 1` test at C level, so only a one-letter
+    title pays the frame: classify's tags, the period-joined
+    derivation's chunks, the set-apart clause's kind, the glued-stop
+    cut, the comma count, the title phrase, C2's third part and the
+    group suggester."""
+    return len(n) == 1 and "." in text and n.upper() != n
 
 
 def _fold_words(words: Iterable[str]) -> list[str]:

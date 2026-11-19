@@ -26,6 +26,7 @@ from nameparser._policy import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser.locales import ja as _ja
+from nameparser.locales import my as _my
 from nameparser.locales import ru as _ru
 from nameparser.locales import tr_az as _tr_az
 from nameparser.locales import zh as _zh
@@ -693,15 +694,15 @@ def test_my_pack_contents() -> None:
     # only removes particle readings (decisions/vocabulary-collisions,
     # the 2026-11-19 #1231 entry); no policy patch
     import pickle
-    from nameparser.locales import my as _my
     assert locales.MY.languages == {"my"}
     assert locales.MY.policy == PolicyPatch()
     assert _ri.changed_words(_ri.selected(locales.MY.languages)) == {"u", "daw"}
     sets = _require_packed("my").lexicon._sets
     assert not set(_my._PARTICLES) & sets.particles
-    # the particles it leaves, and every other kind of the words it names
+    assert not set(_my._CREDENTIALS) & sets.suffix_acronyms
+    # the particles and credentials it leaves
     assert {"de", "von", "del", "bin", "mac"} <= sets.particles
-    assert "do" in sets.suffix_acronyms
+    assert {"md", "ma", "ba", "phd"} <= sets.suffix_acronyms
     assert {"u", "daw"} <= sets.titles
     assert not {"u", "daw"} & Lexicon.default()._sets.titles
     assert pickle.loads(pickle.dumps(locales.MY)) == locales.MY
@@ -711,36 +712,59 @@ def test_my_pack_contents() -> None:
     assert not _my.DEVIATES("Sandra Lee") and not _my.DEVIATES("Thein Sein")
 
 
-#: Each particle the MY fragment removes, with a name its removal alone
-#: moves: the syllable between two name words, which its reading would
-#: chain into the family name
+#: Each reading the MY fragment removes, with a name its removal alone
+#: moves: the syllable between two name words, which its particle
+#: reading would chain into the family name, and DO ending a name
+#: written in capitals, which its credential reading would take as the
+#: suffix once SAN no longer chains it (nameparser/vocab/AGENTS.md, "A
+#: reading taken out")
 _MY_REMOVALS = [
-    ("san", "Aung San Win"), ("la", "Akyaung La Aung"),
-    ("le", "Saw Eh Le Htoo"), ("do", "Htan Do Kyint"),
-    ("da", "Thi Da Oo"), ("du", "Swam Du Naw Aung"),
-    ("te", "Kyauk Te Chan"), ("di", "Aung Di Win"),
-    ("van", "Henry Van Thio"),
+    ("san", "particle", "Aung San Win"), ("la", "particle", "Akyaung La Aung"),
+    ("le", "particle", "Saw Eh Le Htoo"), ("do", "particle", "Htan Do Kyint"),
+    ("da", "particle", "Thi Da Oo"), ("du", "particle", "Swam Du Naw Aung"),
+    ("te", "particle", "Kyauk Te Chan"), ("di", "particle", "Aung Di Win"),
+    ("van", "particle", "Henry Van Thio"),
+    ("do", "credential", "AUNG SAN DO"),
 ]
 
 
 def test_each_my_removal_moves_its_own_row() -> None:
     # the negative control for the fragment, as VI's: with one removal
     # put back, the row that witnesses it reads otherwise
-    from nameparser.locales import my as _my
-    assert sorted(w for w, _ in _MY_REMOVALS) == sorted(_my._PARTICLES)
+    lists = {"particle": _my._PARTICLES, "credential": _my._CREDENTIALS}
+    assert sorted((w, k) for w, k, _ in _MY_REMOVALS) == sorted(
+        (w, k) for k, words in lists.items() for w in words)
     my = _require_packed("my")
 
-    def put_back(word: str | None) -> Parser:
-        lexicon = Lexicon.empty().remove(
-            *[w for w in _my._PARTICLES if w != word], kind="particle")
+    def put_back(removal: tuple[str, str] | None) -> Parser:
+        lexicon = Lexicon.empty()
+        for k, words in lists.items():
+            if kept := [w for w in words if (w, k) != removal]:
+                lexicon = lexicon.remove(*kept, kind=k)
         return parser_for(dataclasses.replace(locales.MY, lexicon=lexicon))
 
     rebuilt = put_back(None)
-    for word, text in _MY_REMOVALS:
+    for word, kind, text in _MY_REMOVALS:
         assert rebuilt.parse(text).as_dict() == my.parse(text).as_dict(), text
-        assert put_back(word).parse(text).as_dict() != my.parse(text).as_dict(), (
-            word, text)
+        assert put_back((word, kind)).parse(text).as_dict() != my.parse(
+            text).as_dict(), (word, kind, text)
         assert len(my.parse(text).family.split()) == 1, text
+
+
+@pytest.mark.parametrize("text, middle, family", [
+    # the credential DO, which SAN's particle chain kept from ending a
+    # name written in capitals, in each comma shape, beside the mixed-case
+    # control (nameparser/vocab/AGENTS.md, "A reading taken out")
+    ("AUNG SAN DO", "SAN", "DO"),
+    ("Aung San Do", "San", "Do"),
+    ("KYAW, AUNG DO", "DO", "KYAW"),
+    ("Kyaw, Aung Do", "Do", "Kyaw"),
+    ("DAW KHIN MYA DO", "MYA", "DO"),
+])
+def test_my_keeps_a_final_do_a_name_word(
+        text: str, middle: str, family: str) -> None:
+    name = _require_packed("my").parse(text)
+    assert (name.middle, name.family, name.suffix) == (middle, family, "")
 
 
 @pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
@@ -791,13 +815,33 @@ def test_my_reads_the_honorific_in_every_comma_shape(
     "John U. Smith", "Smith, John U.", "Smith, U.", ", U. Smith",
     "U.Thein Sein", "U. Thein Sein", "U. S. GRANT", "u. s. grant",
     "U.S. District Judge Jane Roe", "Dr. U. Smith",
+    # #1231's review: the comma count, the title phrase, the glued stop,
+    # the set-apart clause and C2's third part
+    "U. Smith, Ed", "U. Smith, Ma", "Smith U., Ed", "Vice U. Smith",
+    "Vice U.Thein Smith, Ed", "Smith, John, U.", "John Smith, Jr., U.",
+    "Dr.U. Smith", "John Smith Dr.U.", "John (U.) Smith", "(U.) Smith",
+    'John "U." Smith',
 ])
 def test_my_keeps_u_written_with_its_full_stop_an_initial(
         text: str, order: tuple[Role, Role, Role]) -> None:
     base = Parser(policy=Policy(name_order=order))
     packed = parser_for(locales.MY, base=base).parse(text)
-    assert packed.as_dict() == base.parse(text).as_dict()
+    default = base.parse(text)
+    assert packed.as_dict() == default.as_dict()
+    assert [a.kind for a in packed.ambiguities] == [
+        a.kind for a in default.ambiguities]
     assert "U." not in packed.title.upper().split()
+
+
+def test_my_suggests_as_the_default_over_names_opening_with_u_dotted() -> None:
+    # the group suggester reads past a leading title as the parse does,
+    # so `U.` is a given name to it under the pack too (rules/H11)
+    names = ["U. Wang Xiaoming", "U. Zhang Wei", "U. Li Na", "U. Liu Yang",
+             "U. Chen Jie", "U. Wang Fang"]
+    # the evidence, below the first line, which names the base parser
+    packed, default = (str(p.suggest(names)).split("\n", 1)[1]
+                       for p in (_require_packed("my"), Parser()))
+    assert packed == default
 
 
 def test_my_differs_from_the_default_only_through_its_words() -> None:
@@ -2154,6 +2198,8 @@ _ROTATORS["my"] = [
     "Henry Van Thio",                # van
     "AUNG, Saw San",                 # san ending the given part
     "AUNG SAN WIN",                  # san, in one case
+    "AUNG SAN DO",                   # do's credential, in one case
+    "KYAW, AUNG DO",                 # do's credential after a comma
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted

@@ -1049,6 +1049,7 @@
 {"name": "Dr.MD Smith", "title": "Dr.MD", "family": "Smith", "initials": "S.", "capitalized_force": "Dr.Md Smith"}
 {"name": "Dr.McDonald Jones", "title": "Dr.", "given": "McDonald", "family": "Jones", "initials": "M. J."}
 {"name": "Dr.Smith", "title": "Dr.", "family": "Smith", "initials": "S."}
+{"name": "Dr.U. Smith", "title": "Dr.", "given": "U.", "family": "Smith", "initials": "U. S."}
 {"name": "Dr.med. Lukas Mayer", "title": "Dr.med.", "given": "Lukas", "family": "Mayer", "initials": "L. M.", "capitalized_force": "Dr.Med. Lukas Mayer"}
 {"name": "Dr.philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa", "title": "Dr.philol.", "given": "Laima", "middle": "Kristīne Eva Sofija", "family": "van den Volfa Bērziņa-Kalniņa", "initials": "L. K. E. S. V. B.", "capitalized_force": "Dr.Philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa"}
 {"name": "Dra. Andréia da Silva", "title": "Dra.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
@@ -2026,6 +2027,7 @@
 {"name": "John (NP-C) Smith", "given": "John", "family": "Smith", "suffix": "NP-C", "initials": "J. S."}
 {"name": "John (Sr) Smith", "given": "John", "family": "Smith", "suffix": "Sr", "initials": "J. S.", "generation": "Sr"}
 {"name": "John (Sr.) Smith", "given": "John", "family": "Smith", "suffix": "Sr.", "initials": "J. S.", "generation": "Sr."}
+{"name": "John (U.) Smith", "given": "John", "middle": "U.", "family": "Smith", "initials": "J. U. S."}
 {"name": "John . Smith", "given": "John", "middle": ".", "family": "Smith", "initials": "J. .. S."}
 {"name": "John A B Smith", "given": "John", "middle": "A B", "family": "Smith", "initials": "J. A. B. S."}
 {"name": "John A. Doe", "given": "John", "middle": "A.", "family": "Doe", "initials": "J. A. D."}
@@ -4375,6 +4377,8 @@
 {"name": "U Thant", "given": "U", "family": "Thant", "initials": "U. T."}
 {"name": "U Thein Sein", "given": "U", "middle": "Thein", "family": "Sein", "initials": "U. T. S."}
 {"name": "U. S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
+{"name": "U. Smith, Ed", "given": "U.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "U. S.", "capitalized_force": "U. Smith, ED"}
+{"name": "U. Thein Aung", "given": "U.", "middle": "Thein", "family": "Aung", "initials": "U. T. A."}
 {"name": "U.S. District Judge Marc Thomas Treadwell", "title": "U.S. District Judge", "given": "Marc", "middle": "Thomas", "family": "Treadwell", "initials": "M. T. T."}
 {"name": "U.S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
 {"name": "U.S. Grant Smith, John", "given": "John", "family": "U.S. Grant Smith", "initials": "J. U. S. G. S."}
@@ -4472,6 +4476,7 @@
 {"name": "Velasquez y Garcia, Juan Q., Jr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. Q. V. G.", "generation": "Jr."}
 {"name": "Velasquez y Garcia, Juan, Jr.", "given": "Juan", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. V. G.", "generation": "Jr."}
 {"name": "Venerable Ananda", "title": "Venerable", "family": "Ananda", "initials": "A."}
+{"name": "Vice U. Smith", "given": "Vice", "middle": "U.", "family": "Smith", "initials": "V. U. S."}
 {"name": "Vice Yu. Petrov", "given": "Vice", "middle": "Yu.", "family": "Petrov", "initials": "V. Y. P."}
 {"name": "Vicente Becerra Vaca", "given": "Vicente", "middle": "Becerra", "family": "Vaca", "initials": "V. B. V."}
 {"name": "Vicente Gómez Mier", "given": "Vicente", "middle": "Gómez", "family": "Mier", "initials": "V. G. M."}
