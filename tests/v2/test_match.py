@@ -1852,12 +1852,14 @@ def test_a_wikidata_pair_goes_only_in_the_languages_its_readers_judged() -> None
             and r.text == "алёна"} == {"ru"}
 
 
-def test_an_alternate_spelling_from_wikidata_is_read_in_its_script() -> None:
-    # Ukrainian writes Геннадій with one н or two
+def test_a_held_wikidata_spelling_ships_nowhere() -> None:
+    # the readers agreed Генадій / Геннадій is one Ukrainian name, but
+    # the spelling test that passed it kept no planted translation
+    # apart, so #1387's spellings are held until a pass can vouch for
+    # them (decisions/name-matching, 2026-11-20 #1387)
     spelling = _with(Outcome.ALTERNATE_SPELLING)
-    assert spelling.check("Генадій Петренко", "Геннадій Петренко").consistent
-    assert not _familiar.check("Генадій Петренко",
-                               "Геннадій Петренко").consistent
+    assert not spelling.check("Генадій Петренко",
+                              "Геннадій Петренко").consistent
 
 
 @pytest.mark.parametrize("a, b", [
@@ -2157,12 +2159,13 @@ def test_a_choice_of_languages_keeps_its_own_alternate_spellings() -> None:
                 for n in r.props["spelling_of"]}
     from nameparser._reading_index import is_native_script
     uk_only = pairs({"uk"}) - pairs({"en", "mul"})
+    # a strict choice keeps a native-script word's readings whatever its
+    # file; uk.toml writes Latin spellings alone today, so `native` may
+    # be empty, and the Latin ones must be held to the choice
     native = {p for p in uk_only if all(map(is_native_script, p))}
-    assert native and uk_only - native
+    assert uk_only - native
     for a, b in map(sorted, uk_only):
         assert b in ukrainian._alternate_spellings(a)
-        # a strict choice keeps a native-script word's readings whatever
-        # their file (Генадій / Геннадій, #1387), and no Latin one's
         assert (b in english._alternate_spellings(a)) == (
             frozenset((a, b)) in native)
 

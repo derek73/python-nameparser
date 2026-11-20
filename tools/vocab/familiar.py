@@ -75,12 +75,15 @@ REVIEWED_HEADER = ["a", "b", "category", "status", "opus", "sonnet",
                    "reason", "languages", "source", "holders"]
 #: A reviewed pair's categories: the two that ship (`familiar` and
 #: `spelling`), those recorded and not shipped, `split`, a pair the two
-#: readers read differently and nobody settled, and `refused`, one the
-#: maintainer refused; none of the last two ships.
+#: readers read differently and nobody settled, `refused`, one the
+#: maintainer refused, and `held`, one the readers agreed on that the
+#: maintainer held back until a later pass can vouch for it (#1387's
+#: spellings, whose test pass kept no planted translation apart); none
+#: of the last three ships.
 REVIEW_CATEGORIES = frozenset({
     "familiar", "spelling", "translation", "transliteration",
     "different-name", "sibling", "unclear", "abbreviation", "split",
-    "refused"})
+    "refused", "held"})
 #: A row's status: empty where the two readers agreed or on a `split`
 #: nobody has settled, `decided` where the maintainer settled a pair
 #: they split or one the review held, its category the maintainer's,
@@ -225,13 +228,13 @@ def read_reviewed(text: str) -> list[dict[str, str]]:
                              f"{sorted(REVIEW_CATEGORIES)}")
         if r["status"] not in REVIEW_STATUSES or (
                 r["status"] == "pending" and r["category"] != "split") or (
-                not r["status"] and r["category"] == "refused") or (
+                not r["status"] and r["category"] in ("refused", "held")) or (
                 r["status"] == "decided" and r["category"] == "split"):
             raise ValueError(f"{REVIEWED.name} line {number}: status "
                              f"{r['status']!r} on a {r['category']!r} pair; "
                              f"a pending pair is a split, a decided one "
                              f"no longer is, and only a decided one is "
-                             f"refused")
+                             f"refused or held")
         if not (r["a"] < r["b"]) or any(
                 build._normalize(w) != w for w in pair):
             raise ValueError(f"{REVIEWED.name} line {number}: a pair is "

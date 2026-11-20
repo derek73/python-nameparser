@@ -90,16 +90,4 @@ familiar = { short_for = ["alexandru"], note = "found in CC0 or public-domain da
 text = "sile"
 familiar = { short_for = ["vasile"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
-[[word]]
-text = "ferencz"
-spelling = { spelling_of = ["ferenc"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "mordechai"
-spelling = { spelling_of = ["mordecai"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "nicolaie"
-spelling = { spelling_of = ["nicolae"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
 # -- END generated --

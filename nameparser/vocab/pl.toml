@@ -174,24 +174,4 @@ familiar = { short_for = ["zbigniew"], note = "found in CC0 or public-domain dat
 text = "zofia"
 familiar = { short_for = ["zosia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
-[[word]]
-text = "anetta"
-spelling = { spelling_of = ["aneta"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "bożenna"
-spelling = { spelling_of = ["bożena"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "izabella"
-spelling = { spelling_of = ["izabela"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "lejb"
-spelling = { spelling_of = ["leib"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "yehuda"
-spelling = { spelling_of = ["jehuda"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
 # -- END generated --

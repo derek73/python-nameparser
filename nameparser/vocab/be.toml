@@ -36,24 +36,4 @@ familiar = { short_for = ["канстанцін"], note = "found in CC0 or publi
 text = "міхась"
 familiar = { short_for = ["міхаіл"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
-[[word]]
-text = "аляксандр"
-spelling = { spelling_of = ["аляксандар"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "валерый"
-spelling = { spelling_of = ["валеры"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "робэрт"
-spelling = { spelling_of = ["роберт"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "эдмонд"
-spelling = { spelling_of = ["эдмон"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "ісак"
-spelling = { spelling_of = ["ісаак"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
 # -- END generated --

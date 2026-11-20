@@ -472,8 +472,4 @@ familiar = { short_for = ["zuzana"], note = "found in CC0 or public-domain data 
 text = "čeněk"
 familiar = { short_for = ["vincenc"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
-[[word]]
-text = "anetta"
-spelling = { spelling_of = ["aneta"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
 # -- END generated --
