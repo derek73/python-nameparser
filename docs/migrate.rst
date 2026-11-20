@@ -2255,21 +2255,26 @@ where 1.4 through 3.1 read it as the given name and the whole name
 before the comma as the family. A word that qualifies the job joins it
 (``Medical Doctor``, ``Clinical Research Coordinator``). The words are
 English, as ClinicalTrials.gov, where the shape was measured, fills its
-forms in English, and a misspelling (``Proffesor``) or a possessive
-(``Master's degree``) still reads the old way:
+forms in English, and a degree's possessive joins it too (``Master's
+degree``); a misspelling (``Proffesor``) still reads the old way:
 
 .. doctest::
 
     >>> qassoumi = parse("Nadir Qassoumi, Medical Doctor")
     >>> qassoumi.title, qassoumi.given, qassoumi.family
     ('Medical Doctor', 'Nadir', 'Qassoumi')
+    >>> parse("Nadir Qassoumi, Master's degree").title
+    "Master's degree"
     >>> parse("Masters, John").family
     'Masters'
 
 A name the word opens reads it as the title too, as with any title
 (``Student Mary Jones`` gives title ``Student``), and so does one
 alone after a surname and a comma (``Qassoumi, Student`` gives no given
-name). To read such a word as a name, remove its reading:
+name). A word that only qualifies a job, the possessive among them,
+does not claim a name it opens alone (``Master's Nadir`` keeps given
+``Master's``). To read such a word as a name, remove its reading, a
+job's as ``kind="occupation"`` and a qualifier's as ``kind="modifier"``:
 
 .. doctest::
 
