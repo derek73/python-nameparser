@@ -22534,4 +22534,23 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1164)",
          notes="read as 'Rahim Osman @ Jaki Prof.' is, the maiden clause "
                "aside (test_parser's maiden-clause invariant)"),
+    Case("alias_marker_before_a_refused_maiden_marker_keeps_the_suffix_run",
+         "Rahim Osman @ Jaki Jr. née Smith",
+         {"given": "Rahim", "family": "Osman", "nickname": "Jaki",
+          "suffix": "Jr. née Smith"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         classification="fix(#1164)",
+         notes="M2 refuses a marker behind a suffix word, as in "
+               "'Rahim Osman Jr. née Smith'"),
+    Case("alias_marker_before_a_maiden_marker_with_nothing_after_it",
+         "Jane Smith @ JJ Jr. née",
+         {"given": "Jane", "family": "Smith", "nickname": "JJ",
+          "suffix": "Jr. née"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#1164)"),
+    Case("alias_marker_given_part_keeps_a_title_inside_it",
+         "Osman, Rahim @ Jaki Dr Ali",
+         {"given": "Rahim", "family": "Osman", "nickname": "Jaki Dr Ali"},
+         classification="fix(#1164)",
+         notes="a title inside the given part is its walk's name word"),
 )

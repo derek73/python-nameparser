@@ -3511,6 +3511,7 @@
 {"name": "Osman @ Jaki", "given": "Osman", "nickname": "Jaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "O."}
 {"name": "Osman, @ Jaki", "given": "@", "middle": "Jaki", "family": "Osman", "initials": "@. J. O."}
 {"name": "Osman, Rahim @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Osman, Rahim @ Jaki Dr Ali", "given": "Rahim", "family": "Osman", "nickname": "Jaki Dr Ali", "initials": "R. O."}
 {"name": "Osman, Rahim @ Jaki PhD Ali", "given": "Rahim", "family": "Osman", "suffix": "PhD Ali", "nickname": "Jaki", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "R. O."}
 {"name": "Osman, Rahim @ Jaki St.", "given": "Rahim", "family": "St. Osman", "nickname": "Jaki", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: title as title (vocabulary)"], "initials": "R. O."}
 {"name": "Osman, Rahim @ Jaki V", "given": "Rahim", "family": "Osman", "nickname": "Jaki V", "initials": "R. O."}
@@ -3747,6 +3748,7 @@
 {"name": "Rahim @Usman", "given": "Rahim", "family": "@Usman", "initials": "R. @."}
 {"name": "Rahim Osman @", "given": "Rahim", "middle": "Osman", "family": "@", "initials": "R. O. @."}
 {"name": "Rahim Osman @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Rahim Osman @ Jaki Jr. née Smith", "given": "Rahim", "family": "Osman", "suffix": "Jr. née Smith", "nickname": "Jaki", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "R. O.", "capitalized_force": "Rahim \"Jaki\" Osman Jr. Née Smith", "generation": "Jr.", "credentials": "née Smith"}
 {"name": "Rahim Osman @ Jaki PhD", "given": "Rahim", "family": "Osman", "suffix": "PhD", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki Prof.", "title": "Prof.", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki Prof. née Smith", "title": "Prof.", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "maiden": "Smith", "initials": "R. O."}

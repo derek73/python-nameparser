@@ -13,7 +13,7 @@
   "Rahim Osman @ Jaki, PhD"     →  nickname="Jaki"
   "Smith, John, Jr. @ Jack"     →  nickname=""  · boundary
   ```
-- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma. In the given part after a family comma it stops at the first word that part's own reading may take out of the name, a suffix word, a title or a member of the ambiguous credential class, and hands the rest back to that reading. The words the boundary leaves are read as the name.
+- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma. In the given part after a family comma it stops at the first word that part's own reading may take out of the name, a suffix word, a title opening the part's trailing run or a member of the ambiguous credential class, and hands the rest back to that reading. The words the boundary leaves are read as the name.
   ```
   "Rahim @ Jaki bin Osman"      →  nickname="Jaki"
   "Rahim @ Jaki bin Osman"      →  family="bin Osman"
@@ -25,6 +25,7 @@
   "Smith, John @ Jack Jr."      →  suffix="Jr."
   "Doe, Jane @ Janey Mrs"       →  title="Mrs"
   "Osman, Rahim @ Jaki PhD Ali"  →  nickname="Jaki"
+  "Osman, Rahim @ Jaki Dr Ali"  →  nickname="Jaki Dr Ali"
   "Jane Smith @ Janey née Jones"  →  maiden="Jones"
   "Jane Smith née Jones @ JJ"   →  nickname="JJ"
   ```
@@ -82,9 +83,10 @@
 
 **Precedence:**
 
-- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first; an alias a maiden marker ends reads its end as the name with no clause written, and a maiden clause M2 takes before the alias is no word of the name the alias's trailing run is counted against.
+- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first; an alias ended by a maiden marker that M2 takes reads its end as the name with no clause written, and a maiden clause M2 takes before the alias is no word of the name the alias's trailing run is counted against.
   ```
   "Rahim Osman @ Jaki Prof. née Smith"  →  title="Prof."
+  "Rahim Osman @ Jaki Jr. née Smith"  →  suffix="Jr. née Smith"
   "Jane née Jones @ JJ V"       →  nickname="JJ V"
   "Dr née Jones @ JJ V"         →  suffix="V"  · boundary
   ```

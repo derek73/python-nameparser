@@ -484,12 +484,23 @@ def _leaves_the_given_part(j: int,
                            tokens: Sequence[WorkToken]) -> bool:
     """Whether the given part's own reading may read pieces[j] as no
     name word, so an alias there stops before it (rules/N4): a title
-    word (a trailing title, H8's salutation) or a member of the
-    ambiguous credential class. A lone roman numeral is not asked: it
+    word opening the part's trailing run of titles and post-nominals
+    (a trailing title, H8's salutation), or a member of the ambiguous
+    credential class. A lone roman numeral is not asked: it
     is shaped like an initial, which the alias takes, and a report
     naming its initial reading would name a field the alias denies it
     (`test_cases`' alternative check)."""
     if is_title_piece(pieces[j], ptags[j], tokens):
+        # a title inside the part is the walk's name word: only one
+        # every piece after which, to the part's end, is a title or a
+        # post-nominal opens the trailing run
+        for k in range(j + 1, len(pieces)):
+            if not (is_title_piece(pieces[k], ptags[k], tokens)
+                    or "suffix" in ptags[k]
+                    or is_suffix_piece(pieces[k], ptags[k], tokens)
+                    or not tokens[pieces[k][0]].tags.isdisjoint(
+                        _AMBIGUOUS_CREDENTIAL_TAGS)):
+                return False
         return True
     return (len(pieces[j]) == 1 and not tokens[pieces[j][0]].tags
             .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))
@@ -553,10 +564,23 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         # name reads its end as the name with no clause written does
         # (rules/M2's "as if the clause were not written"): over the
         # words before that marker, which end the name there
+        # -- where M2 takes that marker: a name word before it (no
+        # suffix word, no connective) and a word after it that is no
+        # suffix word, M2's head rule
         end_of_name = n
         if (stop < n and site is ClauseSite.TRAILING
                 and "vocab:maiden-marker" in tokens[pieces[stop][0]].tags):
-            end_of_name = stop
+            after = stop + _marker_run_pieces(pieces, tokens, stop)
+            last = stop - 1
+            if (after < n
+                    and not is_suffix_piece(pieces[after], ptags[after],
+                                            tokens)
+                    and "suffix" not in ptags[last]
+                    and not is_suffix_piece(pieces[last], ptags[last],
+                                            tokens)
+                    and not is_conj_piece(pieces[last], ptags[last],
+                                          tokens)):
+                end_of_name = stop
         # a maiden clause before the marker is no word of the name the
         # alias's trailing run is read against, as the maiden take reads
         # without the alias (rules/N4's Precedence); a plain loop, no
