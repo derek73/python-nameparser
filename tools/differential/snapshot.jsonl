@@ -946,6 +946,7 @@
 {"name": "Dr Martin Luther King, Jr.", "title": "Dr", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K.", "generation": "Jr."}
 {"name": "Dr Pope Jr", "title": "Dr", "family": "Pope", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr"}
 {"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "S. V."}
+{"name": "Dr née Jones @ JJ V", "title": "Dr", "given": "née", "family": "Jones", "suffix": "V", "nickname": "JJ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as nickname (shape)"], "initials": "n. J.", "capitalized_force": "Dr Née \"Jj\" Jones V", "generation": "V"}
 {"name": "Dr 田中さん, V.", "title": "Dr", "family": "田中", "suffix": "さん, V.", "generation": "V.", "honorifics": "さん"}
 {"name": "Dr 김민준, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "Jr.", "generation": "Jr."}
 {"name": "Dr 김민준, MA", "title": "Dr", "given": "민준", "family": "김", "suffix": "MA"}
@@ -1914,6 +1915,7 @@
 {"name": "Jane Smith SLP-M.A", "given": "Jane", "family": "Smith", "suffix": "SLP-M.A", "initials": "J. S."}
 {"name": "Jane Smith Vice.", "title": "Vice.", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Jane Smith born Jones", "given": "Jane", "middle": "Smith born", "family": "Jones", "initials": "J. S. b. J.", "capitalized_force": "Jane Smith Born Jones"}
+{"name": "Jane Smith née @ JJ", "given": "Jane", "family": "Smith", "maiden": "@ JJ", "initials": "J. S.", "capitalized_force": "Jane Smith (@ Jj)"}
 {"name": "Jane Smith née Jones", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
 {"name": "Jane Smith née Jones @ JJ", "given": "Jane", "family": "Smith", "nickname": "JJ", "maiden": "Jones", "initials": "J. S.", "capitalized_force": "Jane \"Jj\" Smith (Jones)"}
 {"name": "Jane Smith née Jones PhD", "given": "Jane", "family": "Smith", "suffix": "PhD", "maiden": "Jones", "initials": "J. S."}
@@ -1926,6 +1928,7 @@
 {"name": "Jane and née Jones", "given": "Jane and née", "family": "Jones", "initials": "J. n. J.", "capitalized_force": "Jane and Née Jones"}
 {"name": "Jane de la née Jones", "given": "Jane", "family": "de la", "maiden": "Jones", "initials": "J. d. l.", "capitalized_force": "Jane De La (Jones)"}
 {"name": "Jane nee Smith Jr., AD", "given": "AD", "family": "Jane", "suffix": "Jr.", "maiden": "Smith", "initials": "A. J.", "capitalized_force": "Ad Jane (Smith) Jr.", "generation": "Jr."}
+{"name": "Jane née Jones @ JJ V", "family": "Jane", "nickname": "JJ V", "maiden": "Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J.", "capitalized_force": "\"Jj V\" Jane (Jones)"}
 {"name": "Jane née Jones Smith", "family": "Jane", "maiden": "Jones Smith", "initials": "J."}
 {"name": "Jane née Jr y Jones", "given": "Jane", "middle": "née", "family": "Jr y Jones", "initials": "J. n. J. J.", "capitalized_force": "Jane Née Jr y Jones"}
 {"name": "Jane née and Jones Smith", "family": "Jane", "maiden": "and Jones Smith", "initials": "J."}
@@ -3508,6 +3511,8 @@
 {"name": "Osman @ Jaki", "given": "Osman", "nickname": "Jaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "O."}
 {"name": "Osman, @ Jaki", "given": "@", "middle": "Jaki", "family": "Osman", "initials": "@. J. O."}
 {"name": "Osman, Rahim @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Osman, Rahim @ Jaki PhD Ali", "given": "Rahim", "family": "Osman", "suffix": "PhD Ali", "nickname": "Jaki", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "R. O."}
+{"name": "Osman, Rahim @ Jaki St.", "given": "Rahim", "family": "St. Osman", "nickname": "Jaki", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: title as title (vocabulary)"], "initials": "R. O."}
 {"name": "Osman, Rahim @ Jaki V", "given": "Rahim", "family": "Osman", "nickname": "Jaki V", "initials": "R. O."}
 {"name": "Osman, Rahim Jaki V", "given": "Rahim", "middle": "Jaki", "family": "Osman", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "R. J. O.", "generation": "V"}
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
@@ -4142,7 +4147,6 @@
 {"name": "Smith, John ,", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John - Paul", "given": "John", "middle": "- Paul", "family": "Smith", "initials": "J. -. P. S."}
 {"name": "Smith, John @ Jack Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "nickname": "Jack", "initials": "J. S.", "generation": "Jr."}
-{"name": "Smith, John @ Jack X.Y.Z.", "given": "John", "family": "Smith", "nickname": "Jack X.Y.Z.", "initials": "J. S."}
 {"name": "Smith, John Dipl.Ing.", "title": "Dipl.Ing.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John E, III, Jr", "given": "John", "middle": "E", "family": "Smith", "suffix": "III, Jr", "initials": "J. E. S.", "generation": "III, Jr"}
 {"name": "Smith, John I", "given": "John", "family": "Smith", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "J. S.", "generation": "I"}

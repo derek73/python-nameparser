@@ -510,9 +510,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Abdul Rahman' reporting particle-or-given; 2208 -> 2211 the same
     # day, #1149's 'جورج و. بوش' reporting given-or-family under three
     # orders; 2211 -> 2217 on 2026-11-20, #1164's 'Rahim Osman @ Jaki V'
-    # and 'Ali @ X @ Y Z V' under three orders.
-    assert claims == 2217, (
-        f"the field sweep checks {claims} claims, recorded as 2217 on "
+    # and 'Ali @ X @ Y Z V' under three orders; 2217 -> 2223 the same
+    # day, its fix review's 'Osman, Rahim @ Jaki PhD Ali', 'Jane née
+    # Jones @ JJ V' and 'Dr née Jones @ JJ V', six claims among them.
+    assert claims == 2223, (
+        f"the field sweep checks {claims} claims, recorded as 2223 on "
         f"2026-11-20")
 
 
@@ -999,8 +1001,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 605 -> 608 the same day, from #1464's two suffix-or-name rows
     # ('Ali Abdul Rahim VI', 'Ram Abdul Bahadur B.K.'); 608 -> 611 on
     # 2026-11-20, from #1164's alias rows' three reports ('Rahim Osman @
-    # Jaki V', 'Ali @ X @ Y Z V')
-    assert (checked, skipped) == (611, 497), (checked, skipped)
+    # Jaki V', 'Ali @ X @ Y Z V'); 611 -> 614 and 497 -> 500 the same
+    # day, from its fix review's three suffix-or-name rows
+    assert (checked, skipped) == (614, 500), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

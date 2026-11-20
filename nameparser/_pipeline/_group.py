@@ -115,6 +115,7 @@ from nameparser._types import AmbiguityKind, Role
 
 Piece = list[int]
 _SPAN_START = operator.attrgetter("span.start")
+_MARKER_TAGS = frozenset({ALIAS_MARKER_TAG, "vocab:maiden-marker"})
 #: What the marker passes took out of a segment: the markers' TOKEN
 #: indices (a maiden marker's more than one where the entry is a
 #: phrase, 'z domu'; every alias marker's, rules/N4), and every other
@@ -360,23 +361,26 @@ def _clause_take(pieces: Sequence[Sequence[int]],
         return None
     # no trailing rule reads the end of the clause: before a family
     # comma, or where a boundary ends the clause inside the part. A
-    # suffix word ends it there and hands the rest back unbound.
-    if site is ClauseSite.FAMILY_PART or stop < len(pieces):
-        end = next((j for j in range(lo + 1, stop)
-                    if "suffix" in ptags[j]
-                    or is_suffix_piece(pieces[j], ptags[j], tokens)),
-                   stop)
+    # suffix word ends it there and hands the rest back unbound. In the
+    # given part after a family comma (an alias only, rules/N4) so does
+    # any word that part's own reading may take out of the name -- a
+    # title, a member of the ambiguous class -- which is handed back for
+    # that reading to decide
+    given_slot = site is ClauseSite.GIVEN_SLOT
+    if (site is ClauseSite.FAMILY_PART or site is ClauseSite.GIVEN_SLOT
+            or stop < len(pieces)):
+        end = stop
+        for j in range(lo + 1, stop):
+            if ("suffix" in ptags[j]
+                    or is_suffix_piece(pieces[j], ptags[j], tokens)
+                    or (given_slot and _leaves_the_given_part(
+                        j, pieces, ptags, tokens))):
+                end = j
+                break
         return list(range(m, lo)), [(j, role) for j in range(lo, end)]
-    # the given part after a family comma (an alias only, rules/N4):
-    # its end is read as the comma-less name's, with rules/H8's bare
-    # salutations, as the given part's other predictors read it
-    if site is not ClauseSite.TRAILING and site is not ClauseSite.GIVEN_SLOT:
+    if site is not ClauseSite.TRAILING:
         assert_never(site)
-    # the given part offers every word after the alias's first to the
-    # reading: its walk takes a bare salutation (H8) or a dotted run
-    # that `trailing_candidates` never offers
-    c = (lo + 1 if site is ClauseSite.GIVEN_SLOT
-         else trailing_candidates(lo, pieces, ptags, tokens))
+    c = trailing_candidates(lo, pieces, ptags, tokens)
     end = len(pieces)
     released: list[tuple[int, Role]] = []
     # the view's picks, for the kept member below (#718)
@@ -394,8 +398,7 @@ def _clause_take(pieces: Sequence[Sequence[int]],
         vtags = [ptags[i] for i in left]
         vrest, vchained, vpeel = tail_reading(
             peel_walk(leading_titles(view, vtags, tokens), vtags),
-            view, vtags, tokens, one_case,
-            salutations=site is ClauseSite.GIVEN_SLOT)
+            view, vtags, tokens, one_case)
         picked = vpeel.picks
         titles = set(vchained) | set(vpeel.run_titles)
         in_run = titles | set(vrest[vpeel.names:]) | {
@@ -475,6 +478,23 @@ def _clause_take(pieces: Sequence[Sequence[int]],
             [(j, role) for j in range(lo, end)] + released)
 
 
+def _leaves_the_given_part(j: int,
+                           pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """Whether the given part's own reading may read pieces[j] as no
+    name word, so an alias there stops before it (rules/N4): a title
+    word (a trailing title, H8's salutation) or a member of the
+    ambiguous credential class. A lone roman numeral is not asked: it
+    is shaped like an initial, which the alias takes, and a report
+    naming its initial reading would name a field the alias denies it
+    (`test_cases`' alternative check)."""
+    if is_title_piece(pieces[j], ptags[j], tokens):
+        return True
+    return (len(pieces[j]) == 1 and not tokens[pieces[j][0]].tags
+            .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))
+
+
 def _ends_an_alias(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     """rules/N4's boundaries inside a part: a word with a patronymic
     reading, or another marker of either kind."""
@@ -520,10 +540,11 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         if len(piece) != 1 or ALIAS_MARKER_TAG not in tokens[piece[0]].tags:
             m += 1
             continue
-        # a marker left a word is no name word for the next one to stand
-        # behind ('Osman @ @ Jaki')
+        # a marker of either kind left a word is no name word for this
+        # one to stand behind ('Osman @ @ Jaki', 'Smith née @ JJ')
         behind = pieces[m - 1]
-        if len(behind) == 1 and ALIAS_MARKER_TAG in tokens[behind[0]].tags:
+        if len(behind) == 1 and not tokens[behind[0]].tags.isdisjoint(
+                _MARKER_TAGS):
             m += 1
             continue
         stop = next((j for j in range(m + 1, n)
@@ -538,10 +559,16 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         # without the alias (rules/N4's Precedence); a plain loop, no
         # frame
         view_skip: Set[int] = skip
-        if stop == n:
+        if stop == n and site is ClauseSite.TRAILING:
             for k in range(1, m):
                 if "vocab:maiden-marker" in tokens[pieces[k][0]].tags:
-                    view_skip = skip | set(range(k, m))
+                    # only a clause M2's take would take: ask it, over
+                    # the words before the alias, its reports discarded
+                    before = _maiden_take(pieces[:m], ptags[:m], tokens,
+                                          one_case, site, [])
+                    if before is not None:
+                        view_skip = skip | set(before[0]) | {
+                            j for j, _ in before[1]}
                     break
         take = _clause_take(pieces, ptags, tokens, one_case, site,
                             ambiguities, m, m + 1, stop, Role.NICKNAME,

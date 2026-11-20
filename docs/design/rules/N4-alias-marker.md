@@ -13,7 +13,7 @@
   "Rahim Osman @ Jaki, PhD"     →  nickname="Jaki"
   "Smith, John, Jr. @ Jack"     →  nickname=""  · boundary
   ```
-- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name and in the given part after a family comma, H8's salutations included there, and up to the first suffix word before a family comma. The words the boundary leaves are read as the name.
+- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma. In the given part after a family comma it stops at the first word that part's own reading may take out of the name, a suffix word, a title or a member of the ambiguous credential class, and hands the rest back to that reading. The words the boundary leaves are read as the name.
   ```
   "Rahim @ Jaki bin Osman"      →  nickname="Jaki"
   "Rahim @ Jaki bin Osman"      →  family="bin Osman"
@@ -24,6 +24,7 @@
   "Rahim @ Jaki PhD bin Osman"  →  nickname="Jaki"
   "Smith, John @ Jack Jr."      →  suffix="Jr."
   "Doe, Jane @ Janey Mrs"       →  title="Mrs"
+  "Osman, Rahim @ Jaki PhD Ali"  →  nickname="Jaki"
   "Jane Smith @ Janey née Jones"  →  maiden="Jones"
   "Jane Smith née Jones @ JJ"   →  nickname="JJ"
   ```
@@ -63,11 +64,12 @@
   "Ravi Kumar alias Raju"  aka+alias  →  nickname="Raju"
   "Boscia, Frank aka Francis"  aka+alias  →  nickname="Francis"
   ```
-- **A marker with nothing after it or no name word before it is just a word**, and so is one behind a title, a suffix word or a connective, as M2 says of its marker.
+- **A marker with nothing after it or no name word before it is just a word**, and so is one behind a title, a suffix word, a connective or a marker of either kind left a word, as M2 says of its marker.
   ```
   "Rahim Osman @"               →  family="@"  · boundary
   "Osman, @ Jaki"               →  nickname=""  · boundary
   "Sir @ Jaki Osman"            →  nickname=""  · boundary
+  "Jane Smith née @ JJ"         →  maiden="@ JJ"  · boundary
   ```
 - **A suffix word, a patronymic particle or another marker straight after a bare marker announces nothing**, and the marker is then a word.
   ```
@@ -80,7 +82,11 @@
 
 **Precedence:**
 
-- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first.
+- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first; a maiden clause M2 takes before the alias is no word of the name the alias's trailing run is counted against.
+  ```
+  "Jane née Jones @ JJ V"       →  nickname="JJ V"
+  "Dr née Jones @ JJ V"         →  suffix="V"  · boundary
+  ```
 - **A pair configured for maiden names** (M1): a clause it encloses that opens with an alias marker reads as the nickname, the marker saying which field it means as M3's marker does; M1 governs a clause with no marker.
 - **The lone-word nickname rule** (N3) counts a delimited nickname only. One name word left beside an alias keeps the reading O5's convention gives it, the given name by default, and the fork is reported, since a name written with an alias marker is mostly a Malay or Indian name with no family name in it.
   ```
@@ -90,10 +96,13 @@
 
 **Accepted:**
 
-- In the given part after a family comma the trailing run is read as the comma-less name reads it, which the given part's own reading does not always agree with: a one-letter numeral, an unlisted run of dotted letters and a credential in a name written in one case stay in the nickname, unreported, where the same words without the alias read as the suffix.
+- A word the given part after a family comma hands back stops the alias even where that reading then keeps it a name word, so a particle-title such as `St.` ending the part is the family name's, as it is with no alias.
+  ```
+  "Osman, Rahim @ Jaki St."     →  family="St. Osman"
+  ```
+- A lone roman numeral ending an alias in the given part after a family comma is taken with it, being shaped like the initial an alias there takes, where the same words with no alias read it as the suffix, reported.
   ```
   "Osman, Rahim @ Jaki V"       →  nickname="Jaki V"
-  "Smith, John @ Jack X.Y.Z."   →  nickname="Jack X.Y.Z."
   "Osman, Rahim Jaki V"         →  suffix="V"  · boundary
   ```
 
