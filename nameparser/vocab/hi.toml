@@ -243,4 +243,4 @@ attached = "जी ends बनर्जी, मुखर्जी, चटर्�
 
 [[word]]
 text = "urf"
-alias_marker = { issue = 1164, expands = "urf, alias, the romanized उर्फ़ (Ravi Kumar urf Raju)", note = "a marker in all 3 uses across the local corpora, all in PSC, and in none a name; 21 names on the 2024 Lok Sabha candidates' list write it (2026-11-20)" }
+alias_marker = { issue = 1164, expands = "alias", note = "the romanized उर्फ़ (Ravi Kumar urf Raju); a marker in all 3 uses across the local corpora, all in PSC, and in none a name; 21 names on the 2024 Lok Sabha candidates' list write it (2026-11-20)" }

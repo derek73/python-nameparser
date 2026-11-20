@@ -3503,6 +3503,8 @@
 {"name": "Orueta y Duarte, Ricardo de", "given": "Ricardo", "family": "de Orueta y Duarte", "initials": "R. O. D."}
 {"name": "Orval, Pierre d'", "given": "Pierre", "family": "d' Orval", "initials": "P. O."}
 {"name": "Orville, Johann Friedrich d'", "given": "Johann", "middle": "Friedrich", "family": "d' Orville", "initials": "J. F. O."}
+{"name": "Osman (Jaki)", "family": "Osman", "nickname": "Jaki", "initials": "O."}
+{"name": "Osman @ Jaki", "given": "Osman", "nickname": "Jaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "O."}
 {"name": "Osman, @ Jaki", "given": "@", "middle": "Jaki", "family": "Osman", "initials": "@. J. O."}
 {"name": "Osman, Rahim @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
@@ -3731,12 +3733,14 @@
 {"name": "Rafael Viciana Aráez", "given": "Rafael", "middle": "Viciana", "family": "Aráez", "initials": "R. V. A."}
 {"name": "Ragnar Bjarnason", "given": "Ragnar", "family": "Bjarnason", "initials": "R. B."}
 {"name": "Rahim @ Jaki Osman", "given": "Rahim", "nickname": "Jaki Osman", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
+{"name": "Rahim @ Jaki PhD bin Osman", "given": "Rahim", "middle": "PhD", "family": "bin Osman", "nickname": "Jaki", "initials": "R. P. O.", "patronymic": "bin Osman"}
 {"name": "Rahim @ Jaki a/l Osman", "given": "Rahim", "family": "a/l Osman", "nickname": "Jaki", "initials": "R. O.", "patronymic": "a/l Osman"}
 {"name": "Rahim @ Jaki bin Osman", "given": "Rahim", "family": "bin Osman", "nickname": "Jaki", "initials": "R. O.", "patronymic": "bin Osman"}
 {"name": "Rahim @Usman", "given": "Rahim", "family": "@Usman", "initials": "R. @."}
 {"name": "Rahim Osman @", "given": "Rahim", "middle": "Osman", "family": "@", "initials": "R. O. @."}
 {"name": "Rahim Osman @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki PhD", "given": "Rahim", "family": "Osman", "suffix": "PhD", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Rahim Osman @ Jaki Prof.", "title": "Prof.", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki, PhD", "given": "Rahim", "family": "Osman", "suffix": "PhD", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jr", "given": "Rahim", "middle": "Osman", "family": "@", "suffix": "Jr", "initials": "R. O. @.", "generation": "Jr"}
 {"name": "Rahim Osman @ Tok Ben", "given": "Rahim", "family": "Osman", "nickname": "Tok Ben", "initials": "R. O."}
@@ -3772,6 +3776,7 @@
 {"name": "Rashid Maidin", "given": "Rashid", "family": "Maidin", "initials": "R. M."}
 {"name": "Rashid, Harun al-", "given": "Harun", "family": "al- Rashid", "initials": "H. R."}
 {"name": "Ravi (urf Raju) Kumar", "given": "Ravi", "family": "Kumar", "nickname": "Raju", "initials": "R. K."}
+{"name": "Ravi Kumar (urf Jr)", "given": "Ravi", "family": "Kumar", "nickname": "Jr", "initials": "R. K."}
 {"name": "Ravi Kumar (urf Raju)", "given": "Ravi", "family": "Kumar", "nickname": "Raju", "initials": "R. K."}
 {"name": "Ravi Kumar (urf, Raju)", "given": "Ravi", "family": "Kumar", "nickname": "urf, Raju", "initials": "R. K.", "capitalized_force": "Ravi \"Urf, Raju\" Kumar"}
 {"name": "Ravi Kumar alias Raju", "given": "Ravi", "middle": "Kumar alias", "family": "Raju", "initials": "R. K. a. R.", "capitalized_force": "Ravi Kumar Alias Raju"}
@@ -4057,6 +4062,7 @@
 {"name": "Smith (MD), John", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "Smith (née Jones)", "family": "Smith", "maiden": "Jones", "initials": "S."}
 {"name": "Smith , John", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "Smith @ Jack Jr.", "given": "Smith", "suffix": "Jr.", "nickname": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S.", "generation": "Jr."}
 {"name": "Smith Cecilia Angela", "order": "FAMILY_FIRST", "given": "Cecilia", "middle": "Angela", "family": "Smith", "initials": "C. A. S."}
 {"name": "Smith Dr", "given": "Smith", "family": "Dr", "initials": "S. D."}
 {"name": "Smith E.T.", "given": "Smith", "family": "E.T.", "ambiguities": ["ORDER", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "S. E. T."}

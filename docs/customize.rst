@@ -537,7 +537,7 @@ them:
 
 The alias runs to a patronymic particle (``bin``, ``a/l``), another
 marker or a comma, and otherwise to the end of the name, less any
-trailing suffixes. So two words after the marker are both taken, which
+trailing suffixes and titles. So two words after the marker are both taken, which
 is right for a whole second name and wrong for a one-word alias before
 the family name.
 

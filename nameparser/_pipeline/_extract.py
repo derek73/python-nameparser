@@ -10,8 +10,10 @@ classify tags a marker inside it like any other token, and group drops
 it from a multi-token clause (#329).
 A region reaches that role two ways: the pair that matched sits in
 Policy.maiden_delimiters (M1), or the content itself opens with a
-marker word (M3), which reassigns the role after the match and so is
-the one thing here that a bucket alone does not decide.
+marker word (M3). The content's marker reassigns the role after the
+match both ways -- a maiden marker to the maiden name (M3), an alias
+marker to the nickname (N4) -- and so is the one thing here that a
+bucket alone does not decide.
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
 Lexicon.maiden_markers, Lexicon.alias_markers (rules/N4),
 Lexicon.particles (an apostrophe opening a
@@ -26,7 +28,7 @@ after_given_titles, honorific_tails (through
 honorific_words (through `_vocab.settles_a_member`, the words that
 do NOT settle a member beside them, rules/S1).
 
-Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
+Implements rules N1, N2, N4, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan
 mechanic worth stating up front: matching is one left-to-right pass,
 no nesting, and delimiter characters inside a matched region are

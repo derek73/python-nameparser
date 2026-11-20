@@ -113,15 +113,17 @@ from nameparser._types import AmbiguityKind, Role
 # merged reading
 
 Piece = list[int]
-#: What the marker pass took out of a segment: the marker's TOKEN
-#: indices (more than one where the entry is a phrase, 'z domu'), and
-#: every other piece it took with the role that piece takes -- the
-#: maiden name's Role.MAIDEN, and the trailing run's SUFFIX or TITLE
-#: (#601). `_group_segment` produces it.
+#: What the marker passes took out of a segment: the markers' TOKEN
+#: indices (a maiden marker's more than one where the entry is a
+#: phrase, 'z domu'; every alias marker's, rules/N4), and every other
+#: piece they took with the role that piece takes -- the maiden name's
+#: Role.MAIDEN, an alias's Role.NICKNAME, and the trailing run's SUFFIX
+#: or TITLE (#601). `_apply_take` builds it, take by take.
 MaidenTake = tuple[Piece, list[tuple[Piece, Role]]]
-#: What `_maiden_take` answers with, one index space further out: PIECE
-#: indices into its own `pieces` argument. `_group_segment` resolves
-#: them to the token indices MaidenTake declares, which is the only
+#: What `_clause_take` answers with (through `_maiden_take` and
+#: `_alias_takes`), one index space further out: PIECE indices into its
+#: own `pieces` argument. `_apply_take` resolves them to the token
+#: indices MaidenTake declares, which is the only
 #: reason the two are different types rather than one name used twice.
 MaidenIndices = tuple[list[int], list[tuple[int, Role]]]
 
@@ -148,7 +150,7 @@ class ClauseSite(IntEnum):
 
     FAMILY_PART = 0  # FAMILY_COMMA segment 0: a marker counts, nothing trails
     TRAILING = 1     # NO_COMMA, SUFFIX_COMMA segment 0: S2 peel + H5 chain
-    GIVEN_SLOT = 2   # FAMILY_COMMA segment 1: a marker is an ordinary word
+    GIVEN_SLOT = 2   # FAMILY_COMMA segment 1: a maiden marker is a word; an alias marker counts
     TAIL = 3         # every tail segment: a marker is an ordinary word
 
 
@@ -267,7 +269,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     an ordinary word. Piece indices into `pieces`, not the TOKEN
     indices `_group_segment` builds out of them.
 
-    Three questions, in order (rules/M2, #601):
+    Three questions, in order (rules/M2, #601), answered by
+    `_clause_take`, which rules/N4's alias take shares:
 
     * WHERE A MARKER COUNTS. Only in the part holding the family name
       -- never in the given part after a family comma, never in a tail
@@ -331,8 +334,10 @@ def _clause_take(pieces: Sequence[Sequence[int]],
     take in the same part has already taken, which the clause-free
     reading of the trailing run does not count. `lead`, where given,
     stands in for the leading title run of pieces[:m]: any value below
-    m - 1 reads the word before the marker as past the run, as the run
-    does wherever an earlier take stands between them. None where the
+    m - 1 reads the word before the marker as past the run, so the
+    suffix-word test applies to it and S2's opening-suffix allowance
+    does not, as the run does wherever an earlier take stands between
+    them. None where the
     marker is an ordinary word.
     """
     if site is ClauseSite.TAIL:
@@ -538,8 +543,8 @@ def _apply_take(take: MaidenIndices, pieces: list[Piece],
     marker_ks, removed = take
     if taken is None:
         taken = ([], [])
-    # plain loops, no frame: the maiden take pays two calls for this
-    # helper and the shared take, and nothing more
+    # plain loops, no frame: a maiden take costs two frames more than
+    # its inline form did, this helper's and `_clause_take`'s
     gone = set(marker_ks)
     for k in marker_ks:
         taken[0].extend(pieces[k])

@@ -4,7 +4,7 @@
 
 **Then:** a marker that counts takes the words after it as the nickname, and is itself dropped.
 
-- **Where a marker counts.** Where M2's maiden marker counts, with a name word straight before it, but in any part that may hold a name word: the whole name where no comma divides it, the part before a suffix comma or a family comma, and the given part after a family comma. A part after a suffix comma holds no name word (C2), and a marker there is an ordinary word.
+- **Where a marker counts.** Where M2's maiden marker counts, with a name word straight before it, but in any part that may hold a name word: the whole name where no comma divides it, the part before a suffix comma or a family comma, and the given part after a family comma. A part after a suffix comma holds post-nominals and titles (C2), so a marker there has no name word before it and is an ordinary word.
   ```
   "Ravi Kumar urf Raju"         →  nickname="Raju"
   "Osman, Rahim @ Jaki"         →  nickname="Jaki"
@@ -13,13 +13,15 @@
   "Rahim Osman @ Jaki, PhD"     →  nickname="Jaki"
   "Smith, John, Jr. @ Jack"     →  nickname=""  · boundary
   ```
-- **It takes the words up to the first boundary:** a word read as a patronymic particle, another marker of either kind, or a comma. With none, it takes as far as M2's clause would in that part: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma or in the given part after one. The words the boundary leaves are read as the name.
+- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma or in the given part after one. The words the boundary leaves are read as the name.
   ```
   "Rahim @ Jaki bin Osman"      →  nickname="Jaki"
   "Rahim @ Jaki bin Osman"      →  family="bin Osman"
   "Rahim bin Osman @ Usman"     →  family="bin Osman"
   "Rahim @ Jaki a/l Osman"      →  family="a/l Osman"
   "Rahim Osman @ Jaki PhD"      →  suffix="PhD"
+  "Rahim Osman @ Jaki Prof."    →  title="Prof."
+  "Rahim @ Jaki PhD bin Osman"  →  nickname="Jaki"
   "Smith, John @ Jack Jr."      →  suffix="Jr."
   "Jane Smith @ Janey née Jones"  →  maiden="Jones"
   "Jane Smith née Jones @ JJ"   →  nickname="JJ"
@@ -66,7 +68,7 @@
   "Osman, @ Jaki"               →  nickname=""  · boundary
   "Sir @ Jaki Osman"            →  nickname=""  · boundary
   ```
-- **A suffix word, a patronymic particle or another marker straight after the marker announces nothing**, and the marker is then a word.
+- **A suffix word, a patronymic particle or another marker straight after a bare marker announces nothing**, and the marker is then a word.
   ```
   "Rahim Osman @ Jr"            →  nickname=""  · boundary
   ```
@@ -78,6 +80,12 @@
 **Precedence:**
 
 - **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first.
+- **A pair configured for maiden names** (M1): a clause it encloses that opens with an alias marker reads as the nickname, the marker saying which field it means as M3's marker does; M1 governs a clause with no marker.
+- **The lone-word nickname rule** (N3) counts a delimited nickname only. One name word left beside an alias keeps the reading O5's convention gives it, the given name by default, and the fork is reported, since a name written with an alias marker is mostly a Malay or Indian name with no family name in it.
+  ```
+  "Osman @ Jaki"                →  given="Osman"
+  "Osman (Jaki)"                →  family="Osman"  · boundary
+  ```
 
 **Accepted:**
 
@@ -85,6 +93,10 @@
   ```
   "Rahim @ Jaki Osman"          →  nickname="Jaki Osman"
   "Rahim @ Jaki Osman"          →  family=""
+  ```
+- A marker opening a delimited clause is dropped whatever word follows it, as M3 takes the word after its marker untested, so a suffix word there is the nickname where after a bare marker it would leave the marker a word.
+  ```
+  "Ravi Kumar (urf Jr)"         →  nickname="Jr"
   ```
 - Where a particle ends the words before the marker, it bounds the particle join as M2's marker does, and the particle is left as the family name.
   ```
