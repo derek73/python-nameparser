@@ -502,9 +502,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # its declared policy; 2192 -> 2195 the same day, #1471's 'Emerita
     # Smith' reporting title-or-name under three orders; 2195 -> 2198 the
     # same day, #1457's 'Mr Masters' reporting title-or-name under three
-    # orders.
-    assert claims == 2198, (
-        f"the field sweep checks {claims} claims, recorded as 2198 on "
+    # orders; 2198 -> 2201 the same day, #1467's 'Nur Aina bt Rosli'
+    # reporting suffix-or-name under three orders.
+    assert claims == 2201, (
+        f"the field sweep checks {claims} claims, recorded as 2201 on "
         f"2026-11-19")
 
 
@@ -985,8 +986,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # #1468's 'Kwame Mensah Anak' under FAMILY_FIRST, a `name` stand-in;
     # the 'Anak Agung Made Putra' reports name a patronymic alternative,
     # which has no stand-in; 604 -> 605 the same day, its review's
-    # FAMILY_FIRST row of that name
-    assert (checked, skipped) == (605, 494), (checked, skipped)
+    # FAMILY_FIRST row of that name; 494 -> 497 the same day, #1467's
+    # 'Nur Aina bt Rosli' under the three orders, its suffix-or-name
+    # reports all skipped
+    assert (checked, skipped) == (605, 497), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
