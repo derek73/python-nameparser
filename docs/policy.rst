@@ -300,11 +300,12 @@ A list that mixes orders
 A source can also mix orders, name by name. Singapore's Parliament
 list writes some members with a Chinese surname given first (in the
 shape of ``Grace Lim``) and others family first (``Tan Kok Leong``),
-and nothing in the spelling tells which: of its 77 such members, 27
+and nothing in a Chinese name's spelling tells which: of its 77 such members, 27
 are written given first and 33 family first, and most of the rest
 carry an English name as well (:issue:`1183` has the counts).
-Malaysia's lists mix orders the same way: a candidate known by an
-English given name is written given first (``GRACE TAN``).
+Malaysia's lists mix orders too: a candidate known by an English
+given name is written given first (``GRACE TAN``), the Chinese names
+family first.
 
 No one setting reads such a list. The default order reads the names written given
 first, and ``FAMILY_FIRST`` with ``two_given_names`` the names written
@@ -313,10 +314,12 @@ family first, so each setting misreads the other group.
 The order then has to come from outside the name: a separate field in
 the source, or capitals where the source writes the family name in
 them (:ref:`capitals-as-family`), which helps only where the list writes
-the rest of the name in mixed case. ``Parser.suggest`` suggests no
-order for such a list, its names' votes splitting short of the share
-an order needs (:ref:`suggest-deciding`); that is the right answer,
-and it is the answer for Malaysia's Chinese candidates too.
+the rest of the name in mixed case. ``Parser.suggest`` cannot supply
+it: it suggests no order where neither order holds the share it needs
+(:ref:`suggest-deciding`), as for Malaysia's Chinese candidates, and
+where the names written one way carry more of the evidence, it
+suggests that order for the whole list. Either way the names written
+the other way stay misread.
 
 A comma still wins
 ~~~~~~~~~~~~~~~~~~
