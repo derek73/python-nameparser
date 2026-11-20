@@ -272,11 +272,11 @@ def _split_a_lone_backward_pair(state: ParseState, tokens: list[WorkToken],
     as P5's reserve leaves a bound word's pair of two name words, and
     the one-word report assign made of it is withdrawn. True where it
     split one."""
-    names = [i for i, t in enumerate(tokens)
-             if t.role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY)]
-    first, second = names
-    if second != first + 1 or BOUND_SECOND_TAG not in tokens[first].tags:
-        return False
+    # the caller has found the two name words adjacent, the first
+    # carrying the pair's tag
+    first = next(i for i, t in enumerate(tokens)
+                 if t.role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY))
+    second = first + 1
     # rules/P5's two exceptions to its reserve, read alike: after a
     # family comma the family is fixed and the pair is the given name,
     # and a given-name title asserts that a given name follows
@@ -1389,7 +1389,8 @@ def post_rules(state: ParseState) -> ParseState:
     # the tag test inline, in C, so that a name of two words with no
     # such pair pays no frame for it
     names = givens + middles + families
-    if (len(names) == 2 and BOUND_SECOND_TAG in tokens[min(names)].tags
+    if (len(names) == 2 and max(names) == min(names) + 1
+            and BOUND_SECOND_TAG in tokens[min(names)].tags
             and _split_a_lone_backward_pair(state, tokens, ambiguities)):
         titles, givens, middles, families = _positions(tokens)
 
