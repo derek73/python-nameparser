@@ -2497,11 +2497,23 @@ def test_a_decomposed_name_votes_as_its_composed_twin(
 #: relaxed answer equals its guarded one guards nothing here.
 #: (threshold, relaxed value, group, base order, guarded, relaxed), the
 #: answers as the name_order, patronymic_rules and initials_as_family
-#: patches, and the capitals_as_family patch where a fourth is given (a
-#: row of three holds it unset under both).
+#: patches, the capitals_as_family patch where a fourth is given and the
+#: two_family_names patch where a fifth is (a shorter row holds the rest
+#: unset under both).
 _UNGUARDED_EFFECT: list[tuple[str, object, list[str],
                               tuple[Role, Role, Role],
                               tuple[object, ...], tuple[object, ...]]] = [
+    # two names with a listed surname second-to-last: two votes, under
+    # the three the switch needs (#1452)
+    ("_MIN_TWO_FAMILY_VOTES", 2, ["Ana García López", "Luis Pérez Ruiz"],
+     GIVEN_FIRST, (UNSET, UNSET, UNSET, UNSET, UNSET),
+     (UNSET, UNSET, UNSET, UNSET, True)),
+    # three votes among twelve names the switch moves: 25%, under 30%
+    ("_MIN_TWO_FAMILY_SHARE", 0.1,
+     ["Ana García López", "Luis Pérez Ruiz", "Elena Torres Díaz"]
+     + [f"Ana Xx{c}mir Qq{c}lov" for c in "abcdefghi"],
+     GIVEN_FIRST, (UNSET, UNSET, UNSET, UNSET, UNSET),
+     (UNSET, UNSET, UNSET, UNSET, True)),
     ("_MIN_VOTES", 1, ["Smith Mary", "Xyzzy Plugh"], GIVEN_FIRST,
      (UNSET, UNSET, UNSET), (FAMILY_FIRST, UNSET, UNSET)),
     ("_MIN_SHARE", 0.5, ["Smith Mary", "Kim Minjun", "Jason Smith"],
@@ -2561,10 +2573,11 @@ def test_each_threshold_changes_its_recorded_answer(
     def answer() -> tuple[object, ...]:
         patch = base.suggest(names).patch
         return (patch.name_order, patch.patronymic_rules,
-                patch.initials_as_family, patch.capitals_as_family)
+                patch.initials_as_family, patch.capitals_as_family,
+                patch.two_family_names)
 
     def four(answers: tuple[object, ...]) -> tuple[object, ...]:
-        return answers if len(answers) == 4 else (*answers, UNSET)
+        return (*answers, *(UNSET,) * (5 - len(answers)))
 
     assert answer() == four(guarded)
     monkeypatch.setattr(_suggest, threshold, relaxed)
@@ -3141,18 +3154,21 @@ def test_the_base_parse_is_asked_only_of_a_listed_title(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # a family in capitals the vocabulary lists as no title costs the
     # switch-on parse alone; one it lists costs the base parse too
+    # (the base object itself: the two_family_names vote parses under a
+    # copy of it, #1452)
     calls: list[str] = []
     real = Parser.parse
+    base = Parser()
 
     def counting(self: Parser, text: str) -> object:
-        if not self.policy.capitals_as_family:
+        if self is base:
             calls.append(text)
         return real(self, text)
 
     monkeypatch.setattr(Parser, "parse", counting)
-    Parser().suggest(["Jean DUPONT", "Marie MARTIN", "Anne Leroy"])
+    base.suggest(["Jean DUPONT", "Marie MARTIN", "Anne Leroy"])
     assert calls == []
-    Parser().suggest(["MISS Ann Berg", "Jean DUPONT"])
+    base.suggest(["MISS Ann Berg", "Jean DUPONT"])
     assert calls == ["MISS Ann Berg"]
 
 
@@ -3346,3 +3362,271 @@ def test_a_suggestion_holding_a_position_vote_round_trips() -> None:
     again = pickle.loads(pickle.dumps(s))
     assert again.names == s.names
     assert again.patch == s.patch
+
+
+# -- #1452: two_family_names -----------------------------------------------
+# The word the switch would take into the family, asked of the parse:
+# a listed surname (`García`, `López`) votes True, a father's name votes
+# False, a listed given name (`María`) is moved and casts no vote, and a
+# name the switch leaves as it is casts nothing. On 13cf07cd no row votes.
+@pytest.mark.parametrize("text, vote, moved", [
+    ("Zzana García Qqmoreno", True, True),
+    # the taken word is the unlisted one, the listed surname ending it
+    ("Zzana Qqmoreno García", None, True),
+    ("Zzana María Qqmoreno", None, True),
+    (unicodedata.normalize("NFD", "Zzana María Qqmoreno"), None, True),
+    ("Zzana Xxmir Qqmoreno", None, True),
+    # a particle run after it: the word before the run is taken
+    ("Zzana García de la Qqvega", True, True),
+    ("Zzana García López Qqmoreno", True, True),
+    # read past a title, a post-nominal and a comma before post-nominals
+    ("Dr. Zzana García Qqmoreno", True, True),
+    ("Zzana García Qqmoreno Jr.", True, True),
+    ("Gabriel García Qqmarquez, PhD", True, True),
+    # capitals and the decomposed spelling vote alike
+    ("Zzana GARCÍA Qqmoreno", True, True),
+    (unicodedata.normalize("NFD", "Zzana García Qqmoreno"), True, True),
+    # a father's name or its marker votes against, in any script or case
+    ("Ivan Petrovich Qqsidorov", False, True),
+    ("IVAN PETROVICH QQSIDOROV", False, True),
+    ("Иван Петрович Сидорров", False, True),
+    ("Anna Ivanovna Qqsidorova", False, True),
+    (unicodedata.normalize("NFD", "Ali Vali oğlu Qqmammadov"), False, True),
+    # moved but read by no signal: a comma before a job, words joined by
+    # an interpunct; each counts in the share and casts no vote
+    ("Zzana García Qqmoreno, Clinical Research Coordinator", None, True),
+    ("马丁·路德·金", None, True),
+    # not moved: an initial, a comma, two words, a hyphenated family
+    ("Zzana G. Qqmoreno", None, False),
+    ("Qqmoreno, Zzana García", None, False),
+    ("Zzana Qqmoreno", None, False),
+    ("Zzana García-López", None, False),
+])
+def test_a_listed_surname_the_switch_would_take_votes_for_it(
+        text: str, vote: bool | None, moved: bool) -> None:
+    from nameparser._suggest import _read, _two_family_votes
+    parser = Parser()
+    votes, moved_count, _ = _two_family_votes(
+        [(text, *_read(text, parser.lexicon))], parser)
+    assert votes[0].get(Signal.FIRST_SURNAME) is vote
+    assert bool(moved_count) is moved
+
+
+#: Three names written given first with two family names, each first
+#: surname a listed one (`García`, `López`, `Pérez`).
+_TWO_FAMILY = ["Zzana García Qqmoreno", "Qqluis López Xxromero",
+               "Xxelena Pérez Vvnavarro"]
+#: Three Russian names written given first, too few to decide the East
+#: Slavic rule, each a father's name where the switch would take a word.
+_RUSSIAN_GIVEN_FIRST = ["Ivan Petrovich Qqsidorov", "Anna Sergeevna Qqpetrova",
+            "Oleg Ivanovich Qqvolkov"]
+
+
+@pytest.mark.parametrize("base_order", [
+    GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+def test_a_list_of_two_family_names_gets_the_switch(
+        base_order: tuple[Role, Role, Role]) -> None:
+    # `Ana` and `Luis`, listed given names opening each name, decide the
+    # given-first order on every base, under which the switch is weighed
+    names = [f"Ana {n}" for n in _TWO_FAMILY] + [f"Luis {n}" for n in
+                                                  _TWO_FAMILY]
+    s = Parser(policy=Policy(name_order=base_order)).suggest(names)
+    assert s.parser.policy.name_order == GIVEN_FIRST
+    assert s.parser.policy.two_family_names is True
+    assert s.patch.two_family_names is True
+    evidence = [e for e in s.evidence if e.setting == "two_family_names"][0]
+    assert (Signal.FIRST_SURNAME, True, 6) in evidence.by_signal
+    assert {s.parser.parse(n).surname2 for n in names} == {
+        "Qqmoreno", "Xxromero", "Vvnavarro"}
+
+
+def _two_family(s: Suggestion) -> SettingEvidence:
+    return [e for e in s.evidence if e.setting == "two_family_names"][0]
+
+
+def test_the_switch_needs_three_votes() -> None:
+    # left off, the report counts for and against the value kept, as the
+    # other switches do: the two names voting for the switch are against
+    s = Parser().suggest(_TWO_FAMILY[:2])
+    assert s.patch.two_family_names is UNSET
+    evidence = _two_family(s)
+    assert (evidence.votes_for, evidence.votes_against,
+            evidence.decided) == (0, 2, False)
+    # three alone decide it, with no order vote cast
+    s = Parser().suggest(_TWO_FAMILY)
+    assert s.patch == PolicyPatch(two_family_names=True)
+    assert (_two_family(s).votes_for, _two_family(s).votes_against) == (3, 0)
+
+
+@pytest.mark.parametrize("unlisted, decided", [(6, True), (7, False)])
+def test_the_switch_needs_three_in_ten_of_the_names_it_moves(
+        unlisted: int, decided: bool) -> None:
+    # three votes among nine moved is a third, among ten 30%: not more
+    names = _TWO_FAMILY + [f"Zzana Xx{c}mir Qq{c}lov"
+                           for c in "abcdefg"[:unlisted]]
+    s = Parser().suggest(names)
+    assert _two_family(s).decided is decided
+
+
+def test_a_name_with_a_comma_counts_among_the_names_the_switch_moves() -> None:
+    # the switch reads the names before a job title too, so they count in
+    # the share though no signal reads them: 3 of 15 is not more than 30%
+    names = ["Gabriel García Qqmarquez", "Juan Pérez Qqlopez",
+             "Ana Gómez Qqsanchez"] + [
+        "John Michael Smith, Clinical Research Coordinator",
+        "Mary Ann Jones, Study Nurse",
+        "Robert James Brown, Principal Investigator"] * 4
+    s = Parser().suggest(names)
+    assert s.patch.two_family_names is UNSET
+    assert _two_family(s).note.startswith(
+        "3 of the 15 names two_family_names would change")
+
+
+def test_a_given_name_the_switch_would_take_lowers_the_share() -> None:
+    # `María` is a second given name: moved, so it counts in the share,
+    # and casts no vote; three surnames among eight moved is 37.5%, over
+    # 30%, so the given names lower the share without vetoing the switch
+    names = _TWO_FAMILY + [f"Zzana María Qq{c}lov" for c in "abcde"]
+    s = Parser().suggest(names)
+    note = _two_family(s).note
+    assert "5 of them a common given name there" in note
+    assert _two_family(s).decided
+
+
+def test_names_the_table_does_not_list_can_be_outvoted() -> None:
+    # the accepted cost of the 30% share: three Spanish names decide the
+    # switch beside four English ones, whose second given names it then
+    # reads as first surnames (Michael and Ann listed, James not)
+    names = _TWO_FAMILY + ["John Michael Smith", "Mary Ann Jones",
+                           "Robert James Brown", "Zzx Qqy Zzz"]
+    s = Parser().suggest(names)
+    assert s.patch.two_family_names is True
+    assert s.parser.parse("John Michael Smith").family == "Michael Smith"
+
+
+def test_patronymics_beside_two_family_names_keep_the_switch_off() -> None:
+    # five Russian names written given first, which the switch would read
+    # with the patronymic as the first surname, against three Spanish
+    # ones, whose listed given name `Ana` votes on the order, so the
+    # rule is not decided (5 of 8): 3 for the switch, 5 against, so it
+    # stays off, counted for and against the value kept
+    names = [f"Ana {n}" for n in _TWO_FAMILY] + _written("middle", 0, 5)
+    s = Parser().suggest(names)
+    evidence = _two_family(s)
+    assert (evidence.votes_for, evidence.votes_against) == (5, 3)
+    assert not evidence.decided
+    assert s.patch.two_family_names is UNSET
+
+
+@pytest.mark.parametrize("spanish, decided", [(3, False), (4, True)])
+def test_the_switch_needs_more_votes_for_it_than_against(
+        spanish: int, decided: bool) -> None:
+    names = (_TWO_FAMILY + ["Zzmaria Sánchez Qqruiz"])[:spanish] + _RUSSIAN_GIVEN_FIRST
+    s = Parser().suggest(names)
+    assert s.patch.patronymic_rules is UNSET
+    assert _two_family(s).decided is decided
+
+
+def test_a_fathers_name_disagrees_with_a_decided_switch() -> None:
+    names = _TWO_FAMILY * 2 + ["Ivan Petrovich Qqsidorov"]
+    s = Parser().suggest(names)
+    assert s.patch.two_family_names is True
+    assert [n.text for n in s.disagreeing()] == ["Ivan Petrovich Qqsidorov"]
+    assert s.names[-1].votes[Signal.FIRST_SURNAME] is False
+    report = str(s)
+    assert "two_family_names  True  6 for, 1 against, 0 no evidence" in report
+    assert "first-surname False  1" in report
+    assert "; 1 a father's name there" in report
+    assert "disagreeing (1): Ivan Petrovich Qqsidorov" in report
+
+
+def test_the_evidence_for_the_switch_reads_alike_in_either_order() -> None:
+    # a False and a True row of one signal sort by their value, not by
+    # which name of the list cast its vote first
+    names = ["Ivan Petrovich Qqsidorov"] + _TWO_FAMILY * 2
+    forward = _two_family(Parser().suggest(names))
+    backward = _two_family(Parser().suggest(names[::-1]))
+    assert forward.by_signal == backward.by_signal == (
+        (Signal.FIRST_SURNAME, False, 1), (Signal.FIRST_SURNAME, True, 6))
+    assert forward == backward
+
+
+def test_the_east_slavic_rule_excludes_the_switch() -> None:
+    base = Parser(policy=Policy(patronymic_rules=_EAST_SLAVIC_RULE))
+    s = base.suggest(_TWO_FAMILY * 2)
+    assert s.patch == PolicyPatch()
+    assert _two_family(s).note.startswith("not read: the East Slavic rule")
+
+
+def test_a_family_first_list_is_not_weighed_for_the_switch() -> None:
+    # no mirror under a family-first order in this version (#1452)
+    names = ["García Qqmoreno Zzana", "López Xxromero Qqluis",
+             "Pérez Vvnavarro Xxelena"] * 2
+    s = Parser(policy=Policy(name_order=FAMILY_FIRST)).suggest(names)
+    assert s.patch.two_family_names is UNSET
+    assert _two_family(s).note.startswith("not read: the order is family")
+
+
+def test_an_east_slavic_rule_the_list_decides_excludes_the_switch() -> None:
+    # read under the parser the rest of the suggestion gives, not the base
+    names = _TWO_FAMILY * 3 + [f"Ivan Petrovich Qq{c}ov" for c in "abcde"]
+    s = Parser().suggest(names)
+    assert s.patch == PolicyPatch(patronymic_rules=_EAST_SLAVIC_RULE)
+    assert _two_family(s).note.startswith("not read: the East Slavic rule")
+
+
+def test_a_family_first_order_the_list_decides_is_not_weighed() -> None:
+    names = ["Qqmoreno García Zzana", "Xxromero López Qqluis",
+             "Vvnavarro Pérez Xxelena"] * 2 + [
+        "WANG Xiao Li", "LI Ming Hua", "ZHANG Wei Qi"]
+    s = Parser().suggest(names)
+    assert s.patch.name_order == FAMILY_FIRST
+    assert s.patch.two_family_names is UNSET
+    assert _two_family(s).note.startswith("not read: the order is family")
+
+
+def test_a_capitals_switch_the_list_decides_moves_no_name() -> None:
+    # the family in capitals is read whole under capitals_as_family, so
+    # the switch would take nothing
+    names = ["Zzana García QQMORENO", "Qqluis López XXROMERO",
+             "Xxelena Pérez VVNAVARRO"] * 2
+    s = Parser().suggest(names)
+    assert s.patch == PolicyPatch(capitals_as_family=True)
+    assert (_two_family(s).decided, _two_family(s).note) == (False, "")
+
+
+def test_a_base_reading_middle_names_as_family_moves_no_name() -> None:
+    s = Parser(policy=Policy(middle_as_family=True)).suggest(_TWO_FAMILY * 2)
+    assert s.patch == PolicyPatch()
+    assert (_two_family(s).votes_for, _two_family(s).note) == (0, "")
+
+
+def test_a_base_reading_two_family_names_is_not_weighed() -> None:
+    s = Parser(policy=Policy(two_family_names=True)).suggest(_TWO_FAMILY)
+    assert s.patch == PolicyPatch()
+    assert _two_family(s).note.startswith("not read: the base reads")
+
+
+@pytest.mark.parametrize("vote", [1, 0, "yes", None, GIVEN_FIRST])
+def test_a_first_surname_vote_must_be_a_bool(vote: object) -> None:
+    with pytest.raises(TypeError, match="must be True or False"):
+        NameEvidence("Zzana García Qqmoreno", {Signal.FIRST_SURNAME: vote})  # type: ignore[dict-item]
+    for value in (True, False):
+        assert NameEvidence("Zzana García Qqmoreno", {
+            Signal.FIRST_SURNAME: value}).votes == {
+                Signal.FIRST_SURNAME: value}
+
+
+def test_every_signal_votes_on_one_setting() -> None:
+    from nameparser._suggest import _SETTING_OF
+    assert set(_SETTING_OF) == set(Signal)
+    assert set(_SETTING_OF.values()) <= {f.name for f in
+                                         dataclasses.fields(Policy)}
+
+
+def test_a_suggestion_holding_a_first_surname_vote_round_trips() -> None:
+    import pickle
+    s = Parser().suggest(_TWO_FAMILY)
+    assert any(Signal.FIRST_SURNAME in n.votes for n in s.names)
+    again = pickle.loads(pickle.dumps(s))
+    assert (again.names, again.patch) == (s.names, s.patch)

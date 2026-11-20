@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "alhaj"
+style = { issue = 1469, decided = 2026-11-19, expands = "al-hajj, one who has made the Hajj, written before the name in Pakistan and Bangladesh", note = "opening a name it was the title wherever counted (UK PSC 2, JRC-Names 1, ORCID 1), save an ORCID byline writing the family name Alhaj first; ORCID's 2025 extract holds it in 17 given boxes (Sudan 5) and 269 family boxes, a surname written last, which a leading title does not reach (2026-11-19)" }
+
+[[word]]
+text = "alhajj"
+style = { same_as = "alhaj", issue = 1469, decided = 2026-11-19, expands = "al-hajj, the spelling Bangladesh's parliament writes", note = "ORCID's 2025 extract holds it in 5 given boxes and 47 family boxes; no corpus name opens with it (2026-11-19)" }
+
+[[word]]
 text = "hajji"
 style = { expands = "one who has made the Hajj" }
 
@@ -176,12 +184,20 @@ given = { us_ssa = 2398, wikidata = 141, as_of = 2026-10-26, note = "US SSA: mal
 family = { us_census_2010 = 1241, wikidata = 13, as_of = 2026-10-26 }
 
 [[word]]
+text = "moulana"
+religious = { issue = 1469, decided = 2026-11-19, expands = "mawlana, a cleric, the spelling of Pakistani and Bangladeshi lists", note = "opening a name it was the title wherever counted (Pakistan's National Assembly 2, UK PSC 3, JRC-Names 1); ORCID's 2025 extract holds it in 6 given boxes and 16 family boxes (2026-11-19). The spelling maulana is left out, an Indonesian given name and surname (decisions/indic-honorifics, 2026-11-19 #1469)" }
+
+[[word]]
 text = "mufti"
 religious = {}
 
 [[word]]
 text = "murshid"
 religious = { expands = "a Sufi guide" }
+
+[[word]]
+text = "qari"
+religious = { issue = 1469, decided = 2026-11-19, expands = "a reciter of the Quran", note = "opening a name it was the title wherever counted (ORCID 1, UK PSC 5, JRC-Names 53); ORCID's 2025 extract holds it in 9 given boxes (Pakistan 4) and 43 family boxes, a surname written last (Saudi Arabia 10); US SSA 10 births (2026-11-19)" }
 
 [[word]]
 text = "الحاج"

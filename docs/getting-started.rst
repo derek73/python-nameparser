@@ -119,6 +119,8 @@ it, and ``suggestion.base`` is the parser you started from:
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
       capitals_as_family  unchanged (False)  5 for, 0 against, 0 no evidence
+      two_family_names  unchanged (False)  no evidence
+          not read: the order is family-first, and two family names are weighed under a given-first order alone
 
 Each setting counts its names for and against the value the suggested
 parser has: all five names are in mixed case with no word in capitals,
@@ -147,7 +149,7 @@ surname (``Mary``, not ``James``), at one end; a
 family name written in capitals; a lowercase particle; initials after
 the name, as a bibliography writes them (:ref:`suggest-evidence`).
 
-``suggest`` decides four settings from it, each only where enough of
+``suggest`` decides five settings from it, each only where enough of
 the list's names carry its evidence, and leaves every other one as the
 parser you called it on has it:
 
@@ -163,6 +165,10 @@ parser you called it on has it:
 - **Family names in capitals** (:ref:`capitals-as-family`): for a list
   that writes the family name in capitals of four letters or more
   (``Mary SMITH``) (:ref:`suggest-capitals`).
+- **Two family names** (:ref:`two-family-names`): for a list written
+  given name first whose names carry a common surname where a second
+  given name would stand (``Gabriel García Márquez``)
+  (:ref:`suggest-two-family`).
 
 Choose the language first
 ~~~~~~~~~~~~~~~~~~~~~~~~~
