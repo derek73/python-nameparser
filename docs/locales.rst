@@ -144,6 +144,8 @@ shape covers much:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
 - ``mn`` may read any name written wholly in Cyrillic differently.
+- ``ms`` may read any name holding ``Puan``, ``Cik``, ``Ustaz``,
+  ``Ustazah`` or ``Cikgu`` as a word differently.
 - ``my`` may read any name holding ``U`` or ``Daw`` as a word
   differently, with or without its full stop, or ``U`` as a letter of
   a word joined by full stops. Chosen strictly, it may read any name
@@ -186,7 +188,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'my', 'ne', 'nl', 'pt', 'pt_br', 'pt_pt', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
+    ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ms', 'my', 'ne', 'nl', 'pt', 'pt_br', 'pt_pt', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -296,6 +298,13 @@ says which parts each pack is made of.
        name last, so the father's name, written first, is the family.
        See :ref:`Mongolian names <mongolian-names>`.
      - ``Батын Сүхээ`` → family ``Батын``, given ``Сүхээ``
+   * - ``ms``
+     - Malay: Malaysian titles
+     - Chooses ``ms``, which reads the salutations ``Puan`` (Mrs.) and
+       ``Cik`` (Miss), and ``Ustaz``, ``Ustazah`` and ``Cikgu``, as
+       titles, where the default reads a name word. See
+       :ref:`malay-names`.
+     - ``Puan Siti binti Ahmad`` → title ``Puan``
    * - ``my``
      - Burmese
      - Chooses ``my``, which reads the honorifics ``U`` and ``Daw``
@@ -391,8 +400,8 @@ says what it can change:
      - Chooses a language
      - Policy fields
      - Word list
-   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``nl``,
-       ``pt``, ``sl``
+   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``ms``,
+       ``nl``, ``pt``, ``sl``
      - yes
      - none
      - none

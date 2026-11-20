@@ -1107,6 +1107,43 @@ CASES: tuple[Case, ...] = (
          notes="the mid-name cost that keeps ten off by default "
                "(rules/P2's Accepted); 1.4.0 through 3.1.0 read middle "
                "'Ten'"),
+    # #1179: the Malay pack. Each row's notes checked against the 1.4.0
+    # and 3.1.0 wheels on 2026-11-19; on master, where no `ms` pack
+    # exists, every row fails
+    Case("the_malay_pack_reads_puan_as_the_title",
+         "Puan Siti binti Ahmad",
+         {"title": "Puan", "given": "Siti", "family": "binti Ahmad"},
+         locale="ms", classification="feat(#1179)",
+         notes="3.1.0 read given 'Puan', middle 'Siti'; 1.4.0 read given "
+               "'Puan', middle 'Siti binti', family 'Ahmad'"),
+    Case("the_malay_pack_reads_cik_as_the_title",
+         "Cik Nadia binti Rahman",
+         {"title": "Cik", "given": "Nadia", "family": "binti Rahman"},
+         locale="ms", classification="feat(#1179)",
+         notes="3.1.0 read given 'Cik', middle 'Nadia'; 1.4.0 read given "
+               "'Cik', middle 'Nadia binti', family 'Rahman'"),
+    Case("the_malay_pack_reads_ustaz_in_capitals_as_the_title",
+         "USTAZ HAFIZ BIN OMAR",
+         {"title": "USTAZ", "given": "HAFIZ", "family": "BIN OMAR"},
+         locale="ms", classification="feat(#1179)",
+         notes="1.4.0 through 3.1.0 read given 'USTAZ', middle 'HAFIZ'"),
+    Case("the_malay_pack_reads_cikgu_as_the_title",
+         "Cikgu Ahmad bin Ali",
+         {"title": "Cikgu", "given": "Ahmad", "family": "bin Ali"},
+         locale="ms", classification="feat(#1179)",
+         notes="1.4.0 through 3.1.0 read given 'Cikgu', middle 'Ahmad'"),
+    Case("the_malay_pack_reads_the_salutation_after_a_family_comma",
+         "Ahmad, Puan Siti",
+         {"title": "Puan", "given": "Siti", "family": "Ahmad"},
+         locale="ms", classification="feat(#1179)",
+         notes="1.4.0 through 3.1.0 read given 'Puan', middle 'Siti'"),
+    Case("the_malay_pack_leaves_the_hereditary_tuan_a_name_word",
+         "Tuan Aminah binti Tuan Yusof",
+         {"given": "Tuan", "middle": "Aminah", "family": "binti Tuan Yusof"},
+         locale="ms", classification="feat(#1179)",
+         notes="tuan is no title under the pack (decisions/salutation-"
+               "titles, the 2026-11-19 #1179 entry); 3.1.0 reads it "
+               "so; 1.4.0 read middle 'Aminah binti Tuan', family 'Yusof'"),
     # #1231: the Burmese pack. Burmese names have no family name, so the
     # last word lands in family by position. Each row's notes checked
     # against the 1.4.0, 2.0.0, 2.4.0, 2.8.2 and 3.1.0 wheels on
