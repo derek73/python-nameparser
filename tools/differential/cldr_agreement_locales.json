@@ -1305,6 +1305,116 @@
   },
   "text": "Цэцэг Дорж"
  },
+ "ms/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Bruhel",
+   "got": "Bruhel Domingo"
+  },
+  "surname2": {
+   "expected": "Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia Martina von Bruhel Domingo MD DDS"
+ },
+ "ms/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Syed A Ismail Petra",
+   "got": "Petra"
+  },
+  "family_base": {
+   "expected": "Ismail Petra",
+   "got": "Petra"
+  },
+  "family_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Syed Abd Aziz",
+   "got": "Syed Abd Aziz Syed A Ismail"
+  },
+  "surname1_base": {
+   "expected": "Ismail",
+   "got": "Petra"
+  },
+  "surname1_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Petra",
+   "got": ""
+  },
+  "text": "Tn. Syed Abd Aziz Syed A Ismail Petra MP"
+ },
+ "ms/nativeFull/sorting": {
+  "family": {
+   "expected": "Ismail Syed A",
+   "got": "Ismail"
+  },
+  "family_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Syed Abd Aziz",
+   "got": "Syed Abd Aziz Syed A"
+  },
+  "surname1_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "text": "Ismail, Syed Abd Aziz Syed A"
+ },
+ "ms/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "Syed A Ismail",
+   "got": "Syed"
+  },
+  "family_base": {
+   "expected": "Ismail",
+   "got": "Syed"
+  },
+  "family_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Syed Abd Aziz",
+   "got": "A Ismail Syed Abd Aziz"
+  },
+  "surname1_base": {
+   "expected": "Ismail",
+   "got": "Syed"
+  },
+  "surname1_particles": {
+   "expected": "Syed A",
+   "got": ""
+  },
+  "text": "Syed A Ismail Syed Abd Aziz MP"
+ },
+ "ms/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Syed Hassan",
+   "got": "Hassan"
+  },
+  "given_names": {
+   "expected": "Syed Sadiq",
+   "got": "Syed Sadiq Syed"
+  },
+  "text": "Syed Sadiq Syed Hassan"
+ },
+ "ms/nativeGGS/surnameFirst": {
+  "family": {
+   "expected": "Syed Hassan",
+   "got": "Syed"
+  },
+  "given_names": {
+   "expected": "Syed Sadiq",
+   "got": "Hassan Syed Sadiq"
+  },
+  "text": "Syed Hassan Syed Sadiq"
+ },
  "my/foreignFull/givenFirst": {
   "family": {
    "expected": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ",

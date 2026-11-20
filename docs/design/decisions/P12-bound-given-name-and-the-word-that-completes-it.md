@@ -9,7 +9,7 @@
 - `abu` keeps its particle and teknonymic readings and no `completes_any`; Arabic-script `عبد` keeps its list — 2026-11-19 #1464.
 - A pair P12 joined counts as one family word for rules/O6 (two family names): under `two_family_names` `سعيد حسن عبد الله` gives family 'حسن عبد الله'; P5's pair at the start and a pair a particle chain took count as two — 2026-11-04 #694; a Latin pair the join makes past the first name word counts as one, as the Arabic-script pair does (`Ana abdul Rahman López` under `two_family_names` gives family 'abdul Rahman López'), where one at the start still counts as two — 2026-11-19 #1464.
 
-Open: a Malay choice could turn `abdul`'s three-word join on, its Malaysian writers filing the pair as the family 183 times to 2 in ORCID; the Malay choice is #1179's question (2026-11-19 #1464).
+Open: `locales.MS` (#1179) could turn `abdul`'s three-word join on, its Malaysian writers filing the pair as the family 183 times to 2 in ORCID; as shipped it reads `abdul` as the default does, and a strict choice of it reads no Latin bound word at all, `ar.toml` not being chosen (2026-11-19 #1464).
 
 Open: the second elements that join the word BEFORE them (`الدين`, `الله`, `الغنى` in `جميل عز الدين`, `هالة شكر الله`, `عائشة ذو الغنى`), the other three Arabic-script names `wikidata_native_agreement.json` held on the shape, want a mechanism of their own and are not decided here.
 
