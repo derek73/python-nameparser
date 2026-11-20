@@ -19,7 +19,7 @@ subset with its own parser, or pass several packs to ``parser_for``:
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
 Vietnamese, Mongolian and Thai names, Maghrebi, Amazigh, Hebrew and
-Dutch particles, and Burmese names. Other languages are described where their mechanism is:
+Dutch particles, and Burmese and Malay names. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -1430,3 +1430,76 @@ Minjun`` keeps it as the family name. Chosen strictly, the pack also
 reads a run of initials holding ``U`` as the title (``U.S. Grant``
 gives title ``U.S.``, family ``Grant``). Keep the pack to a parser of
 its own for the Burmese names in your data.
+
+.. _malay-names:
+
+Malay names
+-----------
+
+Turn on ``locales.MS`` when your data is Malaysian names, Malay ones
+written with the titles Malaysian lists put in front of them. ``ms`` is
+the language tag of Malay (Burmese is ``my``, :ref:`burmese-names`).
+
+A Malay name has no family name either: a given name, then ``bin``
+(son of) or ``binti`` (daughter of) and the father's name, which the
+default reads as the family already. What the pack adds is the words
+written before the name. ``Encik`` (Mr.) is a title by default; the
+pack reads ``Puan`` (Mrs.), ``Cik`` (Miss), ``Ustaz`` and ``Ustazah``
+(a religious teacher) and ``Cikgu`` (teacher) as titles too:
+
+.. doctest::
+
+    >>> parse("Puan Siti binti Ahmad").given
+    'Puan'
+    >>> malay = parser_for(locales.MS)
+    >>> siti = malay.parse("Puan Siti binti Ahmad")
+    >>> siti.title, siti.given, siti.family
+    ('Puan', 'Siti', 'binti Ahmad')
+    >>> hafiz = malay.parse("USTAZ HAFIZ BIN OMAR")
+    >>> hafiz.title, hafiz.given, hafiz.family
+    ('USTAZ', 'HAFIZ', 'BIN OMAR')
+
+Each is off by default because a name elsewhere is written with it:
+``Puan`` is an Indonesian given name, so the default keeps
+``Puan Maharani``'s given name, and the pack does not. Choose the pack
+for Malaysian lists, not Indonesian ones.
+
+On Malaysia's election candidates, 3,077 distinct names written in
+capitals, the pack reads 117 differently from the default, each a title
+the default read as the given name: ``USTAZ`` 69, ``CIKGU`` 41,
+``USTAZAH`` 4. Two write ``Cikgu`` in two words (``CIK GU``), and read
+title ``CIK``, given ``GU``. Among the records ORCID, PatentsView and
+Companies House hold of Malaysians, Indonesians, Singaporeans and
+Vietnamese, each split into boxes by the person or the filer, the share
+whose boxes the parse matches does not move (measured 2026-11-19,
+:issue:`1179`).
+
+What the pack leaves as it is
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Tuan`` (Mr., Sir) stays a name word. Malaysians who file their own
+names write it first as a hereditary prefix, repeated before the
+father's name, and a Vietnamese given name is written so too:
+
+.. doctest::
+
+    >>> aminah = malay.parse("Tuan Aminah binti Tuan Yusof")
+    >>> aminah.title, aminah.given, aminah.family
+    ('', 'Tuan', 'binti Tuan Yusof')
+
+``Dato'``, ``Datuk``, ``Tan Sri`` and ``Haji`` are not titles yet
+(:issue:`1180`), and a title written after one stays a name word
+(``Dato' Ustaz Idris`` gives given ``Dato'``, middle ``Ustaz``).
+``bt``, written short for ``binti``, stays a credential (Baronet), as
+by default; :doc:`customize` shows how to remove it.
+
+Plain, not strict
+~~~~~~~~~~~~~~~~~
+
+Choose the pack plainly. Malaysian lists mix Malay, Chinese and Indian
+names with English and Arabic titles, and a strict choice of ``ms``
+reads no other language's words, ``Abdul``'s join and the English
+titles among them: it matches the boxes of 76.16% of ORCID's
+Malaysian holders, against 76.72% for the plain choice (measured
+2026-11-19).
+

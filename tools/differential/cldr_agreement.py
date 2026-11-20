@@ -164,7 +164,7 @@ LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ga": "GA", "gd": "GD", "pt": "PT_BR", "es": "ES",
                 # hi_Latn is the romanized Hindi the pack's Latin readings are for
                 "hi": "HI", "hi_Latn": "HI", "bn": "BN", "vi": "VI",
-                "mn": "MN", "ar": "AR", "he": "HE", "nl": "NL",
+                "mn": "MN", "ar": "AR", "he": "HE", "nl": "NL", "ms": "MS",
                 # CLDR's my file is in Burmese script, which the pack's
                 # Latin readings do not reach
                 "my": "MY"}

@@ -119,10 +119,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "ar", "bn", "cs", "es", "es_ar", "ga", "gd", "he", "hi", "hr", "ja", "mn",
-        "my", "ne", "nl", "pt", "pt_br", "pt_pt", "ru", "sk", "sl", "tr_az", "vi", "zh"}
+        "ms", "my", "ne", "nl", "pt", "pt_br", "pt_pt", "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, my, ne, nl, pt, pt_br, pt_pt, ru, sk, sl, tr_az, vi, zh"):
+            match="ar, bn, cs, es, es_ar, ga, gd, he, hi, hr, ja, mn, ms, my, ne, nl, pt, pt_br, pt_pt, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -425,6 +425,67 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
         assert "Sushri" in strict.parse(text).title, text
     assert plain.parse("Her Excellency Sushri Sangita Behera").title == (
         "Her Excellency Sushri")
+
+
+def test_ms_pack_contents() -> None:
+    # #1179: nothing but a choice of ms, which turns on ms.toml's
+    # `default = false` readings and changes no other word
+    from nameparser._reading_index import changed_words, selected
+    assert locales.MS == Locale(code="ms", lexicon=Lexicon.empty(),
+                                languages=frozenset({"ms"}))
+    assert not hasattr(locales.MS, "DEVIATES")
+    assert changed_words(selected(locales.MS.languages)) == {
+        "puan", "cik", "ustaz", "ustazah", "cikgu"}
+
+
+@pytest.mark.parametrize("text, title, given, family", [
+    ("Puan Siti binti Ahmad", "Puan", "Siti", "binti Ahmad"),
+    ("Puan Hajah Siti binti Ahmad", "Puan", "Hajah", "binti Ahmad"),
+    ("PUAN SITI AMINAH", "PUAN", "SITI", "AMINAH"),
+    ("Cik Nadia binti Rahman", "Cik", "Nadia", "binti Rahman"),
+    ("Ustaz Hafiz bin Omar", "Ustaz", "Hafiz", "bin Omar"),
+    ("USTAZAH ZAINAB ISMAIL", "USTAZAH", "ZAINAB", "ISMAIL"),
+    ("Cikgu Ahmad bin Ali", "Cikgu", "Ahmad", "bin Ali"),
+    ("Encik Ahmad bin Ali", "Encik", "Ahmad", "bin Ali"),   # by default too
+    ("Dr. Puan Siti Aminah", "Dr. Puan", "Siti", "Aminah"),
+    ("Ahmad, Puan Siti", "Puan", "Siti", "Ahmad"),
+])
+def test_ms_reads_the_malay_titles(text: str, title: str, given: str,
+                                   family: str) -> None:
+    name = _require_packed("ms").parse(text)
+    assert (name.title, name.given, name.family) == (title, given, family)
+    if title != "Encik":
+        assert parse(text).title != title, text   # the default does not
+
+
+@pytest.mark.parametrize("text", [
+    # tuan stays a name word under the choice: the hereditary prefix,
+    # repeated before the father's name, and a Vietnamese given name
+    # (decisions/vocabulary-collisions, the 2026-11-19 #1179 entry)
+    "Tuan Aminah binti Tuan Yusof",
+    "Ahmad bin Tuan Ismail",
+    "Tuan Nguyen",
+    "Nguyen Van Tuan",
+    # a salutation as a name word inside a name keeps its place
+    "Ali Puan",
+    # Dato' is not a title yet (#1180), so a title written after it
+    # stays a name word, as by default
+    "Dato' Ustaz Idris",
+])
+def test_ms_leaves_these_as_the_default_reads_them(text: str) -> None:
+    assert _require_packed("ms").parse(text).as_dict() == _default_parse(text)
+
+
+@pytest.mark.parametrize("text", ["Puan Maharani", "Tuan Nguyen",
+                                  "Nguyen Van Tuan", "Cik Rohaida Hak"])
+def test_ms_words_move_no_indonesian_or_vietnamese_choice(text: str) -> None:
+    # puan is an Indonesian given name: the default and a choice of id
+    # keep it, and a choice of vi reads none of ms.toml's words
+    indonesian = parser_for(Locale(code="id", lexicon=Lexicon.empty(),
+                                   languages=frozenset({"id"})))
+    assert indonesian.parse(text).as_dict() == _default_parse(text)
+    assert _require_packed("vi").parse(text).title == ""
+    assert parse(text).title == ""
 
 
 @pytest.mark.parametrize("text, middle", [
@@ -2292,6 +2353,20 @@ _ROTATORS["my"] = [
     "Sein, U Thein",                 # u after a family comma
     "Thein Sein Daw.",               # daw, dotted, ending the name (rules/H5)
     "Sir U Kyaw Win",                # u behind a title
+]
+# ms (#1179): each word the choice turns on at the head, in each case,
+# behind a listed title, after a family comma and alone after a comma
+_ROTATORS["ms"] = [
+    "Puan Siti binti Ahmad",         # puan
+    "PUAN SITI AMINAH",              # puan, in one case
+    "Ahmad, Puan Siti",              # puan after a family comma
+    "Cik Nadia binti Rahman",        # cik
+    "Dr. Cik Nadia Rahman",          # cik behind a listed title
+    "Ustaz Hafiz bin Omar",          # ustaz
+    "Hafiz Omar, Ustaz",             # ustaz alone after a comma
+    "USTAZAH ZAINAB",                # ustazah, in one case
+    "Cikgu Ahmad bin Ali",           # cikgu
+    "CIKGU ZAKRI",                   # cikgu with one name word (rules/H1)
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
