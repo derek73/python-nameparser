@@ -320,6 +320,7 @@ def _clause_take(pieces: Sequence[Sequence[int]],
                  m: int, lo: int, stop: int, role: Role,
                  words: tuple[str, str],
                  skip: Set[int] = frozenset(),
+                 lead: int | None = None,
                  ) -> MaidenIndices | None:
     """What the marker at pieces[m] takes, its own words being
     pieces[m:lo]: the maiden take's three questions (see `_maiden_take`)
@@ -328,16 +329,20 @@ def _clause_take(pieces: Sequence[Sequence[int]],
     marker), and is `len(pieces)` where none does; `role` is the role
     the clause's words take; `skip` holds the piece indices an earlier
     take in the same part has already taken, which the clause-free
-    reading of the trailing run does not count. None where the marker
-    is an ordinary word.
+    reading of the trailing run does not count. `lead`, where given,
+    stands in for the leading title run of pieces[:m]: any value below
+    m - 1 reads the word before the marker as past the run, as the run
+    does wherever an earlier take stands between them. None where the
+    marker is an ordinary word.
     """
     if site is ClauseSite.TAIL:
         return None
     if lo >= stop:
         return None
     before = m - 1
-    lead = (1 if m == 1 and is_title_piece(pieces[0], ptags[0], tokens)
-            else leading_titles(pieces[:m], ptags[:m], tokens))
+    if lead is None:
+        lead = (1 if m == 1 and is_title_piece(pieces[0], ptags[0], tokens)
+                else leading_titles(pieces[:m], ptags[:m], tokens))
     if (before < lead
             or (before > lead
                 and is_suffix_piece(pieces[before], ptags[before], tokens))
@@ -503,9 +508,15 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
             continue
         stop = next((j for j in range(m + 1, n)
                      if _ends_an_alias(pieces[j], tokens)), n)
+        # past the first take, the leading title run ends before it,
+        # so the earlier marker's index is below m - 1 and stands in
+        # for the run: asking `leading_titles` of a slice per marker
+        # made a part of n markers quadratic (the `alias_markers` row
+        # of tests/v2/test_benchmark.py)
         take = _clause_take(pieces, ptags, tokens, one_case, site,
                             ambiguities, m, m + 1, stop, Role.NICKNAME,
-                            _ALIAS_WORDS, skip)
+                            _ALIAS_WORDS, skip,
+                            markers[0] if markers else None)
         if take is None:
             m += 1
             continue
