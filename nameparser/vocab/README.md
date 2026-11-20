@@ -131,6 +131,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `bound_given` | `bound_given` | `BOUND_GIVEN_NAMES` |
 | `bound_second` | `bound_second` | `BOUND_SECONDS` |
 | `birth_marker` | `relation` | `MAIDEN_MARKERS` |
+| `alias_marker` | `relation` | `ALIAS_MARKERS` |
 | `given` | `name` | nothing |
 | `family` | `name` | nothing |
 | `familiar` | `familiar` | `FAMILIAR` |

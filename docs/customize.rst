@@ -233,8 +233,10 @@ A kind belongs to a category, which decides what the reading does:
        added in 3.2 (`Bound given names`_).
      - ``bound_second``
    * - relation
-     - The name after the word is the maiden name (``née``).
-     - ``birth_marker``
+     - The name after the word is the maiden name (``née``), or a
+       second name the person is known by, read as the nickname
+       (``@``, ``urf``; added in 3.2, `Alias markers`_).
+     - ``birth_marker``, ``alias_marker``
    * - name
      - The word is borne as a name. With no property it moves a parse
        only beside another reading of the word (`Name readings`_).
@@ -511,6 +513,34 @@ credential is reachable as its component words:
 
     >>> parse("John Smith, MD PhD").suffix
     'MD PhD'
+
+Alias markers
+^^^^^^^^^^^^^
+
+An ``alias_marker`` reading makes a word announce a second name the
+person is known by, which is read as the nickname, the marker dropped.
+``@`` written as a word of its own and ``urf`` are read so by default.
+The English ``alias`` and ``aka`` ship turned off, because each is a
+given name or a surname more often than a marker (``Aka`` is a Turkish
+and an Ivorian surname); a choice of English (``languages={"en"}``)
+turns them on with the rest of English's readings that are off by
+default. If your records write them as markers, add just them:
+
+.. doctest::
+
+    >>> fec = Parser(lexicon=Lexicon.default().add(
+    ...     "aka", "alias", kind="alias_marker"))
+    >>> boscia = fec.parse("BOSCIA, FRANK AKA FRANCIS")
+    >>> boscia.given, boscia.nickname
+    ('FRANK', 'FRANCIS')
+    >>> parse("BOSCIA, FRANK AKA FRANCIS").middle
+    'AKA FRANCIS'
+
+The alias runs to a patronymic particle (``bin``, ``a/l``), another
+marker or a comma, and otherwise to the end of the name, less any
+trailing suffixes and titles. So two words after the marker are both taken, which
+is right for a whole second name and wrong for a one-word alias before
+the family name.
 
 .. _title-detection-off:
 

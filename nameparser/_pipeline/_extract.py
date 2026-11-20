@@ -10,10 +10,13 @@ classify tags a marker inside it like any other token, and group drops
 it from a multi-token clause (#329).
 A region reaches that role two ways: the pair that matched sits in
 Policy.maiden_delimiters (M1), or the content itself opens with a
-marker word (M3), which reassigns the role after the match and so is
-the one thing here that a bucket alone does not decide.
+marker word (M3). The content's marker reassigns the role after the
+match both ways -- a maiden marker to the maiden name (M3), an alias
+marker to the nickname (N4) -- and so is the one thing here that a
+bucket alone does not decide.
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
-Lexicon.maiden_markers, Lexicon.particles (an apostrophe opening a
+Lexicon.maiden_markers, Lexicon.alias_markers (rules/N4),
+Lexicon.particles (an apostrophe opening a
 listed particle, rules/N2), Policy.strip_emoji and Policy.strip_bidi
 (through `_tokenize._ignorable`, where that particle's word ends), and
 through `_vocab.set_apart_kind` and
@@ -25,7 +28,7 @@ after_given_titles, honorific_tails (through
 honorific_words (through `_vocab.settles_a_member`, the words that
 do NOT settle a member beside them, rules/S1).
 
-Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
+Implements rules N1, N2, N4, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan
 mechanic worth stating up front: matching is one left-to-right pass,
 no nesting, and delimiter characters inside a matched region are
@@ -120,6 +123,20 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     run = maiden_marker_run(words, lexicon._sets.maiden_markers)
     return (run > 0 and len(words) > run
             and not comma_follows_marker(words[run]))
+
+
+# rules/N4: "a bracketed or quoted clause whose content opens with a
+# recognized alias marker and carries a word after it reads as the
+# nickname"
+def _alias_marked(content: str, lexicon: Lexicon) -> bool:
+    """M3's test for an alias marker, which is one word: the marker
+    opens the content, a word follows it, and no comma follows the
+    marker. Split on whitespace as `_maiden_marked` is, for the same
+    reason (this stage runs before tokenize)."""
+    words = content.split(None, 2)
+    return (len(words) > 1
+            and _normalize(words[0]) in lexicon._sets.alias_markers
+            and not comma_follows_marker(words[1]))
 
 
 # rules/N2: "a quote whose open and close are the same character
@@ -340,6 +357,12 @@ def extract_delimited(state: ParseState) -> ParseState:
                 if (role is Role.NICKNAME and _maiden_marked(
                         text[inner.start:inner.end], state.lexicon)):
                     role = Role.MAIDEN
+                elif (role is Role.MAIDEN and _alias_marked(
+                        text[inner.start:inner.end], state.lexicon)):
+                    # rules/N4: "whichever bucket the enclosing pair
+                    # sits in" -- M3's mirror for a pair configured
+                    # maiden
+                    role = Role.NICKNAME
                 extracted.append((role, inner))
             masked.append(Span(i, j + len(close)))
         # position-driven scanning makes overlapping matches

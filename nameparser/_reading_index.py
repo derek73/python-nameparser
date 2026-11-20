@@ -40,7 +40,7 @@ from typing import Any, TypedDict
 #: name is also a kind (`title = {}`: a title not yet classified), so
 #: classifying a word later moves no set. bound_given's one kind shares
 #: its category's name, and so does bound_second's, the word a bound
-#: pair writes second and joins from (rules/P12, #1072); the relation (birth_marker) and name (given,
+#: pair writes second and joins from (rules/P12, #1072); the relation (birth_marker, alias_marker) and name (given,
 #: family) categories have no generic kind. Kind
 #: names are unique across categories; a fine kind arrives with its
 #: category's classification, in a core PR, as one row here. The
@@ -88,6 +88,7 @@ CATEGORY: dict[str, str] = {
     "bound_given": "bound_given",
     "bound_second": "bound_second",
     "birth_marker": "relation",
+    "alias_marker": "relation",
     "given": "name",
     "family": "name",
     "familiar": "familiar",
@@ -647,6 +648,7 @@ class Compiled(TypedDict):
     BOUND_GIVEN_NAMES: frozenset[str]
     GIVEN_NAME_ABBREVIATIONS: frozenset[str]
     MAIDEN_MARKERS: frozenset[str]
+    ALIAS_MARKERS: frozenset[str]
     SUFFIX_WORDS: frozenset[str]
     GLUED_HONORIFICS: frozenset[str]
     SUFFIX_WORDS_AMBIGUOUS: frozenset[str]
@@ -709,6 +711,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     initial_conjunctions: set[str] = set()
     bound: set[str] = set()
     markers: set[str] = set()
+    alias_markers: set[str] = set()
     words: set[str] = set()
     glued: set[str] = set()
     ambiguous_words: set[str] = set()
@@ -828,7 +831,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
             else:
                 open_seconds.add(t)
         elif category == "relation":
-            markers.add(t)
+            # a birth marker routes what follows it to the maiden name
+            # (rules/M2), an alias marker to the nickname (rules/N4)
+            (markers if r.kind == "birth_marker" else alias_markers).add(t)
     contested = titles & given - particles
     out = Compiled(
         GIVEN_NAME_TITLES=frozenset(given_titles),
@@ -866,6 +871,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # rules/H2's shape (#789)
         GIVEN_NAME_ABBREVIATIONS=frozenset(short_names.get("given", ())),
         MAIDEN_MARKERS=frozenset(markers),
+        ALIAS_MARKERS=frozenset(alias_markers),
         SUFFIX_WORDS=frozenset(words),
         GLUED_HONORIFICS=frozenset(glued),
         SUFFIX_WORDS_AMBIGUOUS=frozenset(ambiguous_words),

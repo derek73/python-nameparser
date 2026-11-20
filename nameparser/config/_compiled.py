@@ -2632,6 +2632,11 @@ MAIDEN_MARKERS: frozenset[str] = frozenset({
     '旧姓',
 })
 
+ALIAS_MARKERS: frozenset[str] = frozenset({
+    '@',
+    'urf',
+})
+
 SUFFIX_WORDS: frozenset[str] = frozenset({
     '2',
     'dl',

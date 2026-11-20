@@ -131,6 +131,13 @@ HONORIFIC_WORD_TAG = "vocab:honorific-word"
 #: names, and dropped from the published token like the kind tags above.
 PATRONYMIC_TAG = "vocab:patronymic"
 
+#: On a word the lexicon holds as an alias marker (`@`, `urf`), which
+#: group reads to take the words after it as the nickname (rules/N4,
+#: #1164). Kept on the published token, as "vocab:maiden-marker" is: a
+#: marker the rule takes leaves no token, and one read as a word keeps
+#: its tag.
+ALIAS_MARKER_TAG = "vocab:alias-marker"
+
 #: On each word of a particle chain opening a family-first name past
 #: the reach of rules/P1's fold (#828), written by post_rules whether or
 #: not the fold cuts the chain there, so assemble can tell where a
@@ -429,7 +436,10 @@ class ParseState:
     changes the token COUNT: an unspaced CJK token, or a word glued at
     its full stop before any comma (rules/T8), splits into n+1 pieces,
     still as sub-slices of the original, and every later index in the
-    segment runs shifts by n); classify -> token tags AND
+    segment runs shifts by n; the slash after a title opening the name
+    or the given part after a family comma is cut off its word where
+    glued and its token dropped, rules/T9, every later index remapped
+    by the net count); classify -> token tags AND
     one_case; group -> structure (its head decides a comma form, #613)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,

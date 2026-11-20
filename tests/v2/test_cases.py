@@ -509,10 +509,17 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name; 2205 -> 2208 the same day, #1464's 'Dr. Al Amin
     # Abdul Rahman' reporting particle-or-given; 2208 -> 2211 the same
     # day, #1149's 'جورج و. بوش' reporting given-or-family under three
-    # orders.
-    assert claims == 2211, (
-        f"the field sweep checks {claims} claims, recorded as 2211 on "
-        f"2026-11-19")
+    # orders; 2211 -> 2214 on 2026-11-20, #1149's 'Dr/' (rules/T9's
+    # boundary, no name after the slash) reporting given-or-family under
+    # three orders; 2214 -> 2217 the same day, its review's 'Dr/ Dean
+    # Smith' reporting title-or-name under three orders; 2217 -> 2238
+    # the same day, #1164's alias rows ('Rahim Osman @ Jaki V', 'Ali @ X
+    # @ Y Z V', 'Osman, Rahim @ Jaki PhD Ali', 'Jane née Jones @ JJ V',
+    # 'Dr née Jones @ JJ V', 'Rahim Osman @ Jaki Jr. née Smith', 'Jane
+    # Smith @ JJ Jr. née') under three orders.
+    assert claims == 2238, (
+        f"the field sweep checks {claims} claims, recorded as 2238 on "
+        f"2026-11-20")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -996,8 +1003,13 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Nur Aina bt Rosli' under the three orders, its suffix-or-name
     # reports all skipped
     # 605 -> 608 the same day, from #1464's two suffix-or-name rows
-    # ('Ali Abdul Rahim VI', 'Ram Abdul Bahadur B.K.')
-    assert (checked, skipped) == (608, 497), (checked, skipped)
+    # ('Ali Abdul Rahim VI', 'Ram Abdul Bahadur B.K.'); 608 -> 611 on
+    # 2026-11-20, from #1164's alias rows' three reports ('Rahim Osman @
+    # Jaki V', 'Ali @ X @ Y Z V'); 611 -> 614 and 497 -> 500 the same
+    # day, from its fix review's three suffix-or-name rows; 500 -> 509
+    # the same day, its second fix review's two rows, their reports all
+    # skipped
+    assert (checked, skipped) == (614, 509), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

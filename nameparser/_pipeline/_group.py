@@ -67,12 +67,14 @@ with them. is_prefix_piece and is_conj_piece followed in #617, with
 the merge and rules/P3's connective joins (join_connectives), when
 the comma decision's own copy of those joins was folded into them.
 What remains defined here is group's own: the piece predicates
-_is_rootname, _is_maiden_marker_piece, _is_lone_letter and
-_is_name_word, beside the helpers of its joins and its maiden take.
+_is_rootname, _is_maiden_marker_piece, _ends_an_alias, _is_lone_letter
+and _is_name_word, beside the helpers of its joins and its marker takes
+(maiden and alias, rules/M2 and N4).
 """
 from __future__ import annotations
 
 import bisect
+import operator
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -89,7 +91,7 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, BOUND_SECOND_TAG, SPLIT_CREDENTIAL_TAG,
+    ALIAS_MARKER_TAG, AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, PATRONYMIC_TAG, BOUND_SECOND_TAG, SPLIT_CREDENTIAL_TAG,
     SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
@@ -112,15 +114,19 @@ from nameparser._types import AmbiguityKind, Role
 # merged reading
 
 Piece = list[int]
-#: What the marker pass took out of a segment: the marker's TOKEN
-#: indices (more than one where the entry is a phrase, 'z domu'), and
-#: every other piece it took with the role that piece takes -- the
-#: maiden name's Role.MAIDEN, and the trailing run's SUFFIX or TITLE
-#: (#601). `_group_segment` produces it.
+_SPAN_START = operator.attrgetter("span.start")
+_MARKER_TAGS = frozenset({ALIAS_MARKER_TAG, "vocab:maiden-marker"})
+#: What the marker passes took out of a segment: the markers' TOKEN
+#: indices (a maiden marker's more than one where the entry is a
+#: phrase, 'z domu'; every alias marker's, rules/N4), and every other
+#: piece they took with the role that piece takes -- the maiden name's
+#: Role.MAIDEN, an alias's Role.NICKNAME, and the trailing run's SUFFIX
+#: or TITLE (#601). `_apply_take` builds it, take by take.
 MaidenTake = tuple[Piece, list[tuple[Piece, Role]]]
-#: What `_maiden_take` answers with, one index space further out: PIECE
-#: indices into its own `pieces` argument. `_group_segment` resolves
-#: them to the token indices MaidenTake declares, which is the only
+#: What `_clause_take` answers with (through `_maiden_take` and
+#: `_alias_takes`), one index space further out: PIECE indices into its
+#: own `pieces` argument. `_apply_take` resolves them to the token
+#: indices MaidenTake declares, which is the only
 #: reason the two are different types rather than one name used twice.
 MaidenIndices = tuple[list[int], list[tuple[int, Role]]]
 
@@ -130,14 +136,15 @@ class ClauseSite(IntEnum):
     counts there at all and which rule reads the end of the part
     (rules/M2, #601).
 
-    A marker counts only in the part holding the family name, so
-    GIVEN_SLOT and TAIL are statements, not defaults: a marker there is
-    an ordinary word. FAMILY_PART is the part before a family comma,
-    where a marker counts but no trailing rule reads the words after
-    the clause.
+    A maiden marker counts only in the part holding the family name, so
+    GIVEN_SLOT and TAIL are statements, not defaults: a maiden marker
+    there is an ordinary word; an alias marker (rules/N4) counts in
+    GIVEN_SLOT too, and in no TAIL. FAMILY_PART is the part before a
+    family comma, where a marker counts but no trailing rule reads the
+    words after the clause.
 
-    A CLOSED set: `_maiden_take` dispatches on it exhaustively, ONCE
-    (`typing.assert_never`). group() is the one place (structure,
+    A CLOSED set: `_clause_take` dispatches on it exhaustively, ONCE
+    (`typing.assert_never`), for both markers. group() is the one place (structure,
     segment index) is mapped onto it, and tests/v2/pipeline/
     test_group.py's `test_the_site_is_pinned_to_the_structure_it_is_
     read_from` pins that mapping -- by watching the call, not by
@@ -146,7 +153,7 @@ class ClauseSite(IntEnum):
 
     FAMILY_PART = 0  # FAMILY_COMMA segment 0: a marker counts, nothing trails
     TRAILING = 1     # NO_COMMA, SUFFIX_COMMA segment 0: S2 peel + H5 chain
-    GIVEN_SLOT = 2   # FAMILY_COMMA segment 1: a marker is an ordinary word
+    GIVEN_SLOT = 2   # FAMILY_COMMA segment 1: a maiden marker is a word; an alias marker counts
     TAIL = 3         # every tail segment: a marker is an ordinary word
 
 
@@ -265,7 +272,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     an ordinary word. Piece indices into `pieces`, not the TOKEN
     indices `_group_segment` builds out of them.
 
-    Three questions, in order (rules/M2, #601):
+    Three questions, in order (rules/M2, #601), answered by
+    `_clause_take`, which rules/N4's alias take shares:
 
     * WHERE A MARKER COUNTS. Only in the part holding the family name
       -- never in the given part after a family comma, never in a tail
@@ -300,11 +308,49 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         return None
     # the marker may be a phrase, in which case it is several pieces
     lo = m + _marker_run_pieces(pieces, tokens, m)
-    if lo >= len(pieces):
+    return _clause_take(pieces, ptags, tokens, one_case, site, ambiguities,
+                        m, lo, len(pieces), Role.MAIDEN, _MAIDEN_WORDS)
+
+
+#: How a take's reports name the clause and its marker, per role
+_MAIDEN_WORDS = ("maiden name", "maiden marker")
+_ALIAS_WORDS = ("nickname", "alias marker")
+
+
+def _clause_take(pieces: Sequence[Sequence[int]],
+                 ptags: Sequence[Set[str]],
+                 tokens: Sequence[WorkToken],
+                 one_case: bool | None,
+                 site: ClauseSite,
+                 ambiguities: list[PendingAmbiguity],
+                 m: int, lo: int, stop: int, role: Role,
+                 words: tuple[str, str],
+                 skip: Set[int] = frozenset(),
+                 lead: int | None = None,
+                 ) -> MaidenIndices | None:
+    """What the marker at pieces[m] takes, its own words being
+    pieces[m:lo]: the maiden take's three questions (see `_maiden_take`)
+    asked for either marker. `stop` is where a boundary ends the clause
+    before the end of the part (rules/N4's patronymic word or another
+    marker), and is `len(pieces)` where none does; `role` is the role
+    the clause's words take; `skip` holds the piece indices an earlier
+    take in the same part has already taken, which the clause-free
+    reading of the trailing run does not count. `lead`, where given,
+    stands in for the leading title run of pieces[:m]: any value below
+    m - 1 reads the word before the marker as past the run, so the
+    suffix-word test applies to it and S2's opening-suffix allowance
+    does not, as the run does wherever an earlier take stands between
+    them. None where the
+    marker is an ordinary word.
+    """
+    if site is ClauseSite.TAIL:
+        return None
+    if lo >= stop:
         return None
     before = m - 1
-    lead = (1 if m == 1 and is_title_piece(pieces[0], ptags[0], tokens)
-            else leading_titles(pieces[:m], ptags[:m], tokens))
+    if lead is None:
+        lead = (1 if m == 1 and is_title_piece(pieces[0], ptags[0], tokens)
+                else leading_titles(pieces[:m], ptags[:m], tokens))
     if (before < lead
             or (before > lead
                 and is_suffix_piece(pieces[before], ptags[before], tokens))
@@ -313,13 +359,25 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # a suffix word straight after the marker: nothing was announced
     if is_suffix_piece(pieces[lo], ptags[lo], tokens):
         return None
-    if site is ClauseSite.FAMILY_PART:
-        end = next((j for j in range(lo + 1, len(pieces))
-                    if "suffix" in ptags[j]
-                    or is_suffix_piece(pieces[j], ptags[j], tokens)),
-                   len(pieces))
-        return list(range(m, lo)), [(j, Role.MAIDEN)
-                                    for j in range(lo, end)]
+    # no trailing rule reads the end of the clause: before a family
+    # comma, or where a boundary ends the clause inside the part. A
+    # suffix word ends it there and hands the rest back unbound. In the
+    # given part after a family comma (an alias only, rules/N4) so does
+    # any word that part's own reading may take out of the name -- a
+    # title, a member of the ambiguous class -- which is handed back for
+    # that reading to decide
+    given_slot = site is ClauseSite.GIVEN_SLOT
+    if (site is ClauseSite.FAMILY_PART or site is ClauseSite.GIVEN_SLOT
+            or stop < len(pieces)):
+        end = stop
+        for j in range(lo + 1, stop):
+            if ("suffix" in ptags[j]
+                    or is_suffix_piece(pieces[j], ptags[j], tokens)
+                    or (given_slot and _leaves_the_given_part(
+                        j, pieces, ptags, tokens))):
+                end = j
+                break
+        return list(range(m, lo)), [(j, role) for j in range(lo, end)]
     if site is not ClauseSite.TRAILING:
         assert_never(site)
     c = trailing_candidates(lo, pieces, ptags, tokens)
@@ -330,7 +388,12 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # nothing behind the clause that a trailing rule could take: the
     # view would be the head alone, and the whole rest is the clause
     if c < len(pieces):
-        left = list(range(m)) + list(range(c, len(pieces)))
+        left = (list(range(m)) if not skip
+                else [i for i in range(m) if i not in skip]) + list(
+                    range(c, len(pieces)))
+        # where the clause stood in the view: the words before it, less
+        # an earlier take's
+        vm = len(left) - (len(pieces) - c)
         view = [pieces[i] for i in left]
         vtags = [ptags[i] for i in left]
         vrest, vchained, vpeel = tail_reading(
@@ -339,21 +402,21 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         picked = vpeel.picks
         titles = set(vchained) | set(vpeel.run_titles)
         in_run = titles | set(vrest[vpeel.names:]) | {
-            q for q in range(m, len(view)) if "suffix" in vtags[q]}
+            q for q in range(vm, len(view)) if "suffix" in vtags[q]}
         e = len(view)
-        while e - 1 >= m and (e - 1) in in_run:
+        while e - 1 >= vm and (e - 1) in in_run:
             e -= 1
-        end = c + (e - m)
-        released = [(j, Role.TITLE if m + (j - c) in titles
+        end = c + (e - vm)
+        released = [(j, Role.TITLE if vm + (j - c) in titles
                      else Role.SUFFIX) for j in range(end, len(pieces))]
         # rules/S12: "where the count takes the pair, the reading is reported" --
         # the clause-free reading took it, and the take binds it here
-        for j, role in released:
-            if "split" in ptags[j] and role is Role.SUFFIX:
+        for j, given in released:
+            if "split" in ptags[j] and given is Role.SUFFIX:
                 ambiguities.append(
                     split_credential_report(
                         pieces[j], tokens,
-                        name_reading(tokens[pieces[j][0]], Role.MAIDEN)))
+                        name_reading(tokens[pieces[j][0]], role)))
         # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
         # site that takes the branch, not where an ambiguous tag sits"
         # -- the take consumed the run, so the forks the reading called
@@ -364,12 +427,12 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             if piece[0] in consumed:
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{tokens[piece[0]].text!r} after the maiden name "
+                    f"{tokens[piece[0]].text!r} after the {words[0]} "
                     f"reads as a suffix; it may be a name word",
                     tuple(piece),
-                    # a name word there ends the clause's maiden name
+                    # a name word there ends the clause
                     alternative=name_reading(tokens[piece[0]],
-                                             Role.MAIDEN)))
+                                             role)))
     # ...and the member the clause KEEPS as its last word: the reading
     # left it a name word, which is a fork too
     last = pieces[end - 1]
@@ -380,8 +443,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     if len(last) == 1 and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{word.text!r} ending the maiden name is also a "
-            f"post-nominal; the maiden marker's clause keeps it rather "
+            f"{word.text!r} ending the {words[0]} is also a "
+            f"post-nominal; the {words[1]}'s clause keeps it rather "
             f"than reading it as one", tuple(last),
             alternative=suffix_reading(word)))
     elif tuple(last) in picked:
@@ -393,8 +456,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                else "but written in Title case it leans to the name")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{word.text!r} ending the maiden name is a roman numeral, "
-            f"{why}; the maiden marker's clause keeps it rather than "
+            f"{word.text!r} ending the {words[0]} is a roman numeral, "
+            f"{why}; the {words[1]}'s clause keeps it rather than "
             f"reading it as a generational suffix", tuple(last),
             alternative=suffix_reading(word)))
     elif (released and len(last) == 1 and end - 2 >= lo
@@ -407,12 +470,181 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # numeral its released post-nominal stands behind
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{word.text!r} ending the maiden name is a roman numeral, "
-            f"but a post-nominal follows it; the maiden marker's clause "
+            f"{word.text!r} ending the {words[0]} is a roman numeral, "
+            f"but a post-nominal follows it; the {words[1]}'s clause "
             f"keeps it rather than reading it as a generational suffix",
             tuple(last), alternative=suffix_reading(word)))
     return (list(range(m, lo)),
-            [(j, Role.MAIDEN) for j in range(lo, end)] + released)
+            [(j, role) for j in range(lo, end)] + released)
+
+
+def _leaves_the_given_part(j: int,
+                           pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """Whether the given part's own reading may read pieces[j] as no
+    name word, so an alias there stops before it (rules/N4): a title
+    word opening the part's trailing run of titles and post-nominals
+    (a trailing title, H8's salutation), or a member of the ambiguous
+    credential class. A lone roman numeral is not asked: it
+    is shaped like an initial, which the alias takes, and a report
+    naming its initial reading would name a field the alias denies it
+    (`test_cases`' alternative check)."""
+    if is_title_piece(pieces[j], ptags[j], tokens):
+        # a title inside the part is the walk's name word: only one
+        # every piece after which, to the part's end, is a title or a
+        # post-nominal opens the trailing run
+        for k in range(j + 1, len(pieces)):
+            if not (is_title_piece(pieces[k], ptags[k], tokens)
+                    or "suffix" in ptags[k]
+                    or is_suffix_piece(pieces[k], ptags[k], tokens)
+                    or not tokens[pieces[k][0]].tags.isdisjoint(
+                        _AMBIGUOUS_CREDENTIAL_TAGS)):
+                return False
+        return True
+    return (len(pieces[j]) == 1 and not tokens[pieces[j][0]].tags
+            .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))
+
+
+def _ends_an_alias(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
+    """rules/N4's boundaries inside a part: a word with a patronymic
+    reading, or another marker of either kind."""
+    tags = tokens[piece[0]].tags
+    return len(piece) == 1 and (
+        PATRONYMIC_TAG in tags or ALIAS_MARKER_TAG in tags
+        or "vocab:maiden-marker" in tags)
+
+
+# rules/N4: "a marker that counts takes the words after it as the
+# nickname, and is itself dropped" (history: decisions/N4, #1164)
+def _alias_takes(pieces: Sequence[Sequence[int]],
+                 ptags: Sequence[Set[str]],
+                 tokens: Sequence[WorkToken],
+                 one_case: bool | None,
+                 site: ClauseSite,
+                 ambiguities: list[PendingAmbiguity],
+                 ) -> MaidenIndices | None:
+    """Every alias marker's take in the part, left to right, as one
+    MaidenIndices: the markers' pieces, then each alias's pieces with
+    Role.NICKNAME (and, where the last alias ends the name, the
+    trailing run's with the role the clause-free reading gives it).
+
+    One pass over the part rather than a take and a deletion per
+    marker, so a part holding many markers costs no more than a linear
+    walk. A marker counts where M2's marker does, in any part that may
+    hold a name word (the given part after a family comma included,
+    but no tail part), and its alias runs to the first boundary
+    (`_ends_an_alias`) or, with none, as far as M2's clause would.
+    """
+    n = len(pieces)
+    # a tail part is refused in `_clause_take`
+    if n < 3:
+        return None
+    markers: list[int] = []
+    taken: list[tuple[int, Role]] = []
+    skip: set[int] = set()
+    m = 1
+    while m < n - 1:
+        # inline: asked per piece of a part holding a marker
+        piece = pieces[m]
+        if len(piece) != 1 or ALIAS_MARKER_TAG not in tokens[piece[0]].tags:
+            m += 1
+            continue
+        # a marker of either kind left a word is no name word for this
+        # one to stand behind ('Osman @ @ Jaki', 'Smith née @ JJ')
+        behind = pieces[m - 1]
+        if len(behind) == 1 and not tokens[behind[0]].tags.isdisjoint(
+                _MARKER_TAGS):
+            m += 1
+            continue
+        stop = next((j for j in range(m + 1, n)
+                     if _ends_an_alias(pieces[j], tokens)), n)
+        # an alias a maiden marker ends in the part holding the family
+        # name reads its end as the name with no clause written does
+        # (rules/M2's "as if the clause were not written"): over the
+        # words before that marker, which end the name there
+        # -- where M2 takes that marker: a name word before it (no
+        # suffix word, no connective) and a word after it that is no
+        # suffix word, M2's head rule
+        end_of_name = n
+        if (stop < n and site is ClauseSite.TRAILING
+                and "vocab:maiden-marker" in tokens[pieces[stop][0]].tags):
+            after = stop + _marker_run_pieces(pieces, tokens, stop)
+            last = stop - 1
+            if (after < n
+                    and not is_suffix_piece(pieces[after], ptags[after],
+                                            tokens)
+                    and "suffix" not in ptags[last]
+                    and not is_suffix_piece(pieces[last], ptags[last],
+                                            tokens)
+                    and not is_conj_piece(pieces[last], ptags[last],
+                                          tokens)):
+                end_of_name = stop
+        # a maiden clause before the marker is no word of the name the
+        # alias's trailing run is read against, as the maiden take reads
+        # without the alias (rules/N4's Precedence); a plain loop, no
+        # frame
+        view_skip: Set[int] = skip
+        if stop == end_of_name and site is ClauseSite.TRAILING:
+            for k in range(1, m):
+                if "vocab:maiden-marker" in tokens[pieces[k][0]].tags:
+                    # only a clause M2's take would take: ask it, over
+                    # the words before the alias, its reports discarded
+                    before = _maiden_take(pieces[:m], ptags[:m], tokens,
+                                          one_case, site, [])
+                    if before is not None:
+                        view_skip = skip | set(before[0]) | {
+                            j for j, _ in before[1]}
+                    break
+        # past the first take, the leading title run ends before it,
+        # so the earlier marker's index is below m - 1 and stands in
+        # for the run: asking `leading_titles` of a slice per marker
+        # made a part of n markers quadratic (the `alias_markers` row
+        # of tests/v2/test_benchmark.py)
+        take = _clause_take(
+            pieces if end_of_name == n else pieces[:end_of_name],
+            ptags if end_of_name == n else ptags[:end_of_name],
+            tokens, one_case, site, ambiguities, m, m + 1, stop,
+            Role.NICKNAME, _ALIAS_WORDS, view_skip,
+            markers[0] if markers else None)
+        if take is None:
+            m += 1
+            continue
+        markers.extend(take[0])
+        taken.extend(take[1])
+        skip.update(take[0])
+        skip.update(j for j, _ in take[1])
+        m = stop
+    return (markers, taken) if markers else None
+
+
+def _apply_take(take: MaidenIndices, pieces: list[Piece],
+                ptags: list[set[str]],
+                taken: MaidenTake | None) -> MaidenTake:
+    """Remove a take's pieces from the segment, adding their tokens to
+    what the marker passes took so far: the markers' tokens, and each
+    other piece with its role. One rebuild rather than a deletion per
+    piece, so a part holding many markers stays linear."""
+    marker_ks, removed = take
+    if taken is None:
+        taken = ([], [])
+    # plain loops, no frame: a maiden take costs two frames more than
+    # its inline form did, this helper's and `_clause_take`'s
+    gone = set(marker_ks)
+    for k in marker_ks:
+        taken[0].extend(pieces[k])
+    for k, role in removed:
+        taken[1].append((pieces[k], role))
+        gone.add(k)
+    kept: list[Piece] = []
+    kept_tags: list[set[str]] = []
+    for k in range(len(pieces)):
+        if k not in gone:
+            kept.append(pieces[k])
+            kept_tags.append(ptags[k])
+    pieces[:] = kept
+    ptags[:] = kept_tags
+    return taken
 
 
 #: What `_between_name_words` reads instead of walking: two arrays over
@@ -907,15 +1139,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
+    # rules/N4's alias markers first: an alias stops at a maiden marker,
+    # and the maiden take is then asked of what is left, so either may
+    # follow the other (decisions/N4). A plain loop, no frame, so a name
+    # with no marker pays no call (decisions/parse-cost)
+    for piece in pieces:
+        if len(piece) == 1 and ALIAS_MARKER_TAG in tokens[piece[0]].tags:
+            take = _alias_takes(pieces, ptags, tokens, one_case, site,
+                                ambiguities)
+            if take is not None:
+                taken = _apply_take(take, pieces, ptags, None)
+            break
     take = _maiden_take(pieces, ptags, tokens, one_case,
                         site, ambiguities)
     if take is not None:
-        marker_ks, removed = take
-        taken = ([i for k in marker_ks for i in pieces[k]],
-                 [(pieces[k], role) for k, role in removed])
-        for k in reversed(marker_ks + [k for k, _ in removed]):
-            del pieces[k]
-            del ptags[k]
+        taken = _apply_take(take, pieces, ptags, taken)
 
     # S2's trailing run, read once below once the connectives have
     # joined (#614)
@@ -1733,36 +1971,43 @@ def group(state: ParseState) -> ParseState:
     # replicates, the exact ratio moves with the runner. Same idiom,
     # and the same reason, as _extract._overlaps and _tokenize's origin
     # resolution. test_benchmark's maiden_pairs shape is the guard.
-    if any(role is Role.MAIDEN for role, _ in state.extracted):
-        starts = [t.span.start for t in tokens]
-        for role, clause in state.extracted:
-            if role is not Role.MAIDEN:
-                continue
-            # first token starting at or after the clause opens; tokens
-            # are span-sorted and group never reorders or resizes them
-            first = bisect.bisect_left(starts, clause.start)
-            if (first >= len(tokens)
-                    or "vocab:maiden-marker" not in tokens[first].tags):
-                continue
-            # How many tokens the marker is: one, or the whole run of a
-            # phrase entry, as classify recorded it. Same walk the
-            # piece test above makes, in token-index space.
-            run = marker_run_length(
-                tokens[k].tags for k in range(first + 1, len(tokens)))
-            # Testing the end of the token AFTER the run proves the run
-            # AND that token are all inside: tokens do not overlap and
-            # are index-ordered, so every earlier one ends no later,
-            # and bisect already put first.start at or after
-            # clause.start. That is also the "more than the marker"
-            # test, since the tokens inside a clause are contiguous in
-            # index order -- a clause holding nothing but its marker
-            # keeps its words, exactly as a one-token "(Nee)" does.
-            # rules/M3: "a marker followed by a comma is no marker"
-            # -- asked of the same word extract's M3 test asks it of
-            if (first + run < len(tokens)
-                    and tokens[first + run].span.end <= clause.end
-                    and not comma_follows_marker(tokens[first + run].text)):
-                dropped.extend(range(first, first + run))
+    # rules/N4: "the marker dropped as M3 drops it" -- a nickname
+    # clause opening with an alias marker, by the same walk (#1164);
+    # a plain loop, no frame, for a name with no clause
+    starts: list[int] | None = None
+    for role, clause in state.extracted:
+        # extract gives a clause one of the two roles
+        tag = ("vocab:maiden-marker" if role is Role.MAIDEN
+               else ALIAS_MARKER_TAG)
+        if starts is None:
+            # map over a C getter, no frame: a name with a nickname
+            # clause pays none for this (decisions/parse-cost)
+            starts = list(map(_SPAN_START, tokens))
+        # first token starting at or after the clause opens; tokens
+        # are span-sorted and group never reorders or resizes them
+        first = bisect.bisect_left(starts, clause.start)
+        if first >= len(tokens) or tag not in tokens[first].tags:
+            continue
+        # How many tokens the marker is: one, or the whole run of a
+        # phrase entry, as classify recorded it. Same walk the
+        # piece test above makes, in token-index space. An alias
+        # marker is one word, and no token carries its continuation.
+        run = marker_run_length(
+            tokens[k].tags for k in range(first + 1, len(tokens)))
+        # Testing the end of the token AFTER the run proves the run
+        # AND that token are all inside: tokens do not overlap and
+        # are index-ordered, so every earlier one ends no later,
+        # and bisect already put first.start at or after
+        # clause.start. That is also the "more than the marker"
+        # test, since the tokens inside a clause are contiguous in
+        # index order -- a clause holding nothing but its marker
+        # keeps its words, exactly as a one-token "(Nee)" does.
+        # rules/M3: "a marker followed by a comma is no marker"
+        # -- asked of the same word extract's M3 test asks it of
+        if (first + run < len(tokens)
+                and tokens[first + run].span.end <= clause.end
+                and not comma_follows_marker(tokens[first + run].text)):
+            dropped.extend(range(first, first + run))
     return copy_with(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
         piece_tags=tuple(all_ptags), dropped=tuple(dropped),

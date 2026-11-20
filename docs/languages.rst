@@ -1075,6 +1075,20 @@ judge's title in Egypt) and ``السفيرة`` (ambassador):
     >>> parse("اللواء أحمد علي").title
     'اللواء'
 
+Egypt writes a title with a slash in place of its full stop (``د/``,
+``أ.د/``, ``اللواء/``). Opening the name, or the given part after a
+family comma, the slash reads as the full stop would, a separator in no field,
+glued to the name or spaced from it; a Latin title written so reads
+the same (``Dr/ Jane Smith``):
+
+.. doctest::
+
+    >>> arabic_slash = parse("د/ أحمد علي")
+    >>> arabic_slash.title, arabic_slash.given
+    ('د', 'أحمد')
+    >>> [parse(n).title for n in ("د/أحمد علي", "د / أحمد علي", "Prof/Jane Smith")]
+    ['د', 'د', 'Prof']
+
 Initials
 ~~~~~~~~
 
@@ -1093,9 +1107,6 @@ of its own, not as an initial:
 Where the reading stops
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- **A title written with a slash** in place of its full stop
-  (``د/ أحمد علي``, Egypt's usual writing) is still read as the given
-  name; how a slash should read is an open question (:issue:`1149`).
 - **A title behind another title** that is not listed stays a name
   word: ``الأستاذ المساعد`` (assistant professor) reads ``المساعد`` as
   the given name.
@@ -1105,10 +1116,6 @@ Where the reading stops
   initials, and ``و.`` (W.) is read as ``و``, "and", which joins the
   name: ``جورج و. بوش`` reads as one given name.
 
-.. doctest::
-
-    >>> parse("د/ أحمد علي").given
-    'د/'
 
 
 .. _maghrebi-hebrew-particles:

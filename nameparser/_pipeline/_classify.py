@@ -21,7 +21,7 @@ reads both, and `_vocab.period_joined_credential` honorific_tails;
 and the kinds
 of its suffix words and particles (Lexicon's generation_words,
 credential_words, honorific_words and patronymic_particles, internal
-sets, 3.0) and the
+sets, 3.0) and the alias markers (alias_markers, rules/N4, 3.2) and the
 suffix words whose Title case leans to the name
 (title_case_name_words, rules/S6, #1039) and the
 titles written short (title_abbreviations, #999) and the names a
@@ -60,9 +60,9 @@ spelling a title the lexicon marks `dotted`, rules/H10, #490),
 "vocab:suffix-word-ambiguous", "vocab:agnomen", "vocab:title-case-name"
 (a suffix word whose Title case leans to the name, rules/S6),
 "vocab:particle-ambiguous", "vocab:bound-given",
-"vocab:given-abbreviation", "vocab:maiden-marker" and
-"vocab:maiden-marker-cont" (a marker group drops leaves no token; one
-read as a word keeps its tag); namespaced, read by the later stages and dropped
+"vocab:given-abbreviation", "vocab:maiden-marker",
+"vocab:maiden-marker-cont" and "vocab:alias-marker" (rules/N4; a
+marker group drops leaves no token; one read as a word keeps its tag); namespaced, read by the later stages and dropped
 by assemble (`_assemble._KIND_TAGS`): "vocab:generation-word",
 "vocab:credential-word", "vocab:honorific-word" and "vocab:patronymic",
 Token.reading carrying the kind out, "vocab:trailing-title",
@@ -108,7 +108,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_STRIP, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    BOUND_PHRASE_TAG, BOUND_SECOND_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    ALIAS_MARKER_TAG, BOUND_PHRASE_TAG, BOUND_SECOND_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     CHAIN_TITLE_TAG, DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TRAILING_TITLE_TAG,
     ParseState,
@@ -317,6 +317,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # kind, read here as a suffix word's is (decisions/R9, #754)
         if n in lex._sets.patronymic_particles:
             tags.add(PATRONYMIC_TAG)
+    # rules/N4: "a recognized alias marker" -- group reads the tag
+    if n in lex._sets.alias_markers:
+        tags.add(ALIAS_MARKER_TAG)
     # rules/P8: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a
     # name that is not written wholly in one case, or — in a name
@@ -583,13 +586,18 @@ def classify(state: ParseState) -> ParseState:
     # gives each word its vocabulary whichever side of the comma it
     # stands ('(Jr, PhD)', '(MBA, PhD)'); a maiden marker's comma
     # unmakes the marker (M3), which the marker pass above has already
-    # read off the word as written (decisions/S1, #792)
+    # read off the word as written (decisions/S1, #792), and so does an
+    # alias marker's (rules/N4), which keeps its comma here to be read
+    # as no marker
     if state.extracted:
         for i, t in enumerate(state.tokens):
             if (t.role is not None and i not in marker_tags
                     and (bare := t.text.strip(COMMA_STRIP)) and bare != t.text):
+                fold = _normalize(bare)
+                if fold in state.lexicon._sets.alias_markers:
+                    continue
                 readers[i] = copy_with(t, text=bare)
-                folded[i] = _normalize(bare)
+                folded[i] = fold
     # a list, not a generator: tuple() over a generator cost a frame
     # per token for each resume
     tokens = tuple([

@@ -1509,3 +1509,53 @@ def test_a_maiden_marker_ending_the_text_leaves_no_report(text: str) -> None:
     from nameparser import parse
     assert not [a for a in parse(text).ambiguities
                 if "written short" in a.detail]
+
+
+# rules/T9 (#1149): the slash after a title opening the name is cut off
+# and its token dropped, every later index moving back by one
+_DEFAULT = Lexicon.default()
+
+
+def _through_script_segment(text: str) -> ParseState:
+    """The stages up to and including script_segment, extract's
+    included, which `_run` leaves out."""
+    state = ParseState(original=text, lexicon=_DEFAULT, policy=Policy())
+    for stage in STAGES[:STAGES.index(script_segment) + 1]:
+        state = stage(state)
+    return state
+
+
+@pytest.mark.parametrize("text", [
+    "Dr/ Jane Smith", "Dr/Jane Smith", "Dr / Jane Smith", "Dr /Jane Smith",
+])
+def test_a_title_slash_leaves_no_slash_token_and_spans_index_the_original(
+        text: str) -> None:
+    state = _run(text, Policy(), _DEFAULT)
+    assert _texts(state) == ["Dr", "Jane", "Smith"]
+    assert all(text[t.span.start:t.span.end] == t.text for t in state.tokens)
+    assert state.segments == ((0, 1, 2),)
+
+
+def test_a_dropped_slash_moves_the_later_report_indices_back() -> None:
+    # tokenize resolves the unbalanced bracket's report to the token
+    # holding it, the fourth; with the slash gone it is the fourth again
+    state = _through_script_segment("Dr / Jane Smith (")
+    assert _texts(state) == ["Dr", "Jane", "Smith", "("]
+    (report,) = state.ambiguities
+    assert report.indices == (3,)
+
+
+def test_a_dropped_slash_leaves_a_nickname_out_of_the_segment() -> None:
+    state = _through_script_segment('Dr / "Bob" Jane Smith')
+    assert _texts(state) == ["Dr", "Bob", "Jane", "Smith"]
+    assert state.segments == ((0, 2, 3),)
+
+
+def test_a_family_comma_reads_only_the_given_part() -> None:
+    state = _run("Dr/ Smith, Dr/ Jane", Policy(), _DEFAULT)
+    assert _texts(state) == ["Dr/", "Smith", "Dr", "Jane"]
+
+
+def test_a_suffix_comma_reads_the_head() -> None:
+    state = _run("Dr/ Jane Smith, Jr.", Policy(), _DEFAULT)
+    assert _texts(state) == ["Dr", "Jane", "Smith", "Jr."]

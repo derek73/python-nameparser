@@ -369,6 +369,11 @@ _SHAPES = {
     "hyphen_chain": "MD-",          # vocab: the same cut, hyphens only
     "member_chain": "MA/PhD/",      # vocab: the cut's member arm (#1138)
     "bracket_joined_members": "(MA/PhD) ",  # post_rules: joined members
+    # group: N4's alias takes, one pass and one rebuild per part, each
+    # marker's alias ended by the next marker (#1164); asking the
+    # leading title run of a slice per marker measured 7.1x at base 800
+    # (2026-11-20), the first build's quadratic
+    "alias_markers": "a @ ",
 }
 
 _BASE = 800
