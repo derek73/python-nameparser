@@ -744,8 +744,8 @@ def gap_specs(tag: str) -> tuple[str, str]:
     it stacked with the bare tag (a strict call needs a language), or
     else the bare tag. A file holding no reading is refused as a plain
     choice (it would change nothing), so its plain side is the default,
-    unless its language's file holds readings (pt-PT.toml, a [rules]
-    table alone), which a plain choice of the tag selects."""
+    unless its language's file holds readings (a region's file holding a
+    [rules] table alone), which a plain choice of the tag selects."""
     from nameparser import _reading_index, locales
     packs = [locales.get(c) for c in sorted(locales.available())]
     items = [p.code.upper() for p in packs if tag in p.languages]

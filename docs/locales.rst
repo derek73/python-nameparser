@@ -675,6 +675,19 @@ does by default (see :ref:`two-given-names`):
     >>> piedade.middle, piedade.family
     ('da Piedade', 'Costa')
 
+``pt_pt`` also reads three such phrases that Portugal's names support
+and Brazil's do not, ``do Rosário``, ``de Jesus`` and ``do Carmo``:
+in Brazil ``de Jesus`` behind a first name is mostly a surname, so
+``pt`` and ``pt_br`` read each as the start of the family:
+
+.. doctest::
+
+    >>> parser_for(locales.PT_BR).parse("Maria do Rosário Pinto").family
+    'do Rosário Pinto'
+    >>> rosario = parser_for(locales.PT_PT).parse("Maria do Rosário Pinto")
+    >>> rosario.middle, rosario.family
+    ('do Rosário', 'Pinto')
+
 ``pt_br`` also turns on ``SB``. Brazilian filings abbreviate the
 agnomen *Sobrinho* (nephew) to ``SB``, which is also the S.B. degree,
 so the default does not read it. Under the pack it is a suffix only

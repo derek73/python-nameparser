@@ -2,8 +2,24 @@ schema = 1
 
 # European Portuguese: locales.PT_PT reads its names with two family names
 # (rules/O6), its given-name list keeping a given name out of the family.
-# The file holds no word: a reading Portugal writes and Brazil does not
-# has not been needed, and pt.toml holds the language's (decisions/O6, the
-# 2026-11-19 entry)
+# The words are the readings Portugal writes and Brazil does not, each
+# `default = false`, so only a choice of pt-PT turns it on; pt.toml holds
+# the language's (decisions/O6 and decisions/P10, the 2026-11-19 entries)
 [rules]
 two_family_names = true
+
+[[word]]
+text = "carmo"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Carmo), on for Portugal alone: marked as P10's words are, under locales.PT_PT it moves 11 names of Portugal's ORCID holders, 9 to the boxes they filled and 2 away from them, 82%, past the 75% a reading needs; under locales.PT_BR on Brazil's it moves 6 to the boxes and 2 away, too few to judge (decisions/P10) (2026-11-19, #1189)" }
+
+[[word]]
+text = "jesus"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria de Jesus), on for Portugal alone, behind a first name a given name there and mostly a surname in Brazil: marked as P10's words are, under locales.PT_PT it moves 17 names of Portugal's ORCID holders, 16 to the boxes they filled and 1 away from them, 94%, past the 75% a reading needs; under locales.PT_BR on Brazil's it moves 9 to the boxes and 21 away (decisions/P10) (2026-11-19, #1189)" }
+
+[[word]]
+text = "rosario"
+given = { default = false, after_particle = true, note = "the spelling of rosário without its accent, scored with it (Maria do Rosario): es.toml reads it so already in every choice but a strict one, so this reading keeps it under a strict Portuguese choice of Portugal, which compiles no es.toml (decisions/P10) (2026-11-19, #1189)" }
+
+[[word]]
+text = "rosário"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Rosário), on for Portugal alone: marked as P10's words are, under locales.PT_PT it moves 16 names of Portugal's ORCID holders, 15 to the boxes they filled and 1 away from them, 94%, past the 75% a reading needs; under locales.PT_BR on Brazil's it moves none (decisions/P10) (2026-11-19, #1189)" }

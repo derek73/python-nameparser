@@ -3084,9 +3084,11 @@
 {"name": "Maria da Silva Santos", "given": "Maria", "family": "da Silva Santos", "initials": "M. S. S."}
 {"name": "Maria das Graças Silva", "given": "Maria", "middle": "das Graças", "family": "Silva", "initials": "M. G. S."}
 {"name": "Maria de Fatima Costa", "given": "Maria", "middle": "de Fatima", "family": "Costa", "initials": "M. F. C."}
+{"name": "Maria de Jesus Pinto", "given": "Maria", "family": "de Jesus Pinto", "initials": "M. J. P."}
 {"name": "Maria de Lurdes Costa", "given": "Maria", "middle": "de Lurdes", "family": "Costa", "initials": "M. L. C."}
 {"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
+{"name": "Maria do Rosário Pinto", "given": "Maria", "family": "do Rosário Pinto", "initials": "M. R. P."}
 {"name": "Maria do Socorro Silva", "given": "Maria", "middle": "do Socorro", "family": "Silva", "initials": "M. S. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
 {"name": "Mariam binti MD Salleh", "given": "Mariam", "family": "binti", "suffix": "MD Salleh", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "M. b.", "capitalized_force": "Mariam Binti MD Salleh"}
@@ -4332,6 +4334,7 @@
 {"name": "Teitur Þórðarson", "given": "Teitur", "family": "Þórðarson", "initials": "T. Þ."}
 {"name": "Teodoro de Faria", "given": "Teodoro", "family": "de Faria", "initials": "T. F."}
 {"name": "Teresa Mañé i Miravet", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
+{"name": "Teresa de Jesus Sousa Pinto", "given": "Teresa", "family": "de Jesus Sousa Pinto", "initials": "T. J. S. P."}
 {"name": "Tewolde Berhan Gebre Egziabher", "given": "Tewolde", "middle": "Berhan Gebre", "family": "Egziabher", "initials": "T. B. G. E."}
 {"name": "Teógenes Díaz-Corralejo Fernández", "given": "Teógenes", "middle": "Díaz-Corralejo", "family": "Fernández", "initials": "T. D. F."}
 {"name": "Tham Jun", "given": "Tham", "family": "Jun", "initials": "T. J."}

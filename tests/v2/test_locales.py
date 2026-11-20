@@ -2503,7 +2503,15 @@ _ROTATORS["pt_br"] = [
     "ANA SILVA E SOUZA",             # e, pt's connective
     *_PT_TWO_FAMILY_NAMES,
 ]
-_ROTATORS["pt_pt"] = [*_ROTATORS["pt"], *_PT_TWO_FAMILY_NAMES]
+_ROTATORS["pt_pt"] = [
+    *_ROTATORS["pt"],
+    # Portugal's own given names P10 completes, which pt_br's and pt's
+    # choices leave to the family (#1189)
+    "Maria do Carmo Costa",          # carmo
+    "Maria de Jesus Costa",          # jesus
+    "Maria do Rosário Costa",        # rosário
+    *_PT_TWO_FAMILY_NAMES,
+]
 
 
 # #1115 turned these titles on by default, so no choice moves them: the
@@ -3719,10 +3727,13 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
                                  languages=frozenset({tag})))
         assert not bare.policy.two_family_names, tag
     assert not parser_for(locales.PT).policy.two_family_names
-    # pt-PT.toml holds no word, so pt_pt's choice selects pt's file alone
-    assert selected(locales.PT_PT.languages) == {"pt"}
+    # pt-PT.toml holds Portugal's own readings (#1189), which pt_pt's
+    # choice turns on beside pt's and pt_br's does not
+    assert selected(locales.PT_PT.languages) == {"pt-PT", "pt"}
     assert (changed_words(selected(locales.PT_PT.languages))
-            == changed_words(selected(locales.PT.languages)))
+            - changed_words(selected(locales.PT.languages))
+            == {"carmo", "jesus", "rosário"})
+    assert "pt-PT" not in selected(locales.PT_BR.languages)
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
     assert pt.parse("Rui Sousa Pinto").family == "Pinto"
     assert pt.parse("Pedro Sousa Alves Filho").family == "Alves"

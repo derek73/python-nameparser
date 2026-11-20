@@ -18071,6 +18071,34 @@ CASES: tuple[Case, ...] = (
                "first as a middle name, a gap #1453 leaves for #1482; "
                "read middle 'Mirandela Gomes', family 'Paz' 3.0.0 "
                "through 3.1"),
+    Case("portuguese_rosario_given_name_under_pt_pt", "Maria do Rosário Pinto",
+         {"given": "Maria", "middle": "do Rosário", "family": "Pinto"},
+         locale="pt_pt", classification="feat(#1189)",
+         notes="P10: pt-PT.toml's rosário, on for Portugal's choice alone; "
+               "locales.PT_PT is new in 3.2"),
+    Case("portuguese_jesus_given_name_under_pt_pt", "Teresa de Jesus Sousa Pinto",
+         {"given": "Teresa", "middle": "de Jesus", "family": "Sousa Pinto"},
+         locale="pt_pt", classification="feat(#1189)",
+         notes="P10: pt-PT.toml's jesus, then O6 reads the two family names "
+               "after it"),
+    Case("portuguese_carmo_given_name_under_pt_pt", "MARIA DO CARMO PINTO",
+         {"given": "MARIA", "middle": "DO CARMO", "family": "PINTO"},
+         locale="pt_pt", classification="feat(#1189)",
+         notes="P10: pt-PT.toml's carmo, written in capitals"),
+    Case("portuguese_jesus_with_no_name_after_under_pt_pt", "Maria de Jesus",
+         {"given": "Maria", "family": "de Jesus"},
+         locale="pt_pt", classification="parity",
+         notes="P10 completes a given name only with a name word after it, "
+               "so 'de Jesus' ending the name is the family (#1189)"),
+    Case("portuguese_jesus_family_under_pt_br", "Maria de Jesus Pinto",
+         {"given": "Maria", "family": "de Jesus Pinto"},
+         locale="pt_br", classification="parity",
+         notes="pt-PT.toml's reading is off for Brazil's choice, where "
+               "'de Jesus' behind a first name is mostly a surname (#1189)"),
+    Case("portuguese_rosario_family_under_pt", "Maria do Rosário Pinto",
+         {"given": "Maria", "family": "do Rosário Pinto"},
+         locale="pt", classification="parity",
+         notes="pt-PT.toml's reading is off for the language's pack (#1189)"),
     Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
          {"given": "Marquis", "family": "Johnson"},
          classification="fix(#913)",

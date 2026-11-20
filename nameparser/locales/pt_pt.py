@@ -1,10 +1,13 @@
 """The European Portuguese locale pack: locales.PT for names from
 Portugal, with two family names. It chooses ``pt-PT``, which selects
-its ancestor pt.toml (nameparser/vocab/pt-PT.toml holds only the
-[rules] table ``rules_patch`` reads, and no reading for a choice to
-select), so it reads every word locales.PT reads
-(``do`` a particle, ``da Piedade`` the second half of a compound given
-name); it reads two family names (``Policy.two_family_names``,
+nameparser/vocab/pt-PT.toml and its ancestor pt.toml, so it reads every
+word locales.PT reads (``do`` a particle, ``da Piedade`` the second half
+of a compound given name) and Portugal's own: pt-PT.toml's
+``default = false`` readings, the second halves of compound given names
+written behind a particle that Portugal's names support and Brazil's do
+not (``Maria do Rosário Pinto`` gives middle ``do Rosário``, as ``de
+Jesus`` and ``do Carmo`` do; rules/P10, decisions/P10 2026-11-19,
+#1189); it reads two family names (``Policy.two_family_names``,
 rules/O6), its policy patch compiled from pt-PT.toml's [rules] table
 by tools/vocab/build.py: ``Rui Sousa Pinto`` gives family ``Sousa
 Pinto``, where locales.PT gives middle ``Sousa``; and it carries
