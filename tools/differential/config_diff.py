@@ -93,7 +93,7 @@ in every column, and a record either column reads with a listed title
 typed into the given-names box (local_agreement.titled, #1501) is
 dropped from both: in PSC a title in the forename box with the title
 box empty, and in ORCID and PatentsView the few the title-word filter
-above does not drop (`Dr/ Anna`, a title the default does not list).
+above does not drop (`Dr/ Anna`, whose `Dr/` its split does not match).
 Each group is its first --cap records in raw.jsonl's
 order.
 
