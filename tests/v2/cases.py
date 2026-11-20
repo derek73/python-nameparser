@@ -1116,11 +1116,14 @@ CASES: tuple[Case, ...] = (
          {"title": "U", "given": "Thein", "family": "Sein"},
          locale="my", classification="feat(#1231)",
          notes="1.4.0 through 3.1.0 read given 'U', middle 'Thein'"),
-    Case("the_burmese_pack_reads_daw_as_the_title_and_san_as_a_name_word",
+    Case("the_burmese_pack_reads_daw_as_the_title",
          "Daw Aung San Suu Kyi",
-         {"title": "Daw", "given": "Aung", "middle": "San Suu", "family": "Kyi"},
+         {"title": "Daw", "given": "Aung", "family": "San Suu Kyi"},
          locale="my", classification="feat(#1231)",
-         notes="1.4.0 through 3.1.0 read given 'Daw', family 'San Suu Kyi'"),
+         notes="san keeps its particle reading under the plain choice, as "
+               "by default; the strict choice reads it as a name word, "
+               "family 'Kyi' (#1483); 1.4.0 through 3.1.0 read given "
+               "'Daw', family 'San Suu Kyi'"),
     Case("the_burmese_pack_reads_the_honorific_after_a_family_comma",
          "Sein, U Thein",
          {"title": "U", "given": "Thein", "family": "Sein"},
@@ -1132,19 +1135,6 @@ CASES: tuple[Case, ...] = (
          locale="my", classification="feat(#1231)",
          notes="a title and one name word, the word the family (rules/H1); "
                "1.4.0 through 3.1.0 read given 'U', family 'Thant'"),
-    Case("the_burmese_pack_keeps_a_chin_van_a_name_word",
-         "Henry Van Thio",
-         {"given": "Henry", "middle": "Van", "family": "Thio"},
-         locale="my", classification="feat(#1231)",
-         notes="the fragment takes out van's particle reading; 1.4.0 through "
-               "3.1.0 read family 'Van Thio'"),
-    Case("the_burmese_pack_keeps_san_a_name_word_after_a_family_comma",
-         "AUNG, Saw San",
-         {"given": "Saw", "middle": "San", "family": "AUNG"},
-         locale="my", classification="parity",
-         notes="rules/P6's trailing attachment has no particle to attach; "
-               "1.4.0 and 2.0.0 read the same fields, 2.4.0 through 3.1.0 "
-               "family 'San AUNG'"),
     Case("the_burmese_pack_reads_u_with_its_full_stop_as_the_title",
          "U. Thein Sein",
          {"title": "U.", "given": "Thein", "family": "Sein"},
@@ -1160,12 +1150,6 @@ CASES: tuple[Case, ...] = (
                "(decisions/vocabulary-collisions, the #1231 entry): the "
                "reason not to apply the pack to a mixed list; 1.4.0 through "
                "3.1.0 read given 'U.', middle 'S.'"),
-    Case("the_burmese_pack_costs_a_dutch_particle",
-         "Jan van Dijk",
-         {"given": "Jan", "middle": "van", "family": "Dijk"},
-         locale="my", classification="feat(#1231)",
-         notes="the cost of applying the pack to names that are not Burmese "
-               "(docs/languages.rst); the default reads family 'van Dijk'"),
     # #1257: the Maghrebi and Hebrew particles, each row checked against
     # the 1.4.0 wheel and master 161ebd28 on 2026-11-12
     Case("an_amazigh_ait_starts_the_family_name",

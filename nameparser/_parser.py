@@ -320,8 +320,11 @@ class Parser:
         name of fewer than two words once those are read past casts
         none, and so does a name with a comma, unless only
         post-nominals follow the comma. A patronymic votes only where
-        the patronymic rule reads one, and a trailing initial
-        (``Smith J.``) only where at least three names, and 60% of the
+        the patronymic rule reads one, and an East Slavic one votes on
+        the order too, by where it stands: last for family-first
+        (``Sidorov Ivan Petrovich``), in the middle for given-first
+        (``Ivan Petrovich Sidorov``). A trailing initial
+        (``Smith J.``) votes only where at least three names, and 60% of the
         group's names holding a name word, end in initials no other
         signal in the same name contradicts. A capitals word of two
         or three letters ending a name in mixed case (``Armitage JO``),
@@ -347,11 +350,12 @@ class Parser:
         note says how many.
         A group decided East Slavic gets the rule and reads
         given-first, the order the rule reorders each name under,
-        unless its names' own votes decide family-first, which the rule
-        never overrides: there a ``FAMILY_FIRST_GIVEN_LAST`` parser gets
-        ``FAMILY_FIRST``, under which the patronymic is not read as the
-        given name (``Popov Ivan Ivanovich``). One case keeps a
-        declared order instead: under a ``FAMILY_FIRST`` parser whose names' votes do not decide
+        unless its names' own votes decide family-first, as a list of
+        patronymics written last does, which the rule never overrides: there a
+        ``FAMILY_FIRST_GIVEN_LAST`` parser gets ``FAMILY_FIRST``, under
+        which the patronymic is not read as the given name (``Popov Ivan
+        Ivanovich``). One case keeps a declared order instead: under a
+        ``FAMILY_FIRST`` parser whose names' votes do not decide
         given-first, where more of the names carrying the patronymic
         write it last (``Sidorov Ivan Petrovich``) than in the middle
         (``Ivan Petrovich Sidorov``), the group keeps that order and
@@ -394,8 +398,8 @@ class Parser:
         2026-11-14, 2026-11-15, 2026-11-16 and 2026-11-19, with
         tools/differential/suggest_measure.py on groups drawn from real
         names written in a known order, 300 groups a size
-        (decisions/group-suggestion's 2026-11-19 #1364 entry holds
-        the sizes): a group written in this parser's own order kept it
+        (decisions/group-suggestion's 2026-11-19 #1364 and #1447
+        entries hold the sizes): a group written in this parser's own order kept it
         in at least 97% of groups at every size from 2 to 2,000 names,
         under either base order, save three lists. ORCID holders who
         typed their given name in capitals (``ANNA Smith``), which the
@@ -414,12 +418,13 @@ class Parser:
         Moving the base takes more names, and
         how many depends on what the names carry: groups of Chinese,
         Taiwanese, Korean, Czech, Polish or Italian names (the romanized
-        surnames and the common given names) were read right in 95% of
-        groups from 5 names; German, Dutch, Spanish, British, French,
+        surnames and the common given names) and of Russian ones (where
+        their patronymics stand) were read right in 95% of groups from 5
+        names; German, Dutch, Spanish, British, French,
         Romanian, Vietnamese and Japanese from 10; US, Turkish,
-        Nigerian and Brazilian from 20; Russian and Indian from 50;
-        PatentsView's Philippine inventors from 100; and PSC's
-        Bangladeshi filers from 200. A group whose votes fall short of
+        Nigerian and Brazilian from 20; Indian from 50; and PSC's
+        Bangladeshi filers from 200 (PatentsView's Philippine inventors
+        from 20, through the Russian names among them). A group whose votes fall short of
         the thresholds keeps the base rather than guess, so a smaller
         group moves it in fewer of the draws. ``capitals_as_family``, measured 2026-11-12
         (decisions/group-suggestion's CAPITALS entry): ORCID holders who

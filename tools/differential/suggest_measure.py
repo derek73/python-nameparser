@@ -179,10 +179,14 @@ POOL_CAP = 20_000
 #: The names each population's signal counts read.
 SIGNAL_NAMES = 3_000
 PV_COUNTRIES = ("US", "DE", "FR", "CN", "JP", "KR", "IN", "IT", "ES", "RU",
-                "BR", "TW", "NL", "MX", "AR", "CO", "PH", "PT", "TR")
+                "BR", "TW", "NL", "MX", "AR", "CO", "PH", "PT", "TR",
+                # IL and the last four nationalities: #1447's check of a
+                # surname ending as a patronymic does (`-ovich`)
+                "IL")
 PSC_NATIONALITIES = ("British", "Romanian", "Indian", "Chinese", "Polish",
                      "Nigerian", "Turkish", "Spanish", "Filipino",
-                     "Portuguese", "Bangladeshi", "Pakistani", "Brazilian")
+                     "Portuguese", "Bangladeshi", "Pakistani", "Brazilian",
+                     "Israeli", "Serbian", "Croatian", "Belarusian")
 #: `pv-surname-given`: the inventors of PV_COUNTRIES less these whose
 #: given box opens with a word PatentsView's own boxes write in the
 #: family box at least as often as in the given box, by at least

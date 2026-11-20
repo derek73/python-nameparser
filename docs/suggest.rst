@@ -317,6 +317,10 @@ Each name votes on its order from the evidence it carries:
   surname vote.
 - **A common given name that is rarely a surname** (``Emily``, not
   ``Taylor``) as the first or last word.
+- **Where a Russian-style patronymic stands** in a name of three words
+  (:ref:`suggest-patronymics`): last (``Sidorov Ivan Petrovich``), the
+  family name is written first; in the middle (``Ivan Petrovich
+  Sidorov``), it is written last.
 
 Each is read past the titles and post-nominals your parser's vocabulary
 lists (``Dr.``, ``PhD``, ``Jr.``). A name with a comma states its own
@@ -348,8 +352,9 @@ carry one rule's patronymic and they are more than four in five of the
 names that cast any vote, on the order or on a patronymic.
 
 Under the default parser a list written family name first reads its
-patronymic as the family name; with the rule, each name is put back in
-order and its patronymic set apart:
+patronymic as the family name. Where the patronymics stand says how
+the list is written, so the suggestion reads it family first, with the
+rule setting each patronymic apart:
 
 .. doctest::
 
@@ -360,7 +365,7 @@ order and its patronymic set apart:
     'Petrovich'
     >>> slavic = Parser().suggest(registry)
     >>> slavic.patch
-    PolicyPatch(patronymic_rules=frozenset({<PatronymicRule.EAST_SLAVIC: 'east-slavic'>}))
+    PolicyPatch(name_order=FAMILY_FIRST, patronymic_rules=frozenset({<PatronymicRule.EAST_SLAVIC: 'east-slavic'>}))
     >>> sidorov = slavic.parser.parse("Sidorov Ivan Petrovich")
     >>> sidorov.given, sidorov.family, sidorov.patronymic
     ('Ivan', 'Sidorov', 'Petrovich')
@@ -369,11 +374,11 @@ The order that comes with the rule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A Turkic rule is suggested alone: it reads a name written either way
-round, so the order is left to the names' own votes. The East Slavic
-rule reorders a name only under a given-first order, so what is
-suggested with it depends on the base parser's order and on where the
-list writes the patronymic, last (``Sidorov Ivan Petrovich``) or in
-the middle (``Ivan Petrovich Sidorov``):
+round, so the order is left to the names' own votes. Where an East
+Slavic patronymic stands is itself a vote on the order, last
+(``Sidorov Ivan Petrovich``) for family first and in the middle
+(``Ivan Petrovich Sidorov``) for given first, so a list that writes its
+patronymics one way gets that order with the rule:
 
 .. list-table::
    :header-rows: 1
@@ -383,17 +388,29 @@ the middle (``Ivan Petrovich Sidorov``):
      - The list writes the patronymic
      - Order suggested with the rule
    * - ``GIVEN_FIRST``
-     - last or in the middle
+     - last
+     - ``FAMILY_FIRST``
+   * - ``GIVEN_FIRST``
+     - in the middle
      - none: the base's stays
    * - ``FAMILY_FIRST``
-     - last in more names than in the middle
+     - last
      - none: the base's stays
    * - ``FAMILY_FIRST``
-     - in the middle in as many names, or more
+     - in the middle
      - ``GIVEN_FIRST``
    * - ``FAMILY_FIRST_GIVEN_LAST``
-     - last or in the middle
+     - last
+     - ``FAMILY_FIRST``, since its own order would read the
+       patronymic as the given name
+   * - ``FAMILY_FIRST_GIVEN_LAST``
+     - in the middle
      - ``GIVEN_FIRST``
+
+The rule reorders a name only under a given-first order, and reads a
+name written family first under a family-first one, where it reorders
+none and fills the ``patronymic`` view. A name of two words in the same
+list (``Sidorov Ivan``) is read in the order suggested.
 
 .. doctest::
 
@@ -406,21 +423,13 @@ the middle (``Ivan Petrovich Sidorov``):
     >>> family_first.suggest(spoken).patch
     PolicyPatch(name_order=GIVEN_FIRST, patronymic_rules=frozenset({<PatronymicRule.EAST_SLAVIC: 'east-slavic'>}))
 
-The names' own order votes come before the table in two cases:
-
-- **They decide a family-first order.** The rule never overrides it:
-  the list gets the rule with that order, under which the rule
-  reorders no name. A ``FAMILY_FIRST_GIVEN_LAST`` base gets
-  ``FAMILY_FIRST`` there, since its own order would read the
-  patronymic as the given name (``Popov Ivan Ivanovich``).
-- **They decide given-first under a** ``FAMILY_FIRST`` **base.** The
-  second row does not apply, and the list gets ``GIVEN_FIRST`` with
-  the rule.
-
-Where a ``FAMILY_FIRST`` base keeps its order, the rule reorders no
-name there and fills the ``patronymic`` view. The names written the
-other way, patronymic in the middle, get no given-first order, and the
-note under ``patronymic_rules`` counts them.
+Where the names' votes decide no order (a list writing as many
+patronymics one way as the other, or too few one way, or other
+evidence contradicting them), the rule brings the given-first order it reorders each name
+under, save under a ``FAMILY_FIRST`` base whose list writes the
+patronymic last in more names than in the middle, which keeps its
+order; the note under ``patronymic_rules`` counts the names written the
+other way.
 
 What counts for and against
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -445,13 +454,14 @@ What the report shows
 ~~~~~~~~~~~~~~~~~~~~~
 
 The ``patronymic_rules`` line has a row for each rule the names voted
-for, and the ``name_order`` line a note where the rule decided the
-order:
+for, the ``name_order`` line a ``patronymic-position`` row for where
+the patronymics stand, and a note on how the order and the rule were
+decided together:
 
 .. doctest::
 
     >>> [e.note for e in slavic.evidence if e.setting == "name_order"]
-    ['the East Slavic rule reorders each name; it needs a given-first order']
+    ["the East Slavic rule is decided too, but the names' order votes decide a family-first order, under which the rule reorders no name"]
 
 .. _suggest-initials:
 
@@ -664,9 +674,9 @@ and how it varies, and will differ for every dataset.
   of groups from 2 to 2,000 names, and 97% for nearly every kind, save
   the three kinds of list below.
 - **A list written the other way round** takes more names to move the
-  base, from 5 for Chinese, Taiwanese, Korean, Czech, Polish and
-  Italian names to 50 for Russian and Indian ones and 200 for
-  Bangladeshi ones. A group whose votes fall short of the thresholds
+  base, from 5 for Chinese, Taiwanese, Korean, Czech, Polish, Italian
+  and Russian names to 50 for Indian ones and 200 for Bangladeshi
+  ones. A group whose votes fall short of the thresholds
   keeps the base rather than guess (:ref:`suggest-deciding`).
 
 Three kinds of list keep their order less often:
