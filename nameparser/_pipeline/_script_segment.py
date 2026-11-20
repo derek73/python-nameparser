@@ -5,7 +5,9 @@ one_case where segment recorded it, and comma_offsets, for the
 own-words span `_one_case` asks the fact over where segment did not
 (#613; the answer is not recorded, classify recording its own), and
 original, for the peel's ASCII bail.
-Produces: tokens, by four independent splits into sub-slices -- a
+Produces: tokens, first with the slash after a listed title opening
+the name or the given part after a family comma cut off and the slash's token
+dropped (rules/T9), then by four independent splits into sub-slices -- a
 word of the part before any comma glued to the next at its full stop
 divided there (rules/T8), with a SUFFIX_OR_NAME report where an
 initial is cut from the word ending the name, a listed title peeled
@@ -16,11 +18,14 @@ non-post-nominal token, in whichever of the name's runs that falls
 first activated-script token of the name segment split into n+1
 (into its two surnames and, undivided, the given name behind them,
 where a Han surname pair stands there, the second surname carrying
-SURNAME_PAIR_TAG for post_rules, rules/W5) -- segments (index runs remapped past the insertions), ambiguities
+SURNAME_PAIR_TAG for post_rules, rules/W5) -- segments (index runs remapped past the insertions and T9's removal), ambiguities
 (indices likewise remapped, plus a SEGMENTATION report when more than
 one split was vocabulary-supported, or when a segmenter's answer
 scored under the confidence floor).
-Reads: the vocabulary `_vocab.glued_cuts` reads for T8 (Lexicon.titles,
+Reads: Lexicon.titles, suffix_acronyms, suffix_words and
+saint_particles (T9's title before the slash) and titles,
+title_modifiers, suffix_words and suffix_acronyms with their ambiguous
+sets (T9's name after it), the vocabulary `_vocab.glued_cuts` reads for T8 (Lexicon.titles,
 titles_ambiguous, title_modifiers, title_styles, saint_particles,
 given_name_abbreviations, suffix_acronyms and its ambiguous set,
 suffix_words and its ambiguous set, credential_words, and
@@ -62,16 +67,16 @@ delimiter-core token as a suffix and splits a token on a core, the
 split being the half that flips "田中さん, Jr./V." under {"/"} and the
 bare core the half that flips "田中さん, /").
 
-Implements rules T8 (a word glued at its full stop), W1 (the
+Implements rules T9 (a slash for a title's full stop), T8 (a word glued at its full stop), W1 (the
 vocabulary/segmenter division), W2 (the glued-honorific peel), W6 (the
 glued-title peel), W3 (the
 writer's divisions are respected) and W5's division (a Han surname
 pair) of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
 spaced-honorific trade) is decisions/W1, #W2 and #W3, and T8's
-decisions/T8. Every split makes sub-slices of one token, rewriting nothing -- spans still index
-the original exactly, so the anti-#100 invariant holds by
-construction. The script splits also match on the token's CORE, its
+decisions/T8, and T9's decisions/T9. Every split makes sub-slices of one token, rewriting nothing, and
+T9's drop removes a token whole -- spans still index the original
+exactly, so the anti-#100 invariant holds by construction. The script splits also match on the token's CORE, its
 text.rstrip(FULL_STOPS) (#323) -- rstrip and never strip, because
 both offsets are measured from the text's START, so the core has to
 stay a prefix of the text for the offset the match yields to land
@@ -90,7 +95,7 @@ import functools
 import unicodedata
 from collections.abc import Callable, Sequence
 
-from nameparser._lexicon import FULL_STOPS, _normalize
+from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
@@ -98,7 +103,7 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    GLUED_SHAPE, dotted_title_end, effective_script,
+    GLUED_SHAPE, dotted_title_end, effective_script, is_name_word,
     glued_cuts, glued_saint_cut, title_prefixes,
     is_initial_chunk, is_one_case,
     period_joined_vocab,
@@ -161,6 +166,8 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
     range(cap, 0, -1) construction and its len-1 cap. From T8's
     division: `_vocab.glued_cuts` appends each offset after a matched
     stop, so each is >= 2, ascending, and < len(text), a name following.
+    From T9's division: (slash,), (slash, slash + 1) or (1,), each
+    interior, a title before the slash and a slash or a name after it.
 
     The ONE split path: the vocabulary hit is the single-offset case,
     and the segmenter's answer and T8's division the general one, so
@@ -911,6 +918,126 @@ def _split_surname_site(state: ParseState) -> ParseState:
     return _split(state, i, answer.splits, detail)
 
 
+def _drop(state: ParseState, i: int) -> ParseState:
+    """Token `i` removed, a slash T9 reads as a separator: every later
+    index shifts down by one, in the segment runs and the reports
+    alike, as `_split` shifts them up."""
+    tokens = state.tokens[:i] + state.tokens[i + 1:]
+    segments = tuple(tuple(j - 1 if j > i else j for j in run if j != i)
+                     for run in state.segments)
+    ambiguities = tuple(
+        copy_with(a, indices=tuple(
+            j - 1 if j > i else j for j in a.indices if j != i))
+        for a in state.ambiguities)
+    return copy_with(state, tokens=tokens, segments=segments,
+                     ambiguities=ambiguities)
+
+
+def _slash_title(text: str, lexicon: Lexicon) -> bool:
+    """Whether `text` is a listed title T9 reads before a slash: one no
+    suffix reading claims and no saint particle, since a title/suffix
+    dual joined by a slash is a credential as often (`CPO/L`,
+    `MS/CCRP`)."""
+    word = _normalize(text)
+    sets = lexicon._sets
+    return (word in sets.titles and word not in sets.suffix_acronyms
+            and word not in sets.suffix_words
+            and word not in sets.saint_particles)
+
+
+def _slash_name(text: str, lexicon: Lexicon) -> bool:
+    """Whether `text`, written after a title's slash, is a name word
+    T9 divides at the slash: one name word in T8's shape (no delimiter,
+    digit or slash) once its full stops are set aside, so an initial or
+    a name written short reads as after the title's full stop (`J.`,
+    `Wm.`), which no title, title modifier or suffix reading claims
+    outright (`Dr/Mrs`, `Dr/MD`, `Dr/M.D.` keep their one word). A
+    title or suffix that is also a given name (`Dean`, `Ed`, `Junior`)
+    is read as it is after the title's full stop, and so is a given name
+    written short that is also a credential where it is not written in
+    capitals (`Md.`, rules/H2's yield), `MD` being the credential."""
+    if text.startswith(".") or not is_name_word(text.replace(".", "")):
+        return False
+    word = _normalize(text)
+    sets = lexicon._sets
+    if word in sets.given_name_abbreviations and not text.isupper():
+        return True
+    # the acronyms both as stored and without their stops: a caller's
+    # acronym may be stored with them ('q.z'), the shipped ones never
+    return not (word in sets.titles or word in sets.title_modifiers
+                or (word in sets.suffix_words
+                    and word not in sets.suffix_words_ambiguous)
+                or (word in sets.suffix_acronyms
+                    and word not in sets.suffix_acronyms_ambiguous)
+                or (word.replace(".", "") in sets.suffix_acronyms
+                    and word.replace(".", "")
+                    not in sets.suffix_acronyms_ambiguous))
+
+
+# rules/T9: "the slash reads as the title's full stop would, a
+# separator" -- the word opening the name, or the given part after a
+# family comma, and only there (decisions/T9 (#1149))
+def _divide_title_slash(state: ParseState) -> ParseState:
+    """The slash after a listed title opening the name, or the given
+    part after a family comma, cut off and dropped. Group decides the
+    comma later, so a comma is asked its decision here, and only where
+    a head is a site, the decision costing a classify pass: a part
+    after it read as post-nominals leaves the name whole before it,
+    where the head is read, and a family comma leaves the part before
+    it a surname, where a slash joins two (`JURIST/KANJO,
+    DAVID/KATHRYN`), so only the given part after it is read."""
+    plan = _slash_plan(state, 0)
+    if state.structure is Structure.FAMILY_COMMA:
+        given = _slash_plan(state, 1)
+        if plan is None and given is None:
+            return state
+        if not _postnominal_behind_a_whole_name(state):
+            plan = given
+    if plan is None:
+        return state
+    split_at, splits, slash = plan
+    if split_at is not None:
+        state = _split(state, split_at, splits, None)
+    return _drop(state, slash)
+
+
+def _slash_plan(state: ParseState, site: int
+                ) -> tuple[int | None, tuple[int, ...], int] | None:
+    """T9's cut at the head of segment `site`, in each of the slash's
+    four writings (`X/`, `X/word`, `X / word` and `X /word`): the token
+    to split and where (None where the slash stands alone), and the
+    index the slash's token then holds. None where the head is no
+    site."""
+    if len(state.segments) <= site or not state.segments[site]:
+        return None
+    run = state.segments[site]
+    lexicon = state.lexicon
+    tokens = state.tokens
+    i = run[0]
+    text = tokens[i].text
+    # the last slash, so a title listed with one of its own ('mag/judge')
+    # is X whole; the name after it holds none
+    slash = text.rfind("/")
+    if slash > 0 and _slash_title(text[:slash], lexicon):   # glued to X
+        rest = text[slash + 1:]
+        name = rest or (tokens[run[1]].text if len(run) > 1 else "")
+        if name and _slash_name(name, lexicon):
+            # `X/word` or `X/ word`
+            return i, ((slash, slash + 1) if rest else (slash,)), i + 1
+    # a word refused there may be a title listed with its slash
+    # ('mag/judge'), read as X whole before a spaced slash
+    if len(run) < 2 or not _slash_title(text, lexicon):
+        return None
+    nxt = tokens[run[1]].text               # the slash spaced from X
+    if nxt == "/":                          # `X / word`
+        if len(run) < 3 or not _slash_name(tokens[run[2]].text, lexicon):
+            return None
+        return None, (), run[1]
+    if nxt.startswith("/") and _slash_name(nxt[1:], lexicon):
+        return run[1], (1,), run[1]         # `X /word`
+    return None
+
+
 # rules/T8: "the word reads as it does with a space there" -- the part
 # before any comma, where the division acts (decisions/T8 (#1230, #1235))
 def _divide_glued(state: ParseState) -> ParseState:
@@ -1068,6 +1195,9 @@ def _ends_the_name(cuts: tuple[int, ...], texts: Sequence[str],
 # family by declaration and never divides, and the post-comma side
 # is given text with no family to find" (history: decisions/W3)
 def script_segment(state: ParseState) -> ParseState:
+    # a C-level test first, so a name with no slash pays no frame
+    if "/" in state.original and state.segments:
+        state = _divide_title_slash(state)
     if state.segments and GLUED_SHAPE.search(state.original):
         state = _divide_glued(state)
     if state.original.isascii():
