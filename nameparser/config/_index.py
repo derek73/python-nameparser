@@ -2748,7 +2748,6 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('ty', (('en', 'familiar', (('short_for', ('tyler',)),)),)),
     ('u', (('my', 'salutation', (('default', False),)),)),
     ('ua', (('ga', 'clan', (('cased', 'Ua'), ('same_as', 'ó'))), ('ga', 'given', ()))),
-    ('ud', (('en', 'credential', ()),)),
     ('uk', (('en', 'modifier', (('dotted', True),)),)),
     ('ul-', (('ar', 'article', (('same_as', 'al-'),)), ('ur', 'article', (('same_as', 'al-'),)))),
     ('ula', (('pl', 'familiar', (('short_for', ('urszula',)),)),)),

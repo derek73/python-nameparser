@@ -21592,4 +21592,36 @@ CASES: tuple[Case, ...] = (
          notes="boundary: the possessive is listed with the straight and "
                "the typographic apostrophe (#1487), not U+02BC, so the "
                "part still takes the name over"),
+    # #1467: `ud` loses its credential reading; `bt` keeps its own.
+    Case("ud_inside_a_compound_name_in_capitals_is_a_name_word",
+         "NADIR ZIA UD DIN",
+         {"given": "NADIR", "middle": "ZIA UD", "family": "DIN"},
+         notes="#1467 restores 1.4.0's reading: 2.4.0 through 3.1.0 "
+               "read family 'ZIA', suffix 'UD DIN', reported "
+               "suffix-or-name, the credential reading starting a run "
+               "that took the rest of the name"),
+    Case("ud_in_lower_case_inside_a_compound_name_is_a_name_word",
+         "Nadir Zia ud Din",
+         {"given": "Nadir", "middle": "Zia ud", "family": "Din"},
+         notes="#1467 restores 1.4.0's reading: 2.4.0 through 3.1.0 "
+               "read family 'Zia', suffix 'ud Din', reported "
+               "suffix-or-name; the compound is not joined (decided on "
+               "#1467)"),
+    Case("ud_after_a_full_name_and_a_comma_reads_as_initials",
+         "Anke Vissering, UD",
+         {"given": "UD", "family": "Anke Vissering"},
+         classification="fix(#1467)",
+         notes="the accepted cost: an unlisted pair of capitals after the "
+               "name and a comma reads as initials run together, as 'XQ' "
+               "does; read suffix 'UD' 1.4.0 through 3.1.0"),
+    Case("bt_in_lower_case_before_the_last_word_stays_the_credential",
+         "Nur Aina bt Rosli",
+         {"given": "Nur", "family": "Aina", "suffix": "bt Rosli"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#602)",
+         notes="boundary: #1467 decided `bt` keeps its credential "
+               "reading, whose run here came with #602's in 2.4.0 "
+               "(1.4.0 through 2.3.0 read middle 'Aina bt', family "
+               "'Rosli'); a caller with Malay names removes it "
+               "(docs/customize.rst)"),
 )

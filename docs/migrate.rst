@@ -2281,3 +2281,20 @@ job's as ``kind="occupation"`` and a qualifier's as ``kind="modifier"``:
     >>> as_31 = Parser(lexicon=Lexicon.default().remove("student", kind="occupation"))
     >>> as_31.parse("Student Mary Jones").given
     'Student'
+
+ud inside a compound name
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ud`` is no longer a credential, so a South Asian compound name
+holding it reads as 1.4 and 2.0 through 2.3 read it, where 2.4 through
+3.1 read ``ud`` and every word after it as the suffix. Alone after a
+name and a comma it now reads as initials run together, as any
+unlisted pair of capitals does there:
+
+.. doctest::
+
+    >>> zia = parse("NADIR ZIA UD DIN")
+    >>> zia.middle, zia.family, zia.suffix
+    ('ZIA UD', 'DIN', '')
+    >>> parse("Anke Vissering, UD").given
+    'UD'

@@ -5890,7 +5890,7 @@ credential = { cased = "ThM" }
 
 [[word]]
 text = "ud"
-credential = {}
+excluded = { credential = { reason = "the Urdu and Arabic connective of a compound name (Zia ud Din, Mohi ud Din): between name words in 121 distinct names of eight local corpora (ctgov-officials, ctgov-contacts, govuk-people, ukec-individuals, psc-individuals, fec-individuals, orcid-researchers, my-candidates), the words split at spaces with commas and full stops removed, as the vocabulary matches an acronym, 2026-11-19, against 7 ending a name, where the credential reading started a run that took the rest of the name (NADIR ZIA UD DIN read suffix 'UD DIN'). The 7 write no credential: initials written U.D (four: three ORCID holders', now read as the family, as an unlisted pair of initials ending a name is, and an FEC donor's after a comma, read as initials before and after), the compound written surname first (one; DIN, NADIR UD-shape, now middle 'UD'), and a Dutch study chair in two ClinicalTrials.gov records writing the rank universitair docent after the name and a comma, which now reads as an unlisted pair of capitals there does, as initials run together, given 'UD' and the name before the comma the family (Anke Vissering, UD, an invented name of that shape), the accepted cost. Never reviewed as a credential, having come with the bulk list (decisions/suffix-acronym-collisions)", issue = 1467, decided = 2026-11-19 } }
 
 [[word]]
 text = "usa"

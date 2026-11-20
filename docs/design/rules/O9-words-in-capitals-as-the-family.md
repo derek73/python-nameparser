@@ -47,7 +47,7 @@
   "Jeffrey LAM Kin-fung"  capitals_as_family  →  family="LAM"
   "Mrs Rita FAN HSU Lai-tai"  capitals_as_family  →  family="FAN HSU"
   ```
-- **The capitals settle the field**: they outrank a credential or title reading, so a listed suffix that is the only capitals word is the family (without the switch S6 reads a credential so written as the suffix, S11's count a suffix word that is also a name, and S10's a numeral), and so is a title written in capitals (H1, H9); a report asking which field a word of the run or a word the peel took takes names no open fork, nor does one asking whether a lone name word is the given or the family name, whether a particle opens the family, or which order the name is written in, while a title or suffix fork on any other word stands, under every order.
+- **The capitals settle the field**: they outrank a credential or title reading, so a listed suffix that is the only capitals word is the family (without the switch S6 reads a credential so written as the suffix, S11's count a suffix word that is also a name, and S10's a numeral), and so is a title written in capitals (H1, H9), save a title-particle opening the name (P4: `ST Anna Berg` keeps title `ST`); a report asking which field a word of the run or a word the peel took takes names no open fork, nor does one asking whether a lone name word is the given or the family name, whether a particle opens the family, or which order the name is written in, while a title or suffix fork on any other word stands, under every order.
   ```
   "Hugo LAC"  capitals_as_family  →  family="LAC"
   "Yanjun MA"  capitals_as_family  →  family="MA"
@@ -198,10 +198,11 @@
   "Hon CHAN Kin-por GBS JP"  capitals_as_family  →  family="GBS"
   ```
 - `capitalized()` leaves a name in mixed case as written, so the family keeps its capitals; `capitalized(force=True)` recases them, the family being named by its field by then (R5).
-- A bare `DR` in capitals at the head of a name is a capitals word, so it reads as the family (204 given boxes of the 2025-10 ORCID dump open with it, counted 2026-11-12); whether a title that is never a surname should stand is open (decisions/O9).
+- A title written in capitals with no full stop is a capitals word, so where no other word of the name is in capitals it reads as the family, save a title-particle (P4), which stays the title (`ST Anna Berg`, `FREIHERR Anna Berg`): such a name writes no family in capitals and is not in the convention the switch is for, a name that marks its family in capitals writing its title in mixed case about 650 times to 8 (counted 2026-11-19, decisions/O9). Where the family is in capitals too, the title keeps its place.
   ```
-  "DR Anna BERG"  capitals_as_family  →  family="BERG"
   "DR Anna Berg"  capitals_as_family  →  family="DR"
+  "DR Anna BERG"  capitals_as_family  →  title="DR"
+  "DR Anna BERG"  capitals_as_family  →  family="BERG"
   ```
 - A numeral is one the generation reading knows, II to X, so a longer one is a word of the run, and one standing before the family name is read with it.
   ```
