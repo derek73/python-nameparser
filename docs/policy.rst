@@ -284,15 +284,13 @@ order belongs to the record, so it goes in a ``Policy`` you choose for
 that source.
 
 Malaysia's election lists are another such source: they write a
-Chinese name family first (``TAN KOK LEONG``), every three-word
-Chinese name on them but two (the count is in
+Chinese name family first (``TAN KOK LEONG``), nearly every three-word
+Chinese name on them (the count is in
 ``docs/design/decisions/O4-positional-assignment-and-declared-order.md``).
 Such a name often writes its given name as two words, which a
 family-first order reads as a given name and a middle name;
 :ref:`two-given-names-chinese` shows the setting that keeps them
-together. The same lists write a candidate known by an English given
-name given first (``GRACE TAN``), so they mix orders too, the case
-below.
+together.
 
 .. _mixed-name-order:
 
@@ -304,8 +302,11 @@ list writes some members with a Chinese surname given first (in the
 shape of ``Grace Lim``) and others family first (``Tan Kok Leong``),
 and nothing in the spelling tells which: of its 77 such members, 27
 are written given first and 33 family first, and most of the rest
-carry an English name as well (:issue:`1183` has the counts). No one setting
-reads such a list. The default order reads the names written given
+carry an English name as well (:issue:`1183` has the counts).
+Malaysia's lists mix orders the same way: a candidate known by an
+English given name is written given first (``GRACE TAN``).
+
+No one setting reads such a list. The default order reads the names written given
 first, and ``FAMILY_FIRST`` with ``two_given_names`` the names written
 family first, so each setting misreads the other group.
 
@@ -313,9 +314,9 @@ The order then has to come from outside the name: a separate field in
 the source, or capitals where the source writes the family name in
 them (:ref:`capitals-as-family`), which helps only where the list writes
 the rest of the name in mixed case. ``Parser.suggest`` suggests no
-order where neither order holds the share it needs, as on Singapore's
-list, which is the right answer there (:ref:`suggest-deciding`); a
-list with only a few names in the other order still gets one.
+order for such a list, its names' votes splitting short of the share
+an order needs (:ref:`suggest-deciding`); that is the right answer,
+and it is the answer for Malaysia's Chinese candidates too.
 
 A comma still wins
 ~~~~~~~~~~~~~~~~~~
@@ -1014,8 +1015,8 @@ write:
 - **Joined initials**: ``Jan GM Brouwer`` gives family ``GM``.
 - **A title written in capitals, with no full stop, where no other
   word of the name is in capitals**: ``DR Anna Berg`` gives family
-  ``DR``, middle ``Berg``; a title-particle such as ``ST`` stays the
-  title. Such a name does not write its
+  ``DR``, middle ``Berg``. A title that can also open a surname, as
+  ``ST`` or ``FREIHERR`` can, stays the title. Such a name does not write its
   family name in capitals, so it is not in the format the switch is
   for; where the family is in capitals too, the title keeps its place
   (``DR Anna BERG`` gives title ``DR``, family ``BERG``).
