@@ -537,7 +537,11 @@ under a family-first order), and only then:
 :ref:`What it costs <two-family-names-cost>` shows what it does to
 other names. ``locales.ES``, ``locales.ES_AR``, ``locales.PT_BR`` and
 ``locales.PT_PT`` turn it on together with a list of given names that it holds back (see
-`Keeping a given name out of the family`_).
+`Keeping a given name out of the family`_). For a list of names,
+``Parser.suggest()`` turns the bare switch on where enough of the names
+write a common surname where the switch would take a word into the
+family (:ref:`suggest-two-family`); where you know the list is Spanish
+or Portuguese, the pack reads it better.
 
 In Spain and most of Latin America a person carries two family names,
 the father's first and then the mother's, and writes both after the
