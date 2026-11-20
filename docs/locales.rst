@@ -334,7 +334,7 @@ says which parts each pack is made of.
    * - ``pt_pt``
      - Portuguese from Portugal
      - ``pt`` with two family names and ``pt_br``'s given-name list, and
-       ``do Rosário``, ``de Jesus`` and ``do Carmo`` as given names. See
+       ``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz`` as given names. See
        :ref:`portuguese-two-family-names` and :ref:`portuguese-packs`.
      - ``Rui Sousa Pinto`` → family ``Sousa Pinto``, where ``pt`` gives
        ``Pinto``
@@ -619,7 +619,7 @@ Most of these packs are described in :doc:`languages`, where the table
 above links each. Two groups are described here: the Irish and Scottish
 Gaelic packs (:ref:`gaelic-clan-particles`), and the Portuguese ones,
 which turn on ``da Piedade``, in ``pt_br`` ``SB``, in ``pt_pt``
-``do Rosário``, ``de Jesus`` and ``do Carmo``, and in ``pt_br`` and
+``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz``, and in ``pt_br`` and
 ``pt_pt`` two family names (:ref:`portuguese-packs`).
 
 .. _gaelic-clan-particles:
@@ -677,11 +677,9 @@ does by default (see :ref:`two-given-names`):
     >>> piedade.middle, piedade.family
     ('da Piedade', 'Costa')
 
-``pt_pt`` also reads three such phrases that Portugal's names support
-and Brazil's refute or are too few to judge (in Brazil ``de Jesus``
-behind a first name is mostly a surname): ``do Rosário``, ``de Jesus``
-and ``do Carmo``. ``pt`` and ``pt_br`` read them as the start of the
-family:
+``pt_pt`` also reads four such phrases that Portugal's names support
+and Brazil's refute: ``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz``. ``pt`` and ``pt_br`` read them as the
+start of the family:
 
 .. doctest::
 

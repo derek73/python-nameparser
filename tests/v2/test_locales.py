@@ -2508,7 +2508,9 @@ _ROTATORS["pt_pt"] = [
     # Portugal's own given names P10 completes, which pt_br's and pt's
     # choices leave to the family (#1189)
     "Maria do Carmo Costa",          # carmo
-    "Maria de Jesus Costa",          # jesus
+    "Maria da Conceição Costa",      # conceição
+    "Maria da Conceicao Costa",      # conceicao
+    "Maria da Luz Costa",            # luz
     "Maria do Rosário Costa",        # rosário
     *_PT_TWO_FAMILY_NAMES,
 ]
@@ -3732,7 +3734,7 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
     assert selected(locales.PT_PT.languages) == {"pt-PT", "pt"}
     assert (changed_words(selected(locales.PT_PT.languages))
             - changed_words(selected(locales.PT.languages))
-            == {"carmo", "jesus", "rosário"})
+            == {"carmo", "conceicao", "conceição", "luz", "rosário"})
     assert "pt-PT" not in selected(locales.PT_BR.languages)
     # a strict choice of Portugal reads them too, and the spelling without
     # the accent, which only es.toml's reading gave a plain choice; a
@@ -3740,7 +3742,8 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
     for strict_pack, middle in ((locales.PT_PT, True), (locales.PT_BR, False),
                                 (locales.PT, False)):
         strict = parser_for(strict_pack, strict=True)
-        for phrase in ("do Rosario", "do Rosário", "de Jesus", "do Carmo"):
+        for phrase in ("do Rosario", "do Rosário", "do Carmo", "da Conceição",
+                       "da Conceicao", "da Luz"):
             parsed = strict.parse(f"Rita {phrase} Quaresma")
             assert parsed.middle == (phrase if middle else ""), (strict_pack.code, phrase)
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
