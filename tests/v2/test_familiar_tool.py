@@ -300,9 +300,9 @@ def test_a_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
     # a pair from a list of familiar forms, not data the project measured
     ((_row("kasia", "katarzyna", "familiar", source="nicknames-spelling"),),
      "source 'nicknames-spelling' is not one of"),
-    # Wikidata joins only with its fetch tool (#1387)
-    ((_row("kasia", "katarzyna", "familiar", source="wikidata"),),
-     "source 'wikidata' is not one of"),
+    # a source with no counting tool or recipe in the tree
+    ((_row("kasia", "katarzyna", "familiar", source="discogs"),),
+     "source 'discogs' is not one of"),
 ])
 def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
                                        match: str) -> None:
@@ -312,7 +312,7 @@ def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
 
 def test_the_sources_are_the_ones_whose_counts_the_tree_reproduces() -> None:
     # a widening needs its counting recipe or tool in the tree first
-    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress"}
+    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress", "wikidata"}
 
 
 @pytest.mark.parametrize("source", sorted(tool.REVIEW_SOURCES))

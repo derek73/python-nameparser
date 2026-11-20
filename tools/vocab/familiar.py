@@ -18,7 +18,9 @@ common familiar forms researchers rarely publish under, the nicknames
 donors write in brackets in the FEC's filings and the nicknames of
 Congress's members (both in the public domain), counted by recipes in
 decisions/name-matching, 2026-11-13 THE FAMILIAR FORMS FROM DATA
-ALONE. No pair is copied from
+ALONE; and for Central and Eastern European and Balkan languages,
+Wikidata's people (CC0) named two ways, read by
+tools/vocab/familiar_wikidata.py (2026-11-20 #1387). No pair is copied from
 a list of familiar forms: a compiler's list copied whole keeps its licence
 (decisions/shipped-data-licences, 2026-11-12 #1370 FACTS WE MEASURE and
 2026-11-13 THE NICKNAMES LIST LEAVES). Each row is written by its
@@ -87,9 +89,9 @@ REVIEW_CATEGORIES = frozenset({
 REVIEW_STATUSES = frozenset({"", "decided", "pending"})
 #: Where a reviewed pair was found, each a source the project may use:
 #: ORCID's public data file (CC0), the FEC's filings and Congress's
-#: legislators (public domain). Wikidata joins with its fetch tool
-#: (#1387).
-REVIEW_SOURCES = frozenset({"orcid", "fec", "congress"})
+#: legislators (public domain), and Wikidata's people (CC0), read by
+#: tools/vocab/familiar_wikidata.py (#1387).
+REVIEW_SOURCES = frozenset({"orcid", "fec", "congress", "wikidata"})
 
 
 def _toml_str(text: str) -> str:

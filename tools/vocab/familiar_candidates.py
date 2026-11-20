@@ -166,6 +166,12 @@ def _is_title(word: str, titles: frozenset[str]) -> bool:
     return fold(build._normalize(word)) in titles
 
 
+def default_titles() -> frozenset[str]:
+    """The default lexicon's titles, folded, as `_is_title` reads them."""
+    from nameparser import Lexicon
+    return frozenset(fold(t) for t in Lexicon.default()._sets.titles)
+
+
 def pairs_of(record: Mapping[str, object],
              titles: frozenset[str]) -> set[tuple[str, str]]:
     """The unordered pairs one record evidences, each as (x, y) sorted,
@@ -370,8 +376,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"{extract} is not cached; run `uv run python "
                          f"tools/differential/local_corpora.py fetch "
                          f"orcid-researchers`")
-    from nameparser import Lexicon
-    titles = frozenset(fold(t) for t in Lexicon.default()._sets.titles)
+    titles = default_titles()
     found = mine(orcid_records(extract), titles)
     known = known_pairs()
     kept = [p for p, ev in found.items()
