@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "alhaj"
-style = { issue = 1469, decided = 2026-11-19, expands = "al-hajj, one who has made the Hajj, written before the name in Pakistan and Bangladesh", note = "opening a name it was the title wherever counted (ORCID 1, UK PSC 2, JRC-Names 1); ORCID's 2025 extract holds it in 17 given boxes (Sudan 5) and 269 family boxes, a surname written last, which a leading title does not reach (2026-11-19)" }
+style = { issue = 1469, decided = 2026-11-19, expands = "al-hajj, one who has made the Hajj, written before the name in Pakistan and Bangladesh", note = "opening a name it was the title wherever counted (UK PSC 2, JRC-Names 1, ORCID 1), save an ORCID byline writing the family name Alhaj first; ORCID's 2025 extract holds it in 17 given boxes (Sudan 5) and 269 family boxes, a surname written last, which a leading title does not reach (2026-11-19)" }
 
 [[word]]
 text = "alhajj"
