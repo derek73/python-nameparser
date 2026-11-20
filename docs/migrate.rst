@@ -2412,3 +2412,31 @@ To read one of the four as a name, remove its reading:
     >>> as_31 = Parser(lexicon=Lexicon.default().remove("qari", kind="religious"))
     >>> as_31.parse("Qari Ahmed Khan").given
     'Qari'
+
+Alias markers: @ and urf
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A second name written after ``@`` standing as a word of its own, or
+after ``urf``, is the nickname, and the marker is dropped, where 1.4
+through 3.1 read both as name words. The alias stops at a patronymic
+particle such as ``bin``, so the father's name after it stays the family
+name. An ``@`` glued to a word, as in an e-mail address, is part of that
+word, as before:
+
+.. doctest::
+
+    >>> rahim = parse("Rahim @ Jaki bin Osman")
+    >>> rahim.given, rahim.nickname, rahim.family
+    ('Rahim', 'Jaki', 'bin Osman')
+    >>> parse("Ravi Kumar urf Raju").nickname
+    'Raju'
+    >>> parse("Rahim Osman@Usman").family
+    'Osman@Usman'
+
+To read the two as name words again, remove their readings:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("@", "urf", kind="alias_marker"))
+    >>> as_31.parse("Ravi Kumar urf Raju").middle
+    'Kumar urf'

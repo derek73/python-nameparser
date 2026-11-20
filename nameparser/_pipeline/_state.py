@@ -131,6 +131,13 @@ HONORIFIC_WORD_TAG = "vocab:honorific-word"
 #: names, and dropped from the published token like the kind tags above.
 PATRONYMIC_TAG = "vocab:patronymic"
 
+#: On a word the lexicon holds as an alias marker (`@`, `urf`), which
+#: group reads to take the words after it as the nickname (rules/N4,
+#: #1164). Kept on the published token, as "vocab:maiden-marker" is: a
+#: marker the rule takes leaves no token, and one read as a word keeps
+#: its tag.
+ALIAS_MARKER_TAG = "vocab:alias-marker"
+
 #: On each word of a particle chain opening a family-first name past
 #: the reach of rules/P1's fold (#828), written by post_rules whether or
 #: not the fold cuts the chain there, so assemble can tell where a

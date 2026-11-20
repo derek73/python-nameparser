@@ -29,6 +29,10 @@
 
 **Precedence:**
 
+- **A nickname announced by an alias marker** (N4) is not counted: the rule reads a delimited nickname, and the one name word beside an alias keeps O5's reading.
+  ```
+  "Smith @ Jack Jr."          →  given="Smith"
+  ```
 - **A title word left as the one name word** ("'Smitty' Pope Jr."): this rule reads it as the family name as it reads any other, and where the suffix is written without a comma H4 keeps its doubt, whether the word is a title at all, and its report; a title-particle keeps the reading it has, as a particle does.
   ```
   "'Smitty' Pope Jr."         →  family="Pope"

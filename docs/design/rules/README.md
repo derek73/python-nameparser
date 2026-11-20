@@ -163,6 +163,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [N1 — the default delimiter pairs](N1-default-delimiter-pairs.md)
 - [N2 — same-character quotes and shared-character conventions](N2-same-character-quotes-and-shared-character-conventions.md)
 - [N3 — the lone-word nickname rule](N3-lone-word-nickname-rule.md)
+- [N4 — the alias marker](N4-alias-marker.md)
 
 ## [Maiden names (M)](M-maiden-names.md)
 

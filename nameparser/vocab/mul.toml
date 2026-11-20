@@ -144,6 +144,10 @@ text = "&"
 conjunction = {}
 
 [[word]]
+text = "@"
+alias_marker = { issue = 1164, note = "the at sign written as a word of its own between two names, the second a name the person is also known by (RAHIM @ JAKI BIN OSMAN): an alias marker in all 109 spaced uses across the local corpora, a name in none (master e0f698c8, 2026-11-20); Malaysian ballots and honours lists write it most. Glued to a word (Saad@Yahaya, an e-mail address, a handle) it is part of that word and no marker" }
+
+[[word]]
 text = "mhd"
 given = { same_as = "muhammad", note = "Muhammad written short, in Indonesia, Syria, Turkey and Germany: ORCID given boxes 426 (Indonesia 86, Syria 37), family boxes 71 (2026-11-06); written with its period at the head of a name (Dr Mhd. Azhar Kharsa), it read as a title by the leading-abbreviation shape (#1115)" }
 

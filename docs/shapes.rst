@@ -275,6 +275,10 @@ Each row's reading kind is what :meth:`Lexicon.words(kind=...)
      - the following name
      - ``maiden``
      - ``Jane Smith née Jones`` → ``Jones``
+   * - Alias markers (``alias_marker``)
+     - the following name, up to ``bin`` or a comma
+     - ``nickname``
+     - ``Rahim @ Jaki bin Osman`` → ``Jaki``
    * - Conjunctions (``conjunction``)
      - the words on both sides
      - any
@@ -403,6 +407,17 @@ Nicknames and maiden names
     'Jack'
     >>> parse("Jane Smith née Jones").maiden
     'Jones'
+
+A second name written after ``@`` or ``urf`` is a nickname too, as
+Malaysian and Indian lists write one; it runs to a patronymic particle
+such as ``bin``, so the father's name after it stays the family name
+(``alias`` and ``aka`` are read so only where you add them, see
+:doc:`customize`):
+
+.. doctest::
+
+    >>> parse("Rahim @ Jaki bin Osman").nickname
+    'Jaki'
 
 Both fields appear in the default ``str()`` rendering — the nickname
 quoted after the given name, the maiden name parenthesized after the

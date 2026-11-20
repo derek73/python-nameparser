@@ -2987,8 +2987,10 @@ def comma_follows_marker(word: str) -> bool:
     delimited clause, opens with a comma -- standing alone (' , ') or
     glued to the name after it (' ,Jones'). A comma glued to the marker
     itself ('née,') needs no test: that word is no marker to begin with,
-    the vocabulary storing no comma. The one predicate for extract's M3
-    test over whitespace words and group's M1 drop over tokens, which
+    the vocabulary storing no comma (and an alias marker's, which classify
+    keeps on the word for that reason, rules/N4). The one predicate for
+    extract's M3 and N4 tests over whitespace words and group's M1 and
+    N4 drops over tokens, which
     since #653 hold the same comma
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 
