@@ -240,3 +240,7 @@ issue = [346, 344, 343]
 note = "Maharaj, trailing; the leading महाराजा is a title (#344)"
 [word.courtesy.excluded]
 attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"
+
+[[word]]
+text = "urf"
+alias_marker = { issue = 1164, expands = "urf, alias, the romanized उर्फ़ (Ravi Kumar urf Raju)", note = "a marker in all 3 uses across the local corpora, all in PSC, and in none a name; 21 names on the 2024 Lok Sabha candidates' list write it (2026-11-20)" }

@@ -1962,7 +1962,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "GLUED_TITLES",
         "BOUND_PHRASES", "BOUND_COMPLETES_ANY", "BOUND_LONG_NAMES_ONLY",
         "BOUND_SECONDS", "BOUND_SECOND_PHRASES", "BOUND_SECONDS_LISTED",
-        "SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
+        "ALIAS_MARKERS", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
         "ALTERNATE_SPELLINGS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code

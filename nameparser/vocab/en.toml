@@ -6000,6 +6000,14 @@ text = "nee"
 birth_marker = { issue = 274, same_as = "née", gender = "f", note = "née typed without its accent" }
 
 [[word]]
+text = "aka"
+alias_marker = { default = false, issue = 1164, expands = "also known as", note = "off by default: Aka is a given name and a surname (Ivorian, Turkish, Nepali), 90 name uses against 38 markers across the local corpora (2026-11-20); FEC writes the marker in 24 of 1,893,964 names (BOSCIA, FRANK AKA FRANCIS). A caller whose data uses it turns it on with Lexicon.add('aka', kind='alias_marker')" }
+
+[[word]]
+text = "alias"
+alias_marker = { default = false, issue = 1164, note = "off by default: Alias is a Malay given name and father's name, a Kerala name and a US surname, 97 name uses against 43 markers across the local corpora, the markers mostly Indian (2026-11-20). A caller whose data uses it turns it on with Lexicon.add('alias', kind='alias_marker')" }
+
+[[word]]
 text = "ben"
 familiar = { short_for = ["benedict", "benjamin"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 given = { us_ssa = 85816, wikidata = 6037, as_of = 2026-11-12, note = "#1248. US Census 2010 surnames 3,386. US SSA births summed over both sexes (F 467, M 85,349); Wikidata is a lower bound; nam_dict band 7, the Netherlands 7, Belgium 4, Great Britain 3; ORCID given boxes 7,556 (opening the box or alone 476), PSC middle-name boxes 189, 142 of them British. The clash that keeps ar.toml's and he.toml's particle reading off by default (#1257)" }

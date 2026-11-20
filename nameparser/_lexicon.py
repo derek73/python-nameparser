@@ -610,6 +610,10 @@ class _LexiconSets:
     #: the words of `bound_seconds` every reading of which lists
     #: `completes`, joining behind those words alone
     bound_seconds_listed: frozenset[str]
+    #: the words that announce a second name the person is known by
+    #: (`@`, `urf`), which rules/N4 reads the words after as the
+    #: nickname (#1164)
+    alias_markers: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -656,6 +660,7 @@ _COMPILED_FIELDS = {
     "bound_seconds": "BOUND_SECONDS",
     "bound_second_phrases": "BOUND_SECOND_PHRASES",
     "bound_seconds_listed": "BOUND_SECONDS_LISTED",
+    "alias_markers": "ALIAS_MARKERS",
 }
 
 #: What the 2.x sets do not record: the kinds the views read (rules/R8,
@@ -2458,7 +2463,8 @@ class Lexicon:
             ``nameparser._reading_index.CATEGORY`` (``"title"``,
             ``"office"``, ``"credential"``, ``"generation"``,
             ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
-            ``"bound_second"`` (3.2), ``"birth_marker"``, ``"given"``,
+            ``"bound_second"`` (3.2), ``"birth_marker"``, ``"alias_marker"``
+            (3.2), ``"given"``,
             ``"family"``, ...), and
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
