@@ -507,9 +507,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # day, #1464's 'Ali Abdul Rahim VI' under three orders and 'Ram Abdul
     # Bahadur B.K.' under its declared policy, each reporting
     # suffix-or-name; 2205 -> 2208 the same day, #1464's 'Dr. Al Amin
-    # Abdul Rahman' reporting particle-or-given.
-    assert claims == 2208, (
-        f"the field sweep checks {claims} claims, recorded as 2208 on "
+    # Abdul Rahman' reporting particle-or-given; 2208 -> 2211 the same
+    # day, #1149's 'جورج و. بوش' reporting given-or-family under three
+    # orders.
+    assert claims == 2211, (
+        f"the field sweep checks {claims} claims, recorded as 2211 on "
         f"2026-11-19")
 
 

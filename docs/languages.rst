@@ -18,8 +18,8 @@ subset with its own parser, or pass several packs to ``parser_for``:
 
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
-Vietnamese, Mongolian and Thai names, Maghrebi, Amazigh, Hebrew and
-Dutch particles, and Burmese and Malay names. Other languages are described where their mechanism is:
+Vietnamese, Mongolian and Thai names, Arabic-script names, Maghrebi,
+Amazigh, Hebrew and Dutch particles, and Burmese and Malay names. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -1033,6 +1033,82 @@ each stored without its last full stop:
     ...     if "฀" <= word[0] <= "๿"]
     >>> sorted(thai_salutations)
     ['ด.ช', 'ด.ญ', 'น.ส', 'นาง', 'นางสาว', 'นาย', 'เด็กชาย', 'เด็กหญิง']
+
+
+.. _arabic-script-names:
+
+Arabic-script names
+-------------------
+
+An Arabic, Persian or Urdu name written in Arabic script needs no pack
+for its titles: the vocabulary reads them by default. The doctor, the
+professor, the hajji and the sheikh are read written out
+(``الدكتور``, ``الأستاذ``, ``الحاج``, ``الشيخ``); this section is about
+the titles written short, and about initials.
+
+Titles written short
+~~~~~~~~~~~~~~~~~~~~
+
+Arabic writes a title short with a full stop after a letter: ``د.``
+(doctor), ``أ.`` (*ustādh*, professor or Mr.) and ``م.`` (lecturer or
+engineer), and the academic ranks written short, as ORCID's records
+from Iraq write them most,
+``أ.د.`` (professor doctor), ``أ.م.د.`` (assistant professor
+doctor), ``م.د.`` (lecturer doctor) and ``م.م.`` (assistant
+lecturer). Each reads as the title with its full stop, without it,
+glued to the name, or with its letters spaced:
+
+.. doctest::
+
+    >>> arabic_dr = parse("د. أحمد علي حسن")
+    >>> arabic_dr.title, arabic_dr.given, arabic_dr.family
+    ('د.', 'أحمد', 'حسن')
+    >>> [parse(n).title for n in ("د أحمد علي", "أ.د.أحمد علي", "أ. م. د. أحمد علي")]
+    ['د', 'أ.د.', 'أ. م. د.']
+
+Ranks and offices are read in front of a name too: ``اللواء``
+(major general), ``المستشار`` and ``المستشارة`` (counsellor, a
+judge's title in Egypt) and ``السفيرة`` (ambassador):
+
+.. doctest::
+
+    >>> parse("اللواء أحمد علي").title
+    'اللواء'
+
+Initials
+~~~~~~~~
+
+In the name lists measured, Arabic script writes a letter with a full
+stop before a name as a title and almost never for a name (Persian and
+Urdu names were measured less). :meth:`~nameparser.ParsedName.initials`
+gives nothing for a word in Arabic script, as for Han, Thai and
+Burmese, and the name match reads a letter with a full stop as a word
+of its own, not as an initial:
+
+.. doctest::
+
+    >>> parse("أحمد علي حسن").initials()
+    ''
+
+Where the reading stops
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- **A title written with a slash** in place of its full stop
+  (``د/ أحمد علي``, Egypt's usual writing) is still read as the given
+  name; how a slash should read is an open question (:issue:`1149`).
+- **A title behind another title** that is not listed stays a name
+  word: ``الأستاذ المساعد`` (assistant professor) reads ``المساعد`` as
+  the given name.
+- **A vowel mark on the letter** (``دُ.``) or a presentation form
+  (``ﺩ.``) is not read as the title.
+- **A Western name written in Arabic script with an initial** has no
+  initials, and ``و.`` (W.) is read as ``و``, "and", which joins the
+  name: ``جورج و. بوش`` reads as one given name.
+
+.. doctest::
+
+    >>> parse("د/ أحمد علي").given
+    'د/'
 
 
 .. _maghrebi-hebrew-particles:
