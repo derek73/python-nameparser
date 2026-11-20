@@ -509,14 +509,16 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name; 2205 -> 2208 the same day, #1464's 'Dr. Al Amin
     # Abdul Rahman' reporting particle-or-given; 2208 -> 2211 the same
     # day, #1149's 'جورج و. بوش' reporting given-or-family under three
-    # orders; 2211 -> 2217 on 2026-11-20, #1164's 'Rahim Osman @ Jaki V'
-    # and 'Ali @ X @ Y Z V' under three orders; 2217 -> 2223 the same
-    # day, its fix review's 'Osman, Rahim @ Jaki PhD Ali', 'Jane née
-    # Jones @ JJ V' and 'Dr née Jones @ JJ V', six claims among them;
-    # 2223 -> 2232 the same day, its second fix review's 'Rahim Osman @
-    # Jaki Jr. née Smith' and 'Jane Smith @ JJ Jr. née' under three orders.
-    assert claims == 2232, (
-        f"the field sweep checks {claims} claims, recorded as 2232 on "
+    # orders; 2211 -> 2214 on 2026-11-20, #1149's 'Dr/' (rules/T9's
+    # boundary, no name after the slash) reporting given-or-family under
+    # three orders; 2214 -> 2217 the same day, its review's 'Dr/ Dean
+    # Smith' reporting title-or-name under three orders; 2217 -> 2238
+    # the same day, #1164's alias rows ('Rahim Osman @ Jaki V', 'Ali @ X
+    # @ Y Z V', 'Osman, Rahim @ Jaki PhD Ali', 'Jane née Jones @ JJ V',
+    # 'Dr née Jones @ JJ V', 'Rahim Osman @ Jaki Jr. née Smith', 'Jane
+    # Smith @ JJ Jr. née') under three orders.
+    assert claims == 2238, (
+        f"the field sweep checks {claims} claims, recorded as 2238 on "
         f"2026-11-20")
 
 

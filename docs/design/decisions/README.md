@@ -127,6 +127,7 @@ Entry conventions:
 - [T6 — a narrow no-break space between Mongolian letters joins them](T6-narrow-no-break-space-between-mongolian-letters-joins-them.md)
 - [T7 — a given name written as a run of initials](T7-given-name-written-as-a-run-of-initials.md)
 - [T8 — a word glued to the next at its full stop](T8-word-glued-to-the-next-at-its-full-stop.md)
+- [T9 — a slash written for a title's full stop](T9-slash-written-for-a-titles-full-stop.md)
 
 ## Ambiguity & tie-breaking (A)
 

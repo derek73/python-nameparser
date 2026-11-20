@@ -436,7 +436,10 @@ class ParseState:
     changes the token COUNT: an unspaced CJK token, or a word glued at
     its full stop before any comma (rules/T8), splits into n+1 pieces,
     still as sub-slices of the original, and every later index in the
-    segment runs shifts by n); classify -> token tags AND
+    segment runs shifts by n; the slash after a title opening the name
+    or the given part after a family comma is cut off its word where
+    glued and its token dropped, rules/T9, every later index remapped
+    by the net count); classify -> token tags AND
     one_case; group -> structure (its head decides a comma form, #613)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,
