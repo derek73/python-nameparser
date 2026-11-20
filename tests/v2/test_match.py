@@ -687,6 +687,15 @@ def test_a_devanagari_vowel_sign_is_not_folded_away() -> None:
     assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
 
 
+def test_an_arabic_letter_with_a_full_stop_is_no_initial() -> None:
+    # Arabic script writes no initials (#1149, decisions/script-properties):
+    # the letter is a word of its own, so it conflicts with the name it
+    # would have stood for, where a Latin initial is consistent with it
+    r = m.check("فؤاد علي", "ف. علي")
+    assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+    assert m.check("Fouad Ali", "F. Ali").consistent
+
+
 def test_a_devanagari_anusvara_is_not_folded_away() -> None:
     r = m.check("हंस सिंह", "हस सिंह")
     assert not r.consistent and role(r, Role.GIVEN).outcome is Outcome.CONFLICT
