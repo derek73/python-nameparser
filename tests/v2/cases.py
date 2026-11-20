@@ -21370,6 +21370,34 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1457)",
          notes="H9: a modifier outside the leading run is read as any "
                "title is"),
+    # #1487: a degree's possessive, a title modifier.
+    Case("degree_possessive_and_head_after_a_comma_are_one_title",
+         "Nadir Qassoumi, Master's degree",
+         {"title": "Master's degree", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1487)",
+         notes="H9: the possessive is a modifier, chained into 'degree'; "
+               "read given 'Master's', middle 'degree', family 'Nadir "
+               "Qassoumi' 1.4.0 through 3.1"),
+    Case("degree_possessive_with_the_typographic_apostrophe",
+         "Nadir Qassoumi, Bachelor\u2019s degree",
+         {"title": "Bachelor\u2019s degree", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1487)",
+         notes="listed again with the apostrophe the vocabulary does not "
+               "fold (U+2019)"),
+    Case("degree_possessive_alone_after_a_comma_is_the_title",
+         "Nadir Qassoumi, Doctor's",
+         {"title": "Doctor's", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1487)",
+         notes="a modifier outside the leading run is read as any title is"),
+    Case("degree_possessive_opening_a_name_stays_the_given_name",
+         "Master's Nadir Qassoumi",
+         {"given": "Master's", "middle": "Nadir", "family": "Qassoumi"},
+         notes="H9: a modifier in front claims nothing with no head after "
+               "it (#1487)"),
+    Case("degree_possessive_ending_a_name_stays_the_family",
+         "Nadir Master's",
+         {"given": "Nadir", "family": "Master's"},
+         notes="a bare modifier ending a name is a name word (#1487)"),
     Case("head_title_before_of_after_a_comma",
          "Nadir Qassoumi, Head of Department",
          {"title": "Head of Department", "given": "Nadir",
