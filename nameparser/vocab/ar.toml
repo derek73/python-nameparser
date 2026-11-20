@@ -70,6 +70,30 @@ text = "شيخ"
 excluded = { style = { reason = "bare, it collides with the common female given name Shaikha; الشيخ, with the article, ships", issue = 269 } }
 
 [[word]]
+text = "أ"
+academic = { addresses = "given", expands = "Ustadh (أستاذ) written short: professor, or Mr.", note = "written short with a full stop (the fold leaves the bare letter, which reads as the title too); Arabic script writes no initials (decisions/script-properties), so it swallows none: ORCID's Arabic-script names open with أ. 15 times, every one before a name; the King Saud directory 6 of 401 (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "ا"
+academic = { addresses = "given", same_as = "أ", expands = "Ustadh written short, its alif without the hamza", note = "ORCID Arabic-script records open with ا. 5 times and write it in ا.م.د. and ا.د. (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "أ.د"
+academic = { addresses = "given", expands = "professor doctor (أستاذ دكتور) written short", note = "ORCID Arabic-script records open with it 40 times; the King Saud directory 23 of 401; Egypt's House of Representatives 2 (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "ا.د"
+academic = { addresses = "given", same_as = "أ.د", expands = "professor doctor written short, its alif without the hamza", note = "ORCID Arabic-script records open with it 3 times (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "أ.م.د"
+academic = { addresses = "given", expands = "assistant professor doctor (أستاذ مساعد دكتور) written short", note = "ORCID Arabic-script records open with it 11 times (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "ا.م.د"
+academic = { addresses = "given", same_as = "أ.م.د", expands = "assistant professor doctor written short, its alif without the hamza", note = "ORCID Arabic-script records open with it 4 times (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
 text = "أستاذ"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "professor" }
 
@@ -80,6 +104,10 @@ academic = { addresses = "given", gender = "f", issue = 269, expands = "professo
 [[word]]
 text = "الأستاذ"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "the professor; also an honorific, Mr." }
+
+[[word]]
+text = "الاستاذ"
+academic = { addresses = "given", same_as = "الأستاذ", expands = "the professor, its alif without the hamza", note = "ORCID Arabic-script records open with it 10 times (most before الدكتور), Egypt's House of Representatives once; every one moves to the title and none from a name (2026-11-19)", issue = 1149, decided = 2026-11-19 }
 
 [[word]]
 text = "الأستاذة"
@@ -102,12 +130,12 @@ text = "الدکتورة"
 academic = { addresses = "given", gender = "f", same_as = "الدكتورة", issue = 1151, expands = "the doctor, Persian letters ی and ک" }
 
 [[word]]
-text = "د"
-excluded = { academic = { reason = "the abbreviation د.: the edge-period fold leaves bare د, a single letter that would swallow initials (the bare-κ trap)", issue = 269 } }
-
-[[word]]
 text = "دكتور"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "doctor" }
+
+[[word]]
+text = "د"
+academic = { addresses = "given", same_as = "دكتور", expands = "Dr., دكتور written short", note = "written short with a full stop (the fold leaves the bare letter, which reads as the title too); Arabic script writes no initials (decisions/script-properties), so it swallows none: ORCID's Arabic-script names open with د. 190 times and with a bare د 33; Egypt's House of Representatives with د 13 and د. 7; the King Saud directory 63 of 401 (2026-11-19)", issue = 1149, decided = 2026-11-19 }
 
 [[word]]
 text = "دکتور"
@@ -120,6 +148,18 @@ academic = { addresses = "given", gender = "f", issue = 269, expands = "doctor" 
 [[word]]
 text = "دکتورة"
 academic = { addresses = "given", gender = "f", same_as = "دكتورة", issue = 1151, expands = "doctor, Persian letters ی and ک" }
+
+[[word]]
+text = "م"
+academic = { addresses = "given", expands = "lecturer (مدرس) or engineer (مهندس) written short", note = "written short with a full stop (the fold leaves the bare letter, which reads as the title too); Arabic script writes no initials (decisions/script-properties), so it swallows none: ORCID's Arabic-script names open with م. 11 times; Egypt's House of Representatives with a bare م 3 (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "م.د"
+academic = { addresses = "given", expands = "lecturer doctor (مدرس دكتور) written short", note = "ORCID Arabic-script records open with it 11 times (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "م.م"
+academic = { addresses = "given", expands = "assistant lecturer (مدرس مساعد) written short", note = "ORCID Arabic-script records open with it 22 times (2026-11-19)", issue = 1149, decided = 2026-11-19 }
 
 [[word]]
 text = "مهندس"
@@ -172,8 +212,28 @@ text = "سلطان"
 excluded = { nobility = { reason = "Sultan is a common given name", issue = 269 } }
 
 [[word]]
+text = "اللواء"
+military = { addresses = "given", expands = "the major general", note = "opens 4 names of Egypt's House of Representatives, each moving to the title and none from a name (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "لواء"
+military = { addresses = "given", same_as = "اللواء", expands = "major general, without the article", note = "opens 2 names of Egypt's House of Representatives, each moving to the title (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
 text = "vizier"
 office = {}
+
+[[word]]
+text = "السفيرة"
+office = { addresses = "given", gender = "f", expands = "the ambassador", note = "opens 1 name of Egypt's House of Representatives, moving to the title (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "المستشار"
+office = { addresses = "given", gender = "m", expands = "the counsellor, a judge's title in Egypt", note = "opens 1 name of Egypt's House of Representatives, moving to the title (2026-11-19)", issue = 1149, decided = 2026-11-19 }
+
+[[word]]
+text = "المستشارة"
+office = { addresses = "given", gender = "f", expands = "the counsellor, a judge's title in Egypt", note = "opens 1 name of Egypt's House of Representatives, moving to the title (2026-11-19)", issue = 1149, decided = 2026-11-19 }
 
 [[word]]
 text = "الأب"

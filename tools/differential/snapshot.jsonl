@@ -5997,338 +5997,343 @@
 {"name": "תומר שחורי", "given": "תומר", "family": "שחורי", "initials": "ת. ש."}
 {"name": "תמיר כהן", "given": "תמיר", "family": "כהן", "initials": "ת. כ."}
 {"name": "תמרה כהן", "given": "תמרה", "family": "כהן", "initials": "ת. כ."}
-{"name": "آئرين ائڊلر", "given": "آئرين", "family": "ائڊلر", "initials": "آ. ا."}
-{"name": "آقای امیر هوشنگ رستگار دکتر", "title": "آقای", "given": "امیر", "middle": "هوشنگ رستگار", "family": "دکتر", "initials": "ا. ه. ر. د."}
-{"name": "آمال فهمي", "given": "آمال", "family": "فهمي", "initials": "آ. ف."}
-{"name": "آیتین عدلو", "given": "آیتین", "family": "عدلو", "initials": "آ. ع."}
-{"name": "أبو الأغا، أحمد رامي نجيب محفوظ", "order": "FAMILY_FIRST", "given": "أحمد", "middle": "رامي نجيب محفوظ", "family": "أبو الأغا", "initials": "أ. ر. ن. م. ا."}
-{"name": "أبو بكر الشاطري", "given": "أبو بكر", "family": "الشاطري", "initials": "أ. ب. ا."}
-{"name": "أبو بكر سالم", "given": "أبو بكر", "family": "سالم", "initials": "أ. ب. س."}
-{"name": "أحلام الجريتلي", "given": "أحلام", "family": "الجريتلي", "initials": "أ. ا."}
-{"name": "أحمد حجازي", "given": "أحمد", "family": "حجازي", "initials": "أ. ح."}
-{"name": "أحمد سالم", "given": "أحمد", "family": "سالم", "initials": "أ. س."}
-{"name": "أحمد قنديل", "given": "أحمد", "family": "قنديل", "initials": "أ. ق."}
-{"name": "أحمد مصطفى", "given": "أحمد", "family": "مصطفى", "initials": "أ. م."}
-{"name": "أصالة نصري", "given": "أصالة", "family": "نصري", "initials": "أ. ن."}
-{"name": "أكرم التلاوي", "given": "أكرم", "family": "التلاوي", "initials": "أ. ا."}
-{"name": "أكرم عجة", "given": "أكرم", "family": "عجة", "initials": "أ. ع."}
-{"name": "ألكسندر دارسي", "given": "ألكسندر", "family": "دارسي", "initials": "أ. د."}
-{"name": "أمجد الطرابلسي", "given": "أمجد", "family": "الطرابلسي", "initials": "أ. ا."}
-{"name": "أمين دابو", "given": "أمين", "family": "دابو", "initials": "أ. د."}
-{"name": "أمين سامي", "given": "أمين", "family": "سامي", "initials": "أ. س."}
-{"name": "أمينة رشيد", "given": "أمينة", "family": "رشيد", "initials": "أ. ر."}
-{"name": "أنطوانيت نجيب", "given": "أنطوانيت", "family": "نجيب", "initials": "أ. ن."}
-{"name": "أنطونيوس نجيب", "given": "أنطونيوس", "family": "نجيب", "initials": "أ. ن."}
-{"name": "أيمن الدُّقر", "given": "أيمن", "family": "الدُّقر", "initials": "أ. ا."}
-{"name": "إبراهيم البغدادي", "given": "إبراهيم", "family": "البغدادي", "initials": "إ. ا."}
-{"name": "إبراهيم الغلاييني", "given": "إبراهيم", "family": "الغلاييني", "initials": "إ. ا."}
-{"name": "إبراهيم صالح", "given": "إبراهيم", "family": "صالح", "initials": "إ. ص."}
-{"name": "إحسان الرفاعي", "given": "إحسان", "family": "الرفاعي", "initials": "إ. ا."}
-{"name": "إلهام حسين", "given": "إلهام", "family": "حسين", "initials": "إ. ح."}
-{"name": "إلياس الزيَّات", "given": "إلياس", "family": "الزيَّات", "initials": "إ. ا."}
-{"name": "إيهاب خورشيد", "given": "إيهاب", "family": "خورشيد", "initials": "إ. خ."}
-{"name": "ائڊلر آئرين", "order": "FAMILY_FIRST", "given": "آئرين", "family": "ائڊلر", "initials": "آ. ا."}
-{"name": "احمد", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "احمد", "order": "FAMILY_FIRST", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "احمد گلشیری", "given": "احمد", "family": "گلشیری", "initials": "ا. گ."}
-{"name": "اختر رضا خان", "given": "اختر", "middle": "رضا", "family": "خان", "initials": "ا. ر. خ."}
-{"name": "ادا كورنەليا فون بريۋل جۋنيور، ءتىس دارىگەرى", "given": "ءتىس", "middle": "دارىگەرى", "family": "ادا كورنەليا فون بريۋل جۋنيور", "initials": "ء. د. ا. ك. ف. ب. ج."}
-{"name": "ارین اډلر", "given": "ارین", "family": "اډلر", "initials": "ا. ا."}
-{"name": "استوبر، زازیلیا هایمیش", "order": "FAMILY_FIRST", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر", "initials": "ز. ه. ا."}
-{"name": "اسٽوبر زيزيليا ھئمش", "order": "FAMILY_FIRST", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر", "initials": "ز. ھ. ا."}
-{"name": "اسەم", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "اسەم", "order": "FAMILY_FIRST", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
-{"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
-{"name": "اقبال قریشی", "given": "اقبال", "family": "قریشی", "initials": "ا. ق."}
-{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "title": "الدكتور", "given": "طبيب", "middle": "وجراح", "family": "عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "initials": "ط. و. ع. ك. س. م. ف. ب.", "generation": "الإبن"}
-{"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا", "suffix": "الابن", "initials": "ا. ا. أ. ر. ن. م. ا.", "generation": "الابن"}
-{"name": "العامر، كمال مجدي", "order": "FAMILY_FIRST", "given": "كمال", "middle": "مجدي", "family": "العامر", "initials": "ك. م. ا."}
-{"name": "النجار، سميرة", "order": "FAMILY_FIRST", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
-{"name": "امید رضا ملایری", "given": "امید", "middle": "رضا", "family": "ملایری", "initials": "ا. ر. م."}
-{"name": "انو آغا", "given": "انو", "family": "آغا", "initials": "ا. آ."}
-{"name": "انیتا اگنی ہوتری", "given": "انیتا", "middle": "اگنی", "family": "ہوتری", "initials": "ا. ا. ہ."}
-{"name": "اډلر ارین", "order": "FAMILY_FIRST", "given": "ارین", "family": "اډلر", "initials": "ا. ا."}
-{"name": "بالقىباي ماقسات", "order": "FAMILY_FIRST", "given": "ماقسات", "family": "بالقىباي", "initials": "م. ب."}
-{"name": "بالقىباي، ماقسات توقماحامبەتۇلى", "order": "FAMILY_FIRST", "given": "ماقسات", "middle": "توقماحامبەتۇلى", "family": "بالقىباي", "initials": "م. ت. ب."}
-{"name": "بروهل، آدا کورنلیا سزار مارتین وان", "order": "FAMILY_FIRST", "given": "آدا", "middle": "کورنلیا سزار مارتین وان", "family": "بروهل", "initials": "آ. ک. س. م. و. ب."}
-{"name": "بريۋل، ادا كورنەليا سەزار مارتين فون", "order": "FAMILY_FIRST", "given": "ادا", "middle": "كورنەليا سەزار مارتين فون", "family": "بريۋل", "initials": "ا. ك. س. م. ف. ب."}
-{"name": "بهروز بوچانی", "given": "بهروز", "family": "بوچانی", "initials": "ب. ب."}
-{"name": "بهمن جلالی", "given": "بهمن", "family": "جلالی", "initials": "ب. ج."}
-{"name": "بهيج الخطيب", "given": "بهيج", "family": "الخطيب", "initials": "ب. ا."}
-{"name": "جان همیش واټسن", "given": "جان", "middle": "همیش", "family": "واټسن", "initials": "ج. ه. و."}
-{"name": "جلال همتی", "given": "جلال", "family": "همتی", "initials": "ج. ه."}
-{"name": "جمال محمد", "given": "جمال", "family": "محمد", "initials": "ج. م."}
-{"name": "جميل عز الدين", "given": "جميل", "middle": "عز", "family": "الدين", "initials": "ج. ع. ا."}
-{"name": "جورج إسحاق", "given": "جورج", "family": "إسحاق", "initials": "ج. إ."}
-{"name": "جورج بوش الابن", "given": "جورج", "family": "بوش", "suffix": "الابن", "initials": "ج. ب.", "generation": "الابن"}
-{"name": "جورج ميشيل", "given": "جورج", "family": "ميشيل", "initials": "ج. م."}
-{"name": "جوزف پال", "given": "جوزف", "family": "پال", "initials": "ج. پ."}
-{"name": "جيانيس كريستو", "given": "جيانيس", "family": "كريستو", "initials": "ج. ك."}
-{"name": "جيهان السادات", "given": "جيهان", "family": "السادات", "initials": "ج. ا."}
-{"name": "جیسی پال", "given": "جیسی", "family": "پال", "initials": "ج. پ."}
-{"name": "حاتم علي", "given": "حاتم", "family": "علي", "initials": "ح. ع."}
-{"name": "حاتم منصور", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
-{"name": "حازم هاشم", "given": "حازم", "family": "هاشم", "initials": "ح. ه."}
-{"name": "حسن دانشفر", "given": "حسن", "family": "دانشفر", "initials": "ح. د."}
-{"name": "حسن شحاتة", "given": "حسن", "family": "شحاتة", "initials": "ح. ش."}
-{"name": "حسن عابدی", "given": "حسن", "family": "عابدی", "initials": "ح. ع."}
-{"name": "حسن ناصر", "given": "حسن", "family": "ناصر", "initials": "ح. ن."}
-{"name": "حسني سبح", "given": "حسني", "family": "سبح", "initials": "ح. س."}
-{"name": "حسين خطاب", "given": "حسين", "family": "خطاب", "initials": "ح. خ."}
-{"name": "حسین امینی", "given": "حسین", "family": "امینی", "initials": "ح. ا."}
-{"name": "حسین حسینی", "given": "حسین", "family": "حسینی", "initials": "ح. ح."}
-{"name": "حكمت هاشم", "given": "حكمت", "family": "هاشم", "initials": "ح. ه."}
-{"name": "حليم بركات", "given": "حليم", "family": "بركات", "initials": "ح. ب."}
-{"name": "حمدان شلبي", "given": "حمدان", "family": "شلبي", "initials": "ح. ش."}
-{"name": "حمدي الحريري", "given": "حمدي", "family": "الحريري", "initials": "ح. ا."}
-{"name": "حميدة الطاهر", "given": "حميدة", "family": "الطاهر", "initials": "ح. ا."}
-{"name": "حنیف خان", "given": "حنیف", "family": "خان", "initials": "ح. خ."}
-{"name": "خالد عزيز", "given": "خالد", "family": "عزيز", "initials": "خ. ع."}
-{"name": "خان مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
-{"name": "خان، مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
-{"name": "خضر الأحمد", "given": "خضر", "family": "الأحمد", "initials": "خ. ا."}
-{"name": "دلیپ کور ٹوانہ", "given": "دلیپ", "middle": "کور", "family": "ٹوانہ", "initials": "د. ک. ٹ."}
-{"name": "رائد المتني", "given": "رائد", "family": "المتني", "initials": "ر. ا."}
-{"name": "رامي مخلوف", "given": "رامي", "family": "مخلوف", "initials": "ر. م."}
-{"name": "رجاء يوسف", "given": "رجاء", "family": "يوسف", "initials": "ر. ي."}
-{"name": "رستگار، آقای امیر هوشنگ دکتر", "order": "FAMILY_FIRST", "title": "آقای", "given": "امیر", "middle": "هوشنگ دکتر", "family": "رستگار", "initials": "ا. ه. د. ر."}
-{"name": "رستگار، امیر هوشنگ", "order": "FAMILY_FIRST", "given": "امیر", "middle": "هوشنگ", "family": "رستگار", "initials": "ا. ه. ر."}
-{"name": "رشاد رشدي", "given": "رشاد", "family": "رشدي", "initials": "ر. ر."}
-{"name": "رمضان ديب", "given": "رمضان", "family": "ديب", "initials": "ر. د."}
-{"name": "رنا أحمد", "given": "رنا", "family": "أحمد", "initials": "ر. أ."}
-{"name": "ريما الجفالي", "given": "ريما", "family": "الجفالي", "initials": "ر. ا."}
-{"name": "رینوکا شرما", "given": "رینوکا", "family": "شرما", "initials": "ر. ش."}
-{"name": "زازیلیا هایمیش استوبر", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر", "initials": "ز. ه. ا."}
-{"name": "زكي مبارك", "given": "زكي", "family": "مبارك", "initials": "ز. م."}
-{"name": "زكية إبراهيم", "given": "زكية", "family": "إبراهيم", "initials": "ز. إ."}
-{"name": "زيزيليا ھئمش اسٽوبر", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر", "initials": "ز. ھ. ا."}
-{"name": "زيزينيا هاميش ستوبر", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر", "initials": "ز. ه. س."}
-{"name": "زیزیلیا همیش سټوبر", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
-{"name": "سارہ خان", "given": "سارہ", "family": "خان", "initials": "س. خ."}
-{"name": "سامانتا", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سامانتا", "order": "FAMILY_FIRST", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سامي الكيالي", "given": "سامي", "family": "الكيالي", "initials": "س. ا."}
-{"name": "ستوبر، زيزينيا هاميش", "order": "FAMILY_FIRST", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر", "initials": "ز. ه. س."}
-{"name": "ستیش شرما", "given": "ستیش", "family": "شرما", "initials": "س. ش."}
-{"name": "سحر كامل", "given": "سحر", "family": "كامل", "initials": "س. ك."}
-{"name": "سعدیہ خان", "given": "سعدیہ", "family": "خان", "initials": "س. خ."}
-{"name": "سعدیہ دہلوی", "given": "سعدیہ", "family": "دہلوی", "initials": "س. د."}
-{"name": "سعيد حماد", "given": "سعيد", "family": "حماد", "initials": "س. ح."}
-{"name": "سعيد عبد الله", "given": "سعيد", "family": "عبد الله", "initials": "س. ع. ا."}
-{"name": "سلام امینی", "given": "سلام", "family": "امینی", "initials": "س. ا."}
-{"name": "سلطان البرقان", "given": "سلطان", "family": "البرقان", "initials": "س. ا."}
-{"name": "سلمان, محمد", "given": "محمد", "family": "سلمان", "initials": "م. س."}
-{"name": "سلمان،", "given": "سلمان", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سلمان، محمد", "given": "محمد", "family": "سلمان", "initials": "م. س."}
-{"name": "سليمان الجوخدار", "given": "سليمان", "family": "الجوخدار", "initials": "س. ا."}
-{"name": "سمر عبد العزيز", "given": "سمر", "family": "عبد العزيز", "initials": "س. ع. ا."}
-{"name": "سمير سرور", "given": "سمير", "family": "سرور", "initials": "س. س."}
-{"name": "سميرة النجار", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
-{"name": "سميرة خاشقجي", "given": "سميرة", "family": "خاشقجي", "initials": "س. خ."}
-{"name": "سميرة عزت", "given": "سميرة", "family": "عزت", "initials": "س. ع."}
-{"name": "سنباد", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سنباد", "order": "FAMILY_FIRST", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سندباد", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سندباد", "order": "FAMILY_FIRST", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سهيل الغزي", "given": "سهيل", "family": "الغزي", "initials": "س. ا."}
-{"name": "سوسن ربيع", "given": "سوسن", "family": "ربيع", "initials": "س. ر."}
-{"name": "سيد كريم", "given": "سيد", "family": "كريم", "initials": "س. ك."}
-{"name": "سينباد", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سينباد", "order": "FAMILY_FIRST", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سټوبر زیزیلیا همیش", "order": "FAMILY_FIRST", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
-{"name": "سید عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
-{"name": "سید، عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
-{"name": "سیروس قهرمانی", "given": "سیروس", "family": "قهرمانی", "initials": "س. ق."}
-{"name": "سیروس گرجستانی", "given": "سیروس", "family": "گرجستانی", "initials": "س. گ."}
-{"name": "سەسيليا شتوبەر", "given": "سەسيليا", "family": "شتوبەر", "initials": "س. ش."}
-{"name": "شازیہ اصغر", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
-{"name": "شاہدہ رضا", "given": "شاہدہ", "family": "رضا", "initials": "ش. ر."}
-{"name": "شاہین رضا", "given": "شاہین", "family": "رضا", "initials": "ش. ر."}
-{"name": "شبیر اختر", "given": "شبیر", "family": "اختر", "initials": "ش. ا."}
-{"name": "شتوبەر سەسيليا", "order": "FAMILY_FIRST", "given": "سەسيليا", "family": "شتوبەر", "initials": "س. ش."}
-{"name": "شتوبەر، سەسيليا حەمىش", "order": "FAMILY_FIRST", "given": "سەسيليا", "middle": "حەمىش", "family": "شتوبەر", "initials": "س. ح. ش."}
-{"name": "شهره آغداشلو", "given": "شهره", "family": "آغداشلو", "initials": "ش. آ."}
-{"name": "شيماء الصباغ", "given": "شيماء", "family": "الصباغ", "initials": "ش. ا."}
-{"name": "صابری محمد ہاشم", "order": "FAMILY_FIRST", "given": "محمد", "middle": "ہاشم", "family": "صابری", "initials": "م. ہ. ص."}
-{"name": "صابری، محمد ہاشم", "order": "FAMILY_FIRST", "given": "محمد", "middle": "ہاشم", "family": "صابری", "initials": "م. ہ. ص."}
-{"name": "صالح اسدی", "given": "صالح", "family": "اسدی", "initials": "ص. ا."}
-{"name": "صالح اللحيدان", "given": "صالح", "family": "اللحيدان", "initials": "ص. ا."}
-{"name": "صالح خالد الشهري", "given": "صالح", "middle": "خالد", "family": "الشهري", "initials": "ص. خ. ا."}
-{"name": "صلاح المُولَّد", "given": "صلاح", "family": "المُولَّد", "initials": "ص. ا."}
-{"name": "صنع الله إبراهيم", "given": "صنع", "middle": "الله", "family": "إبراهيم", "initials": "ص. ا. إ."}
-{"name": "طارق سلامة", "given": "طارق", "family": "سلامة", "initials": "ط. س."}
-{"name": "طارق عبد العزيز", "given": "طارق", "family": "عبد العزيز", "initials": "ط. ع. ا."}
-{"name": "طارق فتح", "given": "طارق", "family": "فتح", "initials": "ط. ف."}
-{"name": "طاہر داوڑ", "given": "طاہر", "family": "داوڑ", "initials": "ط. د."}
-{"name": "طلعت زكريا", "given": "طلعت", "family": "زكريا", "initials": "ط. ز."}
-{"name": "عائشة ذو الغنى", "given": "عائشة", "middle": "ذو", "family": "الغنى", "initials": "ع. ذ. ا."}
-{"name": "عادل التويجري", "given": "عادل", "family": "التويجري", "initials": "ع. ا."}
-{"name": "عارف علوی", "given": "عارف", "family": "علوی", "initials": "ع. ع."}
-{"name": "عارف وزیر", "given": "عارف", "family": "وزیر", "initials": "ع. و."}
-{"name": "عالي القرشي", "given": "عالي", "family": "القرشي", "initials": "ع. ا."}
-{"name": "عباس شفیعی", "given": "عباس", "family": "شفیعی", "initials": "ع. ش."}
-{"name": "عباس وفایی", "given": "عباس", "family": "وفایی", "initials": "ع. و."}
-{"name": "عباس کریمی", "given": "عباس", "family": "کریمی", "initials": "ع. ک."}
-{"name": "عبد الأكرم السقَّا", "given": "عبد الأكرم", "family": "السقَّا", "initials": "ع. ا. ا."}
-{"name": "عبد الإله نبهان", "given": "عبد الإله", "family": "نبهان", "initials": "ع. ا. ن."}
-{"name": "عبد الباسط بدر", "given": "عبد الباسط", "family": "بدر", "initials": "ع. ا. ب."}
-{"name": "عبد الجبار الضحاك", "given": "عبد الجبار", "family": "الضحاك", "initials": "ع. ا. ا."}
-{"name": "عبد الحليم قدور", "given": "عبد الحليم", "family": "قدور", "initials": "ع. ا. ق."}
-{"name": "عبد الرحمن السديس", "given": "عبد الرحمن", "family": "السديس", "initials": "ع. ا. ا."}
-{"name": "عبد الرحمن العجلان", "given": "عبد الرحمن", "family": "العجلان", "initials": "ع. ا. ا."}
-{"name": "عبد الرحيم منصور", "given": "عبد الرحيم", "family": "منصور", "initials": "ع. ا. م."}
-{"name": "عبد الستار إبراهيم", "given": "عبد الستار", "family": "إبراهيم", "initials": "ع. ا. إ."}
-{"name": "عبد العزيز الربيعي", "given": "عبد العزيز", "family": "الربيعي", "initials": "ع. ا. ا."}
-{"name": "عبد القدوس أبو صالح", "given": "عبد القدوس", "family": "أبو صالح", "initials": "ع. ا. ص."}
-{"name": "عبد اللطيف عبد الحميد", "given": "عبد اللطيف", "family": "عبد الحميد", "initials": "ع. ا. ع. ا."}
-{"name": "عبد الله", "given": "عبد", "family": "الله", "initials": "ع. ا."}
-{"name": "عبد الله الحقيل", "given": "عبد الله", "family": "الحقيل", "initials": "ع. ا. ا."}
-{"name": "عبد الله حسن, علي", "given": "علي", "family": "عبد الله حسن", "initials": "ع. ع. ا. ح."}
-{"name": "عبد الهادي الباني", "given": "عبد الهادي", "family": "الباني", "initials": "ع. ا. ا."}
-{"name": "عبد الوكيل الهاشمي", "given": "عبد الوكيل", "family": "الهاشمي", "initials": "ع. ا. ا."}
-{"name": "عبد الکریم عبد الحمید سید ایم پی", "given": "عبد الکریم", "middle": "عبد الحمید سید ایم", "family": "پی", "initials": "ع. ا. ع. ا. س. ا. پ."}
-{"name": "عثمان آل حميد", "given": "عثمان", "family": "آل حميد", "initials": "ع. ح."}
-{"name": "عدلو، آیتین", "order": "FAMILY_FIRST", "given": "آیتین", "family": "عدلو", "initials": "آ. ع."}
-{"name": "عدنان بركات", "given": "عدنان", "family": "بركات", "initials": "ع. ب."}
-{"name": "عدنان خاشقجي", "given": "عدنان", "family": "خاشقجي", "initials": "ع. خ."}
-{"name": "عدنان مصطفى", "given": "عدنان", "family": "مصطفى", "initials": "ع. م."}
-{"name": "عرفان خان", "given": "عرفان", "family": "خان", "initials": "ع. خ."}
-{"name": "عرفان صدیقی", "given": "عرفان", "family": "صدیقی", "initials": "ع. ص."}
-{"name": "عزت‌الله انتظامی", "given": "عزت‌الله", "family": "انتظامی", "initials": "ع. ا."}
-{"name": "علي الرواس", "given": "علي", "family": "الرواس", "initials": "ع. ا."}
-{"name": "علي القرني", "given": "علي", "family": "القرني", "initials": "ع. ا."}
-{"name": "علي عبد الکریم", "given": "علي", "family": "عبد الکریم", "initials": "ع. ع. ا."}
-{"name": "علی حاتمی", "given": "علی", "family": "حاتمی", "initials": "ع. ح."}
-{"name": "علیرضا بیرانوند", "given": "علیرضا", "family": "بیرانوند", "initials": "ع. ب."}
-{"name": "علی‌اصغر زارعی", "given": "علی‌اصغر", "family": "زارعی", "initials": "ع. ز."}
-{"name": "علی‌اکبر حیدری", "given": "علی‌اکبر", "family": "حیدری", "initials": "ع. ح."}
-{"name": "عمران خان", "given": "عمران", "family": "خان", "initials": "ع. خ."}
-{"name": "غادة السمان", "given": "غادة", "family": "السمان", "initials": "غ. ا."}
-{"name": "غسان جبري", "given": "غسان", "family": "جبري", "initials": "غ. ج."}
-{"name": "غلام اللہ خان", "given": "غلام", "middle": "اللہ", "family": "خان", "initials": "غ. ا. خ."}
-{"name": "فائق عرقسُوسي", "given": "فائق", "family": "عرقسُوسي", "initials": "ف. ع."}
-{"name": "فاروق خورشيد", "given": "فاروق", "family": "خورشيد", "initials": "ف. خ."}
-{"name": "فاروق عطية", "given": "فاروق", "family": "عطية", "initials": "ف. ع."}
-{"name": "فايزة حسين", "given": "فايزة", "family": "حسين", "initials": "ف. ح."}
-{"name": "فتحي قورة", "given": "فتحي", "family": "قورة", "initials": "ف. ق."}
-{"name": "فتح‌الله بنی‌صدر", "given": "فتح‌الله", "family": "بنی‌صدر", "initials": "ف. ب."}
-{"name": "فرح خان", "given": "فرح", "family": "خان", "initials": "ف. خ."}
-{"name": "فريد الأطرش", "given": "فريد", "family": "الأطرش", "initials": "ف. ا."}
-{"name": "فریدون ابراهیمی", "given": "فریدون", "family": "ابراهیمی", "initials": "ف. ا."}
-{"name": "فون برول، عايدة كورنيليا سيزار مارتن", "order": "FAMILY_FIRST", "given": "عايدة", "middle": "كورنيليا سيزار مارتن", "family": "فون برول", "initials": "ع. ك. س. م. ف. ب."}
-{"name": "فون بريۋل ادا كورنەليا", "order": "FAMILY_FIRST", "given": "بريۋل", "middle": "ادا كورنەليا", "family": "فون", "initials": "ب. ا. ك. ف."}
-{"name": "قالاجان قايرات", "given": "قالاجان", "family": "قايرات", "initials": "ق. ق."}
-{"name": "قايرات قالاجان", "order": "FAMILY_FIRST", "given": "قالاجان", "family": "قايرات", "initials": "ق. ق."}
-{"name": "قايرات، قالاجان", "order": "FAMILY_FIRST", "given": "قالاجان", "family": "قايرات", "initials": "ق. ق."}
-{"name": "كاثرين مولر", "given": "كاثرين", "family": "مولر", "initials": "ك. م."}
-{"name": "كارىباي مۇرات", "order": "FAMILY_FIRST", "given": "مۇرات", "family": "كارىباي", "initials": "م. ك."}
-{"name": "كارىباي، مۇرات", "order": "FAMILY_FIRST", "given": "مۇرات", "family": "كارىباي", "initials": "م. ك."}
-{"name": "كمال مجدي العامر", "given": "كمال", "middle": "مجدي", "family": "العامر", "initials": "ك. م. ا."}
-{"name": "كەيت مۇللەر", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}
-{"name": "لطفي لبيب", "given": "لطفي", "family": "لبيب", "initials": "ل. ل."}
-{"name": "لويس جريس", "given": "لويس", "family": "جريس", "initials": "ل. ج."}
-{"name": "مازن المبارك", "given": "مازن", "family": "المبارك", "initials": "م. ا."}
-{"name": "ماقسات بالقىباي", "given": "ماقسات", "family": "بالقىباي", "initials": "م. ب."}
-{"name": "مانی شرما", "given": "مانی", "family": "شرما", "initials": "م. ش."}
-{"name": "محترم برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم پي", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم", "family": "پي", "initials": "م. ب. و. ھ. ر. و. ا. پ."}
-{"name": "محمد البغدادي", "given": "محمد", "family": "البغدادي", "initials": "م. ا."}
-{"name": "محمد الزعبي", "given": "محمد", "family": "الزعبي", "initials": "م. ا."}
-{"name": "محمد بن سلمان", "given": "محمد", "family": "بن سلمان", "initials": "م. س.", "patronymic": "بن سلمان"}
-{"name": "محمد خاتمی", "given": "محمد", "family": "خاتمی", "initials": "م. خ."}
-{"name": "محمد دهمان", "given": "محمد", "family": "دهمان", "initials": "م. د."}
-{"name": "محمد سليم الحلواني", "given": "محمد", "middle": "سليم", "family": "الحلواني", "initials": "م. س. ا."}
-{"name": "محمد سليمان", "given": "محمد", "family": "سليمان", "initials": "م. س."}
-{"name": "محمد ضياء الدين الصابوني", "given": "محمد", "middle": "ضياء الدين", "family": "الصابوني", "initials": "م. ض. ا. ا."}
-{"name": "محمد عبد القريشي", "given": "محمد", "middle": "عبد", "family": "القريشي", "initials": "م. ع. ا."}
-{"name": "محمد عبد الله أحمد", "given": "محمد", "middle": "عبد الله", "family": "أحمد", "initials": "م. ع. ا. أ."}
-{"name": "محمد عطا", "given": "محمد", "family": "عطا", "initials": "م. ع."}
-{"name": "محمد علي MD حسن", "given": "محمد", "family": "علي", "suffix": "MD حسن", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "م. ع."}
-{"name": "محمد علي و", "given": "محمد", "family": "علي و", "initials": "م. ع."}
-{"name": "محمد نبيه المسيري", "given": "محمد", "middle": "نبيه", "family": "المسيري", "initials": "م. ن. ا."}
-{"name": "محمد و علي", "given": "محمد", "middle": "و", "family": "علي", "initials": "م. و. ع."}
-{"name": "محمد کوثری", "given": "محمد", "family": "کوثری", "initials": "م. ک."}
-{"name": "محمد ہاشم صابری", "given": "محمد", "middle": "ہاشم", "family": "صابری", "initials": "م. ہ. ص."}
-{"name": "محمدتقی شریعتی", "given": "محمدتقی", "family": "شریعتی", "initials": "م. ش."}
-{"name": "محمدعلی حفیظی", "given": "محمدعلی", "family": "حفیظی", "initials": "م. ح."}
-{"name": "محمدعلی ییلاقی اشرفی", "given": "محمدعلی", "middle": "ییلاقی", "family": "اشرفی", "initials": "م. ی. ا."}
-{"name": "محمود الزعبي", "given": "محمود", "family": "الزعبي", "initials": "م. ا."}
-{"name": "محمود جركس", "given": "محمود", "family": "جركس", "initials": "م. ج."}
-{"name": "محمود شاكر", "given": "محمود", "family": "شاكر", "initials": "م. ش."}
-{"name": "محمود فروغی", "given": "محمود", "family": "فروغی", "initials": "م. ف."}
-{"name": "مريم صالح", "given": "مريم", "family": "صالح", "initials": "م. ص."}
-{"name": "مریم نواز خان", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
-{"name": "مصطفى خليل", "given": "مصطفى", "family": "خليل", "initials": "م. خ."}
-{"name": "ملایری، امید رضا", "order": "FAMILY_FIRST", "given": "امید", "middle": "رضا", "family": "ملایری", "initials": "ا. ر. م."}
-{"name": "ملر ڪئٿي", "order": "FAMILY_FIRST", "given": "ڪئٿي", "family": "ملر", "initials": "ڪ. م."}
-{"name": "منال الشريف", "given": "منال", "family": "الشريف", "initials": "م. ا."}
-{"name": "منصور حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
-{"name": "منصور، حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
-{"name": "منير", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "م."}
-{"name": "منير", "order": "FAMILY_FIRST", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "م."}
-{"name": "مها عامر", "given": "مها", "family": "عامر", "initials": "م. ع."}
-{"name": "موفق الخاني", "given": "موفق", "family": "الخاني", "initials": "م. ا."}
-{"name": "مولر کیتی", "order": "FAMILY_FIRST", "given": "کیتی", "family": "مولر", "initials": "ک. م."}
-{"name": "مولر، كاثرين", "order": "FAMILY_FIRST", "given": "كاثرين", "family": "مولر", "initials": "ك. م."}
-{"name": "مولر، کاتیا", "order": "FAMILY_FIRST", "given": "کاتیا", "family": "مولر", "initials": "ک. م."}
-{"name": "ميري سيو ھامش واٽسن", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن", "initials": "م. س. ھ. و."}
-{"name": "مُحمَّد علي محجوب", "given": "مُحمَّد", "middle": "علي", "family": "محجوب", "initials": "م. ع. م."}
-{"name": "مُحَمَّد بِن سَلمان", "given": "مُحَمَّد", "middle": "بِن", "family": "سَلمان", "initials": "م. ب. س."}
-{"name": "مُوفَّق دعبول", "given": "مُوفَّق", "family": "دعبول", "initials": "م. د."}
-{"name": "مۇرات كارىباي", "given": "مۇرات", "family": "كارىباي", "initials": "م. ك."}
-{"name": "مۇللەر كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}
-{"name": "مۇللەر، كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}
-{"name": "نادية زغلول", "given": "نادية", "family": "زغلول", "initials": "ن. ز."}
-{"name": "نادیہ خان", "given": "نادیہ", "family": "خان", "initials": "ن. خ."}
-{"name": "ناصر الأنصاري", "given": "ناصر", "family": "الأنصاري", "initials": "ن. ا."}
-{"name": "ناہید اختر", "given": "ناہید", "family": "اختر", "initials": "ن. ا."}
-{"name": "نبيل درويش", "given": "نبيل", "family": "درويش", "initials": "ن. د."}
-{"name": "نبيل فهمي", "given": "نبيل", "family": "فهمي", "initials": "ن. ف."}
-{"name": "نبيهة حداد", "given": "نبيهة", "family": "حداد", "initials": "ن. ح."}
-{"name": "ندیم رضا یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "order": "FAMILY_FIRST", "given": "رضا", "middle": "یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "family": "ندیم", "initials": "ر. ی. ر. س. م. ا. ڈ. ڈ. ڈ. ا. ن."}
-{"name": "ندیم رضا، یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "order": "FAMILY_FIRST", "given": "یاسمین", "middle": "راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "family": "ندیم رضا", "initials": "ی. ر. س. م. ا. ڈ. ڈ. ڈ. ا. ن. ر."}
-{"name": "نسرين طافش", "given": "نسرين", "family": "طافش", "initials": "ن. ط."}
-{"name": "نعيم عيسى", "given": "نعيم", "family": "عيسى", "initials": "ن. ع."}
-{"name": "نهلة القدسي", "given": "نهلة", "family": "القدسي", "initials": "ن. ا."}
-{"name": "نوال عبد هاشم", "given": "نوال", "middle": "عبد", "family": "هاشم", "initials": "ن. ع. ه."}
-{"name": "نور الدين عتر", "given": "نور", "middle": "الدين", "family": "عتر", "initials": "ن. ا. ع."}
-{"name": "نورس عبد الواحد", "given": "نورس", "family": "عبد الواحد", "initials": "ن. ع. ا."}
-{"name": "هالة شكر الله", "given": "هالة", "middle": "شكر", "family": "الله", "initials": "ه. ش. ا."}
-{"name": "هدى شعراوي", "given": "هدى", "family": "شعراوي", "initials": "ه. ش."}
-{"name": "هدى عابدين", "given": "هدى", "family": "عابدين", "initials": "ه. ع."}
-{"name": "هشام حافظ", "given": "هشام", "family": "حافظ", "initials": "ه. ح."}
-{"name": "هشام سليم", "given": "هشام", "family": "سليم", "initials": "ه. س."}
-{"name": "هشام عباس", "given": "هشام", "family": "عباس", "initials": "ه. ع."}
-{"name": "هشام فؤاد", "given": "هشام", "family": "فؤاد", "initials": "ه. ف."}
-{"name": "وان برل گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "order": "FAMILY_FIRST", "given": "برل", "middle": "گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان", "initials": "ب. گ. ڊ. پ. ڊ. ا. ڪ. س. م. ا. ڊ. ڊ. ڊ. ا. و."}
-{"name": "وان برل گونزالس ڊومنگو, پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان برل گونزالس ڊومنگو", "initials": "پ. ڊ. ا. ڪ. س. م. ا. ڊ. ڊ. ڊ. ا. و. ب. گ. ڊ."}
-{"name": "وان بروهل، پروفسور آدا کورنلیا سزار مارتین جونیور، دکترای دندانپزشکی", "order": "FAMILY_FIRST", "given": "پروفسور", "middle": "آدا کورنلیا سزار مارتین", "family": "وان بروهل", "suffix": "جونیور, دکترای دندانپزشکی", "ambiguities": ["COMMA_STRUCTURE"], "initials": "پ. آ. ک. س. م. و. ب.", "generation": "جونیور", "credentials": "دکترای دندانپزشکی"}
-{"name": "واټسن جان همیش", "order": "FAMILY_FIRST", "given": "جان", "middle": "همیش", "family": "واټسن", "initials": "ج. ه. و."}
-{"name": "واٽسن ميري سيو ھامش", "order": "FAMILY_FIRST", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن", "initials": "م. س. ھ. و."}
-{"name": "وداد أنطوان", "given": "وداد", "family": "أنطوان", "initials": "و. أ."}
-{"name": "وديع بشور", "given": "وديع", "family": "بشور", "initials": "و. ب."}
-{"name": "وليد الشهري", "given": "وليد", "family": "الشهري", "initials": "و. ا."}
-{"name": "ووسټر ښاغلی. برټرام ولبرفورس هنري رابرټ ایم پی", "order": "FAMILY_FIRST", "given": "ښاغلی.", "middle": "برټرام ولبرفورس هنري رابرټ ایم پی", "family": "ووسټر", "initials": "ښ. ب. و. ه. ر. ا. پ. و."}
-{"name": "ووسٽر محترم برٽرم ولبرفورس ھينري رابرٽ ايم پي", "order": "FAMILY_FIRST", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ايم پي", "family": "ووسٽر", "initials": "م. ب. و. ھ. ر. ا. پ. و."}
-{"name": "وون لیوه بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "order": "FAMILY_FIRST", "given": "لیوه", "middle": "بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون", "initials": "ل. ب. ش. پ. ډ. ا. ک. ا. س. ا. ‌. ډ. ډ. ا. و."}
-{"name": "وون لیوه بیکر شمیت, پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون لیوه بیکر شمیت", "initials": "پ. ډ. ا. ک. ا. س. ا. ‌. ډ. ډ. ا. و. ل. ب. ش."}
-{"name": "يوسف إدريس", "given": "يوسف", "family": "إدريس", "initials": "ي. إ."}
-{"name": "يوسف السالم", "given": "يوسف", "family": "السالم", "initials": "ي. ا."}
-{"name": "يوسف مكي", "given": "يوسف", "family": "مكي", "initials": "ي. م."}
-{"name": "پردیس افکاری", "given": "پردیس", "family": "افکاری", "initials": "پ. ا."}
-{"name": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور، دکترای دندانپزشکی", "given": "دکترای", "middle": "دندانپزشکی", "family": "پروفسور آدا کورنلیا سزار مارتین وان بروهل", "suffix": "جونیور", "initials": "د. د. پ. آ. ک. س. م. و. ب.", "generation": "جونیور"}
-{"name": "پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي", "family": "ايس", "initials": "پ. ڊ. ا. ڪ. س. م. و. ب. گ. ڊ. ا. ڊ. ڊ. ڊ. ا."}
-{"name": "پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی", "family": "ایس", "initials": "پ. ډ. ا. ک. ا. س. و. ل. ب. ش. ا. ‌. ډ. ډ. ا."}
-{"name": "ژیلا", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ژ."}
-{"name": "ژیلا", "order": "FAMILY_FIRST", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ژ."}
-{"name": "ښاغلی. برټرام ولبرفورس هنري رابرټ ووسټر ایم پی", "title": "ښاغلی.", "given": "برټرام", "middle": "ولبرفورس هنري رابرټ ووسټر ایم", "family": "پی", "initials": "ب. و. ه. ر. و. ا. پ."}
-{"name": "کاتیا مولر", "given": "کاتیا", "family": "مولر", "initials": "ک. م."}
-{"name": "کمال ایرانی", "given": "کمال", "family": "ایرانی", "initials": "ک. ا."}
-{"name": "کیتی مولر", "given": "کیتی", "family": "مولر", "initials": "ک. م."}
-{"name": "کیوان وحدانی", "given": "کیوان", "family": "وحدانی", "initials": "ک. و."}
-{"name": "ڪئٿي ملر", "given": "ڪئٿي", "family": "ملر", "initials": "ڪ. م."}
-{"name": "ہاشم خان", "given": "ہاشم", "family": "خان", "initials": "ہ. خ."}
-{"name": "یاسمین راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی ایس", "given": "یاسمین", "middle": "راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی", "family": "ایس", "initials": "ی. ر. س. م. ن. ر. ا. ڈ. ڈ. ڈ. ا."}
+{"name": "آئرين ائڊلر", "given": "آئرين", "family": "ائڊلر"}
+{"name": "آقای امیر هوشنگ رستگار دکتر", "title": "آقای", "given": "امیر", "middle": "هوشنگ رستگار", "family": "دکتر"}
+{"name": "آمال فهمي", "given": "آمال", "family": "فهمي"}
+{"name": "آیتین عدلو", "given": "آیتین", "family": "عدلو"}
+{"name": "أ.د.أحمد علي", "title": "أ.د.", "given": "أحمد", "family": "علي"}
+{"name": "أبو الأغا، أحمد رامي نجيب محفوظ", "order": "FAMILY_FIRST", "given": "أحمد", "middle": "رامي نجيب محفوظ", "family": "أبو الأغا"}
+{"name": "أبو بكر الشاطري", "given": "أبو بكر", "family": "الشاطري"}
+{"name": "أبو بكر سالم", "given": "أبو بكر", "family": "سالم"}
+{"name": "أحلام الجريتلي", "given": "أحلام", "family": "الجريتلي"}
+{"name": "أحمد حجازي", "given": "أحمد", "family": "حجازي"}
+{"name": "أحمد سالم", "given": "أحمد", "family": "سالم"}
+{"name": "أحمد علي حسن", "given": "أحمد", "middle": "علي", "family": "حسن"}
+{"name": "أحمد قنديل", "given": "أحمد", "family": "قنديل"}
+{"name": "أحمد م. علي", "given": "أحمد", "middle": "م.", "family": "علي"}
+{"name": "أحمد مصطفى", "given": "أحمد", "family": "مصطفى"}
+{"name": "أصالة نصري", "given": "أصالة", "family": "نصري"}
+{"name": "أكرم التلاوي", "given": "أكرم", "family": "التلاوي"}
+{"name": "أكرم عجة", "given": "أكرم", "family": "عجة"}
+{"name": "ألكسندر دارسي", "given": "ألكسندر", "family": "دارسي"}
+{"name": "أمجد الطرابلسي", "given": "أمجد", "family": "الطرابلسي"}
+{"name": "أمين دابو", "given": "أمين", "family": "دابو"}
+{"name": "أمين سامي", "given": "أمين", "family": "سامي"}
+{"name": "أمينة رشيد", "given": "أمينة", "family": "رشيد"}
+{"name": "أنطوانيت نجيب", "given": "أنطوانيت", "family": "نجيب"}
+{"name": "أنطونيوس نجيب", "given": "أنطونيوس", "family": "نجيب"}
+{"name": "أيمن الدُّقر", "given": "أيمن", "family": "الدُّقر"}
+{"name": "إبراهيم البغدادي", "given": "إبراهيم", "family": "البغدادي"}
+{"name": "إبراهيم الغلاييني", "given": "إبراهيم", "family": "الغلاييني"}
+{"name": "إبراهيم صالح", "given": "إبراهيم", "family": "صالح"}
+{"name": "إحسان الرفاعي", "given": "إحسان", "family": "الرفاعي"}
+{"name": "إلهام حسين", "given": "إلهام", "family": "حسين"}
+{"name": "إلياس الزيَّات", "given": "إلياس", "family": "الزيَّات"}
+{"name": "إيهاب خورشيد", "given": "إيهاب", "family": "خورشيد"}
+{"name": "ائڊلر آئرين", "order": "FAMILY_FIRST", "given": "آئرين", "family": "ائڊلر"}
+{"name": "احمد", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "احمد", "order": "FAMILY_FIRST", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "احمد گلشیری", "given": "احمد", "family": "گلشیری"}
+{"name": "اختر رضا خان", "given": "اختر", "middle": "رضا", "family": "خان"}
+{"name": "ادا كورنەليا فون بريۋل جۋنيور، ءتىس دارىگەرى", "given": "ءتىس", "middle": "دارىگەرى", "family": "ادا كورنەليا فون بريۋل جۋنيور"}
+{"name": "ارین اډلر", "given": "ارین", "family": "اډلر"}
+{"name": "استوبر، زازیلیا هایمیش", "order": "FAMILY_FIRST", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر"}
+{"name": "اسٽوبر زيزيليا ھئمش", "order": "FAMILY_FIRST", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر"}
+{"name": "اسەم", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "اسەم", "order": "FAMILY_FIRST", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر"}
+{"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر"}
+{"name": "اقبال قریشی", "given": "اقبال", "family": "قریشی"}
+{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "title": "الدكتور", "given": "طبيب", "middle": "وجراح", "family": "عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "generation": "الإبن"}
+{"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا", "suffix": "الابن", "generation": "الابن"}
+{"name": "العامر، كمال مجدي", "order": "FAMILY_FIRST", "given": "كمال", "middle": "مجدي", "family": "العامر"}
+{"name": "النجار، سميرة", "order": "FAMILY_FIRST", "given": "سميرة", "family": "النجار"}
+{"name": "امید رضا ملایری", "given": "امید", "middle": "رضا", "family": "ملایری"}
+{"name": "انو آغا", "given": "انو", "family": "آغا"}
+{"name": "انیتا اگنی ہوتری", "given": "انیتا", "middle": "اگنی", "family": "ہوتری"}
+{"name": "اډلر ارین", "order": "FAMILY_FIRST", "given": "ارین", "family": "اډلر"}
+{"name": "بالقىباي ماقسات", "order": "FAMILY_FIRST", "given": "ماقسات", "family": "بالقىباي"}
+{"name": "بالقىباي، ماقسات توقماحامبەتۇلى", "order": "FAMILY_FIRST", "given": "ماقسات", "middle": "توقماحامبەتۇلى", "family": "بالقىباي"}
+{"name": "بروهل، آدا کورنلیا سزار مارتین وان", "order": "FAMILY_FIRST", "given": "آدا", "middle": "کورنلیا سزار مارتین وان", "family": "بروهل"}
+{"name": "بريۋل، ادا كورنەليا سەزار مارتين فون", "order": "FAMILY_FIRST", "given": "ادا", "middle": "كورنەليا سەزار مارتين فون", "family": "بريۋل"}
+{"name": "بهروز بوچانی", "given": "بهروز", "family": "بوچانی"}
+{"name": "بهمن جلالی", "given": "بهمن", "family": "جلالی"}
+{"name": "بهيج الخطيب", "given": "بهيج", "family": "الخطيب"}
+{"name": "جان همیش واټسن", "given": "جان", "middle": "همیش", "family": "واټسن"}
+{"name": "جلال همتی", "given": "جلال", "family": "همتی"}
+{"name": "جمال محمد", "given": "جمال", "family": "محمد"}
+{"name": "جميل عز الدين", "given": "جميل", "middle": "عز", "family": "الدين"}
+{"name": "جورج إسحاق", "given": "جورج", "family": "إسحاق"}
+{"name": "جورج بوش الابن", "given": "جورج", "family": "بوش", "suffix": "الابن", "generation": "الابن"}
+{"name": "جورج ميشيل", "given": "جورج", "family": "ميشيل"}
+{"name": "جوزف پال", "given": "جوزف", "family": "پال"}
+{"name": "جيانيس كريستو", "given": "جيانيس", "family": "كريستو"}
+{"name": "جيهان السادات", "given": "جيهان", "family": "السادات"}
+{"name": "جیسی پال", "given": "جیسی", "family": "پال"}
+{"name": "حاتم علي", "given": "حاتم", "family": "علي"}
+{"name": "حاتم منصور", "given": "حاتم", "family": "منصور"}
+{"name": "حازم هاشم", "given": "حازم", "family": "هاشم"}
+{"name": "حسن دانشفر", "given": "حسن", "family": "دانشفر"}
+{"name": "حسن شحاتة", "given": "حسن", "family": "شحاتة"}
+{"name": "حسن عابدی", "given": "حسن", "family": "عابدی"}
+{"name": "حسن ناصر", "given": "حسن", "family": "ناصر"}
+{"name": "حسني سبح", "given": "حسني", "family": "سبح"}
+{"name": "حسين خطاب", "given": "حسين", "family": "خطاب"}
+{"name": "حسین امینی", "given": "حسین", "family": "امینی"}
+{"name": "حسین حسینی", "given": "حسین", "family": "حسینی"}
+{"name": "حكمت هاشم", "given": "حكمت", "family": "هاشم"}
+{"name": "حليم بركات", "given": "حليم", "family": "بركات"}
+{"name": "حمدان شلبي", "given": "حمدان", "family": "شلبي"}
+{"name": "حمدي الحريري", "given": "حمدي", "family": "الحريري"}
+{"name": "حميدة الطاهر", "given": "حميدة", "family": "الطاهر"}
+{"name": "حنیف خان", "given": "حنیف", "family": "خان"}
+{"name": "خالد عزيز", "given": "خالد", "family": "عزيز"}
+{"name": "خان مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان"}
+{"name": "خان، مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان"}
+{"name": "خضر الأحمد", "given": "خضر", "family": "الأحمد"}
+{"name": "د.أحمد علي حسن", "title": "د.", "given": "أحمد", "middle": "علي", "family": "حسن"}
+{"name": "دلیپ کور ٹوانہ", "given": "دلیپ", "middle": "کور", "family": "ٹوانہ"}
+{"name": "رائد المتني", "given": "رائد", "family": "المتني"}
+{"name": "رامي مخلوف", "given": "رامي", "family": "مخلوف"}
+{"name": "رجاء يوسف", "given": "رجاء", "family": "يوسف"}
+{"name": "رستگار، آقای امیر هوشنگ دکتر", "order": "FAMILY_FIRST", "title": "آقای", "given": "امیر", "middle": "هوشنگ دکتر", "family": "رستگار"}
+{"name": "رستگار، امیر هوشنگ", "order": "FAMILY_FIRST", "given": "امیر", "middle": "هوشنگ", "family": "رستگار"}
+{"name": "رشاد رشدي", "given": "رشاد", "family": "رشدي"}
+{"name": "رمضان ديب", "given": "رمضان", "family": "ديب"}
+{"name": "رنا أحمد", "given": "رنا", "family": "أحمد"}
+{"name": "ريما الجفالي", "given": "ريما", "family": "الجفالي"}
+{"name": "رینوکا شرما", "given": "رینوکا", "family": "شرما"}
+{"name": "زازیلیا هایمیش استوبر", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر"}
+{"name": "زكي مبارك", "given": "زكي", "family": "مبارك"}
+{"name": "زكية إبراهيم", "given": "زكية", "family": "إبراهيم"}
+{"name": "زيزيليا ھئمش اسٽوبر", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر"}
+{"name": "زيزينيا هاميش ستوبر", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر"}
+{"name": "زیزیلیا همیش سټوبر", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر"}
+{"name": "سارہ خان", "given": "سارہ", "family": "خان"}
+{"name": "سامانتا", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سامانتا", "order": "FAMILY_FIRST", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سامي الكيالي", "given": "سامي", "family": "الكيالي"}
+{"name": "ستوبر، زيزينيا هاميش", "order": "FAMILY_FIRST", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر"}
+{"name": "ستیش شرما", "given": "ستیش", "family": "شرما"}
+{"name": "سحر كامل", "given": "سحر", "family": "كامل"}
+{"name": "سعدیہ خان", "given": "سعدیہ", "family": "خان"}
+{"name": "سعدیہ دہلوی", "given": "سعدیہ", "family": "دہلوی"}
+{"name": "سعيد حماد", "given": "سعيد", "family": "حماد"}
+{"name": "سعيد عبد الله", "given": "سعيد", "family": "عبد الله"}
+{"name": "سلام امینی", "given": "سلام", "family": "امینی"}
+{"name": "سلطان البرقان", "given": "سلطان", "family": "البرقان"}
+{"name": "سلمان, محمد", "given": "محمد", "family": "سلمان"}
+{"name": "سلمان،", "given": "سلمان", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سلمان، محمد", "given": "محمد", "family": "سلمان"}
+{"name": "سليمان الجوخدار", "given": "سليمان", "family": "الجوخدار"}
+{"name": "سمر عبد العزيز", "given": "سمر", "family": "عبد العزيز"}
+{"name": "سمير سرور", "given": "سمير", "family": "سرور"}
+{"name": "سميرة النجار", "given": "سميرة", "family": "النجار"}
+{"name": "سميرة خاشقجي", "given": "سميرة", "family": "خاشقجي"}
+{"name": "سميرة عزت", "given": "سميرة", "family": "عزت"}
+{"name": "سنباد", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سنباد", "order": "FAMILY_FIRST", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سندباد", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سندباد", "order": "FAMILY_FIRST", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سهيل الغزي", "given": "سهيل", "family": "الغزي"}
+{"name": "سوسن ربيع", "given": "سوسن", "family": "ربيع"}
+{"name": "سيد كريم", "given": "سيد", "family": "كريم"}
+{"name": "سينباد", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سينباد", "order": "FAMILY_FIRST", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "سټوبر زیزیلیا همیش", "order": "FAMILY_FIRST", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر"}
+{"name": "سید عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید"}
+{"name": "سید، عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید"}
+{"name": "سیروس قهرمانی", "given": "سیروس", "family": "قهرمانی"}
+{"name": "سیروس گرجستانی", "given": "سیروس", "family": "گرجستانی"}
+{"name": "سەسيليا شتوبەر", "given": "سەسيليا", "family": "شتوبەر"}
+{"name": "شازیہ اصغر", "given": "شازیہ", "family": "اصغر"}
+{"name": "شاہدہ رضا", "given": "شاہدہ", "family": "رضا"}
+{"name": "شاہین رضا", "given": "شاہین", "family": "رضا"}
+{"name": "شبیر اختر", "given": "شبیر", "family": "اختر"}
+{"name": "شتوبەر سەسيليا", "order": "FAMILY_FIRST", "given": "سەسيليا", "family": "شتوبەر"}
+{"name": "شتوبەر، سەسيليا حەمىش", "order": "FAMILY_FIRST", "given": "سەسيليا", "middle": "حەمىش", "family": "شتوبەر"}
+{"name": "شهره آغداشلو", "given": "شهره", "family": "آغداشلو"}
+{"name": "شيماء الصباغ", "given": "شيماء", "family": "الصباغ"}
+{"name": "صابری محمد ہاشم", "order": "FAMILY_FIRST", "given": "محمد", "middle": "ہاشم", "family": "صابری"}
+{"name": "صابری، محمد ہاشم", "order": "FAMILY_FIRST", "given": "محمد", "middle": "ہاشم", "family": "صابری"}
+{"name": "صالح اسدی", "given": "صالح", "family": "اسدی"}
+{"name": "صالح اللحيدان", "given": "صالح", "family": "اللحيدان"}
+{"name": "صالح خالد الشهري", "given": "صالح", "middle": "خالد", "family": "الشهري"}
+{"name": "صلاح المُولَّد", "given": "صلاح", "family": "المُولَّد"}
+{"name": "صنع الله إبراهيم", "given": "صنع", "middle": "الله", "family": "إبراهيم"}
+{"name": "طارق سلامة", "given": "طارق", "family": "سلامة"}
+{"name": "طارق عبد العزيز", "given": "طارق", "family": "عبد العزيز"}
+{"name": "طارق فتح", "given": "طارق", "family": "فتح"}
+{"name": "طاہر داوڑ", "given": "طاہر", "family": "داوڑ"}
+{"name": "طلعت زكريا", "given": "طلعت", "family": "زكريا"}
+{"name": "عائشة ذو الغنى", "given": "عائشة", "middle": "ذو", "family": "الغنى"}
+{"name": "عادل التويجري", "given": "عادل", "family": "التويجري"}
+{"name": "عارف علوی", "given": "عارف", "family": "علوی"}
+{"name": "عارف وزیر", "given": "عارف", "family": "وزیر"}
+{"name": "عالي القرشي", "given": "عالي", "family": "القرشي"}
+{"name": "عباس شفیعی", "given": "عباس", "family": "شفیعی"}
+{"name": "عباس وفایی", "given": "عباس", "family": "وفایی"}
+{"name": "عباس کریمی", "given": "عباس", "family": "کریمی"}
+{"name": "عبد الأكرم السقَّا", "given": "عبد الأكرم", "family": "السقَّا"}
+{"name": "عبد الإله نبهان", "given": "عبد الإله", "family": "نبهان"}
+{"name": "عبد الباسط بدر", "given": "عبد الباسط", "family": "بدر"}
+{"name": "عبد الجبار الضحاك", "given": "عبد الجبار", "family": "الضحاك"}
+{"name": "عبد الحليم قدور", "given": "عبد الحليم", "family": "قدور"}
+{"name": "عبد الرحمن السديس", "given": "عبد الرحمن", "family": "السديس"}
+{"name": "عبد الرحمن العجلان", "given": "عبد الرحمن", "family": "العجلان"}
+{"name": "عبد الرحيم منصور", "given": "عبد الرحيم", "family": "منصور"}
+{"name": "عبد الستار إبراهيم", "given": "عبد الستار", "family": "إبراهيم"}
+{"name": "عبد العزيز الربيعي", "given": "عبد العزيز", "family": "الربيعي"}
+{"name": "عبد القدوس أبو صالح", "given": "عبد القدوس", "family": "أبو صالح"}
+{"name": "عبد اللطيف عبد الحميد", "given": "عبد اللطيف", "family": "عبد الحميد"}
+{"name": "عبد الله", "given": "عبد", "family": "الله"}
+{"name": "عبد الله الحقيل", "given": "عبد الله", "family": "الحقيل"}
+{"name": "عبد الله حسن, علي", "given": "علي", "family": "عبد الله حسن"}
+{"name": "عبد الهادي الباني", "given": "عبد الهادي", "family": "الباني"}
+{"name": "عبد الوكيل الهاشمي", "given": "عبد الوكيل", "family": "الهاشمي"}
+{"name": "عبد الکریم عبد الحمید سید ایم پی", "given": "عبد الکریم", "middle": "عبد الحمید سید ایم", "family": "پی"}
+{"name": "عثمان آل حميد", "given": "عثمان", "family": "آل حميد"}
+{"name": "عدلو، آیتین", "order": "FAMILY_FIRST", "given": "آیتین", "family": "عدلو"}
+{"name": "عدنان بركات", "given": "عدنان", "family": "بركات"}
+{"name": "عدنان خاشقجي", "given": "عدنان", "family": "خاشقجي"}
+{"name": "عدنان مصطفى", "given": "عدنان", "family": "مصطفى"}
+{"name": "عرفان خان", "given": "عرفان", "family": "خان"}
+{"name": "عرفان صدیقی", "given": "عرفان", "family": "صدیقی"}
+{"name": "عزت‌الله انتظامی", "given": "عزت‌الله", "family": "انتظامی"}
+{"name": "علي الرواس", "given": "علي", "family": "الرواس"}
+{"name": "علي القرني", "given": "علي", "family": "القرني"}
+{"name": "علي ح. م.", "given": "علي", "middle": "ح.", "family": "م."}
+{"name": "علي عبد الکریم", "given": "علي", "family": "عبد الکریم"}
+{"name": "علی حاتمی", "given": "علی", "family": "حاتمی"}
+{"name": "علیرضا بیرانوند", "given": "علیرضا", "family": "بیرانوند"}
+{"name": "علی‌اصغر زارعی", "given": "علی‌اصغر", "family": "زارعی"}
+{"name": "علی‌اکبر حیدری", "given": "علی‌اکبر", "family": "حیدری"}
+{"name": "عمران خان", "given": "عمران", "family": "خان"}
+{"name": "غادة السمان", "given": "غادة", "family": "السمان"}
+{"name": "غسان جبري", "given": "غسان", "family": "جبري"}
+{"name": "غلام اللہ خان", "given": "غلام", "middle": "اللہ", "family": "خان"}
+{"name": "فائق عرقسُوسي", "given": "فائق", "family": "عرقسُوسي"}
+{"name": "فاروق خورشيد", "given": "فاروق", "family": "خورشيد"}
+{"name": "فاروق عطية", "given": "فاروق", "family": "عطية"}
+{"name": "فايزة حسين", "given": "فايزة", "family": "حسين"}
+{"name": "فتحي قورة", "given": "فتحي", "family": "قورة"}
+{"name": "فتح‌الله بنی‌صدر", "given": "فتح‌الله", "family": "بنی‌صدر"}
+{"name": "فرح خان", "given": "فرح", "family": "خان"}
+{"name": "فريد الأطرش", "given": "فريد", "family": "الأطرش"}
+{"name": "فریدون ابراهیمی", "given": "فریدون", "family": "ابراهیمی"}
+{"name": "فون برول، عايدة كورنيليا سيزار مارتن", "order": "FAMILY_FIRST", "given": "عايدة", "middle": "كورنيليا سيزار مارتن", "family": "فون برول"}
+{"name": "فون بريۋل ادا كورنەليا", "order": "FAMILY_FIRST", "given": "بريۋل", "middle": "ادا كورنەليا", "family": "فون"}
+{"name": "قالاجان قايرات", "given": "قالاجان", "family": "قايرات"}
+{"name": "قايرات قالاجان", "order": "FAMILY_FIRST", "given": "قالاجان", "family": "قايرات"}
+{"name": "قايرات، قالاجان", "order": "FAMILY_FIRST", "given": "قالاجان", "family": "قايرات"}
+{"name": "كاثرين مولر", "given": "كاثرين", "family": "مولر"}
+{"name": "كارىباي مۇرات", "order": "FAMILY_FIRST", "given": "مۇرات", "family": "كارىباي"}
+{"name": "كارىباي، مۇرات", "order": "FAMILY_FIRST", "given": "مۇرات", "family": "كارىباي"}
+{"name": "كمال مجدي العامر", "given": "كمال", "middle": "مجدي", "family": "العامر"}
+{"name": "كەيت مۇللەر", "given": "كەيت", "family": "مۇللەر"}
+{"name": "لطفي لبيب", "given": "لطفي", "family": "لبيب"}
+{"name": "لويس جريس", "given": "لويس", "family": "جريس"}
+{"name": "مازن المبارك", "given": "مازن", "family": "المبارك"}
+{"name": "ماقسات بالقىباي", "given": "ماقسات", "family": "بالقىباي"}
+{"name": "مانی شرما", "given": "مانی", "family": "شرما"}
+{"name": "محترم برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم پي", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم", "family": "پي"}
+{"name": "محمد البغدادي", "given": "محمد", "family": "البغدادي"}
+{"name": "محمد الزعبي", "given": "محمد", "family": "الزعبي"}
+{"name": "محمد بن سلمان", "given": "محمد", "family": "بن سلمان", "patronymic": "بن سلمان"}
+{"name": "محمد خاتمی", "given": "محمد", "family": "خاتمی"}
+{"name": "محمد دهمان", "given": "محمد", "family": "دهمان"}
+{"name": "محمد سليم الحلواني", "given": "محمد", "middle": "سليم", "family": "الحلواني"}
+{"name": "محمد سليمان", "given": "محمد", "family": "سليمان"}
+{"name": "محمد ضياء الدين الصابوني", "given": "محمد", "middle": "ضياء الدين", "family": "الصابوني"}
+{"name": "محمد عبد القريشي", "given": "محمد", "middle": "عبد", "family": "القريشي"}
+{"name": "محمد عبد الله أحمد", "given": "محمد", "middle": "عبد الله", "family": "أحمد"}
+{"name": "محمد عطا", "given": "محمد", "family": "عطا"}
+{"name": "محمد علي MD حسن", "given": "محمد", "family": "علي", "suffix": "MD حسن", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"]}
+{"name": "محمد علي و", "given": "محمد", "family": "علي و"}
+{"name": "محمد نبيه المسيري", "given": "محمد", "middle": "نبيه", "family": "المسيري"}
+{"name": "محمد و علي", "given": "محمد", "middle": "و", "family": "علي"}
+{"name": "محمد کوثری", "given": "محمد", "family": "کوثری"}
+{"name": "محمد ہاشم صابری", "given": "محمد", "middle": "ہاشم", "family": "صابری"}
+{"name": "محمدتقی شریعتی", "given": "محمدتقی", "family": "شریعتی"}
+{"name": "محمدعلی حفیظی", "given": "محمدعلی", "family": "حفیظی"}
+{"name": "محمدعلی ییلاقی اشرفی", "given": "محمدعلی", "middle": "ییلاقی", "family": "اشرفی"}
+{"name": "محمود الزعبي", "given": "محمود", "family": "الزعبي"}
+{"name": "محمود جركس", "given": "محمود", "family": "جركس"}
+{"name": "محمود شاكر", "given": "محمود", "family": "شاكر"}
+{"name": "محمود فروغی", "given": "محمود", "family": "فروغی"}
+{"name": "مريم صالح", "given": "مريم", "family": "صالح"}
+{"name": "مریم نواز خان", "given": "مریم", "middle": "نواز", "family": "خان"}
+{"name": "مصطفى خليل", "given": "مصطفى", "family": "خليل"}
+{"name": "ملایری، امید رضا", "order": "FAMILY_FIRST", "given": "امید", "middle": "رضا", "family": "ملایری"}
+{"name": "ملر ڪئٿي", "order": "FAMILY_FIRST", "given": "ڪئٿي", "family": "ملر"}
+{"name": "منال الشريف", "given": "منال", "family": "الشريف"}
+{"name": "منصور حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور"}
+{"name": "منصور، حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور"}
+{"name": "منير", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "منير", "order": "FAMILY_FIRST", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "مها عامر", "given": "مها", "family": "عامر"}
+{"name": "موفق الخاني", "given": "موفق", "family": "الخاني"}
+{"name": "مولر کیتی", "order": "FAMILY_FIRST", "given": "کیتی", "family": "مولر"}
+{"name": "مولر، كاثرين", "order": "FAMILY_FIRST", "given": "كاثرين", "family": "مولر"}
+{"name": "مولر، کاتیا", "order": "FAMILY_FIRST", "given": "کاتیا", "family": "مولر"}
+{"name": "ميري سيو ھامش واٽسن", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن"}
+{"name": "مُحمَّد علي محجوب", "given": "مُحمَّد", "middle": "علي", "family": "محجوب"}
+{"name": "مُحَمَّد بِن سَلمان", "given": "مُحَمَّد", "middle": "بِن", "family": "سَلمان"}
+{"name": "مُوفَّق دعبول", "given": "مُوفَّق", "family": "دعبول"}
+{"name": "مۇرات كارىباي", "given": "مۇرات", "family": "كارىباي"}
+{"name": "مۇللەر كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر"}
+{"name": "مۇللەر، كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر"}
+{"name": "نادية زغلول", "given": "نادية", "family": "زغلول"}
+{"name": "نادیہ خان", "given": "نادیہ", "family": "خان"}
+{"name": "ناصر الأنصاري", "given": "ناصر", "family": "الأنصاري"}
+{"name": "ناہید اختر", "given": "ناہید", "family": "اختر"}
+{"name": "نبيل درويش", "given": "نبيل", "family": "درويش"}
+{"name": "نبيل فهمي", "given": "نبيل", "family": "فهمي"}
+{"name": "نبيهة حداد", "given": "نبيهة", "family": "حداد"}
+{"name": "ندیم رضا یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "order": "FAMILY_FIRST", "given": "رضا", "middle": "یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "family": "ندیم"}
+{"name": "ندیم رضا، یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "order": "FAMILY_FIRST", "given": "یاسمین", "middle": "راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "family": "ندیم رضا"}
+{"name": "نسرين طافش", "given": "نسرين", "family": "طافش"}
+{"name": "نعيم عيسى", "given": "نعيم", "family": "عيسى"}
+{"name": "نهلة القدسي", "given": "نهلة", "family": "القدسي"}
+{"name": "نوال عبد هاشم", "given": "نوال", "middle": "عبد", "family": "هاشم"}
+{"name": "نور الدين عتر", "given": "نور", "middle": "الدين", "family": "عتر"}
+{"name": "نورس عبد الواحد", "given": "نورس", "family": "عبد الواحد"}
+{"name": "هالة شكر الله", "given": "هالة", "middle": "شكر", "family": "الله"}
+{"name": "هدى شعراوي", "given": "هدى", "family": "شعراوي"}
+{"name": "هدى عابدين", "given": "هدى", "family": "عابدين"}
+{"name": "هشام حافظ", "given": "هشام", "family": "حافظ"}
+{"name": "هشام سليم", "given": "هشام", "family": "سليم"}
+{"name": "هشام عباس", "given": "هشام", "family": "عباس"}
+{"name": "هشام فؤاد", "given": "هشام", "family": "فؤاد"}
+{"name": "وان برل گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "order": "FAMILY_FIRST", "given": "برل", "middle": "گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان"}
+{"name": "وان برل گونزالس ڊومنگو, پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان برل گونزالس ڊومنگو"}
+{"name": "وان بروهل، پروفسور آدا کورنلیا سزار مارتین جونیور، دکترای دندانپزشکی", "order": "FAMILY_FIRST", "given": "پروفسور", "middle": "آدا کورنلیا سزار مارتین", "family": "وان بروهل", "suffix": "جونیور, دکترای دندانپزشکی", "ambiguities": ["COMMA_STRUCTURE"], "generation": "جونیور", "credentials": "دکترای دندانپزشکی"}
+{"name": "واټسن جان همیش", "order": "FAMILY_FIRST", "given": "جان", "middle": "همیش", "family": "واټسن"}
+{"name": "واٽسن ميري سيو ھامش", "order": "FAMILY_FIRST", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن"}
+{"name": "وداد أنطوان", "given": "وداد", "family": "أنطوان"}
+{"name": "وديع بشور", "given": "وديع", "family": "بشور"}
+{"name": "وليد الشهري", "given": "وليد", "family": "الشهري"}
+{"name": "ووسټر ښاغلی. برټرام ولبرفورس هنري رابرټ ایم پی", "order": "FAMILY_FIRST", "given": "ښاغلی.", "middle": "برټرام ولبرفورس هنري رابرټ ایم پی", "family": "ووسټر"}
+{"name": "ووسٽر محترم برٽرم ولبرفورس ھينري رابرٽ ايم پي", "order": "FAMILY_FIRST", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ايم پي", "family": "ووسٽر"}
+{"name": "وون لیوه بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "order": "FAMILY_FIRST", "given": "لیوه", "middle": "بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون", "initials": "‌."}
+{"name": "وون لیوه بیکر شمیت, پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون لیوه بیکر شمیت", "initials": "‌."}
+{"name": "يوسف إدريس", "given": "يوسف", "family": "إدريس"}
+{"name": "يوسف السالم", "given": "يوسف", "family": "السالم"}
+{"name": "يوسف مكي", "given": "يوسف", "family": "مكي"}
+{"name": "پردیس افکاری", "given": "پردیس", "family": "افکاری"}
+{"name": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور، دکترای دندانپزشکی", "given": "دکترای", "middle": "دندانپزشکی", "family": "پروفسور آدا کورنلیا سزار مارتین وان بروهل", "suffix": "جونیور", "generation": "جونیور"}
+{"name": "پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي", "family": "ايس"}
+{"name": "پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی", "family": "ایس", "initials": "‌."}
+{"name": "ژیلا", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ژیلا", "order": "FAMILY_FIRST", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ښاغلی. برټرام ولبرفورس هنري رابرټ ووسټر ایم پی", "title": "ښاغلی.", "given": "برټرام", "middle": "ولبرفورس هنري رابرټ ووسټر ایم", "family": "پی"}
+{"name": "کاتیا مولر", "given": "کاتیا", "family": "مولر"}
+{"name": "کمال ایرانی", "given": "کمال", "family": "ایرانی"}
+{"name": "کیتی مولر", "given": "کیتی", "family": "مولر"}
+{"name": "کیوان وحدانی", "given": "کیوان", "family": "وحدانی"}
+{"name": "ڪئٿي ملر", "given": "ڪئٿي", "family": "ملر"}
+{"name": "ہاشم خان", "given": "ہاشم", "family": "خان"}
+{"name": "یاسمین راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی ایس", "given": "یاسمین", "middle": "راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی", "family": "ایس"}
 {"name": "अंजलि देवी", "given": "अंजलि", "family": "देवी", "initials": "अ. द."}
 {"name": "अंजलि शर्मा", "given": "अंजलि", "family": "शर्मा", "initials": "अ. श."}
 {"name": "अंबिका सोनी", "given": "अंबिका", "family": "सोनी", "initials": "अ. स."}
@@ -7105,7 +7110,7 @@
 {"name": "​Dr. John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "​王小明", "family": "王小明"}
 {"name": "‏John‏ Smith", "given": "John", "family": "Smith", "initials": "J. S."}
-{"name": "‏محمد بن سلمان‏", "given": "محمد", "family": "بن سلمان", "initials": "م. س.", "patronymic": "بن سلمان"}
+{"name": "‏محمد بن سلمان‏", "given": "محمد", "family": "بن سلمان", "patronymic": "بن سلمان"}
 {"name": "∫≜⩕ Smith 😊", "given": "∫≜⩕", "family": "Smith", "initials": "∫. S."}
 {"name": "∫≜⩕ Smith😊", "given": "∫≜⩕", "family": "Smith", "initials": "∫. S."}
 {"name": "〆木 ひろ", "given": "ひろ", "family": "〆木"}
