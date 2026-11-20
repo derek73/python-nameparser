@@ -390,7 +390,22 @@ class Parser:
         never turns it off, nor turns it on under a base with
         ``unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE``, beside which
         it cannot be set; it is decided apart from the order, which the
-        capitals in a name vote on as before. A setting the votes do not decide keeps this parser's value, so
+        capitals in a name vote on as before. ``two_family_names``
+        (rules/O6) is weighed last, and only where the rest of the
+        suggestion reads given-first with the East Slavic rule off: each
+        name is parsed with the switch off and on, and where the switch
+        takes a word into the family, a common surname there votes for
+        it (``García`` in ``Gabriel García Márquez``), a common given
+        name casts no vote (``María`` in ``Ana María López``), and a
+        father's name votes against it. It is turned on where at least
+        three names vote for it, more than 30% of every name the switch
+        would change and more than those against; a group never turns
+        it off; a father's name the switch would take disagrees with it.
+        A caller who knows a list is Spanish or Portuguese does better
+        with the language's pack (``locales.ES``, ``locales.PT_BR``,
+        ``locales.PT_PT``), whose given names the switch leaves out of
+        the family. A setting the votes do not
+        decide keeps this parser's value, so
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 

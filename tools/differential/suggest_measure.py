@@ -176,6 +176,20 @@ TRIALS = 300
 SEED = 20261110
 #: The most names a population keeps, drawn by a seeded reservoir.
 POOL_CAP = 20_000
+#: `orcid-span-CC`: ORCID holders of these countries, their given and
+#: family boxes as typed (#1452), the population of known surname span
+#: two_family_names is measured on: the Spanish- and Portuguese-
+#: speaking countries the switch is for, the countries where a second
+#: given name or a name both given and family stands second-to-last and
+#: the switch must not be suggested, the five the signals do not see, and
+#: the United States.
+SPAN_FOR = ("ES", "MX", "CO", "PE", "AR", "BR", "PT")
+SPAN_NOT = ("BD", "GH", "KE", "PK", "VN", "AO", "MZ", "TR")
+SPAN_UNSEEN = ("HR", "SI", "IR", "CD", "CM")
+SPAN_COUNTRIES = (*SPAN_FOR, *SPAN_NOT, *SPAN_UNSEEN, "US")
+#: The largest group whose names are each parsed for the whole-name
+#: score of a span population: the score costs a parse a name a draw.
+SPAN_SCORED = 200
 #: The names each population's signal counts read.
 SIGNAL_NAMES = 3_000
 PV_COUNTRIES = ("US", "DE", "FR", "CN", "JP", "KR", "IN", "IT", "ES", "RU",
@@ -202,10 +216,11 @@ GF, FF, FFGL = "GF", "FF", "FFGL"
 SETTABLE = ("_MIN_VOTES", "_MIN_SHARE", "_MIN_PATRONYMIC_SHARE",
             "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
             "_MIN_TRAILING_SHARE", "_MIN_RUN_NAMES", "_MIN_RUN_SHARE",
-            "_MIN_CAPITALS_LETTERS", "_MIN_ORDER_GROUP_SHARE")
+            "_MIN_CAPITALS_LETTERS", "_MIN_ORDER_GROUP_SHARE",
+            "_MIN_TWO_FAMILY_VOTES", "_MIN_TWO_FAMILY_SHARE")
 #: The thresholds that count names (or letters), read as int.
 _COUNTS = ("_MIN_VOTES", "_MIN_PATRONYMIC_VOTES", "_MIN_TRAILING_NAMES",
-           "_MIN_RUN_NAMES", "_MIN_CAPITALS_LETTERS")
+           "_MIN_RUN_NAMES", "_MIN_CAPITALS_LETTERS", "_MIN_TWO_FAMILY_VOTES")
 #: The countries `orcid-famcaps-ea` reads.
 EAST_ASIAN_COUNTRIES = frozenset({"CN", "KR", "VN", "TW"})
 
@@ -460,6 +475,19 @@ def _orcid(keep: _Reservoir) -> None:
     for r in _checked_rows("orcid-researchers"):
         _orcid_capitals(keep, r, is_capitals_word)
         _orcid_byline(keep, r)
+        _orcid_span(keep, r)
+
+
+def _orcid_span(keep: _Reservoir, r: dict[str, Any]) -> None:
+    """A holder of one of SPAN_COUNTRIES with both boxes filled and no
+    comma in either, the boxes as typed (`orcid-span-CC`)."""
+    country = r.get("country")
+    if country not in SPAN_COUNTRIES:
+        return
+    given = " ".join(unicodedata.normalize("NFC", r.get("given") or "").split())
+    family = " ".join(unicodedata.normalize("NFC", r.get("family") or "").split())
+    if given and family and "," not in given + family:
+        keep.add(f"orcid-span-{country}", given, family)
 
 
 def _orcid_capitals(keep: _Reservoir, r: dict[str, Any],
@@ -521,7 +549,8 @@ WANTED = {"patentsview-inventors": (*(f"pv-{c}" for c in PV_COUNTRIES),
           "cz-candidates": ("cz",), "uit-vinames": ("vi",),
           "orcid-researchers": ("orcid-byline", "orcid-byline-joined",
                                 "orcid-famcaps", "orcid-famcaps-ea",
-                                "orcid-famcaps-short", "orcid-givcaps")}
+                                "orcid-famcaps-short", "orcid-givcaps",
+                                *(f"orcid-span-{c}" for c in SPAN_COUNTRIES))}
 
 
 def load_pools(seed: int) -> tuple[dict[str, Pool], list[str]]:
@@ -679,17 +708,26 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
         return families[key]
 
     east_slavic = letters = 0
+    two: dict[str, list[float | None]] = {}
+    # a span population's whole names read right against the boxes,
+    # written given first under the given-first base, at each size up to
+    # SPAN_SCORED: (names, under the suggestion, under the base)
+    span = label.startswith("orcid-span-")
+    whole: dict[int, list[int]] = {}
     for order in (GF, FF):
         row = {base: [] for base in bases}
         caps_row = {base: [] for base in bases}
+        two_row = {base: [] for base in bases}
         for size in sizes:
             if size > len(pool):
                 for base in bases:
                     row[base].append(None)
                     caps_row[base].append(None)
+                    two_row[base].append(None)
                 continue
             right = Counter[str]()
             decided = Counter[str]()
+            two_decided = Counter[str]()
             for _ in range(trials):
                 names = rng.sample(pool, size)
                 group = [written(t, order) for t in names]
@@ -705,6 +743,18 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
                     switched = getattr(s.parser.policy,
                                        "capitals_as_family", False)
                     decided[base] += switched
+                    # rules/O6's switch (#1452); a tree without the
+                    # suggestion never turns it on
+                    two_decided[base] += (
+                        getattr(s.parser.policy, "two_family_names", False)
+                        and not parser.policy.two_family_names)
+                    if (span and order == GF and base == GF
+                            and size <= SPAN_SCORED):
+                        tally = whole.setdefault(size, [0, 0, 0])
+                        for (given, box), text in zip(names, group):
+                            tally[0] += 1
+                            tally[1] += _whole(s.parser, text, given, box)
+                            tally[2] += _whole(parser, text, given, box)
                     if switched:
                         on = s.parser
                         off = dataclasses.replace(on, policy=dataclasses.replace(
@@ -717,9 +767,11 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
             for base in bases:
                 row[base].append(right[base] / trials)
                 caps_row[base].append(decided[base] / trials)
+                two_row[base].append(two_decided[base] / trials)
         for base in bases:
             cells[f"{order}/{base}"] = row[base]
             capitals[f"{order}/{base}"] = caps_row[base]
+            two[f"{order}/{base}"] = two_row[base]
     signals: dict[str, dict[str, int]] = {}
     words: dict[str, dict[str, list[tuple[str, int]]]] = {}
     sample = random.Random(f"{seed}-{label}-signals").sample(
@@ -759,7 +811,40 @@ def _measure_population(label: str, pool: Pool, sizes: tuple[int, ...],
             # decides in compares equal against a tree without the switch
             "capitals": (capitals if any(x for row in capitals.values()
                                          for x in row) else {}),
-            "capitals_family_right": dict(family_right)}
+            "capitals_family_right": dict(family_right),
+            # only where some group decided it, as the capitals rows
+            "two_family": (two if any(x for row in two.values() for x in row)
+                           else {}),
+            "whole": {str(k): v for k, v in sorted(whole.items())},
+            "switch": _switch_score(pool) if span else {}}
+
+
+def _whole(parser: Parser, text: str, given: str, family: str) -> bool:
+    """Whether the parser reads the name as its boxes split it: the given
+    and middle names the given box, the family the family box, case
+    folded."""
+    r = parser.parse(text)
+    read_given = " ".join(w for w in (r.given, r.middle) if w)
+    return (read_given.casefold() == given.casefold()
+            and r.family.casefold() == family.casefold())
+
+
+def _switch_score(pool: Pool) -> dict[str, int]:
+    """A span population's whole names read right written given first,
+    under the default parser and with the bare switch on, over a fixed
+    sample of SIGNAL_NAMES names: what the switch is worth for the list,
+    as config_diff.py's score reads it from the same boxes."""
+    from nameparser import Parser as _Parser, Policy as _Policy
+    sample = random.Random("span-switch").sample(
+        pool, min(SIGNAL_NAMES, len(pool)))
+    off, on = _Parser(), _Parser(policy=_Policy(two_family_names=True))
+    out = Counter[str]()
+    for given, family in sample:
+        text = f"{given} {family}"
+        out["names"] += 1
+        out["off"] += _whole(off, text, given, family)
+        out["on"] += _whole(on, text, given, family)
+    return dict(out)
 
 
 #: The populations whose names the romanized surname table is for.
@@ -953,6 +1038,9 @@ def _measure_parliaments(lists: dict[str, dict[str, list[str]]]
                 if capitals is not None and capitals.decided:
                     row["capitals"] = [capitals.votes_for,
                                        capitals.votes_against]
+                two = evidence.get("two_family_names")
+                if two is not None and two.decided:
+                    row["two_family"] = [two.votes_for, two.votes_against]
                 suggestions.append(row)
     return {"turkic": turkic, "suggestions": suggestions}
 
@@ -1026,6 +1114,30 @@ def report(result: dict[str, Any], show_words: bool) -> None:
                 print(f"{'':16} family read as the box where decided: "
                       f"{right['on'] / n:.1%} with the switch, "
                       f"{right['off'] / n:.1%} without, over {n} names")
+    two = [p for p in result["populations"] if p.get("two_family")]
+    if two:
+        print("\n-- groups deciding two_family_names (rules/O6), where any "
+              "did; written order / base order")
+        print(f"{'population':16} {'written':7} {'base':4} "
+              + " ".join(f"{n:>6}" for n in sizes))
+        for p in two:
+            for key, row in p["two_family"].items():
+                order, base = key.split("/")
+                print(f"{p['label']:16} {order:7} {base:4} "
+                      + " ".join(_pct(x) for x in row))
+    spans = [p for p in result["populations"] if p.get("whole")]
+    if spans:
+        print("\n-- whole names read right against the boxes, written given "
+              "first under a given-first base: under the suggestion / under "
+              "the base, by size; then the bare switch over a sample")
+        for p in spans:
+            cells = " ".join(
+                f"{n}:{w[1] / w[0]:.0%}/{w[2] / w[0]:.0%}"
+                for n, w in p["whole"].items())
+            sw = p["switch"]
+            print(f"{p['label']:16} {cells}  switch "
+                  f"{sw['off'] / sw['names']:.1%} -> "
+                  f"{sw['on'] / sw['names']:.1%} of {sw['names']}")
     print(f"\n-- votes per name (right/wrong/contested/none) and per signal "
           f"(right/wrong), at most {SIGNAL_NAMES} names")
     for p in result["populations"]:
@@ -1074,8 +1186,12 @@ def report(result: dict[str, Any], show_words: bool) -> None:
 
 def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
     """What differs between two runs of the same draw: the cells, the
-    groups that decided the East Slavic rule, the TURKIC table's rows
-    and every parliament list's suggestion."""
+    groups that decided the East Slavic rule, initials_as_family,
+    capitals_as_family or two_family_names, the whole names read right
+    against the boxes, the TURKIC table's rows and every parliament
+    list's suggestion (a parliament's capitals and two_family fields are
+    recorded only where decided, so a move between two undecided counts
+    is not listed)."""
     old = {p["label"]: p for p in base["populations"]}
     out = []
     for p in head["populations"]:
@@ -1097,13 +1213,22 @@ def moved(base: dict[str, Any], head: dict[str, Any]) -> list[str]:
             out.append(f"{p['label']:14} capitals_as_family family right "
                        f"{was.get('capitals_family_right')} -> "
                        f"{p.get('capitals_family_right')}")
-        old_caps, new_caps = was.get("capitals") or {}, p.get("capitals") or {}
-        for key in sorted(set(old_caps) | set(new_caps)):
-            before, after = old_caps.get(key), new_caps.get(key)
-            if before != after:
-                out.append(f"{p['label']:14} capitals_as_family {key:6} "
-                           + " ".join(_pct(x, 1) for x in before or [])
-                           + "  ->  " + " ".join(_pct(x, 1) for x in after or []))
+        for field, setting in (("capitals", "capitals_as_family"),
+                               ("two_family", "two_family_names")):
+            old_rows, new_rows = was.get(field) or {}, p.get(field) or {}
+            for key in sorted(set(old_rows) | set(new_rows)):
+                before, after = old_rows.get(key), new_rows.get(key)
+                if before != after:
+                    out.append(f"{p['label']:14} {setting} {key:6} "
+                               + " ".join(_pct(x, 1) for x in before or [])
+                               + "  ->  "
+                               + " ".join(_pct(x, 1) for x in after or []))
+        for field in ("whole", "switch"):
+            # #1452's scores against the boxes: which names are read
+            # right can move where how often the switch is decided does not
+            if was.get(field) != p.get(field):
+                out.append(f"{p['label']:14} {field} {was.get(field)} -> "
+                           f"{p.get(field)}")
     parl_old, parl_new = base.get("parliaments") or {}, head.get("parliaments") or {}
     turkic_old = parl_old.get("turkic", {})
     for dataset, row in (parl_new.get("turkic") or {}).items():
