@@ -51,7 +51,14 @@ word in capitals of four letters or more that the lexicon lists as no
 credential or numeral and the base reads as no title, against the names
 the switch would give a family the base reads as a title and the names
 in mixed case with no word in capitals; it is no vote on the order,
-which the capitals signal casts as before. A setting is
+which the capitals signal casts as before. Last it weighs
+``two_family_names`` (rules/O6), where the rest reads given-first with
+the East Slavic rule off, asking the parse itself under that parser
+with the switch off and on: a name the switch would change votes for it
+where the word it would take into the family is a common surname of
+the ORCID table (`Signal.FIRST_SURNAME`), casts no vote where that word
+is a common given name, and votes against it where it is a father's
+name. A setting is
 decided only on the evidence the thresholds below admit; any other
 setting keeps the base's value, so an empty group, or one with no
 votes, gives back a parser that reads exactly as the base does. The
@@ -90,7 +97,7 @@ from ._types import (
     ReadingSource, Role,
     _guarded_getstate, _guarded_setstate,
 )
-from .config._order_names import COMMON_GIVEN_NAMES, SURNAMES
+from .config._order_names import COMMON_GIVEN_NAMES, COMMON_SURNAMES, SURNAMES
 
 if TYPE_CHECKING:
     from ._parser import Parser
@@ -124,7 +131,9 @@ def fold(word: str) -> str:
 
 
 class Signal(StrEnum):
-    """The evidence a single name offers about its writer's name order."""
+    """The evidence a single name offers about how its writer writes
+    names; each signal votes on one ``Policy`` setting: the order, the
+    patronymic rule or ``two_family_names``."""
 
     #: A family name written in capitals at one end of a name in mixed
     #: case (``Mary SMITH``).
@@ -151,6 +160,14 @@ class Signal(StrEnum):
     #: last (``Sidorov Ivan Petrovich``) it is written first. Cast only
     #: beside an East Slavic ``PATRONYMIC`` vote.
     PATRONYMIC_POSITION = "patronymic-position"
+    #: The word ``two_family_names`` would take into a name's family
+    #: (rules/O6), voting the switch's value: True where it is a common
+    #: surname of the ORCID table (``COMMON_SURNAMES``, #1364), ``García``
+    #: in ``Gabriel García Márquez``, a first surname standing where a
+    #: second given name would; False where it is a father's name the
+    #: switch would read as a first surname (``Ivan Petrovich
+    #: Sidorov``). A listed given name there casts no vote.
+    FIRST_SURNAME = "first-surname"
 
 
 _INITIAL_JOINS = re.compile(r"[.-]+")
@@ -425,14 +442,13 @@ def _letter_run(text: str, readers: tuple[Parser, Parser]) -> str | None:
 
 
 def _read(text: str, lexicon: Lexicon
-          ) -> tuple[dict[Signal, tuple[Role, Role, Role] | PatronymicRule],
-                     bool, list[str]]:
+          ) -> tuple[dict[Signal, Vote], bool, list[str]]:
     """The votes one name casts, whether a comma left it out, and the
     words the signals read."""
     words, comma = _name_words(text, lexicon)
     if len(words) < 2:
         return {}, comma, words
-    votes: dict[Signal, tuple[Role, Role, Role] | PatronymicRule] = {}
+    votes: dict[Signal, Vote] = {}
 
     capitals = _capitals(words)
     if capitals is not None:
@@ -476,17 +492,22 @@ def name_votes(text: str, lexicon: Lexicon
     """The votes one name casts; empty for a name of fewer than two
     words once its titles and post-nominals are read past, and for a
     comma name, save one whose comma is followed by post-nominals
-    alone."""
-    return _read(text, lexicon)[0]
+    alone. It holds no ``two_family_names`` vote, which reads the parse
+    the rest of a suggestion gives."""
+    # one name read alone casts only orders and rules: the switch's
+    # votes are cast in suggest
+    return {signal: vote for signal, vote in _read(text, lexicon)[0].items()
+            if not isinstance(vote, bool)}
 
 
 # -- the group ----------------------------------------------------------
 
-#: A vote one signal casts: an order, or the patronymic rule a shape
-#: matches.
-Vote = tuple[Role, Role, Role] | PatronymicRule
+#: A vote one signal casts: an order, the patronymic rule a shape
+#: matches, or a switch's value (``two_family_names``).
+Vote = tuple[Role, Role, Role] | PatronymicRule | bool
 #: A setting's value as SettingEvidence holds it: an order, a set of
-#: patronymic rules, or a switch (initials_as_family, capitals_as_family).
+#: patronymic rules, or a switch (initials_as_family, capitals_as_family,
+#: two_family_names).
 SettingValue = tuple[Role, Role, Role] | frozenset[PatronymicRule] | bool
 
 # The thresholds, chosen with tools/differential/suggest_measure.py
@@ -545,12 +566,32 @@ _MIN_CAPITALS_LETTERS = 4
 #: (decisions/group-suggestion, 2026-11-11 TRAILING INITIAL, #1254).
 _MIN_TRAILING_NAMES = 3
 _MIN_TRAILING_SHARE = 0.6
+#: two_family_names is decided where at least this many names vote for
+#: it, they are more than _MIN_TWO_FAMILY_SHARE of the names the switch
+#: would change, and more than the names voting against it: a list of
+#: two family names writes many first surnames the table does not hold,
+#: so the share is lower than an order's, and at more than three in ten
+#: no list from a country the switch costs is decided at any size
+#: measured (decisions/group-suggestion, 2026-11-19 #1452).
+_MIN_TWO_FAMILY_VOTES = 3
+_MIN_TWO_FAMILY_SHARE = 0.3
 
 _NAME_ORDER = "name_order"
 _PATRONYMIC_RULES = "patronymic_rules"
 _INITIALS_AS_FAMILY = "initials_as_family"
 _CAPITALS_AS_FAMILY = "capitals_as_family"
+_TWO_FAMILY_NAMES = "two_family_names"
 _SIGNAL_RANK = {signal: rank for rank, signal in enumerate(Signal)}
+#: The setting each signal votes on: one setting a signal, one signal a
+#: kind of vote (decisions/group-suggestion, 2026-11-19 #1447), read by
+#: every site that tells the kinds apart (2026-11-19 #1452).
+_SETTING_OF: Mapping[Signal, str] = MappingProxyType({
+    Signal.CAPITALS: _NAME_ORDER, Signal.TRAILING_INITIAL: _NAME_ORDER,
+    Signal.PARTICLE: _NAME_ORDER, Signal.SURNAME: _NAME_ORDER,
+    Signal.GIVEN_NAME: _NAME_ORDER, Signal.PATRONYMIC: _PATRONYMIC_RULES,
+    Signal.PATRONYMIC_POSITION: _NAME_ORDER,
+    Signal.FIRST_SURNAME: _TWO_FAMILY_NAMES,
+})
 
 
 def _end(order: tuple[Role, ...]) -> tuple[Role, Role, Role]:
@@ -565,16 +606,23 @@ def _order_ends(pairs: Iterable[tuple[Signal, Vote]]
     order vote) or both (the name is contested and casts no order
     vote)."""
     return frozenset(vote for signal, vote in pairs  # type: ignore[misc]
-                     if signal is not Signal.PATRONYMIC)
+                     if _SETTING_OF[signal] == _NAME_ORDER)
 
 
 def _checked_vote(signal: object, vote: object,
                   owner: str = "NameEvidence") -> tuple[Signal, Vote]:
     """One (signal, vote) pair, validated: an order signal votes
     ``GIVEN_FIRST`` or ``FAMILY_FIRST``, the patronymic signal a
-    ``PatronymicRule``. ``owner`` names the type in the message."""
+    ``PatronymicRule``, a ``two_family_names`` signal the switch's
+    value, True or False. ``owner`` names the type in the message."""
     signal = Signal(signal)  # type: ignore[arg-type]  # ValueError names it
-    if signal is Signal.PATRONYMIC:
+    if _SETTING_OF[signal] == _TWO_FAMILY_NAMES:
+        if not isinstance(vote, bool):
+            raise TypeError(
+                f"{owner} vote for {signal.value!r} must be True or False, "
+                f"got {vote!r}; pass e.g. {{Signal.{signal.name}: True}}")
+        return signal, vote
+    if _SETTING_OF[signal] == _PATRONYMIC_RULES:
         if not isinstance(vote, PatronymicRule):
             raise TypeError(
                 f"{owner} vote for {signal.value!r} must be a "
@@ -946,7 +994,9 @@ class Suggestion:
         disagree with; a name that cast no vote, or whose order signals
         are contested, never disagrees on order; a name in mixed case
         with no word in capitals disagrees with a decided
-        ``capitals_as_family``; and a name carrying an
+        ``capitals_as_family``; a name whose father's name the switch
+        would take disagrees with a decided ``two_family_names``; and a
+        name carrying an
         East Slavic patronymic never disagrees on order where the East
         Slavic rule is decided with a given-first order, since the rule
         reorders it there."""
@@ -1011,13 +1061,16 @@ class Suggestion:
 
 
 def _setting_of(signal: Signal) -> str:
-    return _PATRONYMIC_RULES if signal is Signal.PATRONYMIC else _NAME_ORDER
+    return _SETTING_OF[signal]
 
 
 def _disagrees(name: NameEvidence, decided: Mapping[str, object]) -> bool:
     """Whether one name's votes contradict a decided setting."""
     if (decided.get(_CAPITALS_AS_FAMILY) is True
             and name.family_in_capitals is False):
+        return True
+    if (decided.get(_TWO_FAMILY_NAMES) is True
+            and dict(name._votes).get(Signal.FIRST_SURNAME) is False):
         return True
     patronymic = dict(name._votes).get(Signal.PATRONYMIC)
     rules = decided.get(_PATRONYMIC_RULES)
@@ -1568,11 +1621,107 @@ def _trailing_initials_vote(
         f"names and {_MIN_TRAILING_SHARE:.0%} of the group do")
 
 
+def _two_family_votes(
+        with_words: list[tuple[str, dict[Signal, Vote], bool, list[str]]],
+        reader: Parser) -> tuple[list[dict[Signal, Vote]], int, int]:
+    """Each name's votes on ``two_family_names``, read where rules/O6
+    reads it: the parse itself is asked, under ``reader`` (the parser the
+    rest of the suggestion gives) with the switch off and on, and a name
+    the switch moves is one whose family it changes, every name of the
+    group with a middle name asked. Where such a name has no comma and three name words or
+    more, the last word the switch takes into its family votes
+    (`Signal.FIRST_SURNAME`): for the switch where it is a common
+    surname of the ORCID table, against it where it is a patronymic or
+    its marker, a father's name the switch would read as a first
+    surname, and not at all where it is a common given name, the second
+    given name the switch would take (`COMMON_GIVEN_NAMES`). Returns the
+    votes, the names the switch moves and the names whose taken word is
+    a listed given name."""
+    with warnings.catch_warnings():
+        # the base gave its construction warnings when it was built
+        warnings.simplefilter("ignore")
+        on = dataclasses.replace(reader, policy=dataclasses.replace(
+            reader.policy, two_family_names=True))
+    out: list[dict[Signal, Vote]] = []
+    moved = vetoed = 0
+    for text, _, comma, words in with_words:
+        votes: dict[Signal, Vote] = {}
+        out.append(votes)
+        # every name the switch changes counts in the share, a comma name
+        # and one whose words the signals do not split included; only a
+        # name they read casts a vote
+        off = reader.parse(text)
+        if not off.middle:
+            # the switch takes the word before the family from the
+            # middle, so a name with none is one it leaves as it is
+            continue
+        off_family, on_family = off.family, on.parse(text).family
+        if on_family == off_family:
+            continue
+        moved += 1
+        if (comma or len(words) < 3
+                or not on_family.endswith(" " + off_family)):
+            continue
+        word = on_family[:len(on_family) - len(off_family)].split()[-1]
+        bare = word.rstrip(".") or word
+        if is_patronymic_marker(bare) or has_patronymic_ending(bare):
+            # a father's name or its marker, never a first surname
+            votes[Signal.FIRST_SURNAME] = False
+        elif _listed(word, COMMON_GIVEN_NAMES):
+            vetoed += 1
+        elif _listed(word, COMMON_SURNAMES):
+            votes[Signal.FIRST_SURNAME] = True
+    return out, moved, vetoed
+
+
+def _decide_two_family_names(
+        votes: list[dict[Signal, Vote]], moved: int, vetoed: int,
+        base_value: bool, note: str = ""
+        ) -> tuple[SettingEvidence, dict[str, object]]:
+    """Decide ``two_family_names`` (rules/O6): true where at least
+    _MIN_TWO_FAMILY_VOTES names vote for it and they are more than
+    _MIN_TWO_FAMILY_SHARE of the names the switch would move, and more
+    than the names it would read a father's name in as a first surname.
+    A group never decides it false."""
+    size = len(votes)
+    voters = sum(v.get(Signal.FIRST_SURNAME) is True for v in votes)
+    fathers = sum(v.get(Signal.FIRST_SURNAME) is False for v in votes)
+    rows: Counter[tuple[Signal, Vote]] = Counter(
+        pair for v in votes for pair in v.items())
+    by_signal = tuple(sorted(((sig, vote, n) for (sig, vote), n
+                              in rows.items()),
+                             key=lambda row: (_SIGNAL_RANK[row[0]],
+                                              _label(row[1]))))
+    if note or not moved:
+        return (SettingEvidence(_TWO_FAMILY_NAMES, base_value, False, 0, 0,
+                                0, size, (), note), {})
+    decided = (voters >= _MIN_TWO_FAMILY_VOTES
+               and voters > _MIN_TWO_FAMILY_SHARE * moved
+               and voters > fathers)
+    value = True if decided else base_value
+    noun = "name" if moved == 1 else "names"
+    text = (f"{voters} of the {moved} {noun} two_family_names would "
+            f"change carry a common surname where it would take a first "
+            f"surname")
+    if vetoed:
+        text += (f"; {vetoed} of them a common given name there, which "
+                 f"casts no vote")
+    if fathers:
+        text += (f"; {fathers} a father's name there, which it would read "
+                 f"as a first surname")
+    fields: dict[str, object] = (
+        {_TWO_FAMILY_NAMES: True} if decided and not base_value else {})
+    # counted for and against the value kept, as the other switches are
+    for_, against = (voters, fathers) if value else (fathers, voters)
+    return (SettingEvidence(_TWO_FAMILY_NAMES, value, decided, for_,
+                            against, 0, size - voters - fathers, by_signal,
+                            text), fields)
+
+
 def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
     """The settings a group of names suggests, with ``parser`` as the
     base: see :meth:`Parser.suggest`."""
     tallies = {_NAME_ORDER: _Tally(), _PATRONYMIC_RULES: _Tally()}
-    evidence: list[NameEvidence] = []
     any_voters = comma_left_out = 0
     texts = list(_texts(names))
     family_first = parser.policy.name_order != GIVEN_FIRST
@@ -1619,7 +1768,6 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         if not trailing_votes and Signal.TRAILING_INITIAL in votes:
             del votes[Signal.TRAILING_INITIAL]
             set_aside += not votes
-        evidence.append(NameEvidence(text, votes, family_in_capitals=mark))
         comma_left_out += comma
         per_setting: dict[str, list[tuple[Signal, Vote]]] = {
             setting: [] for setting in tallies}
@@ -1634,7 +1782,8 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         tallies[_PATRONYMIC_RULES], policy.patronymic_rules, any_voters,
         _keeps_family_first(policy, tallies[_NAME_ORDER].winner(),
                             with_words))
-    if set_aside and any(Signal.PATRONYMIC in n.votes for n in evidence):
+    if set_aside and any(Signal.PATRONYMIC in votes
+                         for _, votes, _, _ in with_words):
         # the evidence says what its share was taken of: the names a
         # set-aside vote left with none still count among those casting
         # one, and show as no evidence
@@ -1651,6 +1800,34 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         trailing_note)
     fields = {**order_fields, **patronymic_fields, **letter_fields,
               **capitals_fields}
+    # weighed only where the rest gives a given-first order (#1452): the
+    # parser the other settings suggest, asked with the switch on
+    with warnings.catch_warnings():
+        # the base gave its construction warnings when it was built
+        warnings.simplefilter("ignore")
+        reader = dataclasses.replace(parser, policy=apply_patch(
+            policy, PolicyPatch(**fields)))  # type: ignore[arg-type]
+    family_votes: list[dict[Signal, Vote]] = [{} for _ in texts]
+    moved = vetoed = 0
+    if policy.two_family_names:
+        two_note = "not read: the base reads two family names already"
+    elif PatronymicRule.EAST_SLAVIC in reader.policy.patronymic_rules:
+        two_note = ("not read: the East Slavic rule is on, and the switch "
+                    "would read a patronymic as a first surname")
+    elif reader.policy.name_order != GIVEN_FIRST:
+        two_note = ("not read: the order is family-first, and two family "
+                    "names are weighed under a given-first order alone")
+    else:
+        family_votes, moved, vetoed = _two_family_votes(with_words, reader)
+        two_note = ""
+    two_family, two_fields = _decide_two_family_names(
+        family_votes, moved, vetoed, policy.two_family_names, two_note)
+    fields.update(two_fields)
+    evidence = [NameEvidence(text, {**votes, **extra},
+                             family_in_capitals=mark)
+                for (text, votes, _, _), mark, extra
+                in zip(with_words, marks, family_votes)]
     patch = PolicyPatch(**fields)  # type: ignore[arg-type]
-    return Suggestion(parser, patch, (order, patronymic, letters, capitals),
+    return Suggestion(parser, patch,
+                      (order, patronymic, letters, capitals, two_family),
                       tuple(evidence))

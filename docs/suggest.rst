@@ -35,11 +35,12 @@ first because the list is, and nothing in the name can confirm that.
 
 Each name votes on its order from the evidence it carries
 (:ref:`suggest-evidence`), and the group decides the order where enough
-of its names agree (:ref:`suggest-deciding`). Three more settings are
+of its names agree (:ref:`suggest-deciding`). Four more settings are
 decided the same way, each by its own evidence: a patronymic rule
 (:ref:`suggest-patronymics`), ``initials_as_family``
-(:ref:`suggest-initials`) and ``capitals_as_family``
-(:ref:`suggest-capitals`). Every setting the votes do not decide keeps
+(:ref:`suggest-initials`), ``capitals_as_family``
+(:ref:`suggest-capitals`) and ``two_family_names``
+(:ref:`suggest-two-family`). Every setting the votes do not decide keeps
 the base parser's value.
 
 .. _suggest-how-many:
@@ -118,6 +119,8 @@ the names that disagree with it:
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
       capitals_as_family  unchanged (False)  5 for, 0 against, 0 no evidence
+      two_family_names  unchanged (False)  no evidence
+          not read: the order is family-first, and two family names are weighed under a given-first order alone
 
 The report reads as follows:
 
@@ -139,8 +142,8 @@ The report reads as follows:
   SMITH`` the surname in front says family first and the capitals at
   the end say family last). A contested name casts no order vote and
   never disagrees on the order.
-- **The indented rows** under ``name_order`` and ``patronymic_rules``
-  count the names by kind of evidence and the value it votes for. A
+- **The indented rows** under ``name_order``, ``patronymic_rules``
+  and ``two_family_names`` count the names by kind of evidence and the value it votes for. A
   name carrying two kinds is in two rows (``Wang Xiaoming`` above), so
   the rows can add up to more than the names for.
 - **An indented sentence**, where one follows, is a note saying why
@@ -185,6 +188,8 @@ The report counts it as ``against`` and names it on its last line:
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
       capitals_as_family  unchanged (False)  6 for, 0 against, 0 no evidence
+      two_family_names  unchanged (False)  no evidence
+          not read: the order is family-first, and two family names are weighed under a given-first order alone
       disagreeing (1): Emily Clark
 
 .. _suggest-deciding:
@@ -220,6 +225,12 @@ and enough of them agree:
      - 2 writing the family name in capitals of four letters or more
      - more than two thirds of the names with evidence either way
      - :ref:`suggest-capitals`
+   * - ``two_family_names``
+     - 3 with a common surname where the switch would take a first
+       surname
+     - more than three in ten of the names the switch would change,
+       and more than the names voting against it
+     - :ref:`suggest-two-family`
 
 The group decides ``name_order`` when at least two names vote for one
 end and they are more than two thirds of the names that cast an order
@@ -274,6 +285,7 @@ mixed case as ``for`` the switch staying off, :ref:`suggest-report`.)
       patronymic_rules  unchanged (none)  no evidence
       initials_as_family  unchanged (False)  no evidence
       capitals_as_family  unchanged (False)  3 for, 0 against, 0 no evidence
+      two_family_names  unchanged (False)  no evidence
 
 Then, where you know how the list is written, set the order yourself
 (:ref:`name-order`):
@@ -581,18 +593,99 @@ A list left with the switch off shows no note unless a name writes its
 family in capitals, and counts its names in mixed case as ``for``
 (:ref:`suggest-report`).
 
+.. _suggest-two-family:
+
+Lists that give two family names
+--------------------------------
+
+``suggest()`` turns ``two_family_names`` on (see
+:ref:`two-family-names`) for a list written given name first whose
+names end in two family names, as Spanish-speaking lists do, so that
+the word before the family name joins it:
+
+.. doctest::
+
+    >>> hispanic = Parser().suggest(["María García López", "Juan Pérez Ruiz",
+    ...                              "Ana Martínez Soto"])
+    >>> hispanic.patch
+    PolicyPatch(two_family_names=True)
+    >>> Parser().parse("Gabriel García Márquez").family
+    'Márquez'
+    >>> hispanic.parser.parse("Gabriel García Márquez").family
+    'García Márquez'
+
+A wrong suggestion here costs more than a missed one: the switch reads
+a middle name as a first surname, and in lists from countries where
+two family names are rare it cost up to 53 points of whole names read
+right (:issue:`1452`). So the switch is decided only where at least
+three names, more than three in ten of the names it would change, carry
+a common surname where it would take a first surname.
+
+What counts for and against
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every name the switch would change counts in that share. One of three
+words or more with no comma also votes for it, against it, or not at
+all, by the word the switch would take into the family:
+
+- **For**: a common surname (``García`` in ``Gabriel García
+  Márquez``), from the table of words ORCID's holders type as a family
+  name and rarely as a given name (:ref:`suggest-evidence`).
+- **Against**: a father's name (``Ivan Petrovich Sidorov``), which the
+  switch would read as a first surname. The names voting for it must
+  outnumber these, and such a name disagrees with a decided switch.
+- **No evidence**: every other name, a common given name there
+  included (``Maria Anna Berg``), which the switch would read as a
+  surname. A common given name casts no vote but still counts in the
+  share, among the names the switch would change.
+
+The switch is weighed only once the order is settled given name first,
+by the base or by the list: a list written family first is not
+suggested the switch, and neither is a list for which an East Slavic
+patronymic rule is on, whose fathers' names the switch would read as
+surnames. A group never turns the switch off, and a base with it on is
+suggested no change to it.
+
+What the report shows
+~~~~~~~~~~~~~~~~~~~~~
+
+The note under ``two_family_names`` counts the names voting for it
+among those it would change:
+
+.. doctest::
+
+    >>> [e.note for e in hispanic.evidence if e.setting == "two_family_names"]
+    ['3 of the 3 names two_family_names would change carry a common surname where it would take a first surname']
+
+Where you know the list
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The suggestion is the bare switch. Where you know a list is Spanish or
+Portuguese, choose the language pack instead (:ref:`suggest-packs`):
+it turns the switch on too, and its given names keep a compound given
+name whole, which the bare switch reads as a first surname:
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> hispanic.parser.parse("Juan Pablo Montoya").family
+    'Pablo Montoya'
+    >>> parser_for(locales.ES).parse("Juan Pablo Montoya").family
+    'Montoya'
+
 .. _suggest-packs:
 
 Choosing a language pack
 ------------------------
 
-A suggestion never chooses a language pack. It proposes the four
+A suggestion never chooses a language pack. It proposes the five
 ``Policy`` settings above (``name_order``, ``patronymic_rules``,
-``initials_as_family`` and ``capitals_as_family``) and leaves the
-vocabulary as the base parser has it. The words a pack turns on, and
-its other rules (two family names for Spanish, dividing a Chinese
-surname from the given name), come only from choosing the pack
-yourself: see :ref:`shipped-packs`.
+``initials_as_family``, ``capitals_as_family`` and
+``two_family_names``) and leaves the vocabulary as the base parser has
+it. The words a pack turns on, and its other rules (dividing a Chinese
+surname from the given name, the pack's own reading of two family
+names), come only from choosing the pack yourself: see
+:ref:`shipped-packs`.
 
 Where you know a list's language, build the base with ``parser_for``
 and call ``suggest()`` on that; the suggested parser keeps the pack.
