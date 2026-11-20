@@ -159,6 +159,22 @@ Korean name that divided at 김 divides at 김민 once that is listed:
     >>> Parser(lexicon=lex).parse("김민준").family
     '김민'
 
+A listed surname also divides a foreign name written in hangul, since
+hangul is read as Korean: 라르스 (Lars) opens with the surname 라. If
+your data holds such names, take the surname out of the list, and
+Korean names opening with it stay whole too:
+
+.. doctest::
+
+    >>> import dataclasses
+    >>> parse("라르스").family
+    '라'
+    >>> ko_lexicon = Lexicon.default()
+    >>> no_ra = dataclasses.replace(
+    ...     ko_lexicon, surnames=ko_lexicon.surnames - {"라"})
+    >>> Parser(lexicon=no_ra).parse("라르스").family
+    '라르스'
+
 For a Chinese name, add the surname to the parser the ``zh`` pack is
 folded onto. 庹 is a rare surname the pack does not list, so the name
 stays whole until it is added:

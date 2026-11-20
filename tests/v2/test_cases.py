@@ -516,9 +516,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # the same day, #1164's alias rows ('Rahim Osman @ Jaki V', 'Ali @ X
     # @ Y Z V', 'Osman, Rahim @ Jaki PhD Ali', 'Jane née Jones @ JJ V',
     # 'Dr née Jones @ JJ V', 'Rahim Osman @ Jaki Jr. née Smith', 'Jane
-    # Smith @ JJ Jr. née') under three orders.
-    assert claims == 2238, (
-        f"the field sweep checks {claims} claims, recorded as 2238 on "
+    # Smith @ JJ Jr. née') under three orders; 2238 -> 2242 the same day,
+    # #1239's 'Broeck, Pieter Vanden' under three orders and 'Vanden
+    # Broeck Pieter' under its declared policy, each reporting
+    # particle-or-given.
+    assert claims == 2242, (
+        f"the field sweep checks {claims} claims, recorded as 2242 on "
         f"2026-11-20")
 
 
@@ -1008,8 +1011,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # Jaki V', 'Ali @ X @ Y Z V'); 611 -> 614 and 497 -> 500 the same
     # day, from its fix review's three suffix-or-name rows; 500 -> 509
     # the same day, its second fix review's two rows, their reports all
-    # skipped
-    assert (checked, skipped) == (614, 509), (checked, skipped)
+    # skipped; 614 -> 617 the same day, #1239's 'Broeck, Pieter Vanden'
+    # under three orders
+    assert (checked, skipped) == (617, 509), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

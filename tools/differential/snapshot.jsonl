@@ -6196,6 +6196,7 @@
 {"name": "سامانتا", "order": "FAMILY_FIRST", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "سامر بن الله", "given": "سامر", "family": "بن الله", "patronymic": "بن الله"}
 {"name": "سامر ذو الغنى", "given": "سامر", "family": "ذو الغنى"}
+{"name": "سامر عبد القوى", "given": "سامر", "family": "عبد القوى"}
 {"name": "سامر عز الدين", "given": "سامر", "family": "عز الدين"}
 {"name": "سامر نور الدين حداد", "given": "سامر", "middle": "نور الدين", "family": "حداد"}
 {"name": "سامي الكيالي", "given": "سامي", "family": "الكيالي"}
@@ -7654,6 +7655,8 @@
 {"name": "남다름", "given": "다름", "family": "남"}
 {"name": "노유상", "given": "유상", "family": "노"}
 {"name": "도민호", "given": "민호", "family": "도"}
+{"name": "라르스", "given": "르스", "family": "라"}
+{"name": "라미란", "given": "미란", "family": "라"}
 {"name": "로버트 다우니 주니어", "given": "다우니", "family": "로버트", "suffix": "주니어", "generation": "주니어"}
 {"name": "류효영", "given": "효영", "family": "류"}
 {"name": "마이클·잭슨", "given": "마이클", "family": "잭슨"}
@@ -7698,6 +7701,7 @@
 {"name": "양 지훈", "given": "지훈", "family": "양"}
 {"name": "양 지훈.", "given": "지훈.", "family": "양"}
 {"name": "양. 지훈", "given": "지훈", "family": "양."}
+{"name": "어수선", "given": "수선", "family": "어"}
 {"name": "에이다 코넬리아 세사르 마르틴 폰 볼프 박사", "given": "코넬리아", "middle": "세사르 마르틴 폰 볼프", "family": "에이다", "suffix": "박사"}
 {"name": "오정숙", "given": "정숙", "family": "오"}
 {"name": "유명희", "given": "명희", "family": "유"}

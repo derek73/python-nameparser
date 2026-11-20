@@ -4,9 +4,10 @@
 
 **Then:** the two words are one name unit, past the first name word or, for a pair read from its second word, at it too, a unit that position places.
 
-- **The completing word is one a reading lists** (`completed_by` on the bound word's reading): for Arabic-script `عبد`, the one-word names of God, the other divine epithets and the devotional completions written after it, each in its hamza-less and Persian spellings.
+- **The completing word is one a reading lists** (`completed_by` on the bound word's reading): for Arabic-script `عبد`, the one-word names of God, the other divine epithets and the devotional completions written after it, each in its hamza-less and Persian spellings, and a word ending in `ي` also with the final `ى` Egyptian names write, and `المولى` with `ي` too.
   ```
   "سعيد عبد الله"             →  family="عبد الله"
+  "سامر عبد القوى"            →  family="عبد القوى"
   "طارق عبد العزيز"           →  family="عبد العزيز"
   "محمد عبد الله أحمد"        →  middle="عبد الله"
   "عبد اللطيف عبد الحميد"     →  family="عبد الحميد"
