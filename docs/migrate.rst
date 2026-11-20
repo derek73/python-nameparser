@@ -2271,7 +2271,10 @@ degree``); a misspelling (``Proffesor``) still reads the old way:
 A name the word opens reads it as the title too, as with any title
 (``Student Mary Jones`` gives title ``Student``), and so does one
 alone after a surname and a comma (``Qassoumi, Student`` gives no given
-name). To read such a word as a name, remove its reading:
+name). A word that only qualifies a job, the possessive among them,
+does not claim a name it opens alone (``Master's Nadir`` keeps given
+``Master's``). To read such a word as a name, remove its reading, a
+job's as ``kind="occupation"`` and a qualifier's as ``kind="modifier"``:
 
 .. doctest::
 

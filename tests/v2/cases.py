@@ -21384,6 +21384,30 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1487)",
          notes="listed again with the apostrophe the vocabulary does not "
                "fold (U+2019)"),
+    Case("degree_possessive_master_with_the_typographic_apostrophe",
+         "Nadir Qassoumi, Master\u2019s degree",
+         {"title": "Master\u2019s degree", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1487)"),
+    Case("degree_possessive_in_capitals_before_student",
+         "NADIR QASSOUMI, BACHELOR'S STUDENT",
+         {"title": "BACHELOR'S STUDENT", "given": "NADIR", "family": "QASSOUMI"},
+         classification="fix(#1487)"),
+    Case("degree_possessive_typographic_alone_in_lower_case",
+         "nadir qassoumi, doctor\u2019s",
+         {"title": "doctor\u2019s", "given": "nadir", "family": "qassoumi"},
+         classification="fix(#1487)"),
+    Case("degree_possessive_opening_the_given_part_after_a_family_comma",
+         "Qassoumi, Master's Nadir",
+         {"title": "Master's", "given": "Nadir", "family": "Qassoumi"},
+         classification="fix(#1487)",
+         notes="H9: a modifier opening the given part after a family comma "
+               "is the title, the cost #1457 took for 'Qassoumi, Medical "
+               "Nadir'; read given \"Master's\" 1.4.0 through 3.1"),
+    Case("degree_possessive_before_a_family_comma_stays_the_family",
+         "Master's, John",
+         {"given": "John", "family": "Master's"},
+         notes="boundary: a modifier before a family comma with no name "
+               "word behind it stays the family (#1487)"),
     Case("degree_possessive_alone_after_a_comma_is_the_title",
          "Nadir Qassoumi, Doctor's",
          {"title": "Doctor's", "given": "Nadir", "family": "Qassoumi"},
@@ -21554,10 +21578,11 @@ CASES: tuple[Case, ...] = (
                "word behind it before a family comma; 4 of FEC's "
                "1,893,964 names (decisions/salutation-titles); read "
                "family 'Masters Boyd' through 3.1"),
-    Case("possessive_degree_after_a_comma_is_still_read_as_the_name",
-         "Nadir Qassoumi, Master's degree",
-         {"given": "Master's", "middle": "degree",
+    Case("possessive_degree_with_an_unlisted_apostrophe_is_still_read_as_the_name",
+         "Nadir Qassoumi, Master\u02bcs degree",
+         {"given": "Master\u02bcs", "middle": "degree",
           "family": "Nadir Qassoumi"},
-         notes="boundary: the possessive is left unlisted (#1457), so "
-               "the part still takes the name over"),
+         notes="boundary: the possessive is listed with the straight and "
+               "the typographic apostrophe (#1487), not U+02BC, so the "
+               "part still takes the name over"),
 )
