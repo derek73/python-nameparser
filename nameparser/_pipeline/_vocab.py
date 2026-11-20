@@ -385,17 +385,19 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 ROMAN = _ROMAN
 
 
-# Ported verbatim from v1's patterns (the 1.x and 2.x
+# Ported from v1's patterns (the 1.x and 2.x
 # nameparser.config.regexes, removed in 3.0, #1008), the RU and TR_AZ
 # packs' copies pinned to these by tests/v2/test_locales.py: the East
 # Slavic patronymic endings and the standalone Turkic patronymic
 # markers, which rules/O1's and O2's rotations and rules/R9's reading
-# ask through the two predicates below.
+# ask through the two predicates below. The Ukrainian Cyrillic endings
+# (`івна`, `ївна`, `євич`, `ілліч`) joined v1's in 3.2 (#1212).
 _EAST_SLAVIC = re.compile(
     r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)
 _EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
+    r"(ович|овна|евич|евна|ична|ильич|івна|ївна|євич|ілліч"
+    r"|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
     re.I)
 _TURKIC = re.compile(
     r"^(oglu|oğlu|ogly|ogli|o['’ʻ‘ʼ`]g['’ʻ‘ʼ`]li"
