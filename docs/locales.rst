@@ -678,11 +678,10 @@ does by default (see :ref:`two-given-names`):
     ('da Piedade', 'Costa')
 
 ``pt_pt`` also reads three such phrases that Portugal's names support
-and Brazil's do not (in Brazil ``de Jesus`` behind a first name is
-mostly a surname): ``do Rosário``, ``de Jesus`` and ``do Carmo``.
-``pt`` and ``pt_br`` read them as the start of the family; ``do
-Rosario``, without the accent, every pack reads as a middle name, as
-Spanish ``del Rosario`` is read:
+and Brazil's refute or are too few to judge (in Brazil ``de Jesus``
+behind a first name is mostly a surname): ``do Rosário``, ``de Jesus``
+and ``do Carmo``. ``pt`` and ``pt_br`` read them as the start of the
+family:
 
 .. doctest::
 
@@ -691,6 +690,10 @@ Spanish ``del Rosario`` is read:
     >>> rosario = parser_for(locales.PT_PT).parse("Maria do Rosário Pinto")
     >>> rosario.middle, rosario.family
     ('do Rosário', 'Pinto')
+
+``do Rosario``, without the accent, every pack's plain choice reads as a
+middle name, as Spanish ``del Rosario`` is read; a strict choice of
+``pt`` or ``pt_br``, which leaves Spanish out, reads it as the family.
 
 ``pt_br`` also turns on ``SB``. Brazilian filings abbreviate the
 agnomen *Sobrinho* (nephew) to ``SB``, which is also the S.B. degree,

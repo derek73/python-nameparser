@@ -804,10 +804,10 @@ Which words are marked:
   Portuguese word too rare to measure (``da Piedade``; see
   :ref:`language-packs`).
 - **Under** ``locales.PT_PT`` **only**, words Portugal's names support
-  and Brazil's do not (``do Rosário``, ``de Jesus``, ``do Carmo``; see
+  and Brazil's refute or are too few to judge (``do Rosário``, ``de Jesus``, ``do Carmo``; see
   :ref:`portuguese-packs`).
 - **Not marked**: a phrase too often a surname, as Portuguese
-  ``do Carmo`` is outside ``locales.PT_PT``, stays the family, the same shape as ``"João da Silva
+  ``do Carmo`` is (outside ``locales.PT_PT``), stays the family, the same shape as ``"João da Silva
   Santos"``, and so does one opening with a saint (``"Domingo Santa
   María González"``).
 

@@ -2,7 +2,8 @@ schema = 1
 
 # European Portuguese: locales.PT_PT reads its names with two family names
 # (rules/O6), its given-name list keeping a given name out of the family.
-# The words are readings Portugal's names support and Brazil's do not,
+# The words are readings Portugal's names support and Brazil's refute
+# or are too few to judge,
 # each `default = false`, so only a choice of pt-PT turns them on
 # (`rosario`, which es.toml reads by default, is here for a strict
 # choice); pt.toml holds the language's (decisions/O6 and decisions/P10,
