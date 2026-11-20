@@ -549,9 +549,17 @@ def test_score_rows_drops_a_record_any_configuration_reads_with_a_typed_title() 
         scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings,
                                     listed)
     assert scored == 2 and [(s.agree, s.broken) for s in per] == [(2, 0), (1, 1)]
-    # gaps drops it from both columns the same way.
-    result = _score([(cd.ORCID, "XX", r) for r in rows], specs)
-    assert result["groups"][f"{cd.ORCID} XX"]["scored"] == 1
+    # gaps drops it from both columns the same way, whichever reads the
+    # title: the plain choice listing it and the strict one not is the
+    # direction a strict gap meets.
+    for pair in (specs, specs[::-1]):
+        result = _score([(cd.ORCID, "XX", r) for r in rows], pair)
+        assert result["groups"][f"{cd.ORCID} XX"]["scored"] == 1, pair
+    # Any configuration, not the first or the last alone.
+    three = (no_dr, "default", no_dr)
+    readings = cd._read_chunk([(r["name"], None, three) for r in rows])[1]
+    scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings, listed)
+    assert scored == 1
 
 
 def test_score_selects_a_named_group_or_a_languages_countries(

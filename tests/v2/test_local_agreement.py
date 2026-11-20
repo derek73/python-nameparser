@@ -291,6 +291,7 @@ def test_a_record_written_by_another_scorer_is_refused(
         assert agreement.scorer_fingerprint(_PSC) != before, "its own boxes"
     for name, changed in (("fold", lambda text: text.casefold()),
                           ("score", lambda rows, fielded, parser: None),
+                          ("titled", lambda *args: False),
                           ("key", lambda record: str(record))):
         with monkeypatch.context() as patch:
             patch.setattr(agreement, name, changed)
@@ -616,9 +617,18 @@ def test_a_title_typed_into_the_forename_box_beside_an_empty_title_box_is_counte
     (_held("Dr", "Berg"), _ORCID_FIELDS, {"given+middle": ""}),
     # A title typed into the family box, read as the title after it.
     (_held("Anna", "Berg Dr."), _ORCID_FIELDS, {"family": "Berg"}),
-    # Another field disagrees too.
+    # Another field disagrees too, the given box agreeing (the family
+    # box's nickname is no family; the set check alone refuses it).
+    (_held("Dr Anna", "Berg (Lee)"), _ORCID_FIELDS, {"family": "Berg"} | {
+        "given+middle": "Anna"}),
     (_held("Dr Anna", "Berg Silva"), _ORCID_FIELDS, {"given+middle": "Anna Berg",
                                                      "family": "Silva"}),
+    # The box holds more than the title and the names read (a nickname),
+    # nothing else disagreeing: the comparison alone refuses it.
+    (_held("Dr (Ann) Anna", "Berg"), _ORCID_FIELDS, {"given+middle": "Anna"}),
+    # A slash glued inside a word is not read as the title's full stop;
+    # only a title word ending in it is (`Dr/ Anna`).
+    (_held("Dr/Anna", "Berg"), _ORCID_FIELDS, {"given+middle": "Anna"}),
     # A title box filed: the title is scored against it.
     (_filed("Mrs", "Dr Anna", surname="Berg"), _PSC_FIELDS, {"title": "Mrs Dr",
                                                              "given": "Anna"}),
@@ -639,9 +649,9 @@ def test_a_title_word_the_parse_reads_as_a_given_name_agrees() -> None:
     assert (reading.got, reading.titled) == ({}, "")
 
 
-#: How many of the class's rows (the parametrized rows above, in both
-#: sources) the scorer read as misses before #1501: the guard's negative
-#: control, re-taken whenever its rows or the parse move.
+#: How many of the class's rows (the parametrized rows above, read as
+#: ORCID records) the scorer read as misses before #1501: the guard's
+#: negative control, re-taken whenever its rows or the parse move.
 _TITLED_ROWS = (("Dr. Anna", "Berg"), ("Dr/ Anna", "Berg"), ("د. منى", "حسن"),
                 ("Dr.Ahmed", "Hassan"), ("Prof. Dr. Anna", "Berg"), ("Dr. Anna Maria", "Berg"))
 _UNTITLED_EFFECT = 6
@@ -665,17 +675,20 @@ def test_the_titled_class_is_counted_apart_from_the_agreement_figure(
     # The negative control: with the class off, each of its rows is a miss.
     monkeypatch.setattr(agreement, "titled", lambda *args: False)
     off = agreement.score(rows, _ORCID_FIELDS, Parser())
-    assert sum(off.scored.values()) - sum(off.agreed.values()) - 1 == _UNTITLED_EFFECT
     assert not off.titled
+    assert sum(bool(agreement.read(r, _ORCID_FIELDS, Parser(), _LISTED).got)
+               for r in rows[:6]) == _UNTITLED_EFFECT
 
 
 def test_a_record_entering_or_leaving_the_titled_class_is_reported_apart() -> None:
     miss = {"got": {"given+middle": "Anna"}}
     titled = {"got": {"given+middle": "Anna"}, "titled": "Dr."}
-    old = {"a": miss, "c": titled, "d": titled, "e": miss}
-    new = {"a": titled, "b": titled, "c": miss, "e": {"got": {"family": "Lee"}}}
+    other = {"got": {"given+middle": "Anna"}, "titled": "Prof. Dr."}
+    old = {"a": miss, "c": titled, "d": titled, "e": miss, "f": titled}
+    new = {"a": titled, "b": titled, "c": miss, "e": {"got": {"family": "Lee"}}, "f": other}
     found = agreement.moves(old, new)
-    assert found == {"regression": [], "progress": [], "changed": ["e"],
+    # A record in the class on both sides, read with another title, changed.
+    assert found == {"regression": [], "progress": [], "changed": ["e", "f"],
                      "titled in": ["a", "b"], "titled out": ["c", "d"]}
     lines = agreement.summarize(found, old, new)
     assert "titled in: 2 records, a title typed into the given-names box (Dr. 2)" in lines
@@ -839,6 +852,32 @@ def _volby_read(record: dict[str, str], fielded: object = _VOLBY_FIELDS
     """The record's reading, as _read gives it, under `fielded`."""
     reading = agreement.read(record, fielded, Parser(), _LISTED)
     return reading.got, reading.set_aside, reading.by_suffix
+
+
+@pytest.mark.parametrize(("record", "titled"), [
+    # A listed title typed into the given-names box, the title box empty,
+    # whatever stands after the name.
+    (_candidate("", "Dr. Jan", "Novák"), "Dr."),
+    (_candidate("", "Mgr. Jan", "Novák", "Ph.D."), "Mgr."),
+    # The title box filed: the title is scored against it.
+    (_candidate("Ing.", "Dr. Jan", "Novák"), ""),
+    # A title the default vocabulary does not list.
+    (_candidate("", "Ing. Jan", "Novák"), ""),
+])
+def test_a_source_with_a_title_box_counts_a_title_in_the_given_box_only_where_it_is_empty(
+        record: dict[str, str], titled: str) -> None:
+    assert agreement.read(record, _VOLBY_FIELDS, Parser(), _LISTED).titled == titled
+
+
+def test_a_filed_title_box_keeps_a_record_out_of_the_titled_class() -> None:
+    # A filed title box puts its words in the parse's title, so the
+    # comparison refuses such a record too; this pins the clause itself.
+    got, wrong = {"title": "Dr", "given": "Anna", "middle": "", "family": "Berg"}, {
+        "title": "Dr", "given": "Anna"}
+    record = {"forename": "Dr Anna", "surname": "Berg"}
+    assert agreement.titled(record, _PSC_FIELDS, "Dr", got, wrong, _LISTED)
+    assert not agreement.titled({**record, "title": "Dr"}, _PSC_FIELDS, "Dr", got, wrong,
+                                _LISTED)
 
 
 def test_a_suffix_is_compared_with_the_box_after_the_name_not_the_surname() -> None:

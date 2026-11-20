@@ -82,8 +82,9 @@ What counts:
   the parse is right and the box is what differs, so it is counted in
   neither the agreeing records nor the misses, the agreement figure is
   taken over the records outside it, and the report prints the titles
-  read there, so a reader checks the words (a given name wrongly peeled
-  as a title, a leading `Dean`, lands there too) rather than the
+  read there, so a reader checks the words (a given name the parse
+  wrongly peels as a title lands there too: `Hon`, a Cantonese given
+  name, in `Hon Kit` read title `Hon`, given `Kit`) rather than the
   records. A title the vocabulary does not list (`Xyz. Anna`, read by
   its shape), a box holding only a title, and a title typed into the
   family box stay misses.
@@ -438,9 +439,12 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
            + " ".join(f"{r:>8}" for r in roles)
            + (f" {'titled':>8}" if result.titled else "")]
-    for group, n in result.scored.most_common():
-        if n < floor:
-            break
+    # By the records a group holds, the class among them, so the class
+    # does not reorder groups of one size (a country at ORCID's cap).
+    sizes = result.scored + result.titled_groups
+    for group, _size in sizes.most_common():
+        if (n := result.scored[group]) < floor:
+            continue
         row = result.misses.get(group, Counter())
         out.append(f"  {group[:24]:<24} {n:>10,} {_pct(result.agreed[group], n)}  "
                    + " ".join(f"{row[r]:>8,}" for r in roles)
