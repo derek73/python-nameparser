@@ -283,14 +283,16 @@ because the same names are written given-first in running text. The
 order belongs to the record, so it goes in a ``Policy`` you choose for
 that source.
 
-Malaysia's election lists are another such source: they write their
-Chinese candidates' names family first (``TAN Kok Leong``), nearly
-every one of them (the count is in
+Malaysia's election lists are another such source: they write a
+Chinese name family first (``TAN KOK LEONG``), every three-word
+Chinese name on them but two (the count is in
 ``docs/design/decisions/O4-positional-assignment-and-declared-order.md``).
 Such a name often writes its given name as two words, which a
 family-first order reads as a given name and a middle name;
 :ref:`two-given-names-chinese` shows the setting that keeps them
-together.
+together. The same lists write a candidate known by an English given
+name given first (``GRACE TAN``), so they mix orders too, the case
+below.
 
 .. _mixed-name-order:
 
@@ -309,9 +311,11 @@ family first, so each setting misreads the other group.
 
 The order then has to come from outside the name: a separate field in
 the source, or capitals where the source writes the family name in
-them (:ref:`capitals-as-family`). ``Parser.suggest`` suggests no order
-for such a list, which is the right answer: its names vote both ways
-(:ref:`suggest-deciding`).
+them (:ref:`capitals-as-family`), which helps only where the list writes
+the rest of the name in mixed case. ``Parser.suggest`` suggests no
+order where neither order holds the share it needs, as on Singapore's
+list, which is the right answer there (:ref:`suggest-deciding`); a
+list with only a few names in the other order still gets one.
 
 A comma still wins
 ~~~~~~~~~~~~~~~~~~
@@ -750,14 +754,15 @@ name as two words, family name first (:ref:`name-order`). Under
     ('Tan', 'Wei Ming', '')
 
 For a list written family first throughout, ``Parser.suggest`` decides
-the order. It never suggests ``two_given_names``, so add that yourself:
+the order. It does not suggest ``two_given_names``, so add that
+yourself:
 
 .. doctest::
 
-    >>> listed = ["Tan Kok Leong", "Lim Boon Keat", "Ong Siew Ting",
-    ...           "Goh Wei Jie", "Teo Boon Leong", "Koh Siew Ting",
-    ...           "Chen Kok Keat", "Wang Wei Jie"]
-    >>> Parser().suggest(listed).patch
+    >>> chinese_list = ["Tan Kok Leong", "Lim Boon Keat", "Ong Siew Ting",
+    ...                 "Goh Wei Jie", "Teo Boon Leong", "Koh Siew Ting",
+    ...                 "Chen Kok Keat", "Wang Wei Jie"]
+    >>> Parser().suggest(chinese_list).patch
     PolicyPatch(name_order=FAMILY_FIRST)
 
 A list that mixes the two orders needs the order from elsewhere (see
@@ -1007,8 +1012,10 @@ write:
 - **A credential with no comma before it**: ``John Smith MD`` gives
   family ``MD``.
 - **Joined initials**: ``Jan GM Brouwer`` gives family ``GM``.
-- **A title written in capitals where no other word is**:
-  ``DR Anna Berg`` gives family ``DR``. Such a name does not write its
+- **A title written in capitals, with no full stop, where no other
+  word of the name is in capitals**: ``DR Anna Berg`` gives family
+  ``DR``, middle ``Berg``; a title-particle such as ``ST`` stays the
+  title. Such a name does not write its
   family name in capitals, so it is not in the format the switch is
   for; where the family is in capitals too, the title keeps its place
   (``DR Anna BERG`` gives title ``DR``, family ``BERG``).
