@@ -300,8 +300,8 @@ A list that mixes orders
 A source can also mix orders, name by name. Singapore's Parliament
 list writes some members with a Chinese surname given first (in the
 shape of ``Grace Lim``) and others family first (``Tan Kok Leong``),
-and nothing in a Chinese name's spelling tells which: of its 77 such members, 27
-are written given first and 33 family first, and most of the rest
+and the spelling does not reliably tell which (a short name such as
+``Koh Ann`` may be either): of its 77 such members, 27 are written given first and 33 family first, and most of the rest
 carry an English name as well (:issue:`1183` has the counts).
 Malaysia's lists mix orders too: a candidate known by an English
 given name is written given first (``GRACE TAN``), the Chinese names
