@@ -68,6 +68,34 @@ text = "vlad"
 familiar = { short_for = ["vladyslav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "алекс"
+familiar = { short_for = ["олександр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "каха"
+familiar = { short_for = ["кахабер"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "люба"
+familiar = { short_for = ["любов"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "наталка"
+familiar = { short_for = ["наталія"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "олекса"
+familiar = { short_for = ["олексій"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "олесь"
+familiar = { short_for = ["олександр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "оля"
+familiar = { short_for = ["ольга"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "anatolij"
 spelling = { spelling_of = ["anatolii"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

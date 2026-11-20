@@ -217,6 +217,7 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
         _row("george", "georgios", "translation", languages="el"),
         _row("george", "jorge", "split", languages="es"),
         _row("john", "jon", "split", "pending", "en"),
+        _row("kasia", "kasieńka", "held", "decided", "pl"),
         _row("kasia", "katarzyna", "familiar", languages="pl en"),
         _row("kasia", "kaśka", "refused", "decided"),
         _row("lukasz", "łukasz", "spelling"),
@@ -233,9 +234,9 @@ def test_the_reviewed_pairs_are_placed_by_category_and_language() -> None:
     assert "łukasz" not in placed["pl"] and "lukasz" not in placed["pl"]
     # a split the maintainer decided ships as decided
     assert placed["uk"]["olha"] == {"spelling": {"olga"}}
-    # pending, refused, split and recorded pairs ship nowhere
+    # pending, refused, held, split and recorded pairs ship nowhere
     assert "jon" not in placed["en"] and "john" not in placed["en"]
-    assert "kaśka" not in placed["pl"]
+    assert "kaśka" not in placed["pl"] and "kasieńka" not in placed["pl"]
     assert "es" not in placed and "el" not in placed
 
 
@@ -290,6 +291,7 @@ def test_a_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
     ((_row("kasia", "katarzyna", "familiar", "pending"),), "a pending pair is a split"),
     ((_row("kasia", "katarzyna", "split", "decided"),), "no longer is"),
     ((_row("kasia", "katarzyna", "refused"),), "only a decided one is refused"),
+    ((_row("kasia", "katarzyna", "held"),), "only a decided one is refused or held"),
     ((_row("katarzyna", "kasia", "familiar"),), "in order"),
     ((_row("Kasia", "katarzyna", "familiar"),), "normalized"),
     ((_row("kasia", "katarzyna", "familiar"),
@@ -300,9 +302,9 @@ def test_a_reading_on_a_word_the_file_holds_goes_under_its_text() -> None:
     # a pair from a list of familiar forms, not data the project measured
     ((_row("kasia", "katarzyna", "familiar", source="nicknames-spelling"),),
      "source 'nicknames-spelling' is not one of"),
-    # Wikidata joins only with its fetch tool (#1387)
-    ((_row("kasia", "katarzyna", "familiar", source="wikidata"),),
-     "source 'wikidata' is not one of"),
+    # a source with no counting tool or recipe in the tree
+    ((_row("kasia", "katarzyna", "familiar", source="discogs"),),
+     "source 'discogs' is not one of"),
 ])
 def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
                                        match: str) -> None:
@@ -312,7 +314,7 @@ def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
 
 def test_the_sources_are_the_ones_whose_counts_the_tree_reproduces() -> None:
     # a widening needs its counting recipe or tool in the tree first
-    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress"}
+    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress", "wikidata"}
 
 
 @pytest.mark.parametrize("source", sorted(tool.REVIEW_SOURCES))

@@ -355,9 +355,11 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly(
         assert ri.compile_choice(frozenset({tag}), True) == ri.compile_readings(
             ri.choose([r for r in ri.index() if ri.is_native_script(r.text)
                        or r.tag in ("mul", tag)], frozenset({tag})))
-        # any reading such a file holds is one no parse reads; a file of
-        # familiar readings alone is planted in the test below
-        assert all(r.category == "familiar"
+        # any reading such a file holds is one no parse reads, a
+        # familiar or a spelling one (hu.toml and zu.toml hold familiar
+        # readings alone on 2026-11-20); a file of familiar readings
+        # alone is planted in the test below
+        assert all(r.category in ri.MATCHING_ONLY
                    for r in ri.index() if r.tag == tag)
 
 

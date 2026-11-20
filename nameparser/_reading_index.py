@@ -368,8 +368,8 @@ def tags() -> frozenset[str]:
     plain choice never drops one of those, which no parse reads, so a
     file holding only those would change nothing as a plain choice, and
     is refused as one holding no reading (decisions/name-matching,
-    2026-11-08 FAMILIAR FORMS; no shipped file has that shape at
-    present)."""
+    2026-11-08 FAMILIAR FORMS; hu.toml and zu.toml had that shape on
+    2026-11-20)."""
     return frozenset(row[0] for rows in _by_text().values() for row in rows
                      if CATEGORY[row[1]] not in MATCHING_ONLY)
 

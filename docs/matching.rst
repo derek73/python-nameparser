@@ -688,14 +688,21 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
 Where the shipped pairs come from
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The shipped familiar forms, about a thousand pairs, are pairs people
-wrote both ways for themselves: mostly
+The shipped familiar forms, about thirteen hundred pairs, are pairs
+people wrote both ways for themselves: mostly
 ORCID's researchers, who wrote one in the given-name box and the other
 in a published name, in many languages (``Peggy`` / ``Margaret``,
 ``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``, ``Kostas`` /
 ``Konstantinos``, ``Seun`` / ``Oluwaseun``), and a few common English
 ones that US political donors and members of Congress gave as their
 nicknames (``Betty`` / ``Elizabeth``).
+
+Central and Eastern European and Balkan languages also have pairs from
+Wikidata's people, each named one way in their name or nickname and
+the other in their given name or birth name (``Erzsi`` / ``Erzsébet``,
+``Jára`` / ``Jaroslav``). The Russian, Ukrainian, Belarusian,
+Bulgarian and most Serbian ones are written in Cyrillic (``Женя`` /
+``Евгений``), so a name romanized in Latin letters does not reach them.
 ``docs/design/decisions/name-matching.md`` has how they were selected.
 
 .. _matching-familiar-language-choice:
