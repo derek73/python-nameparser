@@ -2352,3 +2352,13 @@ title reading:
     >>> as_31 = Parser(lexicon=Lexicon.default().remove("د", kind="academic"))
     >>> as_31.parse("د. أحمد علي حسن").given
     'د.'
+
+A listed title opening the name, or the given part after a family
+comma, written with a slash for its full stop reads as that title too,
+in any script, the slash in no field, where 1.4 through 3.1 read the
+title and its slash as the given name (``Dr/ Jane`` gave given ``Dr/``):
+
+.. doctest::
+
+    >>> [parse(n).title for n in ("د/ أحمد علي حسن", "Dr/ Jane Smith")]
+    ['د', 'Dr']

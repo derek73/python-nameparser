@@ -987,6 +987,15 @@ _GLUED_WORD = re.compile(
     + _ARABIC_MARKS + r"|['’\-]|[\u200c\u200d](?=[^\W\d_]))*")
 
 
+def is_name_word(text: str) -> bool:
+    """Whether `text` is wholly one name word as T8 reads the name after
+    a stop: letters, apostrophes and hyphens, a letter's marks counted
+    with it and a joiner between two letters. rules/T9 asks it of the
+    name after a title's slash, so a word holding a delimiter, a digit
+    or another slash is never cut."""
+    return _GLUED_WORD.fullmatch(text) is not None
+
+
 def _is_cased_letter(chunk: str) -> bool:
     """One letter in a script with case: the initial T8 reads alone
     (rules/T8); a single letter in a script without case is read alone

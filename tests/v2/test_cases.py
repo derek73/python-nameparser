@@ -509,10 +509,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name; 2205 -> 2208 the same day, #1464's 'Dr. Al Amin
     # Abdul Rahman' reporting particle-or-given; 2208 -> 2211 the same
     # day, #1149's 'جورج و. بوش' reporting given-or-family under three
-    # orders.
-    assert claims == 2211, (
-        f"the field sweep checks {claims} claims, recorded as 2211 on "
-        f"2026-11-19")
+    # orders; 2211 -> 2214 on 2026-11-20, #1149's 'Dr/' (rules/T9's
+    # boundary, no name after the slash) reporting given-or-family under
+    # three orders; 2214 -> 2217 the same day, its review's 'Dr/ Dean
+    # Smith' reporting title-or-name under three orders.
+    assert claims == 2217, (
+        f"the field sweep checks {claims} claims, recorded as 2217 on "
+        f"2026-11-20")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
