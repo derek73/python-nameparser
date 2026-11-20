@@ -21932,4 +21932,9 @@ CASES: tuple[Case, ...] = (
          notes="boundary: a numeral in lower case reads as the "
                "generation (rules/S10), so it is no name word in the "
                "count"),
+    Case("abdul_after_a_lone_mark_in_a_three_word_name_stays_apart",
+         "Tariq - Abdul Aziz",
+         {"given": "Tariq", "middle": "- Abdul", "family": "Aziz"},
+         notes="boundary: a mark with no letter is no name word in the "
+               "count, so the name holds three"),
 )
