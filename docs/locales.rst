@@ -464,8 +464,9 @@ and the patronymic for the family.
 
 The pack detects that shape and assigns it accordingly. The shape is
 three name words, the last ending like a patronymic (Cyrillic and
-transliterated ``-ovich``/``-ovna``-style endings), the middle not, and
-no initial before the last, so ``И. Б. Зубкевич`` keeps family
+transliterated ``-ovich``/``-ovna``-style endings, and the Ukrainian
+``-івна``, ``-ївна``, ``-євич`` and ``Ілліч`` in Cyrillic), the middle
+not, and no initial before the last, so ``И. Б. Зубкевич`` keeps family
 ``Зубкевич``:
 
 .. doctest::

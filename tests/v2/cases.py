@@ -22930,4 +22930,86 @@ CASES: tuple[Case, ...] = (
           "nickname": "Jack"},
          classification="fix(#1164)",
          notes="a title followed by another opens the trailing run"),
+    # #1380: the Lao script writes no initials (rules/R7, the
+    # script-property table's lao row), so a Lao letter with a full stop
+    # is a name word to the policy switches, as a Thai one is
+    Case("lao_letters_ending_a_name_are_no_initials_to_the_letters_switch",
+         "ສົມຊາຍ ໃຈດີ ສ. ດ.",
+         {"given": "ສົມຊາຍ", "middle": "ໃຈດີ ສ.", "family": "ດ."},
+         policy=_LETTERS, classification="fix(#1380)",
+         notes="rules/O8 reads no Lao letter as an initial; 3.1.0 read "
+               "family 'ສ. ດ.', middle 'ໃຈດີ'"),
+    Case("lao_letter_between_two_name_words_joins_two_family_names",
+         "ສົມຊາຍ ສ. ໃຈດີ",
+         {"given": "ສົມຊາຍ", "family": "ສ. ໃຈດີ"},
+         policy=_TWO, classification="fix(#1380)",
+         notes="rules/O6 takes a Lao letter as a name word, no middle "
+               "initial; 3.1.0 read middle 'ສ.', family 'ໃຈດີ'"),
+    Case("lao_title_written_short_keeps_its_shape",
+         "ດຣ. ສົມຊາຍ ໃຈດີ",
+         {"title": "ດຣ.", "given": "ສົມຊາຍ", "family": "ໃຈດີ"},
+         notes="the lao row writes period abbreviations (#1380), so "
+               "rules/H2's shape still reads the title"),
+    # #1212: the Ukrainian Cyrillic patronymic endings under the East
+    # Slavic rule (rules/O1, R9)
+    Case("ru_pack_ukrainian_ivna", "Коваленко Олена Петрівна",
+         {"given": "Олена", "middle": "Петрівна", "family": "Коваленко"},
+         views=(("patronymic", "Петрівна"),),
+         locale="ru", classification="fix(#1212)",
+         notes="2.0.0 through 3.1.0 read given 'Коваленко', family "
+               "'Петрівна'"),
+    Case("ru_pack_ukrainian_yivna", "Ткачук Ганна Сергіївна",
+         {"given": "Ганна", "middle": "Сергіївна", "family": "Ткачук"},
+         views=(("patronymic", "Сергіївна"),),
+         locale="ru", classification="fix(#1212)"),
+    Case("ru_pack_ukrainian_yevych", "Бондар Василь Леонтієвич",
+         {"given": "Василь", "middle": "Леонтієвич", "family": "Бондар"},
+         views=(("patronymic", "Леонтієвич"),),
+         locale="ru", classification="fix(#1212)"),
+    Case("ru_pack_ukrainian_illich", "Мельник Тарас Ілліч",
+         {"given": "Тарас", "middle": "Ілліч", "family": "Мельник"},
+         views=(("patronymic", "Ілліч"),),
+         locale="ru", classification="fix(#1212)",
+         notes="an irregular ending nearly the whole word, matched "
+               "capitalized (re.I, AGENTS.md's Cyrillic gotcha)"),
+    Case("ru_pack_ukrainian_ending_in_capitals", "МЕЛЬНИК ТАРАС ІЛЛІЧ",
+         {"given": "ТАРАС", "middle": "ІЛЛІЧ", "family": "МЕЛЬНИК"},
+         views=(("patronymic", "ІЛЛІЧ"),),
+         locale="ru", classification="fix(#1212)"),
+    Case("ru_pack_ukrainian_spoken_order_fills_the_view",
+         "Олена Сергіївна Ткачук",
+         {"given": "Олена", "middle": "Сергіївна", "family": "Ткачук"},
+         views=(("patronymic", "Сергіївна"),),
+         locale="ru", classification="fix(#1212)",
+         notes="no rotation; the view, empty in 3.0.0 and 3.1.0, reads "
+               "the middle"),
+    Case("ru_pack_ukrainian_patronymic_before_an_yevych_surname",
+         "Олена Петрівна Гаєвич",
+         {"given": "Олена", "middle": "Петрівна", "family": "Гаєвич"},
+         views=(("patronymic", "Петрівна"),),
+         locale="ru", classification="fix(#1212)",
+         notes="the false-reorder guard: a middle word carrying an ending "
+               "blocks rules/O1, so the surname with the ending stays "
+               "the family; only the view moved (empty in 3.0.0 and "
+               "3.1.0)"),
+    Case("ru_pack_ukrainian_yevych_surname_behind_two_given_names",
+         "Олена Марія Гаєвич",
+         {"given": "Марія", "middle": "Гаєвич", "family": "Олена"},
+         views=(("patronymic", "Гаєвич"),),
+         locale="ru", classification="fix(#1212)",
+         notes="rules/O1's accepted cost, the twin of 'Анна Мария "
+               "Абрамович': the shape gives no sign the surname is one; "
+               "2.0.0 through 3.1.0 read family 'Гаєвич'"),
+    Case("ru_pack_belarusian_ending_is_not_read",
+         "Сокалаў Мікалай Іванавіч",
+         {"given": "Сокалаў", "middle": "Мікалай", "family": "Іванавіч"},
+         locale="ru",
+         notes="the Belarusian endings stay out (decisions/R9's Open, "
+               "#1212)"),
+    Case("ru_pack_latin_ukrainian_ending_is_not_read",
+         "Tkachuk Olena Petrivna",
+         {"given": "Tkachuk", "middle": "Olena", "family": "Petrivna"},
+         locale="ru",
+         notes="the Latin -ivna stays out with -ovych (decisions/R9's "
+               "Open, #1212)"),
 )

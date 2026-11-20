@@ -7,6 +7,12 @@
 - **A middle word that also carries the ending blocks the reading**, because the surname itself may be patronymic-derived.
   ```
   "Иван Петрович Абрамович"  [ru]  →  family="Абрамович"  · boundary
+  "Олена Петрівна Гаєвич"  [ru]  →  family="Гаєвич"  · boundary
+  ```
+- **The endings are the Russian ones and the Ukrainian ones written in Cyrillic** (`-івна`, `-ївна`, `-євич`, `Ілліч`), the three languages writing the patronymic in the same slot and the same orders.
+  ```
+  "Коваленко Олена Петрівна"  [ru]  →  family="Коваленко"
+  "Мельник Тарас Ілліч"  [ru]  →  family="Мельник"
   ```
 - **The restoration is the default order's work**: it recovers the given-first reading a family-first listing hides, so where the caller has DECLARED a family-first order there is nothing left to restore and position decides.
 
@@ -29,6 +35,16 @@
 
 **Accepted:**
 
+- A name written in the spoken order with two given names and a surname carrying the ending is read as family-first, the shape giving no sign of which it is, a Ukrainian `-євич` surname as a Russian `-евич` one.
+  ```
+  "Анна Мария Абрамович"  [ru]  →  family="Анна"
+  "Олена Марія Гаєвич"  [ru]  →  family="Олена"
+  ```
+- The Belarusian endings and the Latin spellings of the Ukrainian ones are not read, so a Belarusian or a romanized Ukrainian name written family-first keeps its positional reading.
+  ```
+  "Сокалаў Мікалай Іванавіч"  [ru]  →  family="Іванавіч"
+  "Tkachuk Olena Petrivna"  [ru]  →  family="Petrivna"
+  ```
 - A family-first listing that writes the given name as an initial and the patronymic in full has the shape of a given name, an initial and a surname with the ending, so it keeps its positional reading, its patronymic standing in the family where R9 does not read one.
   ```
   "Сидоров И. Петрович"  [ru]  →  family="Петрович"
