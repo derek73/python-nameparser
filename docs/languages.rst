@@ -535,8 +535,11 @@ with the filer, on records the list was not built from:
      - 67.2%
      - 2,853
 
-So Cape Verdean and São Toméan lists read better under ``pt_pt`` than
-under ``pt``, and Angolan and Mozambican lists worse.
+``pt_pt`` reads these records within 0.1 point of ``pt_br`` (Portugal
+89.6%, Brazil 79.7%), its own given names behind a particle (``da
+Conceição``) moving a few. So Cape Verdean and São Toméan lists read
+better under ``pt_pt`` than under ``pt``, and Angolan and Mozambican
+lists worse.
 
 Whether the switch helps also depends on who split the names. It
 gains most on names their bearers split themselves, as ORCID's are.
