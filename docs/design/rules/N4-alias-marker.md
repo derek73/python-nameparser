@@ -13,7 +13,7 @@
   "Rahim Osman @ Jaki, PhD"     →  nickname="Jaki"
   "Smith, John, Jr. @ Jack"     →  nickname=""  · boundary
   ```
-- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name, and up to the first suffix word before a family comma or in the given part after one. The words the boundary leaves are read as the name.
+- **It takes the words up to the first boundary inside its part:** a word read as a patronymic particle or another marker of either kind, a suffix word before such a boundary ending the alias too. With none, it takes to the end of the part as far as M2's clause would: up to the trailing run of post-nominals and titles in the part holding the family name and in the given part after a family comma, H8's salutations included there, and up to the first suffix word before a family comma. The words the boundary leaves are read as the name.
   ```
   "Rahim @ Jaki bin Osman"      →  nickname="Jaki"
   "Rahim @ Jaki bin Osman"      →  family="bin Osman"
@@ -23,6 +23,7 @@
   "Rahim Osman @ Jaki Prof."    →  title="Prof."
   "Rahim @ Jaki PhD bin Osman"  →  nickname="Jaki"
   "Smith, John @ Jack Jr."      →  suffix="Jr."
+  "Doe, Jane @ Janey Mrs"       →  title="Mrs"
   "Jane Smith @ Janey née Jones"  →  maiden="Jones"
   "Jane Smith née Jones @ JJ"   →  nickname="JJ"
   ```
@@ -88,6 +89,13 @@
   ```
 
 **Accepted:**
+
+- In the given part after a family comma the trailing run is read as the comma-less name reads it, which the given part's own reading does not always agree with: a one-letter numeral, an unlisted run of dotted letters and a credential in a name written in one case stay in the nickname, unreported, where the same words without the alias read as the suffix.
+  ```
+  "Osman, Rahim @ Jaki V"       →  nickname="Jaki V"
+  "Smith, John @ Jack X.Y.Z."   →  nickname="Jack X.Y.Z."
+  "Osman, Rahim Jaki V"         →  suffix="V"  · boundary
+  ```
 
 - A one-word alias followed by the family name takes the family name with it, the two shapes being written alike: the whole second name reads right and the one-word alias loses its family name to the nickname.
   ```

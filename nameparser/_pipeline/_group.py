@@ -74,6 +74,7 @@ and _is_name_word, beside the helpers of its joins and its marker takes
 from __future__ import annotations
 
 import bisect
+import operator
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -113,6 +114,7 @@ from nameparser._types import AmbiguityKind, Role
 # merged reading
 
 Piece = list[int]
+_SPAN_START = operator.attrgetter("span.start")
 #: What the marker passes took out of a segment: the markers' TOKEN
 #: indices (a maiden marker's more than one where the entry is a
 #: phrase, 'z domu'; every alias marker's, rules/N4), and every other
@@ -357,19 +359,24 @@ def _clause_take(pieces: Sequence[Sequence[int]],
     if is_suffix_piece(pieces[lo], ptags[lo], tokens):
         return None
     # no trailing rule reads the end of the clause: before a family
-    # comma, in the given part after one (rules/N4), or where a boundary
-    # ends the clause inside the part. A suffix word ends it there and
-    # hands the rest back unbound.
-    if (site is ClauseSite.FAMILY_PART or site is ClauseSite.GIVEN_SLOT
-            or stop < len(pieces)):
+    # comma, or where a boundary ends the clause inside the part. A
+    # suffix word ends it there and hands the rest back unbound.
+    if site is ClauseSite.FAMILY_PART or stop < len(pieces):
         end = next((j for j in range(lo + 1, stop)
                     if "suffix" in ptags[j]
                     or is_suffix_piece(pieces[j], ptags[j], tokens)),
                    stop)
         return list(range(m, lo)), [(j, role) for j in range(lo, end)]
-    if site is not ClauseSite.TRAILING:
+    # the given part after a family comma (an alias only, rules/N4):
+    # its end is read as the comma-less name's, with rules/H8's bare
+    # salutations, as the given part's other predictors read it
+    if site is not ClauseSite.TRAILING and site is not ClauseSite.GIVEN_SLOT:
         assert_never(site)
-    c = trailing_candidates(lo, pieces, ptags, tokens)
+    # the given part offers every word after the alias's first to the
+    # reading: its walk takes a bare salutation (H8) or a dotted run
+    # that `trailing_candidates` never offers
+    c = (lo + 1 if site is ClauseSite.GIVEN_SLOT
+         else trailing_candidates(lo, pieces, ptags, tokens))
     end = len(pieces)
     released: list[tuple[int, Role]] = []
     # the view's picks, for the kept member below (#718)
@@ -387,7 +394,8 @@ def _clause_take(pieces: Sequence[Sequence[int]],
         vtags = [ptags[i] for i in left]
         vrest, vchained, vpeel = tail_reading(
             peel_walk(leading_titles(view, vtags, tokens), vtags),
-            view, vtags, tokens, one_case)
+            view, vtags, tokens, one_case,
+            salutations=site is ClauseSite.GIVEN_SLOT)
         picked = vpeel.picks
         titles = set(vchained) | set(vpeel.run_titles)
         in_run = titles | set(vrest[vpeel.names:]) | {
@@ -518,9 +526,19 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         # for the run: asking `leading_titles` of a slice per marker
         # made a part of n markers quadratic (the `alias_markers` row
         # of tests/v2/test_benchmark.py)
+        # a maiden clause before the marker is no word of the name the
+        # alias's trailing run is read against, as the maiden take reads
+        # without the alias (rules/N4's Precedence); a plain loop, no
+        # frame
+        view_skip: Set[int] = skip
+        if stop == n:
+            for k in range(1, m):
+                if "vocab:maiden-marker" in tokens[pieces[k][0]].tags:
+                    view_skip = skip | set(range(k, m))
+                    break
         take = _clause_take(pieces, ptags, tokens, one_case, site,
                             ambiguities, m, m + 1, stop, Role.NICKNAME,
-                            _ALIAS_WORDS, skip,
+                            _ALIAS_WORDS, view_skip,
                             markers[0] if markers else None)
         if take is None:
             m += 1
@@ -1898,7 +1916,9 @@ def group(state: ParseState) -> ParseState:
         else:
             continue
         if starts is None:
-            starts = [t.span.start for t in tokens]
+            # map over a C getter, no frame: a name with a nickname
+            # clause pays none for this (decisions/parse-cost)
+            starts = list(map(_SPAN_START, tokens))
         # first token starting at or after the clause opens; tokens
         # are span-sorted and group never reorders or resizes them
         first = bisect.bisect_left(starts, clause.start)

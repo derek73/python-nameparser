@@ -841,6 +841,7 @@
 {"name": "Doe, J. MA", "given": "J.", "family": "Doe", "suffix": "MA", "initials": "J. D."}
 {"name": "Doe, J. ba", "given": "J.", "family": "Doe", "suffix": "ba", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "J. D.", "capitalized_force": "J. Doe BA"}
 {"name": "Doe, J. nee MA ba", "given": "J.", "middle": "nee", "family": "Doe", "suffix": "MA ba", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "J. n. D.", "capitalized_force": "J. Nee Doe MA BA"}
+{"name": "Doe, Jane @ Janey Mrs", "title": "Mrs", "given": "Jane", "family": "Doe", "nickname": "Janey", "initials": "J. D."}
 {"name": "Doe, Jane Dr", "given": "Jane", "middle": "Dr", "family": "Doe", "initials": "J. D. D."}
 {"name": "Doe, Jane Fru", "given": "Jane", "middle": "Fru", "family": "Doe", "initials": "J. F. D."}
 {"name": "Doe, Jane Miss", "title": "Miss", "given": "Jane", "family": "Doe", "initials": "J. D."}
@@ -3507,6 +3508,8 @@
 {"name": "Osman @ Jaki", "given": "Osman", "nickname": "Jaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "O."}
 {"name": "Osman, @ Jaki", "given": "@", "middle": "Jaki", "family": "Osman", "initials": "@. J. O."}
 {"name": "Osman, Rahim @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Osman, Rahim @ Jaki V", "given": "Rahim", "family": "Osman", "nickname": "Jaki V", "initials": "R. O."}
+{"name": "Osman, Rahim Jaki V", "given": "Rahim", "middle": "Jaki", "family": "Osman", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "R. J. O.", "generation": "V"}
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
 {"name": "Otto III.", "given": "Otto", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "O.", "generation": "III."}
 {"name": "Outrein, Johannes d'", "given": "Johannes", "family": "d' Outrein", "initials": "J. O."}
@@ -4139,6 +4142,7 @@
 {"name": "Smith, John ,", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John - Paul", "given": "John", "middle": "- Paul", "family": "Smith", "initials": "J. -. P. S."}
 {"name": "Smith, John @ Jack Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "nickname": "Jack", "initials": "J. S.", "generation": "Jr."}
+{"name": "Smith, John @ Jack X.Y.Z.", "given": "John", "family": "Smith", "nickname": "Jack X.Y.Z.", "initials": "J. S."}
 {"name": "Smith, John Dipl.Ing.", "title": "Dipl.Ing.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John E, III, Jr", "given": "John", "middle": "E", "family": "Smith", "suffix": "III, Jr", "initials": "J. E. S.", "generation": "III, Jr"}
 {"name": "Smith, John I", "given": "John", "family": "Smith", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "J. S.", "generation": "I"}
