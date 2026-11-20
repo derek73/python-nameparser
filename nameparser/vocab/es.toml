@@ -102,6 +102,18 @@ text = "ingeniera"
 academic = { gender = "f", issue = 753, same_as = "ingeniero", expands = "Ingeniera, the feminine of ingeniero", note = "no name bearer in any source tools/name_usage.py reads (2026-10-30)" }
 
 [[word]]
+text = "l.a.e"
+academic = { issue = 979, expands = "Licenciado en Administración de Empresas", note = "a Mexican degree written before the name, its three letters joined by full stops; without the reading T7 cut it into initials (L.C.P. Ana Ruiz Paz read given L.). measured with the other three degrees (#979, 2026-11-20): dof-signatures 34 distinct names gain a title, by default and under locales.ES; over the whole of ORCID, PatentsView and PSC no name moves but one ORCID record. Letters spelling it are a person's initials too, which a family comma or a single surname behind them leaves without a given name (Perez, X.Y.Z.; decisions/H10, 2026-11-20). The two-letter degrees (C.P., L.C.) stay out, being written as initials too" }
+
+[[word]]
+text = "l.c.p"
+academic = { issue = 979, expands = "Licenciado en Contaduría Pública", note = "a Mexican degree written before the name, its three letters joined by full stops; without the reading T7 cut it into initials (L.C.P. Ana Ruiz Paz read given L.). measured with the other three degrees (#979, 2026-11-20): dof-signatures 34 distinct names gain a title, by default and under locales.ES; over the whole of ORCID, PatentsView and PSC no name moves but one ORCID record. Letters spelling it are a person's initials too, which a family comma or a single surname behind them leaves without a given name (Perez, X.Y.Z.; decisions/H10, 2026-11-20). The two-letter degrees (C.P., L.C.) stay out, being written as initials too" }
+
+[[word]]
+text = "l.e.m"
+academic = { issue = 979, note = "its expansion unconfirmed by the corpus; a Mexican degree written before the name, its three letters joined by full stops; without the reading T7 cut it into initials (L.C.P. Ana Ruiz Paz read given L.). measured with the other three degrees (#979, 2026-11-20): dof-signatures 34 distinct names gain a title, by default and under locales.ES; over the whole of ORCID, PatentsView and PSC no name moves but one ORCID record. Letters spelling it are a person's initials too, which a family comma or a single surname behind them leaves without a given name (Perez, X.Y.Z.; decisions/H10, 2026-11-20). The two-letter degrees (C.P., L.C.) stay out, being written as initials too" }
+
+[[word]]
 text = "licenciado"
 academic = { gender = "m", issue = 753, expands = "Licenciado, the holder of a licenciatura, a form of address in Mexico and Central America", note = "no name bearer in any source tools/name_usage.py reads; 1 ORCID name opens with it (2026-10-30); ORCID's family box holds it once, written last (Abraham Licenciado, Venezuela), so a name written family first that opens with it reads it as the title, read by default since #1115 (2026-11-06)" }
 
@@ -124,6 +136,10 @@ academic = { gender = "f", issue = 753, same_as = "licenciada", expands = "Lcda.
 [[word]]
 text = "licda"
 academic = { gender = "f", same_as = "licenciada", issue = 1115, expands = "Licda., Licenciada abbreviated, in Central America and Mexico (Licda. Gabriela Morales Valdivia)", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 4 records, the title typed in; Mexico's DOF signatures 14 (2026-11-06)" }
+
+[[word]]
+text = "m.a.p"
+academic = { issue = 979, expands = "Maestro en Administración Pública", note = "the one ORCID record is a Sri Lankan name whose initials are M.A.P.; a Mexican degree written before the name, its three letters joined by full stops; without the reading T7 cut it into initials (L.C.P. Ana Ruiz Paz read given L.). measured with the other three degrees (#979, 2026-11-20): dof-signatures 34 distinct names gain a title, by default and under locales.ES; over the whole of ORCID, PatentsView and PSC no name moves but one ORCID record. Letters spelling it are a person's initials too, which a family comma or a single surname behind them leaves without a given name (Perez, X.Y.Z.; decisions/H10, 2026-11-20). The two-letter degrees (C.P., L.C.) stay out, being written as initials too" }
 
 [[word]]
 text = "maestra"

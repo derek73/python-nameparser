@@ -39,6 +39,7 @@
   ```
   "J.R. Smith"                →  given="J."
   "K.T. Smith"                →  given="K."
+  "L.C.P. Ana Ruiz Paz"       →  title="L.C.P."
   ```
 - **A run in another field** keeps its one word: a middle name's run, and the family name some surnames are written as (B.K.).
   ```
