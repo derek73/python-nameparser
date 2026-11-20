@@ -79,6 +79,10 @@ text = "nicu"
 familiar = { short_for = ["nicolae"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "rózsa"
+familiar = { short_for = ["rózsi"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "sandu"
 familiar = { short_for = ["alexandru"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

@@ -142,7 +142,7 @@ familiar = { short_for = ["ladislav"], note = "found in CC0 or public-domain dat
 
 [[word]]
 text = "láďa"
-familiar = { short_for = ["ladislav", "vladimír"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ladislav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "lída"
@@ -207,6 +207,10 @@ familiar = { short_for = ["václav"], note = "found in CC0 or public-domain data
 [[word]]
 text = "vojta"
 familiar = { short_for = ["vojtěch"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "zuzka"
+familiar = { short_for = ["zuzana"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "čeněk"

@@ -1836,6 +1836,20 @@ def test_a_wikidata_familiar_form_is_kept_by_its_languages_choice() -> None:
     czech = parser_for(locales.CS, strict=True).matching(
         accept={"familiar-form"})
     assert czech.check("Vlado Novák", "Vladimír Novák").consistent
+    # nor loses one the readers judged it in where the tool now finds
+    # fewer people (Slovak Zuzka)
+    slovak = parser_for(locales.SK, strict=True).matching(
+        accept={"familiar-form"})
+    assert slovak.check("Zuzka Nováková", "Zuzana Nováková").consistent
+
+
+def test_a_wikidata_pair_goes_only_in_the_languages_its_readers_judged() -> None:
+    # Алена / Елена, a Belarusian against a Russian form, was split;
+    # its fold-twin Алёна / Елена, judged a familiar form in Russian,
+    # takes no Belarusian placement from it
+    from nameparser._reading_index import index
+    assert {r.tag for r in index() if r.kind == "familiar"
+            and r.text == "алёна"} == {"ru"}
 
 
 def test_an_alternate_spelling_from_wikidata_is_read_in_its_script() -> None:
