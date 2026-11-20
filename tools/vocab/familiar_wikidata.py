@@ -256,6 +256,7 @@ def ask(query: str, name: str = "a query",
             return text
         except urllib.error.HTTPError as exc:
             if exc.code not in (429, 500, 502, 503, 504) or attempt == RETRIES:
+                exc.close()  # it holds the response; 3.14 warns on a leak
                 raise FetchError(f"{name}: HTTP {exc.code}") from exc
             retry = exc.headers.get("Retry-After", "")
             wait = int(retry) if retry.isdigit() else 30 * (attempt + 1)

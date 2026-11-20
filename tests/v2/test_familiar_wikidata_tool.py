@@ -343,18 +343,21 @@ def test_a_failed_connection_is_retried(
     import http.client
     import io
     import urllib.error
-    raised = {
-        "url": urllib.error.URLError("refused"),
-        "timeout": TimeoutError("timed out"),
-        "incomplete": http.client.IncompleteRead(b"?h"),
-        "http-503": urllib.error.HTTPError("u", 503, "busy", {}, None),  # type: ignore[arg-type]
+    # built when raised, so an error a case does not raise is never left
+    # open (an HTTPError holds its response)
+    make = {
+        "url": lambda: urllib.error.URLError("refused"),
+        "timeout": lambda: TimeoutError("timed out"),
+        "incomplete": lambda: http.client.IncompleteRead(b"?h"),
+        "http-503": lambda: urllib.error.HTTPError(
+            "u", 503, "busy", {}, io.BytesIO()),  # type: ignore[arg-type]
     }[error]
     calls = []
 
     def fake_open(request: object, timeout: float) -> object:
         calls.append(1)
         if len(calls) == 1:
-            raise raised
+            raise make()
         return io.BytesIO(b"?h\t?v\n")
 
     monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
@@ -364,10 +367,11 @@ def test_a_failed_connection_is_retried(
 
 
 def test_a_refused_query_names_itself(monkeypatch: pytest.MonkeyPatch) -> None:
+    import io
     import urllib.error
 
     def fake_open(request: object, timeout: float) -> object:
-        raise urllib.error.HTTPError("u", 400, "bad", {}, None)  # type: ignore[arg-type]
+        raise urllib.error.HTTPError("u", 400, "bad", {}, io.BytesIO())  # type: ignore[arg-type]
 
     monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
     with pytest.raises(tool.FetchError, match="hu-label: HTTP 400"):
