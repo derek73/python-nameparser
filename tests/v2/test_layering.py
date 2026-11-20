@@ -899,7 +899,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: a listed title, its `sets =` binding and the two title sets it
 #: reads, 200 -> 203; the 3.1 simplify pass folding T8's two copies
 #: of the unambiguous title-or-suffix test after a glued stop into
-#: `_vocab._claimed_after_the_stop`, 203 -> 198);
+#: `_vocab._claimed_after_the_stop`, 203 -> 198; #1464's P12 test
+#: in classify reading the bound sets through a `sets =` binding,
+#: 198 -> 199);
 #: the tools' first 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -926,7 +928,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 198, "tools": 35}
+_UNGUARDED_READS = {"library": 199, "tools": 35}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

@@ -1454,7 +1454,9 @@ _SURNAME2_ROWS = [
     # O6's other declines
     ("Ana García", _GF, False, ""),
     ("Ana M.-J. López", _GF, False, ""),
-    ("Ana abdul Rahman López", _GF, False, ""),
+    ("Ana Umm Kulthum López", _GF, False, ""),
+    # a Latin bound pair P12 joined is one unit O6 takes (#1464)
+    ("Ana abdul Rahman López", _GF, False, "López"),
     ("Ana M. García", _GF, False, ""),
     ("Pérez de la Vega", _FF, False, ""),
     ("王 小 明", _GF, False, ""),

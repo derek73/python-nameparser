@@ -257,10 +257,13 @@ SHARED_NAME_TAG = "vocab:shared-name"
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
 #: On a bound given name whose word and the word after it are a phrase
-#: of `Lexicon.bound_phrases` ('عبد' before 'الله'), which rules/P12
-#: joins past the first name word (`_group._join_bound_phrases`), and
-#: group leaves it only on a pair it joined. Dropped
-#: from the published token like the kind tags above (#694).
+#: of `Lexicon.bound_phrases` ('عبد' before 'الله'), or one of
+#: `Lexicon.bound_completes_any` before a plain name word, one of
+#: `Lexicon.bound_long_names_only` only in a name of four name words or
+#: more (#1464), which rules/P12 joins past the first name word
+#: (`_group._join_bound_phrases`), and group leaves it only on a pair
+#: it joined. Dropped from the published token like the kind tags
+#: above (#694).
 BOUND_PHRASE_TAG = "vocab:bound-phrase"
 #: rules/O9 ("the capitals settle the field"): a word in capitals that
 #: Policy.capitals_as_family read as the family, written by post_rules,

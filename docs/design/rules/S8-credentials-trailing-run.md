@@ -29,7 +29,7 @@
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
-  "Mohamed Ali Abd Allah"     →  family="Allah"
+  "Mohamed Ali Abd Allah"     →  family="Abd Allah"
   "John Smith Ma Jones"       →  family="Jones"
   "JOHN SMITH MA JONES"       →  family="JONES"
   "John Smith DO Jones"       →  family="DO Jones"

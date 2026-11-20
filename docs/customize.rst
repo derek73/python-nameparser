@@ -1156,19 +1156,34 @@ entirely:
     >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
     'abdul'
 
-Past the first name word, a bound word joins only a word its reading
-lists in ``completed_by``. Arabic-script ``عبد`` lists the names of God
-and the devotional names it completes, so the pair is one name wherever
-it stands, while the Latin ``abdul`` lists none:
+Past the first name word, a bound word joins a word its reading lists
+in ``completed_by``, or, where its reading is written ``completes_any``,
+any name word after it with no vocabulary reading and no initial's
+shape. Arabic-script ``عبد``
+lists the names of God and the devotional names it completes, so the
+pair is one name wherever it stands. The Latin spellings name no word
+after them and complete with any, ``abdul`` only in a name of four
+words or more, titles and suffixes not counted (``long_names_only``),
+its three-word names being split
+both ways by the people who write them:
 
 .. doctest::
 
     >>> parse("طارق عبد العزيز").family
     'عبد العزيز'
+    >>> parse("Tariq Abdel Aziz").family
+    'Abdel Aziz'
     >>> parse("Tariq Abdul Aziz").family
     'Aziz'
-    >>> lex = Lexicon.default().add("abdul", kind="bound_given",
-    ...                             completed_by=["aziz"])
+
+Where your names are Malaysian, which write a three-word ``X Abdul Y``
+with the pair as the family, state ``abdul``'s reading without
+``long_names_only``:
+
+.. doctest::
+
+    >>> lex = (Lexicon.default().remove("abdul", kind="bound_given")
+    ...        .add("abdul", kind="bound_given", completes_any=True))
     >>> Parser(lexicon=lex).parse("Tariq Abdul Aziz").family
     'Abdul Aziz'
 

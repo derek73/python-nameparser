@@ -596,6 +596,11 @@ class _LexiconSets:
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
+    #: the bound given names that complete with any plain name word
+    #: after them past the first name word, and the ones of those that
+    #: do so only in a name of four words or more (rules/P12, #1464)
+    bound_completes_any: frozenset[str]
+    bound_long_names_only: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -637,6 +642,8 @@ _COMPILED_FIELDS = {
     "dotted_titles": "DOTTED_TITLES",
     "glued_titles": "GLUED_TITLES",
     "bound_phrases": "BOUND_PHRASES",
+    "bound_completes_any": "BOUND_COMPLETES_ANY",
+    "bound_long_names_only": "BOUND_LONG_NAMES_ONLY",
 }
 
 #: What the 2.x sets do not record: the kinds the views read (rules/R8,
@@ -876,7 +883,7 @@ _UNSTATED = frozenset({"default", "cased"})
 _FLAG_PROPS = frozenset({
     "abbreviation", "acronym", "after_given", "may_be_initial",
     "title_case_is_name", "shared", "after_particle", "capital_opening",
-    "dotted"})
+    "dotted", "completes_any", "long_names_only"})
 
 
 class _Edit(NamedTuple):

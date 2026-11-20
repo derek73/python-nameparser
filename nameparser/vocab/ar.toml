@@ -565,23 +565,28 @@ note = "formal script attaches و to the following word (وفاطمة), so a sta
 text = "abd"
 [word.bound_given]
 expands = "servant of"
-note = "the bare transliteration, which abdul/abdel/abdal do not match: 'abd Allah Smith' and 'Abd al-Rahman Smith' read given 'abd Allah' and 'Abd al-Rahman'; the three-token 'abd al rahman smith' is not joined, al being a particle that chains forward. Also the credential ABD in en.toml; position decides at the two ends but not in a family comma's given slot (decisions/P5)"
+completes_any = true
+note = "the bare transliteration, which abdul/abdel/abdal do not match: 'abd Allah Smith' and 'Abd al-Rahman Smith' read given 'abd Allah' and 'Abd al-Rahman'; the three-token 'abd al rahman smith' is not joined, al being a particle that chains forward. Also the credential ABD in en.toml; position decides at the two ends but not in a family comma's given slot (decisions/P5), save before a plain name word there, which it completes ('Haddad, Nadia Abd Karim' reads middle 'Abd Karim'). completes_any: joined with any plain name word after it past the first name word, the pair placed by position (rules/P12, #1464)"
 
 [[word]]
 text = "abdul"
-bound_given = { expands = "servant of the" }
+[word.bound_given]
+expands = "servant of the"
+completes_any = true
+long_names_only = true
+note = "completes_any: joined with any plain name word after it past the first name word, the pair placed by position (rules/P12, #1464). long_names_only: only in a name of four name words or more, for the filers of a three-word X Abdul Y split it both ways, by the boxes filed for abdul between two words in the three-word names of each population (2026-11-19): family 'Abdul Y' against family 'Y', ORCID Malaysia 183 to 2, Pakistan 35 to 14, Iraq 31 to 1, Bangladesh 10 to 60; PSC British 43 to 172, Pakistani 27 to 29, Indian 10 to 21, Bangladeshi 1 to 21; PatentsView Malaysia 8 to 9, Saudi Arabia 2 to 11 (decisions/P12)"
 
 [[word]]
 text = "abdal"
-bound_given = { expands = "servant of the", same_as = "abdul" }
+bound_given = { expands = "servant of the", same_as = "abdul", completes_any = true }
 
 [[word]]
 text = "abdel"
-bound_given = { expands = "servant of the", same_as = "abdul" }
+bound_given = { expands = "servant of the", same_as = "abdul", completes_any = true }
 
 [[word]]
 text = "abou"
-bound_given = { expands = "father of", same_as = "abu" }
+bound_given = { expands = "father of", same_as = "abu", completes_any = true }
 
 [[word]]
 text = "umm"

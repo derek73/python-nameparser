@@ -2298,3 +2298,28 @@ unlisted pair of capitals does there:
     ('ZIA UD', 'DIN', '')
     >>> parse("Anke Vissering, UD").given
     'UD'
+
+A Latin bound given name past the first word
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``Abdel``, ``Abd``, ``Abdal`` and ``Abou`` past the first word of a
+name now join the name word after them, and ``Abdul`` does too in a name
+of four words or more. Position places the pair: the family name where
+it ends the name, one middle name inside it. 1.4 through 3.1 read the
+bound word as a middle name of its own, or, for ``Abd`` in the given
+part after a family comma, as the credential ABD, and the word after it
+apart. In a name of three words ``Abdul`` still stays apart:
+
+.. doctest::
+
+    >>> tariq = parse("Tariq Abdel Aziz")
+    >>> tariq.middle, tariq.family
+    ('', 'Abdel Aziz')
+    >>> nadia = parse("Nadia Ali Abdul Rahim")
+    >>> nadia.middle, nadia.family
+    ('Ali', 'Abdul Rahim')
+    >>> parse("Tariq Abdul Aziz").middle
+    'Abdul'
+    >>> haddad = parse("Haddad, Nadia Abd Karim")
+    >>> haddad.middle, haddad.suffix
+    ('Abd Karim', '')

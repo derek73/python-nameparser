@@ -28,9 +28,11 @@ titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
 written behind a particle (particle_given_names, #704) and the
 two-word given names a bound word completes into (bound_phrases,
-#694) and the titles a run of single letters may spell
-(dotted_titles, rules/H10, #490) and the saint particles a word glued
-at its full stop is cut behind (saint_particles, through
+#694) and the bound words that complete with any plain name word, in
+any name or only in one of four name words or more
+(bound_completes_any, bound_long_names_only, #1464) and the titles a
+run of single letters may spell (dotted_titles, rules/H10, #490) and
+the saint particles a word glued at its full stop is cut behind (saint_particles, through
 `_vocab.glued_saint_cut`); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
@@ -95,7 +97,9 @@ is what lets the fork be reported without being taken.
 """
 from __future__ import annotations
 
+import re
 import unicodedata
+from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
@@ -111,10 +115,10 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
-    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD,
+    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, _ROMAN,
     _TRAILING_TITLE_SHAPE, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_dotted_title, is_initial, is_one_case,
+    is_dotted_title, is_initial, is_one_case, is_title_shaped,
     period_joined_title, period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
@@ -122,6 +126,71 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import own_words
 
 
+def _name_words(tokens: Sequence[WorkToken], state: ParseState,
+                clause_at: int, partner: int) -> int:
+    """How many name words the name holds, for rules/P12's
+    `long_names_only`, part by part (the comma parts, before a maiden
+    clause, which changes nothing else in the name): words carrying no
+    role and holding a letter, save each part's leading title run (a
+    listed title, a title phrase H9 read, a dotted title, one H2's shape
+    reads, and a connective inside the run with the word it joins) and,
+    after `partner`, the word the bound word would join, anything but a
+    plain word, a bound given name or a pair of initials in a script
+    with case (a suffix, listed, by its shape or a numeral VI to X
+    written other than in Title case), and nothing past the next comma.
+    A plain loop, a generator costing a frame per word."""
+    count = 0
+    for seg in state.segments:
+        if seg and seg[0] > partner:
+            break
+        leading = True
+        held = 0
+        titled = False
+        for i in seg:
+            if i >= clause_at:
+                break
+            t = tokens[i]
+            if t.role is not None or not _HAS_LETTER.search(t.text):
+                continue
+            tags = t.tags
+            if i > partner:
+                stem = t.text.rstrip(".")
+                if ((not tags - _BOUND_TAGS
+                     or is_cased_paired_initials(t.text))
+                        and not (stem and not stem.istitle()
+                                 and _ROMAN.match(stem))):
+                    count += 1
+                continue
+            if leading:
+                if (_LEADING_TITLE_TAGS & tags
+                        or is_title_shaped(t.text, state.lexicon)):
+                    held = 0
+                    titled = True
+                    continue
+                if "conjunction" in tags:
+                    held += 1
+                    continue
+                if titled and held:
+                    # the word a title's connective joins into the run
+                    # ('Dean of Students')
+                    held = 0
+                    continue
+                leading = False
+                count += held
+            count += 1
+    return count
+
+
+#: The tag H9 leaves on a contested title it read as a name word.
+_CONTESTED_TAGS = frozenset({TITLE_AMBIGUOUS_TAG})
+#: A bound given name's own tags: one after the pair is a name word.
+_BOUND_TAGS = frozenset({"vocab:bound-given"})
+#: The tags that mark a word of the leading title run: a title, listed
+#: or read in its phrase (H9), and a dotted title (H10).
+_LEADING_TITLE_TAGS = frozenset({"vocab:title", DOTTED_TITLE_TAG})
+#: A letter (a decomposed accent's base included): a search, not a
+#: loop over the word, so the test costs no frame.
+_HAS_LETTER = re.compile(r"[^\W\d_]")
 
 
 # rules/S2: "a trailing word of the suffix vocabulary reads as a
@@ -538,25 +607,6 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
-    # rules/P12: "the two words are one name unit past the first name word"
-    # -- the phrase test over each word and the word after it, asked
-    # only of a name holding a bound word, in a plain loop, so that no
-    # other name pays a frame; the tag goes on the bound word, and
-    # group joins the pair (decisions/P12, #694)
-    phrases = state.lexicon._sets.bound_phrases
-    if phrases and not state.lexicon._sets.bound_given_names.isdisjoint(
-            folded):
-        heads = set()
-        for i in range(len(folded) - 1):
-            # rules/C10: "no join, maiden clause or connective reaches
-            # across it", so a delimiter glued to the bound word ends it
-            if (f"{folded[i]} {folded[i + 1]}" in phrases
-                    and i not in stemmed):
-                heads.add(i)
-        if heads:
-            tokens = tuple(
-                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
-                if i in heads else t for i, t in enumerate(tokens))
     # rules/H9: "the word is a title only inside a title phrase, and
     # elsewhere a name word" -- the phrase test (_vocab.title_readings)
     # asked per part, of the words carrying no role, and only of a part
@@ -606,6 +656,43 @@ def classify(state: ParseState) -> ParseState:
                 if tags != written[i].tags:
                     written[i] = copy_with(written[i], tags=tags)
         tokens = tuple(written)
+    # rules/P12: "the two words are one name unit past the first name word"
+    # -- the phrase test over each word and the word after it, asked
+    # only of a name holding a bound word, in a plain loop, so that no
+    # other name pays a frame; the tag goes on the bound word, and
+    # group joins the pair (decisions/P12, #694). A bound word written
+    # `completes_any` pairs with a plain word, one carrying no tag (no
+    # vocabulary reading, not initial-shaped) and holding a letter, and
+    # one written `long_names_only` only in a name of four name words
+    # or more (decisions/P12, #1464)
+    sets = state.lexicon._sets
+    phrases = sets.bound_phrases
+    open_bound = sets.bound_completes_any
+    if ((phrases or open_bound)
+            and not sets.bound_given_names.isdisjoint(folded)):
+        heads = set()
+        for i in range(len(folded) - 1):
+            # rules/C10: "no join, maiden clause or connective reaches
+            # across it", so a delimiter glued to the bound word ends it
+            if i in stemmed:
+                continue
+            if f"{folded[i]} {folded[i + 1]}" in phrases:
+                heads.add(i)
+            # the first word is P5's, which this join never reads
+            # a contested title H9 read out of a title phrase is a name word
+            elif (i and folded[i] in open_bound
+                  and not tokens[i + 1].tags - _CONTESTED_TAGS
+                  and _HAS_LETTER.search(tokens[i + 1].text)):
+                # counted per pair, the count reading which words stand
+                # after the word it would join
+                if (folded[i] in sets.bound_long_names_only
+                        and _name_words(tokens, state, clause_at, i + 1) < 4):
+                    continue
+                heads.add(i)
+        if heads:
+            tokens = tuple(
+                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
+                if i in heads else t for i, t in enumerate(tokens))
     # rules/S12: "a credential written split across a space reads as one
     # word" -- each adjacent pair of a segment asked once, here, and
     # the answer written on its first word for group's merge and the

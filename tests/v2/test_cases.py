@@ -503,9 +503,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Smith' reporting title-or-name under three orders; 2195 -> 2198 the
     # same day, #1457's 'Mr Masters' reporting title-or-name under three
     # orders; 2198 -> 2201 the same day, #1467's 'Nur Aina bt Rosli'
-    # reporting suffix-or-name under three orders.
-    assert claims == 2201, (
-        f"the field sweep checks {claims} claims, recorded as 2201 on "
+    # reporting suffix-or-name under three orders; 2201 -> 2205 the same
+    # day, #1464's 'Ali Abdul Rahim VI' under three orders and 'Ram Abdul
+    # Bahadur B.K.' under its declared policy, each reporting
+    # suffix-or-name; 2205 -> 2208 the same day, #1464's 'Dr. Al Amin
+    # Abdul Rahman' reporting particle-or-given.
+    assert claims == 2208, (
+        f"the field sweep checks {claims} claims, recorded as 2208 on "
         f"2026-11-19")
 
 
@@ -989,7 +993,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # FAMILY_FIRST row of that name; 494 -> 497 the same day, #1467's
     # 'Nur Aina bt Rosli' under the three orders, its suffix-or-name
     # reports all skipped
-    assert (checked, skipped) == (605, 497), (checked, skipped)
+    # 605 -> 608 the same day, from #1464's two suffix-or-name rows
+    # ('Ali Abdul Rahim VI', 'Ram Abdul Bahadur B.K.')
+    assert (checked, skipped) == (608, 497), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

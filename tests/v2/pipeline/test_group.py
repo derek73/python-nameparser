@@ -234,11 +234,14 @@ def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
 
 def test_a_delimiter_glued_to_the_bound_word_ends_the_pair() -> None:
     # a delimiter glued to the bound word parts the pair, as a comma
-    # would (the C10 rule); one glued to the word after it does not
-    for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين"):
+    # would (the C10 rule); one glued to the word after it does not --
+    # for a listed phrase and for a Latin word completing any (#1464)
+    for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين",
+                 "Haddad, Said Abdel; Karim", "Haddad, Said Abdel Karim; Omar"):
         state = _grouped(text, lexicon=Lexicon.default())
         joined = [p for seg in state.pieces for p in seg if len(p) > 1]
-        assert joined == ([] if "عبد;" in text else [(2, 3)]), (text, joined)
+        glued = "عبد;" in text or "Abdel;" in text
+        assert joined == ([] if glued else [(2, 3)]), (text, joined)
 
 
 def test_the_phrase_tag_stays_only_on_a_pair_p12_joined() -> None:

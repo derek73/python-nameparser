@@ -122,7 +122,8 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
                          "title_case_is_name"}),
     "particle": frozenset({"capital_opening", "cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
-    "bound_given": frozenset({"completed_by", "cased", "default"}),
+    "bound_given": frozenset({"completed_by", "completes_any", "cased",
+                              "default", "long_names_only"}),
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
     "familiar": frozenset({"default"}),
@@ -246,7 +247,8 @@ class ReadingProperties:
     def flag(self, prop: str) -> bool:
         """A `may_be_*` flag, `after_given`, `abbreviation`,
         `title_case_is_name`, `shared`, `after_particle`,
-        `capital_opening` or `dotted`: unwritten, false."""
+        `capital_opening`, `dotted`, `completes_any` or
+        `long_names_only`: unwritten, false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -663,6 +665,8 @@ class Compiled(TypedDict):
     DOTTED_TITLES: frozenset[str]
     GLUED_TITLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
+    BOUND_COMPLETES_ANY: frozenset[str]
+    BOUND_LONG_NAMES_ONLY: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
     FAMILIAR: dict[str, tuple[str, ...]]
@@ -718,6 +722,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     shared: set[str] = set()
     after_particle: set[str] = set()
     bound_phrases: set[str] = set()
+    completes_any: set[str] = set()
+    long_names_only: set[str] = set()
     cased: dict[str, str] = {}
     same_as: dict[str, dict[str, set[str]]] = {
         g: {} for g in SAME_AS_GROUPS.values()}
@@ -802,6 +808,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
             bound.add(t)
             bound_phrases.update(f"{t} {w}"
                                  for w in p.get("completed_by", ()))
+            if r.flag("completes_any"):
+                completes_any.add(t)
+                if r.flag("long_names_only"):
+                    long_names_only.add(t)
         elif category == "relation":
             markers.add(t)
     contested = titles & given - particles
@@ -903,6 +913,12 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)
         BOUND_PHRASES=frozenset(bound_phrases),
+        # the bound given names written `completes_any`, which rules/P12
+        # joins with any plain name word after them past the first name
+        # word, and of those the ones written `long_names_only`, joined
+        # only in a name of four words or more (#1464)
+        BOUND_COMPLETES_ANY=frozenset(completes_any),
+        BOUND_LONG_NAMES_ONLY=frozenset(long_names_only),
         # every reading's `same_as` in the group of its kind: the words
         # it is a listed spelling of (`wm` of `william` among given
         # names, `junior` of `jr` among suffixes, `sr` of both `señor`

@@ -5613,11 +5613,7 @@
   },
   "given_names": {
    "expected": "Syed Abd Aziz",
-   "got": "Syed Aziz Syed A"
-  },
-  "suffix": {
-   "expected": "",
-   "got": "Abd"
+   "got": "Syed Abd Aziz Syed A"
   },
   "surname1_particles": {
    "expected": "Syed A",

@@ -1011,6 +1011,18 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         # takes one (rules/H10)
         raise VocabError(f"{where}: dotted must be true, or left unwritten")
     _check_default(where, p)
+    for flag in ("completes_any", "long_names_only"):
+        if flag in p and p[flag] is not True:
+            # unwritten is false, so only true says anything; keys of
+            # the bound_given category alone (BEHAVIORAL), so only a
+            # bound given name takes one (rules/P12, #1464)
+            raise VocabError(f"{where}: {flag} must be true, or left "
+                             f"unwritten")
+    if "long_names_only" in p and "completes_any" not in p:
+        # it narrows where `completes_any` joins, so alone it is inert
+        raise VocabError(f"{where}: long_names_only narrows completes_any "
+                         f"to a name of four words or more, so it needs "
+                         f"completes_any = true beside it")
     if "completed_by" in p:
         # the words that complete a bound given name into one given
         # name past the first name word (rules/P12): each one word, written
@@ -1460,7 +1472,8 @@ def _behavior(r: Reading, prop: str) -> object:
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
                 "title_case_is_name", "shared", "after_particle",
-                "capital_opening", "dotted"):
+                "capital_opening", "dotted", "completes_any",
+                "long_names_only"):
         return r.flag(prop)
     if prop in ("attaches", "completed_by"):
         att = r.props.get(prop)
@@ -1509,6 +1522,8 @@ CONSTANTS = (
     "DOTTED_TITLES",
     "GLUED_TITLES",
     "BOUND_PHRASES",
+    "BOUND_COMPLETES_ANY",
+    "BOUND_LONG_NAMES_ONLY",
     "SAME_AS",
     "SAME_AS_NAMED",
     "FAMILIAR",
