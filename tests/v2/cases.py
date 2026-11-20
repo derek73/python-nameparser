@@ -678,10 +678,21 @@ CASES: tuple[Case, ...] = (
          notes="hyphenated initials write given names, as an initial "
                "written alone does (#959)"),
     Case("two_family_names_leaves_a_bound_given_pair_before_the_family",
-         "Ana abdul Rahman López",
-         {"given": "Ana", "middle": "abdul Rahman", "family": "López"},
+         "Ana Umm Kulthum López",
+         {"given": "Ana", "middle": "Umm Kulthum", "family": "López"},
          policy=_TWO, classification="parity",
-         notes="#754 review: a P5 pair is one GIVEN name"),
+         notes="#754 review: a bound word P12 does not join past the "
+               "first word (umm completes nothing) leaves two words, which "
+               "O6 does not take; written with 'abdul Rahman' until #1464 "
+               "made that pair one name (rules/P12), which O6 takes as a "
+               "family word"),
+    Case("two_family_names_takes_a_latin_bound_pair_p12_joined",
+         "Ana abdul Rahman López",
+         {"given": "Ana", "family": "abdul Rahman López"},
+         policy=_TWO, classification="fix(#1464)",
+         notes="rules/P12 joins the pair past the first name word, so O6 "
+               "counts it one word, as it counts 'abu Bakr'; read middle "
+               "'abdul Rahman', family 'López' through 3.1.0"),
     Case("two_family_names_counts_an_en_dash_as_a_hyphen",
          "Ana María García–López",
          {"given": "Ana", "middle": "María", "family": "García–López"},
@@ -3096,10 +3107,12 @@ CASES: tuple[Case, ...] = (
                "title half only; the sweep test over `trailing_candidates` "
                "found this one"),
     Case("a_bound_given_word_is_no_run", "Mohamed Ali Abd Allah",
-         {"given": "Mohamed", "middle": "Ali Abd", "family": "Allah"},
+         {"given": "Mohamed", "middle": "Ali", "family": "Abd Allah"},
+         classification="fix(#1464)",
          notes="'abd' is in the credential list (ABD) and heads 'Abd "
                "Allah'; a word another vocabulary claims as a name never "
-               "starts the run"),
+               "starts the run. rules/P12 joins the pair since #1464; "
+               "middle 'Ali Abd', family 'Allah' through 3.1.0"),
     Case("one_name_word_is_no_core", "John PhD Smith",
          {"given": "John", "middle": "PhD", "family": "Smith"},
          notes="with no comma two name words must stand in front of the "
@@ -21705,4 +21718,260 @@ CASES: tuple[Case, ...] = (
                "(1.4.0 through 2.3.0 read middle 'Aina bt', family "
                "'Rosli'); a caller with Malay names removes it "
                "(docs/customize.rst)"),
+    # #1464: a Latin bound given name (abdul, abd, abdel, abdal, abou)
+    # completes with a plain name word after it past the first name
+    # word (rules/P12), abdul only in a name of four name words or more.
+    Case("abdel_past_the_first_word_completes_with_the_word_after_it",
+         "Tariq Abdel Aziz",
+         {"given": "Tariq", "family": "Abdel Aziz"},
+         classification="fix(#1464)",
+         notes="the pair ends the name, so it is the family; read middle "
+               "'Abdel', family 'Aziz' 1.4.0 through 3.1.0"),
+    Case("abdul_ending_a_four_word_name_is_the_family",
+         "Nadia Ali Abdul Rahim",
+         {"given": "Nadia", "middle": "Ali", "family": "Abdul Rahim"},
+         classification="fix(#1464)",
+         notes="read middle 'Ali Abdul', family 'Rahim' 1.4.0 through "
+               "3.1.0"),
+    Case("abdul_inside_a_four_word_name_is_one_middle_name",
+         "Nadia Abdul Rahim Ali",
+         {"given": "Nadia", "middle": "Abdul Rahim", "family": "Ali"},
+         notes="boundary: the pair stands inside the name, so position "
+               "makes it one middle name, the field it already filled"),
+    Case("abdul_in_a_three_word_name_stays_apart",
+         "Tariq Abdul Aziz",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz"},
+         notes="boundary: abdul's reading is written long_names_only, the "
+               "writers of a three-word name splitting it both ways by "
+               "population (decisions/P12, #1464)"),
+    Case("abdul_in_a_three_word_name_with_a_title_stays_apart",
+         "Mr Tariq Abdul Aziz",
+         {"title": "Mr", "given": "Tariq", "middle": "Abdul",
+          "family": "Aziz"},
+         notes="boundary: a title is no name word in the count"),
+    Case("abdul_in_a_three_word_name_with_a_credential_stays_apart",
+         "Tariq Abdul Aziz, MD",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz",
+          "suffix": "MD"},
+         notes="boundary: a credential after a comma is no name word in "
+               "the count"),
+    Case("abdul_in_a_three_word_name_in_capitals_stays_apart",
+         "TARIQ ABDUL AZIZ",
+         {"given": "TARIQ", "middle": "ABDUL", "family": "AZIZ"},
+         notes="boundary: the spelling twin of the three-word row"),
+    Case("abdel_in_capitals_completes_with_the_word_after_it",
+         "NADIA ABDEL RAHIM",
+         {"given": "NADIA", "family": "ABDEL RAHIM"},
+         classification="fix(#1464)",
+         notes="read middle 'ABDEL', family 'RAHIM' 1.4.0 through 3.1.0"),
+    Case("abou_completes_with_the_word_after_it",
+         "Ahmad Abou Zeid",
+         {"given": "Ahmad", "family": "Abou Zeid"},
+         classification="fix(#1464)",
+         notes="abou is abu's spelling; abu keeps its particle reading "
+               "and is not changed. Read middle 'Abou', family 'Zeid' "
+               "1.4.0 through 3.1.0"),
+    Case("abd_past_the_first_word_completes_before_a_credential",
+         "Nadia Abd Karim, MD",
+         {"given": "Nadia", "family": "Abd Karim", "suffix": "MD"},
+         classification="fix(#1464)",
+         notes="read middle 'Abd', family 'Karim' 1.4.0 through 3.1.0"),
+    Case("abd_opening_a_two_word_name_keeps_its_given_name",
+         "Abd Karim, MD",
+         {"given": "Abd", "family": "Karim", "suffix": "MD"},
+         notes="boundary: the opening word is P5's, which leaves a "
+               "two-word name its family; the particle reading weighed in "
+               "decisions/P12 (#1464) would have read the whole name into "
+               "the family and left no given name"),
+    Case("a_latin_bound_word_completes_no_particle",
+         "Ahmad Abdel bin Omar",
+         {"given": "Ahmad", "middle": "Abdel", "family": "bin Omar"},
+         notes="boundary: a word the vocabulary reads otherwise completes "
+               "nothing, so the bin chain keeps its family"),
+    Case("a_latin_bound_pair_before_a_bin_chain_is_a_middle_name",
+         "Ahmad Abdul Rahim bin Omar",
+         {"given": "Ahmad", "middle": "Abdul Rahim", "family": "bin Omar"},
+         notes="boundary: the pair joins inside the name and the chain is "
+               "not cut"),
+    Case("a_latin_bound_word_completes_no_initial",
+         "Ahmad Abdel K.",
+         {"given": "Ahmad", "middle": "Abdel", "family": "K."},
+         notes="boundary: an initial is no plain name word"),
+    Case("a_latin_bound_pair_after_a_family_comma_is_a_middle_name",
+         "Rahim, Nadia Abdel Karim",
+         {"given": "Nadia", "middle": "Abdel Karim", "family": "Rahim"},
+         notes="boundary: the pair stands inside the given part"),
+    Case("a_latin_bound_pair_under_family_first_is_the_given_name",
+         "Rahim Nadia Abdel Karim",
+         {"given": "Abdel Karim", "middle": "Nadia", "family": "Rahim"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#1464)",
+         notes="position places the pair: with the given name declared "
+               "last, the pair is it; read given 'Karim', middle 'Nadia "
+               "Abdel' through 3.1.0"),
+    Case("a_latin_bound_pair_under_family_first_is_a_middle_name",
+         "Rahim Nadia Abdel Karim",
+         {"given": "Nadia", "middle": "Abdel Karim", "family": "Rahim"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="boundary: the given name declared second, the pair is "
+               "the middle name it was"),
+    Case("abd_after_a_family_comma_completes_rather_than_reads_as_abd",
+         "Haddad, Nadia Abd Karim",
+         {"given": "Nadia", "middle": "Abd Karim", "family": "Haddad"},
+         classification="fix(#1464)",
+         notes="the join keeps 'Abd' a name word where the given part "
+               "read it as the credential ABD (All But Dissertation); "
+               "read middle 'Karim', suffix 'Abd' 1.4.0 through 3.1.0"),
+    Case("abdul_in_a_three_word_name_with_a_generation_stays_apart",
+         "Tariq Abdul Aziz Jr.",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz",
+          "suffix": "Jr."},
+         notes="boundary: a suffix word after the pair is no name word in "
+               "the count, with no comma before it as with one (code "
+               "review)"),
+    Case("abdul_in_a_three_word_name_with_a_credential_and_no_comma",
+         "Tariq Abdul Aziz MD",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz",
+          "suffix": "MD"},
+         notes="boundary: the comma-less twin of the credential row"),
+    Case("abdul_in_a_three_word_name_with_a_shape_title_stays_apart",
+         "Insp. Tariq Abdul Aziz",
+         {"title": "Insp.", "given": "Tariq", "middle": "Abdul",
+          "family": "Aziz"},
+         notes="boundary: a title read by its shape (rules/H2) is no name "
+               "word in the count, as a listed one is not"),
+    Case("a_latin_bound_word_completes_no_lone_mark",
+         "Tariq Abdel - Smith",
+         {"given": "Abdel", "middle": "- Smith", "family": "Tariq"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="boundary: a mark with no letter is no name word to join "
+               "(code review)"),
+    Case("abdul_in_a_three_word_name_with_a_nickname_stays_apart",
+         "Tariq (Zizo) Abdul Aziz",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz",
+          "nickname": "Zizo"},
+         notes="boundary: a nickname is no name word in the count (test "
+               "review)"),
+    Case("abdul_in_a_three_word_name_with_a_quoted_nickname_stays_apart",
+         'Tariq "Zizo" Abdul Aziz',
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz",
+          "nickname": "Zizo"},
+         notes="boundary: the quoted twin of the nickname row"),
+    Case("a_nickname_between_the_bound_word_and_its_partner_parts_them",
+         "Nadia Abdel (Zizo) Rahim",
+         {"given": "Nadia", "middle": "Abdel", "family": "Rahim",
+          "nickname": "Zizo"},
+         notes="boundary: the join pairs the bound word with the word "
+               "written right after it, and a clause between ends it"),
+    Case("abdul_inside_a_four_word_name_under_family_first",
+         "Nadia Abdul Rahim Ali",
+         {"given": "Abdul Rahim", "middle": "Ali", "family": "Nadia"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1464)",
+         notes="the pair joins in a four-word name and the order places "
+               "it: given 'Abdul', middle 'Rahim Ali' through 3.1.0"),
+    Case("abdul_in_a_three_word_name_under_family_first_given_last",
+         "Rahim Abdul Aziz",
+         {"given": "Aziz", "middle": "Abdul", "family": "Rahim"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         notes="boundary: three words stay apart under every order"),
+    Case("a_latin_bound_pair_before_a_bin_chain_under_family_first",
+         "Ahmad Abdul Rahim bin Omar",
+         {"given": "Abdul Rahim", "middle": "bin Omar", "family": "Ahmad"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1464)",
+         notes="the pair joins and the chain stays whole: given 'Abdul', "
+               "middle 'Rahim bin Omar' through 3.1.0"),
+    Case("a_latin_bound_pair_after_an_empty_head_is_a_middle_name",
+         ", Tariq Abdel Aziz",
+         {"given": "Tariq", "middle": "Abdel Aziz"},
+         notes="boundary: nothing before the comma names no family (C15), "
+               "and the pair stays one middle name"),
+    Case("a_latin_bound_pair_in_lower_case_completes",
+         "tariq abdel aziz",
+         {"given": "tariq", "family": "abdel aziz"},
+         classification="fix(#1464)",
+         notes="the lower-case twin; read middle 'abdel', family 'aziz' "
+               "1.4.0 through 3.1.0"),
+    Case('abdul_after_a_title_phrase_stays_apart',
+         'Associate Dean Nadia Abdul Rahim',
+         {'title': 'Associate Dean', 'given': 'Nadia', 'middle': 'Abdul', 'family': 'Rahim'},
+         classification='feat(#752)',
+         notes='boundary: a title phrase (rules/H9) is no name word in the count (fix-commit review)'),
+    Case('abdul_after_a_title_phrase_with_a_connective_stays_apart',
+         'Dean of Students Nadia Abdul Rahim',
+         {'title': 'Dean of Students', 'given': 'Nadia', 'middle': 'Abdul', 'family': 'Rahim'},
+         classification='feat(#752)',
+         notes="boundary: the word a title's connective joins is the title's"),
+    Case('abdul_after_an_article_and_titles_stays_apart',
+         'The Rt Hon Nadia Abdul Rahim',
+         {'title': 'The Rt Hon', 'given': 'Nadia', 'middle': 'Abdul', 'family': 'Rahim'},
+         notes='boundary: a connective inside the leading title run is no name word'),
+    Case('abdul_after_a_dotted_title_stays_apart',
+         'U.S. Senator Nadia Abdul Rahim',
+         {'title': 'U.S. Senator', 'given': 'Nadia', 'middle': 'Abdul', 'family': 'Rahim'},
+         classification='fix(#490)',
+         notes='boundary: a dotted title (rules/H10) is no name word'),
+    Case('abdul_before_an_ambiguous_credential_after_a_comma_stays_apart',
+         'Nadia Abdul Rahim, MA',
+         {'given': 'Nadia', 'middle': 'Abdul', 'family': 'Rahim', 'suffix': 'MA'},
+         notes='boundary: after the pair only a plain word counts'),
+    Case('abdul_before_a_numeral_stays_apart',
+         'Ali Abdul Rahim VI',
+         {'given': 'Ali', 'middle': 'Abdul', 'family': 'Rahim', 'suffix': 'VI'},
+         ambiguities=("suffix-or-name",),
+         notes='boundary: a numeral VI to X, which no tag marks, is no name word'),
+    Case("abdul_before_paired_initials_under_family_first",
+         "Ram Abdul Bahadur B.K.",
+         {"given": "Abdul Bahadur", "middle": "B.K.", "family": "Ram"},
+         ambiguities=("suffix-or-name",),
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1464)",
+         notes="paired initials in a script with case may be a family "
+               "name (#864), so they count; given 'Abdul', middle 'Bahadur "
+               "B.K.' through 3.1.0"),
+    Case("a_second_abdul_after_p5s_pair_completes",
+         "Mr Abdul Rahim Abdul Karim",
+         {"title": "Mr", "given": "Abdul Rahim", "family": "Abdul Karim"},
+         classification="fix(#1464)",
+         notes="the four-word count is taken per pair, and a bound word "
+               "after the pair is a name word (fix-commit review: P5's "
+               "pair's count once stood in for the second); read middle "
+               "'Abdul', family 'Karim' 1.4.0 through 3.1.0"),
+    Case("abdul_after_a_title_and_a_bound_pair_completes",
+         "Dr Abu Bakar Abdul Rahim",
+         {"title": "Dr", "given": "Abu Bakar", "family": "Abdul Rahim"},
+         classification="fix(#1464)",
+         notes="a particle after a title opens the name and is no title "
+               "object; four name words, as without the title (second "
+               "fix-commit review); 1.4.0 and 2.0.0 read family 'Abu "
+               "Bakar Abdul Rahim', 3.1.0 middle 'Abdul', family 'Rahim'"),
+    Case("abdul_after_a_title_and_a_particle_completes",
+         "Dr. Al Amin Abdul Rahman",
+         {"title": "Dr.", "given": "Al", "middle": "Amin",
+          "family": "Abdul Rahman"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#1464)",
+         notes="the untitled twin reads the same; 1.4.0 and 2.0.0 read "
+               "family 'Al Amin Abdul Rahman', 3.1.0 middle 'Amin Abdul', "
+               "family 'Rahman'"),
+    Case("abdel_completes_with_a_contested_title_read_as_a_name",
+         "Ali Abdel Mahdi",
+         {"given": "Ali", "family": "Abdel Mahdi"},
+         classification="fix(#1464)",
+         notes="H9 reads 'Mahdi' out of any title phrase, a name word "
+               "(rules/H9), so it is plain to the join; read middle "
+               "'Abdel', family 'Mahdi' 1.4.0 through 3.1.0"),
+    Case("abdul_before_a_lower_case_numeral_stays_apart",
+         "Ali Abdul Rahim vi",
+         {"given": "Ali", "middle": "Abdul", "family": "Rahim",
+          "suffix": "vi"},
+         notes="boundary: a numeral in lower case reads as the "
+               "generation (rules/S10), so it is no name word in the "
+               "count"),
+    Case("abdul_after_a_lone_mark_in_a_three_word_name_stays_apart",
+         "Tariq - Abdul Aziz",
+         {"given": "Tariq", "middle": "- Abdul", "family": "Aziz"},
+         notes="boundary: a mark with no letter is no name word in the "
+               "count, so the name holds three"),
 )

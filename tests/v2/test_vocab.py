@@ -688,6 +688,12 @@ MUTATIONS = [
     # (BEHAVIORAL), so any other refuses it as unknown
     ("dotted-not-true", {"en.toml": _w('[[word]]\ntext = "us"\nmodifier = { dotted = false }')}, "dotted must be true, or left unwritten"),
     ("dotted-on-a-suffix-reading", {"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = { dotted = true }')}, "dotted"),
+    # rules/P12's completes_any and long_names_only: true or unwritten,
+    # and long_names_only only beside completes_any, which it narrows
+    # (#1464)
+    ("completes-any-not-true", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completes_any = false }')}, "completes_any must be true, or left unwritten"),
+    ("long-names-only-not-true", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completes_any = true, long_names_only = 1 }')}, "long_names_only must be true, or left unwritten"),
+    ("long-names-only-alone", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { long_names_only = true }')}, "long_names_only narrows completes_any"),
 ]
 
 
@@ -1300,6 +1306,10 @@ _PROPERTY_PROBES = {
     "capital_opening": ("preposition", "{ capital_opening = true }", "zzq"),
     "dotted": ("modifier", "{ dotted = true }", "zzq"),
     "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
+    "completes_any": ("bound_given", "{ completes_any = true }", "zzq"),
+    "long_names_only": ("bound_given",
+                        "{ completes_any = true, long_names_only = true }",
+                        "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

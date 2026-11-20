@@ -66,7 +66,8 @@ _LEX = (
     # María'), which rules/O7 reads (#704)
     .add("maría", "maria", kind="given", after_particle=True)
     .add("y", kind="conjunction")
-    .add("abdul", kind="bound_given")
+    .add("abdul", kind="bound_given", completes_any=True,
+         long_names_only=True)
 )
 
 
@@ -1196,15 +1197,17 @@ def test_a_surviving_name_word_parts_two_entries() -> None:
     test alone cannot reach: a name word standing between two
     post-nominals parts their entries. `abd` is suffix vocabulary that
     starts no credential run (it is bound given-name vocabulary too,
-    rules/S8), so `Jones` behind it survives as a name word before
-    the credential. Drop the conjunct and this renders 'abd PhD'.
+    rules/S8), so `de Jones` behind it survives as a name word before
+    the credential. Drop the conjunct and this renders 'abd PhD'. The
+    particle keeps `abd` from completing with the word after it
+    (rules/P12, #1464), which 'abd Jones' does.
 
     The fixture was 'Smith, MD - PhD - FACS' until #602, whose dashes
     stood as name words between the post-nominals; a credential now
     starts a run to the end of the part, taking them in."""
     for policy in (Policy(),
                    Policy(extra_suffix_delimiters=frozenset({" | "}))):
-        assert _entry_tags("Smith, Jane abd Jones PhD", policy) == [
+        assert _entry_tags("Smith, Jane abd de Jones PhD", policy) == [
             ("abd", False), ("PhD", False)]
 
 
@@ -2871,9 +2874,12 @@ def _division_disagreements(readings: Sequence[_DivisionReading],
 #: tree that added the division (#1456, #1479); on 6560abde, before
 #: it, the same grid disagreed in 941 pairs, the comma-less side of a
 #: particle-led and a P10 family undivided too (a dated figure). Re-take
-#: the first two when the grid moves.
-_DIVISION_SAME_FAMILY = 1659
-_DIVISION_UNGUARDED = 1241
+#: the first two when the grid moves. 1659 and 1241 until #1464, whose
+#: Latin bound pair joined past the first name word (rules/P12) read 18
+#: more pairs' two writings one family, each divided where the comma
+#: divides it.
+_DIVISION_SAME_FAMILY = 1677
+_DIVISION_UNGUARDED = 1259
 
 
 def test_both_writings_of_one_family_read_the_same_units() -> None:

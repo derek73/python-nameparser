@@ -26,7 +26,8 @@ and tail_reads, rules/S2's trailing run of each main segment read
 ONCE, after P3's connective joins and before the particle chain and
 the bound-given join, and split off so neither reaches it (#614),
 which assign places and reports rather than peeling again; and,
-last in each part, P12's join of a listed pair past the start, the
+last in each part, P12's join past the start of a listed pair, or of a
+`completes_any` bound word and the plain word after it (#1464), the
 classify tag left only on the bound word of a pair it joined (#694).
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369), Policy.name_order (rules/P13's joins at the end
@@ -720,7 +721,8 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
 # rules/P12: "the two words are one name unit past the first name word"
 # -- past the piece P5's leading join reads, which this leaves as it
 # was, its reserve included; classify's tag says the word and the
-# token after it are a listed phrase (history: decisions/P12, #694)
+# token after it are a listed phrase, or a `completes_any` bound word
+# before a plain word (history: decisions/P12, #694, #1464)
 def _join_bound_phrases(pieces: list[Piece], ptags: list[set[str]],
                         tokens: Sequence[WorkToken],
                         joined_heads: set[int]) -> None:
@@ -1610,7 +1612,7 @@ def group(state: ParseState) -> ParseState:
         ptags = []
         seg_reads: list[TailRead | None] = []
         for part in parts:
-            # a plain loop, no frame: a name with no listed pair pays
+            # a plain loop, no frame: a name with no tagged pair pays
             # nothing (rules/P12)
             heads: set[int] | None = None
             for i in part:

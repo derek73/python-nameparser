@@ -1007,6 +1007,40 @@ def test_dotted_is_rule_h10s_switch_both_ways() -> None:
     assert Parser().parse("U.S. Senator John Smith").title == "U.S. Senator"
 
 
+def test_completes_any_and_long_names_only_are_rule_p12s_switches_both_ways() -> None:
+    # a caller's completes_any reaches the parse as a file's does, False
+    # turns a shipped one off, and long_names_only narrows it to a name
+    # of four name words or more either way (rules/P12, #1464)
+    def family(lex: Lexicon, text: str) -> str:
+        return Parser(lexicon=lex).parse(text).family
+    default = Lexicon.default()
+    assert family(default, "Tariq Abdou Aziz") == "Aziz"
+    assert family(default.add("abdou", kind="bound_given", completes_any=True),
+                  "Tariq Abdou Aziz") == "Abdou Aziz"
+    assert family(default, "Tariq Abdel Aziz") == "Abdel Aziz"
+    assert family(default.add("abdel", kind="bound_given", completes_any=False),
+                  "Tariq Abdel Aziz") == "Aziz"
+    assert family(default, "Tariq Abdul Aziz") == "Aziz"
+    assert family(default.add("abdul", kind="bound_given", long_names_only=False),
+                  "Tariq Abdul Aziz") == "Abdul Aziz"
+    long_only = default.add("abdel", kind="bound_given", long_names_only=True)
+    assert family(long_only, "Tariq Abdel Aziz") == "Aziz"
+    assert family(long_only, "Nadia Ali Abdel Rahim") == "Abdel Rahim"
+    # alone it narrows nothing, so it is inert rather than refused (the
+    # build, which refuses it, holds the shipped files to more): an
+    # inert entry misparses nothing (AGENTS.md, invariants guard harm)
+    alone = default.add("abdou", kind="bound_given", long_names_only=True)
+    assert family(alone, "Nadia Ali Abdou Rahim") == "Rahim"
+
+
+@pytest.mark.parametrize("flag", ["completes_any", "long_names_only"])
+def test_p12s_switches_refuse_a_non_bool_and_another_kind(flag: str) -> None:
+    with pytest.raises(TypeError, match=flag):
+        Lexicon.default().add("abdou", kind="bound_given", **{flag: 1})
+    with pytest.raises(ValueError, match=flag):
+        Lexicon.default().add("abdou", kind="given", **{flag: True})
+
+
 def test_a_dotted_title_reads_as_listed_in_its_language() -> None:
     # assemble counts classify's dotted tag as a listed title's
     # (rules/H10), so the reading names the vocabulary and its file
@@ -1885,7 +1919,8 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES", "DOTTED_TITLES",
         "GLUED_TITLES",
-        "BOUND_PHRASES", "SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
+        "BOUND_PHRASES", "BOUND_COMPLETES_ANY", "BOUND_LONG_NAMES_ONLY",
+        "SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
         "ALTERNATE_SPELLINGS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code

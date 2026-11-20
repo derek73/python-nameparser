@@ -4627,6 +4627,18 @@ BOUND_PHRASES: frozenset[str] = frozenset({
     'عبد الکریم',
 })
 
+BOUND_COMPLETES_ANY: frozenset[str] = frozenset({
+    'abd',
+    'abdal',
+    'abdel',
+    'abdul',
+    'abou',
+})
+
+BOUND_LONG_NAMES_ONLY: frozenset[str] = frozenset({
+    'abdul',
+})
+
 SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
     'family': {
         'ad-': ('al-',),

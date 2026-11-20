@@ -76,10 +76,11 @@
   "Sir Abu Bakar"             →  given="Abu Bakar"
   "Abu Bakar Salim"           →  given="Abu Bakar"
   ```
-- **A word that is BOTH bound-given and suffix vocabulary** ("abd Allah Smith", "Smith, Abd"): position decides and both readings survive: leading, it is the bound word; trailing, it is the suffix (S2). In the given slot after a family comma the suffix reading wins.
+- **A word that is BOTH bound-given and suffix vocabulary** ("abd Allah Smith", "Smith, Abd"): position decides and both readings survive: leading, it is the bound word; trailing, it is the suffix (S2). In the given slot after a family comma the suffix reading wins, save before a plain name word, which P12 joins it with.
   ```
   "abd Allah Smith"           →  given="abd Allah"
   "Smith, Abd"                →  suffix="Abd"
+  "Haddad, Nadia Abd Karim"   →  middle="Abd Karim"
   ```
 - **A trailing particle after a family comma** ("Berg, abdul van"): the join runs before the trailing particle's attachment (P6) sees the name.
 
