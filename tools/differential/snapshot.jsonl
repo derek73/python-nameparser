@@ -3749,6 +3749,7 @@
 {"name": "Rahim Osman @ Jaki", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki PhD", "given": "Rahim", "family": "Osman", "suffix": "PhD", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki Prof.", "title": "Prof.", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "initials": "R. O."}
+{"name": "Rahim Osman @ Jaki Prof. née Smith", "title": "Prof.", "given": "Rahim", "family": "Osman", "nickname": "Jaki", "maiden": "Smith", "initials": "R. O."}
 {"name": "Rahim Osman @ Jaki, PhD", "given": "Rahim", "family": "Osman", "suffix": "PhD", "nickname": "Jaki", "initials": "R. O."}
 {"name": "Rahim Osman @ Jr", "given": "Rahim", "middle": "Osman", "family": "@", "suffix": "Jr", "initials": "R. O. @.", "generation": "Jr"}
 {"name": "Rahim Osman @ Tok Ben", "given": "Rahim", "family": "Osman", "nickname": "Tok Ben", "initials": "R. O."}

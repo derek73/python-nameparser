@@ -22527,4 +22527,11 @@ CASES: tuple[Case, ...] = (
          "Jane Smith née @ JJ",
          {"given": "Jane", "family": "Smith", "maiden": "@ JJ"},
          notes="boundary: master's reading kept"),
+    Case("alias_marker_ended_by_a_maiden_marker_leaves_the_trailing_run",
+         "Rahim Osman @ Jaki Prof. née Smith",
+         {"title": "Prof.", "given": "Rahim", "family": "Osman",
+          "nickname": "Jaki", "maiden": "Smith"},
+         classification="fix(#1164)",
+         notes="read as 'Rahim Osman @ Jaki Prof.' is, the maiden clause "
+               "aside (test_parser's maiden-clause invariant)"),
 )

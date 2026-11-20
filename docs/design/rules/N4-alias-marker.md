@@ -82,8 +82,9 @@
 
 **Precedence:**
 
-- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first; a maiden clause M2 takes before the alias is no word of the name the alias's trailing run is counted against.
+- **A maiden marker in the same part:** the alias ends at it, and the maiden clause then reads as M2 reads it without the alias, so either may come first; an alias a maiden marker ends reads its end as the name with no clause written, and a maiden clause M2 takes before the alias is no word of the name the alias's trailing run is counted against.
   ```
+  "Rahim Osman @ Jaki Prof. née Smith"  →  title="Prof."
   "Jane née Jones @ JJ V"       →  nickname="JJ V"
   "Dr née Jones @ JJ V"         →  suffix="V"  · boundary
   ```

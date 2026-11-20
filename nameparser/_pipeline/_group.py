@@ -549,17 +549,20 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
             continue
         stop = next((j for j in range(m + 1, n)
                      if _ends_an_alias(pieces[j], tokens)), n)
-        # past the first take, the leading title run ends before it,
-        # so the earlier marker's index is below m - 1 and stands in
-        # for the run: asking `leading_titles` of a slice per marker
-        # made a part of n markers quadratic (the `alias_markers` row
-        # of tests/v2/test_benchmark.py)
+        # an alias a maiden marker ends in the part holding the family
+        # name reads its end as the name with no clause written does
+        # (rules/M2's "as if the clause were not written"): over the
+        # words before that marker, which end the name there
+        end_of_name = n
+        if (stop < n and site is ClauseSite.TRAILING
+                and "vocab:maiden-marker" in tokens[pieces[stop][0]].tags):
+            end_of_name = stop
         # a maiden clause before the marker is no word of the name the
         # alias's trailing run is read against, as the maiden take reads
         # without the alias (rules/N4's Precedence); a plain loop, no
         # frame
         view_skip: Set[int] = skip
-        if stop == n and site is ClauseSite.TRAILING:
+        if stop == end_of_name and site is ClauseSite.TRAILING:
             for k in range(1, m):
                 if "vocab:maiden-marker" in tokens[pieces[k][0]].tags:
                     # only a clause M2's take would take: ask it, over
@@ -570,10 +573,17 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
                         view_skip = skip | set(before[0]) | {
                             j for j, _ in before[1]}
                     break
-        take = _clause_take(pieces, ptags, tokens, one_case, site,
-                            ambiguities, m, m + 1, stop, Role.NICKNAME,
-                            _ALIAS_WORDS, view_skip,
-                            markers[0] if markers else None)
+        # past the first take, the leading title run ends before it,
+        # so the earlier marker's index is below m - 1 and stands in
+        # for the run: asking `leading_titles` of a slice per marker
+        # made a part of n markers quadratic (the `alias_markers` row
+        # of tests/v2/test_benchmark.py)
+        take = _clause_take(
+            pieces if end_of_name == n else pieces[:end_of_name],
+            ptags if end_of_name == n else ptags[:end_of_name],
+            tokens, one_case, site, ambiguities, m, m + 1, stop,
+            Role.NICKNAME, _ALIAS_WORDS, view_skip,
+            markers[0] if markers else None)
         if take is None:
             m += 1
             continue
