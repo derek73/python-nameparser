@@ -21578,6 +21578,13 @@ CASES: tuple[Case, ...] = (
                "word behind it before a family comma; 4 of FEC's "
                "1,893,964 names (decisions/salutation-titles); read "
                "family 'Masters Boyd' through 3.1"),
+    Case("possessive_degree_with_an_acute_accent_is_still_read_as_the_name",
+         "Nadir Qassoumi, Master\u00b4s degree",
+         {"given": "Master\u00b4s", "middle": "degree",
+          "family": "Nadir Qassoumi"},
+         notes="boundary: the acute accent written for the apostrophe "
+               "(4 registry names) is left unlisted as a misspelling "
+               "(#1487)"),
     Case("possessive_degree_with_an_unlisted_apostrophe_is_still_read_as_the_name",
          "Nadir Qassoumi, Master\u02bcs degree",
          {"given": "Master\u02bcs", "middle": "degree",

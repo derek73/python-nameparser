@@ -2075,7 +2075,7 @@ modifier = {}
 
 [[word]]
 text = "bachelor's"
-modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Bachelor's degree), where it was read as the given name, the name before the comma as the family: 73 distinct names move, 64 to the title and the name read right, the rest left wrong as before (such as a field after `in` or a word cut short); no name bearer: US Census, which folds the apostrophe, counts Bachelors under 100; FEC's surname-first names and every other local corpus move none (2026-11-19)" }
+modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Bachelor's degree), where it was mostly read as the given name, the name before the comma as the family: 73 distinct names move, 64 to the title and the name read right, the rest left wrong as before (such as a field after `in` or a word cut short); no name bearer: US Census, which folds the apostrophe, counts Bachelors under 100; FEC's surname-first names and every other local corpus move none (2026-11-19)" }
 
 [[word]]
 text = "bachelor’s"
@@ -2187,7 +2187,7 @@ modifier = { issue = 9, expands = "Docket Clerk" }
 
 [[word]]
 text = "doctor's"
-modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Doctor's degree), where it was read as the given name, the name before the comma as the family: 34 distinct names move, every one to the title and the name read right; no name bearer: US Census, which folds the apostrophe, counts Doctors under 100; it leaves the title Doctor alone; FEC's surname-first names and every other local corpus move none (2026-11-19)" }
+modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Doctor's degree), where it was mostly read as the given name, the name before the comma as the family: 34 distinct names move, every one to the title and the name read right; no name bearer: US Census, which folds the apostrophe, counts Doctors under 100; it leaves the title Doctor alone; FEC's surname-first names and every other local corpus move none (2026-11-19)" }
 
 [[word]]
 text = "doctoral"
@@ -2344,7 +2344,7 @@ modifier = {}
 
 [[word]]
 text = "master's"
-modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Master's degree), where it was read as the given name, the name before the comma as the family: 167 distinct names move, 160 to the title and the name read right, the rest left wrong as before (such as a field after `in` or a word cut short); no name bearer written so: US Census folds the apostrophe and counts Masters (23,533), which keeps its own reading, and a surname-first name keeps it before a comma (Master's, John); FEC's surname-first names and every other local corpus move none (2026-11-19)" }
+modifier = { issue = 1487, decided = 2026-11-19, note = "written after the name and a comma by ClinicalTrials.gov officials and contacts, a degree's possessive before `degree`, `student` or `candidate` or alone (Nadir Qassoumi, Master's degree), where it was mostly read as the given name, the name before the comma as the family: 167 distinct names move, 160 to the title and the name read right, the rest left wrong as before (such as a field after `in` or a word cut short); no name bearer written so: US Census folds the apostrophe and counts Masters (23,533), which keeps its own reading, and a surname-first name keeps it before a comma (Master's, John); FEC's surname-first names and every other local corpus move none (2026-11-19)" }
 
 [[word]]
 text = "master’s"
