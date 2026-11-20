@@ -19,7 +19,7 @@
   "Maria do Carmo Silva"      →  family="do Carmo Silva"  · boundary
   "João da Silva Santos"      →  family="da Silva Santos"  · boundary
   ```
-- **A word whose evidence falls short of the default's is marked for its language alone**, read where the caller chooses that language and left to the surname otherwise: Portuguese da Piedade. One that passes in a single country's names is marked for that country alone: Portugal's do Rosário, de Jesus and do Carmo, which Brazil's names do not support (de Jesus there is mostly a surname).
+- **A word whose evidence falls short of the default's is marked for its language alone**, read where the caller chooses that language and left to the surname otherwise: Portuguese da Piedade. One that passes in a single country's names is marked for that country alone: Portugal's do Rosário, de Jesus and do Carmo, which Brazil's names do not support or are too few to judge (de Jesus there is mostly a surname).
   ```
   "Maria da Piedade Costa"  [pt]  →  middle="da Piedade"
   "MARIA DA PIEDADE COSTA"  [pt_br]  →  family="COSTA"

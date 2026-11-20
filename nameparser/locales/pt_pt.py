@@ -5,7 +5,7 @@ word locales.PT reads (``do`` a particle, ``da Piedade`` the second half
 of a compound given name) and Portugal's own: pt-PT.toml's
 ``default = false`` readings, the second halves of compound given names
 written behind a particle that Portugal's names support and Brazil's do
-not (``Maria do Rosário Pinto`` gives middle ``do Rosário``, as ``de
+not, or are too few to judge (``Maria do Rosário Pinto`` gives middle ``do Rosário``, as ``de
 Jesus`` and ``do Carmo`` do; rules/P10, decisions/P10 2026-11-19,
 #1189); it reads two family names (``Policy.two_family_names``,
 rules/O6), its policy patch compiled from pt-PT.toml's [rules] table
@@ -18,7 +18,8 @@ Toméan names read better under it than under locales.PT, Angolan and
 Mozambican names worse (decisions/O6, the 2026-11-19 entry, which
 measures it).
 
-Data sources: the counts are on the readings in pt.toml; the given
+Data sources: the counts are on the readings in pt.toml and
+pt-PT.toml; the given
 names are measured on ORCID's public data file (CC0), whose credit the
 list's module carries.
 

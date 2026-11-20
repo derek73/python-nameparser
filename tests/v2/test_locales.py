@@ -3734,6 +3734,15 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
             - changed_words(selected(locales.PT.languages))
             == {"carmo", "jesus", "rosário"})
     assert "pt-PT" not in selected(locales.PT_BR.languages)
+    # a strict choice of Portugal reads them too, and the spelling without
+    # the accent, which only es.toml's reading gave a plain choice; a
+    # strict choice of Brazil or of the language reads none of them
+    for strict_pack, middle in ((locales.PT_PT, True), (locales.PT_BR, False),
+                                (locales.PT, False)):
+        strict = parser_for(strict_pack, strict=True)
+        for phrase in ("do Rosario", "do Rosário", "de Jesus", "do Carmo"):
+            parsed = strict.parse(f"Rita {phrase} Quaresma")
+            assert parsed.middle == (phrase if middle else ""), (strict_pack.code, phrase)
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
     assert pt.parse("Rui Sousa Pinto").family == "Pinto"
     assert pt.parse("Pedro Sousa Alves Filho").family == "Alves"

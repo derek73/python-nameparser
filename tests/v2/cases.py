@@ -18074,8 +18074,8 @@ CASES: tuple[Case, ...] = (
     Case("portuguese_rosario_given_name_under_pt_pt", "Maria do Rosário Pinto",
          {"given": "Maria", "middle": "do Rosário", "family": "Pinto"},
          locale="pt_pt", classification="feat(#1189)",
-         notes="P10: pt-PT.toml's rosário, on for Portugal's choice alone; "
-               "locales.PT_PT is new in 3.2"),
+         notes="P10: pt-PT.toml's rosário, on for Portugal's choice alone "
+               "(#1189); locales.PT_PT was added by #1453"),
     Case("portuguese_jesus_given_name_under_pt_pt", "Teresa de Jesus Sousa Pinto",
          {"given": "Teresa", "middle": "de Jesus", "family": "Sousa Pinto"},
          locale="pt_pt", classification="feat(#1189)",
@@ -18085,6 +18085,16 @@ CASES: tuple[Case, ...] = (
          {"given": "MARIA", "middle": "DO CARMO", "family": "PINTO"},
          locale="pt_pt", classification="feat(#1189)",
          notes="P10: pt-PT.toml's carmo, written in capitals"),
+    Case("portuguese_jesus_one_word_after_under_pt_pt", "Rita de Jesus Quaresma",
+         {"given": "Rita", "middle": "de Jesus", "family": "Quaresma"},
+         locale="pt_pt", classification="feat(#1189)",
+         notes="P10 reads first, so O6 takes nothing into a family of one "
+               "word behind the phrase"),
+    Case("portuguese_carmo_before_a_suffix_comma_under_pt_pt",
+         "Rita do Carmo Quaresma, Jr.",
+         {"given": "Rita", "middle": "do Carmo", "family": "Quaresma", "suffix": "Jr."},
+         locale="pt_pt", classification="feat(#1189)",
+         notes="P10 behind a suffix comma, as without it"),
     Case("portuguese_jesus_with_no_name_after_under_pt_pt", "Maria de Jesus",
          {"given": "Maria", "family": "de Jesus"},
          locale="pt_pt", classification="parity",

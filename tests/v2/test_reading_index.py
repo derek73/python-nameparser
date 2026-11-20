@@ -335,8 +335,8 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly(
         monkeypatch: pytest.MonkeyPatch) -> None:
     empty = ri.files() - ri.tags()
     assert empty and ri.tags() <= ri.files()
-    # no shipped region's file holds a [rules] table and no reading since
-    # pt-PT.toml took Portugal's own readings (#1189), so one is planted
+    # no shipped region's file holds no reading since pt-PT.toml took
+    # Portugal's own (#1189), so one is planted
     regions = {tag for tag in empty if tag.split("-")[0] in ri.tags()}
     assert regions == set()
     monkeypatch.setattr(ri, "files", lambda: frozenset(ri.tags() | empty | {"pt-AO"}))

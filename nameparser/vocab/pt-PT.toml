@@ -2,9 +2,11 @@ schema = 1
 
 # European Portuguese: locales.PT_PT reads its names with two family names
 # (rules/O6), its given-name list keeping a given name out of the family.
-# The words are the readings Portugal writes and Brazil does not, each
-# `default = false`, so only a choice of pt-PT turns it on; pt.toml holds
-# the language's (decisions/O6 and decisions/P10, the 2026-11-19 entries)
+# The words are readings Portugal's names support and Brazil's do not,
+# each `default = false`, so only a choice of pt-PT turns them on
+# (`rosario`, which es.toml reads by default, is here for a strict
+# choice); pt.toml holds the language's (decisions/O6 and decisions/P10,
+# the 2026-11-19 entries)
 [rules]
 two_family_names = true
 
@@ -18,7 +20,7 @@ given = { default = false, after_particle = true, note = "the second of a compou
 
 [[word]]
 text = "rosario"
-given = { default = false, after_particle = true, note = "the spelling of rosário without its accent, scored with it (Maria do Rosario): es.toml reads it so already in every choice but a strict one, so this reading keeps it under a strict Portuguese choice of Portugal, which compiles no es.toml (decisions/P10) (2026-11-19, #1189)" }
+given = { default = false, after_particle = true, note = "the spelling of rosário without its accent, scored with it (Maria do Rosario): es.toml's reading is on by default and in every plain choice, and under a strict one only where es is chosen, so this reading keeps it under a strict choice of Portugal, which compiles no es.toml (decisions/P10) (2026-11-19, #1189)" }
 
 [[word]]
 text = "rosário"

@@ -13,7 +13,9 @@ and locales.PT_PT choose ``pt-BR`` and ``pt-PT``, which select ``pt``
 too, so they read all of these the same way; each also reads two
 family names, which this pack does not (decisions/O6, 2026-11-19), and
 locales.PT_PT reads Portugal's own given names behind a particle
-(pt-PT.toml, ``do Rosário``, #1189), which this pack does not.
+(pt-PT.toml, ``do Rosário``, #1189), which this pack does not; the
+spelling without the accent, ``do Rosario``, every plain choice reads
+through es.toml's reading.
 
 Data sources: the counts are on the readings in pt.toml
 (tools/name_usage.py and the local corpora). The pack carries no
