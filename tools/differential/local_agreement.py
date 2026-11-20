@@ -75,6 +75,18 @@ What counts:
   counts where at least TITLE_FLOOR records share one (the --top
   commonest), as leads for the vocabulary (a title nobody listed lands
   there as well).
+- Where the filer typed a listed title into the given-names box (`Dr.
+  Anna`, `Dr/ Anna`, `Dr.Ahmed`) and the parse reads it as the title and
+  the rest of the box as the box's names, every other field agreeing and
+  no title box filed, the record is a class of its own (titled, #1501):
+  the parse is right and the box is what differs, so it is counted in
+  neither the agreeing records nor the misses, the agreement figure is
+  taken over the records outside it, and the report prints the titles
+  read there, so a reader checks the words (a given name wrongly peeled
+  as a title, a leading `Dean`, lands there too) rather than the
+  records. A title the vocabulary does not list (`Xyz. Anna`, read by
+  its shape), a box holding only a title, and a title typed into the
+  family box stay misses.
 
 The record is keyed to the corpus's records and to the scorer's own
 code (scorer_fingerprint), so a refetch, or a change to how a field is
@@ -236,14 +248,18 @@ def unlisted(title: str, listed: frozenset[str]) -> bool:
 @dataclass(frozen=True)
 class Reading:
     """One record's reading: each field as parsed where it disagrees
-    with the box, whether the record was set aside, and whether the
-    family agreed only with the parser's suffix appended."""
+    with the box, whether the record was set aside, whether the family
+    agreed only with the parser's suffix appended, and the title the
+    parse read where the filer typed it into the given-names box
+    (titled)."""
     got: dict[str, str]
     set_aside: bool = False
     by_suffix: bool = False
+    titled: str = ""
 
     def entry(self) -> dict[str, Any]:
-        return {"got": self.got, **({"set_aside": True} if self.set_aside else {})}
+        return {"got": self.got, **({"set_aside": True} if self.set_aside else {}),
+                **({"titled": self.titled} if self.titled else {})}
 
 
 def read(record: dict[str, str], fielded: Fielded, parser: Parser,
@@ -263,7 +279,32 @@ def read(record: dict[str, str], fielded: Fielded, parser: Parser,
     title = record.get(_box(fielded, "title"), "")
     if fielded.sets_aside and title and "title" in wrong and unlisted(title, listed):
         return Reading(wrong, set_aside=True)
+    if titled(record, fielded, name.title, got, wrong, listed):
+        return Reading(wrong, titled=name.title)
     return Reading(wrong, by_suffix=by_suffix and not wrong)
+
+
+def titled(record: dict[str, str], fielded: Fielded, title: str, got: dict[str, str],
+           wrong: dict[str, str], listed: frozenset[str]) -> bool:
+    """Whether the filer typed a listed title into the given-names box
+    (#1501): the parse read a `title` whose every word the vocabulary
+    lists, no title box was filed, the given-names box is that title
+    followed by the box's names as read (agrees; a slash typed for the
+    title's full stop, `Dr/ Anna`, read as one), and nothing else
+    disagrees but that box and, where the source has one, the empty
+    title box. A box holding the title alone has no names to agree."""
+    box = _box(fielded, "given")
+    role = fielded.fields.get(box, "")
+    title_role = fielded.fields.get(_box(fielded, "title"), "")
+    if not (title and role and got[role]) or unlisted(title, listed) \
+            or record.get(_box(fielded, "title"), "").strip():
+        return False
+    if set(wrong) != {role, *filter(None, [title_role])}:
+        return False
+    words = record.get(box, "").split()
+    typed = [w[:-1] + "." if i < len(title.split()) and w.endswith("/") else w
+             for i, w in enumerate(words)]
+    return agrees(" ".join(typed), f"{title} {got[role]}")
 
 
 def _box(fielded: Fielded, role: str) -> str:
@@ -306,6 +347,11 @@ class Score:
     shapes: Counter[str]
     by_suffix: int
     entries: dict[str, dict[str, Any]]
+    #: The titles the parse read in the given-names box (titled), with
+    #: how many records each, and those records per group: counted apart
+    #: from the scored records.
+    titled: Counter[str] = field(default_factory=Counter)
+    titled_groups: Counter[str] = field(default_factory=Counter)
 
 
 def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielded,
@@ -335,6 +381,10 @@ def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielde
             result.set_aside[record.get(_box(fielded, "title"), "")] += 1
             continue
         group = group_of(record, fielded)
+        if reading.titled:
+            result.titled[reading.titled] += 1
+            result.titled_groups[group] += 1
+            continue
         result.scored[group] += 1
         if not reading.got:
             result.agreed[group] += 1
@@ -380,18 +430,26 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
            f"every field agrees: {agreed:,} of {total:,} ({_pct(agreed, total).strip()})"
            + ("" if _box(fielded, "suffix") else
               f"; {result.by_suffix:,} of them with the parser's suffix in the surname box"),
+           f"a title typed into the given-names box, read as the title: "
+           f"{sum(result.titled.values()):,} (counted apart, neither agreeing nor missing)",
            "misses per field: " + ", ".join(f"{r} {misses[r]:,}" for r in roles), "",
-           f"by {fielded.group} (at least {floor:,} records), misses per field:",
+           f"by {fielded.group} (at least {floor:,} records), misses per field"
+           + (", and the titles typed into the given-names box:" if result.titled else ":"),
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
-           + " ".join(f"{r:>8}" for r in roles)]
+           + " ".join(f"{r:>8}" for r in roles)
+           + (f" {'titled':>8}" if result.titled else "")]
     for group, n in result.scored.most_common():
         if n < floor:
             break
         row = result.misses.get(group, Counter())
         out.append(f"  {group[:24]:<24} {n:>10,} {_pct(result.agreed[group], n)}  "
-                   + " ".join(f"{row[r]:>8,}" for r in roles))
+                   + " ".join(f"{row[r]:>8,}" for r in roles)
+                   + (f" {result.titled_groups[group]:>8,}" if result.titled else ""))
     out += ["", f"the {top} commonest disagreement shapes (field: words filed->parsed):"]
     out += [f"  {n:>9,}  {s}" for s, n in result.shapes.most_common(top)]
+    if result.titled:
+        out += ["", f"the {top} titles most often read in the given-names box:"]
+        out += [f"  {n:>9,}  {t}" for t, n in result.titled.most_common(top)]
     if fielded.sets_aside:
         out += ["", f"set-aside title boxes written by at least {TITLE_FLOOR} records:"]
         out += [f"  {n:>9,}  {t}" for t, n in result.set_aside.most_common()
@@ -460,7 +518,7 @@ def read_record(path: Path, local: local_corpora.Local, locale: str = ""
 
 #: What decides a record's reading, besides the parser: scorer_fingerprint
 #: hashes them, as local_corpora.fold_fingerprint hashes the word fold.
-_SCORER_CODE = ("fold", "agrees", "_words", "_joined", "_title_words", "unlisted", "read", "_box", "Reading",
+_SCORER_CODE = ("fold", "agrees", "_words", "_joined", "_title_words", "unlisted", "read", "titled", "_box", "Reading",
                 "key", "score", "_read_chunk", "parser_of")
 
 
@@ -561,26 +619,50 @@ def moves(old: dict[str, dict[str, Any]], new: dict[str, dict[str, Any]],
           ) -> dict[str, list[str]]:
     """Each record whose reading moved, by kind: `regression` (it agreed
     and now does not), `progress` (it disagreed and now agrees),
-    `changed` (it disagrees, or is set aside, differently). Both sides
-    read the same fetch, so no record is gained or lost."""
-    found: dict[str, list[str]] = {"regression": [], "progress": [], "changed": []}
+    `changed` (it disagrees, or is set aside, differently), and apart
+    from those `titled in` and `titled out`, a record entering or
+    leaving the class of a title typed into the given-names box
+    (titled), which is neither agreeing nor missing. Both sides read the
+    same fetch, so no record is gained or lost."""
+    found: dict[str, list[str]] = {"regression": [], "progress": [], "changed": [],
+                                   "titled in": [], "titled out": []}
     for k in sorted(set(old) | set(new)):
-        if k not in old:
+        was, now = old.get(k), new.get(k)
+        if was == now:
+            continue
+        if _titled_entry(now) and not _titled_entry(was):
+            found["titled in"].append(k)
+        elif _titled_entry(was) and not _titled_entry(now):
+            found["titled out"].append(k)
+        elif was is None:
             found["regression"].append(k)
-        elif k not in new:
+        elif now is None:
             found["progress"].append(k)
-        elif old[k] != new[k]:
+        else:
             found["changed"].append(k)
     return found
+
+
+def _titled_entry(entry: dict[str, Any] | None) -> bool:
+    return bool(entry and entry.get("titled"))
 
 
 def summarize(found: dict[str, list[str]], old: dict[str, dict[str, Any]],
               new: dict[str, dict[str, Any]]) -> list[str]:
     """One line per kind of move, with the fields it moved: a field
-    counts where the record disagrees on it on either side."""
+    counts where the record disagrees on it on either side. A move into
+    or out of the titled class names the titles read there instead, so
+    a reader checks the words rather than the records."""
     out = []
     for kind, keys in found.items():
         if not keys:
+            continue
+        if kind.startswith("titled"):
+            side = new if kind == "titled in" else old
+            titles = Counter(side[k]["titled"] for k in keys)
+            out.append(f"{kind}: {len(keys):,} records, a title typed into the given-names "
+                       f"box (" + ", ".join(f"{t} {n:,}" for t, n in titles.most_common(10))
+                       + ")")
             continue
         fields: Counter[str] = Counter()
         for k in keys:
