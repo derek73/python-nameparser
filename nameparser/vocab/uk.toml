@@ -308,28 +308,8 @@ text = "zoryana"
 spelling = { spelling_of = ["zoriana"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "арчіл"
-spelling = { spelling_of = ["арчил"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "вальдас"
 spelling = { spelling_of = ["валдас"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "вартан"
-spelling = { spelling_of = ["вардан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "владіслав"
-spelling = { spelling_of = ["владислав"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "вітаутас"
-spelling = { spelling_of = ["витаутас"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "геворк"
-spelling = { spelling_of = ["геворг"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "геннадій"
@@ -338,14 +318,6 @@ spelling = { spelling_of = ["генадій"], note = "found in CC0 or public-do
 [[word]]
 text = "гія"
 spelling = { spelling_of = ["гіа"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "зіновій"
-spelling = { spelling_of = ["зиновій"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "костянтин"
-spelling = { spelling_of = ["констянтин"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "максиміліян"
@@ -374,10 +346,6 @@ spelling = { spelling_of = ["філіп"], note = "found in CC0 or public-domain
 [[word]]
 text = "юліян"
 spelling = { spelling_of = ["юліан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "євгенія"
-spelling = { spelling_of = ["евґенія"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ісак"

@@ -700,9 +700,9 @@ nicknames (``Betty`` / ``Elizabeth``).
 Central and Eastern European and Balkan languages also have pairs from
 Wikidata's people, each named one way in their name or nickname and
 the other in their given name or birth name (``Erzsi`` / ``Erzsébet``,
-``Jára`` / ``Jaroslav``). The Russian, Ukrainian and Belarusian ones
-are written in Cyrillic (``Женя`` / ``Евгений``), so a name romanized in
-Latin letters does not reach them.
+``Jára`` / ``Jaroslav``). The Russian, Ukrainian, Belarusian,
+Bulgarian and most Serbian ones are written in Cyrillic (``Женя`` /
+``Евгений``), so a name romanized in Latin letters does not reach them.
 ``docs/design/decisions/name-matching.md`` has how they were selected.
 
 .. _matching-familiar-language-choice:

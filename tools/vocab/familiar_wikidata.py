@@ -14,8 +14,12 @@ MEASURE).
 THE THREE RELATIONS (decisions/name-matching, 2026-11-20 #1387). For
 each person of a country in COUNTRIES, a human (Q5) with a citizenship
 (P27) of that country, in each language the country writes (its
-LANGUAGES, the label's language tag; a language-independent `mul`
-label read as the country's language where it writes one alone):
+languages, the tag Wikidata puts on a label, birth name or nickname;
+one tagged `mul`, language-independent, read as the country's language
+where it writes one alone). A person a given or family name of whom
+the language cannot read (an item with no one-word label in it or in
+`mul`) is left out of it, since the relations could not tell that
+name from the word they pair:
 
 1. `birth`: the birth name (P1477) against the person's label in the
    same language. Where the label holds exactly one word the birth name
@@ -28,7 +32,8 @@ label read as the country's language where it writes one alone):
    name beside it is set aside) against the person's one given name,
    or the one of several starting with its letter, kept where the two
    share the first letter or the nickname's first two letters stand in
-   the given name (`Józsi` / `József`, `Pista` / `István` left out).
+   the given name (`Józsi` / `József` kept, `Pista` / `István` left
+   out).
 3. `label`: the label against the given name, where no word of the
    label is a given name of the person's: the label's words less its
    family names (P734), and less a patronymic, must be one word, and a
@@ -37,8 +42,10 @@ label read as the country's language where it writes one alone):
 Each word is a name word (familiar_candidates.is_name_word: no initial,
 no digit), no title of the default lexicon's, and the two words differ
 under the name match's fold and are written in one script. A pair is
-counted once per person whichever relations evidence it, and goes in the
-file of the language it was found in.
+counted once per person whichever relations, languages or citizenships
+evidence it, spellings the name match folds alike are one pair
+(`Алена` / `Алёна`), and it goes in the file of each language it was
+found in.
 
 What is left to the review: two spellings of one name (`Sergei` /
 `Sergey`, shape `spelling`), another language's form, another name the
@@ -50,10 +57,12 @@ proposed again.
     uv run python tools/vocab/familiar_wikidata.py pairs --min 1   # write the candidates
 
 `fetch` keeps each query's answer in $NAMEPARSER_TOOLS_CACHE (or
-~/.cache/nameparser-tools) under FETCH_DIR and asks the query service
-again only for an answer it does not hold; `pairs` reads them alone and
-writes CANDIDATES_FILE beside them. The requests name no person or
-project (USER_AGENT). The candidates are given names and counts alone.
+~/.cache/nameparser-tools) under FETCH_DIR, named by the query's
+digest, and asks the query service again only for an answer it does
+not hold; `pairs` reads the kept answers alone, refusing to run on a
+missing one, and writes CANDIDATES_FILE beside them (a file of its own
+for `--country`). The requests name no person or project (USER_AGENT).
+The candidates hold given names, counts and country codes, no person.
 """
 from __future__ import annotations
 
@@ -61,10 +70,12 @@ import argparse
 import collections
 import csv
 import hashlib
+import http.client
 import io
 import json
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -139,7 +150,8 @@ def wikidata_tag(lang: str) -> str:
 
 #: Each query's name -> its SPARQL, `{country}` the citizenship item and
 #: `{langs}` the label languages asked for. Each is answered from the
-#: index alone, a country's in seconds; joining labels to people in one
+#: index alone, a country's in seconds; joining the given- and
+#: family-name items' labels to the people in one
 #: query takes a minute and times out (measured 2026-11-20).
 QUERIES = {
     "given": "SELECT ?h ?v WHERE {{ ?h wdt:P27 wd:{country}; wdt:P31 wd:Q5; "
@@ -168,7 +180,8 @@ def label_langs(tags: Iterable[str]) -> list[str]:
 
 class FetchError(RuntimeError):
     """An answer that is not a whole TSV result: a timeout's stack trace
-    after some rows, or an error page."""
+    after some rows, an error page, or a body cut inside or at the end
+    of a line."""
 
 
 def _unescape(text: str) -> str:
@@ -178,20 +191,26 @@ def _unescape(text: str) -> str:
 
 _ENTITY = re.compile(r"^<http://www\.wikidata\.org/entity/(Q\d+)>$")
 _UNKNOWN = "<http://www.wikidata.org/.well-known/genid/"
-_LITERAL = re.compile(r'^"((?:[^"\\]|\\.)*)"(?:@([A-Za-z0-9-]+))?$')
+_LITERAL = re.compile(r'^"((?:[^"\\]|\\.)*)"@([A-Za-z0-9-]+)$')
 
 
-def read_answer(text: str) -> list[tuple[str, str, str]]:
+def read_answer(text: str,
+                langs: Iterable[str] | None = None) -> list[tuple[str, str, str]]:
     """A `?h ?v` TSV answer's rows, each (QID, value, language): an
     item's QID with an empty language, or a literal's text and tag.
     A statement of unknown value (a blank node) is left out. Raises
-    FetchError on any line of another shape, so an answer cut by a
-    timeout is never kept."""
-    lines = text.split("\n")
-    if lines[-1] == "":
-        lines.pop()
-    if not lines or lines[0] != "?h\t?v":
+    FetchError on any line of another shape, a literal with no language
+    tag or, where `langs` is given, a tag not among them, and an answer
+    not ending in a line break: every literal these queries ask for is
+    tagged, so a cut inside a line (`"Kovács János"@h`) is refused, and
+    one at a line's end is refused by the missing break."""
+    if not text.endswith("\n"):
+        raise FetchError(f"an answer not ending in a line break: "
+                         f"{text[-120:]!r}")
+    lines = text[:-1].split("\n")
+    if lines[0] != "?h\t?v":
         raise FetchError(f"not a ?h ?v answer: {text[:120]!r}")
+    allowed = None if langs is None else frozenset(langs)
     out = []
     for number, line in enumerate(lines[1:], 2):
         cells = line.split("\t")
@@ -204,12 +223,12 @@ def read_answer(text: str) -> list[tuple[str, str, str]]:
         item, literal = _ENTITY.match(v), _LITERAL.match(v)
         if item:
             out.append((h.group(1), item.group(1), ""))
-        elif literal:
+        elif literal and (allowed is None or literal.group(2) in allowed):
             out.append((h.group(1), _unescape(literal.group(1)),
-                        literal.group(2) or ""))
+                        literal.group(2)))
         else:
             raise FetchError(f"line {number}'s value is neither an item "
-                             f"nor a literal: {v[:120]!r}")
+                             f"nor a literal tagged as asked: {v[:120]!r}")
     return out
 
 
@@ -217,9 +236,12 @@ def _sleep(seconds: float) -> None:
     time.sleep(seconds)
 
 
-def ask(query: str) -> str:
-    """The query service's TSV answer, retried after a rate limit or a
-    timeout, and checked whole (read_answer)."""
+def ask(query: str, name: str = "a query",
+        langs: Iterable[str] | None = None) -> str:
+    """The query service's TSV answer, checked whole (read_answer),
+    retried after a rate limit, a server error or timeout, a cut answer
+    or a connection the client timed out; `name` says which in each
+    message."""
     body = urllib.parse.urlencode({"query": query}).encode()
     request = urllib.request.Request(ENDPOINT, data=body, headers={
         "Accept": "text/tab-separated-values",
@@ -229,20 +251,21 @@ def ask(query: str) -> str:
         try:
             with urllib.request.urlopen(request, timeout=120) as response:
                 text: str = response.read().decode("utf-8")
-            read_answer(text)
+            read_answer(text, langs)
             return text
         except urllib.error.HTTPError as exc:
             if exc.code not in (429, 500, 502, 503, 504) or attempt == RETRIES:
-                raise
+                raise FetchError(f"{name}: HTTP {exc.code}") from exc
             retry = exc.headers.get("Retry-After", "")
             wait = int(retry) if retry.isdigit() else 30 * (attempt + 1)
+            reason = f"HTTP {exc.code}"
             exc.close()
-        except FetchError:
+        except (FetchError, OSError, http.client.HTTPException) as exc:
+            # OSError takes URLError and the client's own timeout
             if attempt == RETRIES:
-                raise
-            wait = 30 * (attempt + 1)
-        print(f"query service refused or cut an answer; waiting {wait}s",
-              file=sys.stderr)
+                raise FetchError(f"{name}: {exc}") from exc
+            wait, reason = 30 * (attempt + 1), str(exc)[:200]
+        print(f"{name}: {reason}; waiting {wait}s", file=sys.stderr)
         _sleep(wait)
     raise AssertionError("unreachable")
 
@@ -253,31 +276,60 @@ def fetch_dir() -> Path:
     return path
 
 
-def _kept(path: Path, query: str) -> str:
-    """The answer kept at `path`, asked for and kept first if missing;
-    written to a temporary name and renamed once whole."""
+def _digest(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
+def _kept(folder: Path, name: str, query: str, offline: bool,
+          langs: Iterable[str] | None = None) -> str:
+    """The answer to `query`, kept in `folder` under `name` and the
+    query's digest, so a changed query (another country's languages, an
+    edited template) is asked again rather than read from an old answer;
+    asked for first if missing, unless `offline`, which raises naming
+    the file instead. Written under a temporary name of its own and
+    renamed once whole, and checked whole again when read back."""
+    path = folder / f"{name}-{_digest(query)}.tsv"
     if not path.exists():
-        text = ask(query)
-        tmp = path.with_name(path.name + ".part")
-        tmp.write_text(text, encoding="utf-8")
-        tmp.replace(path)
-    return path.read_text(encoding="utf-8")
+        if offline:
+            raise SystemExit(f"{path} is not fetched; run `uv run python "
+                             f"tools/vocab/familiar_wikidata.py fetch`")
+        text = ask(query, name, langs)
+        with tempfile.NamedTemporaryFile(
+                "w", encoding="utf-8", dir=folder, prefix=path.name,
+                suffix=".part", delete=False) as tmp:
+            tmp.write(text)
+        Path(tmp.name).replace(path)
+        return text
+    text = path.read_text(encoding="utf-8")
+    try:
+        read_answer(text, langs)
+    except FetchError as exc:
+        raise SystemExit(f"{path}: {exc}; delete it and fetch again") from exc
+    return text
 
 
 def _sparql_strings(values: Iterable[str]) -> str:
     return ", ".join(json.dumps(v) for v in values)
 
 
-def fetch(qid: str, folder: Path | None = None) -> dict[str, str]:
+#: The queries whose literals must be in the label languages asked.
+_LABEL_QUERIES = frozenset({"label"})
+
+
+def fetch(qid: str, folder: Path | None = None,
+          offline: bool = False) -> dict[str, str]:
     """Every answer one country's relations read, by query name, the
-    item labels under `items`, each kept in `folder`."""
+    item labels under `items`, each kept in `folder`; `offline` reads
+    the folder alone (_kept)."""
     folder = folder or fetch_dir()
     code, tags = COUNTRIES[qid]
-    langs = _sparql_strings(label_langs(tags))
+    asked = label_langs(tags)
+    langs = _sparql_strings(asked)
     out = {}
     for name, template in QUERIES.items():
-        out[name] = _kept(folder / f"{code}-{name}.tsv",
-                          template.format(country=qid, langs=langs))
+        out[name] = _kept(folder, f"{code}-{name}",
+                          template.format(country=qid, langs=langs), offline,
+                          asked if name in _LABEL_QUERIES else None)
     items = sorted({v for name in ("given", "family")
                     for _, v, _ in read_answer(out[name])},
                    key=lambda q: int(q[1:]))
@@ -286,9 +338,7 @@ def fetch(qid: str, folder: Path | None = None) -> dict[str, str]:
         batch = items[start:start + LABEL_BATCH]
         query = ITEM_LABELS.format(
             items=" ".join(f"wd:{q}" for q in batch), langs=langs)
-        # named by its items, so a batch is never read for another
-        digest = hashlib.sha256(" ".join(batch).encode()).hexdigest()[:16]
-        text = _kept(folder / f"{code}-items-{digest}.tsv", query)
+        text = _kept(folder, f"{code}-items", query, offline, asked)
         parts.append(text.split("\n", 1)[1])
     out["items"] = "?h\t?v\n" + "".join(parts)
     return out
@@ -334,8 +384,9 @@ def item_labels(answer: str) -> dict[str, dict[str, set[str]]]:
 
 #: A word a language makes of a name that is not the person's own given
 #: name: Hungarian `-né`, a wife named by her husband's name
-#: (`Kovácsné`, `Istvánné`).
-_NOT_OWN = {"hu": re.compile(r"\wné$", re.I)}
+#: (`Kovácsné`, `Istvánné`); a name of three letters or more before it,
+#: so the given name `René` stays.
+_NOT_OWN = {"hu": re.compile(r"\w{3}né$", re.I)}
 
 
 def name_words(text: str, titles: frozenset[str],
@@ -369,15 +420,20 @@ class Found:
 
 
 def _names(items: Iterable[str], labels: Mapping[str, Mapping[str, set[str]]],
-           tag: str) -> list[str]:
+           tag: str) -> list[str] | None:
     """The one-word labels of `items` in `tag`, or the language-
-    independent ones (`mul`) of an item with none in it: a name item is
-    labelled in `mul` alone more often than not."""
+    independent ones (`mul`) of an item with none in it, which many
+    name items carry alone; None where an item has neither, or only a
+    label of several words (`Anna Mária`), which a relation could not
+    tell from the person's other words."""
     out = []
     for q in items:
         by_lang = labels.get(q, {})
-        texts = by_lang.get(tag) or by_lang.get("mul", set())
-        out += [t for t in texts if len(t.split()) == 1]
+        texts = [t for t in by_lang.get(tag) or by_lang.get("mul", set())
+                 if len(t.split()) == 1]
+        if not texts:
+            return None
+        out += texts
     return out
 
 
@@ -412,6 +468,8 @@ def relations(person: Person, labels: Mapping[str, Mapping[str, set[str]]],
     for tag in tags:
         given = _names(person.given, labels, tag)
         family = _names(person.family, labels, tag)
+        if given is None or family is None:
+            continue  # a name the relations cannot read in this language
         g_keys = {_key(g) for g in given}
         f_keys = {_key(f) for f in family}
         written = _written(person.labels, tag, sole)
@@ -445,9 +503,11 @@ def relations(person: Person, labels: Mapping[str, Mapping[str, set[str]]],
             lw = name_words(label, titles, tag)
             if not lw or {_key(w) for w in lw} & g_keys:
                 continue
+            if not any(_key(w) in f_keys for w in lw):
+                continue  # no family name in it: a stage name
             rest = [w for w in lw if _key(w) not in f_keys
                     and not _is_patronymic(w)]
-            if len(rest) != 1 or len(rest) == len(lw):
+            if len(rest) != 1:
                 continue
             x = rest[0]
             y = _one_by_letter(x, given)
@@ -472,14 +532,14 @@ def _pairable(x: str, y: str) -> bool:
 
 @dataclass
 class Evidence:
-    """One pair's people in one language: how many, by relation and by
-    country."""
+    """One pair's people in one language: every person (QID), and the
+    people each relation and each country found, so a column counts a
+    person once however many languages, spellings or citizenships
+    found them."""
 
     people: set[str] = field(default_factory=set)
-    relations: collections.Counter[str] = field(
-        default_factory=collections.Counter)
-    countries: collections.Counter[str] = field(
-        default_factory=collections.Counter)
+    relations: dict[str, set[str]] = field(default_factory=dict)
+    countries: dict[str, set[str]] = field(default_factory=dict)
 
 
 Pairs = dict[tuple[str, str, str], Evidence]
@@ -489,16 +549,12 @@ def mine(found: Iterable[tuple[str, str, Found]]) -> Pairs:
     """Each (a, b, tag) with its evidence, from (QID, country, Found)
     triples: a person counts once a pair, whichever relations found it."""
     out: Pairs = {}
-    seen: set[tuple[str, str, str, str, str]] = set()
     for qid, country, f in found:
         a, b = sorted((build._normalize(f.x), build._normalize(f.y)))
         ev = out.setdefault((a, b, f.tag), Evidence())
-        if (qid, a, b, f.tag, f.relation) not in seen:
-            seen.add((qid, a, b, f.tag, f.relation))
-            ev.relations[f.relation] += 1
-        if qid not in ev.people:
-            ev.people.add(qid)
-            ev.countries[country] += 1
+        ev.people.add(qid)
+        ev.relations.setdefault(f.relation, set()).add(qid)
+        ev.countries.setdefault(country, set()).add(qid)
     return out
 
 
@@ -514,6 +570,14 @@ def country_found(qid: str, answers: Mapping[str, str],
 
 HEADER = ["a", "b", "source", "holders", "shape", "languages", "relations",
           "countries"]
+
+
+def _union(maps: Iterable[Mapping[str, set[str]]]) -> dict[str, set[str]]:
+    out: dict[str, set[str]] = {}
+    for m in maps:
+        for k, q in m.items():
+            out.setdefault(k, set()).update(q)
+    return out
 
 
 def _folded_pair(a: str, b: str) -> frozenset[str]:
@@ -544,14 +608,13 @@ def rows(pairs: Pairs, minimum: int,
         for a, b, _, ev in evs:
             spelled[a, b] += len(ev.people)
         (a, b), _ = min(spelled.items(), key=lambda kv: (-kv[1], kv[0]))
-        rel: collections.Counter[str] = sum(
-            (ev.relations for *_, ev in evs), collections.Counter())
-        cty: collections.Counter[str] = sum(
-            (ev.countries for *_, ev in evs), collections.Counter())
+        rel = _union(ev.relations for *_, ev in evs)
+        cty = _union(ev.countries for *_, ev in evs)
         out.append([a, b, SOURCE, str(len(people_)), fc.shape(a, b),
                     " ".join(sorted({t for _, _, t, _ in evs})),
-                    ", ".join(f"{r} {n}" for r, n in sorted(rel.items())),
-                    ", ".join(f"{c} {n}" for c, n in cty.most_common())])
+                    ", ".join(f"{r} {len(q)}" for r, q in sorted(rel.items())),
+                    ", ".join(f"{c} {len(q)}" for c, q in sorted(
+                        cty.items(), key=lambda kv: (-len(kv[1]), kv[0])))])
     out.sort(key=lambda r: (-int(r[3]), r[0], r[1]))
     return out
 
@@ -595,20 +658,24 @@ def main(argv: list[str] | None = None) -> int:
     titles = fc.default_titles()
     found = []
     for qid in qids:
-        code = COUNTRIES[qid][0]
-        if not (folder / f"{code}-given.tsv").exists():
-            raise SystemExit(f"{code} is not fetched; run `uv run python "
-                             f"tools/vocab/familiar_wikidata.py fetch "
-                             f"--country {code}`")
-        found += country_found(qid, fetch(qid, folder), titles)
+        found += country_found(qid, fetch(qid, folder, offline=True), titles)
     pairs = mine(found)
     out = rows(pairs, args.min, fc.known_pairs())
-    path = name_usage.cache_dir() / CANDIDATES_FILE
+    path = name_usage.cache_dir() / candidates_file(args.country)
     path.write_text(write_tsv(out), encoding="utf-8")
     print(f"{len(pairs):,} pairs by language, {len(out):,} candidates at "
           f"{args.min}+ people not yet reviewed; wrote {path}",
           file=sys.stderr)
     return 0
+
+
+def candidates_file(codes: list[str] | None) -> str:
+    """CANDIDATES_FILE for every country; for some, a name of its own
+    holding their codes, so a partial run never overwrites a whole one."""
+    if not codes:
+        return CANDIDATES_FILE
+    return CANDIDATES_FILE.replace(".tsv", "-" + "-".join(sorted(set(codes)))
+                                   + ".tsv")
 
 
 if __name__ == "__main__":

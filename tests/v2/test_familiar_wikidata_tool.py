@@ -80,10 +80,34 @@ def test_a_label_naming_no_one_word_against_the_given_name_pairs_nothing(
     assert {r for r in _found(p) if r[2] == "label"} == set()
 
 
-def test_a_patronymic_is_set_aside_from_a_label() -> None:
+@pytest.mark.parametrize("label, tag, given, family", [
+    ("Ваня Петрович Иванов", "ru", "Иван", "Иванов"),
+    ("Лена Петровна Иванова", "ru", "Елена", "Иванова"),
+    ("Ксеня Іванівна Петренко", "uk", "Оксана", "Петренко"),
+])
+def test_a_patronymic_is_set_aside_from_a_label(
+        label: str, tag: str, given: str, family: str) -> None:
+    labels = {"Q30": {tag: {given}}, "Q31": {tag: {family}}}
+    p = tool.Person(given={"Q30"}, family={"Q31"}, labels={tag: [label]})
+    assert {(f.x, f.y) for f in tool.relations(p, labels, (tag,), _TITLES)} == {
+        (label.split()[0], given)}
+
+
+def test_a_patronymic_does_not_stand_for_the_family_name() -> None:
+    # a label of a familiar form and a patronymic alone names no family
     p = tool.Person(given={"Q8"}, family={"Q13"},
-                    labels={"ru": ["Ваня Петрович Иванов"]})
-    assert _found(p, ("ru",)) == {("Ваня", "Иван", "label")}
+                    labels={"ru": ["Ваня Петрович"]})
+    assert _found(p, ("ru",)) == set()
+
+
+def test_a_given_name_the_language_cannot_read_stops_the_language() -> None:
+    # a second given name labelled only in German, or only as two
+    # words, could be the word the label holds (`Péter`): nothing pairs
+    for second in ({"de": {"Peter"}}, {"hu": {"Péter Pál"}}):
+        labels = {**_LABELS, "Q20": second}
+        p = tool.Person(given={"Q1", "Q20"}, family={"Q10"},
+                        labels={"hu": ["Kovács Péter"]})
+        assert tool.relations(p, labels, ("hu",), _TITLES) == set()
 
 
 def test_the_birth_name_pairs_where_the_given_name_is_one_of_the_two() -> None:
@@ -126,6 +150,33 @@ def test_a_nickname_not_shaped_like_the_given_name_pairs_nothing() -> None:
     assert _found(p) == set()
 
 
+def test_a_nickname_holding_the_given_names_second_two_letters_pairs() -> None:
+    labels = {**_LABELS, "Q21": {"cs": {"Alois"}}, "Q22": {"cs": {"Novák"}}}
+    p = tool.Person(given={"Q21"}, family={"Q22"},
+                    labels={"cs": ["Alois Novák"]}, nicknames={"cs": ["Lojza"]})
+    assert {(f.x, f.y) for f in tool.relations(p, labels, ("cs",), _TITLES)} == {
+        ("Lojza", "Alois")}
+
+
+def test_two_given_names_of_the_nicknames_letter_pair_neither() -> None:
+    labels = {**_LABELS, "Q23": {"hu": {"János"}}}
+    p = tool.Person(given={"Q1", "Q23"}, family={"Q10"},
+                    labels={"hu": ["Kovács József János"]},
+                    nicknames={"hu": ["Józsi"]})
+    assert tool.relations(p, labels, ("hu",), _TITLES) == set()
+    # nor a birth name of two words of the label word's letter
+    p = tool.Person(given={"Q3"}, family={"Q12"},
+                    labels={"hu": ["Kiss Böske"]},
+                    births={"hu": ["Kiss Borbála Boglárka"]})
+    assert {f.relation for f in tool.relations(p, _LABELS, ("hu",), _TITLES)
+            } == {"label"}
+
+
+def test_rene_is_no_wifes_name() -> None:
+    assert tool.name_words("Kovács René", _TITLES, "hu") == ["Kovács", "René"]
+    assert tool.name_words("Kovács Istvánné", _TITLES, "hu") == ["Kovács"]
+
+
 def test_of_two_given_names_the_one_sharing_the_first_letter_is_paired() -> None:
     p = tool.Person(given={"Q1", "Q2"}, family={"Q10"},
                     labels={"hu": ["Kovács József István"]},
@@ -164,8 +215,25 @@ def test_a_person_counts_once_a_pair_whichever_relations_found_it() -> None:
     pairs = tool.mine(found)
     ev = pairs[("józsef", "józsi", "hu")]
     assert len(ev.people) == 2
-    assert ev.relations == {"label": 1, "nickname": 1, "birth": 1}
-    assert ev.countries == {"hu": 1, "ro": 1}
+    assert ev.relations == {"label": {"Q100"}, "nickname": {"Q100"},
+                            "birth": {"Q101"}}
+    assert ev.countries == {"hu": {"Q100"}, "ro": {"Q101"}}
+
+
+def test_each_column_counts_a_person_once() -> None:
+    # one person found in two languages (a Czechoslovak labelled in cs
+    # and sk) and under two citizenships (ru and su): one holder, and
+    # one in each relation and every country that found them
+    found = [("Q1", "cs", tool.Found("Pepa", "Josef", "cs", "label")),
+             ("Q1", "cs", tool.Found("Pepa", "Josef", "sk", "label")),
+             ("Q2", "ru", tool.Found("Ваня", "Иван", "ru", "label")),
+             ("Q2", "su", tool.Found("Ваня", "Иван", "ru", "label"))]
+    by_pair = {(r[0], r[1]): r for r in tool.rows(tool.mine(found), 1, set())}
+    pepa = by_pair["josef", "pepa"]
+    assert (pepa[3], pepa[5], pepa[6], pepa[7]) == ("1", "cs sk", "label 1",
+                                                     "cs 1")
+    vanya = by_pair["ваня", "иван"]
+    assert (vanya[3], vanya[6], vanya[7]) == ("1", "label 1", "ru 1, su 1")
 
 
 def test_the_rows_leave_out_the_known_pairs_and_the_thin_ones() -> None:
@@ -208,25 +276,92 @@ def test_an_answer_cut_by_a_timeout_is_refused() -> None:
              '<http://www.wikidata.org/.well-known/genid/fa0d79>\n')
     assert tool.read_answer(whole) == [("Q1", 'Kovács "Józsi"', "hu"),
                                        ("Q2", "Q5", "")]
-    cut = whole + "java.util.concurrent.TimeoutException\n\tat org.x\n"
+    for cut in (whole + "java.util.concurrent.TimeoutException\n\tat org.x\n",
+                "upstream request timeout",
+                # cut inside the last line's tag, before it, or at its end
+                whole + '<http://www.wikidata.org/entity/Q4>\t"Kovács"@h',
+                whole + '<http://www.wikidata.org/entity/Q4>\t"Kovács"\n',
+                whole[:-1]):
+        with pytest.raises(tool.FetchError):
+            tool.read_answer(cut)
+    # a label answer refuses a tag it did not ask for
     with pytest.raises(tool.FetchError):
-        tool.read_answer(cut)
-    with pytest.raises(tool.FetchError):
-        tool.read_answer("upstream request timeout")
+        tool.read_answer(whole, langs={"ro", "mul"})
+    assert tool.read_answer(whole, langs={"hu"})[0][2] == "hu"
+
+
+def _serve(monkeypatch: pytest.MonkeyPatch, answers: list[str]) -> list[str]:
+    """Serve `answers` in turn as the query service, recording each
+    query asked."""
+    import io
+    import urllib.parse
+    asked: list[str] = []
+    queue = iter(answers)
+
+    def fake_open(request: object, timeout: float) -> object:
+        body = request.data.decode()  # type: ignore[attr-defined]
+        asked.append(urllib.parse.parse_qs(body)["query"][0])
+        return io.BytesIO(next(queue).encode())
+
+    monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
+    monkeypatch.setattr(tool, "_sleep", lambda s: None)
+    return asked
 
 
 def test_an_answer_is_kept_only_once_whole(tmp_path: Path,
                                            monkeypatch: pytest.MonkeyPatch) -> None:
-    answers = iter(["?h\t?v\n<http://x>\tbad\n", "?h\t?v\n"])
+    asked = _serve(monkeypatch, ["?h\t?v\n<http://x>\tbad\n", "?h\t?v\n"])
+    assert tool._kept(tmp_path, "a", "SELECT", False) == "?h\t?v\n"
+    assert len(asked) == 2
+    assert [p.suffix for p in tmp_path.iterdir()] == [".tsv"]
+    # read back without asking, and checked whole again
+    assert tool._kept(tmp_path, "a", "SELECT", True) == "?h\t?v\n"
+    (kept,) = tmp_path.iterdir()
+    kept.write_text("?h\t?v\n<http://www.wikidata.org/entity/Q1>\t", "utf-8")
+    with pytest.raises(SystemExit, match="delete it and fetch again"):
+        tool._kept(tmp_path, "a", "SELECT", True)
 
-    def fake_open(request: object, timeout: float) -> object:
-        import io
-        return io.BytesIO(next(answers).encode())
 
-    monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
-    monkeypatch.setattr(tool, "_sleep", lambda s: None)
-    assert tool._kept(tmp_path / "a.tsv", "SELECT") == "?h\t?v\n"
-    assert not (tmp_path / "a.tsv.part").exists()
+def test_a_changed_query_is_asked_again_and_offline_refuses(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # a country's languages are in its label query, so a change to them
+    # is never read from the answer kept for the old ones
+    asked = _serve(monkeypatch, ["?h\t?v\n", "?h\t?v\n"])
+    tool._kept(tmp_path, "hu-label", 'SELECT "hu"', False)
+    tool._kept(tmp_path, "hu-label", 'SELECT "hu", "de"', False)
+    assert len(asked) == 2
+    with pytest.raises(SystemExit, match="is not fetched"):
+        tool._kept(tmp_path, "hu-label", 'SELECT "ro"', True)
+
+
+def test_a_country_is_read_from_its_answers(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Serbian written in Latin (`sr-el`) and Cyrillic is one tag
+    e = "<http://www.wikidata.org/entity/{}>".format
+    answers = {
+        "given": f"?h\t?v\n{e('Q1')}\t{e('Q5')}\n{e('Q2')}\t{e('Q5')}\n",
+        "family": f"?h\t?v\n{e('Q1')}\t{e('Q6')}\n{e('Q2')}\t{e('Q6')}\n",
+        "label": f'?h\t?v\n{e("Q1")}\t"Jova Petrović"@sr-el\n'
+                 f'{e("Q2")}\t"Јова Петровић"@sr\n',
+        "birth": "?h\t?v\n", "nickname": "?h\t?v\n",
+        "items": f'?h\t?v\n{e("Q5")}\t"Jovan"@sr-el\n{e("Q5")}\t"Јован"@sr\n'
+                 f'{e("Q6")}\t"Petrović"@sr-el\n{e("Q6")}\t"Петровић"@sr\n',
+    }
+    found = sorted((q, f.x, f.y, f.tag) for q, _, f in
+                   tool.country_found("Q403", answers, _TITLES))
+    assert found == [("Q1", "Jova", "Jovan", "sr"), ("Q2", "Јова", "Јован", "sr")]
+    # and fetch asks each query once, then reads the kept answers alone
+    served = [answers[n] for n in tool.QUERIES] + [answers["items"]]
+    asked = _serve(monkeypatch, served)
+    fetched = tool.fetch("Q403", tmp_path)
+    assert len(asked) == len(served) and fetched["items"] == answers["items"]
+    assert tool.fetch("Q403", tmp_path, offline=True) == fetched
+
+
+def test_a_partial_run_writes_a_file_of_its_own() -> None:
+    assert tool.candidates_file(None) == tool.CANDIDATES_FILE
+    assert tool.candidates_file(["ro", "hu"]) == (
+        "familiar-wikidata-candidates-hu-ro.tsv")
 
 
 def test_every_country_writes_a_language_the_vocabulary_has() -> None:

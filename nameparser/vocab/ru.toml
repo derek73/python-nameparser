@@ -694,20 +694,8 @@ text = "вальдас"
 spelling = { spelling_of = ["валдас"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "вартан"
-spelling = { spelling_of = ["вардан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "геворк"
-spelling = { spelling_of = ["геворг"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "гэри"
 spelling = { spelling_of = ["гарий"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "джиа"
-spelling = { spelling_of = ["гия"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ибрахим"
@@ -742,16 +730,8 @@ text = "оганес"
 spelling = { spelling_of = ["ованес"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "оссип"
-spelling = { spelling_of = ["осип"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "отари"
 spelling = { spelling_of = ["отар"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
-text = "саркис"
-spelling = { spelling_of = ["саргис"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "тахир"

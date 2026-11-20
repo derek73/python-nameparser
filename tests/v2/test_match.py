@@ -1839,6 +1839,8 @@ def test_an_alternate_spelling_from_wikidata_is_read_in_its_script() -> None:
 @pytest.mark.parametrize("a, b", [
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
+    # nor on Wikidata's pairs: Ivo and Ivica are each paired with Ivan
+    ("Ivo Horvat", "Ivica Horvat"),
     # pairs no source lists: Rickie is paired with Rick and Roderick,
     # Pancho with nothing
     ("Rickie Smith", "Richard Smith"),

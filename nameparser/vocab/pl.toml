@@ -64,7 +64,7 @@ familiar = { short_for = ["dariusz"], note = "found in CC0 or public-domain data
 
 [[word]]
 text = "ela"
-familiar = { short_for = ["elzbieta", "elżbieta"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["elzbieta"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "gosia"
