@@ -265,6 +265,12 @@ PARTICLE_GIVEN_TAG = "vocab:particle-given"
 #: it joined. Dropped from the published token like the kind tags
 #: above (#694).
 BOUND_PHRASE_TAG = "vocab:bound-phrase"
+#: On the first word of a pair joined backward, from a word of
+#: `Lexicon.bound_seconds` or a pair of `Lexicon.bound_second_phrases`
+#: ('عز' before 'الدين'), beside BOUND_PHRASE_TAG: group joins such a
+#: pair at the first name word too (rules/P12, #1072). Dropped from the
+#: published token like the kind tags above.
+BOUND_SECOND_TAG = "vocab:bound-second"
 #: rules/O9 ("the capitals settle the field"): a word in capitals that
 #: Policy.capitals_as_family read as the family, written by post_rules,
 #: so assemble reads its reading as the shape's (a word in capitals)

@@ -901,7 +901,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: of the unambiguous title-or-suffix test after a glued stop into
 #: `_vocab._claimed_after_the_stop`, 203 -> 198; #1464's P12 test
 #: in classify reading the bound sets through a `sets =` binding,
-#: 198 -> 199);
+#: 198 -> 199; #1072's split of a lone backward pair in post_rules
+#: reading the given-name titles, 199 -> 200);
 #: the tools' first 20 are 18
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -928,14 +929,14 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-#: 199 -> 212 on 2026-11-20: rules/T9's slash division (#1149), its
+#: 200 -> 213 on 2026-11-20: rules/T9's slash division (#1149), its
 #: two `sets = lexicon._sets` bindings, the titles and two suffix sets
 #: the title before the slash is read against (saint_particles being no
 #: `_VOCAB_FIELDS` field), and eight loads of six sets the name after it
 #: is read against (the acronyms and their ambiguous set twice, as
-#: stored and without their stops), and 212 -> 213 the same day, the
+#: stored and without their stops), and 213 -> 214 the same day, the
 #: given names written short it reads as names first (`Md.`).
-_UNGUARDED_READS = {"library": 213, "tools": 35}
+_UNGUARDED_READS = {"library": 214, "tools": 35}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

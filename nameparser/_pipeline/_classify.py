@@ -30,7 +30,9 @@ written behind a particle (particle_given_names, #704) and the
 two-word given names a bound word completes into (bound_phrases,
 #694) and the bound words that complete with any plain name word, in
 any name or only in one of four name words or more
-(bound_completes_any, bound_long_names_only, #1464) and the titles a
+(bound_completes_any, bound_long_names_only, #1464) and the words a
+pair writes second and joins from, and the pairs those list
+(bound_seconds, bound_second_phrases, #1072) and the titles a
 run of single letters may spell (dotted_titles, rules/H10, #490) and
 the saint particles a word glued at its full stop is cut behind (saint_particles, through
 `_vocab.glued_saint_cut`); and, since
@@ -106,7 +108,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_STRIP, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    BOUND_PHRASE_TAG, BOUND_SECOND_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     CHAIN_TITLE_TAG, DOTTED_TITLE_TAG, JOINED_TITLE_TAG, TRAILING_TITLE_TAG,
     ParseState,
@@ -656,7 +658,7 @@ def classify(state: ParseState) -> ParseState:
                 if tags != written[i].tags:
                     written[i] = copy_with(written[i], tags=tags)
         tokens = tuple(written)
-    # rules/P12: "the two words are one name unit past the first name word"
+    # rules/P12: "the two words are one name unit, past the first name word"
     # -- the phrase test over each word and the word after it, asked
     # only of a name holding a bound word, in a plain loop, so that no
     # other name pays a frame; the tag goes on the bound word, and
@@ -693,6 +695,37 @@ def classify(state: ParseState) -> ParseState:
             tokens = tuple(
                 copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
                 if i in heads else t for i, t in enumerate(tokens))
+    # rules/P12: "for a pair read from its second word, at it too" -- a word of
+    # Lexicon.bound_seconds joins the plain word before it, and a pair of
+    # Lexicon.bound_second_phrases joins whole, wherever it stands, the
+    # first name word included; a name of two name words is split back
+    # once roles are settled (post_rules), as P5's reserve keeps a bound
+    # word's pair there (decisions/P12, #1072)
+    seconds = sets.bound_seconds
+    if not seconds.isdisjoint(folded):
+        second_phrases = sets.bound_second_phrases
+        listed = sets.bound_seconds_listed
+        back = []
+        for i in range(len(folded) - 1):
+            before, after = tokens[i], tokens[i + 1]
+            # a word carrying a role (a delimited clause) is in no
+            # piece group joins, so its tag would be read by nothing
+            if (folded[i + 1] not in seconds or i in stemmed
+                    or after.tags - _CONTESTED_TAGS
+                    # no pair is written across a comma
+                    or any(before.span.end <= c < after.span.start
+                           for c in state.comma_offsets)):
+                continue
+            if f"{folded[i]} {folded[i + 1]}" not in second_phrases and (
+                    folded[i + 1] in listed or before.tags
+                    or not _HAS_LETTER.search(before.text)):
+                continue
+            back.append(i)
+        if back:
+            tokens = tuple(
+                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG,
+                                             BOUND_SECOND_TAG})
+                if i in back else t for i, t in enumerate(tokens))
     # rules/S12: "a credential written split across a space reads as one
     # word" -- each adjacent pair of a segment asked once, here, and
     # the answer written on its first word for group's merge and the

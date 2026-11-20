@@ -464,17 +464,6 @@
   },
   "text": "Степаненко Василиса Іллівна"
  },
- "Q121061159/ar-sy/givenFirst": {
-  "family": {
-   "expected": "ذو الغنى",
-   "got": "الغنى"
-  },
-  "given_names": {
-   "expected": "عائشة",
-   "got": "عائشة ذو"
-  },
-  "text": "عائشة ذو الغنى"
- },
  "Q12123956/uk-ua/surnameFirst": {
   "patronymic": {
    "expected": "Олексійович",
@@ -506,17 +495,6 @@
    "got": ""
   },
   "text": "朱霖"
- },
- "Q125699198/ar-eg/givenFirst": {
-  "family": {
-   "expected": "عز الدين",
-   "got": "الدين"
-  },
-  "given_names": {
-   "expected": "جميل",
-   "got": "جميل عز"
-  },
-  "text": "جميل عز الدين"
  },
  "Q127605824/zh-tw/surnameFirst": {
   "family": {
@@ -634,17 +612,6 @@
    "got": ""
   },
   "text": "Олексій Олексійович Гончаренко"
- },
- "Q16230492/ar-eg/givenFirst": {
-  "family": {
-   "expected": "شكر الله",
-   "got": "الله"
-  },
-  "given_names": {
-   "expected": "هالة",
-   "got": "هالة شكر"
-  },
-  "text": "هالة شكر الله"
  },
  "Q16262307/zh-cn/surnameFirst": {
   "family": {

@@ -1457,6 +1457,11 @@ _SURNAME2_ROWS = [
     ("Ana Umm Kulthum López", _GF, False, ""),
     # a Latin bound pair P12 joined is one unit O6 takes (#1464)
     ("Ana abdul Rahman López", _GF, False, "López"),
+    # a pair joined from its second word is one unit, with a family
+    # comma and without one (#1072)
+    ("سامر حداد عز الدين", _GF, False, "عز الدين"),
+    ("حداد عز الدين، سامر", _GF, False, "عز الدين"),
+    ("سامر عز الدين حداد", _GF, False, "حداد"),
     ("Ana M. García", _GF, False, ""),
     ("Pérez de la Vega", _FF, False, ""),
     ("王 小 明", _GF, False, ""),
