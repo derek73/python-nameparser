@@ -2323,3 +2323,32 @@ apart. In a name of three words ``Abdul`` still stays apart:
     >>> haddad = parse("Haddad, Nadia Abd Karim")
     >>> haddad.middle, haddad.suffix
     ('Abd Karim', '')
+
+Arabic-script titles written short, and initials in Arabic script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An Arabic title written short with a full stop, ``د.`` (doctor),
+``أ.``, ``م.``, ``أ.د.``, ``أ.م.د.``, ``م.د.`` and ``م.م.``, and the
+ranks ``اللواء`` (major general), ``المستشار`` (counsellor) and
+``السفيرة`` (ambassador), are titles where 1.4 through 3.1 read them as
+the given name. :meth:`~nameparser.ParsedName.initials` gives nothing
+for a word in Arabic script, where 1.4 through 3.1 gave its first
+letter, and the name match reads an Arabic letter with a full stop as
+a word, so ``م. علي`` no longer matches ``محمد علي``. There is no
+setting to restore those initials; a caller wanting a letter per word
+takes it from the fields:
+
+.. doctest::
+
+    >>> arabic_name = parse("د. أحمد علي حسن")
+    >>> arabic_name.title, arabic_name.given, arabic_name.initials()
+    ('د.', 'أحمد', '')
+
+To read a letter with a full stop as the given name again, remove its
+title reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("د", kind="academic"))
+    >>> as_31.parse("د. أحمد علي حسن").given
+    'د.'

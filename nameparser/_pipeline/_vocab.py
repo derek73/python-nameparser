@@ -957,24 +957,34 @@ def _dotted(text: str) -> bool:
             or _CHUNKED.fullmatch(text) is not None)
 
 
+# the combining marks (Mn) Unicode names ARABIC, every block's, which
+# `_LETTER` does not count (decisions/H2): the hamza a decomposed أ or إ
+# is written with, and the short vowels, so a title's chunk and the name
+# after its stop are found in NFD text ('أ.محمد', 'أ.د.أحمد') as in NFC
+# (#1149)
+_ARABIC_MARKS = "[" + "".join(re.escape(chr(c)) for c in range(0x0600, 0x10F00) if unicodedata.category(chr(c)) == "Mn" and unicodedata.name(chr(c), "").startswith("ARABIC")) + "]"  # noqa: E501
+# a letter as T8 reads one: `_LETTER`, an Arabic mark counted with it
+_GLUED_LETTER = r"[^\W\d_](?:" + _MARKS + "|" + _ARABIC_MARKS + ")*"
 # rules/T8: "glued to the next at its full stop" -- the shapes
 # `glued_cuts` reads (decisions/T8 (#1230, #1235)): one chunk of letters
 # closed by a stop with something after it
-_GLUED_CHUNK = re.compile(r"((?:" + _LETTER + r")+)\.(?=\S)")
+_GLUED_CHUNK = re.compile(r"((?:" + _GLUED_LETTER + r")+)\.(?=\S)")
 # a run of two or more single letters closed by stops, a letter after
 # it (the name is `glued_cuts`' to find)
-_GLUED_RUN = re.compile(r"(?:" + _LETTER + r"\.){2,}(?=[^\W\d_])")
+_GLUED_RUN = re.compile(r"(?:" + _GLUED_LETTER + r"\.){2,}(?=[^\W\d_])")
 #: a letter (its marks with it, so NFD text passes), a full stop and a
 #: letter: the C-level test `_script_segment` asks before `glued_cuts`
-GLUED_SHAPE = re.compile(_LETTER + r"\.[^\W\d_]")
+GLUED_SHAPE = re.compile(_GLUED_LETTER + r"\.[^\W\d_]")
 # the Thai vowel and tone marks (Mn), which `_LETTER` does not count:
 # nearly every Thai name writes one ('สุดา', 'ใจดี'), so without them the
 # name after a Thai title's stop is never found (#1166)
 _THAI_MARKS = "[\u0e31\u0e34-\u0e3a\u0e47-\u0e4e]"
 # one word of letters, apostrophes and hyphens: what can follow a chunk
-# and be a name
+# and be a name; a zero-width non-joiner or joiner between two letters
+# is part of the word, as Persian spells one ('محمد\u200cرضا', #1149)
 _GLUED_WORD = re.compile(
-    r"(?:" + _LETTER + r")(?:" + _LETTER + "|" + _THAI_MARKS + r"|['’\-])*")
+    r"(?:" + _LETTER + r")(?:" + _LETTER + "|" + _THAI_MARKS + "|"
+    + _ARABIC_MARKS + r"|['’\-]|[\u200c\u200d](?=[^\W\d_]))*")
 
 
 def _is_cased_letter(chunk: str) -> bool:

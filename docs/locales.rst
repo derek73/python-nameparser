@@ -46,8 +46,7 @@ reverse: transliterations like ``sri``/``shri`` are *not* in the
 default vocabulary, because they are also ordinary given names in
 Latin script. The same conservatism holds back a handful of native
 entries that collide within their own script — bare ``سيد`` and
-``شيخ`` (common given names), Hebrew ``רב`` (an ordinary word), the
-Arabic ``د.`` abbreviation (it would swallow initials).
+``شيخ`` (common given names) and Hebrew ``רב`` (an ordinary word).
 
 If your data is homogeneous enough that a collision can't occur, the
 reasoning behind the default doesn't apply to you — add the entry:

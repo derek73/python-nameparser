@@ -348,9 +348,10 @@ _classified_char = _script_matcher(*_EAST_ASIAN_SCRIPTS, whole=True)
 # can key a setting on, and membership there settles nothing about
 # case or initials. mechanisms.md#SCRIPT-PROPERTY-TABLE ("a reader selects the spans of the column that is ITS question")
 # names the pattern. Each answer is a writing CONVENTION, never the
-# script's typology: Devanagari is an abugida and Arabic an abjad,
-# and both abbreviate a name to a letter and a period ("म. गांधी",
-# "م. الفارسي"), as Cyrillic does ("А. С. Пушкин"). decisions/script-properties holds each row's
+# script's typology: Devanagari is an abugida and abbreviates a name
+# to a letter and a period ("म. गांधी"), as Cyrillic does ("А. С.
+# Пушкин"), while Arabic, an abjad, writes a letter and a period for a
+# title (د.) and, in the name lists measured, almost none for a name. decisions/script-properties holds each row's
 # history and the recompute recipes, the CLDR count that decides
 # "writes initials" where a locale states it among them.
 
@@ -439,6 +440,18 @@ _SCRIPT_PROPERTIES: Mapping[str, _ScriptRow] = MappingProxyType({
         "CLDR th uses an initial in 0 of 20 authored patterns, a block of "
         "its own (12 of 20 equal to en's by the copy test; 2026-08-02 "
         "#320, re-run 2026-11-12, #1256)"),
+    "arabic": _ScriptRow(
+        ((0x0600, 0x06FF), (0x0750, 0x077F), (0x0870, 0x089F),
+         (0x08A0, 0x08FF), (0xFB50, 0xFDFF), (0xFE70, 0xFEFC),
+         (0x10EC0, 0x10EFF)), None, False, True, False,
+        "the Arabic-script name lists measured write a letter and a period "
+        "for a title (د., أ.د., م.م.) and almost never for a name, so it "
+        "writes period abbreviations and no initials; Persian and Urdu "
+        "are covered on thin evidence (decisions/script-properties' Open)",
+        "decided 2026-11-19 on #1149 from usage, against CLDR ar's 8 of 42 "
+        "authored patterns with an initial: ORCID's 6,291 Arabic-script "
+        "names write every opening letter with a period as a title, "
+        "Wikidata's 212 none (decisions/script-properties)"),
 })
 
 

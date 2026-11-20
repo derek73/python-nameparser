@@ -127,6 +127,8 @@ _RANGE_IN_SOURCE = re.compile(
 #: table's, by the name they are bound to, each with its reason.
 _OTHER_QUESTIONS = {
     "_THAI_MARKS": "the marks a Thai name writes after a stop (T8)",
+    "_ARABIC_MARKS": "the marks an Arabic-script word writes, which T8 "
+                     "counts with a letter in NFD text (#1149)",
     "_AFTER_A_CONSONANT": "the Thai vowel signs written after a "
                           "consonant, which the segmenter reads",
 }
@@ -214,16 +216,18 @@ def test_a_script_with_no_initials_may_still_write_abbreviations(
     assert name.initials() == ""
 
 
-#: Georgian beside its Arabic twin: a script the table gives no case
+#: Georgian beside its Hebrew twin: a script the table gives no case
 #: reads as a script Unicode gives none, at every name-level case
-#: question that reads the name's case (#1222). Master (161ebd28) reads
-#: eleven of these sixteen rows apart; the other five agreed there too
-#: (MA, ჯეკ; the MD and III rows; ნინო SMITH; the Latin control). Not
-#: an oracle where the two scripts differ in another column: Georgian
-#: writes initials and Arabic's dotted runs read otherwise, so a
-#: dotted run is held by its own test below, not by its twin.
-_GEORGIAN = {"ჯეკ": "محمد", "ბერიძე": "علي", "ნინო": "حسن",
-             "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ": "فاطمة"}
+#: question that reads the name's case (#1222). With the table off
+#: (the control below), eleven of these sixteen rows read apart; the
+#: other five agree there too (MA, ჯეკ; the MD and III rows; ნინო SMITH;
+#: the Latin control). The
+#: twin is a script with no row, so it differs from Georgian in the
+#: case column alone: Arabic was the twin until #1149 gave it a row
+#: saying it writes no initials, which `_shape`'s initials count reads.
+#: Not an oracle for a dotted run, which is held by its own test below.
+_GEORGIAN = {"ჯეკ": "דוד", "ბერიძე": "כהן", "ნინო": "שרה",
+             "ᲑᲣᲠᲯᲐᲜᲐᲫᲔ": "רבינוביץ"}
 _TWIN_SHAPES = (
     "ჯეკ MA", "ჯეკ, MA", ", ჯეკ MA", "MA, ჯეკ", "ჯეკ ბერიძე MA",
     "ბერიძე, ჯეკ MA", "ჯეკ DO",
@@ -244,17 +248,17 @@ def _shape(text: str, order: tuple[object, ...]) -> tuple[object, ...]:
 
 
 @pytest.mark.parametrize("text", _TWIN_SHAPES)
-def test_georgian_reads_as_its_arabic_twin(text: str) -> None:
+def test_georgian_reads_as_its_hebrew_twin(text: str) -> None:
     from nameparser import FAMILY_FIRST, GIVEN_FIRST
     twin = text
-    for ka, ar in _GEORGIAN.items():
-        twin = twin.replace(ka, ar)
+    for ka, he in _GEORGIAN.items():
+        twin = twin.replace(ka, he)
     for order in (GIVEN_FIRST, FAMILY_FIRST):
         assert _shape(text, order) == _shape(twin, order), (text, twin)
 
 
 #: The twin test's recorded negative control (AGENTS.md's guard tests):
-#: how many of `_TWIN_SHAPES` read apart from their Arabic twin under
+#: how many of `_TWIN_SHAPES` read apart from their Hebrew twin under
 #: either order with the caseless table emptied, which is master's
 #: answer at every site that reads it. Re-take it when a shape is added.
 _UNGUARDED_EFFECT = 11
@@ -273,8 +277,8 @@ def test_the_twin_test_fails_with_the_table_off(
     apart = 0
     for text in _TWIN_SHAPES:
         twin = text
-        for ka, ar in _GEORGIAN.items():
-            twin = twin.replace(ka, ar)
+        for ka, he in _GEORGIAN.items():
+            twin = twin.replace(ka, he)
         apart += any(_shape(text, o) != _shape(twin, o)
                      for o in (GIVEN_FIRST, FAMILY_FIRST))
     assert apart == _UNGUARDED_EFFECT
@@ -347,6 +351,13 @@ def test_a_georgian_run_ending_the_name_gives_an_initial_per_letter() -> None:
     # thai and myanmar write no initials (#1256's amendment)
     ("สมชาย ใจดี", "initials", ""),
     ("ကြည် ကြည် ဌေး", "initials", ""),
+    # the arabic script writes no initials, and a listed letter with a
+    # full stop is its title (#1149)
+    ("أحمد علي حسن", "initials", ""),
+    ("د. أحمد علي حسن", "title", "د."),
+    # and writes period abbreviations: H2's shape reads an unlisted run
+    # of its letters with a period as a title (#1149)
+    ("حس. علي", "title", "حس."),
 ])
 def test_each_row_is_pinned_by_a_reading(text: str, field: str,
                                          value: str) -> None:
@@ -419,6 +430,7 @@ def test_every_script_member_has_a_row_or_a_stated_default() -> None:
 #: independent of the row's own spans, so a span dropped or cut short
 #: leaves a letter of the script outside the row.
 _ROW_LETTER_NAMES = {
+    "arabic": ("ARABIC LETTER",),
     "myanmar": ("MYANMAR LETTER",),
     "thai": ("THAI CHARACTER",),
     "georgian": ("GEORGIAN LETTER", "GEORGIAN MTAVRULI CAPITAL LETTER"),
