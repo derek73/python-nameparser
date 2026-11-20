@@ -688,6 +688,14 @@ MUTATIONS = [
     # (BEHAVIORAL), so any other refuses it as unknown
     ("dotted-not-true", {"en.toml": _w('[[word]]\ntext = "us"\nmodifier = { dotted = false }')}, "dotted must be true, or left unwritten"),
     ("dotted-on-a-suffix-reading", {"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = { dotted = true }')}, "dotted"),
+    # rules/P12's completes on a bound_second reading: a list of single
+    # folded words, and a bound_second reading's alone (#1072)
+    ("completes-not-a-list", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_second = { completes = "zzr" }')}, "completes must be a non-empty list"),
+    ("completes-two-words", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_second = { completes = ["zzr zzs"] }')}, "completes must be a non-empty list"),
+    ("completes-empty", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_second = { completes = [] }')}, "completes must be a non-empty list"),
+    ("completes-unfolded", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_second = { completes = ["Zzr"] }')}, "completes must be a non-empty list"),
+    ("completes-duplicate", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_second = { completes = ["zzr", "zzr"] }')}, "completes must be a non-empty list"),
+    ("completes-on-a-bound-given", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completes = ["zzr"] }')}, "completes"),
     # rules/P12's completes_any and long_names_only: true or unwritten,
     # and long_names_only only beside completes_any, which it narrows
     # (#1464)
@@ -1277,10 +1285,13 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
         compiled = build.compile_files(files)
-    # a word is in a set of phrases where it opens one (TITLE_PHRASES),
-    # and in SAME_AS where a group of it holds the word
+    # a word is in a set of phrases where it opens one (TITLE_PHRASES)
+    # or ends one (BOUND_SECOND_PHRASES, #1072), and in SAME_AS where a
+    # group of it holds the word
     return {name for name, value in compiled.items()
-            if text in value or any(isinstance(v, str) and v.startswith(text + " ")
+            if text in value or any(isinstance(v, str)
+                                    and (v.startswith(text + " ")
+                                         or v.endswith(" " + text))
                                     for v in value)
             or (isinstance(value, dict) and any(
                 isinstance(g, dict) and text in g for g in value.values()))}
@@ -1307,6 +1318,7 @@ _PROPERTY_PROBES = {
     "dotted": ("modifier", "{ dotted = true }", "zzq"),
     "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
     "completes_any": ("bound_given", "{ completes_any = true }", "zzq"),
+    "completes": ("bound_second", '{ completes = ["zzr"] }', "zzq"),
     "long_names_only": ("bound_given",
                         "{ completes_any = true, long_names_only = true }",
                         "zzq"),

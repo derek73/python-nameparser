@@ -1023,6 +1023,18 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         raise VocabError(f"{where}: long_names_only narrows completes_any "
                          f"to a name of four words or more, so it needs "
                          f"completes_any = true beside it")
+    if "completes" in p:
+        # the first words a bound_second word completes, where it joins
+        # behind those alone (rules/P12, #1072): each one word, written
+        # as the fold leaves it, so the phrase test matches it
+        done = p["completes"]
+        if (not isinstance(done, list) or not done
+                or not all(isinstance(w, str) and w and " " not in w
+                           and _normalize(w) == w for w in done)
+                or len(set(done)) != len(done)):
+            raise VocabError(f"{where}: completes must be a non-empty "
+                             f"list of single words, each once and "
+                             f"written folded")
     if "completed_by" in p:
         # the words that complete a bound given name into one given
         # name past the first name word (rules/P12): each one word, written
@@ -1475,7 +1487,7 @@ def _behavior(r: Reading, prop: str) -> object:
                 "capital_opening", "dotted", "completes_any",
                 "long_names_only"):
         return r.flag(prop)
-    if prop in ("attaches", "completed_by"):
+    if prop in ("attaches", "completed_by", "completes"):
         att = r.props.get(prop)
         return None if att is None else frozenset(att)
     if prop == "default":
@@ -1524,6 +1536,9 @@ CONSTANTS = (
     "BOUND_PHRASES",
     "BOUND_COMPLETES_ANY",
     "BOUND_LONG_NAMES_ONLY",
+    "BOUND_SECONDS",
+    "BOUND_SECOND_PHRASES",
+    "BOUND_SECONDS_LISTED",
     "SAME_AS",
     "SAME_AS_NAMED",
     "FAMILIAR",

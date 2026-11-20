@@ -27,3 +27,7 @@ may_be_given = false
 issue = 700
 expands = "the, after a case ending: \"Zia ul-Haq\""
 same_as = "al-"
+
+[[word]]
+text = "اللہ"
+bound_second = { expands = "God", same_as = "الله", issue = 1072, note = "the Urdu spelling, with the Urdu heh (rules/P12, #1072)" }

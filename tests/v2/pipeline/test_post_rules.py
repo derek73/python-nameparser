@@ -1726,6 +1726,61 @@ def test_the_704_tags_reach_no_published_token() -> None:
     assert not published & {"vocab:shared-name", "vocab:particle-given"}
 
 
+@pytest.mark.parametrize("order,folded,field", [
+    ("given_first", False, "family"),
+    ("family_first", False, "middle"),
+    ("family_first", True, "family"),
+    ("family_first_given_last", False, "given"),
+])
+def test_a_split_backward_pair_leaves_a_later_words_alternative_right(
+        order: str, folded: bool, field: str) -> None:
+    # rules/P12's split of a pair holding every name word (#1072): a
+    # word after it, read as the suffix, would be the THIRD name word,
+    # which under FAMILY_FIRST is the middle, as the unjoined pair's
+    # reading named it (review of the guard's rewrite)
+    import nameparser
+    policy = Policy(name_order=getattr(nameparser, order.upper()),
+                    middle_as_family=folded)
+    for text in ("عز الدين V", "عز الدين Junior"):
+        n = Parser(policy=policy).parse(text)
+        [report] = [a for a in n.ambiguities if a.kind.value == "suffix-or-name"]
+        assert report.alternative is not None
+        assert report.alternative.role == field, (order, folded, text)
+
+
+def test_a_split_backward_pair_leaves_a_report_after_a_comma_alone() -> None:
+    # a word after a suffix comma names the given name for the comma's
+    # other reading, read as a family comma, which no count of units
+    # moves: 'Kim Lee, Ba' names it under every order (review of the
+    # alternative's fix)
+    import nameparser
+    for order in ("GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"):
+        for folded in (False, True):
+            p = Parser(policy=Policy(name_order=getattr(nameparser, order),
+                                     middle_as_family=folded))
+            for text in ("عز الدين, Ba", "عز الدين, MA", "عز الدين, Junior"):
+                roles = [a.alternative.role for a in p.parse(text).ambiguities
+                         if a.alternative is not None]
+                assert roles == ["given"], (order, folded, text, roles)
+    # one report on each side of the comma: the word before it moves,
+    # the one after it does not
+    n = Parser(policy=Policy(name_order=nameparser.FAMILY_FIRST)).parse(
+        "عز الدين V, Ba")
+    by_word = {a.tokens[0].text: a.alternative.role
+               for a in n.ambiguities if a.alternative is not None}
+    assert by_word == {"V": "middle", "Ba": "given"}, by_word
+
+
+def test_the_1072_tags_reach_no_published_token() -> None:
+    # BOUND_SECOND_TAG and the phrase tag beside it serve group and the
+    # post rules only, dropped at assemble (_assemble._KIND_TAGS)
+    names = [parse("سامر عز الدين"), parse("نور الدين سامر حداد"),
+             Parser(policy=Policy(two_family_names=True)).parse(
+                 "سامر حداد عز الدين")]
+    published = {tag for n in names for t in n.tokens for tag in t.tags}
+    assert not published & {"vocab:bound-second", "vocab:bound-phrase"}
+
+
 def test_a_saint_particle_opens_no_given_name_phrase() -> None:
     # rules/P10's saint clause: 'Santa María' is a surname, the given
     # name phrases being written with a preposition or an article. The

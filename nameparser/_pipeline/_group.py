@@ -27,8 +27,9 @@ ONCE, after P3's connective joins and before the particle chain and
 the bound-given join, and split off so neither reaches it (#614),
 which assign places and reports rather than peeling again; and,
 last in each part, P12's join past the start of a listed pair, or of a
-`completes_any` bound word and the plain word after it (#1464), the
-classify tag left only on the bound word of a pair it joined (#694).
+`completes_any` bound word and the plain word after it (#1464), and of a
+pair read from its listed second word at the start too (#1072), the
+classify tag left only on the first word of a pair it joined (#694).
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369), Policy.name_order (rules/P13's joins at the end
 of a name read given-first, #1098) and Policy.extra_suffix_delimiters, whose
@@ -88,7 +89,7 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, SPLIT_CREDENTIAL_TAG,
+    AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, BOUND_SECOND_TAG, SPLIT_CREDENTIAL_TAG,
     SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
@@ -718,17 +719,23 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
         k += 1
 
 
-# rules/P12: "the two words are one name unit past the first name word"
+# rules/P12: "the two words are one name unit, past the first name word"
 # -- past the piece P5's leading join reads, which this leaves as it
-# was, its reserve included; classify's tag says the word and the
-# token after it are a listed phrase, or a `completes_any` bound word
-# before a plain word (history: decisions/P12, #694, #1464)
+# was, its reserve included, save a pair read from its second word,
+# which joins there too; classify's tag says the word and the token
+# after it are a listed phrase, a `completes_any` bound word before a
+# plain word, or a plain word before a listed second word (history:
+# decisions/P12, #694, #1464, #1072)
 def _join_bound_phrases(pieces: list[Piece], ptags: list[set[str]],
                         tokens: Sequence[WorkToken],
                         joined_heads: set[int]) -> None:
     # built in one pass: a merge per pair would shift every piece
     # behind it, a quadratic in a run of pairs (merge_pieces' note)
-    k = leading_titles(pieces, ptags, tokens) + 1
+    k = leading_titles(pieces, ptags, tokens)
+    # P5's first word, save a pair joined from its second word, which
+    # joins there too (#1072)
+    if not (k < len(pieces) and BOUND_SECOND_TAG in tokens[pieces[k][0]].tags):
+        k += 1
     out, out_tags = pieces[:k], ptags[:k]
     n = len(pieces)
     joined = False
@@ -1633,6 +1640,10 @@ def group(state: ParseState) -> ParseState:
                 # pair a chain or a comma kept apart, count as two
                 for i in part:
                     if BOUND_PHRASE_TAG in tokens[i].tags and i not in heads:
+                        # BOUND_SECOND_TAG stays, as `vocab:bound-given`
+                        # does: the unit readers count the pair by it
+                        # where no join was made, before a family comma
+                        # (#1072)
                         tokens[i] = copy_with(
                             tokens[i], tags=tokens[i].tags - {BOUND_PHRASE_TAG})
             pieces.extend(part_pieces)
