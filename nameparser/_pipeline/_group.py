@@ -67,8 +67,9 @@ with them. is_prefix_piece and is_conj_piece followed in #617, with
 the merge and rules/P3's connective joins (join_connectives), when
 the comma decision's own copy of those joins was folded into them.
 What remains defined here is group's own: the piece predicates
-_is_rootname, _is_maiden_marker_piece, _is_lone_letter and
-_is_name_word, beside the helpers of its joins and its maiden take.
+_is_rootname, _is_maiden_marker_piece, _ends_an_alias, _is_lone_letter
+and _is_name_word, beside the helpers of its joins and its marker takes
+(maiden and alias, rules/M2 and N4).
 """
 from __future__ import annotations
 
@@ -130,14 +131,15 @@ class ClauseSite(IntEnum):
     counts there at all and which rule reads the end of the part
     (rules/M2, #601).
 
-    A marker counts only in the part holding the family name, so
-    GIVEN_SLOT and TAIL are statements, not defaults: a marker there is
-    an ordinary word. FAMILY_PART is the part before a family comma,
-    where a marker counts but no trailing rule reads the words after
-    the clause.
+    A maiden marker counts only in the part holding the family name, so
+    GIVEN_SLOT and TAIL are statements, not defaults: a maiden marker
+    there is an ordinary word; an alias marker (rules/N4) counts in
+    GIVEN_SLOT too, and in no TAIL. FAMILY_PART is the part before a
+    family comma, where a marker counts but no trailing rule reads the
+    words after the clause.
 
-    A CLOSED set: `_maiden_take` dispatches on it exhaustively, ONCE
-    (`typing.assert_never`). group() is the one place (structure,
+    A CLOSED set: `_clause_take` dispatches on it exhaustively, ONCE
+    (`typing.assert_never`), for both markers. group() is the one place (structure,
     segment index) is mapped onto it, and tests/v2/pipeline/
     test_group.py's `test_the_site_is_pinned_to_the_structure_it_is_
     read_from` pins that mapping -- by watching the call, not by
@@ -455,11 +457,6 @@ def _clause_take(pieces: Sequence[Sequence[int]],
             [(j, role) for j in range(lo, end)] + released)
 
 
-def _is_alias_marker_piece(piece: Sequence[int],
-                           tokens: Sequence[WorkToken]) -> bool:
-    return len(piece) == 1 and ALIAS_MARKER_TAG in tokens[piece[0]].tags
-
-
 def _ends_an_alias(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     """rules/N4's boundaries inside a part: a word with a patronymic
     reading, or another marker of either kind."""
@@ -499,7 +496,9 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
     skip: set[int] = set()
     m = 1
     while m < n - 1:
-        if not _is_alias_marker_piece(pieces[m], tokens):
+        # inline: asked per piece of a part holding a marker
+        piece = pieces[m]
+        if len(piece) != 1 or ALIAS_MARKER_TAG not in tokens[piece[0]].tags:
             m += 1
             continue
         stop = next((j for j in range(m + 1, n)
@@ -516,6 +515,35 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         skip.update(j for j, _ in take[1])
         m = stop
     return (markers, taken) if markers else None
+
+
+def _apply_take(take: MaidenIndices, pieces: list[Piece],
+                ptags: list[set[str]],
+                taken: MaidenTake | None) -> MaidenTake:
+    """Remove a take's pieces from the segment, adding their tokens to
+    what the marker passes took so far: the markers' tokens, and each
+    other piece with its role. One rebuild rather than a deletion per
+    piece, so a part holding many markers stays linear."""
+    marker_ks, removed = take
+    if taken is None:
+        taken = ([], [])
+    # plain loops, no frame: the maiden take pays two calls for this
+    # helper and the shared take, and nothing more
+    gone = set(marker_ks)
+    for k in marker_ks:
+        taken[0].extend(pieces[k])
+    for k, role in removed:
+        taken[1].append((pieces[k], role))
+        gone.add(k)
+    kept: list[Piece] = []
+    kept_tags: list[set[str]] = []
+    for k in range(len(pieces)):
+        if k not in gone:
+            kept.append(pieces[k])
+            kept_tags.append(ptags[k])
+    pieces[:] = kept
+    ptags[:] = kept_tags
+    return taken
 
 
 #: What `_between_name_words` reads instead of walking: two arrays over
@@ -1011,23 +1039,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
     # rules/N4's alias markers first: an alias stops at a maiden marker,
-    # and a maiden clause is then taken from what is left, so either
-    # may follow the other (decisions/N4)
-    # the maiden take asked only once the aliases have left
-    for marker_pass in (_alias_takes, _maiden_take):
-        take = marker_pass(pieces, ptags, tokens, one_case, site,
-                           ambiguities)
-        if take is None:
-            continue
-        marker_ks, removed = take
-        gone = set(marker_ks).union(k for k, _ in removed)
-        if taken is None:
-            taken = ([], [])
-        taken[0].extend(i for k in marker_ks for i in pieces[k])
-        taken[1].extend((pieces[k], role) for k, role in removed)
-        keep = [k for k in range(len(pieces)) if k not in gone]
-        pieces[:] = [pieces[k] for k in keep]
-        ptags[:] = [ptags[k] for k in keep]
+    # and the maiden take is then asked of what is left, so either may
+    # follow the other (decisions/N4). A plain loop, no frame, so a name
+    # with no marker pays no call (decisions/parse-cost)
+    for piece in pieces:
+        if len(piece) == 1 and ALIAS_MARKER_TAG in tokens[piece[0]].tags:
+            take = _alias_takes(pieces, ptags, tokens, one_case, site,
+                                ambiguities)
+            if take is not None:
+                taken = _apply_take(take, pieces, ptags, None)
+            break
+    take = _maiden_take(pieces, ptags, tokens, one_case,
+                        site, ambiguities)
+    if take is not None:
+        taken = _apply_take(take, pieces, ptags, taken)
 
     # S2's trailing run, read once below once the connectives have
     # joined (#614)
