@@ -63,6 +63,10 @@ text = "eta"
 familiar = { short_for = ["etelka"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "fani"
+familiar = { short_for = ["frančiška"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "feri"
 familiar = { short_for = ["ferenc"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -225,6 +229,10 @@ familiar = { short_for = ["istván"], note = "found in CC0 or public-domain data
 [[word]]
 text = "pál"
 familiar = { short_for = ["pali"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "reni"
+familiar = { short_for = ["renata"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "rozi"

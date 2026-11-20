@@ -16,10 +16,11 @@ each person of a country in COUNTRIES, a human (Q5) with a citizenship
 (P27) of that country, in each language the country writes (its
 languages, the tag Wikidata puts on a label, birth name or nickname;
 one tagged `mul`, language-independent, read as the country's language
-where it writes one alone). A person a given or family name of whom
-the language cannot read (an item with no one-word label in it or in
-`mul`) is left out of it, since the relations could not tell that
-name from the word they pair:
+where it writes one alone). A person a given name of whom the language
+cannot read (an item with no one-word label in it or in `mul`) is left
+out of it, since the relations could not tell that name from the word
+they pair; one whose family name it cannot read, out of the nickname
+and label relations, which set the family name aside:
 
 1. `birth`: the birth name (P1477) against the person's label in the
    same language. Where the label holds exactly one word the birth name
@@ -468,10 +469,12 @@ def relations(person: Person, labels: Mapping[str, Mapping[str, set[str]]],
     for tag in tags:
         given = _names(person.given, labels, tag)
         family = _names(person.family, labels, tag)
-        if given is None or family is None:
-            continue  # a name the relations cannot read in this language
+        if given is None:
+            continue  # a given name the relations cannot read in it
         g_keys = {_key(g) for g in given}
-        f_keys = {_key(f) for f in family}
+        # an unreadable family name stops the two relations that set the
+        # family name aside; the birth name's pair is a given name already
+        f_keys = None if family is None else {_key(f) for f in family}
         written = _written(person.labels, tag, sole)
         # 1. the birth name against the label
         for birth in _written(person.births, tag, sole):
@@ -488,6 +491,8 @@ def relations(person: Person, labels: Mapping[str, Mapping[str, set[str]]],
                 if y is None or not ({_key(x), _key(y)} & g_keys):
                     continue
                 out.add(Found(x, y, tag, "birth"))
+        if f_keys is None:
+            continue
         # 2. a stated nickname against the given name
         for nickname in _written(person.nicknames, tag, sole):
             words = [w for w in name_words(nickname, titles, tag)

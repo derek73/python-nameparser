@@ -437,6 +437,10 @@ text = "vilma"
 familiar = { short_for = ["vilhelmina"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "vlado"
+familiar = { short_for = ["vladimir"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "vláďa"
 familiar = { short_for = ["vladimír"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

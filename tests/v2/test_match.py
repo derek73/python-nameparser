@@ -1828,6 +1828,16 @@ def test_a_wikidata_pair_the_review_did_not_agree_on_is_no_familiar_form(
     assert not _familiar.check(a, b).consistent
 
 
+def test_a_wikidata_familiar_form_is_kept_by_its_languages_choice() -> None:
+    # a pair goes in the file of each language it was found in, so a
+    # strict choice of one of them keeps it (#1387's review once lost
+    # `vlado` from cs.toml when it merged two spellings of the pair)
+    from nameparser import locales, parser_for
+    czech = parser_for(locales.CS, strict=True).matching(
+        accept={"familiar-form"})
+    assert czech.check("Vlado Novák", "Vladimír Novák").consistent
+
+
 def test_an_alternate_spelling_from_wikidata_is_read_in_its_script() -> None:
     # Ukrainian writes Геннадій with one н or two
     spelling = _with(Outcome.ALTERNATE_SPELLING)

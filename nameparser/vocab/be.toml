@@ -29,6 +29,10 @@ text = "алесь"
 familiar = { short_for = ["аляксандр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "алёна"
+familiar = { short_for = ["елена"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "кастусь"
 familiar = { short_for = ["канстанцін"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

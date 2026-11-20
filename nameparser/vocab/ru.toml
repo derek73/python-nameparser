@@ -134,10 +134,6 @@ text = "алекс"
 familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "алесь"
-familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "алик"
 familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

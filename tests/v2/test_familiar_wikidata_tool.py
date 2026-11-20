@@ -150,6 +150,20 @@ def test_a_nickname_not_shaped_like_the_given_name_pairs_nothing() -> None:
     assert _found(p) == set()
 
 
+def test_a_family_name_the_language_cannot_read_stops_only_two_relations() -> None:
+    # the birth name's pair is a given name already, so it still pairs;
+    # the nickname and label relations set the family name aside and
+    # cannot here (`Kiss` labelled only in German)
+    labels = {**_LABELS, "Q24": {"de": {"Kiss"}}}
+    p = tool.Person(given={"Q3"}, family={"Q24"},
+                    labels={"hu": ["Kiss Böske"]},
+                    births={"hu": ["Kiss Erzsébet"]},
+                    nicknames={"hu": ["Erzsi"]})
+    assert {(f.x, f.y, f.relation)
+            for f in tool.relations(p, labels, ("hu",), _TITLES)} == {
+        ("Böske", "Erzsébet", "birth")}
+
+
 def test_a_nickname_holding_the_given_names_second_two_letters_pairs() -> None:
     labels = {**_LABELS, "Q21": {"cs": {"Alois"}}, "Q22": {"cs": {"Novák"}}}
     p = tool.Person(given={"Q21"}, family={"Q22"},
@@ -320,6 +334,44 @@ def test_an_answer_is_kept_only_once_whole(tmp_path: Path,
     kept.write_text("?h\t?v\n<http://www.wikidata.org/entity/Q1>\t", "utf-8")
     with pytest.raises(SystemExit, match="delete it and fetch again"):
         tool._kept(tmp_path, "a", "SELECT", True)
+
+
+@pytest.mark.parametrize("error", [
+    "url", "timeout", "incomplete", "http-503"])
+def test_a_failed_connection_is_retried(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, error: str) -> None:
+    import http.client
+    import io
+    import urllib.error
+    raised = {
+        "url": urllib.error.URLError("refused"),
+        "timeout": TimeoutError("timed out"),
+        "incomplete": http.client.IncompleteRead(b"?h"),
+        "http-503": urllib.error.HTTPError("u", 503, "busy", {}, None),  # type: ignore[arg-type]
+    }[error]
+    calls = []
+
+    def fake_open(request: object, timeout: float) -> object:
+        calls.append(1)
+        if len(calls) == 1:
+            raise raised
+        return io.BytesIO(b"?h\t?v\n")
+
+    monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
+    monkeypatch.setattr(tool, "_sleep", lambda s: None)
+    assert tool.ask("SELECT", "hu-label") == "?h\t?v\n"
+    assert len(calls) == 2
+
+
+def test_a_refused_query_names_itself(monkeypatch: pytest.MonkeyPatch) -> None:
+    import urllib.error
+
+    def fake_open(request: object, timeout: float) -> object:
+        raise urllib.error.HTTPError("u", 400, "bad", {}, None)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(tool.urllib.request, "urlopen", fake_open)
+    with pytest.raises(tool.FetchError, match="hu-label: HTTP 400"):
+        tool.ask("SELECT", "hu-label")
 
 
 def test_a_changed_query_is_asked_again_and_offline_refuses(

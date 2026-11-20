@@ -18,8 +18,8 @@ abi	abigail	familiar		familiar	familiar	short form of Abigail	en	orcid	19
 abraham	avi	familiar		familiar	familiar	Hebrew familiar of Avraham	ar en he	orcid	7
 abraham	bram	familiar		familiar	familiar	Dutch short form of Abraham	nl	orcid	3
 ada	adolf	familiar		familiar	familiar	Ada/Áda used as a Czech pet form clipped from Adolf	cs	wikidata	2
-adalbert	béla	different-name		different-name	different-name	Hungarian Béla is only conventionally equated with Adalbert/Vojtěch in records; the two names have unrelated roots	ro	wikidata	2
-adel	adele	split		translation	spelling	adel is the accent-folded Hungarian Adél, the Hungarian form of German/English Adele	cs	wikidata	2
+adalbert	béla	different-name		different-name	different-name	Hungarian Béla is only conventionally equated with Adalbert/Vojtěch in records; the two names have unrelated roots	cs ro	wikidata	2
+adel	adele	split		translation	spelling	adel is the accent-folded Hungarian Adél, the Hungarian form of German/English Adele	cs hu	wikidata	2
 adewale	wale	familiar		familiar	familiar	Yoruba short form of Adewale	en	orcid	5
 adi	aditya	familiar		familiar	familiar	short form of Aditya	en	orcid	7
 adi	adrian	familiar		familiar	familiar	short form of Adrian	en	orcid	3
@@ -56,7 +56,7 @@ alec	alexander	familiar		familiar	familiar	Scottish/English short form of Alexan
 alejandra	alex	familiar		familiar	familiar	Alex short form of Alejandra	en	orcid	5
 alejandro	alex	familiar		familiar	familiar	short form of Alejandro	en es	orcid	31
 alejandro	álex	familiar		familiar	familiar	short form of Alejandro	mul	orcid	3
-alek	aleksander	familiar		familiar	familiar	Alek is the Polish/Slovene short form of Aleksander	pl sl	wikidata	1
+alek	aleksander	familiar		familiar	familiar	Alek is the Polish/Slovene short form of Aleksander	pl	wikidata	1
 aleks	aleksandra	familiar		familiar	familiar	short form of Aleksandra	de	orcid	4
 aleksandar	alex	familiar		familiar	familiar	short form of Aleksandar	en	orcid	7
 aleksandar	alexandar	spelling		spelling	spelling	romanization variant	mul	orcid	3
@@ -309,7 +309,7 @@ august	gus	familiar		familiar	familiar	clipped from the end of August	en	orcid	3
 augustin	ágoston	translation		translation	translation	Augustin is the Latin/German/Romanian form of Augustinus, Ágoston its Hungarian form	hu	wikidata	2
 augustinus	augustyn	translation		translation	translation	Augustinus is the Latin form, Augustyn the Polish form	pl	wikidata	2
 augusto	gus	familiar		familiar	familiar	short form of Augusto	mul	orcid	3
-aurelia	aurélie	translation		translation	translation	Aurelia is the Latin/Romanian form, Aurélie the French form of the same name	ro	wikidata	2
+aurelia	aurélie	translation		translation	translation	Aurelia is the Latin/Romanian form, Aurélie the French form of the same name	hu ro	wikidata	2
 avi	avinash	familiar		familiar	familiar	short form of Avinash	en	orcid	5
 avi	avraham	familiar		familiar	familiar	Hebrew short form of Avraham	ar en he	orcid	8
 aydin	aydın	spelling		spelling	spelling	Turkish with and without ı	tr	orcid	10
@@ -754,7 +754,7 @@ evgeniy	yevgen	translation		translation	translation	Russian Evgeniy vs Ukrainian
 evi	paraskevi	familiar		familiar	familiar	Greek familiar form	el	orcid	9
 fabian	fabijan	translation		translation	translation	German/Latin Fabian vs Croatian/Slovene Fabijan	hr sl	wikidata	5
 fanda	františek	familiar		familiar	familiar	Fanda is a common Czech hypocoristic of František	cs sk	wikidata	2
-fani	frančiška	familiar		familiar	familiar	Fani is the Slovene/Hungarian pet form (Fanny) of Frančiška/Franciska	sl	wikidata	2
+fani	frančiška	familiar		familiar	familiar	Fani is the Slovene/Hungarian pet form (Fanny) of Frančiška/Franciska	hu sl	wikidata	2
 fanouš	františek	familiar		familiar	familiar	Fanouš is a Czech pet form of František	cs	wikidata	2
 fateme	fatemeh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	15
 fatemeh	fatima	translation	decided	translation	spelling	Persian vs Arabic form; re-read 2026-11-13: translation (Persian Fatemeh (فاطمه) and Arabic Fatima (فاطمة) are each language's own form, differing in letter and pronunciation, so translation rather than one form romanized two ways)	en fa	orcid	7
@@ -911,7 +911,7 @@ gus	gustavo	familiar		familiar	familiar	short form of Gustavo	en	orcid	8
 gustav	gusztáv	translation		translation	translation	German Gustav against Hungarian Gusztáv	hu	wikidata	5
 gwen	gwendolyn	familiar		familiar	familiar	clipped form of Gwendolyn	en	orcid	7
 gyula	iuliu	translation		translation	translation	Gyula is the Hungarian equivalent of Julius, Iuliu the Romanian form	ro	wikidata	5
-gyula	julius	translation		translation	translation	Hungarian Gyula against its conventional Latin equivalent Julius	hu	wikidata	9
+gyula	julius	translation		translation	translation	Hungarian Gyula against its conventional Latin equivalent Julius	cs hu sk	wikidata	9
 gyöngyi	gyöngyike	familiar		familiar	familiar	Gyöngyike is the -ike diminutive of Hungarian Gyöngyi	hu ro	wikidata	2
 hajnalka	hajni	familiar		familiar	familiar	Hajni is the Hungarian clipped pet form of Hajnalka	hu	wikidata	3
 hal	harold	familiar		familiar	familiar	traditional pet form of Harold	en	orcid	9
@@ -1014,7 +1014,7 @@ isobel	izzy	familiar		familiar	familiar	pet form of Isobel	en	orcid	3
 istván	pista	familiar		familiar	familiar	Pista is the traditional Hungarian hypocoristic of István	hu	wikidata	2
 istván	stephan	translation		translation	translation	István is the Hungarian form of Stephen, Stephan the German one	hu	wikidata	2
 istván	stephen	translation		translation	translation	Hungarian István vs English Stephen	hu	wikidata	2
-istván	ștefan	translation		translation	translation	Hungarian István and Romanian Ștefan are national forms of Stephen	hu ro	wikidata	7
+istván	ștefan	translation		translation	translation	Hungarian István and Romanian Ștefan are national forms of Stephen	hu ro sk	wikidata	7
 iuliana	juliane	translation		translation	translation	Iuliana is the Romanian form, Juliane the German one	ro	wikidata	7
 iuliia	julia	translation		translation	translation	Iuliia Slavic romanization vs Julia	ru	orcid	19
 iuliia	yulia	spelling		spelling	spelling	romanization variant	ru	orcid	24
@@ -1208,20 +1208,20 @@ josef	joseph	translation		translation	translation	Josef is the Czech/German form
 josef	joska	familiar		familiar	familiar	Joska (Jožka, Hungarian Jóska) is a pet form of Josef	cs sk	wikidata	4
 josef	jožka	familiar		familiar	familiar	Jožka is a Czech/Moravian pet form of Josef	cs	wikidata	4
 josef	jura	different-name		different-name	different-name	Jura is a pet form of Jiří, not of Josef	cs	wikidata	2
-josef	józef	translation		translation	translation	Josef is Czech/German, Józef Polish	pl	wikidata	7
+josef	józef	translation		translation	translation	Josef is Czech/German, Józef Polish	cs pl sl	wikidata	7
 josef	józsef	translation		translation	translation	German/Czech Josef vs Hungarian József	hu	wikidata	19
 josef	michal	different-name		different-name	different-name	Josef and Michal are unrelated names	cs sk	wikidata	2
 josef	pepa	familiar		familiar	familiar	Pepa is the Czech hypocoristic of Josef, a different-letter pet form	cs sk	wikidata	3
 josefa	jožka	familiar		familiar	familiar	Jožka is a Czech pet form used for Josefa	cs	wikidata	2
 josep	pep	familiar		familiar	familiar	Catalan familiar form of Josep	ca es	orcid	6
-joseph	józef	translation		translation	translation	Joseph is English/French, Józef Polish	pl	wikidata	8
+joseph	józef	translation		translation	translation	Joseph is English/French, Józef Polish	pl sk	wikidata	8
 joseph	józsef	translation		translation	translation	English Joseph against Hungarian József	hu	wikidata	9
 joseph	yossi	familiar		familiar	familiar	Hebrew familiar of Yosef	mul	orcid	3
 josephine	josie	familiar		familiar	familiar	pet form of Josephine	en	orcid	21
 josh	joshua	familiar		familiar	familiar	clipped form of Joshua	en	orcid	212
 joshua	yehoshua	translation		translation	translation	English vs Hebrew form	mul	orcid	3
 josé	pepe	familiar		familiar	familiar	Pepe Spanish pet form of José	mul	orcid	4
-jozef	józsef	translation		translation	translation	Jozef is the Slovak form, József the Hungarian one	hu	wikidata	5
+jozef	józsef	translation		translation	translation	Jozef is the Slovak form, József the Hungarian one	bs hr hu sl	wikidata	5
 jože	jožef	familiar		familiar	familiar	Jože is the everyday Slovene short form of Jožef	hr sl	wikidata	2
 ju	juliana	familiar		familiar	familiar	short form of Juliana	pt-BR	orcid	3
 juan	sebastian	different-name		different-name	different-name	two names of one person	en	orcid	3
@@ -1265,7 +1265,7 @@ karol	károly	translation		translation	translation	Karol is Slovak/Polish, Káro
 karola	karolina	split		sibling	familiar	Karola and Karolina are separate Hungarian feminine names from Carolus	hu	wikidata	2
 karthik	karthikeyan	familiar		familiar	familiar	short form of Karthikeyan	mul	orcid	3
 kasia	katarzyna	familiar		familiar	familiar	Kasia pet form of Katarzyna	en	orcid	48
-kasimir	kazimir	translation		translation	translation	German Kasimir against the Slavic Kazimir	sl	wikidata	4
+kasimir	kazimir	translation		translation	translation	German Kasimir against the Slavic Kazimir	cs sk sl	wikidata	4
 kat	katerina	familiar		familiar	familiar	short form of Katerina	en	orcid	3
 kat	katharine	familiar		familiar	familiar	Kat short form of Katharine	en	orcid	4
 kat	katherine	familiar		familiar	familiar	Kat short form of Katherine	en	orcid	25
@@ -1454,7 +1454,7 @@ lukas	łukasz	translation		translation	translation	German/Czech vs Polish form	m
 lukasz	łukasz	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	65
 lyn	lynette	familiar		familiar	familiar	Lyn short form of Lynette	en	orcid	5
 lászló	vasile	different-name		different-name	different-name	Hungarian László and Romanian Vasile are unrelated names	ro	wikidata	3
-láďa	vladimír	familiar		familiar	familiar	Láďa is a Czech pet form of Vladimír, from -lad-	cs	wikidata	10
+láďa	vladimír	familiar		familiar	familiar	Láďa is a Czech pet form of Vladimír, from -lad-	cs sk	wikidata	10
 láďa	vladislav	familiar		familiar	familiar	Láďa is the Czech pet form of Ladislav/Vladislav	cs	wikidata	2
 mac	mackenzie	familiar		familiar	familiar	clipped form of Mackenzie	en	orcid	3
 maciej	maciek	familiar		familiar	familiar	Polish pet form of Maciej	pl	orcid	10
@@ -1514,7 +1514,7 @@ margarida	maria	different-name		different-name	different-name	Margarida and Mari
 margarita	marharyta	spelling	decided	spelling	translation	Ukrainian romanization of one Cyrillic form	mul	orcid	3
 mari	mariana	familiar		familiar	familiar	short form of Mariana	pt-BR	orcid	5
 mari	mária	familiar		familiar	familiar	Mari is a Hungarian everyday pet form of Mária	hu	wikidata	11
-maria	marie	translation		translation	translation	Maria is the Latin/Romanian/Slovak form, Marie the Czech one	cs ro sk	wikidata	9
+maria	marie	translation		translation	translation	Maria is the Latin/Romanian/Slovak form, Marie the Czech one	cs hu ro sk	wikidata	9
 maria	mariella	familiar		familiar	familiar	Italian diminutive of Maria	it	orcid	5
 maria	mariia	spelling		spelling	spelling	romanization variant	ru	orcid	50
 maria	marija	translation		translation	translation	Maria and its Baltic/Slavic form	en	orcid	3
@@ -1610,7 +1610,7 @@ michael	mykhaylo	translation		translation	translation	English vs Ukrainian form	
 michail	michalis	familiar		familiar	familiar	Greek vernacular of Michail	el	orcid	21
 michail	mikhail	spelling		spelling	spelling	romanization variants of Михаил	ru	orcid	7
 michal	michał	spelling		spelling	spelling	dropped Polish l-stroke	pl	orcid	100
-michal	michel	translation		translation	translation	Michal is the Czech/Slovak form, Michel the French/German one	cs sk	wikidata	4
+michal	michel	translation		translation	translation	Michal is the Czech/Slovak form, Michel the French/German one	cs pl sk	wikidata	4
 michal	miroslav	different-name		different-name	different-name	Michal and Miroslav are unrelated Czech names	cs	wikidata	2
 michel	mihail	translation		translation	translation	Michel is French, Mihail Romanian for Michael	ro	wikidata	2
 michel	mike	split		familiar	translation	English familiar used for Michel	en	orcid	3
@@ -1905,7 +1905,7 @@ ravi	ravindra	familiar		familiar	familiar	Ravi short form of Ravindra	en	orcid	3
 ray	raymond	familiar		familiar	familiar	clipped form of Raymond	en	orcid	49
 ray	rui	different-name		different-name	different-name	English name for a Chinese name	en	orcid	5
 reggie	reginald	familiar		familiar	familiar	pet form of Reginald	en	orcid	5
-renata	reni	familiar		familiar	familiar	Reni is the Hungarian pet form of Renáta, cut from its first syllable	pl	wikidata	2
+renata	reni	familiar		familiar	familiar	Reni is the Hungarian pet form of Renáta, cut from its first syllable	hu pl	wikidata	2
 rene	renne	split		unclear	spelling	Renne is not a routine Czech or Croatian spelling of René; could be a typo or a different name	hr	wikidata	1
 ret	robert	unclear		unclear	unclear	"corrupt: RET reads as ""retired"", not a form of Robert"	en	fec	6
 rezső	rudolf	translation		translation	translation	Rezső is the Hungarian name adopted as the equivalent of Rudolf	hu	wikidata	8
@@ -1945,7 +1945,7 @@ ron	roni	split		familiar	different-name	Hebrew pet form of Ron	mul	orcid	3
 ros	rosalind	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
 ros	roslyn	familiar		familiar	familiar	short form of Roslyn	en	orcid	5
 rosalie	rosie	familiar		familiar	familiar	pet form of Rosalie	en	orcid	3
-rosalie	rozalia	translation		translation	translation	Rosalie is the French/German form, Rozalia the Polish form	pl	wikidata	2
+rosalie	rozalia	translation		translation	translation	Rosalie is the French/German form, Rozalia the Polish form	hu pl	wikidata	2
 rosalind	rosie	familiar		familiar	familiar	pet form of Rosalind	en	orcid	5
 rosalind	roz	familiar		familiar	familiar	short form of Rosalind	en	orcid	5
 rosanna	rosie	familiar		familiar	familiar	pet form of Rosanna	en	orcid	4
@@ -1967,7 +1967,7 @@ russell	rusty	familiar		familiar	familiar	pet form of Russell	en	orcid	5
 ryan	timothy	different-name		different-name	different-name	unrelated names	en	orcid	3
 ryan	william	different-name		different-name	different-name	unrelated names	en	orcid	3
 róza	rózsi	familiar		familiar	familiar	Rózsi is the Hungarian pet form of Róza with the -si suffix	hu	wikidata	5
-rózsa	rózsi	familiar		familiar	familiar	Rózsi is the Hungarian pet form of Rózsa built with the -i diminutive	hu ro	wikidata	6
+rózsa	rózsi	familiar		familiar	familiar	Rózsi is the Hungarian pet form of Rózsa built with the -i diminutive	hu	wikidata	6
 saeed	saeid	spelling		spelling	spelling	Persian romanization variants	fa	orcid	18
 saeedeh	saeideh	spelling		spelling	spelling	Persian romanization variants	fa	orcid	5
 saif	saifullah	familiar		familiar	familiar	compound part Saif used as call name	mul	orcid	3
@@ -2173,7 +2173,7 @@ till	tillmann	familiar		familiar	familiar	short form of Tillmann	mul	orcid	3
 tim	timothy	familiar		familiar	familiar	clipped form of Timothy	en	orcid	322
 tim	timothée	split		familiar	translation	Tim short form of Timothée	mul	orcid	4
 timofei	timofey	spelling		spelling	spelling	romanization variants	ru	orcid	4
-tivadar	tódor	split		sibling	translation	Tivadar and Tódor are both Hungarian names of their own from Theodorus	hu	wikidata	1
+tivadar	tódor	split		sibling	translation	Tivadar and Tódor are both Hungarian names of their own from Theodorus	hu	wikidata	2
 tobi	tobias	familiar		familiar	familiar	short form of Tobias	de	orcid	3
 tobias	toby	familiar		familiar	familiar	English short form of Tobias	en	orcid	15
 tobin	toby	split		familiar	different-name	pet form of Tobin	en	orcid	4
@@ -2267,7 +2267,7 @@ vivian	wei	different-name		different-name	different-name	English name used by Ch
 vlad	vladimir	familiar		familiar	familiar	short form of Vladimir	en	orcid	10
 vlad	vladislav	familiar		familiar	familiar	short form of Vladislav	en ru	orcid	12
 vlad	vladyslav	familiar		familiar	familiar	short form of Vladyslav	ru uk	orcid	7
-vladimir	vlado	familiar		familiar	familiar	Vlado is the Croatian clipped pet form of Vladimir	hr	wikidata	7
+vladimir	vlado	familiar		familiar	familiar	Vlado is the Croatian clipped pet form of Vladimir	cs hr	wikidata	7
 vladimir	volodymyr	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	58
 vladimír	vladislav	different-name		different-name	different-name	Vladimír and Vladislav are distinct compounds sharing only vlad-	cs	wikidata	2
 vladimír	vláďa	familiar		familiar	familiar	Vláďa is the Czech everyday pet form of Vladimír	cs	wikidata	5
@@ -2344,7 +2344,7 @@ zsuzsa	zsuzsanna	familiar		familiar	familiar	Hungarian familiar of Zsuzsanna	hu	
 zsuzsa	zsuzsi	familiar		familiar	familiar	Zsuzsi is the Hungarian -i pet form of Zsuzsa	hu	wikidata	2
 zsuzsanna	zsuzsi	familiar		familiar	familiar	Zsuzsi is the Hungarian pet form of Zsuzsanna	hu	wikidata	3
 zsófi	zsófia	familiar		familiar	familiar	Zsófi is the Hungarian pet form of Zsófia	hu	wikidata	2
-zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of Zuzana	cs sk	wikidata	1
+zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of Zuzana	cs	wikidata	1
 ági	ágnes	familiar		familiar	familiar	Ági is the Hungarian pet form of Ágnes with -i	hu	wikidata	10
 éva	évi	familiar		familiar	familiar	Évi is the Hungarian -i pet form of Éva	hu	wikidata	2
 аарон	арон	spelling		spelling	spelling	Russian writes Aaron both Аарон and Арон	ru	wikidata	4
@@ -2358,8 +2358,7 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 александр	александрс	translation		translation	translation	Russian Александр against Latvian Aleksandrs in Cyrillic	ru	wikidata	3
 александр	александру	translation		translation	translation	Александру renders Romanian Alexandru; Александр is the Russian form	ru	wikidata	3
 александр	александър	translation		translation	translation	Александр is Russian, Александър the Bulgarian form with ъ	bg	wikidata	5
-александр	алесь	familiar		familiar	familiar	Алесь is the Belarusian familiar form of Alexander, here paired with the Russian full form	ru	wikidata	3
-александр	алик	familiar		familiar	familiar	Алик is a Russian pet form of Александр	ru	wikidata	1
+александр	алик	familiar		familiar	familiar	Алик is a Russian pet form of Александр	ru	wikidata	2
 александр	олександр	translation		translation	translation	Russian and Ukrainian forms	ru uk	orcid	24
 александр	саша	familiar		familiar	familiar	Саша is the Russian pet form of Александр	ru	wikidata	4
 александр	шура	familiar		familiar	familiar	Шура is a traditional Russian pet form of Александр via Саша/Шурик	ru	wikidata	2
@@ -2373,8 +2372,8 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 алексий	алексы	unclear		unclear	unclear	Алексы is not a form I can place (perhaps Belarusian or a misparse); Алексий is the church form of Alexius	ru	wikidata	2
 алесь	аляксандр	familiar		familiar	familiar	Алесь is the Belarusian everyday form of Аляксандр	be	wikidata	4
 альона	олена	split		translation	familiar	Альона is Russian Alyona in Ukrainian letters; Олена is the Ukrainian form of Helen	uk	wikidata	2
-аляксандар	аляксандр	spelling		spelling	spelling	Belarusian Alyaksandr written with and without the inserted а (classical vs official orthography)	be	wikidata	3
-алёна	елена	familiar		familiar	familiar	Алёна is the Russian colloquial form of Елена, used here for women born Елена	ru	wikidata	10
+аляксандар	аляксандр	spelling		spelling	spelling	Belarusian Alyaksandr written with and without the inserted а (classical vs official orthography)	be	wikidata	4
+алёна	елена	familiar		familiar	familiar	Алёна is the Russian colloquial form of Елена, used here for women born Елена	be ru	wikidata	10
 алёна	олена	translation		translation	translation	Russian Алёна (Yelena's folk form) against Ukrainian Олена, the name a Ukrainian Olena bears in Russian	ru	wikidata	4
 ана	анна	split		spelling	translation	Bulgarian writes Anna both as Ана and Анна	bg ru	wikidata	2
 анастасия	анастасія	translation		translation	translation	Russian vs Ukrainian form	mul	orcid	3
@@ -2499,13 +2498,11 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 захари	захарий	split		translation	spelling	Bulgarian vernacular Захари against church Захарий	bg	wikidata	2
 зиновий	зиновій	split		translation	spelling	Russian ending -ий against Ukrainian -ій for Zinovy	ru	wikidata	2
 зиновій	зіновій	split		spelling	spelling	Ukrainian Zinovii written with и or і in the first syllable, same name; the 2026-11-13 spelling test split it (first reader spelling, second translation)	uk	wikidata	2
-зофія	софія	split		translation	spelling	Зофія renders Polish Zofia; Софія is the Ukrainian form	uk	wikidata	2
 ибрагим	ибрахим	spelling		spelling	spelling	Arabic Ibrahim transcribed into Russian with г and with х	ru	wikidata	16
 иван	иоанн	translation		translation	translation	Иоанн is the Church Slavonic form, Иван the vernacular Russian one	ru	wikidata	2
 игорь	ігор	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	5
 иларион	илларион	spelling		spelling	spelling	Russian writes Hilarion with one or two л	ru	wikidata	4
 имант	имантс	translation		translation	translation	Latvian Imants in Cyrillic against a Russianised Имант without -s	ru	wikidata	3
-ирена	ирэна	split		translation	spelling	Ирэна is the Belarusian spelling with э, Ирена the Russian one	ru	wikidata	2
 ирина	ирына	split		translation	spelling	Ирына is the Belarusian spelling, Ирина the Russian one	ru	wikidata	2
 ирина	ірина	translation		translation	translation	Russian vs Ukrainian form	ru uk	orcid	9
 йосип	йосиф	split		translation	spelling	Ukrainian vernacular Йосип against church/Russian Йосиф	uk	wikidata	24
@@ -2520,7 +2517,7 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 киндрат	кондрат	split		translation	spelling	Киндрат is the Ukrainian form, Кондрат the Russian form	ru	wikidata	2
 кирил	кирило	translation		translation	translation	Кирил is the Bulgarian/Russian-style form, Кирило the Ukrainian one	uk	wikidata	2
 кирилл	кирило	translation		translation	translation	Russian Кирилл against Ukrainian Кирило	ru uk	wikidata	2
-константин	коста	familiar		familiar	familiar	Kosta is the Serbian short form of Konstantin used as the everyday name	ru sr	wikidata	1
+константин	коста	familiar		familiar	familiar	Kosta is the Serbian short form of Konstantin used as the everyday name	ru sr	wikidata	2
 константин	котэ	familiar		familiar	familiar	Котэ (Kote) is the Georgian pet form of Konstantine	ru	wikidata	2
 констянтин	костянтин	split		spelling	spelling	Констянтин is a variant spelling of Ukrainian Костянтин; the 2026-11-13 spelling test split it (first reader spelling, second unclear)	uk	wikidata	8
 коста	костадин	familiar		familiar	familiar	Коста is the Bulgarian short form of Костадин	bg	wikidata	2
@@ -2536,7 +2533,7 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 лилия	лілія	translation		translation	translation	Russian Лилия against Ukrainian/Belarusian Лілія	be uk	wikidata	4
 люба	любов	familiar		familiar	familiar	Люба is the Ukrainian pet form of Любов	uk	wikidata	4
 магомед	мухаммед	split		spelling	translation	Магомед is the Caucasian rendering of Arabic Muhammad, same name transcribed differently	ru	wikidata	2
-майя	мая	split		translation	spelling	Майя is the Russian spelling, Мая the Ukrainian/Belarusian form	be ru uk	wikidata	2
+майя	мая	split		translation	spelling	Майя is the Russian spelling, Мая the Ukrainian/Belarusian form	be uk	wikidata	2
 максиміліан	максиміліян	spelling		spelling	spelling	Ukrainian writes the -іан/-іян ending both ways for Maximilian	uk	wikidata	2
 марина	мария	different-name		different-name	different-name	Marina and Maria are separate names	ru	wikidata	2
 мария	марія	translation		translation	translation	Russian Мария vs Ukrainian Марія	ru uk	orcid	5
@@ -2558,7 +2555,7 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 мікалай	мікола	split		sibling	different-name	Мікола is a folk Belarusian form of Nicholas borne as a name of its own beside the literary Мікалай	be	wikidata	13
 міхайла	міхаіл	split		translation	spelling	Міхайла is the Belarusian vernacular form, Міхаіл the church/Russian-style form of Michael	be	wikidata	2
 міхась	міхаіл	familiar		familiar	familiar	Міхась is the Belarusian pet form of Міхаіл	be	wikidata	6
-навум	наум	split		translation	spelling	Навум is the Church Slavonic/Macedonian form, Наум the Russian/Ukrainian form	ru uk	wikidata	1
+навум	наум	split		translation	spelling	Навум is the Church Slavonic/Macedonian form, Наум the Russian/Ukrainian form	ru	wikidata	1
 надежда	надия	split		different-name	sibling	Надия is the Arabic/Tatar name Nadiya, a different name from Slavic Надежда 'hope'	ru	wikidata	2
 надежда	надія	translation		translation	translation	Russian Надежда against Ukrainian Надія	uk	wikidata	11
 наталия	наталья	spelling		spelling	spelling	Russian routinely writes Наталия and Наталья for the same name	ru	wikidata	60
@@ -2580,7 +2577,7 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 олександер	олександр	spelling		spelling	spelling	Ukrainian writes Oleksandr both as Олександер and Олександр	uk	wikidata	3
 олександр	олесь	familiar		familiar	familiar	Олесь is the Ukrainian pet form of Олександр	uk	wikidata	1
 олексей	олексій	split		spelling	translation	Олексей is a Russified-ending spelling of the Ukrainian Олексій, one name written two ways	uk	wikidata	2
-ольга	оля	familiar		familiar	familiar	Оля is the standard Ukrainian/Russian diminutive of Ольга	uk	wikidata	2
+ольга	оля	familiar		familiar	familiar	Оля is the standard Ukrainian/Russian diminutive of Ольга	uk	wikidata	3
 омар	умар	spelling		spelling	spelling	Arabic Umar transcribed into Cyrillic as Омар and Умар	ru uk	wikidata	2
 осип	оссип	split		spelling	spelling	Оссип is a variant double-s spelling of Russian Осип; the 2026-11-13 spelling test split it (first reader spelling, second unclear)	ru	wikidata	1
 отар	отари	spelling		spelling	spelling	Georgian Otar transcribed with and without its nominative -i	ru	wikidata	4
@@ -2589,15 +2586,13 @@ zuzana	zuzka	familiar		familiar	familiar	Zuzka is the Czech/Slovak diminutive of
 павло	петро	different-name		different-name	different-name	Павло (Paul) and Петро (Peter) are different Ukrainian names	uk	wikidata	2
 пантелеймон	панцеляймон	split		translation	spelling	Пантелеймон is the church/Russian form, Панцеляймон the Belarusian form	be	wikidata	2
 парасковія	прасковья	translation		translation	translation	Ukrainian Парасковія against Russian Прасковья	ru	wikidata	4
-петр	петро	translation		translation	translation	Russian Петр against Ukrainian Петро	uk	wikidata	17
+петр	петро	translation		translation	translation	Russian Петр against Ukrainian Петро	ru uk	wikidata	17
 петро	пйотр	translation		translation	translation	Ukrainian Петро against Polish Piotr in Cyrillic	uk	wikidata	7
 пилип	филипп	translation		translation	translation	Пилип is the Ukrainian/Belarusian form of Philip, Филипп the Russian one	ru	wikidata	4
 пилип	філіпп	translation		translation	translation	Ukrainian folk Пилип against the Russian/Western Филипп written in Ukrainian letters	uk	wikidata	9
 порфирий	порфирій	split		translation	spelling	Russian Порфирий vs Ukrainian Порфирій	ru	wikidata	3
 прокофий	прокіп	translation		translation	translation	Прокофий is the Russian form, Прокіп the Ukrainian one	ru	wikidata	2
 радик	радік	split		translation	spelling	Радик is the Russian spelling of Tatar Radik, Радік the Ukrainian one	uk	wikidata	2
-рашель	рэйчел	split		translation	transliteration	Рашель renders French Rachel, Рэйчел English Rachel	ru	wikidata	2
-рихард	рихардс	translation		translation	translation	Рихардс is Latvian Rihards in Cyrillic, Рихард the Russian/German form	ru	wikidata	2
 роберт	робертс	split		translation	different-name	Робертс renders the Latvian form Roberts with its -s ending; Роберт is the Russian form	ru	wikidata	2
 роберт	робэрт	spelling		spelling	spelling	Belarusian Роберт in official orthography vs Робэрт in taraškievica	be	wikidata	2
 рустам	рустем	split		translation	spelling	Рустам is the Persian form, Рустем the Tatar/Turkic form of Rustam	ru uk	wikidata	2
