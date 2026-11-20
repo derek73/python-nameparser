@@ -507,7 +507,8 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
     (`_ends_an_alias`) or, with none, as far as M2's clause would.
     """
     n = len(pieces)
-    if site is ClauseSite.TAIL or n < 3:
+    # a tail part is refused in `_clause_take`
+    if n < 3:
         return None
     markers: list[int] = []
     taken: list[tuple[int, Role]] = []
@@ -517,6 +518,12 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         # inline: asked per piece of a part holding a marker
         piece = pieces[m]
         if len(piece) != 1 or ALIAS_MARKER_TAG not in tokens[piece[0]].tags:
+            m += 1
+            continue
+        # a marker left a word is no name word for the next one to stand
+        # behind ('Osman @ @ Jaki')
+        behind = pieces[m - 1]
+        if len(behind) == 1 and ALIAS_MARKER_TAG in tokens[behind[0]].tags:
             m += 1
             continue
         stop = next((j for j in range(m + 1, n)

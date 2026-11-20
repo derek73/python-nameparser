@@ -57,7 +57,7 @@
   "Rahim Osman@Usman"           →  family="Osman@Usman"  · boundary
   "Rahim @Usman"                →  nickname=""  · boundary
   ```
-- **The English alias and aka are recognized only where a caller lists them**, each being a given name or a surname more often than a marker.
+- **The English alias and aka are recognized only where a caller lists them or chooses English**, each being a given name or a surname more often than a marker.
   ```
   "Ravi Kumar alias Raju"       →  nickname=""  · boundary
   "Ravi Kumar alias Raju"  aka+alias  →  nickname="Raju"

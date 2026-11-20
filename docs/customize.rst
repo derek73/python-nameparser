@@ -522,8 +522,9 @@ person is known by, which is read as the nickname, the marker dropped.
 ``@`` written as a word of its own and ``urf`` are read so by default.
 The English ``alias`` and ``aka`` ship turned off, because each is a
 given name or a surname more often than a marker (``Aka`` is a Turkish
-and an Ivorian surname). If your records write them as markers, add
-them:
+and an Ivorian surname); a choice of English (``languages={"en"}``)
+turns them on with the rest of English's readings that are off by
+default. If your records write them as markers, add just them:
 
 .. doctest::
 
