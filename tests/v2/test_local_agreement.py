@@ -570,15 +570,17 @@ def test_a_box_the_parse_cuts_after_its_full_stops_agrees(given: str) -> None:
     ("AB", "Lee", {"given+middle": ""}),
     # A word of the family box read into the given box's field.
     ("K.S", "Perera Silva", {"given+middle": "K. S Perera", "family": "Silva"}),
-    # A title glued before the box's letters, peeled to a field ORCID
-    # has no box for: since #1501 a class of its own (titled), not an
-    # agreement, which the cut alone would not make it.
+    # A title glued before the box's letters or name, peeled to a field
+    # ORCID has no box for: since #1501 a class of its own (titled), the
+    # cut rule alone never making it agree.
     ("Dr.A.B.", "Perera", {"given+middle": "A. B."}),
     ("Dr.Ahmed", "Hassan", {"given+middle": "Ahmed"}),
 ])
 def test_a_misreading_beside_a_cut_at_a_full_stop_never_agrees(
         given: str, family: str, got: dict[str, str]) -> None:
-    assert agreement.read(_held(given, family), _ORCID_FIELDS, Parser(), _LISTED).got == got
+    reading = agreement.read(_held(given, family), _ORCID_FIELDS, Parser(), _LISTED)
+    assert reading.got == got
+    assert reading.titled == ("Dr." if given.startswith("Dr.") else "")
 
 
 # -- a listed title typed into the given-names box (#1501) ---------------------
@@ -586,14 +588,19 @@ def test_a_misreading_beside_a_cut_at_a_full_stop_never_agrees(
 _PV_FIELDS = agreement.FIELDED[corpora.PV]
 
 
-@pytest.mark.parametrize(("given", "family", "title", "got"), [
+#: The class's rows: the given-names box, the family box, the title the
+#: parse reads, and the given and middle names it reads.
+_TITLED_ROWS = (
     ("Dr. Anna", "Berg", "Dr.", "Anna"),
     ("Dr/ Anna", "Berg", "Dr", "Anna"),          # a slash for the full stop (#1149)
-    ("د. منى", "حسن", "د.", "منى"),
+    ("د. منى", "قاسمي", "د.", "منى"),
     ("Dr.Ahmed", "Hassan", "Dr.", "Ahmed"),      # glued, cut at its full stop (#1477)
     ("Prof. Dr. Anna", "Berg", "Prof. Dr.", "Anna"),
     ("Dr. Anna Maria", "Berg", "Dr.", "Anna Maria"),
-])
+)
+
+
+@pytest.mark.parametrize(("given", "family", "title", "got"), _TITLED_ROWS)
 @pytest.mark.parametrize("fielded", [_ORCID_FIELDS, _PV_FIELDS], ids=["orcid", "patentsview"])
 def test_a_listed_title_typed_into_the_given_box_is_counted_apart(
         given: str, family: str, title: str, got: str, fielded: object) -> None:
@@ -617,10 +624,12 @@ def test_a_title_typed_into_the_forename_box_beside_an_empty_title_box_is_counte
     (_held("Dr", "Berg"), _ORCID_FIELDS, {"given+middle": ""}),
     # A title typed into the family box, read as the title after it.
     (_held("Anna", "Berg Dr."), _ORCID_FIELDS, {"family": "Berg"}),
-    # Another field disagrees too, the given box agreeing (the family
-    # box's nickname is no family; the set check alone refuses it).
+    # Another field disagrees too, the given box agreeing with the title
+    # and names (the family box's bracketed word read as a nickname):
+    # the check of the other fields alone refuses it.
     (_held("Dr Anna", "Berg (Lee)"), _ORCID_FIELDS, {"family": "Berg"} | {
         "given+middle": "Anna"}),
+    # A word of the family box read into the given field.
     (_held("Dr Anna", "Berg Silva"), _ORCID_FIELDS, {"given+middle": "Anna Berg",
                                                      "family": "Silva"}),
     # The box holds more than the title and the names read (a nickname),
@@ -649,18 +658,16 @@ def test_a_title_word_the_parse_reads_as_a_given_name_agrees() -> None:
     assert (reading.got, reading.titled) == ({}, "")
 
 
-#: How many of the class's rows (the parametrized rows above, read as
-#: ORCID records) the scorer read as misses before #1501: the guard's
-#: negative control, re-taken whenever its rows or the parse move.
-_TITLED_ROWS = (("Dr. Anna", "Berg"), ("Dr/ Anna", "Berg"), ("د. منى", "حسن"),
-                ("Dr.Ahmed", "Hassan"), ("Prof. Dr. Anna", "Berg"), ("Dr. Anna Maria", "Berg"))
+#: How many of the class's rows (_TITLED_ROWS, read as ORCID records)
+#: the scorer read as misses before #1501: the guard's negative control,
+#: re-taken whenever its rows or the parse move.
 _UNTITLED_EFFECT = 6
 
 
 def test_the_titled_class_is_counted_apart_from_the_agreement_figure(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(agreement, "GROUP_FLOOR", 1)
-    rows = [_held(g, f) for g, f in _TITLED_ROWS] + [_held("Ann", "Lee"),
+    rows = [_held(g, f) for g, f, _t, _n in _TITLED_ROWS] + [_held("Ann", "Lee"),
                                                      _held("Xyz. Anna", "Berg")]
     result = agreement.score(rows, _ORCID_FIELDS, Parser())
     assert result.scored == {"NZ": 2} and result.agreed == {"NZ": 1}
@@ -676,8 +683,8 @@ def test_the_titled_class_is_counted_apart_from_the_agreement_figure(
     monkeypatch.setattr(agreement, "titled", lambda *args: False)
     off = agreement.score(rows, _ORCID_FIELDS, Parser())
     assert not off.titled
-    assert sum(bool(agreement.read(r, _ORCID_FIELDS, Parser(), _LISTED).got)
-               for r in rows[:6]) == _UNTITLED_EFFECT
+    off = agreement.score(rows[:6], _ORCID_FIELDS, Parser())
+    assert sum(off.scored.values()) - sum(off.agreed.values()) == _UNTITLED_EFFECT
 
 
 def test_a_record_entering_or_leaving_the_titled_class_is_reported_apart() -> None:

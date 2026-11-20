@@ -90,9 +90,11 @@ name is evidence of nothing; the 2026-10-30 entry of
 decisions/vocabulary-model filtered so); PSC's are set aside by
 local_agreement.read with the default's title words, the same records
 in every column, and a record either column reads with a listed title
-typed into the given-names box (local_agreement.titled, #1501; in PSC a
-title in the forename box with the title box empty) is dropped from
-both. Each group is its first --cap records in raw.jsonl's
+typed into the given-names box (local_agreement.titled, #1501) is
+dropped from both: in PSC a title in the forename box with the title
+box empty, and in ORCID and PatentsView the few the title-word filter
+above does not drop (`Dr/ Anna`, a title the default does not list).
+Each group is its first --cap records in raw.jsonl's
 order.
 
 **score**: configurations scored against the filed boxes, a row a group.
@@ -1062,9 +1064,10 @@ def score_rows(rows: Sequence[dict[str, str]], fielded: local_agreement.Fielded,
                readings: Sequence[tuple[Reading, ...]], listed: frozenset[str]
                ) -> tuple[int, list[SpecScore]]:
     """`rows` scored under each configuration's reading: the records
-    scored (local_agreement.read's set-aside, judged under the first
-    configuration, and its title typed into the given-names box, under
-    any, each dropped from every column) and each one's score."""
+    scored, less those local_agreement.read sets aside under the first
+    configuration and those any configuration reads into the titled
+    class (local_agreement.titled), each dropped from every column, and
+    each configuration's score."""
     n_specs = len(readings[0]) if readings else 0
     out = [SpecScore() for _ in range(n_specs)]
     scored = 0

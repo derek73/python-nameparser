@@ -43,7 +43,9 @@ the commonest disagreement shapes, a shape being each disagreeing
 field's word count as filed and as parsed (`middle 0->1, family 2->1` is
 a two-word surname whose first word was read as a middle name), and the
 set-aside title boxes at least TITLE_FLOOR records share (a word that
-many filers typed is no one person's name, though it may be a name).
+many filers typed is no one person's name, though it may be a name),
+and the class of a title typed into the given-names box (titled): its
+size, its records per group and the titles read there.
 `--list N` prints up to N moved records of each kind, names and all, for
 reading at one's own terminal.
 
@@ -439,8 +441,9 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
            + " ".join(f"{r:>8}" for r in roles)
            + (f" {'titled':>8}" if result.titled else "")]
-    # By the records a group holds, the class among them, so the class
-    # does not reorder groups of one size (a country at ORCID's cap).
+    # By the records a group holds, the class among them, so a group's
+    # place does not fall with its class (every country at ORCID's cap
+    # holds as many); groups of one size keep the order they were met.
     sizes = result.scored + result.titled_groups
     for group, _size in sizes.most_common():
         if (n := result.scored[group]) < floor:
@@ -621,13 +624,15 @@ def _record_command(source: str) -> str:
 
 def moves(old: dict[str, dict[str, Any]], new: dict[str, dict[str, Any]],
           ) -> dict[str, list[str]]:
-    """Each record whose reading moved, by kind: `regression` (it agreed
-    and now does not), `progress` (it disagreed and now agrees),
-    `changed` (it disagrees, or is set aside, differently), and apart
-    from those `titled in` and `titled out`, a record entering or
-    leaving the class of a title typed into the given-names box
-    (titled), which is neither agreeing nor missing. Both sides read the
-    same fetch, so no record is gained or lost."""
+    """Each record whose reading moved, by kind: `titled in` and
+    `titled out`, a record entering or leaving the class of a title
+    typed into the given-names box (titled), which is neither agreeing
+    nor missing, whichever side it came from or went to (a record that
+    agreed and is now titled is `titled in`, never a regression); then,
+    outside the class, `regression` (it agreed and now disagrees),
+    `progress` (it disagreed and now agrees) and `changed` (it
+    disagrees, is set aside, or is titled, differently). Both sides read
+    the same fetch, so no record is gained or lost."""
     found: dict[str, list[str]] = {"regression": [], "progress": [], "changed": [],
                                    "titled in": [], "titled out": []}
     for k in sorted(set(old) | set(new)):
