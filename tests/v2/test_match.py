@@ -1798,6 +1798,44 @@ def test_a_pair_reads_whichever_way_the_source_wrote_it(
         assert matching.keys(a) & matching.keys(b)
 
 
+@pytest.mark.parametrize("a, b, key", [
+    # Wikidata's people named two ways, reviewed (decisions/
+    # name-matching, 2026-11-20 #1387): Hungarian, Czech, Polish and
+    # Russian familiar forms ORCID's holders did not evidence
+    ("Erzsi Nagy", "Erzsébet Nagy", "nagy;e"),
+    ("Jóska Kovács", "József Kovács", "kovacs;j"),
+    ("Zsuzsi Kiss", "Zsuzsanna Kiss", "kiss;z"),
+    ("Jára Novák", "Jaroslav Novák", "novak;j"),
+    ("Mietek Kowalski", "Mieczysław Kowalski", "kowalski;m"),
+    ("Женя Иванов", "Евгений Иванов", "иванов;е"),
+])
+def test_a_familiar_form_from_wikidata_is_consistent_where_accepted(
+        a: str, b: str, key: str) -> None:
+    r = _familiar.check(a, b)
+    assert r.consistent
+    assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
+    assert key in _familiar.keys(a) & _familiar.keys(b)
+
+
+@pytest.mark.parametrize("a, b", [
+    # the review's translation (another language's form) and a pair
+    # its two readers split ship nowhere
+    ("Josef Novák", "József Novák"),
+    ("Bob Novák", "Bohumír Novák"),
+])
+def test_a_wikidata_pair_the_review_did_not_agree_on_is_no_familiar_form(
+        a: str, b: str) -> None:
+    assert not _familiar.check(a, b).consistent
+
+
+def test_an_alternate_spelling_from_wikidata_is_read_in_its_script() -> None:
+    # Ukrainian writes Геннадій with one н or two
+    spelling = _with(Outcome.ALTERNATE_SPELLING)
+    assert spelling.check("Генадій Петренко", "Геннадій Петренко").consistent
+    assert not _familiar.check("Генадій Петренко",
+                               "Геннадій Петренко").consistent
+
+
 @pytest.mark.parametrize("a, b", [
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
@@ -2091,11 +2129,16 @@ def test_a_choice_of_languages_keeps_its_own_alternate_spellings() -> None:
         return {frozenset((r.text, n)) for r in index()
                 if r.kind == "spelling" and r.tag in tags
                 for n in r.props["spelling_of"]}
+    from nameparser._reading_index import is_native_script
     uk_only = pairs({"uk"}) - pairs({"en", "mul"})
-    assert uk_only
+    native = {p for p in uk_only if all(map(is_native_script, p))}
+    assert native and uk_only - native
     for a, b in map(sorted, uk_only):
         assert b in ukrainian._alternate_spellings(a)
-        assert b not in english._alternate_spellings(a)
+        # a strict choice keeps a native-script word's readings whatever
+        # their file (Генадій / Геннадій, #1387), and no Latin one's
+        assert (b in english._alternate_spellings(a)) == (
+            frozenset((a, b)) in native)
 
 
 def test_a_callers_spelling_extends_the_shipped_ones() -> None:

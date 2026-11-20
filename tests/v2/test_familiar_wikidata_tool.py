@@ -141,6 +141,16 @@ def test_a_name_labelled_in_mul_alone_is_read_in_the_countrys_language() -> None
     assert _found(p, ("hu", "de")) == set()
 
 
+@pytest.mark.parametrize("given", ["Иван/Ваня", "Иванa"])
+def test_a_given_name_label_that_is_no_name_word_pairs_nothing(
+        given: str) -> None:
+    # a slash-joined label and one holding a Latin letter in Cyrillic
+    labels = {**_LABELS, "Q9": {"ru": {given}}}
+    p = tool.Person(given={"Q9"}, family={"Q13"},
+                    labels={"ru": ["Ваня Иванов"]})
+    assert tool.relations(p, labels, ("ru",), _TITLES) == set()
+
+
 def test_two_scripts_and_one_folded_name_pair_nothing() -> None:
     p = tool.Person(given={"Q1"}, family={"Q10"},
                     labels={"hu": ["Kovács Jozsef"]})
@@ -160,18 +170,33 @@ def test_a_person_counts_once_a_pair_whichever_relations_found_it() -> None:
 
 def test_the_rows_leave_out_the_known_pairs_and_the_thin_ones() -> None:
     found = [(f"Q{i}", "hu", tool.Found("Józsi", "József", "hu", "label"))
-             for i in range(3)]
+             for i in range(2)]
     found += [("Q9", "hu", tool.Found("Kati", "Katalin", "hu", "label")),
               ("Q8", "sk", tool.Found("Józsi", "József", "sk", "label"))]
     pairs = tool.mine(found)
-    rows = tool.rows(pairs, 2, set())
-    assert [r[:4] + r[5:6] for r in rows] == [
-        ["józsef", "józsi", "wikidata", "3", "hu"]]
-    assert tool.rows(pairs, 1, {frozenset(("józsef", "józsi"))})[0][:2] == [
-        "katalin", "kati"]
-    # a pair in two languages lists each it reaches the bar in
-    both = tool.rows(pairs, 1, set())[0]
-    assert (both[3], both[5]) == ("4", "hu sk")
+    # the bar counts a pair's people in every language together, and
+    # the row lists each language it was found in
+    assert [r[:6] for r in tool.rows(pairs, 3, set())] == [
+        ["józsef", "józsi", "wikidata", "3", "", "hu sk"]]
+    assert [r[:2] for r in tool.rows(pairs, 1, {frozenset(("józsef", "józsi"))})] == [
+        ["katalin", "kati"]]
+
+
+def test_spellings_the_match_folds_alike_are_one_candidate() -> None:
+    # the match reads Алена and Алёна as one name, so the review must
+    # read them as one pair (#1387's first draw proposed both, and its
+    # readers split one and agreed on the other)
+    found = [(f"Q{i}", "ru", tool.Found("Алёна", "Елена", "ru", "label"))
+             for i in range(3)]
+    found += [("Q9", "ru", tool.Found("Алена", "Елена", "ru", "label")),
+              ("Q8", "by", tool.Found("Алена", "Елена", "be", "label"))]
+    rows = tool.rows(tool.mine(found), 1, set())
+    assert [(r[0], r[1], r[3], r[5]) for r in rows] == [
+        ("алёна", "елена", "5", "be ru")]
+    # the bar counts the merged spellings' people
+    assert tool.rows(tool.mine(found), 6, set()) == []
+    # and a reviewed pair is known in every spelling folded alike
+    assert tool.rows(tool.mine(found), 1, {frozenset(("алена", "елена"))}) == []
 
 
 def test_an_answer_cut_by_a_timeout_is_refused() -> None:

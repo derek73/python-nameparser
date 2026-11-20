@@ -456,9 +456,17 @@ def relations(person: Person, labels: Mapping[str, Mapping[str, set[str]]],
     return {f for f in out if _pairable(f.x, f.y)}
 
 
+def _one_script(word: str) -> bool:
+    return len({fc.script(c) for c in word}) == 1
+
+
 def _pairable(x: str, y: str) -> bool:
-    """Two different names in one script."""
-    return (_match_fold(x) != _match_fold(y)
+    """Two different name words, each written in one script and both in
+    the same: a given-name item's label is a name word too only once
+    tested (`Сол/Саул`, `Богданa` with a Latin `a`)."""
+    return (fc.is_name_word(x) and fc.is_name_word(y)
+            and _one_script(x) and _one_script(y)
+            and _match_fold(x) != _match_fold(y)
             and fc.script(x) == fc.script(y))
 
 
@@ -508,23 +516,40 @@ HEADER = ["a", "b", "source", "holders", "shape", "languages", "relations",
           "countries"]
 
 
+def _folded_pair(a: str, b: str) -> frozenset[str]:
+    """The pair as the name match reads it, each name folded
+    (`Алена` and `Алёна` one name)."""
+    return frozenset((_match_fold(a), _match_fold(b)))
+
+
 def rows(pairs: Pairs, minimum: int,
          known: set[frozenset[str]]) -> list[list[str]]:
-    """The candidate rows: a pair at `minimum` people or more in a
-    language, not yet reviewed, its languages joined; most people first."""
-    merged: dict[tuple[str, str], list[tuple[str, Evidence]]] = {}
+    """The candidate rows: each pair as the name match reads it, its
+    spellings, languages and people merged (`Алена` and `Алёна` one
+    name) and written as its most attested spelling; at `minimum` people
+    or more in all, and not yet reviewed in any spelling the match folds
+    alike; most people first."""
+    seen = {_folded_pair(*pair) for pair in known if len(pair) == 2}
+    merged: dict[frozenset[str], list[tuple[str, str, str, Evidence]]] = {}
     for (a, b, tag), ev in pairs.items():
-        if len(ev.people) >= minimum and frozenset((a, b)) not in known:
-            merged.setdefault((a, b), []).append((tag, ev))
+        key = _folded_pair(a, b)
+        if key not in seen:
+            merged.setdefault(key, []).append((a, b, tag, ev))
     out = []
-    for (a, b), evs in merged.items():
-        people_ = set().union(*(ev.people for _, ev in evs))
+    for evs in merged.values():
+        people_ = set().union(*(ev.people for *_, ev in evs))
+        if len(people_) < minimum:
+            continue
+        spelled: collections.Counter[tuple[str, str]] = collections.Counter()
+        for a, b, _, ev in evs:
+            spelled[a, b] += len(ev.people)
+        (a, b), _ = min(spelled.items(), key=lambda kv: (-kv[1], kv[0]))
         rel: collections.Counter[str] = sum(
-            (ev.relations for _, ev in evs), collections.Counter())
+            (ev.relations for *_, ev in evs), collections.Counter())
         cty: collections.Counter[str] = sum(
-            (ev.countries for _, ev in evs), collections.Counter())
+            (ev.countries for *_, ev in evs), collections.Counter())
         out.append([a, b, SOURCE, str(len(people_)), fc.shape(a, b),
-                    " ".join(sorted(t for t, _ in evs)),
+                    " ".join(sorted({t for _, _, t, _ in evs})),
                     ", ".join(f"{r} {n}" for r, n in sorted(rel.items())),
                     ", ".join(f"{c} {n}" for c, n in cty.most_common())])
     out.sort(key=lambda r: (-int(r[3]), r[0], r[1]))
@@ -557,7 +582,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("pairs", help="write the candidates from the cache")
     p.add_argument("--country", action="append", metavar="CODE")
     p.add_argument("--min", type=int, default=1,
-                   help="the fewest people a pair needs in a language")
+                   help="the fewest people a pair needs, its languages "
+                        "together (#1387's review read 2)")
     args = parser.parse_args(argv)
     qids = _countries(args.country)
     if args.command == "fetch":

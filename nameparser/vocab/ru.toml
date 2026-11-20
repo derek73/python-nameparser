@@ -130,6 +130,74 @@ text = "vlad"
 familiar = { short_for = ["vladislav", "vladyslav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
+text = "алекс"
+familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "алесь"
+familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "алик"
+familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "алёна"
+familiar = { short_for = ["елена"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "даша"
+familiar = { short_for = ["дарья"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "женя"
+familiar = { short_for = ["евгений"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "катя"
+familiar = { short_for = ["екатерина"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "коста"
+familiar = { short_for = ["константин"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "котэ"
+familiar = { short_for = ["константин"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "лена"
+familiar = { short_for = ["елена"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "лео"
+familiar = { short_for = ["леонид"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "маша"
+familiar = { short_for = ["мария"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "митя"
+familiar = { short_for = ["дмитрий"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "наташа"
+familiar = { short_for = ["наталья"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "саша"
+familiar = { short_for = ["александр", "александра"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "шура"
+familiar = { short_for = ["александр"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "юра"
+familiar = { short_for = ["юрий"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
 text = "aleksej"
 spelling = { spelling_of = ["aleksei"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
@@ -604,5 +672,105 @@ spelling = { spelling_of = ["zoriana"], note = "found in CC0 or public-domain da
 [[word]]
 text = "zoya"
 spelling = { spelling_of = ["zoia"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "арон"
+spelling = { spelling_of = ["аарон"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "бауыржан"
+spelling = { spelling_of = ["бауржан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "бахытжан"
+spelling = { spelling_of = ["бакытжан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "валерьян"
+spelling = { spelling_of = ["валериан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "вальдас"
+spelling = { spelling_of = ["валдас"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "вартан"
+spelling = { spelling_of = ["вардан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "геворк"
+spelling = { spelling_of = ["геворг"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "гэри"
+spelling = { spelling_of = ["гарий"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "джиа"
+spelling = { spelling_of = ["гия"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "ибрахим"
+spelling = { spelling_of = ["ибрагим"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "илларион"
+spelling = { spelling_of = ["иларион"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "кадыр"
+spelling = { spelling_of = ["кадир"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "карэн"
+spelling = { spelling_of = ["карен"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "меир"
+spelling = { spelling_of = ["меер"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "мухаммед"
+spelling = { spelling_of = ["мухаммат"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "наталья"
+spelling = { spelling_of = ["наталия"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "оганес"
+spelling = { spelling_of = ["ованес"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "оссип"
+spelling = { spelling_of = ["осип"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "отари"
+spelling = { spelling_of = ["отар"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "саркис"
+spelling = { spelling_of = ["саргис"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "тахир"
+spelling = { spelling_of = ["таир"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "уильям"
+spelling = { spelling_of = ["вильям"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "умар"
+spelling = { spelling_of = ["омар"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "эдмонд"
+spelling = { spelling_of = ["эдмон"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+
+[[word]]
+text = "юлиян"
+spelling = { spelling_of = ["юлиан"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --
