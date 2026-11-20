@@ -1141,8 +1141,8 @@ CASES: tuple[Case, ...] = (
          "Tuan Aminah binti Tuan Yusof",
          {"given": "Tuan", "middle": "Aminah", "family": "binti Tuan Yusof"},
          locale="ms", classification="feat(#1179)",
-         notes="tuan is no title under the pack (decisions/vocabulary-"
-               "collisions, the 2026-11-19 #1179 entry); 3.1.0 reads it "
+         notes="tuan is no title under the pack (decisions/salutation-"
+               "titles, the 2026-11-19 #1179 entry); 3.1.0 reads it "
                "so; 1.4.0 read middle 'Aminah binti Tuan', family 'Yusof'"),
     # #1231: the Burmese pack. Burmese names have no family name, so the
     # last word lands in family by position. Each row's notes checked

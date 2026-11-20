@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "cik"
-salutation = { default = false, gender = "f", issue = [606, 1179], decided = 2026-11-19, expands = "Miss, before a woman's name: \"Cik Siti binti Ahmad\"", note = "#606 left it out as unverified; the 2015 honours list writes it before women's names 11 times of 1,504 (#1179). Also a hereditary prefix borne as a name in Kelantan, and so read by a Malay choice only: ORCID's Malaysian holders write it first in 2 records, one with it in the given box as a name (Cik Rohaida), one with it alone in the given box (the salutation typed in); the given box 8 and family box 2 of 62,996 Malaysian holders; my-candidates 2, both CIK GU, cikgu written in two words (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
+salutation = { default = false, gender = "f", issue = [606, 1179], decided = 2026-11-19, after_given = true, expands = "Miss, before a woman's name: \"Cik Siti binti Ahmad\"", note = "#606 left it out as unverified; the 2015 honours list writes it before women's names 11 times of 1,504 (#1179). Also a hereditary prefix borne as a name in Kelantan, and so read by a Malay choice only: ORCID's Malaysian holders write it first in 2 records, one with it in the given box as a name (Cik Rohaida), one with it alone in the given box (the salutation typed in); the given box 8 and family box 2 of 62,996 Malaysian holders; my-candidates 2, both CIK GU, cikgu written in two words (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
 
 [[word]]
 text = "encik"
@@ -10,12 +10,12 @@ salutation = { issue = 606, gender = "m", after_given = true }
 
 [[word]]
 text = "puan"
-salutation = { default = false, gender = "f", issue = [606, 1179], decided = 2026-11-19, expands = "Mrs., Madam: \"Puan Siti binti Ahmad\"", note = "off by default, an Indonesian given name (Puan Maharani), as #606 left it out: ORCID's given box 8 Indonesian holders of 252,703 and 1 Malaysian of 62,996; on under a Malay choice, the 2015 honours list writing it in the title run of 295 of 1,504 names (#1179); my-candidates 1, PUAN SRI, the wife of a Tan Sri (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
+salutation = { default = false, gender = "f", issue = [606, 1179], decided = 2026-11-19, after_given = true, expands = "Mrs., Madam: \"Puan Siti binti Ahmad\"", note = "off by default, an Indonesian given name (Puan Maharani), as #606 left it out: ORCID's given box 8 Indonesian holders of 252,703 and 1 Malaysian of 62,996; on under a Malay choice, the 2015 honours list writing it in the title run of 295 of 1,504 names (#1179); my-candidates 1, PUAN SRI, the wife of a Tan Sri, which reads given SRI until the phrase is a title (#1180) (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
 
 [[word]]
 text = "tuan"
 [word.excluded.salutation]
-reason = "Mr., Sir, written before a name in official lists: the 2015 honours list holds it in 39 title runs of 1,504 (#1179); left out even under a Malay choice, being the hereditary prefix Malaysians file as part of the name, repeated before the father's (Tuan Aminah binti Tuan Yusof): 16 ORCID and 6 PatentsView Malaysian records open with it, all in the given box, 5 of 5 Malaysian names write it after bin, and the given box holds it 52 times and the family box 44 of 62,996 Malaysian ORCID holders; and a Vietnamese given name (Tuấn), in ORCID's given box 760 times among 46,170 Vietnamese holders. As a salutation under the Malay choice it moved ORCID MY from 76.72% to 76.70%, PatentsView MY 90.56% to 90.50%, and the Vietnamese records of ORCID, PatentsView and Companies House down 0.5 to 1.5 points (config_diff.py score, 2026-11-19)"
+reason = "Mr., Sir, written before a name in official lists: the 2015 honours list, a newspaper's text and the only evidence of the salutation, holds it in 39 title runs of 1,504 (#1179); left out even under a Malay choice, being the hereditary prefix Malaysians file as part of the name, repeated before the father's (Tuan Aminah binti Tuan Yusof): 16 ORCID and 6 PatentsView Malaysian records open with it, 22 of 22 in the given box, my-candidates' 3,077 distinct names open with it 3 times, 2 of them the phrase TUAN GURU, 5 of 5 Malaysian names write it after bin, and the given box holds it 52 times and the family box 44 of 62,996 Malaysian ORCID holders; and a Vietnamese given name (Tuấn), in ORCID's given box 760 times among 46,170 Vietnamese holders. As a salutation under the Malay choice it moved ORCID MY from 76.72% to 76.70%, PatentsView MY 90.56% to 90.50%, and the Vietnamese records of ORCID, PatentsView and Companies House down 0.5 to 1.5 points (config_diff.py score, 2026-11-19)"
 issue = 1179
 decided = 2026-11-19
 
@@ -25,7 +25,7 @@ religious = { default = false, gender = "m", issue = 1179, decided = 2026-11-19,
 
 [[word]]
 text = "ustazah"
-religious = { default = false, gender = "f", issue = 1179, decided = 2026-11-19, same_as = "ustaz", expands = "a woman religious teacher", note = "3 of my-candidates' 3,077 distinct names open with USTAZAH, 2 more after DR or DATO'; no bearer in ORCID, PatentsView or Wikidata (2026-11-19)" }
+religious = { default = false, gender = "f", issue = 1179, decided = 2026-11-19, same_as = "ustaz", expands = "a woman religious teacher", note = "3 of my-candidates' 3,077 distinct names open with USTAZAH, 2 more after DR or DATO'; ORCID's family box holds it once (Indonesia), and no bearer in PatentsView or Wikidata (2026-11-19)" }
 
 [[word]]
 text = "sultan"

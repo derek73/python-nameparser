@@ -12,14 +12,15 @@ or is written so only in Malaysian lists.
 ``Tuan`` is left a name word under the pack too: Malaysians who file
 their own names write it first as the hereditary prefix, repeated before
 the father's name (``Tuan Aminah binti Tuan Yusof``), where honours
-lists write it as the salutation (decisions/vocabulary-collisions, the
-2026-11-19 #1179 entry).
+lists write it as the salutation (decisions/salutation-titles, the 2026-11-19
+#1179 entry).
 
 The pack is a plain choice, not a strict one: Malaysian lists mix
 Malay, Chinese and Indian names with English and Arabic titles, and a
 strict choice of ``ms`` drops the readings other languages' files give
-them (``abdul``'s, ``Dr``'s), so it reads Malaysia's ORCID holders
-worse than the default (the same entry).
+them (``abdul``'s bound reading, English titles such as ``Sir`` and
+``Lawyer``), so it reads Malaysia's ORCID holders worse than the
+default (the same entry).
 
 Data sources: the counts on each reading in ms.toml
 (tools/name_usage.py; Malaysia's election candidates and ORCID's,

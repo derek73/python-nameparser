@@ -440,6 +440,7 @@ def test_ms_pack_contents() -> None:
 
 @pytest.mark.parametrize("text, title, given, family", [
     ("Puan Siti binti Ahmad", "Puan", "Siti", "binti Ahmad"),
+    # Hajah is no title yet (#1180), so it is read as the given name
     ("Puan Hajah Siti binti Ahmad", "Puan", "Hajah", "binti Ahmad"),
     ("PUAN SITI AMINAH", "PUAN", "SITI", "AMINAH"),
     ("Cik Nadia binti Rahman", "Cik", "Nadia", "binti Rahman"),
@@ -449,6 +450,11 @@ def test_ms_pack_contents() -> None:
     ("Encik Ahmad bin Ali", "Encik", "Ahmad", "bin Ali"),   # by default too
     ("Dr. Puan Siti Aminah", "Dr. Puan", "Siti", "Aminah"),
     ("Ahmad, Puan Siti", "Puan", "Siti", "Ahmad"),
+    # a salutation ending the given part after a family comma (rules/H8),
+    # as Encik reads by default
+    ("Ahmad, Siti Puan", "Puan", "Siti", "Ahmad"),
+    ("Rahman, Nadia Cik", "Cik", "Nadia", "Rahman"),
+    ("Hafiz Omar Ustaz.", "Ustaz.", "Hafiz", "Omar"),
 ])
 def test_ms_reads_the_malay_titles(text: str, title: str, given: str,
                                    family: str) -> None:
@@ -461,7 +467,7 @@ def test_ms_reads_the_malay_titles(text: str, title: str, given: str,
 @pytest.mark.parametrize("text", [
     # tuan stays a name word under the choice: the hereditary prefix,
     # repeated before the father's name, and a Vietnamese given name
-    # (decisions/vocabulary-collisions, the 2026-11-19 #1179 entry)
+    # (decisions/salutation-titles, the 2026-11-19 #1179 entry)
     "Tuan Aminah binti Tuan Yusof",
     "Ahmad bin Tuan Ismail",
     "Tuan Nguyen",
@@ -476,11 +482,35 @@ def test_ms_leaves_these_as_the_default_reads_them(text: str) -> None:
     assert _require_packed("ms").parse(text).as_dict() == _default_parse(text)
 
 
+def test_ms_reads_the_indonesian_puan_as_the_title() -> None:
+    # the accepted cost of choosing the pack for Indonesian names
+    # (decisions/salutation-titles, the 2026-11-19 #1179 entry)
+    name = _require_packed("ms").parse("Puan Maharani")
+    assert (name.title, name.given, name.family) == ("Puan", "", "Maharani")
+    # and Puan Sri, the wife of a Tan Sri, reads Sri as the given name
+    # until the phrase is a title (#1180)
+    sri = _require_packed("ms").parse("Puan Sri Aminah Yusof")
+    assert (sri.title, sri.given) == ("Puan", "Sri")
+
+
+def test_ms_is_plain_since_strict_drops_other_languages_readings() -> None:
+    # why the pack is a plain choice (decisions/salutation-titles, the
+    # 2026-11-19 #1179 entry): a strict choice of ms drops ar.toml's
+    # bound reading of Abdul, so the given name loses its second word
+    text = "Abdul Rahman bin Ali"
+    assert _require_packed("ms").parse(text).given == "Abdul Rahman"
+    assert _default_parse(text)["given"] == "Abdul Rahman"
+    strict = parser_for(locales.MS, strict=True).parse(text)
+    assert (strict.given, strict.middle) == ("Abdul", "Rahman")
+
+
 @pytest.mark.parametrize("text", ["Puan Maharani", "Tuan Nguyen",
                                   "Nguyen Van Tuan", "Cik Rohaida Hak"])
 def test_ms_words_move_no_indonesian_or_vietnamese_choice(text: str) -> None:
-    # puan is an Indonesian given name: the default and a choice of id
-    # keep it, and a choice of vi reads none of ms.toml's words
+    # puan is an Indonesian given name: the default keeps it, and so do a
+    # choice of id and one of vi, neither of which reads ms.toml (no file
+    # but ms.toml holds any of its words, so these hold while the default
+    # does)
     indonesian = parser_for(Locale(code="id", lexicon=Lexicon.empty(),
                                    languages=frozenset({"id"})))
     assert indonesian.parse(text).as_dict() == _default_parse(text)
@@ -2354,8 +2384,10 @@ _ROTATORS["my"] = [
     "Thein Sein Daw.",               # daw, dotted, ending the name (rules/H5)
     "Sir U Kyaw Win",                # u behind a title
 ]
-# ms (#1179): each word the choice turns on at the head, in each case,
-# behind a listed title, after a family comma and alone after a comma
+# ms (#1179): the words the choice turns on, across these positions: at
+# the head, in each case, behind a listed title, after a family comma,
+# ending the given part after one (rules/H8), alone after a comma, and
+# dotted at the end of the name (rules/H5)
 _ROTATORS["ms"] = [
     "Puan Siti binti Ahmad",         # puan
     "PUAN SITI AMINAH",              # puan, in one case
@@ -2367,6 +2399,9 @@ _ROTATORS["ms"] = [
     "USTAZAH ZAINAB",                # ustazah, in one case
     "Cikgu Ahmad bin Ali",           # cikgu
     "CIKGU ZAKRI",                   # cikgu with one name word (rules/H1)
+    "Ahmad, Siti Puan",              # puan ending the given part (H8)
+    "Rahman, Nadia Cik",             # cik ending the given part (H8)
+    "Hafiz Omar Ustaz.",             # ustaz, dotted, ending the name (H5)
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted

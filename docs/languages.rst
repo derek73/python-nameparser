@@ -1459,16 +1459,19 @@ pack reads ``Puan`` (Mrs.), ``Cik`` (Miss), ``Ustaz`` and ``Ustazah``
     >>> hafiz.title, hafiz.given, hafiz.family
     ('USTAZ', 'HAFIZ', 'BIN OMAR')
 
-Each is off by default because a name elsewhere is written with it:
-``Puan`` is an Indonesian given name, so the default keeps
-``Puan Maharani``'s given name, and the pack does not. Choose the pack
+Each is off by default, because a name elsewhere is written with it or
+because only Malaysian lists write it: ``Puan`` is an Indonesian given
+name, so the default keeps ``Puan Maharani``'s given name, and the pack
+does not. Choose the pack
 for Malaysian lists, not Indonesian ones.
 
 On Malaysia's election candidates, 3,077 distinct names written in
 capitals, the pack reads 117 differently from the default, each a title
 the default read as the given name: ``USTAZ`` 69, ``CIKGU`` 41,
-``USTAZAH`` 4. Two write ``Cikgu`` in two words (``CIK GU``), and read
-title ``CIK``, given ``GU``. Among the records ORCID, PatentsView and
+``USTAZAH`` 4, ``CIK`` 2 and ``PUAN`` 1. The two ``CIK`` are ``Cikgu``
+written in two words (``CIK GU``), and read given ``GU``, and the
+``PUAN`` opens ``Puan Sri``, the wife of a Tan Sri, and reads given
+``SRI`` until the phrase is a title (:issue:`1180`). Among the records ORCID, PatentsView and
 Companies House hold of Malaysians, Indonesians, Singaporeans and
 Vietnamese, each split into boxes by the person or the filer, the share
 whose boxes the parse matches does not move (measured 2026-11-19,
@@ -1498,8 +1501,8 @@ Plain, not strict
 
 Choose the pack plainly. Malaysian lists mix Malay, Chinese and Indian
 names with English and Arabic titles, and a strict choice of ``ms``
-reads no other language's words, ``Abdul``'s join and the English
-titles among them: it matches the boxes of 76.16% of ORCID's
+reads only the words of ``ms`` and those shared by every language, so
+it drops ``Abdul``'s join and English titles such as ``Sir``: it matches the boxes of 76.16% of ORCID's
 Malaysian holders, against 76.72% for the plain choice (measured
 2026-11-19).
 
