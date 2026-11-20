@@ -327,6 +327,8 @@ TITLES: frozenset[str] = frozenset({
     'air',
     'akhoond',
     'alderman',
+    'alhaj',
+    'alhajj',
     'almoner',
     'ambassador',
     'amn',
@@ -797,6 +799,7 @@ TITLES: frozenset[str] = frozenset({
     'monsignor',
     'most',
     'mother',
+    'moulana',
     'mountaineer',
     'mpco-cg',
     'mr',
@@ -928,6 +931,7 @@ TITLES: frozenset[str] = frozenset({
     'pursuivant',
     'pv2',
     'pvt',
+    'qari',
     "queen's",
     'ra',
     'rabbi',
@@ -1731,6 +1735,8 @@ TITLE_MODIFIERS: frozenset[str] = frozenset({
 })
 
 TITLE_STYLES: frozenset[str] = frozenset({
+    'alhaj',
+    'alhajj',
     'ch.ma',
     'ch.mo',
     'cheikh',
@@ -4743,6 +4749,7 @@ SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
         '2ndlt': ('2lt',),
         'adm': ('admiral',),
         'adv': ('advocate',),
+        'alhajj': ('alhaj',),
         'assist': ('assistant',),
         'assoc': ('associate',),
         'asst': ('assistant',),

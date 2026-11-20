@@ -1155,6 +1155,62 @@ CASES: tuple[Case, ...] = (
          notes="tuan is no title under the pack (decisions/salutation-"
                "titles, the 2026-11-19 #1179 entry); 3.1.0 reads it "
                "so; 1.4.0 read middle 'Aminah binti Tuan', family 'Yusof'"),
+    # #1469: the religious honorifics written before a name in Pakistan
+    # and Bangladesh. Qari, Moulana, Alhaj and Alhajj are titles by
+    # default; Hafiz, Maulana and Haji, borne as given names, and Syed
+    # stay name words (decisions/indic-honorifics, 2026-11-19 #1469).
+    Case("qari_opening_a_name_is_the_title",
+         "Qari Ahmed Khan",
+         {"title": "Qari", "given": "Ahmed", "family": "Khan"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read given 'Qari', middle 'Ahmed'"),
+    Case("moulana_opening_a_name_is_the_title",
+         "Moulana Fazal Karim",
+         {"title": "Moulana", "given": "Fazal", "family": "Karim"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read given 'Moulana', middle 'Fazal'"),
+    Case("alhaj_in_capitals_opening_a_name_is_the_title",
+         "ALHAJ AHMED KARIM",
+         {"title": "ALHAJ", "given": "AHMED", "family": "KARIM"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read given 'ALHAJ', middle 'AHMED'"),
+    Case("alhajj_opening_a_name_is_the_title",
+         "Alhajj Rafiq Uddin",
+         {"title": "Alhajj", "given": "Rafiq", "family": "Uddin"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read given 'Alhajj', middle 'Rafiq'"),
+    Case("qari_opening_the_given_part_after_a_family_comma_is_the_title",
+         "Khan, Qari Ahmed",
+         {"title": "Qari", "given": "Ahmed", "family": "Khan"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read given 'Qari', middle 'Ahmed'"),
+    Case("qari_behind_a_salutation_joins_the_title",
+         "Mr Qari Ahmed Khan",
+         {"title": "Mr Qari", "given": "Ahmed", "family": "Khan"},
+         classification="feat(#1469)",
+         notes="1.4.0 through 3.1.0 read title 'Mr', given 'Qari'"),
+    Case("qari_ending_a_name_is_a_name_word",
+         "Ahmed Khan Qari",
+         {"given": "Ahmed", "middle": "Khan", "family": "Qari"},
+         notes="a bare title ending a name is a name word (rules/H5); "
+               "Qari is a surname written last"),
+    Case("hafiz_opening_a_name_stays_the_given_name",
+         "Hafiz Ahmed Khan",
+         {"given": "Hafiz", "middle": "Ahmed", "family": "Khan"},
+         notes="borne as a given name, so no title by default (#1469)"),
+    Case("maulana_opening_a_name_stays_the_given_name",
+         "Maulana Imran Latif",
+         {"given": "Maulana", "middle": "Imran", "family": "Latif"},
+         notes="an Indonesian given name too, so no title by default "
+               "(#1469); the spelling Moulana is one"),
+    Case("haji_opening_a_name_stays_the_given_name",
+         "Haji Rafiq Uddin",
+         {"given": "Haji", "middle": "Rafiq", "family": "Uddin"},
+         notes="borne as a given name, so no title by default (#1469)"),
+    Case("syed_opening_a_name_stays_the_given_name",
+         "Syed Imran Latif",
+         {"given": "Syed", "middle": "Imran", "family": "Latif"},
+         notes="the given name its bearers file it as (#1469)"),
     # #1231: the Burmese pack. Burmese names have no family name, so the
     # last word lands in family by position. Each row's notes checked
     # against the 1.4.0, 2.0.0, 2.4.0, 2.8.2 and 3.1.0 wheels on

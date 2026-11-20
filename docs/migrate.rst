@@ -909,7 +909,8 @@ list, with reasoning, is in each release's section of
        ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
    * - 3.2
-     - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``
+     - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``,
+       religious titles before a name
      - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
@@ -2323,3 +2324,28 @@ apart. In a name of three words ``Abdul`` still stays apart:
     >>> haddad = parse("Haddad, Nadia Abd Karim")
     >>> haddad.middle, haddad.suffix
     ('Abd Karim', '')
+
+Religious titles before a name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``Qari``, ``Moulana``, ``Alhaj`` and ``Alhajj``, written before a name
+in Pakistan and Bangladesh, are titles, where 1.4 through 3.1 read them
+as the given name. ``Hafiz``, ``Hafez``, ``Haji`` and the spelling
+``Maulana`` are still read as given names, since many people bear them
+as names:
+
+.. doctest::
+
+    >>> qari = parse("Qari Ahmed Khan")
+    >>> qari.title, qari.given, qari.family
+    ('Qari', 'Ahmed', 'Khan')
+    >>> parse("Hafiz Ahmed Khan").given
+    'Hafiz'
+
+To read one of the four as a name, remove its reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("qari", kind="religious"))
+    >>> as_31.parse("Qari Ahmed Khan").given
+    'Qari'
