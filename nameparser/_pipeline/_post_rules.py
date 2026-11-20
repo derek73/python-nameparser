@@ -63,6 +63,7 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
+import dataclasses
 from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
@@ -77,7 +78,7 @@ from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, CAPITALS_FAMILY_TAG, COMMA_CHARS,
     COMMA_STRIP, NAME_ROLES,
     PATRONYMIC_TAG,
-    BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
+    BOUND_PHRASE_TAG, BOUND_SECOND_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG, SURNAME_PAIR_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
@@ -263,6 +264,58 @@ def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
     tokens[i] = copy_with(tokens[i], role=role)
 
 
+def _split_a_lone_backward_pair(state: ParseState, tokens: list[WorkToken],
+                                ambiguities: list[PendingAmbiguity]) -> bool:
+    """A pair P12 joined from its second word that holds every name word
+    the parse read is split back, in place: its first word takes the
+    order's first position and its second the order's other name role,
+    as P5's reserve leaves a bound word's pair of two name words, and
+    the one-word report assign made of it is withdrawn. True where it
+    split one."""
+    # the caller has found the two name words adjacent, the first
+    # carrying the pair's tag
+    first = next(i for i, t in enumerate(tokens)
+                 if t.role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY))
+    second = first + 1
+    # rules/P5's two exceptions to its reserve, read alike: after a
+    # family comma the family is fixed and the pair is the given name,
+    # and a given-name title asserts that a given name follows
+    if (state.structure is Structure.FAMILY_COMMA and state.comma_offsets
+            and tokens[first].span.start > state.comma_offsets[0]):
+        return False
+    titles = [i for i, t in enumerate(tokens[:first]) if t.role is Role.TITLE]
+    if titles and _run_addresses_by_given(
+            (tokens[i].text for i in _addressing_run(titles, first)),
+            state.lexicon._sets.given_name_titles):
+        return False
+    order = state.order or state.policy.name_order
+    other = order[2] if order[1] is Role.MIDDLE else order[1]
+    tokens[first] = copy_with(
+        tokens[first], role=order[0],
+        tags=tokens[first].tags - {BOUND_PHRASE_TAG, BOUND_SECOND_TAG})
+    _retag(tokens, second, other)
+    ambiguities[:] = [a for a in ambiguities
+                      if not (a.kind is AmbiguityKind.GIVEN_OR_FAMILY
+                              and {first, second} & set(a.indices))]
+    # a report on a later word named the field it would take beside ONE
+    # name unit; beside two, under a family-first order with the given
+    # name second, that word would be the third, the middle (assemble
+    # folds it into the family under middle_as_family); a word after a
+    # comma names the given name for the comma's other reading, which
+    # no count of units moves
+    if order[0] is Role.FAMILY and order[1] is Role.GIVEN:
+        comma = state.comma_offsets[0] if state.comma_offsets else None
+        for k, a in enumerate(ambiguities):
+            alt = a.alternative
+            if (alt is not None and alt.role is Role.GIVEN and a.indices
+                    and min(a.indices) > second
+                    and (comma is None
+                         or tokens[max(a.indices)].span.start < comma)):
+                ambiguities[k] = dataclasses.replace(
+                    a, alternative=dataclasses.replace(alt, role=Role.MIDDLE))
+    return True
+
+
 # rules/P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
 # its own, a trailing suffix begins"
@@ -287,7 +340,8 @@ def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     lone-piece site test would not fire at all.) The bound-given join grouping
     never built at all: P5 joins only where the bound word is the
     first non-title piece, save a listed two-word given name P12
-    joins past the first name word (#694), and at a fold site the first piece
+    joins past the first name word (#694) and a pair P12 joins from
+    its listed second word (#1072), and at a fold site the first piece
     is the particle -- "ibn Awf abdul Rahman" reaches here as four
     separate pieces. The tag is the only witness in both cases.
 
@@ -327,8 +381,8 @@ def _family_word_count(tokens: list[WorkToken], family: list[int],
     as one, as the word O6 takes is counted (#959). A bound word counts
     with the word that completes it, the pair P12 joins being one name
     ('عبد الله', #694)."""
-    # rules/P12: "the two words are one name unit past the first name word"
-    # -- so the bound word counts with the word after it
+    # rules/P12: "the two words are one name unit, past the first name word"
+    # -- so the pair's first word counts with the word after it
     words = sum(1 if hyphen_joins
                 else len([part for part in _HYPHENS.split(tokens[i].text)
                           if part])
@@ -824,7 +878,10 @@ def _divide_family(tokens: list[WorkToken], family: list[int],
                 bare = False
                 if not completes:
                     named += 1
-            completes = "vocab:bound-given" in tag
+            # the word before is a bound given-name word, or the first
+            # word of a pair joined from its second (#1072)
+            completes = ("vocab:bound-given" in tag
+                         or BOUND_SECOND_TAG in tag)
         if named > 1 or bare and (len(unit) > 1 or unit is first):
             return False
     _mark_surname(tokens, sorted(first + attached), FIRST_SURNAME_TAG)
@@ -1326,6 +1383,16 @@ def post_rules(state: ParseState) -> ParseState:
         _set_apart_clauses(state, tokens)
         _report_delimited_members(tokens, state.lexicon, ambiguities)
     titles, givens, middles, families = _positions(tokens)
+    # rules/P12: "A pair read from its second word needs a third name
+    # word" -- asked of the parse, once roles are settled, so the
+    # trailing run's reading is the one counted (decisions/P12, #1072)
+    # the tag test inline, in C, so that a name of two words with no
+    # such pair pays no frame for it
+    names = givens + middles + families
+    if (len(names) == 2 and max(names) == min(names) + 1
+            and BOUND_SECOND_TAG in tokens[min(names)].tags
+            and _split_a_lone_backward_pair(state, tokens, ambiguities)):
+        titles, givens, middles, families = _positions(tokens)
 
     # rules/H1: "a title followed by exactly one name word makes
     # that word the family name, whatever suffix, nickname or maiden

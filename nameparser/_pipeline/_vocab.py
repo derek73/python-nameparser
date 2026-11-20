@@ -2339,9 +2339,10 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     order, partitioning `range(len(tags))`: one name word each, except
     where another rule has already made several words one name -- a
     particle and the words it chains (P2), a conjunction-joined run
-    (P3), and a bound given-name word with the word it completes (P5).
-    Each element is the tag set of one token, read for "particle",
-    "conjunction", "vocab:bound-given" and "vocab:suffix".
+    (P3), a bound given-name word with the word it completes (P5), and
+    a pair P12 joined from its second word (#1072). Each element is the
+    tag set of one token, read for "particle", "conjunction",
+    "vocab:bound-given", "vocab:bound-second" and "vocab:suffix".
 
     `chain` picks how far a particle reaches. True is P2's chain: the
     particle run and every word after it up to the next stop ("van der
@@ -2386,6 +2387,10 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
             end = i + 1
             if "vocab:bound-given" in tags[i] and end < n:
                 end = end_of(end)
+            elif "vocab:bound-second" in tags[i] and end < n:
+                # a pair joined from its second word: the word and the
+                # one word after it (rules/P12, #1072)
+                end += 1
         while end + 1 < n and "conjunction" in tags[end]:
             end = end_of(end + 1)
         return end

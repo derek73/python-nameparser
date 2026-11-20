@@ -39,7 +39,8 @@ from typing import Any, TypedDict
 #: feeds. For title, suffix, particle and conjunction, the category's own
 #: name is also a kind (`title = {}`: a title not yet classified), so
 #: classifying a word later moves no set. bound_given's one kind shares
-#: its category's name; the relation (birth_marker) and name (given,
+#: its category's name, and so does bound_second's, the word a bound
+#: pair writes second and joins from (rules/P12, #1072); the relation (birth_marker) and name (given,
 #: family) categories have no generic kind. Kind
 #: names are unique across categories; a fine kind arrives with its
 #: category's classification, in a core PR, as one row here. The
@@ -85,6 +86,7 @@ CATEGORY: dict[str, str] = {
     "alias": "particle",
     "conjunction": "conjunction",
     "bound_given": "bound_given",
+    "bound_second": "bound_second",
     "birth_marker": "relation",
     "given": "name",
     "family": "name",
@@ -124,6 +126,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
     "bound_given": frozenset({"completed_by", "completes_any", "cased",
                               "default", "long_names_only"}),
+    "bound_second": frozenset({"completes", "cased", "default"}),
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
     "familiar": frozenset({"default"}),
@@ -667,6 +670,9 @@ class Compiled(TypedDict):
     BOUND_PHRASES: frozenset[str]
     BOUND_COMPLETES_ANY: frozenset[str]
     BOUND_LONG_NAMES_ONLY: frozenset[str]
+    BOUND_SECONDS: frozenset[str]
+    BOUND_SECOND_PHRASES: frozenset[str]
+    BOUND_SECONDS_LISTED: frozenset[str]
     SAME_AS: dict[str, dict[str, tuple[str, ...]]]
     SAME_AS_NAMED: dict[str, frozenset[str]]
     FAMILIAR: dict[str, tuple[str, ...]]
@@ -724,6 +730,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     bound_phrases: set[str] = set()
     completes_any: set[str] = set()
     long_names_only: set[str] = set()
+    seconds: set[str] = set()
+    second_phrases: set[str] = set()
+    open_seconds: set[str] = set()
     cased: dict[str, str] = {}
     same_as: dict[str, dict[str, set[str]]] = {
         g: {} for g in SAME_AS_GROUPS.values()}
@@ -812,6 +821,12 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 completes_any.add(t)
                 if r.flag("long_names_only"):
                     long_names_only.add(t)
+        elif category == "bound_second":
+            seconds.add(t)
+            if p.get("completes"):
+                second_phrases.update(f"{w} {t}" for w in p["completes"])
+            else:
+                open_seconds.add(t)
         elif category == "relation":
             markers.add(t)
     contested = titles & given - particles
@@ -919,6 +934,17 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # only in a name of four words or more (#1464)
         BOUND_COMPLETES_ANY=frozenset(completes_any),
         BOUND_LONG_NAMES_ONLY=frozenset(long_names_only),
+        # the bound_second readings, the word a bound pair writes second
+        # and joins from, and the pairs those written `completes` list
+        # ('ذو الغنى'), the only ones such a word joins: one with no
+        # `completes` joins behind any plain word, at the first name
+        # word too (rules/P12, #1072)
+        BOUND_SECONDS=frozenset(seconds),
+        BOUND_SECOND_PHRASES=frozenset(second_phrases),
+        # the words every reading of which lists `completes`: those join
+        # behind their listed words alone, where one reading listing none
+        # joins behind any plain word
+        BOUND_SECONDS_LISTED=frozenset(seconds - open_seconds),
         # every reading's `same_as` in the group of its kind: the words
         # it is a listed spelling of (`wm` of `william` among given
         # names, `junior` of `jr` among suffixes, `sr` of both `señor`

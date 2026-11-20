@@ -228,6 +228,10 @@ A kind belongs to a category, which decides what the reading does:
      - The word joins the word after it into one given name
        (`Bound given names`_).
      - ``bound_given``
+   * - bound_second
+     - The word joins the word before it into one name (``عز الدين``),
+       added in 3.2 (`Bound given names`_).
+     - ``bound_second``
    * - relation
      - The name after the word is the maiden name (``née``).
      - ``birth_marker``
@@ -325,6 +329,9 @@ arguments to ``add``:
      - bound_given
      - The words it joins past the first name word
        (`Bound given names`_).
+   * - ``completes=[...]``
+     - bound_second
+     - The only words it joins behind (`Bound given names`_).
    * - ``after_particle=True``
      - ``given``
      - Behind a particle the word completes a given name, so
@@ -1186,6 +1193,26 @@ with the pair as the family, state ``abdul``'s reading without
     ...        .add("abdul", kind="bound_given", completes_any=True))
     >>> Parser(lexicon=lex).parse("Tariq Abdul Aziz").family
     'Abdul Aziz'
+
+A ``bound_second`` reading (3.2) is the other end of such a pair: the
+word written second, which joins the word before it. Arabic script
+writes many given names as a word and ``الدين`` ("of the faith") or
+``الله`` after it, the word before varying, so ``الدين`` and ``الله``
+join any plain word before them, at the start of a name too, where the
+pair is the given name. ``الغنى`` and ``الفقار`` are written
+``completes=["ذو"]``, joining behind ``ذو`` alone; a word that lists
+them joins behind those words only. A name of two name words keeps
+them apart, as it keeps ``عبد الله``:
+
+.. doctest::
+
+    >>> noor = parse("نور الدين سامر حداد")
+    >>> noor.given, noor.middle
+    ('نور الدين', 'سامر')
+    >>> parse("سامر عز الدين").family
+    'عز الدين'
+    >>> parse("عز الدين").given
+    'عز'
 
 .. _rendering-arguments:
 

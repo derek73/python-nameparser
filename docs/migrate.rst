@@ -2325,6 +2325,30 @@ apart. In a name of three words ``Abdul`` still stays apart:
     >>> haddad.middle, haddad.suffix
     ('Abd Karim', '')
 
+A pair written with الدين or الله second
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Arabic script, ``الدين`` and ``الله`` (``الدین``, ``اله`` and
+``اللہ`` in Persian and Urdu spelling) join the word before them into
+one name, and ``ذو`` joins ``الغنى`` and ``الفقار``. Position places the
+pair: the given name where it opens the name, the family name where it
+ends it. 1.4 through 3.1 split a pair opening or ending the name. A
+name of two name words still keeps them apart, as it keeps ``عبد الله``:
+
+.. doctest::
+
+    >>> noor = parse("نور الدين سامر حداد")
+    >>> noor.given, noor.middle
+    ('نور الدين', 'سامر')
+    >>> parse("سامر عز الدين").family
+    'عز الدين'
+    >>> parse("عز الدين").given
+    'عز'
+
+``Lexicon.add`` accepts the new kind, ``bound_second``, for a word of
+your own written second in such a pair, with ``completes=[...]`` naming
+the only words it joins behind.
+
 Arabic-script titles written short, and initials in Arabic script
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

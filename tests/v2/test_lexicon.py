@@ -1033,6 +1033,47 @@ def test_completes_any_and_long_names_only_are_rule_p12s_switches_both_ways() ->
     assert family(alone, "Nadia Ali Abdou Rahim") == "Rahim"
 
 
+def test_bound_second_is_rule_p12s_backward_switch_both_ways() -> None:
+    # a caller's bound_second reading joins the plain word before it
+    # wherever it stands, `completes` narrows it to the words listed,
+    # and removing a shipped one gives the pair back (rules/P12, #1072)
+    def read(lex: Lexicon, text: str) -> dict[str, str]:
+        n = Parser(lexicon=lex).parse(text)
+        return {"given": n.given, "middle": n.middle, "family": n.family}
+    default = Lexicon.default()
+    assert read(default, "Samir Nour zzend")["family"] == "zzend"
+    added = default.add("zzend", kind="bound_second")
+    assert read(added, "Samir Nour zzend")["family"] == "Nour zzend"
+    assert read(added, "Nour zzend Samir Haddad")["given"] == "Nour zzend"
+    listed = default.add("zzend", kind="bound_second", completes=["dhu"])
+    assert read(listed, "Samir Nour zzend")["family"] == "zzend"
+    assert read(listed, "Samir Dhu zzend")["family"] == "Dhu zzend"
+    assert read(default, "سامر عز الدين")["family"] == "عز الدين"
+    removed = default.remove("الدين", kind="bound_second")
+    assert read(removed, "سامر عز الدين") == {
+        "given": "سامر", "middle": "عز", "family": "الدين"}
+    # a second word the vocabulary reads otherwise too joins nothing
+    titled = added.add("zzend", kind="title")
+    assert read(titled, "Samir Nour zzend")["family"] == "zzend"
+    assert pickle.loads(pickle.dumps(added)) == added
+
+
+@pytest.mark.parametrize("prop", ["completes", "completed_by"])
+def test_a_pair_list_refuses_an_empty_list_and_a_phrase(prop: str) -> None:
+    kind = "bound_second" if prop == "completes" else "bound_given"
+    with pytest.raises(ValueError, match="at least one word") as refused:
+        Lexicon.default().add("zzend", kind=kind, **{prop: []})
+    # the fix the message offers runs and clears a shipped list: الغنى
+    # then joins behind any plain word
+    assert f"{prop}=None" in str(refused.value)
+    if prop == "completes":
+        opened = Lexicon.default().add("الغنى", kind="bound_second",
+                                       completes=None)
+        assert Parser(lexicon=opened).parse("سامر نور الغنى").family == "نور الغنى"
+    with pytest.raises(ValueError, match="must be single words"):
+        Lexicon.default().add("zzend", kind=kind, **{prop: ["dhu nour"]})
+
+
 @pytest.mark.parametrize("flag", ["completes_any", "long_names_only"])
 def test_p12s_switches_refuse_a_non_bool_and_another_kind(flag: str) -> None:
     with pytest.raises(TypeError, match=flag):
@@ -1920,6 +1961,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "CAPITALIZED_PARTICLES", "CAPITAL_OPENING_PARTICLES", "DOTTED_TITLES",
         "GLUED_TITLES",
         "BOUND_PHRASES", "BOUND_COMPLETES_ANY", "BOUND_LONG_NAMES_ONLY",
+        "BOUND_SECONDS", "BOUND_SECOND_PHRASES", "BOUND_SECONDS_LISTED",
         "SAME_AS", "SAME_AS_NAMED", "FAMILIAR",
         "ALTERNATE_SPELLINGS"}
     assert public_in_2x <= named

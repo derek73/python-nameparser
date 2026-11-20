@@ -4685,6 +4685,26 @@ BOUND_LONG_NAMES_ONLY: frozenset[str] = frozenset({
     'abdul',
 })
 
+BOUND_SECONDS: frozenset[str] = frozenset({
+    'الدين',
+    'الدین',
+    'الغنى',
+    'الفقار',
+    'الله',
+    'اللہ',
+    'اله',
+})
+
+BOUND_SECOND_PHRASES: frozenset[str] = frozenset({
+    'ذو الغنى',
+    'ذو الفقار',
+})
+
+BOUND_SECONDS_LISTED: frozenset[str] = frozenset({
+    'الغنى',
+    'الفقار',
+})
+
 SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
     'family': {
         'ad-': ('al-',),

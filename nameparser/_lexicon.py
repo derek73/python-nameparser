@@ -601,6 +601,15 @@ class _LexiconSets:
     #: do so only in a name of four words or more (rules/P12, #1464)
     bound_completes_any: frozenset[str]
     bound_long_names_only: frozenset[str]
+    #: the words a bound pair writes second and joins from, and the
+    #: pairs a reading written `completes` lists ('ذو الغنى'); a word
+    #: with a reading listing none joins behind any plain word, at the
+    #: first name word too (rules/P12, #1072)
+    bound_seconds: frozenset[str]
+    bound_second_phrases: frozenset[str]
+    #: the words of `bound_seconds` every reading of which lists
+    #: `completes`, joining behind those words alone
+    bound_seconds_listed: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -644,6 +653,9 @@ _COMPILED_FIELDS = {
     "bound_phrases": "BOUND_PHRASES",
     "bound_completes_any": "BOUND_COMPLETES_ANY",
     "bound_long_names_only": "BOUND_LONG_NAMES_ONLY",
+    "bound_seconds": "BOUND_SECONDS",
+    "bound_second_phrases": "BOUND_SECOND_PHRASES",
+    "bound_seconds_listed": "BOUND_SECONDS_LISTED",
 }
 
 #: What the 2.x sets do not record: the kinds the views read (rules/R8,
@@ -935,6 +947,7 @@ def _unwritten(kind: str, prop: str) -> object:
 _LIST_PROPS: Mapping[str, str] = MappingProxyType({
     "attaches": "title kinds or title words, e.g. attaches=['military']",
     "completed_by": "single words, e.g. completed_by=['الله']",
+    "completes": "single words, e.g. completes=['ذو']",
     "short_for": "given names, e.g. short_for=['maxwell']",
     "spelling_of": "given names, e.g. spelling_of=['olga']",
 })
@@ -1007,11 +1020,19 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                 f"normalizing to nothing, got {value!r}; write e.g. "
                 f"{prop}={['maxwell'] if prop == 'short_for' else ['olga']!r}")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
-        if prop == "completed_by" and any(" " in w for w in folded):
-            # rules/P12 joins a bound word to the ONE word after it
-            raise ValueError(f"completed_by entries must be single words, "
-                             f"got {value!r}; list each completing word "
-                             f"on its own")
+        if prop in ("completed_by", "completes") and not folded:
+            # an empty list would leave `completes` unwritten, which
+            # joins behind ANY plain word, the widest reading; the build
+            # refuses it too (#1072)
+            raise ValueError(f"{prop} must list at least one word, got "
+                             f"{value!r}; write {prop}=None to clear a "
+                             f"list the word's reading has")
+        if prop in ("completed_by", "completes") and any(" " in w for w in folded):
+            # rules/P12 joins two words: a bound word to the one word
+            # after it (completed_by), a bound_second word to the one
+            # before it (completes)
+            raise ValueError(f"{prop} entries must be single words, "
+                             f"got {value!r}; list each word on its own")
         if prop in ("short_for", "spelling_of") and any(
                 " " in w for w in folded):
             # the match compares a given name word by word
@@ -1930,8 +1951,8 @@ class LexiconReading:
     #: :class:`ReadingKind`, which is the parse's.
     kind: str
     #: The kind's category (``"title"``, ``"suffix"``, ``"particle"``,
-    #: ``"conjunction"``, ``"bound_given"``, ``"relation"``,
-    #: ``"name"``).
+    #: ``"conjunction"``, ``"bound_given"``, ``"bound_second"``,
+    #: ``"relation"``, ``"name"``).
     category: str
     #: The behavioral properties as sorted ``(name, value)`` pairs,
     #: spelled as the files spell them (``("addresses", "given")``), a
@@ -2437,14 +2458,17 @@ class Lexicon:
             ``nameparser._reading_index.CATEGORY`` (``"title"``,
             ``"office"``, ``"credential"``, ``"generation"``,
             ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
-            ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
+            ``"bound_second"`` (3.2), ``"birth_marker"``, ``"given"``,
+            ``"family"``, ...), and
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"`` on a suffix word reading
             and ``attached="before"`` on a one-word title reading (rules/W2
             and W6),
-            ``may_be_initial=True``, ``completed_by=[...]`` on a
-            ``bound_given`` reading, ``after_particle=True`` on a
+            ``may_be_initial=True``, ``completed_by=[...]``,
+            ``completes_any=True`` and ``long_names_only=True`` on a
+            ``bound_given`` reading, ``completes=[...]`` on a
+            ``bound_second`` reading, ``after_particle=True`` on a
             ``given`` reading, ``shared=True`` on a name reading,
             ``capital_opening=True`` on a particle reading,
             ``dotted=True`` on a title reading, and
