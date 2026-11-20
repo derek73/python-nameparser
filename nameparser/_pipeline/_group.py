@@ -509,11 +509,10 @@ def _leaves_the_given_part(j: int,
 def _ends_an_alias(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     """rules/N4's boundaries inside a part: a word with a patronymic
     reading, or another marker of either kind."""
-    if len(piece) != 1:
-        return False
     tags = tokens[piece[0]].tags
-    return (PATRONYMIC_TAG in tags or ALIAS_MARKER_TAG in tags
-            or "vocab:maiden-marker" in tags)
+    return len(piece) == 1 and (
+        PATRONYMIC_TAG in tags or ALIAS_MARKER_TAG in tags
+        or "vocab:maiden-marker" in tags)
 
 
 # rules/N4: "a marker that counts takes the words after it as the
@@ -1977,12 +1976,9 @@ def group(state: ParseState) -> ParseState:
     # a plain loop, no frame, for a name with no clause
     starts: list[int] | None = None
     for role, clause in state.extracted:
-        if role is Role.MAIDEN:
-            tag = "vocab:maiden-marker"
-        elif role is Role.NICKNAME:
-            tag = ALIAS_MARKER_TAG
-        else:
-            continue
+        # extract gives a clause one of the two roles
+        tag = ("vocab:maiden-marker" if role is Role.MAIDEN
+               else ALIAS_MARKER_TAG)
         if starts is None:
             # map over a C getter, no frame: a name with a nickname
             # clause pays none for this (decisions/parse-cost)

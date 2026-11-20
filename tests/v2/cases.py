@@ -22924,4 +22924,10 @@ CASES: tuple[Case, ...] = (
          {"given": "Rahim", "family": "Osman", "nickname": "Jaki Dr Ali"},
          classification="fix(#1164)",
          notes="a title inside the given part is its walk's name word"),
+    Case("alias_marker_given_part_hands_back_a_trailing_title_run",
+         "Smith, John @ Jack Prof. Dr.",
+         {"title": "Prof. Dr.", "given": "John", "family": "Smith",
+          "nickname": "Jack"},
+         classification="fix(#1164)",
+         notes="a title followed by another opens the trailing run"),
 )
