@@ -283,6 +283,44 @@ because the same names are written given-first in running text. The
 order belongs to the record, so it goes in a ``Policy`` you choose for
 that source.
 
+Malaysia's election lists are another such source: they write a
+Chinese name family first (``TAN KOK LEONG``), nearly every three-word
+Chinese name on them (the count is in
+``docs/design/decisions/O4-positional-assignment-and-declared-order.md``).
+Such a name often writes its given name as two words, which a
+family-first order reads as a given name and a middle name;
+:ref:`two-given-names-chinese` shows the setting that keeps them
+together.
+
+.. _mixed-name-order:
+
+A list that mixes orders
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A source can also mix orders, name by name. Singapore's Parliament
+list writes some members with a Chinese surname given first (in the
+shape of ``Grace Lim``) and others family first (``Tan Kok Leong``),
+and the spelling does not reliably tell which (a short name such as
+``Koh Ann`` may be either): of its 77 such members, 27 are written given first and 33 family first, and most of the rest
+carry an English name as well (:issue:`1183` has the counts).
+Malaysia's lists mix orders too: a candidate known by an English
+given name is written given first (``GRACE TAN``), the Chinese names
+family first.
+
+No one setting reads such a list. The default order reads the names written given
+first, and ``FAMILY_FIRST`` with ``two_given_names`` the names written
+family first, so each setting misreads the other group.
+
+The order then has to come from outside the name: a separate field in
+the source, or capitals where the source writes the family name in
+them (:ref:`capitals-as-family`), which helps only where the list writes
+the rest of the name in mixed case. ``Parser.suggest`` cannot supply
+it: it suggests no order where neither order holds the share it needs
+(:ref:`suggest-deciding`), as for Malaysia's Chinese candidates, and
+where the names written one way carry more of the evidence, it
+suggests that order for the whole list. Either way the names written
+the other way stay misread.
+
 A comma still wins
 ~~~~~~~~~~~~~~~~~~
 
@@ -698,6 +736,42 @@ two:
 The switch leaves Kaur and Singh as middle names (see
 :ref:`kaur-singh`).
 
+.. _two-given-names-chinese:
+
+Chinese given names written as two words
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Singapore and Malaysia often write the two syllables of a Chinese given
+name as two words, family name first (:ref:`name-order`). Under
+``FAMILY_FIRST`` alone the second syllable is a middle name; with
+``two_given_names`` on too the given name keeps both:
+
+.. doctest::
+
+    >>> tan = family_first.parse("Tan Wei Ming")
+    >>> tan.family, tan.given, tan.middle
+    ('Tan', 'Wei', 'Ming')
+    >>> two_syllables = Parser(policy=Policy(name_order=FAMILY_FIRST,
+    ...                                      two_given_names=True))
+    >>> tan_two = two_syllables.parse("Tan Wei Ming")
+    >>> tan_two.family, tan_two.given, tan_two.middle
+    ('Tan', 'Wei Ming', '')
+
+For a list written family first throughout, ``Parser.suggest`` decides
+the order. It does not suggest ``two_given_names``, so add that
+yourself:
+
+.. doctest::
+
+    >>> chinese_list = ["Tan Kok Leong", "Lim Boon Keat", "Ong Siew Ting",
+    ...                 "Goh Wei Jie", "Teo Boon Leong", "Koh Siew Ting",
+    ...                 "Chen Kok Keat", "Wang Wei Jie"]
+    >>> Parser().suggest(chinese_list).patch
+    PolicyPatch(name_order=FAMILY_FIRST)
+
+A list that mixes the two orders needs the order from elsewhere (see
+:ref:`mixed-name-order`).
+
 Given names written with a particle
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -942,6 +1016,13 @@ write:
 - **A credential with no comma before it**: ``John Smith MD`` gives
   family ``MD``.
 - **Joined initials**: ``Jan GM Brouwer`` gives family ``GM``.
+- **A title written in capitals, with no full stop, where no other
+  word of the name is in capitals**: ``DR Anna Berg`` gives family
+  ``DR``, middle ``Berg``. A title that can also open a surname, as
+  ``ST`` or ``FREIHERR`` can, stays the title. Such a name does not write its
+  family name in capitals, so it is not in the format the switch is
+  for; where the family is in capitals too, the title keeps its place
+  (``DR Anna BERG`` gives title ``DR``, family ``BERG``).
 
 In ORCID researchers' own boxes, where one box holds the words in
 capitals, it is the family box nine times in ten (the counts are in
