@@ -333,8 +333,9 @@ says which parts each pack is made of.
        | ``Tiago Barros Queiroz`` → family ``Barros Queiroz``
    * - ``pt_pt``
      - Portuguese from Portugal
-     - ``pt`` with two family names and ``pt_br``'s given-name list. See
-       :ref:`portuguese-two-family-names`.
+     - ``pt`` with two family names and ``pt_br``'s given-name list, and
+       ``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz`` as given names. See
+       :ref:`portuguese-two-family-names` and :ref:`portuguese-packs`.
      - ``Rui Sousa Pinto`` → family ``Sousa Pinto``, where ``pt`` gives
        ``Pinto``
    * - ``ru``
@@ -617,8 +618,9 @@ costs the other languages' readings of those words.
 Most of these packs are described in :doc:`languages`, where the table
 above links each. Two groups are described here: the Irish and Scottish
 Gaelic packs (:ref:`gaelic-clan-particles`), and the Portuguese ones,
-which turn on ``da Piedade``, in ``pt_br`` ``SB``, and in ``pt_br``
-and ``pt_pt`` two family names (:ref:`portuguese-packs`).
+which turn on ``da Piedade``, in ``pt_br`` ``SB``, in ``pt_pt``
+``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz``, and in ``pt_br`` and
+``pt_pt`` two family names (:ref:`portuguese-packs`).
 
 .. _gaelic-clan-particles:
 
@@ -674,6 +676,22 @@ does by default (see :ref:`two-given-names`):
     >>> piedade = parser_for(locales.PT).parse("Maria da Piedade Costa")
     >>> piedade.middle, piedade.family
     ('da Piedade', 'Costa')
+
+``pt_pt`` also reads four such phrases that Portugal's names support
+and Brazil's refute: ``do Rosário``, ``do Carmo``, ``da Conceição`` and ``da Luz``. ``pt`` and ``pt_br`` read them as the
+start of the family:
+
+.. doctest::
+
+    >>> parser_for(locales.PT_BR).parse("Maria do Rosário Pinto").family
+    'do Rosário Pinto'
+    >>> rosario = parser_for(locales.PT_PT).parse("Maria do Rosário Pinto")
+    >>> rosario.middle, rosario.family
+    ('do Rosário', 'Pinto')
+
+``do Rosario``, without the accent, every pack's plain choice reads as a
+middle name, as Spanish ``del Rosario`` is read; a strict choice of
+``pt`` or ``pt_br``, which leaves Spanish out, reads it as the family.
 
 ``pt_br`` also turns on ``SB``. Brazilian filings abbreviate the
 agnomen *Sobrinho* (nephew) to ``SB``, which is also the S.B. degree,

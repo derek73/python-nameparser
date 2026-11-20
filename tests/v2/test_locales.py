@@ -2503,7 +2503,17 @@ _ROTATORS["pt_br"] = [
     "ANA SILVA E SOUZA",             # e, pt's connective
     *_PT_TWO_FAMILY_NAMES,
 ]
-_ROTATORS["pt_pt"] = [*_ROTATORS["pt"], *_PT_TWO_FAMILY_NAMES]
+_ROTATORS["pt_pt"] = [
+    *_ROTATORS["pt"],
+    # Portugal's own given names P10 completes, which pt_br's and pt's
+    # choices leave to the family (#1189)
+    "Maria do Carmo Costa",          # carmo
+    "Maria da Conceição Costa",      # conceição
+    "Maria da Conceicao Costa",      # conceicao
+    "Maria da Luz Costa",            # luz
+    "Maria do Rosário Costa",        # rosário
+    *_PT_TWO_FAMILY_NAMES,
+]
 
 
 # #1115 turned these titles on by default, so no choice moves them: the
@@ -3719,10 +3729,23 @@ def test_the_portuguese_country_packs_read_two_family_names_and_pt_does_not() ->
                                  languages=frozenset({tag})))
         assert not bare.policy.two_family_names, tag
     assert not parser_for(locales.PT).policy.two_family_names
-    # pt-PT.toml holds no word, so pt_pt's choice selects pt's file alone
-    assert selected(locales.PT_PT.languages) == {"pt"}
+    # pt-PT.toml holds Portugal's own readings (#1189), which pt_pt's
+    # choice turns on beside pt's and pt_br's does not
+    assert selected(locales.PT_PT.languages) == {"pt-PT", "pt"}
     assert (changed_words(selected(locales.PT_PT.languages))
-            == changed_words(selected(locales.PT.languages)))
+            - changed_words(selected(locales.PT.languages))
+            == {"carmo", "conceicao", "conceição", "luz", "rosário"})
+    assert "pt-PT" not in selected(locales.PT_BR.languages)
+    # a strict choice of Portugal reads them too, and the spelling without
+    # the accent, which only es.toml's reading gave a plain choice; a
+    # strict choice of Brazil or of the language reads none of them
+    for strict_pack, middle in ((locales.PT_PT, True), (locales.PT_BR, False),
+                                (locales.PT, False)):
+        strict = parser_for(strict_pack, strict=True)
+        for phrase in ("do Rosario", "do Rosário", "do Carmo", "da Conceição",
+                       "da Conceicao", "da Luz"):
+            parsed = strict.parse(f"Rita {phrase} Quaresma")
+            assert parsed.middle == (phrase if middle else ""), (strict_pack.code, phrase)
     pt, br, pp = (_require_packed(c) for c in ("pt", "pt_br", "pt_pt"))
     assert pt.parse("Rui Sousa Pinto").family == "Pinto"
     assert pt.parse("Pedro Sousa Alves Filho").family == "Alves"
