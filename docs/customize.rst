@@ -840,6 +840,31 @@ falls through to nickname parsing (``"John Smith (Ba)"``,
 ``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
 ambiguity.
 
+Malay names and bt
+^^^^^^^^^^^^^^^^^^
+
+``bt`` is listed as a credential, Baronet (``Sir John Smith Bt``),
+and Malay names write it for *binti*, between a woman's name and her
+father's. Written any way but in Title case, the credential reading
+takes the father's name into the suffix. A caller reading Malay names
+removes the reading:
+
+.. doctest::
+
+    >>> parse("Nur Aina bt Rosli").suffix
+    'bt Rosli'
+    >>> malay = Parser(lexicon=Lexicon.default().remove("bt", kind="credential"))
+    >>> aina = malay.parse("Nur Aina bt Rosli")
+    >>> aina.suffix, aina.family
+    ('', 'Rosli')
+
+Removing it costs a baronet his post-nominal: ``Sir John Smith Bt``
+then reads family ``Bt``, and ``Sir John Smith, Bt`` reads given
+``Bt``, the name before the comma the family. The default keeps the
+reading because ``bt`` is rare on the lists measured, a Malaysian one
+included (:issue:`1467`), and ``Bt`` written in Title case reads as a
+name word already (``Nur Aina Bt Rosli``).
+
 Generation words that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

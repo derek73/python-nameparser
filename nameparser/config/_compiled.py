@@ -3700,7 +3700,6 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'td',
     'thd',
     'thm',
-    'ud',
     'usa',
     'usaf',
     'usar',
