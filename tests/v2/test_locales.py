@@ -225,6 +225,9 @@ _FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
     # and a second half opening with a particle loses it to the middle
     ("Jean Dupont dit de Lebrun", ("Jean", "Dupont dit", "de Lebrun"),
      ("Jean", "Dupont dit de", "Lebrun")),
+    # after a family comma the surname reads whole
+    ("Dupont dit de Lebrun, Jean", ("Jean", "", "Dupont dit de Lebrun"),
+     ("Jean", "", "Dupont dit de Lebrun")),
 ])
 def test_dit_is_a_connective_under_a_french_choice_only(
         text: str, default: tuple[str, str, str],
@@ -246,6 +249,9 @@ def test_a_french_choice_lays_a_dit_name_out_by_a_family_first_order(
         parser, policy=dataclasses.replace(parser.policy, name_order=order))
     name = parser.parse(text)
     assert (name.given, name.middle, name.family) == (given, "", family)
+    # the particle cost's family-first form: the second half leaves the
+    # family (decisions/P3)
+    assert parser.parse("Dupont dit de Lebrun Jean").family == "Dupont dit de"
 
 
 def test_dit_stays_a_connective_when_french_is_stacked_or_strict() -> None:

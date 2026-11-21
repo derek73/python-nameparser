@@ -1395,7 +1395,8 @@ default does not, and reads the first half as a middle name:
 
 It is a choice rather than the default because ``Dit`` and ``Dite`` are
 also given names and surnames (a Cantonese and a Latvian given name, and
-a surname ``Dite``, among them), and the choice reads the word as a connective wherever it stands:
+a surname ``Dite``, among them), and the choice reads the word as a
+connective wherever it stands:
 
 - **A name of three words** with the name in the middle is read as one
   given name, as ``Juan and Garcia`` is (``Sok Dit Chan`` gives given
@@ -1418,9 +1419,14 @@ lower case under the choice (``JEAN DUPONT-DIT-LEBRUN`` gives ``Jean
 Dupont-dit-Lebrun``).
 
 The connective joins one word on each side, so a surname whose second
-half opens with a particle loses the particle to the middle name, in
-any language (``Jean Dupont dit de Lebrun`` gives family ``Lebrun``,
-``Karim Haddad dit Abou Nasr`` family ``Nasr``).
+half opens with a particle, in any language, is split where the name
+has no comma: written given name first, the particle goes to the middle
+name with the first half (``Jean Dupont dit de Lebrun`` gives family
+``Lebrun``, ``Karim Haddad dit Abou Nasr`` family ``Nasr``; of a run
+such as ``de la`` only the first word), and under a family-first order
+the second half leaves the family instead (``Dupont dit de Lebrun
+Jean`` gives family ``Dupont dit de``). After a family comma the
+surname is read whole (``Dupont dit de Lebrun, Jean``).
 
 .. _burmese-names:
 
