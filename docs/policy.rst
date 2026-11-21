@@ -1326,7 +1326,8 @@ an unlisted word as a credential from how it is written: in periods
 (``X.Y.Z.``), or in capitals (``XYZ``). The writing cannot settle it
 alone, because a surname can be written either way, so both fields
 also decide by position: the word has to stand behind a name that can
-spare it.
+spare it. For the ones written otherwise, see
+:ref:`finding-missing-credentials`.
 
 Both fields share one exception. Two letters alone right after a comma
 are how a person's initials are written, and the words before the comma
@@ -1546,22 +1547,28 @@ find the ones your data holds:
 1. Parse every name, and keep those whose text holds a comma and whose
    family name came out two or more words long.
 2. Count the given names of those kept.
-3. Read the top of the count. The credentials stand there, among
+3. Read the count from the top. The credentials stand near it, among
    real listings of a two-word surname (``Ana`` below), which only a
-   reader can tell apart.
+   reader can tell apart; in data rich in two-word surnames, such as
+   Spanish or Portuguese names, the given names can outnumber them.
 4. Add each credential to a :class:`~nameparser.Lexicon` (see
    :ref:`adding-a-word`) and build a :class:`~nameparser.Parser` on it.
+
+The count finds the comma shape, the one easiest to detect. An added
+word is read as a credential wherever it stands, ending a name with no
+comma included, where unlisted it reads as the family name.
 
 .. doctest::
 
     >>> from collections import Counter
+    >>> from nameparser import Lexicon, Parser, parse
     >>> records = ["Ana Ruiz Paz, PhDc", "Lena Moreau Diaz, Pharm-D",
     ...            "Tomas Vidal Ortega, PhDc", "Ruiz Paz, Ana"]
     >>> tally = Counter()
-    >>> for text in records:
-    ...     parsed = parse(text)
-    ...     if "," in text and len(parsed.family.split()) >= 2:
-    ...         tally[parsed.given] += 1
+    >>> for cred_text in records:
+    ...     cred_parsed = parse(cred_text)
+    ...     if "," in cred_text and len(cred_parsed.family.split()) >= 2:
+    ...         tally[cred_parsed.given] += 1
     >>> tally.most_common()
     [('PhDc', 2), ('Pharm-D', 1), ('Ana', 1)]
     >>> with_creds = Parser(lexicon=Lexicon.default().add(
@@ -1571,12 +1578,16 @@ find the ones your data holds:
     ('Ana', 'Paz', 'PhDc')
     >>> with_creds.parse("Ruiz Paz, Ana").given
     'Ana'
+    >>> parse("Ana Ruiz Paz PhDc").family, with_creds.parse("Ana Ruiz Paz PhDc").suffix
+    ('PhDc', 'PhDc')
 
 A non-empty ``ambiguities`` holding ``suffix-or-name`` marks a name
 where the parser weighed a credential against a name, as it does for
-the capitals shape. A mixed-case word it does not read by shape is
-never weighed, so it carries no report, and the count above is the way
-to find it:
+the capitals shape, and for an unlisted word behind a listed
+credential, which is read as a credential and reported
+(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word standing alone after
+the comma is never weighed, so it carries no report, and the count
+above is the way to find it:
 
 .. doctest::
 
@@ -1584,6 +1595,8 @@ to find it:
     ['suffix-or-name']
     >>> parse("Ana Ruiz Paz, PhDc").ambiguities
     ()
+    >>> [a.kind.value for a in parse("Ana Ruiz Paz, PhD PhDc").ambiguities]
+    ['suffix-or-name']
 
 .. _strip-flags:
 
