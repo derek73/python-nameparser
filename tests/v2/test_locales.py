@@ -207,12 +207,21 @@ _FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
      ("Jean", "", "Dupont dit Lebrun")),
     ("Traore, Mamadou dit Madou", ("Mamadou", "dit Madou", "Traore"),
      ("Mamadou dit Madou", "", "Traore")),
-    # a hyphenated dit name is one word, and dit opening a name a name
+    ("Dupont dit Lebrun, Jr.", ("Dupont", "dit", "Lebrun"),
+     ("Dupont dit Lebrun", "", "")),
+    (", Jean dit Lebrun", ("Jean", "dit Lebrun", ""),
+     ("Jean dit Lebrun", "", "")),
+    # a hyphenated dit name is one word, and dit opening a two-word name
+    # a name word
     ("Jean Dupont-dit-Lebrun", ("Jean", "", "Dupont-dit-Lebrun"),
      ("Jean", "", "Dupont-dit-Lebrun")),
     ("Dit Clapper", ("Dit", "", "Clapper"), ("Dit", "", "Clapper")),
-    # the choice's cost, decisions/P3: a name Dit in a three-word name
+    # the choice's costs, decisions/P3: a name Dit inside a three-word
+    # name, opening a longer one, or ending one; a suffix comma after a
+    # joined family leaves no family word
     ("Sok Dit Chan", ("Sok", "Dit", "Chan"), ("Sok Dit Chan", "", "")),
+    ("Dit Jean Dupont", ("Dit", "Jean", "Dupont"), ("Dit Jean", "", "Dupont")),
+    ("Tran Thi Dit", ("Tran", "Thi", "Dit"), ("Tran", "", "Thi Dit")),
 ])
 def test_dit_is_a_connective_under_a_french_choice_only(
         text: str, default: tuple[str, str, str],
@@ -220,6 +229,49 @@ def test_dit_is_a_connective_under_a_french_choice_only(
     for parser, want in ((Parser(), default), (parser_for(_FRENCH), french)):
         name = parser.parse(text)
         assert (name.given, name.middle, name.family) == want, (text, parser)
+
+
+@pytest.mark.parametrize("order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize(("text", "given", "family"), [
+    ("Dupont dit Lebrun Jean", "Jean", "Dupont dit Lebrun"),
+    ("Traore Mamadou dit Madou", "Mamadou dit Madou", "Traore"),
+])
+def test_a_french_choice_lays_a_dit_name_out_by_a_family_first_order(
+        order: tuple[Role, Role, Role], text: str, given: str, family: str) -> None:
+    parser = parser_for(_FRENCH)
+    parser = dataclasses.replace(
+        parser, policy=dataclasses.replace(parser.policy, name_order=order))
+    name = parser.parse(text)
+    assert (name.given, name.middle, name.family) == (given, "", family)
+
+
+def test_dit_stays_a_connective_when_french_is_stacked_or_strict() -> None:
+    for parser in (parser_for(_FRENCH, locales.ES), parser_for(locales.ES, _FRENCH),
+                   parser_for(_FRENCH, locales.CS), parser_for(_FRENCH, strict=True)):
+        assert parser.parse("Jean Dupont dit Lebrun").family == "Dupont dit Lebrun"
+
+
+def test_a_french_choice_repairs_dit_in_lower_case_and_gives_it_no_initial() -> None:
+    # decisions/P3's case and initial costs, where Dit is a name
+    french, default = parser_for(_FRENCH), Parser()
+    for text, repaired, initials, as_default in (
+            ("JEAN DUPONT DIT LEBRUN", "Jean Dupont dit Lebrun", "J. D. L.",
+             "Jean Dupont Dit Lebrun"),
+            ("JEAN DUPONT-DIT-LEBRUN", "Jean Dupont-dit-Lebrun", "J. D.",
+             "Jean Dupont-Dit-Lebrun")):
+        name = french.parse(text)
+        assert str(french.capitalized(name)) == repaired
+        assert name.initials() == initials
+        assert str(default.capitalized(default.parse(text))) == as_default
+    assert french.parse("Sok Dit Chan").initials() == "S. C."
+
+
+def test_a_french_choice_matches_a_dit_surname_with_its_halves() -> None:
+    match = parser_for(_FRENCH).matching()
+    for other in ("Jean Dupont", "Jean Lebrun", "Jean Dupont-dit-Lebrun"):
+        assert match.check("Jean Dupont dit Lebrun", other).consistent, other
+    assert not Parser().matching().check(
+        "Jean Dupont dit Lebrun", "Jean Dupont").consistent
 
 
 def test_a_strict_dutch_choice_keeps_a_leading_oude_given() -> None:

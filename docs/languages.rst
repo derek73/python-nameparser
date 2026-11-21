@@ -1400,14 +1400,20 @@ choice reads the word as a connective wherever it stands:
 - **A name of three words** with the name in the middle is read as one
   given name, as ``Juan and Garcia`` is (``Sok Dit Chan`` gives given
   ``Sok Dit Chan`` and no family name).
+- **Opening a name of three words or more**, it joins the next word to
+  the given name (``Dit Jean Dupont`` gives given ``Dit Jean``).
 - **Ending a name**, it joins the word before it to the family name
   (``Tran Thi Dit`` gives family ``Thi Dit``).
+- **Before a comma and a suffix**, the joined name is read as the given
+  name and the family is left empty (``Dupont dit Lebrun, Jr.``).
 - **Case repair** of a name written in one case writes it in lower
   case (``SOK DIT CHAN`` gives ``Sok dit Chan``), and ``initials()``
-  gives it no initial there.
+  never gives it an initial (``Sok Dit Chan`` gives ``S. C.``).
 
 Written with hyphens (``Dupont-dit-Lebrun``) the name is one word and
-reads the same either way.
+its fields read the same either way; case repair writes its ``dit`` in
+lower case under the choice (``JEAN DUPONT-DIT-LEBRUN`` gives ``Jean
+Dupont-dit-Lebrun``).
 
 .. _burmese-names:
 
