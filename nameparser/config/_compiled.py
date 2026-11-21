@@ -6136,7 +6136,6 @@ FAMILIAR: dict[str, tuple[str, ...]] = {
     'nelo': ('manoel',),
     'nelson': ('nelsinho', 'nelsão'),
     'nete': ('ivanete', 'ivonete'),
-    'neto': ('netinho',),
     'neu': ('irineu', 'manoel'),
     'neusa': ('neusinha', 'neuzinha'),
     'neuza': ('neuzinha',),

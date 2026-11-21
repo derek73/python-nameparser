@@ -90,6 +90,9 @@ def test_a_ballot_name_pairs_with_the_given_name_it_stands_for(
     ("PEDRO HENRIQUE CASTRO", "CASTR"),
     ("PEDRO CASTRO", "CASTRINHO"),
     ("MARIA DA SILVA", "SILVINHA"),
+    # a stray letter or a generation after the surname ends no name
+    ("JOÃO VIEIRA DO O", "VIEIRINHA"),
+    ("JOÃO SILVA JUNIOR", "SILVINHA"),
 ])
 def test_what_is_no_familiar_form_of_the_civil_name_pairs_nothing(
         civil: str, ballot: str) -> None:

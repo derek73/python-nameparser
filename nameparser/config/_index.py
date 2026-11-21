@@ -2602,7 +2602,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('net', (('pt-BR', 'agnomen', (('same_as', 'neto'),)), ('pt-BR', 'family', ()))),
     ('neta', (('pt', 'agnomen', ()), ('pt', 'given', ()), ('pt', 'family', ()))),
     ('nete', (('pt-BR', 'familiar', (('short_for', ('ivanete', 'ivonete')),)),)),
-    ('neto', (('pt', 'agnomen', ()), ('pt', 'given', ()), ('pt', 'family', ()), ('pt-BR', 'familiar', (('short_for', ('netinho',)),)))),
+    ('neto', (('pt', 'agnomen', ()), ('pt', 'given', ()), ('pt', 'family', ()))),
     ('netto', (('pt-BR', 'agnomen', (('same_as', 'neto'),)), ('pt-BR', 'family', ()))),
     ('neu', (('pt-BR', 'familiar', (('short_for', ('irineu', 'manoel')),)),)),
     ('neurologist', (('en', 'occupation', ()),)),

@@ -1955,10 +1955,6 @@ text = "nete"
 familiar = { short_for = ["ivanete", "ivonete"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
-text = "neto"
-familiar = { short_for = ["netinho"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
-
-[[word]]
 text = "neu"
 familiar = { short_for = ["irineu", "manoel"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 

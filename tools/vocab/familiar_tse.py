@@ -366,9 +366,12 @@ def given_words(civil: str, particles: frozenset[str]) -> list[str]:
     GIVEN_WORDS name words that are no particle, before its last word
     that is no particle, the family name, whatever its shape (`PEDRO
     CASTRO` names Pedro alone, `MARIA DA SILVA` Maria, `JOÃO CARLOS
-    D'ÁVILA` João and Carlos, though `D'ÁVILA` is no name word); a name
-    of one such word names it."""
-    toks = [w for w in words(civil) if build._normalize(w) not in particles]
+    D'ÁVILA` João and Carlos, though `D'ÁVILA` is no name word), a
+    single letter or a STOP word never the family name (`JOÃO VIEIRA DO
+    O`, the surname do Ó written without its accent, names João; `JOÃO
+    SILVA JUNIOR` João); a name of one such word names it."""
+    toks = [w for w in words(civil) if build._normalize(w) not in particles
+            and sum(c.isalpha() for c in w) > 1 and _key(w) not in _STOP_KEYS]
     head = toks[:-1] if len(toks) > 1 else toks
     return [w for w in head if _name_word(w)][:GIVEN_WORDS]
 
