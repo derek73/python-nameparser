@@ -750,13 +750,13 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
              or len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      # capitals, or the mixed case `is_mixed_caps_word`
-                      # reads; `isupper()` kept as its own arm, a caps
-                      # word holding a caseless letter ('XיZ') being
-                      # title-shaped to `istitle()`
+                      # capitals, or the mixed case `_mixed_capitals`
+                      # reads, asked here in C by its two ends ('MRes',
+                      # 'AuD'; not 'McDonald', which pays no count);
+                      # `caps_shape_candidate` decides
                       and ((texts[p[0]].isupper()
-                            or not texts[p[0]].islower()
-                            and not texts[p[0]].istitle())
+                            or texts[p[0]][:2].isupper()
+                            or texts[p[0]][-1:].isupper())
                            and (texts[p[0]].isalpha()
                                 # the joined spelling ('PU-PH'), the
                                 # predicate's other half (rules/S9)
@@ -801,9 +801,9 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 initials_at = p[0]
                 break
     contrast_box: list[bool] = []
-    # the unlisted capitals words the run's company admitted, given the
-    # caps shape's marks below as the count's are ('Smith, M.B. ChB'
-    # keeps 'ChB' forced, rules/R4)
+    # the unlisted capitals words the run's company admitted, marked as
+    # caps-shape credentials below as the count's own are, so case
+    # repair keeps them ('Smith, M.B. ChB' keeps 'ChB' forced, rules/R4)
     company_caps: list[int] = []
     if initials_at is not None:
         # titles in front of the run are the given part's (C16);
@@ -1060,9 +1060,6 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                             and (text.isupper()
                                  and (text.isalpha() or "-" in text
                                       or "/" in text)
-                                 or not text.islower()
-                                 and not text.istitle()
-                                 and is_mixed_caps_word(text)
                                  or not unicodedata.is_normalized(
                                      "NFC", text) and is_caps_word(text))):
                         caps.add(i)

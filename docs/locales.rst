@@ -1092,7 +1092,9 @@ What a strict choice drops it drops from every name:
       'RN'
 
 - **The shared words are a default like any other.** Take one out of
-  the lexicon you build on and no choice brings it back:
+  the lexicon you build on and no choice brings it back. (The example
+  writes it ``Phd``: written ``PhD``, an unlisted word is still read as
+  a credential by its capitals, see :ref:`all-caps-credentials`.)
 
   .. doctest::
 

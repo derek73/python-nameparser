@@ -932,7 +932,7 @@ class Policy:
     #: capitals or ends in one is read as an all-caps word is ("Jane
     #: Smith, MRes", "Jane Smith, AuD"), a capital only inside a word
     #: being a name's writing ("Jane Smith, LeBron" keeps given
-    #: ``LeBron``) and "García Márquez, MJ" keeps given ``MJ`` -- a lone
+    #: ``LeBron``). "García Márquez, MJ" keeps given ``MJ`` -- a lone
     #: two-letter word is how a person's initials are written, and two
     #: words before the comma may be one surname, the case #563 decides
     #: for "M.J." too. Credentials behind the two letters make them one:

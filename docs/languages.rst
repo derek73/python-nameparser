@@ -125,7 +125,8 @@ titles under ``cs`` wherever a doctorate is one:
      - title
    * - Bare, after a comma: ``Jana Malá, MgA``
      - title
-     - suffix, by its capitals (``MgA``); name word (``mjr``)
+     - suffix, by its mixed case (``MgA``, see
+       :ref:`all-caps-credentials`); name word (``mjr``)
      - suffix
      - title
    * - Dotted, after a comma: ``Jana Malá, MgA.``

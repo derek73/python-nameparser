@@ -706,9 +706,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
         # rules/R4: "A word read as a credential after a comma by its
         # mixed case (C6) is kept as written, forced or not" -- the
         # caps shape's mark on a word in more than one case ('MRes',
-        # 'AuD'); decisions/C6 (#1516)
+        # 'AuD'; the dotted shape, S3, sets the same tag, hence the
+        # period test); decisions/C6 (#1516)
         if (SHAPE_ACRONYM_TAG in tags and "." not in word
-                and not word.isupper() and not word.islower()):
+                and not word.isupper()):
             return word
         return word.upper()
     # rules/R4: "A roman numeral the parse put in the suffix role is

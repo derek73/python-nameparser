@@ -8,7 +8,7 @@
   ```
   "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
   ```
-- **A word in mixed case that opens with two capitals or ends in one is written the way a credential is, and reads here as an all-caps word does** ('MRes', 'DClinPsy', 'AuD'): it is not written the way a name is, and the vocabulary cannot list every degree written so. A capital only inside the word is a name's writing ('LeBron', 'McKenzie'), and so is a word in mixed case holding a hyphen or a slash ('Pharm-D', as 'Jay-R' is a given name). The mixed-case word is read after the comma only: S9's other positions read capitals alone.
+- **A word in the caps shape's mixed-case spelling (S9) reads here as an all-caps word does** ('MRes', 'DClinPsy', 'AuD'), the contrast gating it alike; S9 reads that spelling after the comma only.
   ```
   "Jane Smith, MRes"          →  suffix="MRes"
   "Jane Smith, AuD"           →  suffix="AuD"
@@ -32,6 +32,15 @@
 "JOHN SMITH, PU-PH"         →  given="PU-PH"  · boundary
 "Smith, PU-PH"              →  given="PU-PH"  · boundary
 ```
+
+**Accepted:**
+
+- A given name written in the mixed-case spelling after a two-word surname and a comma reads as the credential, as one written in capitals does: a surname written in capitals behind a lowercase prefix ('McDONALD', 'DiCAPRIO') and a given name typed without its apostrophe ('DAndre', 'ONeill') end in a capital or open with two. Narrowing the spelling to spare them would cost the credentials written the same way ('MScPT', 'PhDMD', 'MBBChBAO'), which outnumber them where names are typed.
+  ```
+  "García López, DAndre"      →  suffix="DAndre"
+  "John Smith, McDONALD"      →  suffix="McDONALD"
+  "García López, DANDRE"      →  suffix="DANDRE"
+  ```
 
 ---
 **Signal:** case contrast: a word before the comma written in mixed case the way a name is

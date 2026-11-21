@@ -1,6 +1,6 @@
 # S9 — unlisted words that join the ambiguous class by shape
 
-**When:** an unlisted word written in capitals or in dotted chunks stands where a suffix may stand, as in "John Smith XYZ".
+**When:** an unlisted word written in capitals, in dotted chunks, or after a comma in mixed case the way a credential is, stands where a suffix may stand, as in "John Smith XYZ".
 
 **Then:** an unlisted word joins the ambiguous class (S4) by SHAPE, in the positions each shape is admitted: the dotted shape by default, the caps shape by default in one position and elsewhere where the caller asks for it.
 
@@ -13,7 +13,7 @@
   "John Smith, Pu-Ph"         →  given="Pu-Ph"  · boundary
   "Jean Pierre DUPONT-MORETTI"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT-MORETTI"
   ```
-- **A word in mixed case written as a credential is ('MRes', 'AuD') is the caps shape after a comma only** (C6): ending a name it is how a surname typed without its apostrophe is written ('ONeill', 'DSouza'), so the caller setting below reads capitals alone there.
+- **A word of letters in mixed case that opens with two capitals or ends in one is written the way a credential is ('MRes', 'DClinPsy', 'AuD'), and is the caps shape after a comma only**, where C6 reads it: a capital only inside the word is a name's writing ('LeBron', 'McKenzie'), and so is a word in mixed case holding a hyphen or a slash ('Pharm-D', as 'Jay-R' is a given name). Ending a name it is how a surname typed without its apostrophe is written ('ONeill', 'DSouza'), so the caller setting below reads capitals alone there.
   ```
   "Jane Smith, MRes"          →  suffix="MRes"
   "Alex Lee ONeill"  unlisted_caps_suffixes-everywhere  →  family="ONeill"  · boundary
@@ -41,5 +41,5 @@
 - **An unlisted word in capitals ending a name, under capitals-as-family handling** ("Jean DUPONT"): the caller has said the capitals write the family name, which is the opposite statement about the same word, so the setting that admits it to the class at the end of a name cannot be built with that switch (O9).
 
 ---
-**Signal:** shape: an unlisted word written in capitals or in dotted chunks, standing in a suffix position
+**Signal:** shape: an unlisted word written in capitals, in dotted chunks, or in a credential's mixed case, standing in a suffix position
 **history:** decisions/S9 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py

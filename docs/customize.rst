@@ -1277,7 +1277,9 @@ signatures:
   usual way says nothing about how the name was cased.
 - A suffix written in more than one case is the writer's spelling and
   is kept as written (``john smith EdD`` gives ``John Smith EdD``)
-  unless you pass ``force=True``.
+  unless you pass ``force=True``. An unlisted credential read by its
+  mixed case after a comma (``Jane Smith, MRes``) is kept as written
+  even then, since nothing else says how it is spelled.
 
 .. doctest::
 

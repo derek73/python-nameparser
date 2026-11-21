@@ -60,6 +60,12 @@
   "Smith, M.D. PhDc"          →  given="M."
   ```
 
+- A given name written in the caps shape behind the run is company like a credential, so the run and the name read as the credential and the name loses its given name: 'Jansen, J.P. IJsbrand' reads as 'Jansen, J.P. IJSBRAND' does. A list writing initials and then a name spelled so is rare beside the credentials written that way behind initials ('Smith, M.B. ChB').
+  ```
+  "Jansen, J.P. IJsbrand"     →  suffix="J.P. IJsbrand"
+  "Jansen, J.P. Ijsbrand"     →  given="J."
+  ```
+
 - A one-word surname before a credential written as dotted initials reads as a name with no given name written out ('Smith, M.D.' → given 'M.', middle 'D.'), the credential named in the report; a credential then a given name past a second comma ('Arenas, M.D., Magdalena C.') reads as its twin of unlisted letters does. The undotted spelling is the credential's own and is unchanged ('Smith, MD').
   ```
   "Smith, M.D."               →  given="M."
