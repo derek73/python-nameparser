@@ -900,9 +900,10 @@ def test_a_suffix_is_compared_with_the_box_after_the_name_not_the_surname() -> N
 def test_a_title_box_the_parse_misses_is_scored_where_the_source_sets_nothing_aside() -> None:
     # Bc. is a title by its shape (rules/H2) and listed in no vocabulary,
     # so the title box holds an unlisted word; the parse reads the
-    # diploma after the name as a second title.
-    missed = _candidate("Bc.", "Jan", "Novák", "DiS.")
-    assert _volby_read(missed)[:2] == ({"title": "Bc. DiS.", "suffix": ""}, False)
+    # unlisted post-nominal after the name as a second title (IEn.,
+    # where DiS. served until #969 listed it).
+    missed = _candidate("Bc.", "Jan", "Novák", "IEn.")
+    assert _volby_read(missed)[:2] == ({"title": "Bc. IEn.", "suffix": ""}, False)
     # The control: a source that sets aside would excuse the parser's miss.
     setting = agreement.Fielded(dict(_VOLBY_FIELDS.fields), group="election")
     assert _volby_read(missed, setting)[1]
@@ -911,7 +912,7 @@ def test_a_title_box_the_parse_misses_is_scored_where_the_source_sets_nothing_as
 def test_the_report_of_a_source_with_a_suffix_box_counts_by_election(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(agreement, "GROUP_FLOOR", 1)
-    rows = [_candidate("Ing.", "Jan", "Novák"), _candidate("", "Eva", "Malá", "DiS."),
+    rows = [_candidate("Ing.", "Jan", "Novák"), _candidate("", "Eva", "Malá", "IEn."),
             _candidate("Mgr.", "Bo", "Dvořák", election="ps2025")]
     result = agreement.score(rows, _VOLBY_FIELDS, Parser())
     assert result.scored == {"kv2022": 2, "ps2025": 1}

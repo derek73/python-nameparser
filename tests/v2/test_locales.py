@@ -2363,7 +2363,6 @@ _ROTATORS["cs"] = [
     "MgA Malá",                      # mga
     "Mjr Novák",                     # mjr, three initials elsewhere (#1129)
     "Chief Mjr Novák",               # chief mjr, the phrase chief makes
-    "Jan Novák, DrSc",               # drsc, a credential after a comma
     "Pan Novák",                     # pan
     "Jana Nováková (roz. Svobodová)",  # roz, the birth marker, bracketed
     "Dienstbier ml.",                # ml
@@ -2374,8 +2373,6 @@ _ROTATORS["cs"] = [
     "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 _ROTATORS["sk"] = [
-    "Jozef Mrkva, ArtD.",            # artd, a credential after a comma
-    "Jozef Mrkva, DrSc",             # drsc
     "Mrkva ml.",                     # ml
     "Ján Mrkva st.",                 # st
     "Mária Nováková Kováčová",       # rules/O6, the patch
@@ -2866,6 +2863,34 @@ def test_rotator_deviates_and_declares(code: str, name: str) -> None:
     assert _deviates(code)(name)
 
 
+# #969 turned the post-nominals on by default, so no choice moves them:
+# the rows that witnessed each as a choice word now witness that the
+# default reads it as the pack does, a credential after a comma, where
+# the default reversed the bare one and took the dotted one for a title
+# until then (decisions/suffix-acronym-collisions, the 2026-11-20 #969
+# entry).
+_READ_BY_DEFAULT_SINCE_969: dict[str, list[str]] = {
+    "cs": [
+        "Jan Novák, DrSc",               # drsc, bare after a comma
+        "prof. MUDr. Jan Novák, DrSc.",  # drsc, dotted behind titles
+    ],
+    "sk": [
+        "Jozef Mrkva, ArtD.",            # artd
+        "Jozef Mrkva, DrSc",             # drsc
+    ],
+}
+
+
+@pytest.mark.parametrize("code, name", [
+    (code, name) for code in sorted(_READ_BY_DEFAULT_SINCE_969)
+    for name in _READ_BY_DEFAULT_SINCE_969[code]])
+def test_a_post_nominal_read_by_default_since_969_reads_as_its_pack_reads_it(
+        code: str, name: str) -> None:
+    default = _default_parse(name)
+    assert _require_packed(code).parse(name).as_dict() == default
+    assert default["suffix"], name
+
+
 @pytest.mark.parametrize("code, name", [
     (code, name) for code in sorted(_READ_BY_DEFAULT_SINCE_1115)
     for name in _READ_BY_DEFAULT_SINCE_1115[code]])
@@ -3201,17 +3226,6 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("cs", None, "JANA MALÁ MGA.",
      ("", "JANA", "MALÁ", "MGA.", "", "", ()),
      ("MGA.", "JANA", "", "MALÁ", "", "", ())),
-    # the post-nominals: a credential after a comma, where the default
-    # reverses the bare one and takes the dotted one for a title
-    ("cs", None, "Jan Novák, DrSc",
-     ("", "DrSc", "", "Jan Novák", "", "", ()),
-     ("", "Jan", "", "Novák", "DrSc", "", ())),
-    ("cs", None, "prof. MUDr. Jan Novák, DrSc.",
-     ("prof. MUDr. DrSc.", "Jan", "", "Novák", "", "", ()),
-     ("prof. MUDr.", "Jan", "", "Novák", "DrSc.", "", ())),
-    ("sk", None, "Jozef Mrkva, ArtD.",
-     ("ArtD.", "Jozef", "", "Mrkva", "", "", ()),
-     ("", "Jozef", "", "Mrkva", "ArtD.", "", ())),
     # the salutation and the birth marker, each converted from an
     # exclusion; pl's pan with cs's
     ("cs", None, "Pan Jan Novák",
