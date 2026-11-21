@@ -1665,8 +1665,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Jan", "middle": "Novák", "family": "DiS."},
          ambiguities=("suffix-or-name",),
          notes="boundary: the gated credential written in its own mixed "
-               "case with no comma is read by the count, a name word "
-               "(rules/S4; the mixed-case signal is #1053's), as before"),
+               "case with no comma reads as a name by its writing "
+               "(rules/S6), the count alone taking it (rules/S4); whether "
+               "that mixed case should read as the credential is #1053's"),
+    Case("surname_dis_in_capitals_with_a_word_to_spare_reads_the_credential",
+         "PETR JAN DIS",
+         {"given": "PETR", "family": "JAN", "suffix": "DIS"},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="the accepted cost: in a name written in one case the gated "
+               "word's writing says nothing (rules/S6) and the count takes "
+               "it (rules/S4); read middle 'JAN', family 'DIS' through 3.1"),
     Case("surname_dis_ending_a_name_keeps_the_family", "Jan Dis",
          {"given": "Jan", "family": "Dis"},
          ambiguities=("suffix-or-name",),
