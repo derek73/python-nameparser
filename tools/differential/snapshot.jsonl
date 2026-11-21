@@ -1545,8 +1545,8 @@
 {"name": "His Majesty King Charles", "title": "His Majesty King", "given": "Charles", "initials": "C."}
 {"name": "Hisham Ibrahim, CPA, CFA", "given": "Hisham", "family": "Ibrahim", "suffix": "CPA, CFA", "initials": "H. I."}
 {"name": "Hodan Farah Warsame", "given": "Hodan", "middle": "Farah", "family": "Warsame", "initials": "H. F. W."}
-{"name": "Hon CHAN Kin-por GBS JP", "title": "Hon", "given": "CHAN", "middle": "Kin-por", "family": "GBS", "suffix": "JP", "initials": "C. K. G.", "capitalized_force": "Hon Chan Kin-Por Gbs JP"}
-{"name": "Hon CHAN Kin-por, GBS, JP", "title": "Hon", "given": "CHAN", "family": "Kin-por", "suffix": "GBS, JP", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "C. K.", "capitalized_force": "Hon Chan Kin-Por, GBS, JP"}
+{"name": "Hon CHAN Kin-por GBS JP", "title": "Hon", "given": "CHAN", "family": "Kin-por", "suffix": "GBS JP", "initials": "C. K.", "capitalized_force": "Hon Chan Kin-Por GBS JP"}
+{"name": "Hon CHAN Kin-por, GBS, JP", "title": "Hon", "given": "CHAN", "family": "Kin-por", "suffix": "GBS, JP", "initials": "C. K.", "capitalized_force": "Hon Chan Kin-Por, GBS, JP"}
 {"name": "Hon Solo", "title": "Hon", "family": "Solo", "initials": "S."}
 {"name": "Hon. Barrington P. Doe-Ray, Jr.", "title": "Hon.", "given": "Barrington", "middle": "P.", "family": "Doe-Ray", "suffix": "Jr.", "initials": "B. P. D.", "generation": "Jr."}
 {"name": "Hon. Charles J. Siragusa", "title": "Hon.", "given": "Charles", "middle": "J.", "family": "Siragusa", "initials": "C. J. S."}
@@ -1864,7 +1864,7 @@
 {"name": "Jane Doe, AL, PhD", "given": "AL", "family": "Jane Doe", "suffix": "PhD", "initials": "A. J. D.", "capitalized_force": "Al Jane Doe PhD"}
 {"name": "Jane Doe, BM Jr.", "given": "BM", "family": "Jane Doe", "suffix": "Jr.", "initials": "B. J. D.", "capitalized_force": "Bm Jane Doe Jr.", "generation": "Jr."}
 {"name": "Jane Doe, BM PhD", "given": "Jane", "family": "Doe", "suffix": "BM PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
-{"name": "Jane Doe, BM, BCh, PhD", "given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD", "ambiguities": ["COMMA_STRUCTURE", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe, BM, Bch, PhD"}
+{"name": "Jane Doe, BM, BCh, PhD", "given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D."}
 {"name": "Jane Doe, DL", "given": "Jane", "family": "Doe", "suffix": "DL", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
 {"name": "Jane Doe, II, PhD", "given": "Jane", "family": "Doe", "suffix": "II, PhD", "initials": "J. D.", "generation": "II", "credentials": "PhD"}
 {"name": "Jane Doe, KC", "given": "Jane", "family": "Doe", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}

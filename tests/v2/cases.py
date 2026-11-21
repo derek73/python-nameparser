@@ -1572,6 +1572,64 @@ CASES: tuple[Case, ...] = (
                "'Smith', suffix 'BA'; 1.4.0 read given 'BA'. #289 moves "
                "this row again: the caps lean now reads 'Smith, BA' the "
                "way a business form is written"),
+    Case("bch_after_a_comma_reads_the_credential", "Jane Doe, BCh",
+         {"given": "Jane", "family": "Doe", "suffix": "BCh"},
+         classification="fix(#1361)",
+         notes="bch listed (#1131's exclusion lifted, decisions/S12); "
+               "1.4.0 through 3.1 read given 'BCh', family 'Jane Doe'"),
+    Case("mb_bch_still_reads_as_one_suffix_run", "Jane Doe MB BCh, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MB BCh, PhD"},
+         classification="fix(#752)",
+         notes="boundary, S12's since 3.0.0 (1.4.0 read middle 'Doe MB', "
+               "family 'BCh'): with bch listed, the split pair is a run of "
+               "two listed credentials, where chb's listing broke "
+               "MB ChB, PhD (decisions/S12, 2026-11-20 #1361)"),
+    Case("bmbch_ending_a_name_reads_the_credential", "Jane Doe BMBCh",
+         {"given": "Jane", "family": "Doe", "suffix": "BMBCh"},
+         classification="fix(#1361)",
+         notes="read middle 'Doe', family 'BMBCh' 1.4.0 through 3.1"),
+    Case("bchir_after_a_comma_reads_the_credential", "Jane Doe, BChir",
+         {"given": "Jane", "family": "Doe", "suffix": "BChir"},
+         classification="fix(#1361)", ambiguities=("suffix-or-name",),
+         notes="bchir is gated by its family reading (rules/C4 after the "
+               "comma); read given 'BChir', family 'Jane Doe' 1.4.0 "
+               "through 3.1"),
+    Case("bchir_surname_ending_a_name_keeps_the_family", "Amani Bchir",
+         {"given": "Amani", "family": "Bchir"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: the family reading gates the credential, and a "
+               "full name in front leaves no word to spare (rules/S4); "
+               "the report is new with the credential reading (#1361)"),
+    Case("bchir_in_capitals_in_a_mixed_case_name_reads_the_credential",
+         "Amani BCHIR",
+         {"given": "Amani", "suffix": "BCHIR"},
+         classification="fix(#1361)", ambiguities=("given-or-family",),
+         notes="the accepted cost: a gated acronym in capitals in a name "
+               "of mixed case reads as the credential (rules/S6); no corpus "
+               "name writes the surname so; read family 'BCHIR' through 3.1"),
+    Case("mni_after_a_comma_reads_the_credential",
+         "Dr. Ahmed Abubakar Audi, mni",
+         {"title": "Dr.", "given": "Ahmed", "middle": "Abubakar",
+          "family": "Audi", "suffix": "mni"},
+         classification="fix(#1228)",
+         notes="read given 'mni', family 'Ahmed Abubakar Audi' 1.4.0 "
+               "through 3.1"),
+    Case("capitals_initials_after_one_word_and_a_comma_read_the_credential",
+         "Bello, MNI",
+         {"family": "Bello", "suffix": "MNI"},
+         classification="fix(#1228)",
+         notes="the accepted cost: glued capitals initials spelling a "
+               "listed credential after a one-word family and a comma lose "
+               "the given name (Chan, GBS too); none in the corpora; read "
+               "given 'MNI' through 3.1"),
+    Case("hong_kong_honour_without_a_comma_reads_the_credential",
+         "Hon WONG Kwok-kin GBS JP",
+         {"title": "Hon", "given": "WONG", "family": "Kwok-kin",
+          "suffix": "GBS JP"},
+         classification="fix(#1182)",
+         notes="read middle 'Kwok-kin', family 'GBS', suffix 'JP' 1.4.0 "
+               "through 3.1; the capitals family is capitals_as_family's "
+               "to read (rules/O9)"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          notes="the words-to-spare half: a full name in front leaves the "
