@@ -48,7 +48,7 @@
 **Precedence:**
 
 - **Paired initials** ("García Márquez, G.J."): C5 wins; paired initials are the exception to the count.
-- **An unlisted all-caps word** ("MÜLLER WEIß, HANS"): C6 decides whether it is a word of this class here at all, which it is only where the name carries a case contrast.
+- **An unlisted word in the caps shape** ("MÜLLER WEIß, HANS"): C6 decides whether it is a word of this class here at all, which it is only where the name carries a case contrast.
 
 ---
 **Signal:** count: name words before the comma, for a word of the ambiguous class after it

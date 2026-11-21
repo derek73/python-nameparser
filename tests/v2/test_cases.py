@@ -525,10 +525,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'Jane Doe, BM, ...' rows); 2257 -> 2272 the same day, #969's DiS
     # rows' suffix-or-name under three orders; 2272 -> 2275 the same day,
     # its review's 'PETR JAN DIS' under three orders; 2275 -> 2278 the
-    # same day, its second review's 'Jan DIS' under three orders.
-    assert claims == 2278, (
-        f"the field sweep checks {claims} claims, recorded as 2278 on "
-        f"2026-11-20")
+    # same day, its second review's 'Jan DIS' under three orders; 2278
+    # -> 2296 on 2026-11-21, #1517's six caps-shape rows reporting
+    # suffix-or-name under three orders; 2296 -> 2321 the same day, its
+    # test review's eight rows under three orders and its family-first
+    # row under its declared policy.
+    assert claims == 2321, (
+        f"the field sweep checks {claims} claims, recorded as 2321 on "
+        f"2026-11-21")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -611,6 +615,11 @@ _STAND_IN_REREADS = {
     ("JOHN SMITH MD (B) VI JONES", None),
     ("JOHN SMITH MD (B) VI JONES", 2),
     ("John Smith MA VI Jones", None), ("John Smith MA VI Jones", 2),
+    # a name word in a mixed-case credential's place leaves the initials
+    # in front of it no company, so they are the given name (rules/C16,
+    # #1517)
+    ("Smith, M.B. ChB", None), ("Smith, M.B. ChB", 1),
+    ("Smith, M.B. ChB", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -1021,8 +1030,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # under three orders; 617 -> 620 and 509 -> 512 the same day, #1361's
     # and #1284's rows under three orders; 620 -> 629 the same day, #969's
     # three DiS rows after a comma under three orders; 629 -> 632 the same
-    # day, its review's 'PETR JAN DIS' under three orders
-    assert (checked, skipped) == (632, 512), (checked, skipped)
+    # day, its review's 'PETR JAN DIS' under three orders; 632 -> 647 on
+    # 2026-11-21, #1517's five caps-shape rows under three orders,
+    # 'Smith, M.B. ChB' being a stand-in reread; 647 -> 669 the same
+    # day, its test review's rows
+    assert (checked, skipped) == (669, 512), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

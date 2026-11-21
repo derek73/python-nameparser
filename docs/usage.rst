@@ -532,8 +532,8 @@ changes them.
 Two ``Policy`` switches read a word the vocabulary does not hold as a
 credential from how it is written. ``unlisted_dotted_suffixes`` (on by
 default) lets a token of two or more period-separated chunks read as
-one, and ``unlisted_caps_suffixes`` an all-caps word: by default only
-after a
+one, and ``unlisted_caps_suffixes`` an all-caps word (and after a
+comma, a mixed-case one such as ``MRes``): by default only after a
 comma behind a full name, and at the end of a name only on request,
 since an all-caps surname is written there.
 :ref:`unlisted-credentials` says where each applies and what it

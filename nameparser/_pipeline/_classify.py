@@ -482,7 +482,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                           or "/" in token.text)
                      or not unicodedata.is_normalized("NFC", token.text))
                 and caps_shape_candidate(token.text, lex, state.policy,
-                                         one_case)):
+                                         one_case, mixed_case=False)):
             # #516's all-caps half: an unlisted word written in capitals
             # inside a mixed-case name. EVERYWHERE tags it in every
             # slot; the default admits it only in the part after a

@@ -2003,11 +2003,14 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 # default-policy parse a frame it cannot use -- does not apply: the
 # trailing position is behind `CapsSuffixes.EVERYWHERE` (classify's
 # first conjunct), and the comma decision, which IS on by default,
-# asks C-level `isalpha()`/`isupper()` and the suffix tag first, so a
-# comma name with no unlisted all-caps word never reaches it.
+# asks C-level `isalpha()`/`isupper()` (and, for the mixed-case arm,
+# the case of the word's two ends) and the suffix tag first, so a comma
+# name with no unlisted word in capitals or in that mixed case never
+# reaches it.
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
-                         one_case: bool | None) -> bool:
-    """Whether TEXT is an UNLISTED all-caps credential candidate: two
+                         one_case: bool | None, *,
+                         mixed_case: bool) -> bool:
+    """Whether TEXT is an UNLISTED caps-shape credential candidate: two
     or more alphabetic characters, or letter chunks joined by '-' or
     '/' (`_joined_capitals`, #752), no period (a period fails
     `isalpha()` and the joined pattern outright, which is what excludes
@@ -2045,6 +2048,13 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     `n not in suffix_acronyms_ambiguous`, `_comma.decide`'s
     AMBIGUOUS_ACRONYM_TAG test), so a listed member never pays for
     the call.
+
+    `mixed_case` admits a mixed-case word as well (`_mixed_capitals`:
+    'DClinPsy', 'AuD'): `_comma.decide` passes True for the part after
+    a comma (rules/C6, decisions/C6 (#1517)); classify passes False at
+    every slot it tags, `CapsSuffixes.EVERYWHERE`'s trailing positions
+    included, a surname typed without its apostrophe ('ONeill',
+    'DSouza') ending a name there.
     """
     if (policy.unlisted_caps_suffixes is CapsSuffixes.OFF
             or one_case is not False):
@@ -2052,9 +2062,24 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     if not text.isascii():
         text = unicodedata.normalize("NFC", text)
     if not (len(text) >= 2 and text.isalpha() and text.isupper()
-            or _joined_capitals(text)):
+            or _joined_capitals(text)
+            or mixed_case and _mixed_capitals(text)):
         return False
     return not in_any_wordlist(_normalize(text), lexicon)
+
+
+def _mixed_capitals(text: str) -> bool:
+    """Whether TEXT is an alphabetic mixed-case word that opens with two
+    capitals ('DClinPsy', 'MRes') or ends in one ('AuD', 'PharmD'):
+    written neither in capitals nor the way a name is, so the caps
+    shape reads it after a comma. A capital only inside the word
+    ('LeBron', 'McKenzie') is a name's writing and stays out, and so
+    does a word holding anything but letters ('Pharm-D': a mixed-case
+    joined arm would catch given names such as 'Jay-R'). TEXT is
+    NFC-composed."""
+    return (len(text) >= 2 and text.isalpha() and not text.isupper()
+            and (text[0].isupper() and text[1].isupper()
+                 or text[-1].isupper()))
 
 
 #: A word of letter chunks joined by '-' or '/' ('PU-PH', 'MD/MBA').
@@ -2087,6 +2112,15 @@ def is_caps_word(text: str) -> bool:
     text pays no frame."""
     composed = unicodedata.normalize("NFC", text)
     return composed.isalpha() and composed.isupper()
+
+
+def is_mixed_caps_word(text: str) -> bool:
+    """Whether TEXT, once NFC-composed, is the mixed-case word the caps
+    shape reads after a comma (`_mixed_capitals`: 'MRes', 'AuD'), for
+    the comma's C-level filters, which ask it of a word neither in one
+    case nor written the way a name is, or not NFC (#652)."""
+    return _mixed_capitals(text if text.isascii()
+                           else unicodedata.normalize("NFC", text))
 
 
 def composed(text: str) -> str:

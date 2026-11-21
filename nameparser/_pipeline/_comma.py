@@ -49,7 +49,7 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     ROMAN, caps_shape_candidate, claimed_as_non_name,
     composed_len, delimiter_cores, ends_in_a_generation, glued_cores,
-    glued_stem, glues, is_caps_word,
+    glued_stem, glues, is_caps_word, is_mixed_caps_word,
     is_letter_run, is_paired_initials, is_single_letter_numeral,
     is_wholly_suffix, _joined_chunks, _listed_whole,
     name_reading, name_word_count, reads_as_generation, suffix_reading,
@@ -415,7 +415,7 @@ def _company(state: ParseState, seg0: Sequence[int], p: Sequence[int],
         return True
     if (state.one_case
             or not caps_shape_candidate(text, state.lexicon, state.policy,
-                                        one_case=False)):
+                                        one_case=False, mixed_case=True)):
         return False
     if not contrast:
         contrast.append(_name_contrast(state, seg0))
@@ -750,7 +750,13 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
              or len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      and (texts[p[0]].isupper()
+                      # capitals, or the mixed case `_mixed_capitals`
+                      # reads, asked here in C by its two ends ('MRes',
+                      # 'AuD'; not 'McDonald', which pays no count);
+                      # `caps_shape_candidate` decides
+                      and ((texts[p[0]].isupper()
+                            or texts[p[0]][:2].isupper()
+                            or texts[p[0]][-1:].isupper())
                            and (texts[p[0]].isalpha()
                                 # the joined spelling ('PU-PH'), the
                                 # predicate's other half (rules/S9)
@@ -758,7 +764,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                                 or "/" in texts[p[0]])
                            or not unicodedata.is_normalized(
                                "NFC", texts[p[0]])
-                           and is_caps_word(texts[p[0]]))))]
+                           and (is_caps_word(texts[p[0]])
+                                or is_mixed_caps_word(texts[p[0]])))))]
     # rules/C16: "behind one word, initials run together are the given
     # name whatever they spell" -- the runs that spell a listed
     # credential ('J.P.', 'M.A.'), joined to the class so C4's count is
@@ -794,6 +801,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 initials_at = p[0]
                 break
     contrast_box: list[bool] = []
+    # the unlisted capitals words the run's company admitted, marked as
+    # caps-shape credentials below as the count's own are, so case
+    # repair keeps them ('Smith, M.B. ChB' keeps 'ChB' forced, rules/R4)
+    company_caps: list[int] = []
     if initials_at is not None:
         # titles in front of the run are the given part's (C16);
         # behind it a credential is company: a title/suffix dual only in
@@ -807,6 +818,13 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         if rest and all(_company(state, seg0, p, pt, texts, contrast_box)
                         for p, pt in rest):
             initials_at = None
+            # `_company` admits a single unlisted word by the caps shape
+            # alone (its last test)
+            company_caps = [
+                p[0] for p, pt in rest
+                if len(p) == 1 and "split" not in pt
+                and "vocab:suffix" not in tokens[p[0]].tags
+                and AMBIGUOUS_ACRONYM_TAG not in tokens[p[0]].tags]
         elif initials_at not in maybe:
             run_alone = not maybe
             maybe.append(initials_at)
@@ -846,7 +864,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         if listing and not generation:
             return state
     names = 0
-    caps: set[int] = set()
+    caps: set[int] = set(company_caps)
     licensed: set[int] = set()
     run = False
     # a pair a later comma part's credential spoke for (rules/C5), whose
@@ -885,7 +903,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 continue
             if (AMBIGUOUS_ACRONYM_TAG not in tokens[i].tags
                     and pol.unlisted_caps_suffixes is not CapsSuffixes.OFF
-                    and caps_shape_candidate(text, lex, pol, one_case=False)):
+                    and caps_shape_candidate(text, lex, pol, one_case=False,
+                                             mixed_case=True)):
                 if contrast is None:
                     contrast = _name_contrast(state, seg0)
                     # the box the helpers below read, empty until now
@@ -1041,6 +1060,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                             and (text.isupper()
                                  and (text.isalpha() or "-" in text
                                       or "/" in text)
+                                 # the mixed case C12 reads where the
+                                 # count marked nothing ('Dr. Smith
+                                 # Jr., AuD', #1517)
+                                 or not text.islower()
+                                 and not text.istitle()
+                                 and is_mixed_caps_word(text)
                                  or not unicodedata.is_normalized(
                                      "NFC", text) and is_caps_word(text))):
                         caps.add(i)

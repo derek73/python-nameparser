@@ -174,7 +174,8 @@ Brackets and suffixes
    * - ``unlisted_caps_suffixes``
      - :class:`~nameparser.CapsSuffixes`
      - ``AFTER_COMMA``
-     - Where an unlisted all-caps word such as ``XYZ`` reads as a
+     - Where an unlisted all-caps word such as ``XYZ`` (and after a
+       comma, a mixed-case one such as ``MRes``) reads as a
        credential: after a comma (``AFTER_COMMA``), at the end of a
        name as well (``EVERYWHERE``), or nowhere (``OFF``). See
        :ref:`unlisted-credentials`.
@@ -1323,7 +1324,8 @@ Credentials the vocabulary doesn't list
 No suffix list holds every post-nominal, so two ``Policy`` fields, both
 new in 2.4, read
 an unlisted word as a credential from how it is written: in periods
-(``X.Y.Z.``), or in capitals (``XYZ``). The writing cannot settle it
+(``X.Y.Z.``), or in capitals (``XYZ``, and after a comma ``MRes``).
+The writing cannot settle it
 alone, because a surname can be written either way, so both fields
 also decide by position: the word has to stand behind a name that can
 spare it. For the ones written otherwise, see
@@ -1461,7 +1463,12 @@ All-caps words
 ``unlisted_caps_suffixes`` reads an unlisted word of two or more
 capital letters, with no period in it, and since 2.7 one of capitals
 joined by a hyphen or a slash (``PU-PH``, ``MS-OMPT``) with a part of
-two or more letters. Its value is a
+two or more letters. After a comma it also reads a word of letters in
+mixed case that opens with two capitals or ends in one (``MRes``,
+``DClinPsy``, ``AuD``), the way degrees are written. A capital only
+inside a word (``LeBron``, ``McKenzie``) is a name's writing, and a word
+in mixed case holding a hyphen (``Pharm-D``) is left alone, since given
+names are written so (``Jay-R``). Its value is a
 :class:`~nameparser.CapsSuffixes`, because where capitals mean a
 credential depends on a second convention: many records write the
 SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).
@@ -1493,6 +1500,11 @@ all-caps surname convention never writes capitals there:
     >>> cred = parse("John Smith, PU-PH")
     >>> cred.family, cred.suffix
     ('Smith', 'PU-PH')
+    >>> cred = parse("Jane Smith, MRes")
+    >>> cred.family, cred.suffix
+    ('Smith', 'MRes')
+    >>> parse("Jane Smith, LeBron").given
+    'LeBron'
 
 ``EVERYWHERE``
 ^^^^^^^^^^^^^^
@@ -1500,7 +1512,9 @@ all-caps surname convention never writes capitals there:
 ``CapsSuffixes.EVERYWHERE`` also reads the end of a name, the given
 part's last word after a family comma, and the word ending a maiden
 marker's clause. Those are the places an all-caps surname IS written,
-which is why it is not the default:
+which is why it is not the default. It reads only words wholly in
+capitals there, since a surname typed without its apostrophe
+(``ONeill``, ``DSouza``) ends a name in mixed case:
 
 .. doctest::
 
@@ -1516,6 +1530,8 @@ which is why it is not the default:
     >>> cred = caps_everywhere.parse("Jean Pierre DUPONT")
     >>> cred.family, cred.suffix
     ('Pierre', 'DUPONT')
+    >>> caps_everywhere.parse("Alex Lee ONeill").family
+    'ONeill'
 
 ``OFF``
 ^^^^^^^
@@ -1538,8 +1554,9 @@ two-word surname, which the default reads as a credential:
 Finding the credentials your data uses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A credential written in mixed case that the vocabulary does not list
-(``PhDc``, ``Pharm-D``) is read by neither shape above. After a comma
+A credential the vocabulary does not list, written in mixed case
+without two capitals opening it or one ending it (``PhDc``,
+``Pharm-D``), is read by neither shape above. After a comma
 behind a full name it becomes the given name, and the words before the
 comma become the family name, the way ``Ruiz Paz, Ana`` is read. To
 find the ones your data holds:
@@ -1589,13 +1606,15 @@ A non-empty ``ambiguities`` holding ``suffix-or-name`` marks a name
 where the parser weighed a credential against a name, as it does for
 the capitals shape, and for an unlisted word behind a listed
 credential, which is read as a credential and reported
-(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word opening the part
-after the comma is never weighed, so it carries no report, and the count
-above is the way to find it:
+(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word that neither shape
+reads, opening the part after the comma, is never weighed, so it
+carries no report, and the count above is the way to find it:
 
 .. doctest::
 
     >>> [a.kind.value for a in parse("Ana Ruiz Paz, XYZ").ambiguities]
+    ['suffix-or-name']
+    >>> [a.kind.value for a in parse("Ana Ruiz Paz, MRes").ambiguities]
     ['suffix-or-name']
     >>> parse("Ana Ruiz Paz, PhDc").ambiguities
     ()

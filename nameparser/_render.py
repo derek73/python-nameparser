@@ -703,6 +703,14 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     if role is Role.SUFFIX and (
             undotted in lex._sets.suffix_acronyms
             or SHAPE_ACRONYM_TAG in tags):
+        # rules/R4: "A word read as a credential after a comma by its
+        # mixed case (C6) is kept as written, forced or not" -- the
+        # caps shape's mark on a word in more than one case ('MRes',
+        # 'AuD'; the dotted shape, S3, sets the same tag, hence the
+        # period test); decisions/C6 (#1517)
+        if (SHAPE_ACRONYM_TAG in tags and "." not in word
+                and not word.isupper()):
+            return word
         return word.upper()
     # rules/R4: "A roman numeral the parse put in the suffix role is
     # written in capitals" whether or not the vocabulary lists it: 'vi'

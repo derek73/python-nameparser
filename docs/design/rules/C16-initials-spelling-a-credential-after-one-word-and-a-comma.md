@@ -37,6 +37,7 @@
   ```
   "Smith, M.D. Ph.D."         →  suffix="M.D. Ph.D."
   "Smith, M.D. MS"            →  suffix="M.D. MS"
+  "Smith, M.B. ChB"           →  suffix="M.B. ChB"
   "Smith, M.D. / PhD"         →  suffix="M.D. / PhD"
   "Smith, PhD J.P."           →  suffix="PhD J.P."
   "Rinehart, J.D. Jr."        →  given="J."  · boundary
@@ -53,9 +54,16 @@
 
 **Accepted:**
 
-- A credential the vocabulary does not list whole behind the run is a name word there, as behind a run spelling nothing, though C13 read a credential opening the part as taking it in: 'Smith, M.B. ChB' and 'Smith, M.D. M. Sc.' read the run as the given name, the unlisted chunk with it, as 'Smith, X.Q. ChB' does.
+- A credential the vocabulary does not list whole behind the run, and written in neither of the shapes C6 admits, is a name word there, as behind a run spelling nothing, though C13 read a credential opening the part as taking it in: 'Smith, M.D. M. Sc.' and 'Smith, M.D. PhDc' read the run as the given name, the unlisted words with it, as 'Smith, X.Q. ChB' does.
   ```
-  "Smith, M.B. ChB"           →  given="M."
+  "Smith, M.D. M. Sc."        →  given="M."
+  "Smith, M.D. PhDc"          →  given="M."
+  ```
+
+- A given name written in the caps shape behind the run is company like a credential, so the run and the name read as the credential and the name loses its given name: 'Jansen, J.P. IJsbrand' reads as 'Jansen, J.P. IJSBRAND' does. A list writing initials and then a name spelled so is rare beside the credentials written that way behind initials ('Smith, M.B. ChB').
+  ```
+  "Jansen, J.P. IJsbrand"     →  suffix="J.P. IJsbrand"
+  "Jansen, J.P. Ijsbrand"     →  given="J."
   ```
 
 - A one-word surname before a credential written as dotted initials reads as a name with no given name written out ('Smith, M.D.' → given 'M.', middle 'D.'), the credential named in the report; a credential then a given name past a second comma ('Arenas, M.D., Magdalena C.') reads as its twin of unlisted letters does. The undotted spelling is the credential's own and is unchanged ('Smith, MD').

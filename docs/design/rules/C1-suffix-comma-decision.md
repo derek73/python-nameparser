@@ -6,7 +6,7 @@
 
 - **Only the part after the first comma decides**, but for a suffix word ending a whole name before it (C12) and a listed credential in a later part, which speaks for two capitals, dotted or not, standing alone in the part after the first comma (C5).
 - **How the words before the comma are counted** is C3's.
-- **The ambiguous credential class**, counted by name words (C4), with paired initials (C5) and an unlisted all-caps word (C6) read there by rules of their own, and initials spelling a listed credential behind one word read as paired initials are (C16).
+- **The ambiguous credential class**, counted by name words (C4), with paired initials (C5) and an unlisted word in the caps shape (C6) read there by rules of their own, and initials spelling a listed credential behind one word read as paired initials are (C16).
 - **A part read as postnominal** is read before any join (C7).
 - **The listing form's part after the comma** is still read for what it is (C8), and a credential opening it makes it the postnominal part (C13).
 - **A one-character suffix word inside a comma part** is read by what stands before it (C9).
@@ -30,7 +30,7 @@
 - **A suffix word written like an initial** ("John Smith, V."): by default a recognized suffix word counts even written like an initial ("V."); under the strict comma-suffix switch C14 governs, and the word is vetoed.
 - **The count against written case** ("Smith, MA", "Smith Jr., Ma"): C4 counts the name words before the comma first and asks written case (S6) second, only where the count has left the word a name.
 - **Paired initials against the count** ("García Márquez, G.J."): C5 is the stated exception to C4's count, since two words before the comma may be one surname written in two.
-- **An unlisted all-caps word** ("John Smith, XYZ"): C6 decides whether it joins C4's class at all, only where the name carries a case contrast, and once it has joined, C4's count reads it.
+- **An unlisted word in the caps shape** ("John Smith, XYZ"): C6 decides whether it joins C4's class at all, only where the name carries a case contrast, and once it has joined, C4's count reads it.
 - **A generation ending the name before the comma against paired initials after it** ("John Smith Jr., M.J."): written dotted, the initials keep C5's reading and are the given name, the generation staying the suffix, unless a later part's listed credential speaks for them (C5); written undotted as two capitals, they are C12's credential, read as the credential they look like. A numeral ending the family part is read as the comma-less name reads it (S10), so the roman numerals S10 reads by their shape stay the suffix as the listed ones do, save that a particle or a connective in the part counts as no word to spare there, the comma having named the part a surname (S10).
   ```
   "John Smith Jr., M.J."      →  given_names="M.J."
