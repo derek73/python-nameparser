@@ -519,9 +519,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Smith @ JJ Jr. née') under three orders; 2238 -> 2242 the same day,
     # #1239's 'Broeck, Pieter Vanden' under three orders and 'Vanden
     # Broeck Pieter' under its declared policy, each reporting
-    # particle-or-given.
-    assert claims == 2242, (
-        f"the field sweep checks {claims} claims, recorded as 2242 on "
+    # particle-or-given; 2242 -> 2257 the same day, #1361's, #1284's
+    # and #1392's rows under three orders (the bchir rows' suffix-or-name
+    # and given-or-family, 'Aus Rahman's particle-or-given, and the two
+    # 'Jane Doe, BM, ...' rows).
+    assert claims == 2257, (
+        f"the field sweep checks {claims} claims, recorded as 2257 on "
         f"2026-11-20")
 
 
@@ -1012,8 +1015,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # day, from its fix review's three suffix-or-name rows; 500 -> 509
     # the same day, its second fix review's two rows, their reports all
     # skipped; 614 -> 617 the same day, #1239's 'Broeck, Pieter Vanden'
-    # under three orders
-    assert (checked, skipped) == (617, 509), (checked, skipped)
+    # under three orders; 617 -> 620 and 509 -> 512 the same day, #1361's
+    # and #1284's rows under three orders
+    assert (checked, skipped) == (620, 512), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

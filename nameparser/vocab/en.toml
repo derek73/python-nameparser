@@ -2899,6 +2899,14 @@ text = "barch"
 excluded = { credential = { reason = "B.Arch, Bachelor of Architecture, is a surname: US Census 2010 672 bearers, written Barch in 9 ClinicalTrials.gov officials' names and 7 FEC ones, none after a comma (2026-11-09). B.Arch is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
 
 [[word]]
+text = "bbm"
+credential = { expands = "Public Service Star (Singapore, Bintang Bakti Masyarakat)", note = "ends a name on Singapore's honours lists; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1182 }
+
+[[word]]
+text = "bbs"
+credential = { expands = "Bronze Bauhinia Star (Hong Kong)", note = "24 of the 236 distinct names on Hong Kong LegCo precedence lists 1998-2020 (2026-11-08); Czech candidates 5 as Bachelor of Business Studies; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1182 }
+
+[[word]]
 text = "bca"
 credential = {}
 
@@ -2908,11 +2916,12 @@ credential = { expands = "Board Certified Behavior Analyst", note = "NPPES 31,70
 
 [[word]]
 text = "bch"
-excluded = { credential = { reason = "Bachelor of Surgery (B.Ch., 270 ClinicalTrials.gov officials after a comma), the second half of the split MB BCh (rules/S12), kept out as chb is (measured 2026-11-07); B.Ch is read by its shape, rules/S3", issue = 1131, decided = 2026-11-07 } }
+credential = { cased = "BCh", expands = "Bachelor of Surgery", note = "NPPES 208 US healthcare providers (August 2026 file); 273 ClinicalTrials.gov study officials write it, 271 after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Listed, it leaves rules/S12's split MB BCh a run of two listed credentials (Jane Doe MB BCh, PhD and Doe, Jane MB BCh still read suffix), which is why chb's exclusion does not carry over to it", issue = 1361 }
 
 [[word]]
 text = "bchir"
-excluded = { credential = { reason = "B.Chir, Bachelor of Surgery (BChir 62 and B.Chir 3 of 71 ClinicalTrials.gov officials after a comma), is the Tunisian surname Bchir: Wikidata 2 family bearers, ORCID and PSC 3 names, none after a comma (2026-11-09); kept out as bch is. B.Chir is read by its shape, rules/S3", issue = 998, decided = 2026-11-09 } }
+family = { wikidata = 2, as_of = 2026-11-09, note = "the Tunisian surname Bchir: ORCID 2 family boxes and PSC 1 surname, each in Title case and none after a comma (2026-11-20); this reading gates the credential (rules/S4), so a Title-case Bchir ending a name stays the family name" }
+credential = { expands = "Bachelor of Surgery", note = "BChir 62 and B.Chir 3 of 71 ClinicalTrials.gov study officials after a comma (data 2026-10-21); NPPES 5. No case mask, which would repair the surname Bchir to BChir. A surname written BCHIR ending a name in capitals reads as the credential, the gated acronym's capitals reading (no corpus name writes it so, 2026-11-20)", issue = 1361 }
 
 [[word]]
 text = "bcl"
@@ -2938,6 +2947,10 @@ credential = { note = "NPPES 0 US healthcare providers write it (healthcare only
 [[word]]
 text = "bls-i"
 credential = {}
+
+[[word]]
+text = "bmbch"
+credential = { cased = "BMBCh", expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 12 US healthcare providers (August 2026 file); 58 ClinicalTrials.gov study officials after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1361 }
 
 [[word]]
 text = "bmed"
@@ -4361,6 +4374,10 @@ text = "fnp-c"
 credential = { expands = "Family Nurse Practitioner, Certified", note = "NPPES 43,585 US healthcare providers (August 2026 file); 12 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "fnse"
+credential = { cased = "fnse", expands = "Fellow, Nigerian Society of Engineers", note = "lower case after a comma in the 2022 Nigerian national honours list, 1 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
+
+[[word]]
 text = "fnss"
 credential = {}
 
@@ -4515,6 +4532,14 @@ text = "fsdp"
 credential = {}
 
 [[word]]
+text = "fsi"
+credential = { cased = "fsi", expands = "Fellow, the Strategic Institute (Nigeria)", note = "lower case after a comma in the 2022 Nigerian national honours list, 1 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
+
+[[word]]
+text = "fwc"
+credential = { cased = "fwc", expands = "Fellow, War College (Nigeria)", note = "lower case after a comma in the 2022 Nigerian national honours list, 2 of 2 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
+
+[[word]]
 text = "fws"
 credential = {}
 
@@ -4525,6 +4550,14 @@ credential = {}
 [[word]]
 text = "gbe"
 credential = {}
+
+[[word]]
+text = "gbm"
+credential = { expands = "Grand Bauhinia Medal (Hong Kong)", note = "9 of the 236 distinct names on Hong Kong LegCo precedence lists 1998-2020 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1182 }
+
+[[word]]
+text = "gbs"
+credential = { expands = "Gold Bauhinia Star (Hong Kong)", note = "38 of the 236 distinct names on Hong Kong LegCo precedence lists 1998-2020 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Chan, GBS) read as the credential, none in the corpora (2026-11-20)", issue = 1182 }
 
 [[word]]
 text = "gc"
@@ -5103,6 +5136,10 @@ text = "mft"
 credential = { expands = "Marriage and Family Therapist", note = "NPPES 13,618 US healthcare providers (August 2026 file); 3 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
+text = "mh"
+excluded = { credential = { reason = "MH, the Hong Kong Medal for Honour (18 of the 236 distinct names on LegCo precedence lists 1998-2020), is written mostly as initials: listed with sc it moved 324 local-corpus names, most of them wrong (M.H. and paired initials losing the family, 2026-11-20); after a comma MH before JP already reads as the credential run (rules/C5, #1392); a lone trailing MH after a comma stays the given name, and with no comma MH JP reads MH as the family (Hon WONG Kwok-kin MH JP), costs accepted with the decline", issue = 1182, decided = 2026-11-20 } }
+
+[[word]]
 text = "mhpp"
 credential = { note = "NPPES 2,534 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
@@ -5181,6 +5218,10 @@ credential = {}
 [[word]]
 text = "mnae"
 credential = {}
+
+[[word]]
+text = "mni"
+credential = { cased = "mni", expands = "Member, National Institute for Policy and Strategic Studies (Nigeria)", note = "written in lower case after a comma, 14 of 14 times in the 2022 Nigerian national honours list (2026-11-08); ORCID 3 records (M.N.I., MNI, mni), 2 of them in a Nigerian family box, and Nepal 1 Mni, a name the lower-case mask repairs to mni and which, ending a name, reads as the credential (Ram Bahadur Mni); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Bello, MNI) read as the credential, none in the corpora (2026-11-20)", issue = 1228 }
 
 [[word]]
 text = "moid"
@@ -5398,6 +5439,10 @@ credential = {}
 [[word]]
 text = "nd"
 credential = {}
+
+[[word]]
+text = "ndc"
+credential = { cased = "ndc", expands = "National Defence College", note = "a Commonwealth staff-college mark, written in lower case; NPPES 1 (2026-11-20); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
 
 [[word]]
 text = "ndtr"
@@ -5628,6 +5673,10 @@ text = "prm"
 credential = {}
 
 [[word]]
+text = "psc"
+credential = { expands = "passed Staff College", note = "a Commonwealth staff-college mark, written in lower case (Maj Gen John Smith CB psc); NPPES 81, ClinicalTrials.gov 3 as PSc, PSC 4 filers surnamed Psc (2026-11-20). No case mask, unlike the other Nigerian marks (decided 2026-11-20): a mask applies in every role and would repair the surname Psc to psc, so the mark repairs as an unmasked credential does; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
+
+[[word]]
 text = "psm"
 credential = {}
 
@@ -5842,8 +5891,20 @@ text = "same"
 credential = {}
 
 [[word]]
+text = "san"
+excluded = { credential = { reason = "SAN, Senior Advocate of Nigeria (16 times after a comma in the 2022 Nigerian national honours list, 2026-11-08), is the given name San and the saint particle (es, it, fil): as a default credential it cost 17 family names written in capitals (TSE's ALCEU A SAN shape) and added 143 reports (2026-11-20). It waits for a Nigerian English choice of language, where it would be a default = false reading", issue = 1228, decided = 2026-11-20 } }
+
+[[word]]
 text = "sasm"
 credential = {}
+
+[[word]]
+text = "sbs"
+credential = { expands = "Silver Bauhinia Star (Hong Kong)", note = "43 of the 236 distinct names on Hong Kong LegCo precedence lists 1998-2020 (2026-11-08); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1182 }
+
+[[word]]
+text = "sc"
+excluded = { credential = { reason = "SC, Hong Kong's Senior Counsel (4 of the 236 distinct names on LegCo precedence lists 1998-2020), is the Sc of a split M. Sc. (94 names) and capitals initials (FEC's DOYLE, SC shape): listed with mh it moved 324 local-corpus names, most of them wrong (2026-11-20); after a comma SC before JP already reads as the credential run (rules/C5, #1392); with no comma SC JP reads SC as the family, a cost accepted with the decline", issue = 1182, decided = 2026-11-20 } }
 
 [[word]]
 text = "sccp"

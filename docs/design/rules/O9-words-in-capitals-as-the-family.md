@@ -195,7 +195,7 @@
   ```
 - An unlisted post-nominal after a listed one, with no comma, is the last run, so it reads as the family once the listed one peels off.
   ```
-  "Hon CHAN Kin-por GBS JP"  capitals_as_family  →  family="GBS"
+  "Hon CHAN Kin-por MH JP"  capitals_as_family  →  family="MH"
   ```
 - `capitalized()` leaves a name in mixed case as written, so the family keeps its capitals; `capitalized(force=True)` recases them, the family being named by its field by then (R5).
 - A title written in capitals with no full stop is a capitals word, so where no other word of the name is in capitals it reads as the family, save a title-particle (P4), which stays the title (`ST Anna Berg`, `FREIHERR Anna Berg`): such a name writes no family in capitals and is not in the convention the switch is for, a name that marks its family in capitals writing its title in mixed case about 650 times to 8 (counted 2026-11-19, decisions/O9). Where the family is in capitals too, the title keeps its place.

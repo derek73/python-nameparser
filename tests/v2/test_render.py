@@ -1117,7 +1117,7 @@ def test_a_ter_or_der_opening_the_family_name_takes_a_capital() -> None:
             # a der behind an unlisted word, a German epithet
             ("GERARD TER BORCH", "Gerard Ter Borch"),
             ("JA DER LIANG", "Ja Der Liang"),
-            ("KAREN AUS DER FÜNTEN", "Karen Aus Der Fünten"),
+            ("HANS UNTER DER LINDE", "Hans Unter Der Linde"),
             ("ALEXANDRE DUMAS DER ÄLTERE", "Alexandre Dumas Der Ältere"),
             ("JOHANN DER JÜNGERE", "Johann Der Jüngere"),
             # a particle right before the family counts whatever its

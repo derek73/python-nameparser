@@ -168,6 +168,11 @@ text = "auf"
 preposition = { may_be_given = false, issue = 18, expands = "upon: \"auf der Heide\"" }
 
 [[word]]
+text = "aus"
+preposition = { issue = 1284, expands = "out of, from: \"aus der Fünten\"", note = "the German surnames aus der and Aus Der: ORCID family boxes 21 (DE 3), PatentsView family boxes 19 (DE 9); US Census 2010 378 surname bearers (2026-11-20). With the given reading beside it, an Aus written as a middle name before a surname is read into the family (Kevin Aus Smith), none in the local corpora (2026-11-20)" }
+given = { note = "the Arabic and Indonesian given name Aus: ORCID given boxes 14 (IQ 2, AU, CL, ID, IL), PatentsView given boxes 5 (DE 4, SA 1), US SSA under 5 a year; it keeps the word positional where it opens a name (Aus Rahman, reported particle-or-given), where may_be_given = false would fold the whole name into the family, as 6 corpus names showed (2026-11-20)" }
+
+[[word]]
 text = "tho"
 given = { us_ssa = 52, as_of = 2026-10-25, note = "US SSA births summed over both sexes; nam_dict band 8 in Vietnam" }
 preposition = { issue = 18, expands = "to, Low German zu" }
