@@ -41,6 +41,13 @@ _VOTES = [
     ("Mary Smith", Signal.GIVEN_NAME, GIVEN_FIRST),
     ("Иванов Иван Петрович", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ivan Petrovich Sidorov", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
+    # the Ukrainian Cyrillic endings (#1212), a decomposed ї included
+    ("Коваленко Олена Петрівна", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
+    ("Коваленко Олена Петрівна", Signal.PATRONYMIC_POSITION, FAMILY_FIRST),
+    (unicodedata.normalize("NFD", "Ткачук Ганна Сергіївна"), Signal.PATRONYMIC,
+     PatronymicRule.EAST_SLAVIC),
+    ("Мельник Тарас Ілліч", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
+    ("Олена Леонтіївна Бондар", Signal.PATRONYMIC_POSITION, GIVEN_FIRST),
     ("Ziyo Azamat Hamid o‘g‘li", Signal.PATRONYMIC, PatronymicRule.TURKIC),
     # cased evidence in any script: Cyrillic capitals vote
     ("ИВАНОВ Иван", Signal.CAPITALS, FAMILY_FIRST),
@@ -67,6 +74,13 @@ def test_a_name_casts_its_vote(
     ("Smith Jean-Pierre", Signal.TRAILING_INITIAL),
     ("Smith J-", Signal.TRAILING_INITIAL),
     ("Smith -", Signal.TRAILING_INITIAL),
+    # a letter of a script that writes no initials is no initial to the
+    # vote (decisions/group-suggestion): Thai, Burmese (#1256), Arabic
+    # (#1149) and Lao (#1380)
+    ("สมชาย ส.", Signal.TRAILING_INITIAL),
+    ("ကြည် က.", Signal.TRAILING_INITIAL),
+    ("أحمد ع.", Signal.TRAILING_INITIAL),
+    ("ສົມຊາຍ ສ.", Signal.TRAILING_INITIAL),
     ("Smith A.", Signal.SURNAME),
     ("A. Smith", Signal.SURNAME),
     ("김민준", Signal.CAPITALS),

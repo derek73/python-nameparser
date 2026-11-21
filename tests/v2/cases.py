@@ -22944,7 +22944,8 @@ CASES: tuple[Case, ...] = (
          {"given": "ສົມຊາຍ", "family": "ສ. ໃຈດີ"},
          policy=_TWO, classification="fix(#1380)",
          notes="rules/O6 takes a Lao letter as a name word, no middle "
-               "initial; 3.1.0 read middle 'ສ.', family 'ໃຈດີ'"),
+               "initial; 2.6.0 through 3.1.0 read middle 'ສ.', family "
+               "'ໃຈດີ'"),
     Case("lao_title_written_short_keeps_its_shape",
          "ດຣ. ສົມຊາຍ ໃຈດີ",
          {"title": "ດຣ.", "given": "ສົມຊາຍ", "family": "ໃຈດີ"},
@@ -22970,7 +22971,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Тарас", "middle": "Ілліч", "family": "Мельник"},
          views=(("patronymic", "Ілліч"),),
          locale="ru", classification="fix(#1212)",
-         notes="an irregular ending nearly the whole word, matched "
+         notes="an irregular ending that is the whole word, matched "
                "capitalized (re.I, AGENTS.md's Cyrillic gotcha)"),
     Case("ru_pack_ukrainian_ending_in_capitals", "МЕЛЬНИК ТАРАС ІЛЛІЧ",
          {"given": "ТАРАС", "middle": "ІЛЛІЧ", "family": "МЕЛЬНИК"},
@@ -23000,6 +23001,41 @@ CASES: tuple[Case, ...] = (
          notes="rules/O1's accepted cost, the twin of 'Анна Мария "
                "Абрамович': the shape gives no sign the surname is one; "
                "2.0.0 through 3.1.0 read family 'Гаєвич'"),
+    Case("ru_pack_ukrainian_decomposed_yivna",
+         unicodedata.normalize("NFD", "Ткачук Ганна Сергіївна"),
+         {"given": "Ганна",
+          "middle": unicodedata.normalize("NFD", "Сергіївна"),
+          "family": "Ткачук"},
+         views=(("patronymic", unicodedata.normalize("NFD", "Сергіївна")),),
+         locale="ru", classification="fix(#1212)",
+         notes="ї written as і and a combining diaeresis: the ending is "
+               "asked of the word NFC-composed, as the Turkic markers "
+               "are (#1316)"),
+    Case("ru_pack_ukrainian_decomposed_yivna_in_capitals",
+         unicodedata.normalize("NFD", "ТКАЧУК ГАННА СЕРГІЇВНА"),
+         {"given": "ГАННА",
+          "middle": unicodedata.normalize("NFD", "СЕРГІЇВНА"),
+          "family": "ТКАЧУК"},
+         locale="ru", classification="fix(#1212)"),
+    Case("ru_pack_ukrainian_family_comma_fills_the_view",
+         "Коваленко, Олена Петрівна",
+         {"given": "Олена", "middle": "Петрівна", "family": "Коваленко"},
+         views=(("patronymic", "Петрівна"),),
+         locale="ru", classification="fix(#1212)",
+         notes="the comma suppresses rules/O1; rules/R9's view, empty in "
+               "3.0.0 and 3.1.0, reads the middle"),
+    Case("ru_pack_ukrainian_empty_head_fills_the_view",
+         ", Олена Петрівна",
+         {"given": "Олена", "middle": "Петрівна"},
+         views=(("patronymic", "Петрівна"),),
+         locale="ru", classification="fix(#1212)"),
+    Case("east_slavic_rule_reads_a_ukrainian_ending_without_the_pack",
+         "Коваленко Олена Петрівна",
+         {"given": "Олена", "middle": "Петрівна", "family": "Коваленко"},
+         views=(("patronymic", "Петрівна"),),
+         policy=_ES, classification="fix(#1212)",
+         notes="the rule on the default lexicon, as the RU pack turns it "
+               "on"),
     Case("ru_pack_belarusian_ending_is_not_read",
          "Сокалаў Мікалай Іванавіч",
          {"given": "Сокалаў", "middle": "Мікалай", "family": "Іванавіч"},

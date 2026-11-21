@@ -2445,9 +2445,11 @@ Initials in Lao
 ^^^^^^^^^^^^^^^
 
 :meth:`~nameparser.ParsedName.initials` gives nothing for a word in the
-Lao script, which shortens no name to a letter, as for Thai and
-Burmese, where 1.4 through 3.1 gave its first letter. A Lao title
-written short with a full stop is still a title:
+Lao script, where 1.4 through 3.1 gave its first letter: Lao shortens
+no name to a letter, as Thai and Burmese do not. The name match reads
+a Lao letter with a full stop as a word, so ``ສ. ໃຈດີ`` no longer
+matches ``ສົມຊາຍ ໃຈດີ``. A Lao title written short with a full stop is
+still a title:
 
 .. doctest::
 

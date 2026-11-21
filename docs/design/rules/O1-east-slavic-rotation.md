@@ -9,7 +9,7 @@
   "Иван Петрович Абрамович"  [ru]  →  family="Абрамович"  · boundary
   "Олена Петрівна Гаєвич"  [ru]  →  family="Гаєвич"  · boundary
   ```
-- **The endings are the Russian ones and the Ukrainian ones written in Cyrillic** (`-івна`, `-ївна`, `-євич`, `Ілліч`), the three languages writing the patronymic in the same slot and the same orders.
+- **The endings are the Russian ones and the Ukrainian ones written in Cyrillic** (`-івна`, `-ївна`, `-євич`, `Ілліч`), the two languages writing the patronymic in the same slot and the same orders.
   ```
   "Коваленко Олена Петрівна"  [ru]  →  family="Коваленко"
   "Мельник Тарас Ілліч"  [ru]  →  family="Мельник"
