@@ -188,6 +188,40 @@ def test_nl_reads_a_leading_ten_by_its_given_reading_unless_strict(
                for a in name.ambiguities) is reported
 
 
+_FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
+                 languages=frozenset({"fr"}))
+
+
+@pytest.mark.parametrize(("text", "default", "french"), [
+    # #1159: dit and dite are connectives under a French choice only
+    # (fr.toml, default = false; decisions/P3)
+    ("Jean Dupont dit Lebrun", ("Jean", "Dupont dit", "Lebrun"),
+     ("Jean", "", "Dupont dit Lebrun")),
+    ("Marie Martin dite Mimi", ("Marie", "Martin dite", "Mimi"),
+     ("Marie", "", "Martin dite Mimi")),
+    ("Mamadou dit Madou Traore", ("Mamadou", "dit Madou", "Traore"),
+     ("Mamadou dit Madou", "", "Traore")),
+    ("JEAN DUPONT DIT LEBRUN", ("JEAN", "DUPONT DIT", "LEBRUN"),
+     ("JEAN", "", "DUPONT DIT LEBRUN")),
+    ("Dupont dit Lebrun, Jean", ("Jean", "", "Dupont dit Lebrun"),
+     ("Jean", "", "Dupont dit Lebrun")),
+    ("Traore, Mamadou dit Madou", ("Mamadou", "dit Madou", "Traore"),
+     ("Mamadou dit Madou", "", "Traore")),
+    # a hyphenated dit name is one word, and dit opening a name a name
+    ("Jean Dupont-dit-Lebrun", ("Jean", "", "Dupont-dit-Lebrun"),
+     ("Jean", "", "Dupont-dit-Lebrun")),
+    ("Dit Clapper", ("Dit", "", "Clapper"), ("Dit", "", "Clapper")),
+    # the choice's cost, decisions/P3: a name Dit in a three-word name
+    ("Sok Dit Chan", ("Sok", "Dit", "Chan"), ("Sok Dit Chan", "", "")),
+])
+def test_dit_is_a_connective_under_a_french_choice_only(
+        text: str, default: tuple[str, str, str],
+        french: tuple[str, str, str]) -> None:
+    for parser, want in ((Parser(), default), (parser_for(_FRENCH), french)):
+        name = parser.parse(text)
+        assert (name.given, name.middle, name.family) == want, (text, parser)
+
+
 def test_a_strict_dutch_choice_keeps_a_leading_oude_given() -> None:
     # #1455: oude's given reading is in nl.toml itself, so a strict Dutch
     # choice keeps it, where ten's (in zh.toml) leaves

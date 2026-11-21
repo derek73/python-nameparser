@@ -183,6 +183,14 @@ expands = "Sainte, contracted"
 note = "Has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
 
 [[word]]
+text = "dit"
+conjunction = { default = false, issue = 1159 }
+
+[[word]]
+text = "dite"
+conjunction = { default = false, issue = 1159 }
+
+[[word]]
 text = "et"
 conjunction = {}
 

@@ -19,7 +19,7 @@ subset with its own parser, or pass several packs to ``parser_for``:
 The sections below cover Czech, Slovak, Slovenian and Croatian names,
 Spanish and Portuguese titles and family names, romanized Indic titles,
 Vietnamese, Mongolian and Thai names, Arabic-script names, Maghrebi,
-Amazigh, Hebrew and Dutch particles, and Burmese and Malay names. Other languages are described where their mechanism is:
+Amazigh, Hebrew and Dutch particles, French ``dit`` names, and Burmese and Malay names. Other languages are described where their mechanism is:
 
 - **East Slavic patronymics** (``ru``): :ref:`east-slavic-patronymics`.
 - **Turkic patronymic markers** (``tr_az``):
@@ -237,7 +237,8 @@ on:
   Clair Smith`` reads given ``St``.
 
 A caller whose names also hold the English Saint chooses French too, a
-choice that changes no other word:
+choice that changes no other word but ``dit`` and ``dite``
+(:ref:`french-dit-names`):
 
 .. doctest::
 
@@ -1368,6 +1369,45 @@ What the pack costs
     ...                  languages=frozenset({"en"}))
     >>> parser_for(locales.NL, english).parse("John Smith VD").suffix
     'VD'
+
+.. _french-dit-names:
+
+French ``dit`` names
+--------------------
+
+``dit`` and its feminine ``dite`` ("called") join two words of a name
+in two uses: a hereditary French family name of two parts, one legal
+surname in France, Quebec and Switzerland (``Dupont dit Lebrun``), and
+a West African alias written beside the given name (``Mamadou dit
+Madou``). Choosing French reads either as one part of the name; the
+default does not, and reads the first half as a middle name:
+
+.. doctest::
+
+    >>> french_names = parser_for(Locale(code="fr", lexicon=Lexicon.empty(),
+    ...                                  languages=frozenset({"fr"})))
+    >>> parse("Jean Dupont dit Lebrun").family
+    'Lebrun'
+    >>> french_names.parse("Jean Dupont dit Lebrun").family
+    'Dupont dit Lebrun'
+    >>> french_names.parse("Mamadou dit Madou Traore").given
+    'Mamadou dit Madou'
+
+It is a choice rather than the default because ``Dit`` and ``Dite`` are
+also names (Khmer, Vietnamese and Latvian ones among them), and the
+choice reads the word as a connective wherever it stands:
+
+- **A name of three words** with the name in the middle is read as one
+  given name, as ``Juan and Garcia`` is (``Sok Dit Chan`` gives given
+  ``Sok Dit Chan`` and no family name).
+- **Ending a name**, it joins the word before it to the family name
+  (``Tran Thi Dit`` gives family ``Thi Dit``).
+- **Case repair** of a name written in one case writes it in lower
+  case (``SOK DIT CHAN`` gives ``Sok dit Chan``), and ``initials()``
+  gives it no initial there.
+
+Written with hyphens (``Dupont-dit-Lebrun``) the name is one word and
+reads the same either way.
 
 .. _burmese-names:
 
