@@ -1155,6 +1155,123 @@ CASES: tuple[Case, ...] = (
          notes="tuan is no title under the pack (decisions/salutation-"
                "titles, the 2026-11-19 #1179 entry); 3.1.0 reads it "
                "so; 1.4.0 read middle 'Aminah binti Tuan', family 'Yusof'"),
+    # #1180: the Malaysian honours. Datuk, Dato', Datin and Hajah are
+    # titles by default; Tun, Haji and the bare Dato only under the
+    # Malay pack (decisions/salutation-titles, the 2026-11-21 #1180
+    # entry). Notes checked against the 1.4.0 and 3.1.0 wheels on
+    # 2026-11-21
+    Case("datuk_opening_a_name_is_the_title",
+         "Datuk Ahmad bin Ali",
+         {"title": "Datuk", "given": "Ahmad", "family": "bin Ali"},
+         classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Datuk', middle 'Ahmad'"),
+    Case("datuk_in_capitals_opening_a_name_is_the_title",
+         "DATUK AHMAD BIN ALI",
+         {"title": "DATUK", "given": "AHMAD", "family": "BIN ALI"},
+         classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'DATUK', middle 'AHMAD'"),
+    Case("dato_with_its_apostrophe_opening_a_name_is_the_title",
+         "Dato' Ahmad bin Ali",
+         {"title": "Dato'", "given": "Ahmad", "family": "bin Ali"},
+         classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given \"Dato'\", middle 'Ahmad'"),
+    Case("dato_with_the_typographic_apostrophe_is_the_title",
+         "Dato\u2019 Ahmad bin Ali",
+         {"title": "Dato\u2019", "given": "Ahmad", "family": "bin Ali"},
+         classification="feat(#1180)",
+         notes="the typographic apostrophe is not folded, so the "
+               "spelling is listed beside dato'; 1.4.0 through 3.1.0 "
+               "read given 'Dato\u2019', middle 'Ahmad'"),
+    Case("datin_opening_a_name_is_the_title",
+         "Datin Siti binti Ahmad",
+         {"title": "Datin", "given": "Siti", "family": "binti Ahmad"},
+         classification="feat(#1180)",
+         notes="3.1.0 read given 'Datin', middle 'Siti'; 1.4.0 read "
+               "given 'Datin', middle 'Siti binti', family 'Ahmad'"),
+    Case("hajah_opening_a_name_is_the_title",
+         "Hajah Siti binti Ahmad",
+         {"title": "Hajah", "given": "Siti", "family": "binti Ahmad"},
+         classification="feat(#1180)",
+         notes="3.1.0 read given 'Hajah', middle 'Siti'; 1.4.0 read "
+               "given 'Hajah', middle 'Siti binti', family 'Ahmad'"),
+    Case("datuk_after_a_family_comma_is_the_title",
+         "Ali, Datuk Ahmad",
+         {"title": "Datuk", "given": "Ahmad", "family": "Ali"},
+         classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Datuk', middle 'Ahmad'"),
+    Case("seri_behind_datuk_stays_a_name_word",
+         "Datuk Seri Anwar Ibrahim",
+         {"title": "Datuk", "given": "Seri", "middle": "Anwar",
+          "family": "Ibrahim"},
+         classification="feat(#1180)",
+         notes="Seri qualifies the honour before it and is a given name "
+               "too, the qualifier-after-head question left to #1334; "
+               "1.4.0 through 3.1.0 read given 'Datuk', middle 'Seri "
+               "Anwar'"),
+    Case("the_bare_dato_stays_a_name_word_by_default",
+         "Dato Mario Rossi",
+         {"given": "Dato", "middle": "Mario", "family": "Rossi"},
+         notes="dato without its apostrophe is an Italian surname, and a "
+               "title only under the Malay pack"),
+    Case("haji_stays_a_name_word_by_default",
+         "Haji Abdul Hadi Awang",
+         {"given": "Haji", "middle": "Abdul Hadi", "family": "Awang"},
+         notes="a given name and a surname, so the title wants a choice "
+               "(decisions/indic-honorifics, the 2026-11-19 #1469 entry)"),
+    Case("the_malay_pack_reads_haji_as_the_title",
+         "Haji Abdul Hadi Awang",
+         {"title": "Haji", "given": "Abdul Hadi", "family": "Awang"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Haji', middle 'Abdul "
+               "Hadi'"),
+    Case("the_malay_pack_keeps_haji_in_the_fathers_name",
+         "Ahmad bin Haji Abdullah",
+         {"given": "Ahmad", "family": "bin Haji Abdullah"},
+         locale="ms",
+         notes="a title is read at the head of the name only"),
+    Case("the_malay_pack_reads_tun_before_dr_as_the_title",
+         "Tun Dr. Mahathir bin Mohamad",
+         {"title": "Tun Dr.", "given": "Mahathir", "family": "bin Mohamad"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Tun', middle 'Dr. "
+               "Mahathir'"),
+    Case("the_malay_pack_reads_the_surname_tun_after_a_salutation_as_a_title",
+         "Encik Tun Yoke Wah",
+         {"title": "Encik Tun", "given": "Yoke", "family": "Wah"},
+         locale="ms", classification="feat(#1180)",
+         notes="the accepted cost: Tun is also a Chinese surname, which "
+               "is why the title wants the pack (decisions/salutation-"
+               "titles, the 2026-11-21 #1180 entry); 3.1.0 read title "
+               "'Encik', given 'Tun'; 1.4.0 read given 'Encik', middle "
+               "'Tun Yoke'"),
+    Case("tan_sri_stays_a_name_by_default",
+         "Tan Sri Muhyiddin Yassin",
+         {"given": "Tan", "middle": "Sri Muhyiddin", "family": "Yassin"},
+         notes="Tan is a surname and Sri a given name, each a title only "
+               "in the phrase, which the Malay pack turns on"),
+    Case("the_malay_pack_reads_tan_sri_as_the_title",
+         "Tan Sri Muhyiddin Yassin",
+         {"title": "Tan Sri", "given": "Muhyiddin", "family": "Yassin"},
+         locale="ms", classification="feat(#1180)",
+         notes="a phrase rules/H9 reads, tan attaching to sri; 1.4.0 "
+               "through 3.1.0 read given 'Tan', middle 'Sri Muhyiddin'"),
+    Case("the_malay_pack_reads_puan_sri_as_the_title",
+         "Puan Sri Norainee Abdullah",
+         {"title": "Puan Sri", "given": "Norainee", "family": "Abdullah"},
+         locale="ms", classification="feat(#1180)",
+         notes="3.1.0 read title 'Puan', given 'Sri', middle 'Norainee'; "
+               "1.4.0 read given 'Puan', middle 'Sri Norainee'"),
+    Case("the_malay_pack_reads_tan_alone_as_the_given_name",
+         "Tan Chee Chai",
+         {"given": "Tan", "middle": "Chee", "family": "Chai"},
+         locale="ms", ambiguities=("title-or-name",),
+         notes="the commonest Chinese surname in Malaysia, a title only "
+               "before sri (rules/H9); it now reports title-or-name"),
+    Case("the_malay_pack_reads_the_bare_dato_as_the_title",
+         "Dato Ahmad bin Ali",
+         {"title": "Dato", "given": "Ahmad", "family": "bin Ali"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Dato', middle 'Ahmad'"),
     # #1469: the religious honorifics written before a name in Pakistan
     # and Bangladesh. Qari, Moulana, Alhaj and Alhajj are titles by
     # default; Hafiz, Maulana and Haji, borne as given names, and Syed

@@ -145,7 +145,8 @@ shape covers much:
   titles and removed readings reach the comma names too.
 - ``mn`` may read any name written wholly in Cyrillic differently.
 - ``ms`` may read any name holding ``Puan``, ``Cik``, ``Ustaz``,
-  ``Ustazah`` or ``Cikgu`` as a word differently.
+  ``Ustazah``, ``Cikgu``, ``Tun``, ``Haji``, ``Dato``, ``Tan`` or ``Sri``
+  as a word differently.
 - ``my`` may read any name holding ``U`` or ``Daw`` as a word
   differently, with or without its full stop, or ``U`` as a letter of
   a word joined by full stops. Chosen strictly, it may read any name
@@ -301,8 +302,9 @@ says which parts each pack is made of.
    * - ``ms``
      - Malay: Malaysian titles
      - Chooses ``ms``, which reads the salutations ``Puan`` (Mrs.) and
-       ``Cik`` (Miss), and ``Ustaz``, ``Ustazah`` and ``Cikgu``, as
-       titles, where the default reads a name word. See
+       ``Cik`` (Miss), ``Ustaz``, ``Ustazah`` and ``Cikgu``, and the
+       honours ``Tun``, ``Haji``, ``Dato``, ``Tan Sri`` and ``Puan Sri``,
+       as titles, where the default reads a name word. See
        :ref:`malay-names`.
      - ``Puan Siti binti Ahmad`` → title ``Puan``
    * - ``my``

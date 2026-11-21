@@ -32,7 +32,7 @@ import pytest
 
 from tests.checkout import require_checkout
 
-from nameparser import parse
+from nameparser import locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 
 from ._differential_fixtures import load_by_path
@@ -485,6 +485,12 @@ MUTATIONS = [
     ("attaches-a-suffix-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["credential"] }')}, "attaches names 'credential', which is not a title kind"),
     ("attaches-the-generic-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["title"] }')}, "attaches names 'title', which is not a title kind"),
     ("attaches-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word"),
+    # an off-by-default reading may name a partner off by default in its
+    # own file (#1180), but not one with no title reading at all, nor one
+    # whose title only another file's choice turns on: no single choice
+    # would hold the phrase
+    ("attaches-off-by-default-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { default = false, attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word on by default or in en.toml"),
+    ("attaches-off-by-default-a-partner-another-file-turns-on", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { default = false, attaches = ["zzq"] }'), "fr.toml": _w('[[word]]\ntext = "zzq"\noffice = { default = false }')}, "attaches names 'zzq', which is no title kind and no title word on by default or in en.toml"),
     ("attaches-on-a-suffix", {"en.toml": _w('[[word]]\ntext = "phd"\ncredential = { attaches = ["office"] }')}, "unknown key 'attaches'"),
     ("attaches-differs-between-files", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }'), "fr.toml": _w('[[word]]\ntext = "chief"\noffice = {}')}, "attaches"),
     ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved, unbuilt, for 3.x"),
@@ -1580,6 +1586,19 @@ def test_attaches_may_name_a_title_word_that_is_also_another_kind() -> None:
         '[[word]]\ntext = "saint"\nreligious = {}\n\n'
         '[[word]]\ntext = "zzq"\nreligious = { attaches = ["saint"] }')})
     assert c["TITLE_PHRASES"] == frozenset({"zzq saint"})
+
+
+def test_an_off_by_default_phrase_may_name_a_partner_off_by_default_in_its_file() -> None:
+    # the case the check admits since #1180: both readings off by
+    # default in one file, so the default holds no phrase and the one
+    # choice of that file turns both on (ms.toml's puan and sri)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzq"\nnobility = { default = false, attaches = ["zzr"] }\n\n'
+        '[[word]]\ntext = "zzr"\nnobility = { default = false }')})
+    assert c["TITLE_PHRASES"] == frozenset()
+    assert "puan sri" not in Lexicon.default()._sets.title_phrases
+    malay = parser_for(locales.MS).lexicon._sets.title_phrases
+    assert {"puan sri", "tan sri"} <= malay
 
 
 @pytest.mark.parametrize("saint", [

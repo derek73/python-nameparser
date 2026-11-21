@@ -1560,17 +1560,47 @@ name, so the default keeps ``Puan Maharani``'s given name, and the pack
 does not. Choose the pack
 for Malaysian lists, not Indonesian ones.
 
+The honours ``Datuk``, ``Dato'`` and ``Datin`` and the pilgrim's
+``Hajah`` are titles by default, each naming the given name as ``Sir``
+does. The pack adds the honours that are names elsewhere: ``Tun``, a
+Chinese and Burmese name; ``Haji``, a given name and a surname;
+``Dato`` written without its apostrophe, an Italian surname and a
+Georgian given name; and the phrases ``Tan Sri`` and ``Puan Sri``:
+
+.. doctest::
+
+    >>> ahmad = parse("Datuk Ahmad bin Ali")
+    >>> ahmad.title, ahmad.given, ahmad.family
+    ('Datuk', 'Ahmad', 'bin Ali')
+    >>> parse("Tan Sri Muhyiddin Yassin").given
+    'Tan'
+    >>> yassin = malay.parse("Tan Sri Muhyiddin Yassin")
+    >>> yassin.title, yassin.given, yassin.family
+    ('Tan Sri', 'Muhyiddin', 'Yassin')
+    >>> malay.parse("Haji Abdul Hadi Awang").title
+    'Haji'
+
+``Tan``, the commonest Chinese surname in Malaysia, and ``Sri``, a given
+name, are titles only in their phrases: alone each stays the given
+name, and the pack reports the title it might be, so a Chinese name
+written family first reports one under the pack (``Tan Chee Chai``
+gives given ``Tan`` and a ``title-or-name`` report). A ``Sri`` that is a
+given name behind the surname ``Tan`` reads as the phrase
+(``Tan Sri Wahyuni`` gives title ``Tan Sri``).
+
 On Malaysia's election candidates, 3,077 distinct names written in
-capitals, the pack reads 117 differently from the default, each a title
-the default read as the given name: ``USTAZ`` 69, ``CIKGU`` 41,
-``USTAZAH`` 4, ``CIK`` 2 and ``PUAN`` 1. The two ``CIK`` are ``Cikgu``
-written in two words (``CIK GU``), and read given ``GU``, and the
-``PUAN`` opens ``Puan Sri``, the wife of a Tan Sri, and reads given
-``SRI`` until the phrase is a title (:issue:`1180`). Among the records ORCID, PatentsView and
-Companies House hold of Malaysians, Indonesians, Singaporeans and
-Vietnamese, each split into boxes by the person or the filer, the share
-whose boxes the parse matches does not move (measured 2026-11-19,
-:issue:`1179`).
+capitals, the default reads 174 honours at the head of a name as the
+title (``DATO'`` 101, ``DATUK`` 69), and the pack reads 248 differently
+from the default. 197 of them read a title the default read as the
+given name: ``USTAZ`` 72, ``CIKGU`` 45, ``HAJI`` 37, ``DATO`` 29,
+``TAN SRI`` 6, ``USTAZAH`` 5, ``CIK`` 2 and ``PUAN SRI`` 1. The two
+``CIK`` are ``Cikgu`` written in two words (``CIK GU``), and read given
+``GU``. The other 51 read the same and add a report: 36 Chinese names
+written family first with ``TAN``, 14 ``DATO' SRI``. Among the records
+ORCID, PatentsView and Companies House hold of Malaysians, Indonesians
+and Singaporeans, each split into boxes by the person or the filer, the
+share whose boxes the parse matches moves by at most 0.1 point under
+the pack (measured 2026-11-21, :issue:`1179`, :issue:`1180`).
 
 What the pack leaves as it is
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1585,9 +1615,11 @@ father's name, and a Vietnamese given name is written so too:
     >>> aminah.title, aminah.given, aminah.family
     ('', 'Tuan', 'binti Tuan Yusof')
 
-``Dato'``, ``Datuk``, ``Tan Sri`` and ``Haji`` are not titles yet
-(:issue:`1180`), and a title written after one stays a name word
-(``Dato' Ustaz Idris`` gives given ``Dato'``, middle ``Ustaz``).
+``Sri`` and ``Seri`` written behind a head honour, as its qualifier,
+stay name words (``Datuk Seri Anwar Ibrahim`` gives title ``Datuk``,
+given ``Seri``), and so do ``YB``, ``YM`` and ``YA`` and the police
+ranks (:issue:`1180`). ``Haji`` inside the father's name is a name word
+(``Ahmad bin Haji Abdullah`` gives family ``bin Haji Abdullah``).
 ``bt``, written short for ``binti``, stays a credential (Baronet), as
 by default; :doc:`customize` shows how to remove it.
 

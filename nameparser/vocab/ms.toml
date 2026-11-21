@@ -10,7 +10,7 @@ salutation = { issue = 606, gender = "m", after_given = true }
 
 [[word]]
 text = "puan"
-salutation = { default = false, gender = "f", issue = [606, 1179], decided = 2026-11-19, after_given = true, expands = "Mrs., Madam: \"Puan Siti binti Ahmad\"", note = "off by default, an Indonesian given name (Puan Maharani), as #606 left it out: ORCID's given box 8 Indonesian holders of 252,703 and 1 Malaysian of 62,996; on under a Malay choice, the 2015 honours list writing it in the title run of 295 of 1,504 names (#1179); my-candidates 1, PUAN SRI, the wife of a Tan Sri, which reads given SRI until the phrase is a title (#1180) (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
+salutation = { default = false, gender = "f", issue = [606, 1179, 1180], decided = 2026-11-19, after_given = true, attaches = ["sri"], expands = "Mrs., Madam: \"Puan Siti binti Ahmad\"", note = "off by default, an Indonesian given name (Puan Maharani), as #606 left it out: ORCID's given box 8 Indonesian holders of 252,703 and 1 Malaysian of 62,996; on under a Malay choice, the 2015 honours list writing it in the title run of 295 of 1,504 names (#1179); my-candidates 1, PUAN SRI, the wife of a Tan Sri, a phrase rules/H9 reads under the choice, puan attaching to sri (#1180) (tools/name_usage.py --boxes --country MY, 2026-11-19)" }
 
 [[word]]
 text = "tuan"
@@ -18,6 +18,14 @@ text = "tuan"
 reason = "Mr., Sir, written before a name in official lists: the 2015 honours list, a newspaper's text and the only evidence of the salutation, holds it in 39 title runs of 1,504 (#1179); left out even under a Malay choice, being the hereditary prefix Malaysians file as part of the name, repeated before the father's (Tuan Aminah binti Tuan Yusof): 16 ORCID and 6 PatentsView Malaysian records open with it, 22 of 22 in the given box, my-candidates' 3,077 distinct names open with it 3 times, 2 of them the phrase TUAN GURU, 5 of 5 Malaysian names write it after bin, and the given box holds it 52 times and the family box 44 of 62,996 Malaysian ORCID holders; and a Vietnamese given name (Tuấn), in ORCID's given box 760 times among 46,170 Vietnamese holders. As a salutation under the Malay choice it moved ORCID MY from 76.72% to 76.70%, PatentsView MY 90.56% to 90.50%, and the Vietnamese records of ORCID, PatentsView and Companies House down 0.5 to 1.5 points (config_diff.py score, 2026-11-19)"
 issue = 1179
 decided = 2026-11-19
+
+[[word]]
+text = "hajah"
+religious = { addresses = "given", gender = "f", issue = 1180, decided = 2026-11-21, expands = "a woman who has made the Hajj: \"Hajah Siti binti Ahmad\"", note = "the 2015 King's birthday honours list writes it in 16 title runs the vocabulary missed of 1,504 names (#1180, 2026-11-08); as a name, ORCID's given box 32 (Brunei 3, Indonesia 1, none from Malaysia, 28 with no country) and family box 1, PatentsView's given box 2 (Brunei 1), the honorific typed in; US Census 2010 under 100, SSA under 5 a year (tools/name_usage.py --boxes --country MY, 2026-11-21)" }
+
+[[word]]
+text = "haji"
+religious = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, expands = "one who has made the Hajj: \"Haji Ahmad bin Ali\"", note = "off by default, a given name and a surname: US SSA 105+ births, US Census 2010 1,608, ORCID's given box 232 (Iraq 20, Pakistan 15, Malaysia 10) and family box 1,178 (Iran 156, Iraq 72, Brunei 50, Malaysia 37), PatentsView's given box 24 and family box 43 (tools/name_usage.py --boxes --country MY, 2026-11-21); the 2015 honours list writes it in 40 title runs the vocabulary missed of 1,504 names (#1180). A title at the head only: inside a father's name (bin Haji Abdullah) it stays a name word" }
 
 [[word]]
 text = "ustaz"
@@ -28,8 +36,40 @@ text = "ustazah"
 religious = { default = false, gender = "f", issue = 1179, decided = 2026-11-19, same_as = "ustaz", expands = "a woman religious teacher", note = "3 of my-candidates' 3,077 distinct names open with USTAZAH, 2 more after DR or DATO'; ORCID's family box holds it once (Indonesia), and no bearer in PatentsView or Wikidata (2026-11-19)" }
 
 [[word]]
+text = "datin"
+nobility = { addresses = "given", gender = "f", issue = 1180, decided = 2026-11-21, expands = "the wife of a Datuk or Dato': \"Datin Siti binti Ahmad\"", note = "the 2015 King's birthday honours list writes it in 23 title runs the vocabulary missed of 1,504 names (#1180, 2026-11-08); as a name, ORCID's given box 13 (Malaysia 1) and family box 2, PatentsView's family box 3 (US); US Census 2010 under 100, SSA under 5 a year (tools/name_usage.py --boxes --country MY, 2026-11-21)" }
+
+[[word]]
+text = "dato'"
+nobility = { addresses = "given", issue = 1180, decided = 2026-11-21, expands = "a federal or state honour, written so in most states: \"Dato' Ahmad bin Ali\"", note = "the 2015 King's birthday honours list writes it in 32 title runs the vocabulary missed of 1,504 names (#1180, 2026-11-08); as a name, ORCID's given box 7 (Malaysia 4) and family box 3 (Malaysia 2), the honour typed in, PatentsView none (tools/name_usage.py --boxes --country MY, 2026-11-21)" }
+
+[[word]]
+text = "dato"
+nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, same_as = "dato'", note = "dato' written without its apostrophe, as lists in capitals and forms that refuse the character write it; off by default, being an Italian surname that Italian lists write first: US Census 2010 633, ORCID's family box 68 (Italy 13, Philippines 5) and given box 21, PatentsView's family box 17 (tools/name_usage.py --boxes, 2026-11-21)" }
+
+[[word]]
+text = "dato’"
+nobility = { addresses = "given", issue = 1180, decided = 2026-11-21, same_as = "dato'", note = "dato' written with the typographic apostrophe, which the vocabulary does not fold into the straight one, so it is listed beside it as fr.toml lists d’ beside d'" }
+
+[[word]]
+text = "datuk"
+nobility = { addresses = "given", issue = 1180, decided = 2026-11-21, expands = "a federal or state honour, addressing the given name: \"Datuk Ahmad bin Ali\"", note = "the 2015 King's birthday honours list writes it in 23 title runs the vocabulary missed of 1,504 names (#1180, 2026-11-08); as a name, ORCID's given box 4 (NL 1, none from Malaysia) and family box 3 of 24,990,909 holders, PatentsView's given box 2, both Malaysian, the honour typed in; US Census 2010 under 100, SSA under 5 a year (tools/name_usage.py --boxes --country MY, 2026-11-21)" }
+
+[[word]]
+text = "sri"
+nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, note = "a title only behind tan or puan, in the phrases Tan Sri and Puan Sri (rules/H9, the title phrase), mul.toml's given reading gating it: alone it is an Indonesian and Indian given name (Sri Mulyani). Written behind a head honour as its qualifier (Dato' Sri, Datuk Seri) it stays a name word, the qualifier-after-head question being #1334's" }
+
+[[word]]
 text = "sultan"
 nobility = {}
+
+[[word]]
+text = "tan"
+nobility = { default = false, addresses = "given", attaches = ["sri"], issue = 1180, decided = 2026-11-21, note = "a title only in the phrase Tan Sri, the second highest federal honour (rules/H9, the title phrase), mul.toml's given reading gating it: alone it is the commonest Chinese surname in Malaysia and Singapore, and stays a name word (Tan Chee Chai)" }
+
+[[word]]
+text = "tun"
+nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, expands = "the highest federal honour: \"Tun Ahmad bin Ali\"", note = "off by default, a Chinese and Burmese name: ORCID's given box 241 (Myanmar 30, China 21, Malaysia 9) and family box 395 (Myanmar 47, Malaysia 7), PatentsView's given box 53 and family box 22, US Census 2010 1,908 (tools/name_usage.py --boxes --country MY, 2026-11-21); the 2015 honours list writes it once, and once as the surname of a man addressed Encik (#1180)" }
 
 [[word]]
 text = "cikgu"

@@ -459,19 +459,28 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
 
 def test_ms_pack_contents() -> None:
     # #1179: nothing but a choice of ms, which turns on ms.toml's
-    # `default = false` readings and changes no other word
+    # `default = false` readings and changes no other word; #1180 added
+    # the honours and the two phrases they make
     from nameparser._reading_index import changed_words, selected
     assert locales.MS == Locale(code="ms", lexicon=Lexicon.empty(),
                                 languages=frozenset({"ms"}))
     assert not hasattr(locales.MS, "DEVIATES")
     assert changed_words(selected(locales.MS.languages)) == {
-        "puan", "cik", "ustaz", "ustazah", "cikgu"}
+        "puan", "cik", "ustaz", "ustazah", "cikgu", "tun", "haji", "dato",
+        "tan", "sri", "tan sri", "puan sri"}
 
 
 @pytest.mark.parametrize("text, title, given, family", [
     ("Puan Siti binti Ahmad", "Puan", "Siti", "binti Ahmad"),
-    # Hajah is no title yet (#1180), so it is read as the given name
-    ("Puan Hajah Siti binti Ahmad", "Puan", "Hajah", "binti Ahmad"),
+    # Hajah is a title by default since #1180, and joins the run
+    ("Puan Hajah Siti binti Ahmad", "Puan Hajah", "Siti", "binti Ahmad"),
+    ("Haji Abdul Hadi Awang", "Haji", "Abdul Hadi", "Awang"),
+    ("Tun Dr. Mahathir bin Mohamad", "Tun Dr.", "Mahathir", "bin Mohamad"),
+    ("Tan Sri Muhyiddin Yassin", "Tan Sri", "Muhyiddin", "Yassin"),
+    ("TAN SRI MUHYIDDIN YASSIN", "TAN SRI", "MUHYIDDIN", "YASSIN"),
+    ("Yassin, Tan Sri Muhyiddin", "Tan Sri", "Muhyiddin", "Yassin"),
+    ("Puan Sri Aminah Yusof", "Puan Sri", "Aminah", "Yusof"),
+    ("Dato Ahmad bin Ali", "Dato", "Ahmad", "bin Ali"),
     ("PUAN SITI AMINAH", "PUAN", "SITI", "AMINAH"),
     ("Cik Nadia binti Rahman", "Cik", "Nadia", "binti Rahman"),
     ("Ustaz Hafiz bin Omar", "Ustaz", "Hafiz", "bin Omar"),
@@ -504,9 +513,13 @@ def test_ms_reads_the_malay_titles(text: str, title: str, given: str,
     "Nguyen Van Tuan",
     # a salutation as a name word inside a name keeps its place
     "Ali Puan",
-    # Dato' is not a title yet (#1180), so a title written after it
-    # stays a name word, as by default
-    "Dato' Ustaz Idris",
+    # Haji inside the father's name stays a name word (#1180)
+    "Ahmad bin Haji Abdullah",
+    "Siti binti Haji Ali",
+    # Sri behind a head honour stays a name word, the
+    # qualifier-after-head question left to #1334
+    "Datuk Seri Anwar Ibrahim",
+    "Dato' Sri Abu Samah bin Nordin",
 ])
 def test_ms_leaves_these_as_the_default_reads_them(text: str) -> None:
     assert _require_packed("ms").parse(text).as_dict() == _default_parse(text)
@@ -517,10 +530,25 @@ def test_ms_reads_the_indonesian_puan_as_the_title() -> None:
     # (decisions/salutation-titles, the 2026-11-19 #1179 entry)
     name = _require_packed("ms").parse("Puan Maharani")
     assert (name.title, name.given, name.family) == ("Puan", "", "Maharani")
-    # and Puan Sri, the wife of a Tan Sri, reads Sri as the given name
-    # until the phrase is a title (#1180)
-    sri = _require_packed("ms").parse("Puan Sri Aminah Yusof")
-    assert (sri.title, sri.given) == ("Puan", "Sri")
+
+
+
+def test_ms_reads_tan_and_sri_as_name_words_outside_their_phrases() -> None:
+    # each is a title only in its phrase (rules/H9, #1180): alone it is
+    # the given name, reporting the title it might be, and the default
+    # reads no phrase and reports nothing
+    malay = _require_packed("ms")
+    for text in ("Tan Chee Chai", "Sri Mulyani"):
+        name = malay.parse(text)
+        assert name.title == "" and name.given == text.split()[0]
+        assert [a.kind.value for a in name.ambiguities] == ["title-or-name"]
+        assert parse(text).ambiguities == ()
+    # the accepted costs (decisions/salutation-titles, the 2026-11-21
+    # #1180 entry): Sri as a given name behind the surname Tan, and Sri
+    # behind a style, which makes a phrase (rules/H9)
+    assert malay.parse("Tan Sri Wahyuni").title == "Tan Sri"
+    assert malay.parse("Hon. Sri Mulyani").title == "Hon. Sri"
+    assert parse("Tan Sri Wahyuni").title == ""
 
 
 def test_ms_is_plain_since_strict_drops_other_languages_readings() -> None:
@@ -2443,6 +2471,13 @@ _ROTATORS["ms"] = [
     "Ahmad, Siti Puan",              # puan ending the given part (H8)
     "Rahman, Nadia Cik",             # cik ending the given part (H8)
     "Hafiz Omar Ustaz.",             # ustaz, dotted, ending the name (H5)
+    # #1180's honours
+    "Tun Ahmad bin Ali",             # tun
+    "HAJI AHMAD",                    # haji, in one case (rules/H1)
+    "Ali, Haji Ahmad",               # haji after a family comma
+    "Dato Ahmad bin Ali",            # dato without its apostrophe
+    "Tan Sri Muhyiddin Yassin",      # tan sri
+    "Puan Sri Aminah Yusof",         # puan sri
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
