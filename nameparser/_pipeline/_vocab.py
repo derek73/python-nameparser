@@ -385,17 +385,20 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 ROMAN = _ROMAN
 
 
-# Ported verbatim from v1's patterns (the 1.x and 2.x
+# Ported from v1's patterns (the 1.x and 2.x
 # nameparser.config.regexes, removed in 3.0, #1008), the RU and TR_AZ
 # packs' copies pinned to these by tests/v2/test_locales.py: the East
 # Slavic patronymic endings and the standalone Turkic patronymic
-# markers, which rules/O1's and O2's rotations and rules/R9's reading
-# ask through the two predicates below.
+# markers, which rules/O1's and O2's rotations, rules/R9's reading and
+# the group suggester's patronymic signal (nameparser/_suggest.py) ask
+# through the two predicates below. The Ukrainian Cyrillic endings are
+# decisions/O1's (#1212).
 _EAST_SLAVIC = re.compile(
     r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)
 _EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
+    r"(ович|овна|евич|евна|ична|ильич|івна|ївна|євич|ілліч"
+    r"|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
     re.I)
 _TURKIC = re.compile(
     r"^(oglu|oğlu|ogly|ogli|o['’ʻ‘ʼ`]g['’ʻ‘ʼ`]li"
@@ -407,7 +410,13 @@ _TURKIC_CYR = re.compile(
 def has_patronymic_ending(text: str) -> bool:
     """Whether `text` ends in an East Slavic patronymic ending, Latin or
     Cyrillic ("Ivanovich", "Петрович"): rules/O1's test and, under
-    `PatronymicRule.EAST_SLAVIC`, rules/R9's."""
+    `PatronymicRule.EAST_SLAVIC`, rules/R9's. Asked of the word
+    NFC-composed, as `is_patronymic_marker` is (#1316): the Ukrainian
+    `ї` of `-ївна` decomposes to і and a combining diaeresis (#1212);
+    the fold is inline behind `isascii()` so a plain word costs no
+    frame."""
+    if not text.isascii():
+        text = unicodedata.normalize("NFC", text)
     return bool(_EAST_SLAVIC.search(text) or _EAST_SLAVIC_CYR.search(text))
 
 

@@ -147,7 +147,7 @@
 
 **Accepted:**
 
-- A letter with a full stop in a script that writes no initials is a name word, not a middle initial (T5), so it joins the family as any third name word does: Thai and Burmese since 3.1 and the Arabic script since 3.2, as Han before.
+- A letter with a full stop in a script that writes no initials is a name word, not a middle initial (T5), so it joins the family as any third name word does: Thai and Burmese since 3.1 and the Arabic and Lao scripts since 3.2, as Han before.
   ```
   "สมชาย ส. ใจดี"  two_family_names  →  family="ส. ใจดี"
   "John 王. Smith"  two_family_names  →  family="王. Smith"

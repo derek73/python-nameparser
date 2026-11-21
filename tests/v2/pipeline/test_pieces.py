@@ -657,7 +657,7 @@ def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
     ("એમ.", False),         # Gujarati
     ("ଏମ.", False),         # Odia
     ("එම.", False),         # Sinhala, the range's far end
-    ("ດຣ.", True),          # Lao, outside the range, as Thai is
+    ("ດຣ.", True),          # Lao writes no initials, but abbreviations (#1380)
     ("กข.", True),          # Thai writes no initials, but abbreviations (#1256)
     ("Mएम.", False),        # contains-any, as Kim김. is
     # #1136: nor a transliteration digraph in the set, in any case,

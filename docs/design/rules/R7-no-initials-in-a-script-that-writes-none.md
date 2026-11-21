@@ -1,10 +1,10 @@
 # R7 — no initials in a script that writes none
 
-**When:** initials are asked of a parsed name holding a word that opens with a Han ideograph, a Hangul syllable, kana, or a letter of the Myanmar, Thai or Arabic script, as in "김민준".
+**When:** initials are asked of a parsed name holding a word that opens with a Han ideograph, a Hangul syllable, kana, or a letter of the Myanmar, Thai, Lao or Arabic script, as in "김민준".
 
 **Then:** a word whose first letter is in a script that writes no initials contributes nothing to the initials, and a word in another script beside it still gives its own.
 
-**Because:** Han, Hangul, kana, Burmese, Thai and the Arabic script abbreviate no name to a letter, so the first character with a full stop after it is no initial anyone writes. The parse already reads no word in them as an initial (T5), and the name match none as one either, so the parse and this view answer that question alike.
+**Because:** Han, Hangul, kana, Burmese, Thai, Lao and the Arabic script abbreviate no name to a letter, so the first character with a full stop after it is no initial anyone writes. The parse already reads no word in them as an initial (T5), and the name match none as one either, so the parse and this view answer that question alike.
 
 ```
 "김민준"                      →  initials=""
@@ -12,6 +12,7 @@
 "王 小明"                     →  initials=""
 "ကြည် ကြည် ဌေး"                →  initials=""
 "สมชาย ใจดี"                   →  initials=""
+"ສົມຊາຍ ໃຈດີ"                  →  initials=""
 "أحمد علي حسن"                 →  initials=""
 "김민준 John"                 →  initials="J."  · boundary
 ```

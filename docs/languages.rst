@@ -1095,7 +1095,7 @@ Initials
 In the name lists measured, Arabic script writes a letter with a full
 stop before a name as a title and almost never for a name (Persian and
 Urdu names were measured less). :meth:`~nameparser.ParsedName.initials`
-gives nothing for a word in Arabic script, as for Han, Thai and
+gives nothing for a word in Arabic script, as for Han, Thai, Lao and
 Burmese, and the name match reads a letter with a full stop as a word
 of its own, not as an initial:
 

@@ -7,6 +7,7 @@
 - A word opening with conjoining jamo that compose to no syllable gives no initial, the jamo being hangul: `ᄒᆞᆫ 김` gives '' — 2026-11-05 #1087
 - A word opening with a letter of the Myanmar script gives no initial: `ကြည် ကြည် ဌေး` gives '' — 2026-11-12 #1234 (decisions/script-properties).
 - A word opening with a Thai letter gives no initial: `สมชาย ใจดี` gives '' — 2026-11-12 #1256 (decisions/script-properties).
+- A word opening with a Lao letter gives no initial: `ສົມຊາຍ ໃຈດີ` gives '' — 2026-11-20 #1380 (decisions/script-properties).
 
 Open: none in this file.
 
@@ -17,3 +18,4 @@ Open: none in this file.
 - 2026-11-12 #1234 — BURMESE WRITES NO INITIALS. The script-property table's Myanmar row (decisions/script-properties, which holds the evidence and the moves) adds Burmese to the rule: `ကြည် ကြည် ဌေး` gave 'က. က. ဌ.' from 1.4.0 through 3.0.1 and gives ''. The rule's Because no longer says the parse reads no period after such a word as an abbreviation: that is H2's own column, which the Myanmar row does not set.
 - 2026-11-12 #1256 — THAI WRITES NO INITIALS. The script-property table's Thai row (decisions/script-properties, which holds the count and the moves) adds Thai to the rule, as the 2026-08-02 #320 measurement (`th` 0 of 20) had said it belonged once it earned a row: `สมชาย ใจดี` gave 'ส. ใ.' and gives ''.
 - 2026-11-19 #1149 — THE ARABIC SCRIPT WRITES NO INITIALS. The Arabic script takes a row of `_policy._SCRIPT_PROPERTIES` that writes no initials, so a word whose first letter is in it contributes nothing to `initials()`, where 1.4.0 through 3.1.0 gave its first letter; the measurement, the CLDR table it was decided against and the cost are decisions/script-properties' entry of the same date.
+- 2026-11-20 #1380 — LAO WRITES NO INITIALS. The script-property table's Lao row (decisions/script-properties, which holds the count and the moves) adds Lao to the rule: `ສົມຊາຍ ໃຈດີ` gave 'ສ. ໃ.' from 1.4.0 through 3.1.0 and gives ''. Khmer and Tibetan, which #1380 asked about beside it, have no row and still give their first letters (decisions/script-properties' Open).
