@@ -5221,7 +5221,7 @@ credential = {}
 
 [[word]]
 text = "mni"
-credential = { cased = "mni", expands = "Member, National Institute for Policy and Strategic Studies (Nigeria)", note = "written in lower case after a comma, 14 of 14 times in the 2022 Nigerian national honours list (2026-11-08); ORCID 3 records (M.N.I., MNI, mni), 2 of them in a Nigerian family box, and Nepal 1 Mni, a name the lower-case mask repairs to mni; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Bello, MNI) read as the credential, none in the corpora (2026-11-20)", issue = 1228 }
+credential = { cased = "mni", expands = "Member, National Institute for Policy and Strategic Studies (Nigeria)", note = "written in lower case after a comma, 14 of 14 times in the 2022 Nigerian national honours list (2026-11-08); ORCID 3 records (M.N.I., MNI, mni), 2 of them in a Nigerian family box, and Nepal 1 Mni, a name the lower-case mask repairs to mni and which, ending a name, reads as the credential (Ram Bahadur Mni); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Bello, MNI) read as the credential, none in the corpora (2026-11-20)", issue = 1228 }
 
 [[word]]
 text = "moid"
