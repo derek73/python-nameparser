@@ -764,6 +764,7 @@
 {"name": "Danarto", "given": "Danarto", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Daniel Ayala Pérez", "given": "Daniel", "middle": "Ayala", "family": "Pérez", "initials": "D. A. P."}
 {"name": "Daniel Bautista Rocha", "given": "Daniel", "middle": "Bautista", "family": "Rocha", "initials": "D. B. R."}
+{"name": "Datuk Ahmad", "title": "Datuk", "given": "Ahmad", "initials": "A."}
 {"name": "David Ben Gurion", "given": "David", "middle": "Ben", "family": "Gurion", "initials": "D. B. G."}
 {"name": "David arap Kirui", "given": "David", "middle": "arap", "family": "Kirui", "initials": "D. a. K.", "capitalized_force": "David Arap Kirui"}
 {"name": "David zu Sonnegg von Ungnad von Weissenwolf", "given": "David", "middle": "zu Sonnegg von Ungnad", "family": "von Weissenwolf", "initials": "D. S. U. W."}

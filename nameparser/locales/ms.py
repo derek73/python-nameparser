@@ -12,11 +12,14 @@ name (``Tan Sri Ahmad bin Ali`` gives title ``Tan Sri``, given
 ``Datin`` and ``Hajah`` are titles by default already. Each is off by
 default because a word of it is a name elsewhere (``Puan``, an
 Indonesian given name, as in ``Puan Maharani``; ``Tun`` and ``Tan``,
-Chinese surnames; ``Haji``, a given name and a surname; ``Dato``, an
-Italian surname) or is written so only in Malaysian lists. ``Tan`` and
-``Sri`` alone stay name words under the pack, each a title only in its
-phrase (rules/H9), so a name opening with either reports the title it
-might be (``Tan Chee Chai`` reads given ``Tan``).
+Chinese surnames; ``Sri``, an Indonesian and Indian given name;
+``Haji``, a given name and a surname; ``Dato``, an Italian surname and
+a Georgian given name) or is written so only in Malaysian lists. ``Tan`` and
+``Sri`` are each a title only in its phrase (rules/H9), so a name
+opening with either and no phrase stays a name word under the pack and
+reports the title it might be (``Tan Chee Chai`` reads given ``Tan``);
+a style before either makes a phrase of its own (``Hon. Tan Ah Kow``
+gives title ``Hon. Tan``).
 
 ``Tuan`` is left a name word under the pack too: Malaysians who file
 their own names write it first as the hereditary prefix, repeated before

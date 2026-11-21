@@ -157,11 +157,11 @@ given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = ["muhammad"
 
 [[word]]
 text = "sri"
-given = { us_ssa = 109, as_of = 2026-11-21, note = "an Indonesian and Indian given name (Sri Mulyani): ORCID's given box 7,047 (Indonesia 1,951, India 888, Malaysia 23) and family box 1,009, PatentsView's given box 355 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only behind tan or puan (rules/H9), so a name opening with Sri reads it as the given name and reports the title it might be (#1180)" }
+given = { us_ssa = 109, as_of = 2026-11-21, note = "an Indonesian and Indian given name (Sri Mulyani): ORCID's given box 7,047 (Indonesia 1,951, India 888, Malaysia 23) and family box 1,009, PatentsView's given box 355 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only behind tan or puan (rules/H9), so under a Malay choice a name opening with Sri reads it as the given name and reports the title it might be, and by default reports nothing (#1180)" }
 
 [[word]]
 text = "tan"
-given = { us_ssa = 597, as_of = 2026-11-21, note = "a Vietnamese given name (Tân) as well as the commonest Chinese surname of Malaysia and Singapore: ORCID's given box 2,867 (China 400, Vietnam 308, Malaysia 115) and family box 20,353, PatentsView's given box 475 and family box 3,720 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only in the phrase Tan Sri (rules/H9), so a name opening with Tan reads it as the given name and reports the title it might be (#1180)" }
+given = { us_ssa = 597, as_of = 2026-11-21, note = "a Vietnamese given name (Tân) as well as the commonest Chinese surname of Malaysia and Singapore: ORCID's given box 2,867 (China 400, Vietnam 308, Malaysia 115) and family box 20,353, PatentsView's given box 475 and family box 3,720 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only in the phrase Tan Sri (rules/H9), so under a Malay choice a name opening with Tan reads it as the given name and reports the title it might be, and by default reports nothing (#1180)" }
 
 [[word]]
 text = "dis"

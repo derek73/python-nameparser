@@ -1386,8 +1386,9 @@ def check_pool(pool: Pool) -> None:
     # a reading written `default = false` may also name a word whose
     # title reading is off by default IN ITS OWN FILE, the one choice of
     # that file turning both on (`puan` and `sri` in ms.toml, #1180); a
-    # partner switched on by another file's choice alone, or by none,
-    # makes a phrase no single choice holds
+    # partner switched on only by another file's readings is refused,
+    # even one a choice of this file also selects (pt.toml under pt-BR):
+    # the two halves of the phrase are written in one file
     own_titles = {(r.file, r.text) for r in pool.readings
                   if r.category == "title"}
 
@@ -1406,7 +1407,10 @@ def check_pool(pool: Pool) -> None:
                     and not partner(r, k)):
                 raise VocabError(
                     f"{r.where()}: attaches names {k!r}, which is not a "
-                    f"title kind or a title word; the kinds: "
+                    f"title kind or a title word"
+                    + ("" if r.on_by_default else
+                       f" on by default or in {r.file}")
+                    + "; the kinds: "
                     f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
             if k not in CATEGORY and not partner(r, k):
                 raise VocabError(f"{r.where()}: attaches names {k!r}, which "

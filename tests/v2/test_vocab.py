@@ -491,6 +491,14 @@ MUTATIONS = [
     # would hold the phrase
     ("attaches-off-by-default-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { default = false, attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word on by default or in en.toml"),
     ("attaches-off-by-default-a-partner-another-file-turns-on", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { default = false, attaches = ["zzq"] }'), "fr.toml": _w('[[word]]\ntext = "zzq"\noffice = { default = false }')}, "attaches names 'zzq', which is no title kind and no title word on by default or in en.toml"),
+    ("attaches-off-by-default-a-partner-with-only-a-name-reading-in-its-file", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { default = false, attaches = ["zzq"] }\n\n[[word]]\ntext = "zzq"\ngiven = { note = "x" }')}, "attaches names 'zzq', which is no title kind and no title word on by default or in en.toml"),
+    # the case the narrower check refused that matters most: a reading on
+    # by default naming a partner off by default, in the same file; the
+    # end anchor holds that no hint about the file is given
+    ("attaches-a-partner-off-by-default-beside-a-reading-on-by-default", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["zzq"] }\n\n[[word]]\ntext = "zzq"\noffice = { default = false }')}, "attaches names 'zzq', which is no title kind and no title word$"),
+    # the same two halves through the kind-name branch: 'saint' names a
+    # particle kind too, and its title only another file turns on
+    ("attaches-off-by-default-a-kind-name-another-file-turns-on", {"en.toml": _w('[[word]]\ntext = "zzq"\nreligious = { default = false, attaches = ["saint"] }'), "fr.toml": _w('[[word]]\ntext = "saint"\nreligious = { default = false }')}, "attaches names 'saint', which is not a title kind or a title word on by default or in en.toml"),
     ("attaches-on-a-suffix", {"en.toml": _w('[[word]]\ntext = "phd"\ncredential = { attaches = ["office"] }')}, "unknown key 'attaches'"),
     ("attaches-differs-between-files", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }'), "fr.toml": _w('[[word]]\ntext = "chief"\noffice = {}')}, "attaches"),
     ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved, unbuilt, for 3.x"),
@@ -1588,14 +1596,32 @@ def test_attaches_may_name_a_title_word_that_is_also_another_kind() -> None:
     assert c["TITLE_PHRASES"] == frozenset({"zzq saint"})
 
 
-def test_an_off_by_default_phrase_may_name_a_partner_off_by_default_in_its_file() -> None:
+@pytest.mark.parametrize("partner", ["zzr", "saint"])
+def test_an_off_by_default_phrase_may_name_a_partner_off_by_default_in_its_file(
+        partner: str) -> None:
     # the case the check admits since #1180: both readings off by
     # default in one file, so the default holds no phrase and the one
-    # choice of that file turns both on (ms.toml's puan and sri)
-    c = _compile({"en.toml": _w(
-        '[[word]]\ntext = "zzq"\nnobility = { default = false, attaches = ["zzr"] }\n\n'
-        '[[word]]\ntext = "zzr"\nnobility = { default = false }')})
-    assert c["TITLE_PHRASES"] == frozenset()
+    # choice of that file turns both on (ms.toml's puan and sri); a
+    # choice of another file turns on neither. Through both branches of
+    # the check: a plain word, and 'saint', which names a kind too
+    entries = sorted([
+        (partner, '{ default = false }'),
+        ("zzq", f'{{ default = false, attaches = ["{partner}"] }}')])
+    files = {
+        "en.toml": _w("\n\n".join(
+            f'[[word]]\ntext = "{t}"\nreligious = {r}' for t, r in entries)),
+        "fr.toml": _w('[[word]]\ntext = "zzs"\nreligious = {}')}
+    assert _compile(files)["TITLE_PHRASES"] == frozenset()
+    rows = build.index_rows(build.load(files))
+    ri = sys.modules[type(rows[0]).__module__]
+    assert ri.compile_readings(ri.choose(rows, frozenset({"en"})))[
+        "TITLE_PHRASES"] == frozenset({f"zzq {partner}"})
+    assert ri.compile_readings(ri.choose(rows, frozenset({"fr"})))[
+        "TITLE_PHRASES"] == frozenset()
+
+
+def test_the_malay_pack_compiles_its_phrases_and_the_default_none() -> None:
+    # the shipped witness of the case above
     assert "puan sri" not in Lexicon.default()._sets.title_phrases
     malay = parser_for(locales.MS).lexicon._sets.title_phrases
     assert {"puan sri", "tan sri"} <= malay

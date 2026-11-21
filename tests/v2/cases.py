@@ -1156,8 +1156,8 @@ CASES: tuple[Case, ...] = (
                "titles, the 2026-11-19 #1179 entry); 3.1.0 reads it "
                "so; 1.4.0 read middle 'Aminah binti Tuan', family 'Yusof'"),
     # #1180: the Malaysian honours. Datuk, Dato', Datin and Hajah are
-    # titles by default; Tun, Haji and the bare Dato only under the
-    # Malay pack (decisions/salutation-titles, the 2026-11-21 #1180
+    # titles by default; Tun, Haji, the bare Dato and the phrases Tan
+    # Sri and Puan Sri only under the Malay pack (decisions/salutation-titles, the 2026-11-21 #1180
     # entry). Notes checked against the 1.4.0 and 3.1.0 wheels on
     # 2026-11-21
     Case("datuk_opening_a_name_is_the_title",
@@ -1204,10 +1204,10 @@ CASES: tuple[Case, ...] = (
          {"title": "Datuk", "given": "Seri", "middle": "Anwar",
           "family": "Ibrahim"},
          classification="feat(#1180)",
-         notes="Seri qualifies the honour before it and is a given name "
-               "too, the qualifier-after-head question left to #1334; "
-               "1.4.0 through 3.1.0 read given 'Datuk', middle 'Seri "
-               "Anwar'"),
+         notes="seri is unlisted, so the word behind the honour is the "
+               "given name; reading a qualifier written after its head is "
+               "#1334's question; 1.4.0 through 3.1.0 read given 'Datuk', "
+               "middle 'Seri Anwar'"),
     Case("the_bare_dato_stays_a_name_word_by_default",
          "Dato Mario Rossi",
          {"given": "Dato", "middle": "Mario", "family": "Rossi"},
@@ -1228,7 +1228,7 @@ CASES: tuple[Case, ...] = (
          "Ahmad bin Haji Abdullah",
          {"given": "Ahmad", "family": "bin Haji Abdullah"},
          locale="ms",
-         notes="a title is read at the head of the name only"),
+         notes="a title inside the father's name is a name word"),
     Case("the_malay_pack_reads_tun_before_dr_as_the_title",
          "Tun Dr. Mahathir bin Mohamad",
          {"title": "Tun Dr.", "given": "Mahathir", "family": "bin Mohamad"},
@@ -1259,14 +1259,124 @@ CASES: tuple[Case, ...] = (
          "Puan Sri Norainee Abdullah",
          {"title": "Puan Sri", "given": "Norainee", "family": "Abdullah"},
          locale="ms", classification="feat(#1180)",
-         notes="3.1.0 read title 'Puan', given 'Sri', middle 'Norainee'; "
-               "1.4.0 read given 'Puan', middle 'Sri Norainee'"),
+         notes="1.4.0 through 3.1.0 read given 'Puan', middle 'Sri "
+               "Norainee'"),
     Case("the_malay_pack_reads_tan_alone_as_the_given_name",
          "Tan Chee Chai",
          {"given": "Tan", "middle": "Chee", "family": "Chai"},
          locale="ms", ambiguities=("title-or-name",),
          notes="the commonest Chinese surname in Malaysia, a title only "
                "before sri (rules/H9); it now reports title-or-name"),
+    Case("datuk_before_a_family_comma_is_the_title",
+         "Datuk Ali, Ahmad",
+         {"title": "Datuk", "given": "Ahmad", "family": "Ali"},
+         classification="feat(#1180)",
+         notes="rules/H6's vocabulary peel; 1.4.0 through 3.1.0 read "
+               "family 'Datuk Ali'"),
+    Case("datuk_alone_before_a_family_comma_stays_the_family",
+         "Datuk, Ahmad",
+         {"given": "Ahmad", "family": "Datuk"},
+         notes="rules/H6 stops at a title with no name word behind it"),
+    Case("dato_with_the_typographic_apostrophe_in_capitals_is_the_title",
+         "DATO\u2019 AHMAD",
+         {"title": "DATO\u2019", "given": "AHMAD"},
+         classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'DATO\u2019', family "
+               "'AHMAD'"),
+    Case("the_bare_dato_with_a_period_is_the_title_by_its_shape",
+         "Dato. Ali",
+         {"title": "Dato.", "family": "Ali"},
+         notes="rules/H2's shape, a title addressing the family; under the "
+               "Malay pack the listed word addresses the given name"),
+    Case("datuk_dotted_ending_a_name_is_the_title",
+         "Ahmad bin Ali Datuk.",
+         {"title": "Datuk.", "given": "Ahmad", "family": "bin Ali"},
+         classification="feat(#1180)",
+         notes="rules/H5's trailing vocabulary; 1.4.0 through 3.1.0 read "
+               "family 'bin Ali Datuk.'"),
+    Case("a_given_name_hajah_after_a_salutation_reads_the_title",
+         "Miss Hajah Kamara",
+         {"title": "Miss Hajah", "given": "Kamara"},
+         classification="feat(#1180)",
+         notes="the accepted cost of hajah by default "
+               "(decisions/salutation-titles, the 2026-11-21 #1180 entry); "
+               "1.4.0 through 3.1.0 read given 'Hajah', family 'Kamara'"),
+    Case("the_malay_pack_reads_haji_before_a_family_comma_as_the_title",
+         "Haji Awang, Abdul Hadi",
+         {"title": "Haji", "given": "Abdul Hadi", "family": "Awang"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read family 'Haji Awang'"),
+    Case("the_malay_pack_reads_haji_after_a_family_comma_as_the_title",
+         "Ali, Haji Ahmad",
+         {"title": "Haji", "given": "Ahmad", "family": "Ali"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Haji', middle 'Ahmad'"),
+    Case("the_malay_pack_reads_haji_in_lower_case_as_the_title",
+         "haji ali bin abu",
+         {"title": "haji", "given": "ali", "family": "bin abu"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'haji', middle 'ali'"),
+    Case("the_malay_pack_reads_tan_sri_after_an_empty_comma",
+         ", Tan Sri Muhyiddin",
+         {"title": "Tan Sri", "given": "Muhyiddin"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Tan', middle 'Sri "
+               "Muhyiddin'"),
+    Case("the_malay_pack_reads_tan_sri_with_a_period",
+         "Tan Sri. Ali",
+         {"title": "Tan Sri.", "given": "Ali"},
+         locale="ms", classification="feat(#1180)",
+         notes="1.4.0 through 3.1.0 read given 'Tan', middle 'Sri.'"),
+    Case("the_malay_pack_reads_the_bare_dato_with_a_period_by_the_given_name",
+         "Dato. Ali",
+         {"title": "Dato.", "given": "Ali"},
+         locale="ms", classification="feat(#1180)",
+         notes="the listed word addresses the given name (rules/H1); 1.4.0 "
+               "through 3.1.0 read title 'Dato.', family 'Ali', by "
+               "rules/H2's shape"),
+    Case("the_malay_pack_reads_haji_before_an_initial_as_the_title",
+         "Haji A",
+         {"title": "Haji", "given": "A"},
+         locale="ms", classification="feat(#1180)",
+         notes="the accepted cost of the citation shape, a surname Haji "
+               "and an initial; 3.1.0 read given 'Haji', family 'A' and "
+               "reported the order; 1.4.0 read given 'Haji', family 'A'"),
+    Case("the_malay_pack_reads_the_bare_dato_of_another_name_as_the_title",
+         "Dato Mario",
+         {"title": "Dato", "given": "Mario"},
+         locale="ms", classification="feat(#1180)",
+         notes="the accepted cost: an Italian surname and a Georgian given "
+               "name; 1.4.0 through 3.1.0 read given 'Dato', family "
+               "'Mario'"),
+    Case("the_malay_pack_reads_tan_behind_a_style_as_the_title",
+         "Hon. Tan Ah Kow",
+         {"title": "Hon. Tan", "given": "Ah", "family": "Kow"},
+         locale="ms", classification="feat(#1180)",
+         notes="the accepted cost: a style before a title that may be a "
+               "given name makes a phrase (rules/H9); 1.4.0 through 3.1.0 "
+               "read title 'Hon.', given 'Tan'"),
+    Case("the_malay_pack_reads_tan_sri_alone_as_title_and_given_name",
+         "Tan Sri",
+         {"title": "Tan", "given": "Sri"},
+         locale="ms", classification="feat(#1180)", ambiguities=("title-or-name",),
+         notes="the phrase with no name behind it: rules/H1 gives the one "
+               "name word to the given name, as Field Marshal reads by "
+               "default; 1.4.0 through 3.1.0 read given 'Tan', family "
+               "'Sri'"),
+    Case("the_malay_pack_cuts_tan_sri_at_a_comma",
+         "Tan Sri, Muhyiddin",
+         {"title": "Tan", "given": "Muhyiddin", "family": "Sri"},
+         locale="ms", classification="feat(#1180)",
+         notes="rules/H6 peels the gated Tan and leaves Sri the family, as "
+               "Associate Dean, Jones reads by default; 1.4.0 through "
+               "3.1.0 read family 'Tan Sri'"),
+    Case("the_malay_pack_reads_a_lone_name_after_dato_and_ustaz_as_the_family",
+         "Dato' Ustaz Idris",
+         {"title": "Dato' Ustaz", "family": "Idris"},
+         locale="ms", classification="feat(#1180)",
+         notes="the run addresses as its last title, ustaz, does: by the "
+               "family (#1179's reading); 1.4.0 through 3.1.0 read given "
+               "\"Dato'\", middle 'Ustaz'"),
     Case("the_malay_pack_reads_the_bare_dato_as_the_title",
          "Dato Ahmad bin Ali",
          {"title": "Dato", "given": "Ahmad", "family": "bin Ali"},

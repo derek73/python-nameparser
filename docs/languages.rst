@@ -1561,8 +1561,8 @@ does not. Choose the pack
 for Malaysian lists, not Indonesian ones.
 
 The honours ``Datuk``, ``Dato'`` and ``Datin`` and the pilgrim's
-``Hajah`` are titles by default, each naming the given name as ``Sir``
-does. The pack adds the honours that are names elsewhere: ``Tun``, a
+``Hajah`` are titles by default, each addressing the given name, as
+``Sir`` does. The pack adds the honours that are names elsewhere: ``Tun``, a
 Chinese and Burmese name; ``Haji``, a given name and a surname;
 ``Dato`` written without its apostrophe, an Italian surname and a
 Georgian given name; and the phrases ``Tan Sri`` and ``Puan Sri``:
@@ -1586,17 +1586,22 @@ name, and the pack reports the title it might be, so a Chinese name
 written family first reports one under the pack (``Tan Chee Chai``
 gives given ``Tan`` and a ``title-or-name`` report). A ``Sri`` that is a
 given name behind the surname ``Tan`` reads as the phrase
-(``Tan Sri Wahyuni`` gives title ``Tan Sri``).
+(``Tan Sri Wahyuni`` gives title ``Tan Sri``), and so does either word
+behind a style (``Hon. Tan Ah Kow`` gives title ``Hon. Tan``).
 
 On Malaysia's election candidates, 3,077 distinct names written in
-capitals, the default reads 174 honours at the head of a name as the
-title (``DATO'`` 101, ``DATUK`` 69), and the pack reads 248 differently
+capitals, the default reads an honour as the title in 174 names
+(``DATO'`` 103, ``DATUK`` 69, ``DATIN`` 1, ``HAJAH`` 1); the word behind
+it is then the given name, which for a qualifier of the honour (``DATO'
+SRI``, ``DATUK SERI``) or a title the default does not read (``HAJI``,
+``CIKGU``) is still not the person's. The pack reads 248 differently
 from the default. 197 of them read a title the default read as the
 given name: ``USTAZ`` 72, ``CIKGU`` 45, ``HAJI`` 37, ``DATO`` 29,
 ``TAN SRI`` 6, ``USTAZAH`` 5, ``CIK`` 2 and ``PUAN SRI`` 1. The two
 ``CIK`` are ``Cikgu`` written in two words (``CIK GU``), and read given
 ``GU``. The other 51 read the same and add a report: 36 Chinese names
-written family first with ``TAN``, 14 ``DATO' SRI``. Among the records
+written family first with ``TAN``, 14 ``DATO' SRI`` and 1 ``DATO'
+TAN``. Among the records
 ORCID, PatentsView and Companies House hold of Malaysians, Indonesians
 and Singaporeans, each split into boxes by the person or the filer, the
 share whose boxes the parse matches moves by at most 0.1 point under

@@ -532,7 +532,6 @@ def test_ms_reads_the_indonesian_puan_as_the_title() -> None:
     assert (name.title, name.given, name.family) == ("Puan", "", "Maharani")
 
 
-
 def test_ms_reads_tan_and_sri_as_name_words_outside_their_phrases() -> None:
     # each is a title only in its phrase (rules/H9, #1180): alone it is
     # the given name, reporting the title it might be, and the default
@@ -549,6 +548,25 @@ def test_ms_reads_tan_and_sri_as_name_words_outside_their_phrases() -> None:
     assert malay.parse("Tan Sri Wahyuni").title == "Tan Sri"
     assert malay.parse("Hon. Sri Mulyani").title == "Hon. Sri"
     assert parse("Tan Sri Wahyuni").title == ""
+    # a strict choice drops en.toml's style, so no phrase is made there
+    strict = parser_for(locales.MS, strict=True)
+    assert strict.parse("Hon. Sri Mulyani").given == "Sri"
+
+
+@pytest.mark.parametrize("order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("text, title, family", [
+    ("Tan Sri Muhyiddin Yassin", "Tan Sri", "Muhyiddin"),
+    ("Haji Ahmad Ali", "Haji", "Ahmad"),
+    ("Tan Chee Chai", "", "Tan"),
+])
+def test_ms_peels_the_honours_before_a_family_first_order(
+        order: tuple[Role, Role, Role], text: str, title: str,
+        family: str) -> None:
+    # the title run is read first and the order lays out the rest
+    # (#1180), so a Chinese name written family first keeps its surname
+    base = Parser(policy=Policy(name_order=order))
+    name = parser_for(locales.MS, base=base).parse(text)
+    assert (name.title, name.family) == (title, family)
 
 
 def test_ms_is_plain_since_strict_drops_other_languages_readings() -> None:
@@ -563,7 +581,10 @@ def test_ms_is_plain_since_strict_drops_other_languages_readings() -> None:
 
 
 @pytest.mark.parametrize("text", ["Puan Maharani", "Tuan Nguyen",
-                                  "Nguyen Van Tuan", "Cik Rohaida Hak"])
+                                  "Nguyen Van Tuan", "Cik Rohaida Hak",
+                                  # #1180's words
+                                  "Sri Mulyani", "Tan Chee Chai", "Tun Aung",
+                                  "Haji Ali", "Tan Sri Ali"])
 def test_ms_words_move_no_indonesian_or_vietnamese_choice(text: str) -> None:
     # puan is an Indonesian given name: the default keeps it, and so do a
     # choice of id and one of vi, neither of which reads ms.toml (no file
@@ -574,6 +595,7 @@ def test_ms_words_move_no_indonesian_or_vietnamese_choice(text: str) -> None:
     assert indonesian.parse(text).as_dict() == _default_parse(text)
     assert _require_packed("vi").parse(text).title == ""
     assert parse(text).title == ""
+    assert parse(text).ambiguities == ()
 
 
 @pytest.mark.parametrize("text, middle", [

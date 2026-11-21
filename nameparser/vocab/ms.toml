@@ -25,7 +25,7 @@ religious = { addresses = "given", gender = "f", issue = 1180, decided = 2026-11
 
 [[word]]
 text = "haji"
-religious = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, expands = "one who has made the Hajj: \"Haji Ahmad bin Ali\"", note = "off by default, a given name and a surname: US SSA 105+ births, US Census 2010 1,608, ORCID's given box 232 (Iraq 20, Pakistan 15, Malaysia 10) and family box 1,178 (Iran 156, Iraq 72, Brunei 50, Malaysia 37), PatentsView's given box 24 and family box 43 (tools/name_usage.py --boxes --country MY, 2026-11-21); the 2015 honours list writes it in 40 title runs the vocabulary missed of 1,504 names (#1180). A title at the head only: inside a father's name (bin Haji Abdullah) it stays a name word" }
+religious = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, expands = "one who has made the Hajj: \"Haji Ahmad bin Ali\"", note = "off by default, a given name and a surname: US SSA 105+ births, US Census 2010 1,608, ORCID's given box 232 (Iraq 20, Pakistan 15, Malaysia 10) and family box 1,178 (Iran 156, Iraq 72, Brunei 50, Malaysia 37), PatentsView's given box 24 and family box 43 (tools/name_usage.py --boxes --country MY, 2026-11-21); the 2015 honours list writes it in 40 title runs the vocabulary missed of 1,504 names (#1180). Inside a father's name (bin Haji Abdullah) it stays a name word" }
 
 [[word]]
 text = "ustaz"
@@ -57,7 +57,7 @@ nobility = { addresses = "given", issue = 1180, decided = 2026-11-21, expands = 
 
 [[word]]
 text = "sri"
-nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, note = "a title only behind tan or puan, in the phrases Tan Sri and Puan Sri (rules/H9, the title phrase), mul.toml's given reading gating it: alone it is an Indonesian and Indian given name (Sri Mulyani). Written behind a head honour as its qualifier (Dato' Sri, Datuk Seri) it stays a name word, the qualifier-after-head question being #1334's" }
+nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-11-21, note = "a title only behind tan or puan, in the phrases Tan Sri and Puan Sri (rules/H9, the title phrase), mul.toml's given reading gating it: alone it is an Indonesian and Indian given name (Sri Mulyani). Written behind a head honour as its qualifier (Dato' Sri) it stays a name word, reporting the title it might be, the qualifier-after-head question being #1334's" }
 
 [[word]]
 text = "sultan"

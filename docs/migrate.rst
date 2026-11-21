@@ -2394,8 +2394,9 @@ Religious titles before a name
 ``Qari``, ``Moulana``, ``Alhaj`` and ``Alhajj``, written before a name
 in Pakistan and Bangladesh, are titles, where 1.4 through 3.1 read them
 as the given name. ``Hafiz``, ``Hafez``, ``Haji`` and the spelling
-``Maulana`` are still read as given names, since many people bear them
-as names:
+``Maulana`` are still read as given names by default, since many people
+bear them as names (``locales.MS`` reads ``Haji`` as a title,
+:ref:`malay-names`):
 
 .. doctest::
 
