@@ -22904,7 +22904,9 @@ CASES: tuple[Case, ...] = (
     Case("alias_marker_behind_a_maiden_marker_left_a_word",
          "Jane Smith née @ JJ",
          {"given": "Jane", "family": "Smith", "maiden": "@ JJ"},
-         notes="boundary: master's reading kept"),
+         classification="fix(#274)",
+         notes="boundary: master's reading kept, the maiden marker's "
+               "since 2.0.0 (1.4.0 read middle 'Smith née @', family 'JJ')"),
     Case("alias_marker_ended_by_a_maiden_marker_leaves_the_trailing_run",
          "Rahim Osman @ Jaki Prof. née Smith",
          {"title": "Prof.", "given": "Rahim", "family": "Osman",
