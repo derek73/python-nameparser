@@ -1359,10 +1359,9 @@ CASES: tuple[Case, ...] = (
          "Tan Sri",
          {"title": "Tan", "given": "Sri"},
          locale="ms", classification="feat(#1180)", ambiguities=("title-or-name",),
-         notes="the phrase with no name behind it: rules/H1 gives the one "
-               "name word to the given name, as Field Marshal reads by "
-               "default; 1.4.0 through 3.1.0 read given 'Tan', family "
-               "'Sri'"),
+         notes="the phrase with no name behind it leaves its first half a "
+               "title, as Field Marshal does by default (title 'Field'); "
+               "1.4.0 through 3.1.0 read given 'Tan', family 'Sri'"),
     Case("the_malay_pack_cuts_tan_sri_at_a_comma",
          "Tan Sri, Muhyiddin",
          {"title": "Tan", "given": "Muhyiddin", "family": "Sri"},

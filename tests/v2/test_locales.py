@@ -583,8 +583,8 @@ def test_ms_is_plain_since_strict_drops_other_languages_readings() -> None:
 @pytest.mark.parametrize("text", ["Puan Maharani", "Tuan Nguyen",
                                   "Nguyen Van Tuan", "Cik Rohaida Hak",
                                   # #1180's words
-                                  "Sri Mulyani", "Tan Chee Chai", "Tun Aung",
-                                  "Haji Ali", "Tan Sri Ali"])
+                                  "Sri Mulyani", "Tan Chee Chai", "Tun Hla",
+                                  "Haji Juma", "Tan Sri Ali"])
 def test_ms_words_move_no_indonesian_or_vietnamese_choice(text: str) -> None:
     # puan is an Indonesian given name: the default keeps it, and so do a
     # choice of id and one of vi, neither of which reads ms.toml (no file
