@@ -935,7 +935,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_VOCAB_FIELDS` field), and eight loads of six sets the name after it
 #: is read against (the acronyms and their ambiguous set twice, as
 #: stored and without their stops), and 213 -> 214 the same day, the
-#: given names written short it reads as names first (`Md.`).
+#: given names written short it reads as names first (`Md.`); and
+#: tools 35 -> 34 the same day, tools/es_given_names.py no longer
+#: reading `titles_ambiguous` (#1476).
 _UNGUARDED_READS = {"library": 214, "tools": 34}
 
 
