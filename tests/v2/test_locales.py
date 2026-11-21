@@ -222,6 +222,9 @@ _FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
     ("Tran Thi Dit", ("Tran", "Thi", "Dit"), ("Tran", "", "Thi Dit")),
     ("Dupont dit Lebrun, Jr.", ("Dupont", "dit", "Lebrun"),
      ("Dupont dit Lebrun", "", "")),
+    # and a second half opening with a particle loses it to the middle
+    ("Jean Dupont dit de Lebrun", ("Jean", "Dupont dit", "de Lebrun"),
+     ("Jean", "Dupont dit de", "Lebrun")),
 ])
 def test_dit_is_a_connective_under_a_french_choice_only(
         text: str, default: tuple[str, str, str],
@@ -251,7 +254,7 @@ def test_dit_stays_a_connective_when_french_is_stacked_or_strict() -> None:
         assert parser.parse("Jean Dupont dit Lebrun").family == "Dupont dit Lebrun"
 
 
-def test_a_french_choice_repairs_dit_in_lower_case_and_gives_it_no_initial() -> None:
+def test_a_french_choice_repairs_dit_in_lower_case_and_drops_its_initial_in_a_joined_part() -> None:
     # decisions/P3's case and initial costs, where Dit is a name
     french, default = parser_for(_FRENCH), Parser()
     for text, repaired, initials, as_default in (
