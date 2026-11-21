@@ -1394,8 +1394,8 @@ default does not, and reads the first half as a middle name:
     'Mamadou dit Madou'
 
 It is a choice rather than the default because ``Dit`` and ``Dite`` are
-also names (Khmer, Vietnamese and Latvian ones among them), and the
-choice reads the word as a connective wherever it stands:
+also names (a Cantonese given name, Latvian and Slavic surnames), and
+the choice reads the word as a connective wherever it stands:
 
 - **A name of three words** with the name in the middle is read as one
   given name, as ``Juan and Garcia`` is (``Sok Dit Chan`` gives given
@@ -1404,11 +1404,17 @@ choice reads the word as a connective wherever it stands:
   the given name (``Dit Jean Dupont`` gives given ``Dit Jean``).
 - **Ending a name**, it joins the word before it to the family name
   (``Tran Thi Dit`` gives family ``Thi Dit``).
+- **An Arabic surname joined by it** whose second half opens with
+  ``Abou`` or ``Al`` is cut after that word (``Karim Haddad dit Abou
+  Nasr`` gives family ``Nasr``), the connective joining one word on
+  each side.
 - **Before a comma and a suffix**, the joined name is read as the given
   name and the family is left empty (``Dupont dit Lebrun, Jr.``).
 - **Case repair** of a name written in one case writes it in lower
   case (``SOK DIT CHAN`` gives ``Sok dit Chan``), and ``initials()``
-  never gives it an initial (``Sok Dit Chan`` gives ``S. C.``).
+  gives it no initial inside a joined part (``Sok Dit Chan`` gives
+  ``S. C.``), alone in its field it keeps one (``Jean Dit`` gives
+  ``J. D.``).
 
 Written with hyphens (``Dupont-dit-Lebrun``) the name is one word and
 its fields read the same either way; case repair writes its ``dit`` in

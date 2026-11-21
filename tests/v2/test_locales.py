@@ -207,8 +207,6 @@ _FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
      ("Jean", "", "Dupont dit Lebrun")),
     ("Traore, Mamadou dit Madou", ("Mamadou", "dit Madou", "Traore"),
      ("Mamadou dit Madou", "", "Traore")),
-    ("Dupont dit Lebrun, Jr.", ("Dupont", "dit", "Lebrun"),
-     ("Dupont dit Lebrun", "", "")),
     (", Jean dit Lebrun", ("Jean", "dit Lebrun", ""),
      ("Jean dit Lebrun", "", "")),
     # a hyphenated dit name is one word, and dit opening a two-word name
@@ -222,6 +220,8 @@ _FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
     ("Sok Dit Chan", ("Sok", "Dit", "Chan"), ("Sok Dit Chan", "", "")),
     ("Dit Jean Dupont", ("Dit", "Jean", "Dupont"), ("Dit Jean", "", "Dupont")),
     ("Tran Thi Dit", ("Tran", "Thi", "Dit"), ("Tran", "", "Thi Dit")),
+    ("Dupont dit Lebrun, Jr.", ("Dupont", "dit", "Lebrun"),
+     ("Dupont dit Lebrun", "", "")),
 ])
 def test_dit_is_a_connective_under_a_french_choice_only(
         text: str, default: tuple[str, str, str],
@@ -263,7 +263,9 @@ def test_a_french_choice_repairs_dit_in_lower_case_and_gives_it_no_initial() -> 
         assert str(french.capitalized(name)) == repaired
         assert name.initials() == initials
         assert str(default.capitalized(default.parse(text))) == as_default
+    # dropped inside a joined part only: alone in its field it keeps one
     assert french.parse("Sok Dit Chan").initials() == "S. C."
+    assert french.parse("Jean Dit").initials() == "J. D."
 
 
 def test_a_french_choice_matches_a_dit_surname_with_its_halves() -> None:
