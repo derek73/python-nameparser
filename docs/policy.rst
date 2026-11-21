@@ -1532,6 +1532,59 @@ two-word surname, which the default reads as a credential:
     >>> caps_off.parse("García Márquez, GABRIEL").given
     'GABRIEL'
 
+.. _finding-missing-credentials:
+
+Finding the credentials your data uses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A credential written in mixed case that the vocabulary does not list
+(``PhDc``, ``Pharm-D``) is read by neither shape above. After a comma
+behind a full name it becomes the given name, and the words before the
+comma become the family name, the way ``Ruiz Paz, Ana`` is read. To
+find the ones your data holds:
+
+1. Parse every name, and keep those whose text holds a comma and whose
+   family name came out two or more words long.
+2. Count the given names of those kept.
+3. Read the top of the count. The credentials stand there, among
+   real listings of a two-word surname (``Ana`` below), which only a
+   reader can tell apart.
+4. Add each credential to a :class:`~nameparser.Lexicon` (see
+   :ref:`adding-a-word`) and build a :class:`~nameparser.Parser` on it.
+
+.. doctest::
+
+    >>> from collections import Counter
+    >>> records = ["Ana Ruiz Paz, PhDc", "Lena Moreau Diaz, Pharm-D",
+    ...            "Tomas Vidal Ortega, PhDc", "Ruiz Paz, Ana"]
+    >>> tally = Counter()
+    >>> for text in records:
+    ...     parsed = parse(text)
+    ...     if "," in text and len(parsed.family.split()) >= 2:
+    ...         tally[parsed.given] += 1
+    >>> tally.most_common()
+    [('PhDc', 2), ('Pharm-D', 1), ('Ana', 1)]
+    >>> with_creds = Parser(lexicon=Lexicon.default().add(
+    ...     "phdc", "pharm-d", kind="credential"))
+    >>> fixed = with_creds.parse("Ana Ruiz Paz, PhDc")
+    >>> fixed.given, fixed.family, fixed.suffix
+    ('Ana', 'Paz', 'PhDc')
+    >>> with_creds.parse("Ruiz Paz, Ana").given
+    'Ana'
+
+A non-empty ``ambiguities`` holding ``suffix-or-name`` marks a name
+where the parser weighed a credential against a name, as it does for
+the capitals shape. A mixed-case word it does not read by shape is
+never weighed, so it carries no report, and the count above is the way
+to find it:
+
+.. doctest::
+
+    >>> [a.kind.value for a in parse("Ana Ruiz Paz, XYZ").ambiguities]
+    ['suffix-or-name']
+    >>> parse("Ana Ruiz Paz, PhDc").ambiguities
+    ()
+
 .. _strip-flags:
 
 Keeping emoji and control characters
