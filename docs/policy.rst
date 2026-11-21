@@ -1554,8 +1554,9 @@ two-word surname, which the default reads as a credential:
 Finding the credentials your data uses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A credential written in mixed case that the vocabulary does not list
-(``PhDc``, ``Pharm-D``) is read by neither shape above. After a comma
+A credential the vocabulary does not list, written in mixed case
+without two capitals opening it or one ending it (``PhDc``,
+``Pharm-D``), is read by neither shape above. After a comma
 behind a full name it becomes the given name, and the words before the
 comma become the family name, the way ``Ruiz Paz, Ana`` is read. To
 find the ones your data holds:
@@ -1605,13 +1606,15 @@ A non-empty ``ambiguities`` holding ``suffix-or-name`` marks a name
 where the parser weighed a credential against a name, as it does for
 the capitals shape, and for an unlisted word behind a listed
 credential, which is read as a credential and reported
-(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word opening the part
-after the comma is never weighed, so it carries no report, and the count
-above is the way to find it:
+(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word that neither shape
+reads, opening the part after the comma, is never weighed, so it
+carries no report, and the count above is the way to find it:
 
 .. doctest::
 
     >>> [a.kind.value for a in parse("Ana Ruiz Paz, XYZ").ambiguities]
+    ['suffix-or-name']
+    >>> [a.kind.value for a in parse("Ana Ruiz Paz, MRes").ambiguities]
     ['suffix-or-name']
     >>> parse("Ana Ruiz Paz, PhDc").ambiguities
     ()
