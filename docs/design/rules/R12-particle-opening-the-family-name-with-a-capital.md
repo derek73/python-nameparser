@@ -39,7 +39,7 @@
 - The word takes its capital whatever language it is written in, since nothing in its spelling tells the Armenian prefix from the Dutch and German particle: a Dutch surname opened by `ter` is written with a capital, and a German `der` behind a word the vocabulary does not list as a particle (`unter der`) opens the family name as far as repair can tell.
   ```
   "GERARD TER BORCH"          →  capitalized="Gerard Ter Borch"  · boundary
-  "KAREN AUS DER FÜNTEN"      →  capitalized="Karen Aus Der Fünten"  · boundary
+  "HANS UNTER DER LINDE"      →  capitalized="Hans Unter Der Linde"  · boundary
   ```
 - A German epithet the parse places in the family name takes the capital too, its article opening the family name there.
   ```

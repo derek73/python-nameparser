@@ -5137,7 +5137,7 @@ credential = { expands = "Marriage and Family Therapist", note = "NPPES 13,618 U
 
 [[word]]
 text = "mh"
-excluded = { credential = { reason = "MH, the Hong Kong Medal for Honour (18 of the 236 distinct names on LegCo precedence lists 1998-2020), is written mostly as initials: listed with sc it moved 324 local-corpus names, most of them wrong (M.H. and paired initials losing the family, 2026-11-20); MH before JP already reads as the credential run (rules/C5, #1392), and a lone trailing MH after a comma stays the given name", issue = 1182, decided = 2026-11-20 } }
+excluded = { credential = { reason = "MH, the Hong Kong Medal for Honour (18 of the 236 distinct names on LegCo precedence lists 1998-2020), is written mostly as initials: listed with sc it moved 324 local-corpus names, most of them wrong (M.H. and paired initials losing the family, 2026-11-20); after a comma MH before JP already reads as the credential run (rules/C5, #1392); a lone trailing MH after a comma stays the given name, and with no comma MH JP reads MH as the family (Hon WONG Kwok-kin MH JP), costs accepted with the decline", issue = 1182, decided = 2026-11-20 } }
 
 [[word]]
 text = "mhpp"
@@ -5221,7 +5221,7 @@ credential = {}
 
 [[word]]
 text = "mni"
-credential = { cased = "mni", expands = "Member, National Institute for Policy and Strategic Studies (Nigeria)", note = "written in lower case after a comma, 14 of 14 times in the 2022 Nigerian national honours list (2026-11-08); ORCID 3 records (M.N.I., MNI, mni) and Nepal 1 Mni; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Bello, MNI) read as the credential, none in the corpora (2026-11-20)", issue = 1228 }
+credential = { cased = "mni", expands = "Member, National Institute for Policy and Strategic Studies (Nigeria)", note = "written in lower case after a comma, 14 of 14 times in the 2022 Nigerian national honours list (2026-11-08); ORCID 3 records (M.N.I., MNI, mni), 2 of them in a Nigerian family box, and Nepal 1 Mni, a name the lower-case mask repairs to mni; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer. Glued capitals initials after a one-word family and a comma (Bello, MNI) read as the credential, none in the corpora (2026-11-20)", issue = 1228 }
 
 [[word]]
 text = "moid"
@@ -5904,7 +5904,7 @@ credential = { expands = "Silver Bauhinia Star (Hong Kong)", note = "43 of the 2
 
 [[word]]
 text = "sc"
-excluded = { credential = { reason = "SC, Hong Kong's Senior Counsel (4 of the 236 distinct names on LegCo precedence lists 1998-2020), is the Sc of a split M. Sc. (94 names) and capitals initials (FEC's DOYLE, SC shape): listed with mh it moved 324 local-corpus names, most of them wrong (2026-11-20); SC before JP already reads as the credential run (rules/C5, #1392)", issue = 1182, decided = 2026-11-20 } }
+excluded = { credential = { reason = "SC, Hong Kong's Senior Counsel (4 of the 236 distinct names on LegCo precedence lists 1998-2020), is the Sc of a split M. Sc. (94 names) and capitals initials (FEC's DOYLE, SC shape): listed with mh it moved 324 local-corpus names, most of them wrong (2026-11-20); after a comma SC before JP already reads as the credential run (rules/C5, #1392); with no comma SC JP reads SC as the family, a cost accepted with the decline", issue = 1182, decided = 2026-11-20 } }
 
 [[word]]
 text = "sccp"

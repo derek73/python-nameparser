@@ -1455,6 +1455,7 @@
 {"name": "Gössmann, Elisabeth", "given": "Elisabeth", "family": "Gössmann", "initials": "E. G."}
 {"name": "Gülcan B.TURAN", "given": "Gülcan", "middle": "B.", "family": "TURAN", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "G. B. T.", "capitalized_force": "Gülcan B.Turan"}
 {"name": "H. Budi Santoso", "given": "H.", "middle": "Budi", "family": "Santoso", "initials": "H. B. S."}
+{"name": "HANS UNTER DER LINDE", "given": "HANS", "middle": "UNTER", "family": "DER LINDE", "initials": "H. U. L.", "capitalized": "Hans Unter Der Linde"}
 {"name": "Habib Pacha es-Saad", "given": "Habib", "middle": "Pacha", "family": "es-Saad", "initials": "H. P. e.", "capitalized_force": "Habib Pacha Es-Saad"}
 {"name": "Haddad, Nadia Abd Karim", "given": "Nadia", "middle": "Abd Karim", "family": "Haddad", "initials": "N. A. K. H."}
 {"name": "Hafis al-Assad", "given": "Hafis", "family": "al-Assad", "initials": "H. a.", "capitalized_force": "Hafis Al-Assad"}
@@ -1545,7 +1546,7 @@
 {"name": "His Majesty King Charles", "title": "His Majesty King", "given": "Charles", "initials": "C."}
 {"name": "Hisham Ibrahim, CPA, CFA", "given": "Hisham", "family": "Ibrahim", "suffix": "CPA, CFA", "initials": "H. I."}
 {"name": "Hodan Farah Warsame", "given": "Hodan", "middle": "Farah", "family": "Warsame", "initials": "H. F. W."}
-{"name": "Hon CHAN Kin-por GBS JP", "title": "Hon", "given": "CHAN", "family": "Kin-por", "suffix": "GBS JP", "initials": "C. K.", "capitalized_force": "Hon Chan Kin-Por GBS JP"}
+{"name": "Hon CHAN Kin-por MH JP", "title": "Hon", "given": "CHAN", "middle": "Kin-por", "family": "MH", "suffix": "JP", "initials": "C. K. M.", "capitalized_force": "Hon Chan Kin-Por Mh JP"}
 {"name": "Hon CHAN Kin-por, GBS, JP", "title": "Hon", "given": "CHAN", "family": "Kin-por", "suffix": "GBS, JP", "initials": "C. K.", "capitalized_force": "Hon Chan Kin-Por, GBS, JP"}
 {"name": "Hon Solo", "title": "Hon", "family": "Solo", "initials": "S."}
 {"name": "Hon. Barrington P. Doe-Ray, Jr.", "title": "Hon.", "given": "Barrington", "middle": "P.", "family": "Doe-Ray", "suffix": "Jr.", "initials": "B. P. D.", "generation": "Jr."}
@@ -2710,7 +2711,6 @@
 {"name": "K.T. Smith", "given": "K.", "middle": "T.", "family": "Smith", "initials": "K. T. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
-{"name": "KAREN AUS DER FÜNTEN", "given": "KAREN", "family": "AUS DER FÜNTEN", "initials": "K. F.", "capitalized": "Karen aus der Fünten"}
 {"name": "KIM, AE-RA", "family": "KIM", "suffix": "AE-RA", "initials": "K.", "capitalized": "Kim, AE-RA"}
 {"name": "KIM, MA-AE", "family": "KIM", "suffix": "MA-AE", "initials": "K.", "capitalized": "Kim, MA-AE"}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}

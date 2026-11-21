@@ -1580,7 +1580,7 @@ CASES: tuple[Case, ...] = (
     Case("mb_bch_still_reads_as_one_suffix_run", "Jane Doe MB BCh, PhD",
          {"given": "Jane", "family": "Doe", "suffix": "MB BCh, PhD"},
          classification="fix(#752)",
-         notes="boundary, S12's since 3.0.0 (1.4.0 read middle 'Doe MB', "
+         notes="boundary, S12's since 2.6.0 (1.4.0 read middle 'Doe MB', "
                "family 'BCh'): with bch listed, the split pair is a run of "
                "two listed credentials, where chb's listing broke "
                "MB ChB, PhD (decisions/S12, 2026-11-20 #1361)"),
@@ -1612,8 +1612,8 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "given": "Ahmed", "middle": "Abubakar",
           "family": "Audi", "suffix": "mni"},
          classification="fix(#1228)",
-         notes="read given 'mni', family 'Ahmed Abubakar Audi' 1.4.0 "
-               "through 3.1"),
+         notes="read given 'mni', family 'Ahmed Abubakar Audi' 2.8.2 and "
+               "3.1, and family 'Dr. Ahmed Abubakar Audi', no title, 1.4.0"),
     Case("capitals_initials_after_one_word_and_a_comma_read_the_credential",
          "Bello, MNI",
          {"family": "Bello", "suffix": "MNI"},
@@ -6969,13 +6969,21 @@ CASES: tuple[Case, ...] = (
                "in its own part does ('Jane Doe, BM PhD'). 1.4.0 through "
                "3.0.1 read given 'MH', family 'Jane Mary Doe'"),
     Case("two_caps_alone_before_an_unlisted_part_and_a_listed_credential",
-         "Jane Doe, BM, BCh, PhD",
-         {"given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD"},
+         "Jane Doe, BM, Xq, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "BM, Xq, PhD"},
          classification="fix(#1392)",
          ambiguities=("comma-structure", "suffix-or-name"),
          notes="rules/C5 (#1392): any later part answers, not only the "
-               "next; 'BCh' is unlisted and keeps rules/C2's flag. 1.4.0 "
-               "through 3.0.1 read given 'BM', family 'Jane Doe'"),
+               "next; 'Xq' is unlisted and keeps rules/C2's flag (the row "
+               "wrote 'BCh' until #1361 listed it)"),
+    Case("two_caps_alone_before_two_listed_credentials",
+         "Jane Doe, BM, BCh, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "BM, BCh, PhD"},
+         classification="fix(#1392)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/C5 (#1392), every later part listed since #1361, so "
+               "no rules/C2 flag; 1.4.0 through 3.0.1 read given 'BM', "
+               "family 'Jane Doe'"),
     Case("two_caps_alone_before_a_generation_and_a_listed_credential",
          "Jane Doe, MH, Jr., PhD",
          {"given": "Jane", "family": "Doe", "suffix": "MH, Jr., PhD"},
