@@ -2029,6 +2029,16 @@ def test_tr_az_deviates_reads_a_decomposed_marker() -> None:
         assert _tr_az.DEVIATES(decomposed), name
 
 
+def test_ru_deviates_reads_a_decomposed_ending() -> None:
+    """#1212, as #1316 for TR_AZ: the rule reads an ending NFC-composed,
+    so the Ukrainian `-ївна` written with і and a combining diaeresis
+    must declare too, or the non-interference gate misses it."""
+    for name in ("Ткачук Ганна Сергіївна", "ТКАЧУК ГАННА СЕРГІЇВНА"):
+        decomposed = unicodedata.normalize("NFD", name)
+        assert decomposed != name
+        assert _ru.DEVIATES(decomposed), name
+
+
 def test_locales_unknown_attribute() -> None:
     with pytest.raises(AttributeError, match="XX"):
         locales.XX
@@ -2215,6 +2225,10 @@ _ROTATORS["ru"] = [
     "Карпова Ольга Сергеевна",       # евна
     "Петрова Мария Никитична",       # ична
     "Ульянов Владимир Ильич",        # ильич
+    "Коваленко Олена Петрівна",      # івна (Ukrainian, #1212)
+    "Ткачук Ганна Сергіївна",        # ївна
+    "Бондар Василь Леонтієвич",      # євич
+    "Мельник Тарас Ілліч",           # ілліч
     "Булгаков Иван Кузьмич",         # кузьмич
     "Титов Пётр Лукич",              # лукич
     "Орлов Семён Фомич",             # фомич

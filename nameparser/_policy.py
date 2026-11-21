@@ -440,6 +440,14 @@ _SCRIPT_PROPERTIES: Mapping[str, _ScriptRow] = MappingProxyType({
         "CLDR th uses an initial in 0 of 20 authored patterns, a block of "
         "its own (12 of 20 equal to en's by the copy test; 2026-08-02 "
         "#320, re-run 2026-11-12, #1256)"),
+    "lao": _ScriptRow(
+        ((0x0E80, 0x0EFF),), None, False, True, False,
+        "no Lao name is abbreviated to a letter and a period, but a title "
+        "is written short with a period (ດຣ.), so it writes period "
+        "abbreviations, as Thai does",
+        "CLDR lo uses an initial in 0 of 37 authored patterns, writing the "
+        "name in full in each of the 6 where en's has an initial (cldr "
+        "main c0b65ae3, 2026-11-20; #1380)"),
     "arabic": _ScriptRow(
         ((0x0600, 0x06FF), (0x0750, 0x077F), (0x0870, 0x089F),
          (0x08A0, 0x08FF), (0xFB50, 0xFDFF), (0xFE70, 0xFEFC),

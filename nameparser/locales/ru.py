@@ -2,10 +2,11 @@
 on the EAST_SLAVIC patronymic rule, its policy patch compiled from
 nameparser/vocab/ru.toml's [rules] table by tools/vocab/build.py
 (#754, 4f; mechanisms.md#LOCALE-PACKS-PURE-DATA). The morphology data (-ovich/-ovna
-endings, Cyrillic and transliterated) lives beside the rule
-implementation, in nameparser/_pipeline/_vocab.py's patterns, which
-_post_rules.py's rotation and assemble's patronymic reading (rules/R9)
-both ask, not in the Lexicon (mirrors v1's patronymic_name_order flag design, v1.3.0).
+endings, Cyrillic and transliterated, and the Ukrainian -івна/-ївна/
+-євич/Ілліч in Cyrillic only) lives beside the rule implementation, in
+nameparser/_pipeline/_vocab.py's patterns, which _post_rules.py's
+rotation, assemble's patronymic reading (rules/R9) and the group
+suggester ask, not in the Lexicon (mirrors v1's patronymic_name_order flag design, v1.3.0).
 Cyrillic titles/conjunctions are default-lexicon vocabulary (#269),
 not pack data (mechanisms.md#LOCALE-PACKS-PURE-DATA, the sorting
 rule).
@@ -26,6 +27,7 @@ non-interference gate checks.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale, rules_patch
@@ -46,7 +48,9 @@ _EAST_SLAVIC = re.compile(
     r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)
 _EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$", re.I)
+    r"(ович|овна|евич|евна|ична|ильич|івна|ївна|євич|ілліч"
+    r"|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
+    re.I)
 
 
 def DEVIATES(name: str) -> bool:
@@ -61,5 +65,6 @@ def DEVIATES(name: str) -> bool:
     # 'Sidorovich Anna' matches though the rule's 1+1+1 shape never
     # fires) -- the safe direction: DEVIATES may claim more than the
     # rule changes, never less.
+    # NFC-composed, as the rule reads the word (#1212's `ї`, #1316)
     return any(_EAST_SLAVIC.search(tok) or _EAST_SLAVIC_CYR.search(tok)
-               for tok in name.split())
+               for tok in unicodedata.normalize("NFC", name).split())

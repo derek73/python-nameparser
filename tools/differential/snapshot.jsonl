@@ -3511,6 +3511,7 @@
 {"name": "Olabisi Adeboye", "given": "Olabisi", "family": "Adeboye", "initials": "O. A."}
 {"name": "Oldenburg-Januschau, Elard von", "given": "Elard", "family": "von Oldenburg-Januschau", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "E. O."}
 {"name": "Ole Simonsen, Dr.Med", "title": "Dr.Med", "given": "Ole", "family": "Simonsen", "initials": "O. S."}
+{"name": "Olena Serhiivna Tkachuk", "given": "Olena", "middle": "Serhiivna", "family": "Tkachuk", "initials": "O. S. T."}
 {"name": "Oranje-Nassau, Lodewijk van", "given": "Lodewijk", "family": "van Oranje-Nassau", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "L. O."}
 {"name": "Orel Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Orel", "initials": "I. O."}
 {"name": "Orel, Irena", "given": "Irena", "family": "Orel", "initials": "I. O."}
@@ -4447,6 +4448,7 @@
 {"name": "Tisza, István", "given": "István", "family": "Tisza", "initials": "I. T."}
 {"name": "Title First Middle Middle Last, Jr.", "given": "Title", "middle": "First Middle Middle", "family": "Last", "suffix": "Jr.", "initials": "T. F. M. M. L.", "generation": "Jr."}
 {"name": "Tito, Santi di", "given": "Santi", "family": "di Tito", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "S. T."}
+{"name": "Tkachuk Olena Petrivna", "given": "Tkachuk", "middle": "Olena", "family": "Petrivna", "initials": "T. O. P."}
 {"name": "Tn. Syed Abd Aziz Syed A Ismail Petra MP", "title": "Tn.", "given": "Syed", "middle": "Abd Aziz Syed A Ismail", "family": "Petra", "suffix": "MP", "initials": "S. A. A. S. A. I. P."}
 {"name": "Tokugawa, Nariaki", "given": "Nariaki", "family": "Tokugawa", "initials": "N. T."}
 {"name": "Toledo Osorio, Fadrique de", "given": "Fadrique", "family": "de Toledo Osorio", "initials": "F. T. O."}
@@ -5339,6 +5341,7 @@
 {"name": "Алексей Иванович Савельев", "given": "Алексей", "middle": "Иванович", "family": "Савельев", "initials": "А. И. С."}
 {"name": "Алексей Николаевич Плещеев", "given": "Алексей", "middle": "Николаевич", "family": "Плещеев", "initials": "А. Н. П."}
 {"name": "Алексей Семёнович Сечкин", "given": "Алексей", "middle": "Семёнович", "family": "Сечкин", "initials": "А. С. С."}
+{"name": "Алена Сяргееўна Ткачук", "given": "Алена", "middle": "Сяргееўна", "family": "Ткачук", "initials": "А. С. Т."}
 {"name": "Алымбекова Каныкей", "order": "FAMILY_FIRST", "given": "Каныкей", "family": "Алымбекова", "initials": "К. А."}
 {"name": "Амосова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Амосова, Ирина", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
@@ -5355,6 +5358,7 @@
 {"name": "Андрија Милошевић", "given": "Андрија", "family": "Милошевић", "initials": "А. М."}
 {"name": "Андрій Володимирович Бондар", "given": "Андрій", "middle": "Володимирович", "family": "Бондар", "initials": "А. В. Б."}
 {"name": "Андрій Володимирович Портнов", "given": "Андрій", "middle": "Володимирович", "family": "Портнов", "initials": "А. В. П."}
+{"name": "Анна Мария Абрамович", "given": "Анна", "middle": "Мария", "family": "Абрамович", "initials": "А. М. А."}
 {"name": "Анна Мельник", "given": "Анна", "family": "Мельник", "initials": "А. М."}
 {"name": "Анна Николаевна Гладкова", "given": "Анна", "middle": "Николаевна", "family": "Гладкова", "initials": "А. Н. Г."}
 {"name": "Анна Сергеевна Курникова", "given": "Анна", "middle": "Сергеевна", "family": "Курникова", "initials": "А. С. К."}
@@ -5577,6 +5581,7 @@
 {"name": "Кетэ Мюлер", "given": "Кетэ", "family": "Мюлер", "initials": "К. М."}
 {"name": "Кирилл Афанасьевич Мерецков", "given": "Кирилл", "middle": "Афанасьевич", "family": "Мерецков", "initials": "К. А. М."}
 {"name": "Кислов, Александр Степанович", "given": "Александр", "middle": "Степанович", "family": "Кислов", "initials": "А. С. К."}
+{"name": "Коваленко Олена Петрівна", "given": "Коваленко", "middle": "Олена", "family": "Петрівна", "initials": "К. О. П."}
 {"name": "Козловский, Фёдор Алексеевич", "given": "Фёдор", "middle": "Алексеевич", "family": "Козловский", "initials": "Ф. А. К."}
 {"name": "Колкутин, Андрей Борисович", "given": "Андрей", "middle": "Борисович", "family": "Колкутин", "initials": "А. Б. К."}
 {"name": "Комиссаров Геннадий Германович", "order": "FAMILY_FIRST", "given": "Геннадий", "middle": "Германович", "family": "Комиссаров", "initials": "Г. Г. К."}
@@ -5626,6 +5631,7 @@
 {"name": "Матвеев, Герман Иванович", "given": "Герман", "middle": "Иванович", "family": "Матвеев", "initials": "Г. И. М."}
 {"name": "Медведев, Николай Дмитриевич", "given": "Николай", "middle": "Дмитриевич", "family": "Медведев", "initials": "Н. Д. М."}
 {"name": "Мельник Анна", "order": "FAMILY_FIRST", "given": "Анна", "family": "Мельник", "initials": "А. М."}
+{"name": "Мельник Тарас Ілліч", "given": "Мельник", "middle": "Тарас", "family": "Ілліч", "initials": "М. Т. І."}
 {"name": "Микола Козленко", "given": "Микола", "family": "Козленко", "initials": "М. К."}
 {"name": "Миленковић др Слађана Вера млађи, дипл. инж.", "order": "FAMILY_FIRST", "title": "дипл. инж.", "given": "др", "middle": "Слађана Вера", "family": "Миленковић", "suffix": "млађи", "initials": "д. С. В. М.", "capitalized_force": "Дипл. Инж. Миленковић Др Слађана Вера Млађи", "generation": "млађи"}
 {"name": "Миленковић, Слађана Вера", "given": "Слађана", "middle": "Вера", "family": "Миленковић", "initials": "С. В. М."}
@@ -5704,6 +5710,9 @@
 {"name": "Олександр Музичко", "given": "Олександр", "family": "Музичко", "initials": "О. М."}
 {"name": "Олександр Положинський", "given": "Олександр", "family": "Положинський", "initials": "О. П."}
 {"name": "Олексій Олексійович Гончаренко", "given": "Олексій", "middle": "Олексійович", "family": "Гончаренко", "initials": "О. О. Г."}
+{"name": "Олена Марія Гаєвич", "given": "Олена", "middle": "Марія", "family": "Гаєвич", "initials": "О. М. Г."}
+{"name": "Олена Петрівна Гаєвич", "given": "Олена", "middle": "Петрівна", "family": "Гаєвич", "initials": "О. П. Г."}
+{"name": "Олена Сергіївна Ткачук", "given": "Олена", "middle": "Сергіївна", "family": "Ткачук", "initials": "О. С. Т."}
 {"name": "Олимпиада Ивановна Шмидт", "given": "Олимпиада", "middle": "Ивановна", "family": "Шмидт", "initials": "О. И. Ш."}
 {"name": "Ольга Игоревна Кабо", "given": "Ольга", "middle": "Игоревна", "family": "Кабо", "initials": "О. И. К."}
 {"name": "Ольга Рыпакова", "given": "Ольга", "family": "Рыпакова", "initials": "О. Р."}
@@ -5777,6 +5786,7 @@
 {"name": "Синиша Михајловић", "given": "Синиша", "family": "Михајловић", "initials": "С. М."}
 {"name": "Слуцкий, Леонид Эдуардович", "given": "Леонид", "middle": "Эдуардович", "family": "Слуцкий", "initials": "Л. Э. С."}
 {"name": "Смыслов, Василий Васильевич", "given": "Василий", "middle": "Васильевич", "family": "Смыслов", "initials": "В. В. С."}
+{"name": "Сокалаў Мікалай Іванавіч", "given": "Сокалаў", "middle": "Мікалай", "family": "Іванавіч", "initials": "С. М. І."}
 {"name": "Сольский, Семён Мартынович", "given": "Семён", "middle": "Мартынович", "family": "Сольский", "initials": "С. М. С."}
 {"name": "Соња Петровић", "given": "Соња", "family": "Петровић", "initials": "С. П."}
 {"name": "Срђан Новаковић", "given": "Срђан", "family": "Новаковић", "initials": "С. Н."}
@@ -6959,29 +6969,30 @@
 {"name": "ใจดี, พล.ต.ต.สุรศักดิ์", "title": "พล.ต.ต.", "given": "สุรศักดิ์", "family": "ใจดี"}
 {"name": "ใจดี, ว่าที่ร.ท.วินัย", "title": "ว่าที่ร.ท.", "given": "วินัย", "family": "ใจดี"}
 {"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ"}
-{"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
-{"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
-{"name": "ຊາຊິເລຍ ຮາມີສ ສໂຕເບີ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ", "initials": "ຊ. ຮ. ສ."}
-{"name": "ຊິນແບດ", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຊ."}
-{"name": "ຊິນແບດ", "order": "FAMILY_FIRST", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຊ."}
-{"name": "ດຣ. ປອ. ວອນ ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "title": "ດຣ. ປອ.", "given": "ບຣູລ", "middle": "ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "family": "ວອນ", "initials": "ບ. ສ. ປ. ເ. ຄ. ເ. ມ. ຮ. ວ."}
-{"name": "ດຣ. ປອ. ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ ຮຸ່ນລູກ", "title": "ດຣ. ປອ. ສຈ. ປອ.", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ", "family": "ຮຸ່ນລູກ", "initials": "ເ. ຄ. ເ. ມ. ວ. ບ. ຮ."}
-{"name": "ດຣ. ສົມ", "title": "ດຣ.", "family": "ສົມ", "initials": "ສ."}
-{"name": "ນາລິນ ເອກະພົນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
-{"name": "ບຣູລ, ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "family": "ບຣູລ", "initials": "ເ. ຄ. ເ. ມ. ວ. ບ."}
-{"name": "ມະນີ ມະນີຈັນ ວັດທະນາ", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ", "initials": "ມ. ມ. ວ."}
-{"name": "ມູລເລີ ເຄທີ", "order": "FAMILY_FIRST", "given": "ເຄທີ", "family": "ມູລເລີ", "initials": "ເ. ມ."}
-{"name": "ມູລເລີ, ເຄທີ", "given": "ເຄທີ", "family": "ມູລເລີ", "initials": "ເ. ມ."}
-{"name": "ວັດທະນາ ມະນີ ມະນີຈັນ", "order": "FAMILY_FIRST", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ", "initials": "ມ. ມ. ວ."}
-{"name": "ວັດທະນາ, ມະນີ ມະນີຈັນ", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ", "initials": "ມ. ມ. ວ."}
-{"name": "ວູສເຕີ, ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ", "given": "ເບີແທຣັມ", "middle": "ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ", "family": "ວູສເຕີ", "initials": "ເ. ວ. ເ. ໂ. ວ."}
-{"name": "ສ.ສ. ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ ຮຸ່ນລູກ", "given": "ສ.ສ.", "middle": "ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ", "family": "ຮຸ່ນລູກ", "initials": "ສ. ທ. ເ. ວ. ເ. ໂ. ວ. ຮ."}
-{"name": "ສ.ສ. ວູສເຕີ ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "given": "ວູສເຕີ", "middle": "ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ", "family": "ສ.ສ.", "initials": "ວ. ທ. ເ. ວ. ເ. ໂ. ຮ. ສ."}
-{"name": "ສໂຕເບີ ຊາຊິເລຍ ຮາມີສ", "order": "FAMILY_FIRST", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ", "initials": "ຊ. ຮ. ສ."}
-{"name": "ສໂຕເບີ, ຊາຊິເລຍ ຮາມີສ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ", "initials": "ຊ. ຮ. ສ."}
-{"name": "ເຄທີ ມູລເລີ", "given": "ເຄທີ", "family": "ມູລເລີ", "initials": "ເ. ມ."}
-{"name": "ເອກະພົນ ນາລິນ", "order": "FAMILY_FIRST", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
-{"name": "ເອກະພົນ, ນາລິນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
+{"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ຊາຊິເລຍ ຮາມີສ ສໂຕເບີ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ"}
+{"name": "ຊິນແບດ", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ຊິນແບດ", "order": "FAMILY_FIRST", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
+{"name": "ດຣ. ປອ. ວອນ ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "title": "ດຣ. ປອ.", "given": "ບຣູລ", "middle": "ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "family": "ວອນ"}
+{"name": "ດຣ. ປອ. ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ ຮຸ່ນລູກ", "title": "ດຣ. ປອ. ສຈ. ປອ.", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ", "family": "ຮຸ່ນລູກ"}
+{"name": "ດຣ. ສົມ", "title": "ດຣ.", "family": "ສົມ"}
+{"name": "ນາລິນ ເອກະພົນ", "given": "ນາລິນ", "family": "ເອກະພົນ"}
+{"name": "ບຣູລ, ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ", "family": "ບຣູລ"}
+{"name": "ມະນີ ມະນີຈັນ ວັດທະນາ", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ"}
+{"name": "ມູລເລີ ເຄທີ", "order": "FAMILY_FIRST", "given": "ເຄທີ", "family": "ມູລເລີ"}
+{"name": "ມູລເລີ, ເຄທີ", "given": "ເຄທີ", "family": "ມູລເລີ"}
+{"name": "ວັດທະນາ ມະນີ ມະນີຈັນ", "order": "FAMILY_FIRST", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ"}
+{"name": "ວັດທະນາ, ມະນີ ມະນີຈັນ", "given": "ມະນີ", "middle": "ມະນີຈັນ", "family": "ວັດທະນາ"}
+{"name": "ວູສເຕີ, ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ", "given": "ເບີແທຣັມ", "middle": "ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ", "family": "ວູສເຕີ"}
+{"name": "ສ.ສ. ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ ຮຸ່ນລູກ", "given": "ສ.ສ.", "middle": "ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ", "family": "ຮຸ່ນລູກ"}
+{"name": "ສ.ສ. ວູສເຕີ ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "given": "ວູສເຕີ", "middle": "ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ", "family": "ສ.ສ."}
+{"name": "ສົມຊາຍ ໃຈດີ", "given": "ສົມຊາຍ", "family": "ໃຈດີ"}
+{"name": "ສໂຕເບີ ຊາຊິເລຍ ຮາມີສ", "order": "FAMILY_FIRST", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ"}
+{"name": "ສໂຕເບີ, ຊາຊິເລຍ ຮາມີສ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ"}
+{"name": "ເຄທີ ມູລເລີ", "given": "ເຄທີ", "family": "ມູລເລີ"}
+{"name": "ເອກະພົນ ນາລິນ", "order": "FAMILY_FIRST", "given": "ນາລິນ", "family": "ເອກະພົນ"}
+{"name": "ເອກະພົນ, ນາລິນ", "given": "ນາລິນ", "family": "ເອກະພົນ"}
 {"name": "ကက်သီ မူလာ", "given": "ကက်သီ", "family": "မူလာ"}
 {"name": "ကြည် ကြည် ဌေး", "given": "ကြည်", "middle": "ကြည်", "family": "ဌေး"}
 {"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ"}

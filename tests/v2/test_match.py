@@ -658,6 +658,21 @@ def test_a_burmese_letter_is_never_an_initial() -> None:
         is Outcome.INITIAL
 
 
+def test_a_thai_or_lao_letter_is_never_an_initial() -> None:
+    """Thai (#1256) and Lao (#1380) write no initials
+    (decisions/script-properties), so a letter of either, with or without its period, is a whole name that
+    conflicts with the name it would have stood for; 3.1.0 read the Lao
+    letter as an initial."""
+    for a, b in (("ส. ใจดี", "สมชาย ใจดี"), ("ສ. ໃຈດີ", "ສົມຊາຍ ໃຈດີ"),
+                 ("ສ ໃຈດີ", "ສົມຊາຍ ໃຈດີ")):
+        for x, y in ((a, b), (b, a)):
+            r = m.check(x, y)
+            assert not r.consistent, (x, y)
+            assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+    r = m.check("ສົມຊາຍ ສ. ໃຈດີ", "ສົມຊາຍ ສີສະຫວາດ ໃຈດີ")
+    assert role(r, Role.MIDDLE).outcome is Outcome.CONFLICT
+
+
 def test_initials_written_apart_agree_with_the_same_initials_joined() -> None:
     base = parse("John Smith")
     r = m.check(base.replace(given="J.-P."), base.replace(given="J. P."))

@@ -351,6 +351,11 @@ def test_a_georgian_run_ending_the_name_gives_an_initial_per_letter() -> None:
     # thai and myanmar write no initials (#1256's amendment)
     ("สมชาย ใจดี", "initials", ""),
     ("ကြည် ကြည် ဌေး", "initials", ""),
+    # lao writes no initials (#1380), and writes period abbreviations:
+    # an unlisted title written short with a period (ດຣ.) is still a
+    # title by H2's shape
+    ("ສົມຊາຍ ໃຈດີ", "initials", ""),
+    ("ດຣ. ສົມຊາຍ ໃຈດີ", "title", "ດຣ."),
     # the arabic script writes no initials, and a listed letter with a
     # full stop is its title (#1149)
     ("أحمد علي حسن", "initials", ""),
@@ -433,6 +438,7 @@ _ROW_LETTER_NAMES = {
     "arabic": ("ARABIC LETTER",),
     "myanmar": ("MYANMAR LETTER",),
     "thai": ("THAI CHARACTER",),
+    "lao": ("LAO LETTER",),
     "georgian": ("GEORGIAN LETTER", "GEORGIAN MTAVRULI CAPITAL LETTER"),
     "brahmic": tuple(f"{s} LETTER" for s in (
         "DEVANAGARI", "BENGALI", "GURMUKHI", "GUJARATI", "ORIYA", "TAMIL",

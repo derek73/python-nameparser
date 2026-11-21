@@ -2440,3 +2440,37 @@ To read the two as name words again, remove their readings:
     >>> as_31 = Parser(lexicon=Lexicon.default().remove("@", "urf", kind="alias_marker"))
     >>> as_31.parse("Ravi Kumar urf Raju").middle
     'Kumar urf'
+
+Initials in Lao
+^^^^^^^^^^^^^^^
+
+:meth:`~nameparser.ParsedName.initials` gives nothing for a word in the
+Lao script, where 1.4 through 3.1 gave its first letter: Lao shortens
+no name to a letter, as Thai and Burmese do not. The name match reads
+a Lao letter with a full stop as a word, so ``ສ. ໃຈດີ`` no longer
+matches ``ສົມຊາຍ ໃຈດີ``. A Lao title written short with a full stop is
+still a title:
+
+.. doctest::
+
+    >>> parse("ສົມຊາຍ ໃຈດີ").initials()
+    ''
+    >>> parse("ດຣ. ສົມຊາຍ ໃຈດີ").title
+    'ດຣ.'
+
+Ukrainian patronymics under locales.RU
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Under ``locales.RU`` the Ukrainian patronymic endings written in
+Cyrillic, ``-івна``, ``-ївна``, ``-євич`` and ``Ілліч``, read as the
+Russian ones do: a name written family name first is reordered, and the
+patronymic fills ``patronymic``, where 2.0 through 3.1 read the
+patronymic as the family name. The default parse is unchanged:
+
+.. doctest::
+
+    >>> olena = parser_for(locales.RU).parse("Коваленко Олена Петрівна")
+    >>> olena.given, olena.family, olena.patronymic
+    ('Олена', 'Коваленко', 'Петрівна')
+    >>> parse("Коваленко Олена Петрівна").family
+    'Петрівна'

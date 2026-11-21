@@ -531,6 +531,37 @@ def test_score_rows_counts_agreement_and_fixes_and_breaks_against_the_first() ->
     assert lines[-1].split()[5:] == ["[0]", "+0.00", "0/0"]
 
 
+def test_score_rows_drops_a_record_any_configuration_reads_with_a_typed_title() -> None:
+    # #1501: `Dr` typed into the given box is a class of its own, so a
+    # configuration that reads it as the title neither breaks the record
+    # nor is credited with it; every column drops it alike.
+    no_dr = 'expr:Parser(lexicon=Lexicon.default().remove("dr", kind="title"))'
+    rows = [_orcid("Dr Ana Souza", "Dr Ana", "Souza"), _orcid("Ana López", "Ana", "López")]
+    specs = (no_dr, "default")
+    readings = cd._read_chunk([(r["name"], None, specs) for r in rows])[1]
+    listed = cd.local_agreement._title_words(Lexicon.default())
+    scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings, listed)
+    assert scored == 1
+    assert [(s.agree, s.fixed, s.broken) for s in per] == [(1, 0, 0), (1, 0, 0)]
+    # The control: with the class off, the default breaks it.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(cd.local_agreement, "titled", lambda *args: False)
+        scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings,
+                                    listed)
+    assert scored == 2 and [(s.agree, s.broken) for s in per] == [(2, 0), (1, 1)]
+    # gaps drops it from both columns the same way, whichever reads the
+    # title: the plain choice listing it and the strict one not is the
+    # direction a strict gap meets.
+    for pair in (specs, specs[::-1]):
+        result = _score([(cd.ORCID, "XX", r) for r in rows], pair)
+        assert result["groups"][f"{cd.ORCID} XX"]["scored"] == 1, pair
+    # Any configuration, not the first or the last alone.
+    three = (no_dr, "default", no_dr)
+    readings = cd._read_chunk([(r["name"], None, three) for r in rows])[1]
+    scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings, listed)
+    assert scored == 1
+
+
 def test_score_selects_a_named_group_or_a_languages_countries(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _psc(monkeypatch, [("Ana Souza", "Brazilian"), ("Bo Lima", "French"),
