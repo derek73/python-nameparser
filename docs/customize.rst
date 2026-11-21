@@ -88,6 +88,9 @@ list is one reading per word:
     >>> Parser(lexicon=lex).parse("John Smith LEED AP").suffix
     'LEED AP'
 
+To find the credentials your own data holds that the defaults do not
+list, see :ref:`finding-missing-credentials`.
+
 A surname particle is added the same way. The defaults leave out the
 Dutch ``in`` of ``in 't Veld``, which as a default would take a middle
 name spelled like it into the surname of names in every language; add
