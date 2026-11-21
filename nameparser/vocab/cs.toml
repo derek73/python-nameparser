@@ -133,7 +133,7 @@ credential = { cased = "DrSc", issue = [753, 848, 969], expands = "doktor věd, 
 
 [[word]]
 text = "ien"
-excluded = { credential = { reason = "IEn., written after the name by 3 Czech election candidates (cz-candidates, 2026-10-30), is the given name Ien: US SSA 16 or more births a year (2026-11-20), so a credential reading would take a given name ending a name", issue = 969, decided = 2026-11-20 } }
+excluded = { credential = { reason = "IEn., written after the name by 3 Czech election candidates (cz-candidates, 2026-10-30), is the given name Ien: US SSA 16 births since 1880, a lower bound, years under 5 unrecorded (2026-11-20), so a credential reading would take a given name ending a name", issue = 969, decided = 2026-11-20 } }
 
 [[word]]
 text = "roz"

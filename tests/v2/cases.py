@@ -1668,6 +1668,14 @@ CASES: tuple[Case, ...] = (
                "case with no comma reads as a name by its writing "
                "(rules/S6), the count alone taking it (rules/S4); whether "
                "that mixed case should read as the credential is #1053's"),
+    Case("surname_dis_in_capitals_in_a_mixed_case_name_reads_the_credential",
+         "Jan DIS",
+         {"given": "Jan", "suffix": "DIS"},
+         classification="fix(#969)", ambiguities=("given-or-family",),
+         notes="the accepted cost: a gated acronym in capitals in a name "
+               "of mixed case reads as the credential even with no word to "
+               "spare (rules/S6), as Amani BCHIR does; read family 'DIS' "
+               "through 3.1"),
     Case("surname_dis_in_capitals_with_a_word_to_spare_reads_the_credential",
          "PETR JAN DIS",
          {"given": "PETR", "family": "JAN", "suffix": "DIS"},

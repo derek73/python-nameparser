@@ -157,7 +157,7 @@ given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = ["muhammad"
 
 [[word]]
 text = "dis"
-family = { note = "the surname Dis: ORCID family boxes 14 (5 with a country, BR, CZ, FI, NL and US 1 each; 9 with none), given boxes 6; PatentsView family boxes 6 (US 4, NL 2); US Census 2010 under 100 and SSA under 5 a year (2026-11-20). It gates cs.toml's and sk.toml's credential DiS, so a name of mixed case ending in the surname written Dis keeps it (rules/S4, S6), where one written in a single case with a word to spare reads it as the credential (PETR JAN DIS), #969" }
+family = { note = "the surname Dis: ORCID family boxes 14 (5 with a country, BR, CZ, FI, NL and US 1 each; 9 with none), given boxes 6; PatentsView family boxes 6 (US 4, NL 2); US Census 2010 under 100 and SSA under 5 a year (2026-11-20). It gates cs.toml's and sk.toml's credential DiS, so a name of mixed case ending in the surname written Dis keeps it (rules/S4, S6); written DIS in a name of mixed case it reads as the credential even with no word to spare (Jan DIS), and in a name written in one case with a word to spare (PETR JAN DIS), #969" }
 
 [[word]]
 text = "kaur"

@@ -524,9 +524,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # and given-or-family, 'Aus Rahman's particle-or-given, and the two
     # 'Jane Doe, BM, ...' rows); 2257 -> 2272 the same day, #969's DiS
     # rows' suffix-or-name under three orders; 2272 -> 2275 the same day,
-    # its review's 'PETR JAN DIS' under three orders.
-    assert claims == 2275, (
-        f"the field sweep checks {claims} claims, recorded as 2275 on "
+    # its review's 'PETR JAN DIS' under three orders; 2275 -> 2278 the
+    # same day, its second review's 'Jan DIS' under three orders.
+    assert claims == 2278, (
+        f"the field sweep checks {claims} claims, recorded as 2278 on "
         f"2026-11-20")
 
 
