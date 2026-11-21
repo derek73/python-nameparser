@@ -1554,7 +1554,8 @@ find the ones your data holds:
 4. Add each credential to a :class:`~nameparser.Lexicon` (see
    :ref:`adding-a-word`) and build a :class:`~nameparser.Parser` on it.
 
-The count finds the comma shape, the one a count can find. An added
+The count finds the comma shape, where an unlisted credential stands
+out as a given name. An added
 word is read as a credential after a comma and where it ends a name
 with no comma, where unlisted it reads as the family name; before the
 end of the name it stays a name word.
