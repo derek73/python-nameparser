@@ -3983,7 +3983,6 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'preg.ma': 'Preg.ma',
     'preg.mo': 'Preg.mo',
     'prof.ssa': 'Prof.ssa',
-    'psc': 'psc',
     'psyd': 'PsyD',
     'ptech': 'PTech',
     'rkin': 'RKin',

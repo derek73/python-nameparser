@@ -5674,7 +5674,7 @@ credential = {}
 
 [[word]]
 text = "psc"
-credential = { cased = "psc", expands = "passed Staff College", note = "a Commonwealth staff-college mark, written in lower case (Maj Gen John Smith CB psc); NPPES 81, ClinicalTrials.gov 3 as PSc, PSC 4 filers as Psc (2026-11-20); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
+credential = { expands = "passed Staff College", note = "a Commonwealth staff-college mark, written in lower case (Maj Gen John Smith CB psc); NPPES 81, ClinicalTrials.gov 3 as PSc, PSC 4 filers surnamed Psc (2026-11-20). No case mask, unlike the other Nigerian marks (decided 2026-11-20): a mask applies in every role and would repair the surname Psc to psc, so the mark repairs as an unmasked credential does; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1228 }
 
 [[word]]
 text = "psm"

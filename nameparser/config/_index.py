@@ -2435,7 +2435,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('provost', (('en', 'office', ()),)),
     ('prue', (('en', 'familiar', (('short_for', ('prudence',)),)),)),
     ('przemek', (('pl', 'familiar', (('short_for', ('przemyslaw', 'przemysław')),)),)),
-    ('psc', (('en', 'credential', (('cased', 'psc'),)),)),
+    ('psc', (('en', 'credential', ()),)),
     ('pslc', (('en', 'office', ()),)),
     ('psm', (('en', 'credential', ()),)),
     ('psp', (('en', 'credential', ()),)),
