@@ -1554,9 +1554,10 @@ find the ones your data holds:
 4. Add each credential to a :class:`~nameparser.Lexicon` (see
    :ref:`adding-a-word`) and build a :class:`~nameparser.Parser` on it.
 
-The count finds the comma shape, the one easiest to detect. An added
-word is read as a credential wherever it stands, ending a name with no
-comma included, where unlisted it reads as the family name.
+The count finds the comma shape, the one a count can find. An added
+word is read as a credential after a comma and where it ends a name
+with no comma, where unlisted it reads as the family name; before the
+end of the name it stays a name word.
 
 .. doctest::
 
@@ -1578,15 +1579,17 @@ comma included, where unlisted it reads as the family name.
     ('Ana', 'Paz', 'PhDc')
     >>> with_creds.parse("Ruiz Paz, Ana").given
     'Ana'
-    >>> parse("Ana Ruiz Paz PhDc").family, with_creds.parse("Ana Ruiz Paz PhDc").suffix
-    ('PhDc', 'PhDc')
+    >>> parse("Ana Ruiz Paz PhDc").family
+    'PhDc'
+    >>> with_creds.parse("Ana Ruiz Paz PhDc").suffix
+    'PhDc'
 
 A non-empty ``ambiguities`` holding ``suffix-or-name`` marks a name
 where the parser weighed a credential against a name, as it does for
 the capitals shape, and for an unlisted word behind a listed
 credential, which is read as a credential and reported
-(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word standing alone after
-the comma is never weighed, so it carries no report, and the count
+(``Ana Ruiz Paz, PhD PhDc``). A mixed-case word opening the part
+after the comma is never weighed, so it carries no report, and the count
 above is the way to find it:
 
 .. doctest::
