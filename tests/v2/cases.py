@@ -1630,6 +1630,22 @@ CASES: tuple[Case, ...] = (
          notes="read middle 'Kwok-kin', family 'GBS', suffix 'JP' 1.4.0 "
                "through 3.1; the capitals family is capitals_as_family's "
                "to read (rules/O9)"),
+    Case("aus_opens_a_german_family_name", "Karen aus der Fünten",
+         {"given": "Karen", "family": "aus der Fünten"},
+         classification="fix(#1284)",
+         notes="aus is a de.toml preposition; read middle 'aus', family "
+               "'der Fünten' 1.4.0 through 3.1"),
+    Case("aus_opening_a_name_stays_the_given_name", "Aus Rahman",
+         {"given": "Aus", "family": "Rahman"},
+         ambiguities=("particle-or-given",),
+         notes="boundary: aus's given reading keeps the word positional at "
+               "the head, where may_be_given = false would fold the whole "
+               "name into the family (#1284)"),
+    Case("aus_as_a_middle_name_is_read_into_the_family", "Kevin Aus Smith",
+         {"given": "Kevin", "family": "Aus Smith"},
+         classification="fix(#1284)",
+         notes="the accepted cost of listing aus: no corpus name has the "
+               "shape; read middle 'Aus' 1.4.0 through 3.1"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          notes="the words-to-spare half: a full name in front leaves the "

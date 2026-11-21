@@ -2710,7 +2710,7 @@
 {"name": "K.T. Smith", "given": "K.", "middle": "T.", "family": "Smith", "initials": "K. T. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
-{"name": "KAREN AUS DER FÜNTEN", "given": "KAREN", "middle": "AUS", "family": "DER FÜNTEN", "initials": "K. A. F.", "capitalized": "Karen Aus Der Fünten"}
+{"name": "KAREN AUS DER FÜNTEN", "given": "KAREN", "family": "AUS DER FÜNTEN", "initials": "K. F.", "capitalized": "Karen aus der Fünten"}
 {"name": "KIM, AE-RA", "family": "KIM", "suffix": "AE-RA", "initials": "K.", "capitalized": "Kim, AE-RA"}
 {"name": "KIM, MA-AE", "family": "KIM", "suffix": "MA-AE", "initials": "K.", "capitalized": "Kim, MA-AE"}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}

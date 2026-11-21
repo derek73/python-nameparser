@@ -262,6 +262,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('auf', (('de', 'preposition', ()),)),
     ('aunt', (('en', 'kinship', (('addresses', 'given'),)),)),
     ('auntie', (('en', 'kinship', (('addresses', 'given'), ('same_as', 'aunt'))),)),
+    ('aus', (('de', 'preposition', ()), ('de', 'given', ()))),
     ('author', (('en', 'occupation', ()),)),
     ('av', (('nb', 'preposition', ()), ('sv', 'preposition', ()))),
     ('avi', (('ar', 'familiar', (('short_for', ('abraham', 'avraham')),)), ('en', 'familiar', (('short_for', ('abraham', 'avinash', 'avraham')),)), ('he', 'familiar', (('short_for', ('abraham', 'avraham')),)))),

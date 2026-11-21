@@ -2460,6 +2460,7 @@ PARTICLES: frozenset[str] = frozenset({
     'at-',
     'ath-',
     'auf',
+    'aus',
     'av',
     'az-',
     'aït',
