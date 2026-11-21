@@ -66,6 +66,7 @@ import tempfile
 import urllib.request
 import zipfile
 from collections.abc import Iterable, Iterator, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
@@ -246,12 +247,46 @@ def words(text: str) -> list[str]:
     return [w for w in (w.strip(_EDGE) for w in text.split()) if w]
 
 
+#: The civil name's given words a pair may name: the first two that are
+#: no particle, a Brazilian civil name writing its given names first.
+GIVEN_WORDS = 2
+#: A byname: a ballot word paired with BYNAME_PARTNERS civil given
+#: names or more, each at BYNAME_PEOPLE people, a form of address, a
+#: kinship, religious or occupational word or an epithet (`irmão`,
+#: `dona`, `enfermeira`) beside whatever given name the person had.
+BYNAME_PARTNERS = 4
+BYNAME_PEOPLE = 10
+#: A byname's pair kept all the same where its lift is this or more: the
+#: share of the ballot word's people whose civil word is this one, over
+#: that civil word's share of every person. A byname pairs with names
+#: about as often as they are borne (`irmão` / `josé` 1.2, `dona` /
+#: `maria` 3.7, `dona` naming women alone); a familiar form of several
+#: names concentrates on each (`zé` / `josé` 9.7, `beto` / `roberto`
+#: 13.5); measured 2026-11-20, decisions/name-matching 2026-11-20 #1495.
+MIN_LIFT = 5.0
+#: The people a byname's pair kept by its lift needs: a byname beside a
+#: rarer name clears MIN_LIFT too (`dona` / `tereza` 5.3, 32 people), and
+#: a higher lift would lose `zé` / `josé` (9.7) before the rescue was
+#: small enough to read, so the rescue is held to more people instead.
+RESCUE_PEOPLE = 50
+
+
+def _given(civil: str, particles: frozenset[str]) -> list[str]:
+    """The civil name's name words that are no particle."""
+    return [w for w in words(civil) if _name_word(w)
+            and build._normalize(w) not in particles]
+
+
 def pair_of(civil: str, ballot: str, titles: frozenset[str],
             particles: frozenset[str]) -> tuple[str, str] | None:
-    """The pair one candidate's two names evidence (THE PAIR above), each
-    word normalized as the vocabulary writes it, or None."""
+    """The pair one candidate's two names evidence (THE PAIR above) as
+    (the ballot word, the civil given word), each normalized as the
+    vocabulary writes it, or None, as where the civil word chosen is not
+    among the civil name's first GIVEN_WORDS given words (a surname,
+    `castr` / `castro`)."""
     civil_words = [w for w in words(civil) if _name_word(w)]
-    if not civil_words:
+    given = _given(civil, particles)
+    if not civil_words or not given:
         return None
     civil_keys = {_key(w) for w in civil_words}
     x = None
@@ -265,51 +300,102 @@ def pair_of(civil: str, ballot: str, titles: frozenset[str],
     if x is None or not _name_word(x):
         return None
     fx = _key(x)
-    given = [w for w in civil_words if build._normalize(w) not in particles]
     tail = fx[-3:]
     rules = (lambda w: _key(w)[:1] == fx[:1] and tail in _key(w),
              lambda w: _key(w)[:1] == fx[:1],
              lambda w: tail in _key(w))
-    y = next((w for rule in rules for w in given if rule(w)), civil_words[0])
+    y = next((w for rule in rules for w in given if rule(w)), given[0])
+    if _key(y) not in {_key(w) for w in given[:GIVEN_WORDS]}:
+        return None
     if _match_fold(x) == _match_fold(y):
         return None
-    a, b = sorted((build._normalize(x), build._normalize(y)))
-    return a, b
+    return build._normalize(x), build._normalize(y)
+
+
+@dataclass
+class Mined:
+    """What the records evidence: each (ballot word, civil word) pair,
+    both folded as the match folds them, with each spelling written and
+    its people; each ballot word's people; each civil word's people
+    among every person's first GIVEN_WORDS given words; every person."""
+
+    pairs: dict[tuple[str, str], dict[tuple[str, str], set[str]]] = field(
+        default_factory=dict)
+    ballot: dict[str, set[str]] = field(default_factory=dict)
+    civil: collections.Counter[str] = field(default_factory=collections.Counter)
+    people: set[str] = field(default_factory=set)
+
+    def lift(self, x: str, y: str) -> float:
+        """The pair's people over the ballot word's, against the civil
+        word's share of every person."""
+        share = len(set().union(*self.pairs[x, y].values())) / len(self.ballot[x])
+        return share / (self.civil[y] / len(self.people))
 
 
 def mine(records: Iterable[Mapping[str, str]], titles: frozenset[str],
-         particles: frozenset[str]) -> dict[frozenset[str], dict[tuple[str, str], set[str]]]:
-    """Each pair as the match reads it (its two names folded) -> each
-    spelling written -> the people who wrote it."""
-    out: dict[frozenset[str], dict[tuple[str, str], set[str]]] = {}
+         particles: frozenset[str]) -> Mined:
+    """Every pair the records evidence, a person counted once a pair."""
+    out = Mined()
     for r in records:
+        if r["person"] not in out.people:
+            out.people.add(r["person"])
+            for w in {_match_fold(build._normalize(w))
+                      for w in _given(r["civil"], particles)[:GIVEN_WORDS]}:
+                out.civil[w] += 1
         pair = pair_of(r["civil"], r["ballot"], titles, particles)
         if pair is None:
             continue
-        key = frozenset(_match_fold(w) for w in pair)
-        out.setdefault(key, {}).setdefault(pair, set()).add(r["person"])
+        key = (_match_fold(pair[0]), _match_fold(pair[1]))
+        out.pairs.setdefault(key, {}).setdefault(pair, set()).add(r["person"])
+        out.ballot.setdefault(key[0], set()).add(r["person"])
     return out
 
 
-HEADER = ["a", "b", "source", "holders", "shape", "languages", "spellings"]
+def bynames(mined: Mined) -> frozenset[str]:
+    """The ballot words paired with BYNAME_PARTNERS civil words or more,
+    each at BYNAME_PEOPLE people."""
+    partners: collections.Counter[str] = collections.Counter()
+    for (x, _), spelled in mined.pairs.items():
+        if len(set().union(*spelled.values())) >= BYNAME_PEOPLE:
+            partners[x] += 1
+    return frozenset(x for x, n in partners.items() if n >= BYNAME_PARTNERS)
 
 
-def rows(found: Mapping[frozenset[str], Mapping[tuple[str, str], set[str]]],
-         minimum: int, known: set[frozenset[str]]) -> list[list[str]]:
-    """The candidate rows: a pair at `minimum` people or more, its
-    spellings together, not yet reviewed in any spelling the match folds
-    alike, written as its most attested spelling; most people first."""
+HEADER = ["a", "b", "source", "holders", "shape", "languages", "spellings",
+          "lift"]
+
+
+def rows(mined: Mined, minimum: int, known: set[frozenset[str]]
+         ) -> list[list[str]]:
+    """The candidate rows: each pair as the match reads it, both ways
+    and every spelling together, written as its most attested spelling,
+    at `minimum` people or more and not yet reviewed in any spelling the
+    match folds alike, less a byname's pairs whose lift is under
+    MIN_LIFT or whose people are under RESCUE_PEOPLE (the lift column is a
+    byname pair's, empty for another);
+    most people first."""
     seen = {frozenset(_match_fold(w) for w in p) for p in known if len(p) == 2}
+    names = bynames(mined)
+    merged: dict[frozenset[str], list[tuple[tuple[str, str], dict[tuple[str, str], set[str]]]]] = {}
+    for key, spelled in mined.pairs.items():
+        merged.setdefault(frozenset(key), []).append((key, spelled))
     out = []
-    for key, spelled in found.items():
-        if key in seen:
+    for unordered, parts in merged.items():
+        if unordered in seen:
             continue
-        people = set().union(*spelled.values())
+        people = set().union(*(p for _, sp in parts for p in sp.values()))
         if len(people) < minimum:
             continue
-        (a, b), _ = min(spelled.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+        lifts = [mined.lift(*key) for key, _ in parts if key[0] in names]
+        if lifts and (max(lifts) < MIN_LIFT or len(people) < RESCUE_PEOPLE):
+            continue
+        counts: collections.Counter[tuple[str, str]] = collections.Counter()
+        for _, sp in parts:
+            for pair, who in sp.items():
+                counts[tuple(sorted(pair))] += len(who)  # type: ignore[index]
+        (a, b), _ = min(counts.items(), key=lambda kv: (-kv[1], kv[0]))
         out.append([a, b, SOURCE, str(len(people)), fc.shape(a, b), TAG,
-                    str(len(spelled))])
+                    str(len(counts)), f"{max(lifts):.1f}" if lifts else ""])
     out.sort(key=lambda r: (-int(r[3]), r[0], r[1]))
     return out
 
@@ -334,8 +420,9 @@ def main(argv: list[str] | None = None) -> int:
     f = sub.add_parser("fetch", help="download and read every election, cached")
     f.add_argument("--year", action="append", choices=ELECTIONS)
     p = sub.add_parser("pairs", help="write the candidates from the cache")
-    p.add_argument("--min", type=int, default=10,
-                   help="the fewest people a pair needs (default 10)")
+    p.add_argument("--min", type=int, default=20,
+                   help="the fewest people a pair needs (default 20, the "
+                        "bar #1495's review read)")
     args = parser.parse_args(argv)
     if args.command == "fetch":
         for year in args.year or ELECTIONS:
@@ -348,7 +435,7 @@ def main(argv: list[str] | None = None) -> int:
     out = rows(found, args.min, fc.known_pairs())
     path = name_usage.cache_dir() / CANDIDATES_FILE
     path.write_text(write_tsv(out), encoding="utf-8")
-    print(f"{len(found):,} pairs, {len(out):,} candidates at {args.min}+ "
+    print(f"{len(found.pairs):,} pairs, {len(out):,} candidates at {args.min}+ "
           f"people not yet reviewed; wrote {path}", file=sys.stderr)
     return 0
 

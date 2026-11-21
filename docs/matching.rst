@@ -688,7 +688,7 @@ letters of the names it is paired with too, so ``Bill Smith`` meets
 Where the shipped pairs come from
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The shipped familiar forms, about thirteen hundred pairs, are pairs
+The shipped familiar forms, about twenty-three hundred pairs, are pairs
 people wrote both ways for themselves: mostly
 ORCID's researchers, who wrote one in the given-name box and the other
 in a published name, in many languages (``Peggy`` / ``Margaret``,
@@ -703,6 +703,11 @@ the other in their given name or birth name (``Erzsi`` / ``Erzsébet``,
 ``Jára`` / ``Jaroslav``). The Russian, Ukrainian, Belarusian,
 Bulgarian and most Serbian ones are written in Cyrillic (``Женя`` /
 ``Евгений``), so a name romanized in Latin letters does not reach them.
+
+Brazilian Portuguese has pairs from Brazil's election candidates, each
+registering the name printed on the ballot beside the civil name, at
+twenty candidates or more (``Paulinho`` / ``Paulo``, ``Cida`` /
+``Aparecida``, ``Tião`` / ``Sebastião``, ``Biu`` / ``Severino``).
 ``docs/design/decisions/name-matching.md`` has how they were selected.
 
 .. _matching-familiar-language-choice:

@@ -42,7 +42,8 @@ _PARTICLES = frozenset({"de", "da", "do", "dos", "das"})
 
 
 def _pair(civil: str, ballot: str) -> tuple[str, str] | None:
-    return tool.pair_of(civil, ballot, _TITLES, _PARTICLES)
+    pair = tool.pair_of(civil, ballot, _TITLES, _PARTICLES)
+    return None if pair is None else tuple(sorted(pair))  # type: ignore[return-value]
 
 
 @pytest.mark.parametrize("civil, ballot, pair", [
@@ -72,6 +73,8 @@ def test_a_ballot_name_pairs_with_the_given_name_it_stands_for(
     ("PAULO DA SILVA", "DA SILVA"),         # a particle
     ("PAULO SILVA", "PAULO 2024"),          # no name word
     ("JOSE SILVA", "JOSÉ"),                 # one name under the fold
+    # the civil word past the first two given names: a surname
+    ("PEDRO HENRIQUE CASTRO", "CASTR"),
 ])
 def test_what_is_no_familiar_form_of_the_civil_name_pairs_nothing(
         civil: str, ballot: str) -> None:
@@ -102,6 +105,40 @@ def test_a_member_cut_inside_a_row_is_refused() -> None:
         tool.read_member(io.StringIO(whole + '"2";"ANA LIMA";"ANI'), "2024")
     with pytest.raises(ValueError, match="lacks"):
         tool.read_member(io.StringIO('"A";"B"\r\n'), "2024")
+
+
+def test_the_pair_names_the_ballot_word_first() -> None:
+    assert tool.pair_of("PAULO SILVA", "PAULINHO", _TITLES, _PARTICLES) == (
+        "paulinho", "paulo")
+
+
+def _people(n: int, civil: str, ballot: str, tag: str) -> list[dict[str, str]]:
+    return [{"civil": civil, "ballot": ballot, "person": f"{tag}{i}"}
+            for i in range(n)]
+
+
+def test_a_byname_is_dropped_and_its_concentrated_pairs_rescued(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "BYNAME_PEOPLE", 2)
+    monkeypatch.setattr(tool, "RESCUE_PEOPLE", 2)
+    # `dona` beside four names, each as often as the name is borne: a
+    # byname; `zé` beside four names, three often borne, but on José far
+    # beyond José's share: a form of several names, José's pair rescued
+    records = []
+    for name in ("MARIA", "ANA", "RITA", "VERA"):
+        records += _people(40, f"{name} SILVA", name, name)  # the base
+        records += _people(4, f"{name} LIMA", "DONA", "d" + name)
+        records += _people(2, f"{name} REIS", "ZÉ", "z" + name)
+    records += _people(30, "JOSE SOUZA", "ZÉ", "zj")
+    mined = tool.mine(records, _TITLES, _PARTICLES)
+    assert tool.bynames(mined) == frozenset({"dona", "ze"})
+    assert mined.lift("dona", "maria") < tool.MIN_LIFT
+    assert mined.lift("ze", "jose") >= tool.MIN_LIFT
+    pairs = {(r[0], r[1]) for r in tool.rows(mined, 2, set())}
+    assert pairs == {("jose", "zé")}
+    # and a rescued pair needs RESCUE_PEOPLE
+    monkeypatch.setattr(tool, "RESCUE_PEOPLE", 31)
+    assert tool.rows(mined, 2, set()) == []
 
 
 def test_a_person_counts_once_and_spellings_folded_alike_are_one_pair() -> None:

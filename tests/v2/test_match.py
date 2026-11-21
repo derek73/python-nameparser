@@ -1877,6 +1877,46 @@ def test_a_held_wikidata_spelling_ships_nowhere() -> None:
                               "Геннадій Петренко").consistent
 
 
+@pytest.mark.parametrize("a, b, key", [
+    # Brazilian ballot names against the civil names they stand for,
+    # reviewed (decisions/name-matching, 2026-11-20 #1495), in each
+    # shape the match reads: given first, after a family comma, beside
+    # a second given name, in capitals, and without the accent the
+    # stored word carries (`tião`) or with one it lacks (`jose`)
+    ("Paulinho Silva", "Paulo Silva", "silva;p"),
+    ("Silva, Cida", "Aparecida Silva", "silva;a"),
+    ("Tião Alves", "Sebastião Alves", "alves;s"),
+    ("Tiao Alves", "Sebastião Alves", "alves;s"),
+    ("TIAO ALVES", "SEBASTIAO ALVES", "alves;s"),
+    ("Biu Ramos", "Severino Ramos", "ramos;s"),
+    ("Zé Carlos Pereira", "José Carlos Pereira", "pereira;j"),
+    ("Ze Pereira", "Jose Pereira", "pereira;j"),
+    ("Zezinho Lima", "José Lima", "lima;j"),
+    ("CARLINHOS SOUZA", "CARLOS SOUZA", "souza;c"),
+])
+def test_a_brazilian_familiar_form_is_consistent_where_accepted(
+        a: str, b: str, key: str) -> None:
+    r = _familiar.check(a, b)
+    assert r.consistent
+    assert role(r, Role.GIVEN).outcome is Outcome.FAMILIAR_FORM
+    assert key in _familiar.keys(a) & _familiar.keys(b)
+    # reported, not accepted, by default
+    assert not m.check(a, b).consistent
+
+
+@pytest.mark.parametrize("a, b", [
+    # the review's bynames and held spellings ship nowhere: a form of
+    # address beside the name, two spellings of one name
+    ("Dona Silva", "Josefa Silva"),
+    ("Rozangela Silva", "Rosangela Silva"),
+    # never chained: Tiãozinho and Tião are each paired with Sebastião
+    ("Tiãozinho Alves", "Tião Alves"),
+])
+def test_a_brazilian_pair_the_review_did_not_ship_is_no_familiar_form(
+        a: str, b: str) -> None:
+    assert not _familiar.check(a, b).consistent
+
+
 @pytest.mark.parametrize("a, b", [
     # never chained: each is paired with Max alone, not with each other
     ("Maximilian Smith", "Maxim Smith"),
