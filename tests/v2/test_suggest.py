@@ -41,7 +41,8 @@ _VOTES = [
     ("Mary Smith", Signal.GIVEN_NAME, GIVEN_FIRST),
     ("Иванов Иван Петрович", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Ivan Petrovich Sidorov", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
-    # the Ukrainian Cyrillic endings (#1212), a decomposed ї included
+    # the Ukrainian Cyrillic endings (#1212); a decomposed ї votes too,
+    # the suggester composing each word before any signal reads it
     ("Коваленко Олена Петрівна", Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC),
     ("Коваленко Олена Петрівна", Signal.PATRONYMIC_POSITION, FAMILY_FIRST),
     (unicodedata.normalize("NFD", "Ткачук Ганна Сергіївна"), Signal.PATRONYMIC,
