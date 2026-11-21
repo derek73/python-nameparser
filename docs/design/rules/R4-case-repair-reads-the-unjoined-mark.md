@@ -90,8 +90,9 @@
   "Ronald Macdonald"          →  capitalized_forced="Ronald MacDonald"
   "JAMES MACKENZIE"           →  capitalized="James Mackenzie"  · boundary
   ```
-- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary (written whole across any hyphen or slash it holds, `OTR/L`, not as two name words), or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case.
+- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary (written whole across any hyphen or slash it holds, `OTR/L`, not as two name words), or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case. A word read as a credential after a comma by its mixed case (C6) is kept as written, forced or not, its capitals being what made it one.
   ```
+  "Jane Smith, MRes"          →  capitalized_forced="Jane Smith, MRes"
   "john smith md"             →  capitalized="John Smith MD"
   "john smith m.d."           →  capitalized="John Smith M.D."
   "john smith iii."           →  capitalized="John Smith III."

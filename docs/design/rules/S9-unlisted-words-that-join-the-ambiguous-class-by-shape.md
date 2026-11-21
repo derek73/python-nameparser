@@ -13,6 +13,12 @@
   "John Smith, Pu-Ph"         →  given="Pu-Ph"  · boundary
   "Jean Pierre DUPONT-MORETTI"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT-MORETTI"
   ```
+- **A word in mixed case written as a credential is ('MRes', 'AuD') is the caps shape after a comma only** (C6): ending a name it is how a surname typed without its apostrophe is written ('ONeill', 'DSouza'), so the caller setting below reads capitals alone there.
+  ```
+  "Jane Smith, MRes"          →  suffix="MRes"
+  "Alex Lee ONeill"  unlisted_caps_suffixes-everywhere  →  family="ONeill"  · boundary
+  "Alex Lee MRes"  unlisted_caps_suffixes-everywhere  →  family="MRes"  · boundary
+  ```
 - **Where the caps shape is admitted by default.** By default that second shape is admitted in one position only, the part after a comma with two or more name words before it (C4, C6): French and Korean records write the SURNAME in capitals, and that convention puts the capitals at the end of a name or before a comma, never after a comma behind a full name.
   ```
   "John Smith XYZ"            →  family="XYZ"  · boundary

@@ -693,7 +693,8 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
                          policy=policy)[word]
     candidate = (ambiguous_class_candidate(word, lex, policy)
                  or (policy.unlisted_caps_suffixes
-                     and caps_shape_candidate(word, lex, policy, one_case)))
+                     and caps_shape_candidate(word, lex, policy, one_case,
+                                          mixed_case=False)))
     # rules/S3's paired initials, the one shape the two answers part
     # on by design: the candidate (segment's, before the comma has
     # been read) admits them, and classify holds the class tag back,

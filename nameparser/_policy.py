@@ -46,16 +46,19 @@ class CapsSuffixes(StrEnum):
     #: 2.3 read it.
     OFF = "off"
     #: Only after a comma, behind two or more name words ("John Smith,
-    #: XYZ" gives suffix ``XYZ``). The default: the all-caps SURNAME
-    #: convention ("Jean DUPONT", "DUPONT, Jean") never writes the
-    #: capitals there.
+    #: XYZ" gives suffix ``XYZ``), where a word in mixed case that opens
+    #: with two capitals or ends in one reads so too ("Jane Smith, MRes").
+    #: The default: the all-caps SURNAME convention ("Jean DUPONT",
+    #: "DUPONT, Jean") never writes the capitals there.
     AFTER_COMMA = "after-comma"
     #: After a comma and ending a name with no comma ("John Smith XYZ"
     #: gives suffix ``XYZ``), where the all-caps surname convention
     #: does write them -- "Jean Pierre DUPONT" then gives family
     #: ``Pierre``, suffix ``DUPONT``. Cannot be set with
     #: ``Policy.capitals_as_family``, which reads that word as the
-    #: family.
+    #: family. Its other positions read a word wholly in capitals only:
+    #: a surname typed without its apostrophe ("Alex Lee ONeill") ends
+    #: a name there.
     EVERYWHERE = "everywhere"
 
 
@@ -925,7 +928,11 @@ class Policy:
     #: ``AFTER_COMMA``, the default, reads it only in the part after a
     #: comma with two or more name words before it: "John Smith, XYZ"
     #: gives suffix ``XYZ``, while "Smith, XYZ" keeps given ``XYZ`` (one
-    #: name word) and "García Márquez, MJ" keeps given ``MJ`` -- a lone
+    #: name word). There a word in mixed case that opens with two
+    #: capitals or ends in one is read as an all-caps word is ("Jane
+    #: Smith, MRes", "Jane Smith, AuD"), a capital only inside a word
+    #: being a name's writing ("Jane Smith, LeBron" keeps given
+    #: ``LeBron``) and "García Márquez, MJ" keeps given ``MJ`` -- a lone
     #: two-letter word is how a person's initials are written, and two
     #: words before the comma may be one surname, the case #563 decides
     #: for "M.J." too. Credentials behind the two letters make them one:
@@ -942,7 +949,8 @@ class Policy:
     #: convention's own position: "John Smith XYZ" gives suffix ``XYZ``,
     #: and "Jean Pierre DUPONT" gives family ``Pierre``, suffix
     #: ``DUPONT`` -- the cost, a swallowed family name being the worse
-    #: failure. The two-word "Jean DUPONT" and "Minjun KIM" keep their
+    #: failure. The mixed-case word is not read there: "Alex Lee ONeill"
+    #: keeps family ``ONeill``. The two-word "Jean DUPONT" and "Minjun KIM" keep their
     #: family even then (one word before the credential is never
     #: enough), but gain the fork's report. ``OFF`` reads no such word
     #: as a credential anywhere and reports nothing, as 2.3 did. A digit

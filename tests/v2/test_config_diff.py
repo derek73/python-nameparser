@@ -124,7 +124,9 @@ def test_a_name_whose_tokens_differ_is_tallied_as_retokenized() -> None:
 
 
 def test_the_tally_counts_moves_by_input_fields_and_word() -> None:
-    texts = ["Ana Souza PhD", "Bo Lima, PhD", "Ana Souza", "Cy Dias Ph.D."]
+    # 'Phd' after the comma: unlisted, 'PhD' is read by the caps shape's
+    # mixed-case arm and stays a suffix (#1516)
+    texts = ["Ana Souza PhD", "Bo Lima, Phd", "Ana Souza", "Cy Dias Ph.D."]
     names = [(t, None, frozenset({"one"} if i % 2 else {"one", "two"}))
              for i, t in enumerate(texts)]
     specs = ("default", _NO_PHD)

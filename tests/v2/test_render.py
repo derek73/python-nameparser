@@ -2305,6 +2305,27 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
             assert str(name.capitalized(force=True)) == rendered, (setting, text)
 
 
+def test_a_mixed_case_credential_is_kept_as_written_when_forced() -> None:
+    # rules/R4 (#1516): a word the caps shape read after a comma in mixed
+    # case ('MRes', 'AuD') keeps its writing, forced or not: no mask
+    # lists it, and the acronym clause's capitals would write 'MRES'.
+    # Its all-caps twin still repairs to capitals, and the company of a
+    # run of initials (rules/C16) carries the shape's marks too.
+    for text, rendered in (
+            ("Jane Smith, MRes", "Jane Smith, MRes"),
+            ("Jane Smith, AuD", "Jane Smith, AuD"),
+            ("Jane Smith, MRes PhD", "Jane Smith, MRes PhD"),
+            ("Jane Smith, MRE\u0301s", "Jane Smith, MRE\u0301s"),
+            ("Smith, M.B. ChB", "Smith, M.B. ChB"),
+            ("Smith, J.P. AUD", "Smith, J.P. AUD"),
+            ("Ashley Knight, M.S. BME", "Ashley Knight, M.S. BME")):
+        assert str(parse(text).capitalized(force=True)) == rendered, text
+        assert str(parse(text).capitalized()) == rendered, text
+    # a word written as a name is, read as the given name, still repairs
+    assert str(parse("Jane Smith, PhDc").capitalized(force=True)) == (
+        "Phdc Jane Smith")
+
+
 def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
 ) -> None:
     """rules/R4, #700: a particle written with its mark ("d'",

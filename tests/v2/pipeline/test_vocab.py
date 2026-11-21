@@ -576,9 +576,42 @@ def test_caps_shape_candidate_reads_joined_capitals(
     # capitals in letter chunks joined by a hyphen or a slash
     lex = Lexicon.default()
     pol = Policy()
-    assert caps_shape_candidate(text, lex, pol, one_case=False) is expected
+    assert caps_shape_candidate(text, lex, pol, one_case=False,
+                                mixed_case=True) is expected
     # gated as the unjoined word is: a name in one case says nothing
-    assert caps_shape_candidate(text, lex, pol, one_case=True) is False
+    assert caps_shape_candidate(text, lex, pol, one_case=True,
+                                mixed_case=True) is False
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("MRes", True),         # opens with two capitals
+    ("DClinPsy", True),
+    ("AuD", True),          # ends in a capital
+    ("DNSc", True),
+    ("MRE\u0301s", True),   # decomposed, read composed (#652)
+    ("LeBron", False),      # a capital only inside: a name's writing
+    ("McKenzie", False),
+    ("DeShawn", False),
+    ("PhDc", False),        # neither
+    ("Pharm-D", False),     # a hyphen in mixed case: 'Jay-R' is a name
+    ("Jay-R", False),
+    ("Smith", False),       # written the way a name is
+    ("smith", False),
+    ("Ms", False),          # listed
+    ("PhD", False),
+])
+def test_caps_shape_candidate_reads_mixed_case_only_where_asked(
+        text: str, expected: bool) -> None:
+    # #1516: the mixed-case arm, which only the part after a comma asks
+    # for; the trailing position under EVERYWHERE never does
+    lex = Lexicon.default()
+    pol = Policy()
+    assert caps_shape_candidate(text, lex, pol, one_case=False,
+                                mixed_case=True) is expected
+    assert caps_shape_candidate(text, lex, pol, one_case=False,
+                                mixed_case=False) is False
+    assert caps_shape_candidate(text, lex, pol, one_case=True,
+                                mixed_case=True) is False
 
 
 def test_caps_shape_candidate_refuses_a_listed_joined_word() -> None:
@@ -586,9 +619,9 @@ def test_caps_shape_candidate_refuses_a_listed_joined_word() -> None:
     # word
     lex = Lexicon.default() | Lexicon(surnames={"dupont-moretti"})
     assert not caps_shape_candidate("DUPONT-MORETTI", lex, Policy(),
-                                    one_case=False)
+                                    one_case=False, mixed_case=False)
     assert caps_shape_candidate("DUPONT-MORETTI", Lexicon.default(),
-                                Policy(), one_case=False)
+                                Policy(), one_case=False, mixed_case=False)
 
 
 def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:
@@ -686,7 +719,7 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     # name.
     on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     base = Lexicon.default()
-    assert caps_shape_candidate("ZZQX", base, on, False)
+    assert caps_shape_candidate("ZZQX", base, on, False, mixed_case=False)
     assert set(_INTO_FIELD) == set(_VOCAB_FIELDS) - {"conjunctions_ambiguous"}
     for field, into in _INTO_FIELD.items():
         lex = into(base, "zzqx")
@@ -699,9 +732,11 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
         # shape; and #959's fourth, the given names only O6 reads
         if field in ("titles_ambiguous", "title_phrases",
                      "given_name_abbreviations", "given_names"):
-            assert caps_shape_candidate("ZZQX", lex, on, False), field
+            assert caps_shape_candidate("ZZQX", lex, on, False,
+                                        mixed_case=False), field
         else:
-            assert not caps_shape_candidate("ZZQX", lex, on, False), field
+            assert not caps_shape_candidate("ZZQX", lex, on, False,
+                                            mixed_case=False), field
 
 
 def test_is_title_shaped_is_h2_s_shape_alone() -> None:

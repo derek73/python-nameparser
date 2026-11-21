@@ -3522,11 +3522,14 @@ def test_a_caller_removes_a_mul_word_as_any_other() -> None:
     assert kept.parse("Ana Souza, PhD").suffix == "PhD"
     assert kept.parse("Dr Ana Souza").title == "Dr"
     lexicon = Lexicon.default().remove("phd", kind="credential")
-    assert Parser(lexicon=lexicon).parse("Ana Souza, PhD").given == "PhD"
+    # written 'Phd', as a name is: 'PhD' unlisted is still read by the
+    # caps shape's mixed-case arm after a comma (#1516)
+    assert Parser(lexicon=lexicon).parse("Ana Souza, Phd").given == "Phd"
+    assert Parser(lexicon=lexicon).parse("Ana Souza, PhD").suffix == "PhD"
     for strict in (False, True):
         got = parser_for(_choosing("pt"), base=Parser(lexicon=lexicon),
                          strict=strict)
-        assert got.parse("Ana Souza, PhD").given == "PhD"
+        assert got.parse("Ana Souza, Phd").given == "Phd"
     stripped = kept.lexicon.remove("dr", kind="academic")
     assert Parser(lexicon=stripped).parse("Dr Ana Souza").given == "Dr"
 

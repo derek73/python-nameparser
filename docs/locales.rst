@@ -1098,9 +1098,11 @@ What a strict choice drops it drops from every name:
 
       >>> no_phd = Parser(lexicon=Lexicon.default().remove(
       ...     "phd", kind="credential"))
+      >>> korean.parse("Kim Min Jun, Phd").suffix
+      'Phd'
       >>> parser_for(ko, base=no_phd, strict=True).parse(
-      ...     "Kim Min Jun, PhD").given
-      'PhD'
+      ...     "Kim Min Jun, Phd").given
+      'Phd'
 
 Which choices can be strict
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -125,7 +125,7 @@ titles under ``cs`` wherever a doctorate is one:
      - title
    * - Bare, after a comma: ``Jana Malá, MgA``
      - title
-     - name word
+     - suffix, by its capitals (``MgA``); name word (``mjr``)
      - suffix
      - title
    * - Dotted, after a comma: ``Jana Malá, MgA.``
@@ -155,7 +155,9 @@ at the head of a name or of the part after a comma (see
 
     >>> parse("Jan Novák, MUDr").title
     'MUDr'
-    >>> parse("Jana Malá, MgA").family
+    >>> parse("Jana Malá, MgA").suffix
+    'MgA'
+    >>> parse("Jana Malá, mjr").family
     'Jana Malá'
     >>> czech.parse("Jana Malá, MgA").title
     'MgA'
