@@ -156,6 +156,14 @@ text = "mohd"
 given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = ["muhammad", "mohamad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Malaysia, Brunei, Singapore and India: ORCID given boxes 8,594 (Malaysia 2,739, India 1,468), PatentsView 304; US SSA male births; Wikidata is a lower bound (Malaysia 276); written with its period at the head of a name (Mohd. Shameem), it read as a title by the leading-abbreviation shape (#1115). The long spellings it stands for are those written where it is: the first words of Malaysia's ORCID given boxes are muhammad 1,971, mohamad 627, mohammad 433, mohamed 183 and mohammed 164, and muhammed 12, a Turkish spelling (Turkey 2,544) left out (the first word of each ORCID given box by the record's country, 2026-11-14 (decisions/vocabulary-model, 2026-11-14 #1383))" }
 
 [[word]]
+text = "sri"
+given = { us_ssa = 109, as_of = 2026-11-21, note = "an Indonesian and Indian given name (Sri Mulyani): ORCID's given box 7,047 (Indonesia 1,951, India 888, Malaysia 23) and family box 1,009, PatentsView's given box 355 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only behind tan or puan (rules/H9), so under a Malay choice a name opening with Sri reads it as the given name and reports the title it might be, and by default reports nothing (#1180)" }
+
+[[word]]
+text = "tan"
+given = { us_ssa = 597, as_of = 2026-11-21, note = "a Vietnamese given name (Tân) as well as the commonest Chinese surname of Malaysia and Singapore: ORCID's given box 2,867 (China 400, Vietnam 308, Malaysia 115) and family box 20,353, PatentsView's given box 475 and family box 3,720 (tools/name_usage.py --boxes --country MY, 2026-11-21). It gates ms.toml's title, a title only in the phrase Tan Sri (rules/H9), so under a Malay choice a name opening with Tan reads it as the given name and reports the title it might be, and by default reports nothing (#1180)" }
+
+[[word]]
 text = "dis"
 family = { note = "the surname Dis: ORCID family boxes 14 (5 with a country, BR, CZ, FI, NL and US 1 each; 9 with none), given boxes 6; PatentsView family boxes 6 (US 4, NL 2); US Census 2010 under 100 and SSA under 5 a year (2026-11-20). It gates cs.toml's and sk.toml's credential DiS, so a name of mixed case ending in the surname written Dis keeps it (rules/S4, S6); written DIS in a name of mixed case it reads as the credential even with no word to spare (Jan DIS), and in a name written in one case with a word to spare (PETR JAN DIS), #969" }
 

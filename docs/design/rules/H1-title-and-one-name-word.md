@@ -36,6 +36,7 @@
 "Dr. Sir John"              →  given="John"
 "His Excellency Lord Duncan"  →  family="Duncan"
 "Her Royal Highness Princess Anne"  →  given="Anne"
+"Datuk Ahmad"               →  given="Ahmad"
 "Sir John"                  →  given="John"  · boundary
 ```
 

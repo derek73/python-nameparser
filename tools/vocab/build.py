@@ -1383,6 +1383,19 @@ def check_pool(pool: Pool) -> None:
     # else the phrase it asks for can never be made
     title_words = {t for t, rs in live.items()
                    if any(r.category == "title" for r in rs)}
+    # a reading written `default = false` may also name a word whose
+    # title reading is off by default IN ITS OWN FILE, the one choice of
+    # that file turning both on (`puan` and `sri` in ms.toml, #1180); a
+    # partner switched on only by another file's readings is refused,
+    # even one a choice of this file also selects (pt.toml under pt-BR):
+    # the two halves of the phrase are written in one file
+    own_titles = {(r.file, r.text) for r in pool.readings
+                  if r.category == "title"}
+
+    def partner(r: Reading, k: str) -> bool:
+        return k in title_words or (
+            not r.on_by_default and (r.file, k) in own_titles)
+
     # a name that is a kind of another category, or the generic
     # 'title', is refused unless it is also a title word: 'pope'
     # attaches to the word 'saint', which names a particle kind too,
@@ -1391,14 +1404,19 @@ def check_pool(pool: Pool) -> None:
     for r in pool.readings:
         for k in r.props.get("attaches", ()) if r.category == "title" else ():
             if (k in CATEGORY and (CATEGORY[k] != "title" or k == "title")
-                    and k not in title_words):
+                    and not partner(r, k)):
                 raise VocabError(
                     f"{r.where()}: attaches names {k!r}, which is not a "
-                    f"title kind or a title word; the kinds: "
+                    f"title kind or a title word"
+                    + ("" if r.on_by_default else
+                       f" on by default or in {r.file}")
+                    + "; the kinds: "
                     f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
-            if k not in CATEGORY and k not in title_words:
+            if k not in CATEGORY and not partner(r, k):
                 raise VocabError(f"{r.where()}: attaches names {k!r}, which "
-                                 f"is no title kind and no title word")
+                                 f"is no title kind and no title word"
+                                 + ("" if r.on_by_default else
+                                    f" on by default or in {r.file}"))
 
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises
