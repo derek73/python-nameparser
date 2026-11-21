@@ -59,7 +59,7 @@ dev = [
   "pytest (>=8)",
   "dill (>=0.2.5)",
   "sphinx (>=8)",
-  "furo",
+  "furo; python_full_version >= '3.11.5'",
   "mypy (>=2.1)",
   "ruff (>=0.15)",
   "pytest-timeout>=2.4.0",
