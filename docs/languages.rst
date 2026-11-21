@@ -55,8 +55,9 @@ What the default reads and what waits for a pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default reads the doctorates before the name (``MUDr.``,
-``JUDr.``, ``PhDr.``, ``RNDr.`` and the rest), and ``Mgr.``, which it
-lists as Monsignor. It cannot read the other words, each of which
+``JUDr.``, ``PhDr.``, ``RNDr.`` and the rest), ``Mgr.``, which it
+lists as Monsignor, and the degrees after it, ``DiS.``, ``DrSc.`` and
+``ArtD.``. It cannot read the other words, each of which
 another reading claims:
 
 - ``ml.`` is also a pair of initials.
@@ -74,13 +75,11 @@ So they wait for a pack:
      - Turns on
    * - ``locales.CS``
      - ``ml.``, ``st.``; the titles ``MgA.``, ``BcA.`` and ``mjr.``, and
-       ``Mgr.`` read as the degree; ``DrSc.``
-       after the name; ``Pan`` (Mr.); ``roz.``, which routes a maiden
+       ``Mgr.`` read as the degree; ``Pan`` (Mr.); ``roz.``, which routes a maiden
        name as ``rozená`` does; two family names
        (``two_family_names``)
    * - ``locales.SK``
-     - ``ml.``, ``st.``; ``Mgr.`` read as the degree;
-       ``ArtD.`` and ``DrSc.`` after the name; two family names
+     - ``ml.``, ``st.``; ``Mgr.`` read as the degree; two family names
        (``two_family_names``)
    * - ``locales.SL``, ``locales.HR``
      - ``ml.``, ``st.``

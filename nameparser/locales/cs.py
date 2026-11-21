@@ -6,8 +6,8 @@ generations ``ml.`` (mladší) and ``st.`` (starší), the salutation
 ``pan``, the birth marker ``roz.``, the academic titles written before
 the name that the default leaves off (``MgA.``, ``BcA.``, the rank
 ``mjr.``; ``Mgr.`` read
-as the degree, the doctorates being read by default since #1115) and
-the post-nominal ``DrSc.``; on a word cs.toml holds a
+as the degree, the doctorates being read by default since #1115, and
+the post-nominal ``DrSc.`` since #969); on a word cs.toml holds a
 vocabulary reading of, other languages' vocabulary readings leave
 (`st`'s Saint title and particle, so ``St Clair`` is a given name under
 this pack; a caller whose names also hold the English Saint chooses
