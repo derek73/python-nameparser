@@ -379,7 +379,7 @@ def test_hi_and_bn_pack_contents() -> None:
     assert locales.BN == Locale(code="bn", lexicon=Lexicon.empty(),
                                 languages=frozenset({"bn"}))
     assert changed_words(selected(locales.HI.languages)) == {
-        "shrimati", "shriyut", "smt", "sushri"}
+        "shri", "shrimati", "shriyut", "smt", "sushri"}
     assert changed_words(selected(locales.BN.languages)) == {
         "adhyapak", "shrimati", "smt"}
 
@@ -397,11 +397,17 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
         # after a family comma, a salutation ending the given part is the
         # title (rules/H8), as its Devanagari spelling is
         assert packed.parse("Sitharaman, Nirmala Smt").title == "Smt"
-        # shri is left out (decisions/vocabulary-model, phase 3e): the
-        # given names written in two words that open with it keep it
-        assert packed.parse("Shri Kant Tripathi").as_dict() == parse(
-            "Shri Kant Tripathi").as_dict()
         assert packed.parse("Sushri Sangita Behera").given == "Sushri"
+    # shri is the title under hi alone (decisions/vocabulary-model,
+    # 2026-11-20 #1192); a given name written in two words that opens
+    # with it loses it there, the accepted cost, and bn leaves it alone
+    assert hi.parse("Shri Ravi Kumar Verma").title == "Shri"
+    assert (hi.parse("Shri Kant Tripathi").title,
+            hi.parse("Shri Kant Tripathi").given) == ("Shri", "Kant")
+    assert bn.parse("Shri Kant Tripathi").as_dict() == parse(
+        "Shri Kant Tripathi").as_dict()
+    # sri stays excluded under the pack
+    assert hi.parse("Sri Ravi Kumar").given == "Sri"
     # adhyapak is a title only at the head and only under bn; the Marathi
     # family name ending a name keeps its place
     assert bn.parse("Adhyapak Anisuzzaman Khan").title == "Adhyapak"
@@ -2439,6 +2445,12 @@ _ROTATORS["hi"] = [
     "Shrimati Gandhi, Indira",       # shrimati before a family comma (H6)
     "Smt. Sitharaman, Nirmala",      # smt, dotted, before a family comma
     ", Nirmala Smt.",                # smt, dotted, after an empty head
+    "Shri Ravi Kumar Verma",         # shri at the head
+    "SHRI RAVI KUMAR",               # shri, in one case
+    "Dr. Shri Ravi Kumar",           # shri behind a listed title
+    "Verma, Shri Ravi",              # shri after a family comma
+    "Verma, Ravi Shri",              # shri ending the given part (H8)
+    "Shri Verma, Ravi",              # shri before a family comma (H6)
     # sushri: or.toml's Odia given name gates it under the plain choice,
     # so it is a title only inside a title phrase, a style's partner
     # (rules/H9); at the head, behind Dr. and after a family comma it
@@ -3643,9 +3655,10 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     ("הרב משה פיינשטיין שליט״א", "title", "הרב"),
     # Devanagari (hi/mr) titles -- a new #269 script: श्री/श्रीमती are
     # the Mr./Mrs. analogs, डॉ the Dr. abbreviation (edge-period
-    # normalization makes "डॉ." match too). NO Latin twins on purpose:
+    # normalization makes "डॉ." match too). NO Latin twins by default:
     # transliterated sri/shri collide with real given names (Sri
-    # Mulyani); the native script cannot.
+    # Mulyani); the native script cannot. Shri is one under locales.HI
+    # alone (#1192).
     ("श्री राम शर्मा", "title", "श्री"),
     ("श्रीमती सीता शर्मा", "title", "श्रीमती"),
     ("डॉ राम शर्मा", "title", "डॉ"),

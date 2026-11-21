@@ -2672,6 +2672,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('shekh', (('ar', 'style', (('addresses', 'given'), ('same_as', 'sheikh'))), ('ar', 'given', ()))),
     ('shelly', (('en', 'familiar', (('short_for', ('michelle',)),)),)),
     ('sheriff', (('en', 'office', ()),)),
+    ('shri', (('hi', 'salutation', (('after_given', True), ('default', False))),)),
     ('shrimati', (('bn', 'salutation', (('after_given', True), ('default', False))), ('hi', 'salutation', (('after_given', True), ('default', False))))),
     ('shriyut', (('hi', 'salutation', (('after_given', True), ('default', False))),)),
     ('shrm-cp', (('en', 'credential', ()),)),

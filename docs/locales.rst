@@ -44,7 +44,8 @@ Native-script entries are safe to enable by default precisely because
 they cannot collide with Latin-script names. That rules out the
 reverse: transliterations like ``sri``/``shri`` are *not* in the
 default vocabulary, because they are also ordinary given names in
-Latin script. The same conservatism holds back a handful of native
+Latin script (``locales.HI`` turns ``shri`` on, for data where it is
+the salutation). The same conservatism holds back a handful of native
 entries that collide within their own script — bare ``سيد`` and
 ``شيخ`` (common given names) and Hebrew ``רב`` (an ordinary word).
 

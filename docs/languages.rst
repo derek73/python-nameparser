@@ -603,11 +603,23 @@ whose leading use is the title:
     >>> parser_for(locales.BN).parse("Adhyapak Anisuzzaman Khan").title
     'Adhyapak'
 
-Two are left out, because the names that open with them outnumber the
-titles even in Indian data. ``Shri`` opens a given name written in two
-words (``Shri Kant``, ``Shri Lakshmi``), and ``Sushri`` an Odia one
-(``Sushri Sangita``), so both stay name words under the packs. A strict
-Hindi choice, which reads no Odia names, reads ``Sushri`` as the title:
+``hi`` also reads ``Shri`` as the title, as an Indian parliament's
+roll writes it. The cost falls on a person whose given name opens with
+it (``Shri Kant``, ``Shri Lakshmi``), who reads the title there, so
+``bn`` and the default leave it to position:
+
+.. doctest::
+
+    >>> parse("Shri Ravi Kumar Verma").given
+    'Shri'
+    >>> hindi = parser_for(locales.HI).parse("Shri Ravi Kumar Verma")
+    >>> hindi.title, hindi.given
+    ('Shri', 'Ravi')
+
+``Sushri`` opens an Odia given name (``Sushri Sangita``) more often
+than it is the title, so it stays a name word under the plain choice.
+A strict Hindi choice, which reads no Odia names, reads it as the
+title:
 
 .. doctest::
 
