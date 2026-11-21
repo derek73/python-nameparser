@@ -28,58 +28,58 @@ generation = { issue = 679 }
 
 [[word]]
 text = "alek"
-familiar = { short_for = ["aleksander"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["aleksander"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "alojz"
-familiar = { short_for = ["lojze"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["lojze"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "bora"
-familiar = { short_for = ["borivoje"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["borivoje"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "fani"
-familiar = { short_for = ["frančiška"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["frančiška"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ivan"
-familiar = { short_for = ["ivica"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ivica"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ivo"
-familiar = { short_for = ["ivan"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ivan"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jani"
-familiar = { short_for = ["janez", "jános"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["janez", "jános"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jože"
-familiar = { short_for = ["jožef"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["jožef"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "judit"
-familiar = { short_for = ["jutka"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["jutka"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ljubo"
-familiar = { short_for = ["ljubomir"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ljubomir"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "mirko"
-familiar = { short_for = ["miroslav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["miroslav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "niko"
-familiar = { short_for = ["nikolaj"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["nikolaj"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "stane"
-familiar = { short_for = ["stanislav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["stanislav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "tomo"
-familiar = { short_for = ["tomislav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["tomislav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

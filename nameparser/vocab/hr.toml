@@ -40,38 +40,38 @@ generation = { issue = 661 }
 
 [[word]]
 text = "edo"
-familiar = { short_for = ["eduard"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["eduard"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ivan"
-familiar = { short_for = ["ivica"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ivica"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ivo"
-familiar = { short_for = ["ivan"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ivan"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "jože"
-familiar = { short_for = ["jožef"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["jožef"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ljubo"
-familiar = { short_for = ["ljubomir"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ljubomir"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "mirko"
-familiar = { short_for = ["miroslav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["miroslav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "rafo"
-familiar = { short_for = ["rafael"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["rafael"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "stane"
-familiar = { short_for = ["stanislav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["stanislav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "vlado"
-familiar = { short_for = ["vladimir"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["vladimir"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

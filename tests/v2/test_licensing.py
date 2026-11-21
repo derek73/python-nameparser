@@ -27,15 +27,20 @@ _THIRD_PARTY: dict[str, str] = {}
 
 #: Each source the project measured its own list on, credited as a
 #: courtesy rather than named in the expression (decisions/
-#: shipped-data-licences, FACTS WE MEASURE): its SPDX identifier, the
-#: modules crediting it and the words of the licence's name they credit
-#: it by.
+#: shipped-data-licences, FACTS WE MEASURE): the source and its SPDX
+#: identifier, the files crediting it and the words of the licence's
+#: name they credit it by. Keyed by source, as two sources may share a
+#: licence (Spain's INE and Brazil's TSE both publish under CC BY).
 _CREDITED = {
-    "CC-BY-4.0": (("nameparser/locales/_es_given_names.py",
-                   "nameparser/locales/_es_ar_given_names.py"),
-                  "Creative Commons Attribution 4.0"),
-    "OGDL-Taiwan-1.0": (("nameparser/locales/zh.py",),
-                        "Open Government Data License, version 1"),
+    "INE (CC-BY-4.0)": (("nameparser/locales/_es_given_names.py",
+                         "nameparser/locales/_es_ar_given_names.py"),
+                        "Creative Commons Attribution 4.0"),
+    "Taiwan's Ministry of the Interior (OGDL-Taiwan-1.0)": (
+        ("nameparser/locales/zh.py",),
+        "Open Government Data License, version 1"),
+    # a phrase the INE's line holds too would pass on the INE's alone
+    "TSE (CC-BY)": (("nameparser/vocab/pt-BR.toml",),
+                    "Tribunal Superior Eleitoral (Creative Commons Attribution"),
 }
 
 
@@ -88,9 +93,9 @@ def test_licence_expression_names_nothing_without_a_row() -> None:
 
 
 @needs_checkout
-@pytest.mark.parametrize("spdx", sorted(_CREDITED))
-def test_each_measured_source_is_credited(spdx: str) -> None:
-    modules, credit = _CREDITED[spdx]
+@pytest.mark.parametrize("source", sorted(_CREDITED))
+def test_each_measured_source_is_credited(source: str) -> None:
+    modules, credit = _CREDITED[source]
     section = " ".join(_license_section().split())
     assert " ".join(credit.split()) in section, (
         f"README.rst's License section does not name {credit}")

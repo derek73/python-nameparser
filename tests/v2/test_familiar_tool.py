@@ -314,7 +314,8 @@ def test_a_malformed_review_is_refused(rows: tuple[tuple[str, ...], ...],
 
 def test_the_sources_are_the_ones_whose_counts_the_tree_reproduces() -> None:
     # a widening needs its counting recipe or tool in the tree first
-    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress", "wikidata"}
+    assert tool.REVIEW_SOURCES == {"orcid", "fec", "congress", "wikidata",
+                                   "tse"}
 
 
 @pytest.mark.parametrize("source", sorted(tool.REVIEW_SOURCES))

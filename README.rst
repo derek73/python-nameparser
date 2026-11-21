@@ -329,7 +329,12 @@ the sources whose licences ask for credit are credited:
   and ``_es_ar_given_names.py``;
 - part of ``locales.ZH``'s surnames, selected from Taiwan's Ministry of
   the Interior surname ranking (Open Government Data License, version 1),
-  credited in ``nameparser/locales/zh.py``.
+  credited in ``nameparser/locales/zh.py``;
+- the Brazilian Portuguese familiar forms, measured on the candidate
+  files of Brazil's Superior Electoral Court, the Tribunal Superior
+  Eleitoral (Creative Commons Attribution,
+  https://creativecommons.org/licenses/by/4.0/), credited in
+  ``nameparser/vocab/pt-BR.toml``.
 
 .. |Build Status| image:: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml
