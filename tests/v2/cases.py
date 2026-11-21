@@ -1646,6 +1646,38 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1284)",
          notes="the accepted cost of listing aus: no corpus name has the "
                "shape; read middle 'Aus' 1.4.0 through 3.1"),
+    Case("dis_after_a_comma_reads_the_credential", "Jan Novák, DiS.",
+         {"given": "Jan", "family": "Novák", "suffix": "DiS."},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="cs.toml's DiS, gated by mul.toml's surname Dis (rules/C4 "
+               "after the comma); read title 'DiS.' 1.4.0 through 3.1"),
+    Case("dis_behind_a_title_keeps_the_title_apart", "Bc. Jan Novák, DiS.",
+         {"title": "Bc.", "given": "Jan", "family": "Novák", "suffix": "DiS."},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="read title 'Bc. DiS.' 3.1, title 'DiS.', first "
+               "'Bc. Jan Novák' 1.4.0"),
+    Case("dis_without_its_period_no_longer_reverses_the_name",
+         "Jan Novák, DiS",
+         {"given": "Jan", "family": "Novák", "suffix": "DiS"},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="read given 'DiS', family 'Jan Novák' 1.4.0 through 3.1"),
+    Case("dis_with_no_comma_stays_a_name_word", "Jan Novák DiS.",
+         {"given": "Jan", "middle": "Novák", "family": "DiS."},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: the gated credential written in its own mixed "
+               "case with no comma is read by the count, a name word "
+               "(rules/S4; the mixed-case signal is #1053's), as before"),
+    Case("surname_dis_ending_a_name_keeps_the_family", "Jan Dis",
+         {"given": "Jan", "family": "Dis"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: mul.toml's family reading gates the credential "
+               "(#969); the report is new with it"),
+    Case("drsc_after_a_comma_reads_the_credential", "Jan Novák, DrSc.",
+         {"given": "Jan", "family": "Novák", "suffix": "DrSc."},
+         classification="fix(#969)",
+         notes="DrSc on by default since #969, off until then (read only "
+               "under locales.CS and SK); read title 'DrSc.' 1.4.0 through "
+               "3.1"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          notes="the words-to-spare half: a full name in front leaves the "

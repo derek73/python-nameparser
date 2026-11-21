@@ -124,8 +124,12 @@ text = "starší"
 generation = { issue = 661 }
 
 [[word]]
+text = "dis"
+credential = { issue = 969, expands = "diplomovaný specialista, the Czech tertiary professional diploma, written after the name", note = "cz-candidates: 3,248 of 170,181 Czech election candidates' records hold it in the box after the name (2026-10-30), where a comma before it read it as a title; NPPES 2 (written DIS); ClinicalTrials.gov 1 official, after a comma (data 2026-11-18). The surname Dis is mul.toml's family reading, which gates the credential (rules/S4). No case mask (decided 2026-11-20): a mask applies in every role and would repair the surname to DiS (JAN DIS → Jan DiS), so the credential keeps the case it is written in and capitalized(force=True) writes DIS" }
+
+[[word]]
 text = "drsc"
-credential = { default = false, cased = "DrSc", issue = [753, 848], expands = "doktor věd, Doctor scientiarum, written after the name", note = "16 of ClinicalTrials.gov's 536,981 officials write it, all after a comma (data 2026-10-21)" }
+credential = { cased = "DrSc", issue = [753, 848, 969], expands = "doktor věd, Doctor scientiarum, written after the name", note = "on by default since 2026-11-20 (#969): no name reading (ORCID boxes hold it 5 times, the credential typed into a name box; no Census, SSA or PatentsView bearer), and Czech candidates write it after a comma, where unlisted it read as a title (12 records under the default, 2026-10-30); 16 of ClinicalTrials.gov's 536,981 officials write it, all after a comma (data 2026-10-21)" }
 
 [[word]]
 text = "roz"

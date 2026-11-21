@@ -156,6 +156,10 @@ text = "mohd"
 given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = ["muhammad", "mohamad", "mohammad", "mohammed", "mohamed"], note = "Muhammad written short, in Malaysia, Brunei, Singapore and India: ORCID given boxes 8,594 (Malaysia 2,739, India 1,468), PatentsView 304; US SSA male births; Wikidata is a lower bound (Malaysia 276); written with its period at the head of a name (Mohd. Shameem), it read as a title by the leading-abbreviation shape (#1115). The long spellings it stands for are those written where it is: the first words of Malaysia's ORCID given boxes are muhammad 1,971, mohamad 627, mohammad 433, mohamed 183 and mohammed 164, and muhammed 12, a Turkish spelling (Turkey 2,544) left out (the first word of each ORCID given box by the record's country, 2026-11-14 (decisions/vocabulary-model, 2026-11-14 #1383))" }
 
 [[word]]
+text = "dis"
+family = { note = "the surname Dis: ORCID family boxes 14 (BR, CZ, FI, NL, US 1 each), given boxes 6; PatentsView family boxes 6 (US 4, NL 2); US Census 2010 under 100 and SSA under 5 a year (2026-11-20). It gates cs.toml's and sk.toml's credential DiS, so a name ending in the surname keeps it (rules/S4), #969" }
+
+[[word]]
 text = "kaur"
 family = { shared = true, us_census_2010 = 48753, wikidata = 204, as_of = 2026-11-03, native = "ਕੌਰ", gender = "f", note = "the name every Sikh woman is given, written after her personal name and before a family name where she has one (Harpreet Kaur Dhillon): in mul.toml so every choice of languages keeps it; UK PSC filers put it in the middle-name box 2,354 times (2,264 as its only word), the whole surname box 674 and the forename box 25; ORCID holders whose family box holds another surname put it in the given box 69 times and open the family box with it 3 (2026-11-03, #704). Wikidata is a lower bound" }
 
