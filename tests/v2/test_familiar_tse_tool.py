@@ -64,6 +64,9 @@ def _pair(civil: str, ballot: str) -> tuple[str, str] | None:
     ("PAULO SILVA", "SILVA PAULINHO", ("paulinho", "paulo")),
     # a particle in the civil name takes no given-word place
     ("MARIA DAS GRAÇAS SOUZA", "GRACINHA", ("gracinha", "graças")),
+    # a family name that is no name word still ends the name
+    ("JOÃO CARLOS D'ÁVILA", "CARLINHOS", ("carlinhos", "carlos")),
+    ("JOÃO CARLOS WAN-DALL", "CARLINHOS", ("carlinhos", "carlos")),
     # edge punctuation and a quote the court's cp1252 writes
     ("PAULO SILVA", '"PAULINHO"', ("paulinho", "paulo")),
     ("PAULO SILVA", "\u201cPAULINHO\u201d", ("paulinho", "paulo")),
@@ -148,8 +151,30 @@ def test_a_member_too_much_of_which_is_unread_is_refused(bad: str, ok: int) -> N
 
 
 def test_a_member_of_no_named_candidate_is_refused() -> None:
-    with pytest.raises(ValueError):
-        tool.read_member(_member(*_rows(3, '"{i}";"#NULO#";"X";"-4";"{v}"')), "2024")
+    # a header alone, and one nameless row, which the nameless share lets
+    # pass: no person is read
+    for body in (_member(), _member('"1";"#NULO#";"X";"-4";"012345678901"')):
+        with pytest.raises(ValueError, match="no candidate"):
+            tool.read_member(body, "2024")
+
+
+def test_a_persons_second_pair_of_names_in_a_year_is_kept() -> None:
+    records, counts = tool.read_member(_member(
+        '"1";"PAULO SILVA";"PAULINHO";"-4";"012345678901"',
+        '"2";"PAULO SILVA";"PAULÃO";"-4";"012345678901"'), "2024")
+    assert sorted(r["ballot"] for r in records) == ["PAULINHO", "PAULÃO"]
+    assert counts["people"] == 1
+
+
+def test_the_records_no_pair_came_from_are_counted_by_reason() -> None:
+    records = [{"civil": "PAULO SILVA", "ballot": "PAULO", "person": "1"},
+               {"civil": "PAULO SILVA", "ballot": "2024", "person": "2"},
+               {"civil": "PEDRO CASTRO", "ballot": "CASTRINHO", "person": "3"},
+               {"civil": "PAULO SILVA", "ballot": "PAULINHO", "person": "4"}]
+    mined = tool.mine(records, _TITLES, _PARTICLES)
+    assert mined.dropped == {"no ballot word outside the civil name": 1,
+                             "the ballot word no name word": 1,
+                             "the civil word no given word": 1}
 
 
 @pytest.mark.parametrize("row, kind", [
@@ -185,6 +210,13 @@ def test_a_kept_reading_is_named_by_its_zip_and_checked_whole(
     assert [r["ballot"] for r in records] == ["PAULINHO"]
     (kept,) = tmp_path.glob("candidates_2024_*_v*.jsonl")
     assert tool.fetch("2024", tmp_path, offline=True) == records
+    # a republished zip is read again, not answered from the old reading
+    with zipfile.ZipFile(tmp_path / "consulta_cand_2024.zip", "w") as archive:
+        archive.writestr(member, _member(
+            '"1";"ANA LIMA";"ANINHA";"-4";"012345678902"').getvalue().encode("latin-1"))
+    assert [r["ballot"] for r in tool.fetch("2024", tmp_path, offline=True)] == ["ANINHA"]
+    kept.unlink()
+    (kept,) = tmp_path.glob("candidates_2024_*_v*.jsonl")
     kept.write_text(kept.read_text("utf-8").splitlines()[0] + "\n", "utf-8")
     with pytest.raises(SystemExit, match="delete it"):
         tool.fetch("2024", tmp_path, offline=True)

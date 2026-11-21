@@ -346,7 +346,7 @@ BYNAME_PEOPLE = 10
 #: about as often as they are borne (`irmão` / `josé` 1.2, `dona` /
 #: `maria` 3.7, `dona` naming women alone); a familiar form of several
 #: names concentrates on each (`zé` / `josé` 9.7, `beto` / `roberto`
-#: 13.5); measured 2026-11-20, decisions/name-matching 2026-11-20 #1495.
+#: 13.7); measured 2026-11-20, decisions/name-matching 2026-11-20 #1495.
 MIN_LIFT = 5.0
 #: The people a byname's pair kept by its lift needs: a byname beside a
 #: rarer name clears MIN_LIFT too (`dona` / `tereza` 5.3, 32 people), and
@@ -363,11 +363,14 @@ def _given(civil: str, particles: frozenset[str]) -> list[str]:
 
 def given_words(civil: str, particles: frozenset[str]) -> list[str]:
     """The civil name's given words a pair may name: its first
-    GIVEN_WORDS name words that are no particle, a word counting only
-    where another follows it, the last being the family name
-    (`PEDRO CASTRO` names Pedro alone, `MARIA DA SILVA` Maria)."""
-    names = _given(civil, particles)
-    return names[:min(GIVEN_WORDS, max(1, len(names) - 1))]
+    GIVEN_WORDS name words that are no particle, before its last word
+    that is no particle, the family name, whatever its shape (`PEDRO
+    CASTRO` names Pedro alone, `MARIA DA SILVA` Maria, `JOÃO CARLOS
+    D'ÁVILA` João and Carlos, though `D'ÁVILA` is no name word); a name
+    of one such word names it."""
+    toks = [w for w in words(civil) if build._normalize(w) not in particles]
+    head = toks[:-1] if len(toks) > 1 else toks
+    return [w for w in head if _name_word(w)][:GIVEN_WORDS]
 
 
 def pair_of(civil: str, ballot: str, titles: frozenset[str],
