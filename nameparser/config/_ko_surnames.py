@@ -22,6 +22,9 @@ KOREAN_SURNAMES = frozenset({
     "옥", "육", "인", "맹", "제", "모", "탁", "국", "은", "편",
     "용", "예", "경", "봉", "사", "부", "가", "복", "태", "목",
     "형", "계", "피", "두",
+    # past the cut, each a borne surname whose names stayed whole
+    # without it (#1215; decisions/W1, 2026-11-20)
+    "어", "라",
     # the two-syllable surnames in current use (census-complete);
     # longest-first matching splits 남궁민수 as 남궁+민수, not 남+궁민수
     "남궁", "황보", "제갈", "사공", "선우", "서문", "독고", "동방",
@@ -32,8 +35,10 @@ Korean surnames (#271), used by the 2.0 API's unspaced-name
 segmentation (``Lexicon.default().surnames``): a hangul token like
 "김민준" splits into surname + given name by longest match. This ships
 as DEFAULT vocabulary because it is self-selecting -- a hangul entry
-can only ever match hangul text -- and hangul text is unambiguously
-Korean. Chinese surnames deliberately live in ``nameparser.locales.zh``
+can only ever match hangul text -- and hangul text is read as
+Korean, a foreign name written in hangul that opens with a listed
+surname being the accepted cost (decisions/W1, 2026-11-20 #1215;
+docs/east-asian.rst shows how to remove one). Chinese surnames deliberately live in ``nameparser.locales.zh``
 instead (Han segmentation is opt-in; a zh list corrupts Japanese kanji
 names).
 

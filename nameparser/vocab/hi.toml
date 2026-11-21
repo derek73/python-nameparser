@@ -10,7 +10,7 @@ excluded = { salutation = { reason = "Miss, the romanized कुमारी, wh
 
 [[word]]
 text = "shri"
-excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot: it opens given names, alone or written in two words (Shri Kant, Shri Lakshmi), 198 of ORCID's given boxes doing so, 52 of them holding it alone (its 2025 extract, 2026-10-30); nam_dict band 2 in India; Wikidata 7 given (2026-10-30). Turned on for Hindi and Bengali it broke 20 filed names and fixed none (decisions/vocabulary-model, the 2026-10-30 phase 3e entry)", issue = [345, 753], decided = 2026-10-30 } }
+salutation = { default = false, gender = "m", issue = [345, 753, 1192], expands = "Shri, Mr., the romanized श्री", note = "on only under a Hindi choice, reversing its 2026-10-30 exclusion (decisions/vocabulary-model, 2026-11-20 #1192): the salutation before 2,244 of in_sansad's 10,650 spellings (opensanctions-parliaments, 2026-11-20); borne as a given name, opening ORCID's given boxes 198 times, 52 of them alone (Shri Kant, Shri Lakshmi; its 2025 extract, 2026-10-30), nam_dict band 2 in India, Wikidata 7 given (2026-10-30), which read title Shri under the pack, an accepted cost (Verma, Shri gives no given name): 20 filed records broken (fec-individuals 9, orcid-researchers 5, patentsview-inventors 4, psc-individuals 2) and 4 nepal-candidates names whose Devanagari is the one word श्रीनारायण (2026-11-20)", excluded = { after_given = "borne as a given name, so where it ends the given part it may be one (rules/H8); the Lok Sabha roll writes no Family, Given Shri, and with the property 2 names read worse (decisions/vocabulary-model, 2026-11-20 #1192)" } }
 
 [[word]]
 text = "shrimati"
@@ -51,7 +51,7 @@ excluded = { salutation = { reason = "Begum is a trailing name element far more 
 
 [[word]]
 text = "श्री"
-salutation = { gender = "m", issue = [269, 870], expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml); borne as a given name: Wikidata 1 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9). The Nepali given-name element is ne.toml's reading, off by default: nepal-candidates opens 216 Devanagari names with a spaced श्री (one written श्री.), romanized as a name word in 202 (Shree 194, Shri 6, Sri 2) and as Mr in 3 (Mr. twice, the glued Mr.Chatra once), a cost the default accepts for the Hindi, Marathi and Konkani salutation (rules/H9, #870, 2026-11-03)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
+salutation = { gender = "m", issue = [269, 870], expands = "Shri, Mr.", note = "no Latin twin by default: Latin sri is a given name (its exclusion in hi.toml), and shri is a twin only under a Hindi choice, its reading written default = false (#1192); borne as a given name: Wikidata 1 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9). The Nepali given-name element is ne.toml's reading, off by default: nepal-candidates opens 216 Devanagari names with a spaced श्री (one written श्री.), romanized as a name word in 202 (Shree 194, Shri 6, Sri 2) and as Mr in 3 (Mr. twice, the glued Mr.Chatra once), a cost the default accepts for the Hindi, Marathi and Konkani salutation (rules/H9, #870, 2026-11-03)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
 
 [[word]]
 text = "श्रीमती"
@@ -99,7 +99,7 @@ academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and o
 
 [[word]]
 text = "डॉ"
-academic = { issue = 269, expands = "Dr., abbreviated", note = "डॉ. matches through the edge-period normalization, as Latin Dr. does; no Latin twins, for the reason the sri/shri exclusions in hi.toml give" }
+academic = { issue = 269, expands = "Dr., abbreviated", note = "डॉ. matches through the edge-period normalization, as Latin Dr. does; no Latin twins, for the reason the sri exclusion and shri's default = false reading in hi.toml give" }
 
 [[word]]
 text = "डॉक्टर"

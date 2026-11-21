@@ -122,6 +122,11 @@ given = { note = "declared on the conservative default (decisions/vocabulary-col
 preposition = { issue = 18, expands = "van de contracted: \"Vande Casteele\"" }
 
 [[word]]
+text = "vanden"
+given = { us_ssa = 154, as_of = 2026-11-20, note = "male births only; Wikidata lists no given-name bearer" }
+preposition = { issue = 1239, expands = "van den contracted", note = "read as vander is: Pieter Vanden Broeck reads family Vanden Broeck, Vanden Broeck Pieter reports PARTICLE_OR_GIVEN under a family-first order. Scored against the filed boxes: ORCID 41 records fixed, none broken; PatentsView 22 fixed, 7 broken (Belgian names whose filer boxed Vanden with the given name); PSC 6 fixed, 2 broken (British names whose filers boxed Vanden as a middle name) (2026-11-20). Case repair writes it in lower case, as it writes vander and vande; Wikidata 6 family (France 2)" }
+
+[[word]]
 text = "vander"
 given = { us_ssa = 1828, wikidata = 18, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound" }
 preposition = { expands = "van der contracted" }

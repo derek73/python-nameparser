@@ -379,7 +379,7 @@ def test_hi_and_bn_pack_contents() -> None:
     assert locales.BN == Locale(code="bn", lexicon=Lexicon.empty(),
                                 languages=frozenset({"bn"}))
     assert changed_words(selected(locales.HI.languages)) == {
-        "shrimati", "shriyut", "smt", "sushri"}
+        "shri", "shrimati", "shriyut", "smt", "sushri"}
     assert changed_words(selected(locales.BN.languages)) == {
         "adhyapak", "shrimati", "smt"}
 
@@ -397,11 +397,18 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
         # after a family comma, a salutation ending the given part is the
         # title (rules/H8), as its Devanagari spelling is
         assert packed.parse("Sitharaman, Nirmala Smt").title == "Smt"
-        # shri is left out (decisions/vocabulary-model, phase 3e): the
-        # given names written in two words that open with it keep it
-        assert packed.parse("Shri Kant Tripathi").as_dict() == parse(
-            "Shri Kant Tripathi").as_dict()
         assert packed.parse("Sushri Sangita Behera").given == "Sushri"
+    # shri is the title under hi alone (decisions/vocabulary-model,
+    # 2026-11-20 #1192); a given name written in two words that opens
+    # with it loses it there, the accepted cost, and bn leaves it alone
+    assert hi.parse("Shri Ravi Kumar Verma").title == "Shri"
+    assert (hi.parse("Shri Kant Tripathi").title,
+            hi.parse("Shri Kant Tripathi").given) == ("Shri", "Kant")
+    assert bn.parse("Shri Kant Tripathi").as_dict() == parse(
+        "Shri Kant Tripathi").as_dict()
+    # sri stays excluded under the pack
+    assert hi.parse("Sri Ravi Kumar").given == "Sri"
+
     # adhyapak is a title only at the head and only under bn; the Marathi
     # family name ending a name keeps its place
     assert bn.parse("Adhyapak Anisuzzaman Khan").title == "Adhyapak"
@@ -409,6 +416,29 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
     assert hi.parse("Adhyapak Anisuzzaman Khan").title == ""
     assert hi.parse("Shriyut Ram Prasad").title == "Shriyut"
     assert bn.parse("Shriyut Ram Prasad").title == ""
+
+
+def test_shri_peels_before_a_declared_order_lays_out_the_rest() -> None:
+    # #1192: the title is read first under every order, so a family-first
+    # caller's name words keep their declared places behind it, and a
+    # strict choice reads shri as the plain one does (no other file reads
+    # the word, so strict has nothing to gate)
+    for order, expect in (
+            (GIVEN_FIRST, ("Ravi", "Kumar", "Verma")),
+            (FAMILY_FIRST, ("Kumar", "Verma", "Ravi")),
+            (FAMILY_FIRST_GIVEN_LAST, ("Verma", "Kumar", "Ravi"))):
+        for strict in (False, True):
+            packed = parser_for(locales.HI, strict=strict,
+                                base=Parser(policy=Policy(name_order=order)))
+            name = packed.parse("Shri Ravi Kumar Verma")
+            assert (name.title, name.given, name.middle, name.family) == (
+                ("Shri",) + expect), (order, strict)
+            for text in ("Shri Verma", "Verma, Shri Ravi"):
+                assert packed.parse(text).title == "Shri", (text, order)
+            assert packed.parse("Verma, Shri Ravi").given == "Ravi"
+            # not written after_given (rules/H8): bare, it ends the given
+            # part as a middle name
+            assert packed.parse("Verma, Ravi Shri").middle == "Shri"
 
 
 def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
@@ -2419,9 +2449,9 @@ _ROTATORS["ms"] = [
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
 # listed title, after a family comma and before one (rules/H6); a dotted
-# one where it ends the given part after a family comma (rules/H8) or
-# ends the name (rules/H5), rules/H2's shape already reading it as a
-# title at the head by default.
+# one where it ends the given part after a family comma or ends the name
+# (rules/H5's trailing vocabulary), rules/H2's shape already reading it
+# as a title at the head by default.
 _ROTATORS["hi"] = [
     "Shrimati Indira Gandhi",        # shrimati at the head
     "SHRIMATI INDIRA GANDHI",        # shrimati, in one case
@@ -2439,6 +2469,14 @@ _ROTATORS["hi"] = [
     "Shrimati Gandhi, Indira",       # shrimati before a family comma (H6)
     "Smt. Sitharaman, Nirmala",      # smt, dotted, before a family comma
     ", Nirmala Smt.",                # smt, dotted, after an empty head
+    "Shri Ravi Kumar Verma",         # shri at the head
+    "SHRI RAVI KUMAR",               # shri, in one case
+    "Dr. Shri Ravi Kumar",           # shri behind a listed title
+    "Verma, Shri Ravi",              # shri after a family comma
+    "Verma, Ravi Shri.",             # shri, dotted, ending the given part
+    "Shri Verma, Ravi",              # shri before a family comma (H6)
+    "Ravi Kumar Shri.",              # shri, dotted, ending the name (H5)
+    ", Ravi Shri.",                  # shri, dotted, after an empty head
     # sushri: or.toml's Odia given name gates it under the plain choice,
     # so it is a title only inside a title phrase, a style's partner
     # (rules/H9); at the head, behind Dr. and after a family comma it
@@ -3643,9 +3681,10 @@ def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
     ("הרב משה פיינשטיין שליט״א", "title", "הרב"),
     # Devanagari (hi/mr) titles -- a new #269 script: श्री/श्रीमती are
     # the Mr./Mrs. analogs, डॉ the Dr. abbreviation (edge-period
-    # normalization makes "डॉ." match too). NO Latin twins on purpose:
+    # normalization makes "डॉ." match too). NO Latin twins by default:
     # transliterated sri/shri collide with real given names (Sri
-    # Mulyani); the native script cannot.
+    # Mulyani); the native script cannot. Shri is one under locales.HI
+    # alone (#1192).
     ("श्री राम शर्मा", "title", "श्री"),
     ("श्रीमती सीता शर्मा", "title", "श्रीमती"),
     ("डॉ राम शर्मा", "title", "डॉ"),

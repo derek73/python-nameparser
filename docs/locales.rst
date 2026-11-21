@@ -44,7 +44,8 @@ Native-script entries are safe to enable by default precisely because
 they cannot collide with Latin-script names. That rules out the
 reverse: transliterations like ``sri``/``shri`` are *not* in the
 default vocabulary, because they are also ordinary given names in
-Latin script. The same conservatism holds back a handful of native
+Latin script (``locales.HI`` turns ``shri`` on, for data where it is
+the salutation). The same conservatism holds back a handful of native
 entries that collide within their own script — bare ``سيد`` and
 ``شيخ`` (common given names) and Hebrew ``רב`` (an ordinary word).
 
@@ -279,7 +280,7 @@ says which parts each pack is made of.
    * - ``hi``
      - Hindi: romanized titles
      - Chooses ``hi``, which reads the romanized salutations ``Smt``
-       and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.) as titles, where
+       and ``Shrimati`` (Mrs.) and ``Shri`` and ``Shriyut`` (Mr.) as titles, where
        the default reads a name word. See :ref:`Romanized Indic titles
        <romanized-indic-titles>`.
      - ``Shrimati Indira Gandhi`` → title ``Shrimati``

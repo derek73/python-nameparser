@@ -498,6 +498,10 @@ text = "adm"
 military = { same_as = "admiral" }
 
 [[word]]
+text = "air-marshal"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
 text = "amn"
 military = { expands = "Airman" }
 
@@ -523,6 +527,10 @@ military = { same_as = "brigadier", abbreviation = true, attaches = ["gen", "gen
 given = { us_ssa = 72, as_of = 2026-11-03, note = "a rare given name: US SSA 72 births; PatentsView inventors 12 (US 11), ORCID given boxes 11 (India 3, likely the rank typed into the box); Wikidata none found; nam_dict not listed" }
 
 [[word]]
+text = "brigadier-general"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
 text = "captain"
 military = {}
 
@@ -538,6 +546,10 @@ credential = {}
 [[word]]
 text = "ccmsgt"
 military = { expands = "Command Chief Master Sergeant" }
+
+[[word]]
+text = "chief-marshal"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. One of five added after the PR's review (#966, 2026-11-20): govuk-people 0 of 6,021 and ukec-individuals 0 of 15,214 names move; no source tools/name_usage.py reads has a bearer of it" }
 
 [[word]]
 text = "cmsaf"
@@ -635,6 +647,10 @@ text = "fadm"
 military = { expands = "Fleet Admiral" }
 
 [[word]]
+text = "field-marshal"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. One of five added after the PR's review (#966, 2026-11-20): govuk-people 0 of 6,021 and ukec-individuals 0 of 15,214 names move; no source tools/name_usage.py reads has a bearer of it" }
+
+[[word]]
 text = "gaf"
 military = { expands = "General of the Air Force" }
 
@@ -674,6 +690,18 @@ military = { same_as = "lieutenant", attaches = ["gen"], note = "attaches: Lt Ge
 credential = {}
 
 [[word]]
+text = "lieutenant-colonel"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
+text = "lieutenant-commander"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. One of five added after the PR's review (#966, 2026-11-20): govuk-people 0 of 6,021 and ukec-individuals 0 of 15,214 names move; no source tools/name_usage.py reads has a bearer of it" }
+
+[[word]]
+text = "lieutenant-general"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
 text = "ltc"
 military = { expands = "Lieutenant Colonel" }
 
@@ -704,6 +732,10 @@ text = "major"
 military = { issue = 752, decided = 2026-10-25, attaches = ["gen", "general"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General, and since #999 Major Gen" }
 given = { us_ssa = 21749, wikidata = 65, as_of = 2026-10-25, note = "US SSA: female and male births added" }
 family = { us_census_2010 = 20977, wikidata = 400, as_of = 2026-10-25 }
+
+[[word]]
+text = "major-general"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
 
 [[word]]
 text = "marshal"
@@ -788,6 +820,10 @@ text = "rdml"
 military = { same_as = "radm" }
 
 [[word]]
+text = "rear-admiral"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
 text = "sa"
 family = { us_census_2010 = 1600, wikidata = 182, as_of = 2026-10-24, note = "The Census writes no diacritics, so its 1,600 is Sa and Sá together (37.88% Asian/PI, so much of it is Korean, Chinese or Vietnamese Sa); Wikidata is a lower bound: 110 as Sá (Portugal, Brazil) plus 72 as Sa" }
 given = { us_ssa = 73, wikidata = 2, as_of = 2026-10-24, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 (banded in 3 countries: Korea, Vietnam, China)" }
@@ -804,6 +840,10 @@ military = { attaches = ["maj", "major"], issue = 752, decided = 2026-10-26, not
 [[word]]
 text = "sgt"
 military = { attaches = ["maj", "major"], issue = 752, decided = 2026-10-26, note = "attaches: Sergeant Major (rules/H9), and since #999 Sgt Maj; a word, not the military kind, which made Sgt Marshal Smith a title", same_as = "sergeant" }
+
+[[word]]
+text = "sergeant-major"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. One of five added after the PR's review (#966, 2026-11-20): govuk-people 0 of 6,021 and ukec-individuals 0 of 15,214 names move; no source tools/name_usage.py reads has a bearer of it" }
 
 [[word]]
 text = "sfc"
@@ -857,6 +897,18 @@ military = { expands = "Technical Sergeant" }
 [[word]]
 text = "vadm"
 military = { expands = "Vice Admiral" }
+
+[[word]]
+text = "vice-admiral"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): no local corpus name moves on this word (govuk-people's 6 moves are all vice-marshal); no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
+text = "vice-marshal"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. Measured with the other seven hyphenated ranks (#966, 2026-11-20): govuk-people 6 of 6,021 names gain a title, every one Air Vice-Marshal, the word they moved on; ukec-individuals 0 of 15,214 move; no source tools/name_usage.py reads has a bearer of any of the eight" }
+
+[[word]]
+text = "wing-commander"
+military = { issue = 966, note = "the rank written with its hyphen, which tokenize keeps inside one word, so the spaced rank's phrase never reaches it. One of five added after the PR's review (#966, 2026-11-20): govuk-people 0 of 6,021 and ukec-individuals 0 of 15,214 names move; no source tools/name_usage.py reads has a bearer of it" }
 
 [[word]]
 text = "wo1"
