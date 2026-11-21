@@ -2318,7 +2318,13 @@ def test_a_mixed_case_credential_is_kept_as_written_when_forced() -> None:
             ("Jane Smith, MRE\u0301s", "Jane Smith, MRE\u0301s"),
             ("Smith, M.B. ChB", "Smith, M.B. ChB"),
             ("Smith, J.P. AUD", "Smith, J.P. AUD"),
-            ("Ashley Knight, M.S. BME", "Ashley Knight, M.S. BME")):
+            ("Ashley Knight, M.S. BME", "Ashley Knight, M.S. BME"),
+            # behind a generation where a title stands before the
+            # surname, C12 reads it and the count marks nothing (#1517's
+            # fix review)
+            ("Dr. Smith Jr., AuD", "Dr. Smith Jr., AuD"),
+            ("Dr. Smith III, MScPT", "Dr. Smith III, MScPT"),
+            ("Dr. Smith Jr., AD", "Dr. Smith Jr., AD")):
         assert str(parse(text).capitalized(force=True)) == rendered, text
         assert str(parse(text).capitalized()) == rendered, text
     # a word written as a name is, read as the given name, still repairs

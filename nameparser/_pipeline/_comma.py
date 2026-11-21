@@ -1060,6 +1060,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                             and (text.isupper()
                                  and (text.isalpha() or "-" in text
                                       or "/" in text)
+                                 # the mixed case C12 reads where the
+                                 # count marked nothing ('Dr. Smith
+                                 # Jr., AuD', #1517)
+                                 or not text.islower()
+                                 and not text.istitle()
+                                 and is_mixed_caps_word(text)
                                  or not unicodedata.is_normalized(
                                      "NFC", text) and is_caps_word(text))):
                         caps.add(i)
