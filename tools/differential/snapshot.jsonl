@@ -2827,7 +2827,6 @@
 {"name": "Kőrösi, Albin", "given": "Albin", "family": "Kőrösi", "initials": "A. K."}
 {"name": "L'Aubespine, François de", "given": "François", "family": "de L'Aubespine", "initials": "F. L."}
 {"name": "L. U. P. O.", "given": "L.", "middle": "U. P.", "family": "O.", "initials": "L. U. P. O."}
-{"name": "L.C.P. Ana Ruiz Paz", "title": "L.C.P.", "given": "Ana", "middle": "Ruiz", "family": "Paz", "initials": "A. R. P."}
 {"name": "LAKSHMI R S", "given": "LAKSHMI", "middle": "R", "family": "S", "ambiguities": ["ORDER"], "initials": "L. R. S.", "capitalized": "Lakshmi R S"}
 {"name": "LE GRAND Hugo", "given": "LE", "middle": "GRAND", "family": "Hugo", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "L. G. H.", "capitalized_force": "Le Grand Hugo"}
 {"name": "LEED AP", "given": "LEED", "family": "AP", "initials": "L. A.", "capitalized": "Leed Ap"}
