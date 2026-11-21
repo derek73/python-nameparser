@@ -7,6 +7,7 @@
 - A pair declared for both maiden and nickname names reads maiden, the overlap canonicalized out of the effective nickname set before parsing and through `apply_patch` too, silently — 2026-07-18.
 - The marker word inside a declared clause is dropped where the clause holds a word past the marker run (`Jane Smith (née Jones)` → maiden 'Jones'), and a clause of nothing but its marker keeps its words, Nee being an attested surname (`Jane Smith (Nee)` → maiden 'Nee') — 2026-08-04 #329; 2026-08-26 #434.
 - Clauses are independent, each dropping or keeping its own marker (`Jane Smith (Nee) (Jones)` → maiden 'Nee Jones' under a declared pair), and the contentless `(née —)` alone parses to every field empty and `bool()` False — 2026-08-04 #329.
+- A bracket in the family part before a family comma is not read as the maiden name by default (`Smith (Jones), Jane` reads nickname 'Jones'); a caller declares the pair in `maiden_delimiters` — 2026-11-20 #1375.
 - Neighbour-scoping the drop is declined: it would read `Jane Smith nee Nee Jones` as maiden 'Jones' where it reads 'Nee Jones' — 2026-08-04 #329.
 - A clause of nothing but a phrase marker keeps its words too, so `Maria Kowalska (z domu)` under a declared pair reads maiden 'z domu', a name nobody bears, emitted deliberately because the parser cannot know the pair did not enclose an unfamiliar surname — 2026-08-26 #434.
 
@@ -25,6 +26,8 @@ Open: none in this file.
 - M1 and M2 are disjoint by construction, which is the no-conflict guarantee: M2's walk covers joining structure that role-bearing words never enter, while M1's drop reaches only extracted content. Verified independently at review over 7,775 records: 967 diffs, every one in the maiden field.
 
 Declined:
+
+- 2026-11-20 #1375 — reading a bracket in the family part before a family comma as the maiden name by default (`Smith (Jones), Jane` → maiden 'Jones'). No universal convention writes a maiden name in brackets, so a bracket the writer does not announce is a nickname, unless the caller declares the pair in `maiden_delimiters`, which already reads every shape the issue listed. The comma's position does not settle it: of the 94 FEC names with a bracket before the comma (the 2026 cycle, 1,893,964 distinct names, measured 2026-11-12), about 30 held another surname, about 30 a filer's note or an organization, and the rest nicknames, titles and credentials. A maiden marker is the contrast: a convention the writer states in the name, so it reads as maiden without a declared pair (M3). docs/policy.rst ("Routing a pair to maiden names") and docs/shapes.rst already say so.
 
 - Neighbour-scoping the drop (drop a marker whose next word also reads maiden) — implemented, reviewed and rejected: it also fires on the bare-marker path, eating the surname out of "Jane Smith nee Nee Jones" (maiden "Jones" instead of "Nee Jones"), and it leaks across adjacent clauses. It is the obvious implementation, which is why this entry exists.
 
