@@ -35,12 +35,15 @@ whole and the veto never reads. A word is a
 candidate where at least SHARE of its uses are given-name uses, and the
 candidates are ranked by given uses; the list is the first TOP. Words
 the default vocabulary lists as a particle, a conjunction, a title or a
-suffix, ambiguous readings included, are left out: a list of given
-names has no use for a word whose own vocabulary reading another rule
-weighs (a title that may be a given name, `prince`, reaches O6 as a
-name word and would be vetoed), so the list stays clear of every such
-reading, and the disjointness test in tests/v2/test_es_given_names.py
-holds the shipped list to that. The cutoff and SHARE are measured choices
+suffix, ambiguous particles and suffixes included, are left out: a list
+of given names has no use for a word whose own vocabulary reading
+another rule weighs, so the list stays clear of every such reading, and
+the disjointness test in tests/v2/test_es_given_names.py holds the
+shipped list to that. A title only inside a title phrase
+(`titles_ambiguous`, rules/H9) is not left out: outside its phrase, and
+so in the middle of a name, where O6 reads the list, it is a name word,
+and `Maria Emerita Garcia` holds the given name (decisions/O6,
+2026-11-20, #1476). The cutoff and SHARE are measured choices
 (decisions/O6, 2026-10-30): a change to either is a cutoff change,
 decided against the same per-country measurement.
 
@@ -212,11 +215,13 @@ def n_spellings(ranked: list[str], given: Counter[str],
 def excluded_words() -> set[str]:
     """Every word the default vocabulary reads as a particle, a
     conjunction, a title or a suffix, folded as the list is, less the
-    FOLD_KEPT words."""
+    FOLD_KEPT words. A title only inside a title phrase
+    (`titles_ambiguous`) is a name word where the list is read, so it
+    is not excluded (#1476)."""
     from nameparser import Lexicon
     lex = Lexicon.default()
     pool = (lex._sets.particles | lex._sets.conjunctions | lex._sets.titles
-            | lex._sets.titles_ambiguous | lex._sets.suffix_acronyms | lex._sets.suffix_words)
+            | lex._sets.suffix_acronyms | lex._sets.suffix_words)
     return {fold(w) for entry in pool for w in entry.split()} - FOLD_KEPT
 
 

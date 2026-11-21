@@ -3,7 +3,7 @@ checks on tools/es_given_names.py, which writes it.
 
 The list is generated, not judged word by word, so what a test can hold
 is what no cutoff may change: no word the default vocabulary lists as a
-particle or a title (ambiguous ones too), a suffix or a conjunction -- stricter than the TOML build's check 11, which a
+particle, a title (save one only inside a title phrase, which is a name word where the list is read, #1476), a suffix or a conjunction -- stricter than the TOML build's check 11, which a
 generated list does not pass through and which lets a given reading
 stand beside a title or particle reading, deriving a marker from the
 pair -- every entry in the fold the parse matches by, and the tool's
@@ -12,6 +12,7 @@ which no test touches.
 """
 from __future__ import annotations
 
+import dataclasses
 import importlib.util
 import sys
 import urllib.request
@@ -24,7 +25,8 @@ import pytest
 from tests.checkout import HAS_CHECKOUT, needs_docs
 
 import nameparser
-from nameparser import Lexicon
+from nameparser import (FAMILY_FIRST, GIVEN_FIRST, Lexicon, Parser, Role,
+                         locales, parser_for)
 from nameparser._pipeline._vocab import given_name_key
 from nameparser.locales import _es_ar_given_names, _es_given_names
 
@@ -57,10 +59,13 @@ def _non_name_readings(lexicon: Lexicon) -> dict[str, frozenset[str]]:
     """The default vocabulary's readings of a word as something other
     than a name, each folded as the list is: a particle (ambiguous ones
     too, `del` and `da` among them, which the tool also leaves out), a
-    title (an ambiguous one too), a suffix and a conjunction."""
+    title, a suffix and a conjunction. A title only inside a title
+    phrase (`titles_ambiguous`, rules/H9) is no such reading: in the
+    middle of a name, where O6 reads the list, it is a name word
+    (#1476)."""
     fields = {
         "particle": lexicon._sets.particles,
-        "title": lexicon._sets.titles | lexicon._sets.titles_ambiguous,
+        "title": lexicon._sets.titles,
         "suffix": lexicon._sets.suffix_acronyms | lexicon._sets.suffix_words,
         "conjunction": lexicon._sets.conjunctions,
     }
@@ -81,7 +86,7 @@ def _overlap(names: frozenset[str], lexicon: Lexicon) -> dict[str, set[str]]:
 #: nothing.
 _UNGUARDED_EFFECT = {
     "particle": {"los", "del"},
-    "title": {"dr", "dean"},
+    "title": {"dr"},
     "suffix": {"jr"},
     "conjunction": {"y"},
 }
@@ -122,6 +127,40 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     planted = _es_given_names.GIVEN_NAMES | {"los", "del", "dr", "dean",
                                              "jr", "y"}
     assert _overlap(planted, default) == _UNGUARDED_EFFECT
+
+
+def test_the_tool_keeps_a_title_only_inside_a_phrase_and_no_other() -> None:
+    # #1476: a word the default reads as a title only inside a title
+    # phrase (rules/H9) is a name word in the middle of a name, where O6
+    # reads the list, so the tool does not exclude it; every other
+    # non-name reading it still does, a listed title first among them.
+    excluded = tool.excluded_words()
+    sets = Lexicon.default()._sets
+    assert {"dean", "emerita", "prince"} <= sets.titles_ambiguous
+    assert not {"dean", "emerita", "prince"} & excluded
+    assert {"dr", "prof", "de", "del", "jr", "y"} <= excluded
+
+
+@pytest.mark.parametrize(("order", "text", "expected"), [
+    # given first: the listed word is no first family name
+    (GIVEN_FIRST, "Maria Emerita Garcia",
+     {"given": "Maria", "middle": "Emerita", "family": "Garcia"}),
+    # family first: the listed word second is no second family name
+    (FAMILY_FIRST, "Garcia Emerita Maria",
+     {"given": "Emerita", "middle": "Maria", "family": "Garcia"}),
+    # inside its phrase the word is the title, the list unread
+    (GIVEN_FIRST, "Professor Emerita Garcia",
+     {"title": "Professor Emerita", "family": "Garcia"}),
+])
+def test_es_ar_reads_a_title_only_inside_a_phrase_as_a_given_name(
+        order: tuple[Role, Role, Role], text: str,
+        expected: dict[str, str]) -> None:
+    # #1476: read family 'Emerita Garcia' and 'Garcia Emerita' after #1471
+    pack = parser_for(locales.ES_AR)
+    parser = Parser(lexicon=pack.lexicon,
+                    policy=dataclasses.replace(pack.policy, name_order=order))
+    got = {k: v for k, v in parser.parse(text).as_dict().items() if v}
+    assert got == expected
 
 
 @pytest.mark.parametrize("tag", sorted(_MODULES))

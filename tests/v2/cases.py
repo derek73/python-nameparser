@@ -18148,15 +18148,22 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1471)",
          notes="the phrase holds under a family-first order; read title "
                "'Professor', family 'Emeritus' through 3.1"),
-    Case("emerita_is_no_second_given_name_under_es_ar",
+    Case("emerita_is_a_second_given_name_under_es_ar",
          "Maria Emerita Garcia",
-         {"given": "Maria", "family": "Emerita Garcia"},
+         {"given": "Maria", "middle": "Emerita", "family": "Garcia"},
+         locale="es_ar", classification="fix(#1476)",
+         notes="O6: locales.ES_AR's given-name list holds 'emerita', a "
+               "title only inside a title phrase (rules/H9) and so a name "
+               "word mid-name, where the veto reads; locales.ES's shorter "
+               "list does not, and reads family 'Emerita Garcia'; read "
+               "middle 'Emerita' 3.0.0 through 3.1, family 'Emerita "
+               "Garcia' after #1471"),
+    Case("emerita_inside_its_phrase_stays_a_title_under_es_ar",
+         "Professor Emerita Garcia",
+         {"title": "Professor Emerita", "family": "Garcia"},
          locale="es_ar", classification="fix(#1471)",
-         notes="O6: 'emerita' left locales.ES_AR's given-name list, which "
-               "may hold no word the default vocabulary lists as a title, "
-               "so the "
-               "pack reads it as a first family name, as locales.ES does; "
-               "read middle 'Emerita' 3.0.0 through 3.1"),
+         notes="boundary: the list is read only of a middle name word, so "
+               "H9's phrase takes the word first, the list unread"),
     Case("two_family_names_under_pt_br", "Ana Souza Lima",
          {"given": "Ana", "family": "Souza Lima"},
          locale="pt_br", classification="feat(#1453)",
@@ -22897,7 +22904,9 @@ CASES: tuple[Case, ...] = (
     Case("alias_marker_behind_a_maiden_marker_left_a_word",
          "Jane Smith née @ JJ",
          {"given": "Jane", "family": "Smith", "maiden": "@ JJ"},
-         notes="boundary: master's reading kept"),
+         classification="fix(#274)",
+         notes="boundary: master's reading kept, the maiden marker's "
+               "since 2.0.0 (1.4.0 read middle 'Smith née @', family 'JJ')"),
     Case("alias_marker_ended_by_a_maiden_marker_leaves_the_trailing_run",
          "Rahim Osman @ Jaki Prof. née Smith",
          {"title": "Prof.", "given": "Rahim", "family": "Osman",
