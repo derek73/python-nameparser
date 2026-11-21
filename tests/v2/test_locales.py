@@ -408,6 +408,7 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
         "Shri Kant Tripathi").as_dict()
     # sri stays excluded under the pack
     assert hi.parse("Sri Ravi Kumar").given == "Sri"
+
     # adhyapak is a title only at the head and only under bn; the Marathi
     # family name ending a name keeps its place
     assert bn.parse("Adhyapak Anisuzzaman Khan").title == "Adhyapak"
@@ -415,6 +416,26 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
     assert hi.parse("Adhyapak Anisuzzaman Khan").title == ""
     assert hi.parse("Shriyut Ram Prasad").title == "Shriyut"
     assert bn.parse("Shriyut Ram Prasad").title == ""
+
+
+def test_shri_peels_before_a_declared_order_lays_out_the_rest() -> None:
+    # #1192: the title is read first under every order, so a family-first
+    # caller's name words keep their declared places behind it, and a
+    # strict choice reads shri as the plain one does (no other file reads
+    # the word, so strict has nothing to gate)
+    for order, expect in (
+            (GIVEN_FIRST, ("Ravi", "Kumar", "Verma")),
+            (FAMILY_FIRST, ("Kumar", "Verma", "Ravi")),
+            (FAMILY_FIRST_GIVEN_LAST, ("Verma", "Kumar", "Ravi"))):
+        for strict in (False, True):
+            packed = parser_for(locales.HI, strict=strict,
+                                base=Parser(policy=Policy(name_order=order)))
+            name = packed.parse("Shri Ravi Kumar Verma")
+            assert (name.title, name.given, name.middle, name.family) == (
+                ("Shri",) + expect), (order, strict)
+            for text in ("Shri Verma", "Verma, Ravi Shri"):
+                assert packed.parse(text).title == "Shri", (text, order)
+            assert packed.parse("Verma, Ravi Shri").given == "Ravi"
 
 
 def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
@@ -2451,6 +2472,8 @@ _ROTATORS["hi"] = [
     "Verma, Shri Ravi",              # shri after a family comma
     "Verma, Ravi Shri",              # shri ending the given part (H8)
     "Shri Verma, Ravi",              # shri before a family comma (H6)
+    "Ravi Kumar Shri.",              # shri, dotted, ending the name (H5)
+    ", Ravi Shri.",                  # shri, dotted, after an empty head
     # sushri: or.toml's Odia given name gates it under the plain choice,
     # so it is a title only inside a title phrase, a style's partner
     # (rules/H9); at the head, behind Dr. and after a family comma it

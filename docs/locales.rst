@@ -280,7 +280,7 @@ says which parts each pack is made of.
    * - ``hi``
      - Hindi: romanized titles
      - Chooses ``hi``, which reads the romanized salutations ``Smt``
-       and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.) as titles, where
+       and ``Shrimati`` (Mrs.) and ``Shri`` and ``Shriyut`` (Mr.) as titles, where
        the default reads a name word. See :ref:`Romanized Indic titles
        <romanized-indic-titles>`.
      - ``Shrimati Indira Gandhi`` → title ``Shrimati``
