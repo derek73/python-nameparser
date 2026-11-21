@@ -936,7 +936,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: is read against (the acronyms and their ambiguous set twice, as
 #: stored and without their stops), and 213 -> 214 the same day, the
 #: given names written short it reads as names first (`Md.`).
-_UNGUARDED_READS = {"library": 214, "tools": 35}
+_UNGUARDED_READS = {"library": 214, "tools": 34}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
