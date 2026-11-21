@@ -1419,8 +1419,9 @@ lower case under the choice (``JEAN DUPONT-DIT-LEBRUN`` gives ``Jean
 Dupont-dit-Lebrun``).
 
 The connective joins one word on each side, so a surname whose second
-half opens with a particle, in any language, is split where the name
-has no comma: written given name first, the particle goes to the middle
+half opens with a particle, in any language, is split unless a family
+comma follows it (a suffix comma does not keep it): written given name
+first, the particle goes to the middle
 name with the first half (``Jean Dupont dit de Lebrun`` gives family
 ``Lebrun``, ``Karim Haddad dit Abou Nasr`` family ``Nasr``; of a run
 such as ``de la`` only the first word), and under a family-first order
