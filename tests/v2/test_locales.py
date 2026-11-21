@@ -188,6 +188,103 @@ def test_nl_reads_a_leading_ten_by_its_given_reading_unless_strict(
                for a in name.ambiguities) is reported
 
 
+_FRENCH = Locale(code="fr", lexicon=Lexicon.empty(),
+                 languages=frozenset({"fr"}))
+
+
+@pytest.mark.parametrize(("text", "default", "french"), [
+    # #1159: dit and dite are connectives under a French choice only
+    # (fr.toml, default = false; decisions/P3)
+    ("Jean Dupont dit Lebrun", ("Jean", "Dupont dit", "Lebrun"),
+     ("Jean", "", "Dupont dit Lebrun")),
+    ("Marie Martin dite Mimi", ("Marie", "Martin dite", "Mimi"),
+     ("Marie", "", "Martin dite Mimi")),
+    ("Mamadou dit Madou Traore", ("Mamadou", "dit Madou", "Traore"),
+     ("Mamadou dit Madou", "", "Traore")),
+    ("JEAN DUPONT DIT LEBRUN", ("JEAN", "DUPONT DIT", "LEBRUN"),
+     ("JEAN", "", "DUPONT DIT LEBRUN")),
+    ("Dupont dit Lebrun, Jean", ("Jean", "", "Dupont dit Lebrun"),
+     ("Jean", "", "Dupont dit Lebrun")),
+    ("Traore, Mamadou dit Madou", ("Mamadou", "dit Madou", "Traore"),
+     ("Mamadou dit Madou", "", "Traore")),
+    (", Jean dit Lebrun", ("Jean", "dit Lebrun", ""),
+     ("Jean dit Lebrun", "", "")),
+    # a hyphenated dit name is one word, and dit opening a two-word name
+    # a name word
+    ("Jean Dupont-dit-Lebrun", ("Jean", "", "Dupont-dit-Lebrun"),
+     ("Jean", "", "Dupont-dit-Lebrun")),
+    ("Dit Clapper", ("Dit", "", "Clapper"), ("Dit", "", "Clapper")),
+    # the choice's costs, decisions/P3: a name Dit inside a three-word
+    # name, opening a longer one, or ending one; a suffix comma after a
+    # joined family leaves no family word
+    ("Sok Dit Chan", ("Sok", "Dit", "Chan"), ("Sok Dit Chan", "", "")),
+    ("Dit Jean Dupont", ("Dit", "Jean", "Dupont"), ("Dit Jean", "", "Dupont")),
+    ("Tran Thi Dit", ("Tran", "Thi", "Dit"), ("Tran", "", "Thi Dit")),
+    ("Dupont dit Lebrun, Jr.", ("Dupont", "dit", "Lebrun"),
+     ("Dupont dit Lebrun", "", "")),
+    # and a second half opening with a particle loses it to the middle
+    ("Jean Dupont dit de Lebrun", ("Jean", "Dupont dit", "de Lebrun"),
+     ("Jean", "Dupont dit de", "Lebrun")),
+    # after a family comma the surname reads whole
+    ("Dupont dit de Lebrun, Jean", ("Jean", "", "Dupont dit de Lebrun"),
+     ("Jean", "", "Dupont dit de Lebrun")),
+])
+def test_dit_is_a_connective_under_a_french_choice_only(
+        text: str, default: tuple[str, str, str],
+        french: tuple[str, str, str]) -> None:
+    for parser, want in ((Parser(), default), (parser_for(_FRENCH), french)):
+        name = parser.parse(text)
+        assert (name.given, name.middle, name.family) == want, (text, parser)
+
+
+@pytest.mark.parametrize("order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize(("text", "given", "family"), [
+    ("Dupont dit Lebrun Jean", "Jean", "Dupont dit Lebrun"),
+    ("Traore Mamadou dit Madou", "Mamadou dit Madou", "Traore"),
+])
+def test_a_french_choice_lays_a_dit_name_out_by_a_family_first_order(
+        order: tuple[Role, Role, Role], text: str, given: str, family: str) -> None:
+    parser = parser_for(_FRENCH)
+    parser = dataclasses.replace(
+        parser, policy=dataclasses.replace(parser.policy, name_order=order))
+    name = parser.parse(text)
+    assert (name.given, name.middle, name.family) == (given, "", family)
+    # the particle cost's family-first form: the second half leaves the
+    # family (decisions/P3)
+    assert parser.parse("Dupont dit de Lebrun Jean").family == "Dupont dit de"
+
+
+def test_dit_stays_a_connective_when_french_is_stacked_or_strict() -> None:
+    for parser in (parser_for(_FRENCH, locales.ES), parser_for(locales.ES, _FRENCH),
+                   parser_for(_FRENCH, locales.CS), parser_for(_FRENCH, strict=True)):
+        assert parser.parse("Jean Dupont dit Lebrun").family == "Dupont dit Lebrun"
+
+
+def test_a_french_choice_repairs_dit_in_lower_case_and_drops_its_initial_in_a_joined_part() -> None:
+    # decisions/P3's case and initial costs, where Dit is a name
+    french, default = parser_for(_FRENCH), Parser()
+    for text, repaired, initials, as_default in (
+            ("JEAN DUPONT DIT LEBRUN", "Jean Dupont dit Lebrun", "J. D. L.",
+             "Jean Dupont Dit Lebrun"),
+            ("JEAN DUPONT-DIT-LEBRUN", "Jean Dupont-dit-Lebrun", "J. D.",
+             "Jean Dupont-Dit-Lebrun")):
+        name = french.parse(text)
+        assert str(french.capitalized(name)) == repaired
+        assert name.initials() == initials
+        assert str(default.capitalized(default.parse(text))) == as_default
+    # dropped inside a joined part only: alone in its field it keeps one
+    assert french.parse("Sok Dit Chan").initials() == "S. C."
+    assert french.parse("Jean Dit").initials() == "J. D."
+
+
+def test_a_french_choice_matches_a_dit_surname_with_its_halves() -> None:
+    match = parser_for(_FRENCH).matching()
+    for other in ("Jean Dupont", "Jean Lebrun", "Jean Dupont-dit-Lebrun"):
+        assert match.check("Jean Dupont dit Lebrun", other).consistent, other
+    assert not Parser().matching().check(
+        "Jean Dupont dit Lebrun", "Jean Dupont").consistent
+
+
 def test_a_strict_dutch_choice_keeps_a_leading_oude_given() -> None:
     # #1455: oude's given reading is in nl.toml itself, so a strict Dutch
     # choice keeps it, where ten's (in zh.toml) leaves

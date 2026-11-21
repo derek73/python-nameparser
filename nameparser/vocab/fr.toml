@@ -183,6 +183,14 @@ expands = "Sainte, contracted"
 note = "Has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
 
 [[word]]
+text = "dit"
+conjunction = { default = false, issue = 1159, expands = "called (masculine), joining a hereditary two-part surname (Dupont dit Lebrun) or an alias to the given name (Mamadou dit Madou)", note = "Off by default: Dit and Dite are also given names and surnames (a Cantonese and a Latvian given name, a surname Dite, in the corpora measured), and on by default the local corpora fixed 13 scored records against 6 broken, plus 4 names lower-cased by case repair (decisions/P3, 2026-11-21)." }
+
+[[word]]
+text = "dite"
+conjunction = { default = false, issue = 1159, expands = "called (feminine), joining a hereditary two-part surname (Dupont dit Lebrun) or an alias to the given name (Mamadou dit Madou)", note = "Off by default: Dit and Dite are also given names and surnames (a Cantonese and a Latvian given name, a surname Dite, in the corpora measured), and on by default the local corpora fixed 13 scored records against 6 broken, plus 4 names lower-cased by case repair (decisions/P3, 2026-11-21)." }
+
+[[word]]
 text = "et"
 conjunction = {}
 
