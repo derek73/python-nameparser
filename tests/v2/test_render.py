@@ -2306,7 +2306,7 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
 
 
 def test_a_mixed_case_credential_is_kept_as_written_when_forced() -> None:
-    # rules/R4 (#1516): a word the caps shape read after a comma in mixed
+    # rules/R4 (#1517): a word the caps shape read after a comma in mixed
     # case ('MRes', 'AuD') keeps its writing, forced or not: no mask
     # lists it, and the acronym clause's capitals would write 'MRES'.
     # Its all-caps twin still repairs to capitals, and the company of a

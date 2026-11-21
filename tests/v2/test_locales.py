@@ -3363,7 +3363,7 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
      ("", "MgA", "Jana", "Malá", "", "", ()),
      ("MgA", "Jana", "", "Malá", "", "", ())),
     # the default reads it after a two-word head by the caps shape's
-    # mixed-case arm, as the credential it is (#1516); the pack, as the
+    # mixed-case arm, as the credential it is (#1517); the pack, as the
     # title it lists
     ("cs", None, "Jana Malá, MgA",
      ("", "Jana", "", "Malá", "MgA", "", ("SUFFIX_OR_NAME",)),

@@ -602,7 +602,7 @@ def test_caps_shape_candidate_reads_joined_capitals(
 ])
 def test_caps_shape_candidate_reads_mixed_case_only_where_asked(
         text: str, expected: bool) -> None:
-    # #1516: the mixed-case arm, which only the part after a comma asks
+    # #1517: the mixed-case arm, which only the part after a comma asks
     # for; the trailing position under EVERYWHERE never does
     lex = Lexicon.default()
     pol = Policy()

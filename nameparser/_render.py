@@ -707,7 +707,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
         # mixed case (C6) is kept as written, forced or not" -- the
         # caps shape's mark on a word in more than one case ('MRes',
         # 'AuD'; the dotted shape, S3, sets the same tag, hence the
-        # period test); decisions/C6 (#1516)
+        # period test); decisions/C6 (#1517)
         if (SHAPE_ACRONYM_TAG in tags and "." not in word
                 and not word.isupper()):
             return word

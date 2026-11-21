@@ -2051,7 +2051,7 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
 
     `mixed_case` admits a mixed-case word as well (`_mixed_capitals`:
     'DClinPsy', 'AuD'): `_comma.decide` passes True for the part after
-    a comma (rules/C6, decisions/C6 (#1516)); classify passes False at
+    a comma (rules/C6, decisions/C6 (#1517)); classify passes False at
     every slot it tags, `CapsSuffixes.EVERYWHERE`'s trailing positions
     included, a surname typed without its apostrophe ('ONeill',
     'DSouza') ending a name there.

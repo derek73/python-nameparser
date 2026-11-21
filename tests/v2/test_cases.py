@@ -526,7 +526,7 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # rows' suffix-or-name under three orders; 2272 -> 2275 the same day,
     # its review's 'PETR JAN DIS' under three orders; 2275 -> 2278 the
     # same day, its second review's 'Jan DIS' under three orders; 2278
-    # -> 2296 on 2026-11-21, #1516's six caps-shape rows reporting
+    # -> 2296 on 2026-11-21, #1517's six caps-shape rows reporting
     # suffix-or-name under three orders; 2296 -> 2321 the same day, its
     # test review's eight rows under three orders and its family-first
     # row under its declared policy.
@@ -617,7 +617,7 @@ _STAND_IN_REREADS = {
     ("John Smith MA VI Jones", None), ("John Smith MA VI Jones", 2),
     # a name word in a mixed-case credential's place leaves the initials
     # in front of it no company, so they are the given name (rules/C16,
-    # #1516)
+    # #1517)
     ("Smith, M.B. ChB", None), ("Smith, M.B. ChB", 1),
     ("Smith, M.B. ChB", 2),
 }
@@ -1031,7 +1031,7 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # and #1284's rows under three orders; 620 -> 629 the same day, #969's
     # three DiS rows after a comma under three orders; 629 -> 632 the same
     # day, its review's 'PETR JAN DIS' under three orders; 632 -> 647 on
-    # 2026-11-21, #1516's five caps-shape rows under three orders,
+    # 2026-11-21, #1517's five caps-shape rows under three orders,
     # 'Smith, M.B. ChB' being a stand-in reread; 647 -> 669 the same
     # day, its test review's rows
     assert (checked, skipped) == (669, 512), (checked, skipped)
