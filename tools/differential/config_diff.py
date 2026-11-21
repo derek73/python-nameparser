@@ -89,15 +89,22 @@ are left out of ORCID and PatentsView (a holder's `Dr` typed as a given
 name is evidence of nothing; the 2026-10-30 entry of
 decisions/vocabulary-model filtered so); PSC's are set aside by
 local_agreement.read with the default's title words, the same records
-in every column. Each group is its first --cap records in raw.jsonl's
+in every column, and a record either column reads with a listed title
+typed into the given-names box (local_agreement.titled, #1501) is
+dropped from both: in PSC a title in the forename box with the title
+box empty, and in ORCID and PatentsView the few the title-word filter
+above does not drop (`Dr/ Anna`, whose `Dr/` its split does not match).
+Each group is its first --cap records in raw.jsonl's
 order.
 
 **score**: configurations scored against the filed boxes, a row a group.
 For each group of the same three fielded corpora (`--group` as the
 corpus writes it, `--languages` the groups whose country writes one of
 those tags, or every group), its first --cap records, less the given
-boxes opening with a title word and, in ORCID and PatentsView, the
-records with an empty box, each configuration's share of records
+boxes opening with a title word, the records any configuration reads
+with a title typed into the given-names box (local_agreement.titled)
+and, in ORCID and PatentsView, the records with an empty box, each
+configuration's share of records
 agreeing in every box (local_agreement.read), and for the best one the
 records it fixes and breaks against the first. `--switches` names bool
 `Policy` fields and reads every configuration under every combination
@@ -922,6 +929,8 @@ def score_gaps(tag: str, specs: tuple[str, str],
         if rp.set_aside:
             continue
         rs = local_agreement.read(record, fielded, _Parsed(s), listed)  # type: ignore[arg-type]
+        if rp.titled or rs.titled:  # a title typed into the given box (#1501)
+            continue
         count.scored += 1
         count.plain += not rp.got
         count.strict += not rs.got
@@ -1055,20 +1064,22 @@ def score_rows(rows: Sequence[dict[str, str]], fielded: local_agreement.Fielded,
                readings: Sequence[tuple[Reading, ...]], listed: frozenset[str]
                ) -> tuple[int, list[SpecScore]]:
     """`rows` scored under each configuration's reading: the records
-    scored (local_agreement.read's set-aside, judged under the first
-    configuration, dropped from every column) and each one's score."""
+    scored, less those local_agreement.read sets aside under the first
+    configuration and those any configuration reads into the titled
+    class (local_agreement.titled), each dropped from every column, and
+    each configuration's score."""
     n_specs = len(readings[0]) if readings else 0
     out = [SpecScore() for _ in range(n_specs)]
     scored = 0
     for record, rs in zip(rows, readings):
-        first = local_agreement.read(record, fielded, _Parsed(rs[0]), listed)  # type: ignore[arg-type]
-        if first.set_aside:
+        mine = [local_agreement.read(record, fielded, _Parsed(r), listed)  # type: ignore[arg-type]
+                for r in rs]
+        if mine[0].set_aside or any(m.titled for m in mine):
             continue
         scored += 1
-        ok0 = not first.got
-        for i, r in enumerate(rs):
-            ok = ok0 if i == 0 else not local_agreement.read(
-                record, fielded, _Parsed(r), listed).got  # type: ignore[arg-type]
+        ok0 = not mine[0].got
+        for i, m in enumerate(mine):
+            ok = not m.got
             out[i].agree += ok
             out[i].fixed += ok and not ok0
             out[i].broken += ok0 and not ok
