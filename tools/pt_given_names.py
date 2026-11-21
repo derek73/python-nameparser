@@ -30,7 +30,9 @@ A word is a candidate where it has at least MIN_USES uses and at
 least SHARE of them are given uses; the list is every candidate,
 ranked by given uses. Words the default vocabulary lists as a
 particle, a conjunction, a title or a suffix are left out, as the
-Spanish tool leaves them out (its `excluded_words`), and so are
+Spanish tool leaves them out (its `excluded_words`, which keeps a
+title only inside a title phrase, a name word where rules/O6's veto
+reads the list, #1476), and so are
 words of one letter, which write an initial. The floor and SHARE are
 measured choices (decisions/O6, 2026-11-19): a change to either is a
 cutoff change, decided against the same per-country measurement.

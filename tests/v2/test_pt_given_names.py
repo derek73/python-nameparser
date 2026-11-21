@@ -66,7 +66,9 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     # connective is no given name the veto could mean (the Spanish
     # tool's exclusion, which this tool shares)
     sets = Lexicon.default()._sets
-    pool = (sets.particles | sets.conjunctions | sets.titles | sets.titles_ambiguous
+    # a title only inside a title phrase is a name word mid-name, so
+    # the shared exclusion keeps it (#1476)
+    pool = (sets.particles | sets.conjunctions | sets.titles
             | sets.suffix_acronyms | sets.suffix_words)
     folded = {given_name_key(w) for entry in pool for w in entry.split()}
     assert not _pt_given_names.GIVEN_NAMES & folded
