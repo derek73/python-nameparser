@@ -1646,6 +1646,54 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1284)",
          notes="the accepted cost of listing aus: no corpus name has the "
                "shape; read middle 'Aus' 1.4.0 through 3.1"),
+    Case("dis_after_a_comma_reads_the_credential", "Jan Novák, DiS.",
+         {"given": "Jan", "family": "Novák", "suffix": "DiS."},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="cs.toml's DiS, gated by mul.toml's surname Dis (rules/C4 "
+               "after the comma); read title 'DiS.' 1.4.0 through 3.1"),
+    Case("dis_behind_a_title_keeps_the_title_apart", "Bc. Jan Novák, DiS.",
+         {"title": "Bc.", "given": "Jan", "family": "Novák", "suffix": "DiS."},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="read title 'Bc. DiS.' 3.1, title 'DiS.', first "
+               "'Bc. Jan Novák' 1.4.0"),
+    Case("dis_without_its_period_no_longer_reverses_the_name",
+         "Jan Novák, DiS",
+         {"given": "Jan", "family": "Novák", "suffix": "DiS"},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="read given 'DiS', family 'Jan Novák' 1.4.0 through 3.1"),
+    Case("dis_with_no_comma_stays_a_name_word", "Jan Novák DiS.",
+         {"given": "Jan", "middle": "Novák", "family": "DiS."},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: the gated credential written in its own mixed "
+               "case with no comma reads as a name by its writing "
+               "(rules/S6), the count alone taking it (rules/S4); whether "
+               "that mixed case should read as the credential is #1053's"),
+    Case("surname_dis_in_capitals_in_a_mixed_case_name_reads_the_credential",
+         "Jan DIS",
+         {"given": "Jan", "suffix": "DIS"},
+         classification="fix(#969)", ambiguities=("given-or-family",),
+         notes="the accepted cost: a gated acronym in capitals in a name "
+               "of mixed case reads as the credential even with no word to "
+               "spare (rules/S6), as Amani BCHIR does; read family 'DIS' "
+               "through 3.1"),
+    Case("surname_dis_in_capitals_with_a_word_to_spare_reads_the_credential",
+         "PETR JAN DIS",
+         {"given": "PETR", "family": "JAN", "suffix": "DIS"},
+         classification="fix(#969)", ambiguities=("suffix-or-name",),
+         notes="the accepted cost: in a name written in one case the gated "
+               "word's writing says nothing (rules/S6) and the count takes "
+               "it (rules/S4); read middle 'JAN', family 'DIS' through 3.1"),
+    Case("surname_dis_ending_a_name_keeps_the_family", "Jan Dis",
+         {"given": "Jan", "family": "Dis"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: mul.toml's family reading gates the credential "
+               "(#969); the report is new with it"),
+    Case("drsc_after_a_comma_reads_the_credential", "Jan Novák, DrSc.",
+         {"given": "Jan", "family": "Novák", "suffix": "DrSc."},
+         classification="fix(#969)",
+         notes="DrSc on by default since #969, off until then (read only "
+               "under locales.CS and SK); read title 'DrSc.' 1.4.0 through "
+               "3.1"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          notes="the words-to-spare half: a full name in front leaves the "

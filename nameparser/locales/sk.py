@@ -3,8 +3,8 @@ patch, no lexicon fragment (3.0, phase 3f, #753;
 mechanisms.md#LOCALE-PACKS-PURE-DATA). Choosing it turns on
 nameparser/vocab/sk.toml's readings written ``default = false``: the
 generations ``ml.`` and ``st.``, ``Mgr.`` read as the degree (the
-doctorates are read by default since #1115) and the post-nominals
-``ArtD.`` and ``DrSc.``; on a word sk.toml holds a
+doctorates are read by default since #1115, and the post-nominals
+``ArtD.`` and ``DrSc.`` since #969); on a word sk.toml holds a
 vocabulary reading of, other languages' vocabulary readings leave
 (`st`'s Saint title and particle, so ``St Clair`` is a given name under
 this pack; a caller whose names also hold the English Saint chooses
