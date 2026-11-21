@@ -30,24 +30,34 @@ THE PAIR. For each candidate, the ballot name (NM_URNA_CANDIDATO) and
 the civil name (NM_CANDIDATO): x is the ballot name's first word that
 is no title of the default lexicon's, not on STOP (`júnior`,
 `juninho`, the epithets), no particle, and in no form in the civil
-name; y is the civil name's word it most plausibly stands for, tried
-in order: the same first letter and x's last three letters inside it;
-the same first letter; x's last three letters inside it; the civil
-name's first word. Each word is a name word (familiar_candidates.
-is_name_word); the two differ under the name match's fold. A person is
-counted once a pair, across every election they stood in, by a key
-the tool hashes before keeping it (the voter-registration number where
-the file gives one, else the CPF, the tax number, else the year's
-candidate number); spellings the match folds alike are one pair. Every
-pair goes under `pt-BR`, nothing held measuring Portugal.
+name; y is the civil name's given word it most plausibly stands for,
+tried in order: the same first letter and x's last three letters
+inside it; the same first letter; x's last three letters inside it;
+the first given word. A pair whose y is not among the civil name's
+given words (given_words: its first GIVEN_WORDS name words that are no
+particle, the last word the family name) is no familiar form of a given
+name. Each word is a name word (familiar_candidates.is_name_word); the
+two differ under the name match's fold. A person is counted once a
+pair, across every election they stood in, by a key the tool hashes
+before keeping it (person_key); spellings the match folds alike are one
+pair. Every pair goes under `pt-BR`, nothing held measuring Portugal.
+
+THE BYNAMES. A ballot word paired with BYNAME_PARTNERS civil given names
+or more, each at BYNAME_PEOPLE people, is a byname (`irmão`, `dona`,
+`enfermeira`): its pairs are left out, but one whose lift is MIN_LIFT or
+more and that has RESCUE_PEOPLE people is kept, a familiar form of
+several names (`zé` / `josé`) concentrating as a byname does not
+(decisions/name-matching, 2026-11-20 #1495).
 
     uv run python tools/vocab/familiar_tse.py fetch            # every election, cached
     uv run python tools/vocab/familiar_tse.py pairs --min 10   # write the candidates
 
 `fetch` keeps each election's zip in $NAMEPARSER_TOOLS_CACHE (or
 ~/.cache/nameparser-tools) under FETCH_DIR, and beside it the two
-names and the hashed person key of each candidate, nothing else;
-`pairs` reads those alone and writes CANDIDATES_FILE beside them. The
+names and the hashed person key of each candidate, nothing else,
+named by the zip's digest and the reader's version; `pairs` reads the
+kept zips alone and writes CANDIDATES_FILE in the cache folder, with
+the records it dropped by reason. The
 requests name no person or project (USER_AGENT). The candidates hold
 given names and counts, no person: nothing from the files is committed
 but the reviewed pairs, name against name at a bar of people.
@@ -65,6 +75,7 @@ import sys
 import tempfile
 import urllib.request
 import zipfile
+import zlib
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -97,13 +108,29 @@ CPF, VOTER, SEQ = "NR_CPF_CANDIDATO", "NR_TITULO_ELEITORAL_CANDIDATO", "SQ_CANDI
 #: The share of rows a member may hold of another width, or folded into
 #: another row's field, before it is refused as cut or changed.
 MAX_BAD = 1 / 10_000
+#: The share of rows a member may hold without a name before it is
+#: refused, a column masked or moved (2000's 3.9% the most, 2026-11-20).
+MAX_NAMELESS = 1 / 10
+#: The share of a year's rows a member stating the voter number may key
+#: by the candidate number, the number missing or masked (2012's 0.2%
+#: the most, 2026-11-20), before it is refused.
+MAX_SEQ = 1 / 100
+#: The years that state no voter number nor CPF, keyed by the candidate
+#: number alone.
+UNNUMBERED = frozenset({"1994", "1996"})
+#: The reading of a member the kept JSONL holds: bumped whenever
+#: read_member or person_key changes, so a reading by an older tool is
+#: read again rather than reused.
+READER_VERSION = 2
 
 #: Ballot words that are no familiar form of a civil name: a generation
-#: (`júnior`, `juninho`) and the epithets a ballot writes beside a name.
+#: or kinship word (`júnior`, `jr`, `juninho`, `filho`, `neto`,
+#: `sobrinho`) and the epithets a ballot writes beside a name.
 STOP = frozenset({"junior", "júnior", "jr", "juninho", "nego", "negão",
                   "carioca", "amigo", "filho", "neto", "sobrinho"})
 
-#: The cp1252 letters the court's latin-1 files hold in 0x80-0x9F.
+#: The cp1252 characters (letters, quotes, dashes) the court's latin-1
+#: files hold in 0x80-0x9F.
 _CP1252 = {b: bytes([b]).decode("cp1252") for b in range(0x80, 0xA0)
            if b not in (0x81, 0x8D, 0x8F, 0x90, 0x9D)}
 _EDGE = "\"'“”„«»()[],.;:!?-"
@@ -128,7 +155,7 @@ def _download(url: str, path: Path, member: str) -> None:
             with archive.open(member) as part:
                 while part.read(1 << 20):  # a CRC mismatch raises
                     pass
-    except (zipfile.BadZipFile, KeyError) as exc:
+    except (zipfile.BadZipFile, KeyError, EOFError, zlib.error) as exc:
         raise ValueError(f"{url} did not give a whole zip holding {member} "
                          f"({exc})") from exc
     with tempfile.NamedTemporaryFile(dir=path.parent, prefix=path.name,
@@ -141,32 +168,58 @@ def person_key(row: Mapping[str, str], year: str) -> tuple[str, str]:
     """The person a row is, hashed, and which number named them: the
     voter-registration number where the file gives one, the number every
     election from 1998 states and 2024's the only one (its CPF masked),
-    else the CPF, else the year's candidate number (1994 and 1996 state
-    neither, so a person of those years is counted once a candidacy)."""
+    else the CPF, else the year's candidate number, SQ_CANDIDATO, the
+    court's sequence (1994 and 1996 state neither number, so a person of
+    those years is counted once a candidacy). A number of fewer than
+    eight digits, or of one digit repeated, names no one. Raises
+    ValueError on a candidate number that is no positive integer."""
     for column, kind in ((VOTER, "voter"), (CPF, "cpf")):
         digits = re.sub(r"\D", "", row.get(column, ""))
         if len(digits) >= 8 and len(set(digits)) > 1:
             return hashlib.sha256(f"{kind}:{digits}".encode()).hexdigest()[:20], kind
-    return hashlib.sha256(f"seq:{year}:{row.get(SEQ, '')}".encode()
-                          ).hexdigest()[:20], "seq"
+    seq = row.get(SEQ, "").strip()
+    if not seq.isdigit() or int(seq) <= 0:
+        raise ValueError(f"{MEMBER.format(year=year)} holds a row whose "
+                         f"{SEQ} is {seq!r}, and no number names its person")
+    return hashlib.sha256(f"seq:{year}:{seq}".encode()).hexdigest()[:20], "seq"
+
+
+class _Lines:
+    """The lines of a text, remembering whether the last ended in a line
+    break: a body cut inside its last field is a full-width row to csv."""
+
+    def __init__(self, text: Iterable[str]) -> None:
+        self.text, self.ended = text, True
+
+    def __iter__(self) -> Iterator[str]:
+        for line in self.text:
+            self.ended = line.endswith("\n")
+            yield line
 
 
 def read_member(text: Iterable[str], year: str) -> tuple[list[dict[str, str]],
                                                          collections.Counter[str]]:
     """One election's candidates as (civil, ballot, person) records, one
-    per person, and counts of what was read. Raises ValueError where the
-    header lacks a name column, too many rows are of another width or
-    folded into a field, or the last row is short: Python's csv returns
-    a body cut inside a row as a short last row without raising."""
-    rows = csv.reader(text, delimiter=";")
+    per person and pair of names written, and counts of what was read.
+    Raises ValueError where the header lacks a column the tool reads
+    (the voter number in a year stating one, UNNUMBERED aside), too many
+    rows are of another width, folded into a field, nameless or keyed by
+    the candidate number, no person is read, or the body is cut: its
+    last row short, or the body not ending in a line break (Python's csv
+    returns a body cut inside a row as a short last row, and one cut
+    inside its last field as a whole one, without raising)."""
+    name = MEMBER.format(year=year)
+    lines = _Lines(text)
+    rows = csv.reader(lines, delimiter=";")
     header = next(rows, [])
-    missing = [c for c in (CIVIL, BALLOT, SEQ) if c not in header]
+    wanted = (CIVIL, BALLOT, SEQ) + (() if year in UNNUMBERED else (VOTER,))
+    missing = [c for c in wanted if c not in header]
     if missing:
-        raise ValueError(f"{MEMBER.format(year=year)} lacks {', '.join(missing)}: "
-                         f"the file's layout has changed")
+        raise ValueError(f"{name} lacks {', '.join(missing)}: the file's "
+                         f"layout has changed")
     width = len(header)
     counts: collections.Counter[str] = collections.Counter()
-    out: dict[str, dict[str, str]] = {}
+    out: dict[tuple[str, str, str], dict[str, str]] = {}
     last: list[str] = []
     for row in rows:
         counts["rows"] += 1
@@ -182,40 +235,71 @@ def read_member(text: Iterable[str], year: str) -> tuple[list[dict[str, str]],
             continue
         key, kind = person_key(r, year)
         counts[f"key_{kind}"] += 1
-        out[key] = {"civil": civil, "ballot": ballot, "person": key}
+        # a person's second round reads past; a second pair of names stays
+        out[key, civil, ballot] = {"civil": civil, "ballot": ballot, "person": key}
     folded = rows.line_num - 1 - counts["rows"]
-    if last and len(last) < width:
-        raise ValueError(f"{MEMBER.format(year=year)}'s last row is short: the "
-                         f"file is cut")
-    for count, what in ((counts["malformed"], f"rows not {width} columns"),
-                        (folded, "lines folded into another row's field")):
-        if count > max(1, counts["rows"] * MAX_BAD):
-            raise ValueError(f"{MEMBER.format(year=year)} holds {count:,} {what} "
-                             f"in {counts['rows']:,} rows: the layout has changed")
-    counts["people"] = len(out)
+    if (last and len(last) < width) or not lines.ended:
+        raise ValueError(f"{name} is cut: its last row is short or it ends "
+                         f"without a line break")
+    for count, what, share in (
+            (counts["malformed"], f"rows not {width} columns", MAX_BAD),
+            (folded, "lines folded into another row's field", MAX_BAD),
+            (counts["nameless"], "rows with no name", MAX_NAMELESS),
+            (0 if year in UNNUMBERED else counts["key_seq"],
+             "rows no voter number or CPF names", MAX_SEQ)):
+        if count > max(1, counts["rows"] * share):
+            raise ValueError(f"{name} holds {count:,} {what} in "
+                             f"{counts['rows']:,} rows: the layout has changed")
+    counts["people"] = len({r["person"] for r in out.values()})
+    if not counts["people"]:
+        raise ValueError(f"{name} holds no candidate with two names")
     return list(out.values()), counts
+
+
+def _kept_path(folder: Path, year: str, archive_path: Path) -> Path:
+    """The kept reading of a year's zip: named by the zip's digest and
+    READER_VERSION, so a republished zip or a changed reader is read
+    again rather than reused (a cache keyed by what it reads, not by a
+    name: root AGENTS.md's Gotchas)."""
+    digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()[:16]
+    return folder / f"candidates_{year}_{digest}_v{READER_VERSION}.jsonl"
+
+
+def _read_kept(path: Path) -> list[dict[str, str]]:
+    """A kept reading, its record count, written as its first line,
+    checked against the records it holds."""
+    lines = corpus_build.jsonl_lines(path.read_text("utf-8"))
+    head = json.loads(lines[0]) if lines else {}
+    records = [json.loads(line) for line in lines[1:]]
+    if head.get("records") != len(records):
+        raise SystemExit(f"{path} holds {len(records):,} records where its "
+                         f"head says {head.get('records')}; delete it and "
+                         f"fetch again")
+    return records
 
 
 def fetch(year: str, folder: Path | None = None,
           offline: bool = False) -> list[dict[str, str]]:
-    """One election's candidates, kept as JSONL in `folder`, its zip
-    fetched first if missing, unless `offline`, which raises naming it."""
+    """One election's candidates, read from its zip in `folder`, the zip
+    fetched first where missing, unless `offline`, which raises naming
+    it, and the reading kept beside it as JSONL (_kept_path)."""
     folder = folder or fetch_dir()
-    kept = folder / f"candidates_{year}.jsonl"
-    if kept.exists():
-        return [json.loads(line)
-                for line in corpus_build.jsonl_lines(kept.read_text("utf-8"))]
-    if offline:
-        raise SystemExit(f"{kept} is not fetched; run `uv run python "
-                         f"tools/vocab/familiar_tse.py fetch`")
     archive_path = folder / f"consulta_cand_{year}.zip"
     member = MEMBER.format(year=year)
     if not archive_path.exists():
+        if offline:
+            raise SystemExit(f"{archive_path} is not fetched; run `uv run "
+                             f"python tools/vocab/familiar_tse.py fetch`")
         _download(URL.format(year=year), archive_path, member)
+    kept = _kept_path(folder, year, archive_path)
+    if kept.exists():
+        return _read_kept(kept)
     with zipfile.ZipFile(archive_path) as archive, archive.open(member) as binary:
         text = io.TextIOWrapper(binary, encoding="latin-1", newline="")
         records, counts = read_member(text, year)
-    body = "".join(corpus_build.jsonl_line(r) + "\n" for r in records)
+    head = {"year": year, "records": len(records), "reader": READER_VERSION,
+            **{k: v for k, v in sorted(counts.items())}}
+    body = "".join(corpus_build.jsonl_line(r) + "\n" for r in [head, *records])
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=folder,
                                      prefix=kept.name, suffix=".part",
                                      delete=False) as tmp:
@@ -277,16 +361,32 @@ def _given(civil: str, particles: frozenset[str]) -> list[str]:
             and build._normalize(w) not in particles]
 
 
+def given_words(civil: str, particles: frozenset[str]) -> list[str]:
+    """The civil name's given words a pair may name: its first
+    GIVEN_WORDS name words that are no particle, a word counting only
+    where another follows it, the last being the family name
+    (`PEDRO CASTRO` names Pedro alone, `MARIA DA SILVA` Maria)."""
+    names = _given(civil, particles)
+    return names[:min(GIVEN_WORDS, max(1, len(names) - 1))]
+
+
 def pair_of(civil: str, ballot: str, titles: frozenset[str],
-            particles: frozenset[str]) -> tuple[str, str] | None:
+            particles: frozenset[str],
+            why: collections.Counter[str] | None = None) -> tuple[str, str] | None:
     """The pair one candidate's two names evidence (THE PAIR above) as
     (the ballot word, the civil given word), each normalized as the
     vocabulary writes it, or None, as where the civil word chosen is not
-    among the civil name's first GIVEN_WORDS given words (a surname,
-    `castr` / `castro`)."""
+    among the civil name's given words (given_words: a surname, `castr`
+    / `castro`, `castrinho` / `castro`); `why` counts each None by its
+    reason."""
+    def drop(reason: str) -> None:
+        if why is not None:
+            why[reason] += 1
+
     civil_words = [w for w in words(civil) if _name_word(w)]
     given = _given(civil, particles)
     if not civil_words or not given:
+        drop("no civil given word")
         return None
     civil_keys = {_key(w) for w in civil_words}
     x = None
@@ -297,7 +397,11 @@ def pair_of(civil: str, ballot: str, titles: frozenset[str],
             continue
         x = w
         break
-    if x is None or not _name_word(x):
+    if x is None:
+        drop("no ballot word outside the civil name")
+        return None
+    if not _name_word(x):
+        drop("the ballot word no name word")
         return None
     fx = _key(x)
     tail = fx[-3:]
@@ -305,9 +409,13 @@ def pair_of(civil: str, ballot: str, titles: frozenset[str],
              lambda w: _key(w)[:1] == fx[:1],
              lambda w: tail in _key(w))
     y = next((w for rule in rules for w in given if rule(w)), given[0])
-    if _key(y) not in {_key(w) for w in given[:GIVEN_WORDS]}:
+    if _key(y) not in {_key(w) for w in given_words(civil, particles)}:
+        drop("the civil word no given word")
         return None
+    # a backstop: x is in no form in the civil name, so the match's fold
+    # cannot make it y unless the two folds part
     if _match_fold(x) == _match_fold(y):
+        drop("one word under the match's fold")
         return None
     return build._normalize(x), build._normalize(y)
 
@@ -324,6 +432,8 @@ class Mined:
     ballot: dict[str, set[str]] = field(default_factory=dict)
     civil: collections.Counter[str] = field(default_factory=collections.Counter)
     people: set[str] = field(default_factory=set)
+    #: The records no pair came from, by reason.
+    dropped: collections.Counter[str] = field(default_factory=collections.Counter)
 
     def lift(self, x: str, y: str) -> float:
         """The pair's people over the ballot word's, against the civil
@@ -340,9 +450,9 @@ def mine(records: Iterable[Mapping[str, str]], titles: frozenset[str],
         if r["person"] not in out.people:
             out.people.add(r["person"])
             for w in {_match_fold(build._normalize(w))
-                      for w in _given(r["civil"], particles)[:GIVEN_WORDS]}:
+                      for w in given_words(r["civil"], particles)}:
                 out.civil[w] += 1
-        pair = pair_of(r["civil"], r["ballot"], titles, particles)
+        pair = pair_of(r["civil"], r["ballot"], titles, particles, out.dropped)
         if pair is None:
             continue
         key = (_match_fold(pair[0]), _match_fold(pair[1]))
@@ -435,6 +545,8 @@ def main(argv: list[str] | None = None) -> int:
     out = rows(found, args.min, fc.known_pairs())
     path = name_usage.cache_dir() / CANDIDATES_FILE
     path.write_text(write_tsv(out), encoding="utf-8")
+    print("dropped: " + ", ".join(f"{k} {v:,}" for k, v in
+                                  found.dropped.most_common()), file=sys.stderr)
     print(f"{len(found.pairs):,} pairs, {len(out):,} candidates at {args.min}+ "
           f"people not yet reviewed; wrote {path}", file=sys.stderr)
     return 0

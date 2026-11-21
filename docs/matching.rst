@@ -689,8 +689,8 @@ Where the shipped pairs come from
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The shipped familiar forms, about twenty-three hundred pairs, are pairs
-people wrote both ways for themselves: mostly
-ORCID's researchers, who wrote one in the given-name box and the other
+people wrote both ways for themselves: chiefly
+ORCID's researchers and Brazil's election candidates (below), who wrote one in the given-name box and the other
 in a published name, in many languages (``Peggy`` / ``Margaret``,
 ``Ricky`` / ``Richard``, ``Kasia`` / ``Katarzyna``, ``Kostas`` /
 ``Konstantinos``, ``Seun`` / ``Oluwaseun``), and a few common English

@@ -38,8 +38,9 @@ _CREDITED = {
     "Taiwan's Ministry of the Interior (OGDL-Taiwan-1.0)": (
         ("nameparser/locales/zh.py",),
         "Open Government Data License, version 1"),
+    # a phrase the INE's line holds too would pass on the INE's alone
     "TSE (CC-BY)": (("nameparser/vocab/pt-BR.toml",),
-                    "Creative Commons Attribution"),
+                    "Tribunal Superior Eleitoral (Creative Commons Attribution"),
 }
 
 

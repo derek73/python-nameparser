@@ -1905,16 +1905,24 @@ def test_a_brazilian_familiar_form_is_consistent_where_accepted(
 
 
 @pytest.mark.parametrize("a, b", [
-    # the review's bynames and held spellings ship nowhere: a form of
-    # address beside the name, two spellings of one name
+    # the review's bynames and siblings ship nowhere: a form of address
+    # beside the name, two names of one root
     ("Dona Silva", "Josefa Silva"),
-    ("Rozangela Silva", "Rosangela Silva"),
+    ("Carmem Silva", "Carmo Silva"),
     # never chained: Tiãozinho and Tião are each paired with Sebastião
     ("Tiãozinho Alves", "Tião Alves"),
 ])
 def test_a_brazilian_pair_the_review_did_not_ship_is_no_familiar_form(
         a: str, b: str) -> None:
     assert not _familiar.check(a, b).consistent
+
+
+def test_a_held_brazilian_spelling_ships_nowhere() -> None:
+    # the readers agreed Elizangela / Elisangela is one name spelled two
+    # ways; held (decisions/name-matching, 2026-11-20 #1495), it is no
+    # alternate spelling, as it would be shipped
+    spelling = _with(Outcome.ALTERNATE_SPELLING, Outcome.FAMILIAR_FORM)
+    assert not spelling.check("Elizangela Silva", "Elisangela Silva").consistent
 
 
 @pytest.mark.parametrize("a, b", [

@@ -73,7 +73,7 @@ END = "# -- END generated --"
 #: ALTERNATE SPELLINGS ARE OPT-IN and 2026-11-13 THE FAMILIAR FORMS FROM
 #: DATA ALONE).
 REVIEWED = Path(__file__).with_name("familiar_reviewed.tsv")
-REVIEWED_SOURCE = ("found in CC0 or public-domain data and reviewed, "
+REVIEWED_SOURCE = ("found in openly licensed data and reviewed, "
                    "tools/vocab/familiar_reviewed.tsv")
 REVIEWED_HEADER = ["a", "b", "category", "status", "opus", "sonnet",
                    "reason", "languages", "source", "holders"]

@@ -32,14 +32,14 @@ generation = { issue = 661 }
 
 [[word]]
 text = "ivan"
-familiar = { short_for = ["ivica"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ivica"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "ljubo"
-familiar = { short_for = ["ljubomir"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["ljubomir"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 [[word]]
 text = "stane"
-familiar = { short_for = ["stanislav"], note = "found in CC0 or public-domain data and reviewed, tools/vocab/familiar_reviewed.tsv" }
+familiar = { short_for = ["stanislav"], note = "found in openly licensed data and reviewed, tools/vocab/familiar_reviewed.tsv" }
 
 # -- END generated --

@@ -47,17 +47,26 @@ def _pair(civil: str, ballot: str) -> tuple[str, str] | None:
 
 
 @pytest.mark.parametrize("civil, ballot, pair", [
-    # the same first letter and the form's last three letters inside it
+    # rule 1, the same first letter and the form's last three letters
+    # inside it, over rule 2's first given word of that letter
+    ("JOSÉ JOAQUIM PEREIRA", "JUQUIM", ("joaquim", "juquim")),
+    # rule 2, the same first letter (`nho`, `hos` inside neither)
     ("PAULO HENRIQUE DA SILVA", "PAULINHO", ("paulinho", "paulo")),
     ("JOSÉ CARLOS PEREIRA", "CARLINHOS", ("carlinhos", "carlos")),
-    # the same first letter, no shared ending
+    # rule 3, the last three letters alone (`iao` inside `sebastiao`)
     ("SEBASTIÃO ALVES", "TIÃO DO POVO", ("sebastião", "tião")),
-    # the last three letters alone
     ("MARIA APARECIDA SOUZA", "CIDA", ("aparecida", "cida")),
-    # else the civil name's first word
+    # else the first given word
     ("SEVERINO RAMOS LIMA", "BIU", ("biu", "severino")),
-    # a title and a word of the civil name are read past
+    # a title, a particle and a word of the civil name are read past
     ("ANTONIO MARCOS FERREIRA", "DR TONHO", ("antonio", "tonho")),
+    ("PAULO SILVA", "DO PAULINHO", ("paulinho", "paulo")),
+    ("PAULO SILVA", "SILVA PAULINHO", ("paulinho", "paulo")),
+    # a particle in the civil name takes no given-word place
+    ("MARIA DAS GRAÇAS SOUZA", "GRACINHA", ("gracinha", "graças")),
+    # edge punctuation and a quote the court's cp1252 writes
+    ("PAULO SILVA", '"PAULINHO"', ("paulinho", "paulo")),
+    ("PAULO SILVA", "\u201cPAULINHO\u201d", ("paulinho", "paulo")),
 ])
 def test_a_ballot_name_pairs_with_the_given_name_it_stands_for(
         civil: str, ballot: str, pair: tuple[str, str]) -> None:
@@ -73,8 +82,11 @@ def test_a_ballot_name_pairs_with_the_given_name_it_stands_for(
     ("PAULO DA SILVA", "DA SILVA"),         # a particle
     ("PAULO SILVA", "PAULO 2024"),          # no name word
     ("JOSE SILVA", "JOSÉ"),                 # one name under the fold
-    # the civil word past the first two given names: a surname
+    # the civil word past the given words: a surname, as the third word,
+    # or as the second where nothing follows it
     ("PEDRO HENRIQUE CASTRO", "CASTR"),
+    ("PEDRO CASTRO", "CASTRINHO"),
+    ("MARIA DA SILVA", "SILVINHA"),
 ])
 def test_what_is_no_familiar_form_of_the_civil_name_pairs_nothing(
         civil: str, ballot: str) -> None:
@@ -101,10 +113,89 @@ def test_a_person_is_one_record_and_their_number_is_kept_hashed() -> None:
 
 def test_a_member_cut_inside_a_row_is_refused() -> None:
     whole = _member('"1";"PAULO SILVA";"PAULINHO";"-4";"012345678901"').getvalue()
-    with pytest.raises(ValueError, match="last row is short"):
-        tool.read_member(io.StringIO(whole + '"2";"ANA LIMA";"ANI'), "2024")
+    for cut in (whole + '"2";"ANA LIMA";"ANI',
+                # inside the last field: a full-width row to csv
+                whole + '"2";"ANA LIMA";"ANINHA";"-4";"0123'):
+        with pytest.raises(ValueError, match="is cut"):
+            tool.read_member(io.StringIO(cut), "2024")
     with pytest.raises(ValueError, match="lacks"):
         tool.read_member(io.StringIO('"A";"B"\r\n'), "2024")
+    # a year stating voter numbers needs the column; 1994 does not
+    header = '"SQ_CANDIDATO";"NM_CANDIDATO";"NM_URNA_CANDIDATO"\r\n'
+    body = header + '"1";"PAULO SILVA";"PAULINHO"\r\n'
+    with pytest.raises(ValueError, match="NR_TITULO_ELEITORAL_CANDIDATO"):
+        tool.read_member(io.StringIO(body), "2024")
+    assert tool.read_member(io.StringIO(body), "1994")[1]["people"] == 1
+
+
+def _rows(n: int, row: str) -> list[str]:
+    return [row.format(i=i + 1, v=f"{i + 1:012d}") for i in range(n)]
+
+
+@pytest.mark.parametrize("bad, ok", [
+    # a row of another width, a line folded into a name, a nameless row,
+    # a row no number names: one is let pass, two in a few rows are not
+    ('"{i}";"X"', 1),
+    ('"{i}";"ANA\r\nLIMA";"ANINHA";"-4";"{v}"', 1),
+    ('"{i}";"#NULO#";"ANINHA";"-4";"{v}"', 1),
+    ('"{i}";"ANA LIMA";"ANINHA";"-4";"-4"', 1),
+])
+def test_a_member_too_much_of_which_is_unread_is_refused(bad: str, ok: int) -> None:
+    good = _rows(4, '"{i}";"PAULO SILVA";"PAULINHO";"-4";"{v}"')
+    tool.read_member(_member(*_rows(ok, bad), *good), "2024")
+    with pytest.raises(ValueError, match="layout has changed"):
+        tool.read_member(_member(*_rows(ok + 1, bad), *good), "2024")
+
+
+def test_a_member_of_no_named_candidate_is_refused() -> None:
+    with pytest.raises(ValueError):
+        tool.read_member(_member(*_rows(3, '"{i}";"#NULO#";"X";"-4";"{v}"')), "2024")
+
+
+@pytest.mark.parametrize("row, kind", [
+    ({"NR_TITULO_ELEITORAL_CANDIDATO": "012345678901",
+      "NR_CPF_CANDIDATO": "12345678909"}, "voter"),       # the voter number first
+    ({"NR_TITULO_ELEITORAL_CANDIDATO": "1234567",
+      "NR_CPF_CANDIDATO": "12345678909"}, "cpf"),         # seven digits name no one
+    ({"NR_TITULO_ELEITORAL_CANDIDATO": "-4",
+      "NR_CPF_CANDIDATO": "00000000000", "SQ_CANDIDATO": "7"}, "seq"),  # a repeated digit
+])
+def test_a_person_is_named_by_the_first_number_that_names_one(
+        row: dict[str, str], kind: str) -> None:
+    assert tool.person_key(row, "2024")[1] == kind
+
+
+def test_a_candidate_number_names_a_person_of_its_year_alone() -> None:
+    row = {"SQ_CANDIDATO": "7"}
+    assert tool.person_key(row, "1994")[0] != tool.person_key(row, "1996")[0]
+    assert tool.person_key(row, "1994")[0] != tool.person_key({"SQ_CANDIDATO": "8"}, "1994")[0]
+    for bad in ("", "-1", "0"):
+        with pytest.raises(ValueError, match="SQ_CANDIDATO"):
+            tool.person_key({"SQ_CANDIDATO": bad}, "1994")
+
+
+def test_a_kept_reading_is_named_by_its_zip_and_checked_whole(
+        tmp_path: Path) -> None:
+    import zipfile
+    member = tool.MEMBER.format(year="2024")
+    with zipfile.ZipFile(tmp_path / "consulta_cand_2024.zip", "w") as archive:
+        archive.writestr(member, _member(
+            '"1";"PAULO SILVA";"PAULINHO";"-4";"012345678901"').getvalue().encode("latin-1"))
+    records = tool.fetch("2024", tmp_path, offline=True)
+    assert [r["ballot"] for r in records] == ["PAULINHO"]
+    (kept,) = tmp_path.glob("candidates_2024_*_v*.jsonl")
+    assert tool.fetch("2024", tmp_path, offline=True) == records
+    kept.write_text(kept.read_text("utf-8").splitlines()[0] + "\n", "utf-8")
+    with pytest.raises(SystemExit, match="delete it"):
+        tool.fetch("2024", tmp_path, offline=True)
+    with pytest.raises(SystemExit, match="is not fetched"):
+        tool.fetch("2022", tmp_path, offline=True)
+
+
+@pytest.mark.parametrize("word", sorted(tool.STOP))
+def test_a_stop_word_pairs_nothing(word: str) -> None:
+    # each would pair with `paulo` by the last rule were it not stopped
+    assert _pair("PAULO SILVA", word.upper()) is None
 
 
 def test_the_pair_names_the_ballot_word_first() -> None:
@@ -129,16 +220,37 @@ def test_a_byname_is_dropped_and_its_concentrated_pairs_rescued(
         records += _people(40, f"{name} SILVA", name, name)  # the base
         records += _people(4, f"{name} LIMA", "DONA", "d" + name)
         records += _people(2, f"{name} REIS", "ZÉ", "z" + name)
-    records += _people(30, "JOSE SOUZA", "ZÉ", "zj")
+    records += _people(30, "JOSÉ SOUZA", "ZÉ", "zj")
     mined = tool.mine(records, _TITLES, _PARTICLES)
     assert tool.bynames(mined) == frozenset({"dona", "ze"})
     assert mined.lift("dona", "maria") < tool.MIN_LIFT
     assert mined.lift("ze", "jose") >= tool.MIN_LIFT
     pairs = {(r[0], r[1]) for r in tool.rows(mined, 2, set())}
-    assert pairs == {("jose", "zé")}
+    assert pairs == {("josé", "zé")}
     # and a rescued pair needs RESCUE_PEOPLE
     monkeypatch.setattr(tool, "RESCUE_PEOPLE", 31)
     assert tool.rows(mined, 2, set()) == []
+
+
+def test_the_shipped_thresholds_part_a_byname_from_a_familiar_form() -> None:
+    # at the shipped values: a ballot word of three partners is no
+    # byname; one of four is, and its pair at lift about 4 is dropped
+    # while its pair at lift about 8 with 50 people is kept
+    records: list[dict[str, str]] = []
+    for n, name in zip((40, 40, 40, 10, 2000),
+                       ("MARIA", "ANA", "RITA", "VERA", "LUCIA")):
+        records += _people(n, f"{name} SILVA", name, f"base{name}")
+    for name in ("MARIA", "ANA", "RITA"):
+        records += _people(10, f"{name} LIMA", "TRIO", "t" + name)
+    for name, n in (("MARIA", 10), ("ANA", 10), ("RITA", 10), ("VERA", 60)):
+        records += _people(n, f"{name} REIS", "BIBA", "b" + name)
+    mined = tool.mine(records, _TITLES, _PARTICLES)
+    assert tool.bynames(mined) == frozenset({"biba"})
+    assert 3 < mined.lift("biba", "maria") < tool.MIN_LIFT < mined.lift("biba", "vera")
+    pairs = {(r[0], r[1]) for r in tool.rows(mined, 10, set())}
+    assert {("ana", "trio"), ("maria", "trio"), ("rita", "trio"),
+            ("biba", "vera")} <= pairs
+    assert ("biba", "maria") not in pairs
 
 
 def test_a_person_counts_once_and_spellings_folded_alike_are_one_pair() -> None:
