@@ -23215,12 +23215,18 @@ CASES: tuple[Case, ...] = (
          "Shri Gopalan Nair",
          {"title": "Shri", "given": "Gopalan", "family": "Nair"},
          locale="hi", classification="fix(#1192)"),
-    Case("shri_ending_the_given_part_after_a_family_comma_under_hi",
+    Case("shri_bare_ending_the_given_part_stays_a_name_word_under_hi",
          "Verma, Ravi Shri",
-         {"title": "Shri", "given": "Ravi", "family": "Verma"},
+         {"given": "Ravi", "middle": "Shri", "family": "Verma"},
+         locale="hi",
+         notes="shri is not written after_given, being borne as a given "
+               "name, so H8 leaves it a middle name, as the default does"),
+    Case("shri_dotted_ending_the_given_part_under_hi",
+         "Verma, Ravi Shri.",
+         {"title": "Shri.", "given": "Ravi", "family": "Verma"},
          locale="hi", classification="fix(#1192)",
-         notes="a salutation written after_given ends the given part as "
-               "the title, as smt does"),
+         notes="a listed title with a full stop ending the given part "
+               "is the title (rules/H5's trailing vocabulary)"),
     Case("shri_after_a_full_name_and_a_comma_under_hi",
          "Ravi Kumar, Shri",
          {"title": "Shri", "given": "Ravi", "family": "Kumar"},

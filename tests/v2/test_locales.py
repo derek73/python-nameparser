@@ -433,9 +433,12 @@ def test_shri_peels_before_a_declared_order_lays_out_the_rest() -> None:
             name = packed.parse("Shri Ravi Kumar Verma")
             assert (name.title, name.given, name.middle, name.family) == (
                 ("Shri",) + expect), (order, strict)
-            for text in ("Shri Verma", "Verma, Ravi Shri"):
+            for text in ("Shri Verma", "Verma, Shri Ravi"):
                 assert packed.parse(text).title == "Shri", (text, order)
-            assert packed.parse("Verma, Ravi Shri").given == "Ravi"
+            assert packed.parse("Verma, Shri Ravi").given == "Ravi"
+            # not written after_given (rules/H8): bare, it ends the given
+            # part as a middle name
+            assert packed.parse("Verma, Ravi Shri").middle == "Shri"
 
 
 def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
@@ -2470,7 +2473,7 @@ _ROTATORS["hi"] = [
     "SHRI RAVI KUMAR",               # shri, in one case
     "Dr. Shri Ravi Kumar",           # shri behind a listed title
     "Verma, Shri Ravi",              # shri after a family comma
-    "Verma, Ravi Shri",              # shri ending the given part (H8)
+    "Verma, Ravi Shri.",             # shri, dotted, ending the given part
     "Shri Verma, Ravi",              # shri before a family comma (H6)
     "Ravi Kumar Shri.",              # shri, dotted, ending the name (H5)
     ", Ravi Shri.",                  # shri, dotted, after an empty head
