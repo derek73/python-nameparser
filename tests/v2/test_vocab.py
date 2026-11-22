@@ -158,7 +158,7 @@ def test_a_reading_off_by_default_compiles_to_nothing() -> None:
     both = build.compile_files({
         "en.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
         "de.toml": _w('[[word]]\ntext = "zzq"\ncredential = { default = false }'),
-        "hr.toml": _w('[[word]]\ntext = "zzr"\nexcluded = { generation = "x" }'),
+        "sr.toml": _w('[[word]]\ntext = "zzr"\nexcluded = { generation = "x" }'),
         "pl.toml": _w('[[word]]\ntext = "zzr"\ngeneration = { default = false }'),
     })
     assert "zzq" in both["SUFFIX_WORDS"] and "zzq" not in both["SUFFIX_ACRONYMS"]
@@ -1725,7 +1725,7 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ne, pt-BR, pt-PT, ru, sk, tr, vi"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, hr, ne, pt-BR, pt-PT, ru, sk, sl, tr, vi"):
         rules_patch("en")
 
 

@@ -1,5 +1,10 @@
 schema = 1
 
+# locales.HR reads its names with two family names (rules/O6), the
+# married double surname written without a hyphen (decisions/O6, 2026-11-21, #1190)
+[rules]
+two_family_names = true
+
 [[word]]
 text = "gospodin"
 salutation = { issue = 606, gender = "m", after_given = true }

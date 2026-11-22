@@ -187,8 +187,8 @@ def rules_patch(tag: str) -> PolicyPatch:
 
 def deviates_by_two_family_names(name: str) -> bool:
     """The DEVIATES declaration of a pack whose patch turns on
-    ``Policy.two_family_names`` (rules/O6), the es, es_ar, cs, sk,
-    pt_br and pt_pt packs, and of the given-name list the es, es_ar,
+    ``Policy.two_family_names`` (rules/O6), the es, es_ar, cs, sk, hr,
+    sl, pt_br and pt_pt packs, and of the given-name list the es, es_ar,
     pt_br and pt_pt packs carry beside it, which acts only where O6 does. O6 acts only on a name of three
     or more name words, so a name declares that holds three or more
     words, commas read as spaces,

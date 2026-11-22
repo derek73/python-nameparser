@@ -1,5 +1,10 @@
 schema = 1
 
+# locales.SL reads its names with two family names (rules/O6), the
+# married double surname written without a hyphen (decisions/O6, 2026-11-21, #1190)
+[rules]
+two_family_names = true
+
 [[word]]
 text = "ml"
 generation = { default = false, expands = "mlajši, the Younger", issue = [661, 679, 684, 753], note = "real and standard, but ML is a pair of initials in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovenian pack turns it on" }
