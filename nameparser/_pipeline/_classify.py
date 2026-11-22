@@ -32,7 +32,8 @@ two-word given names a bound word completes into (bound_phrases,
 any name or only in one of four name words or more
 (bound_completes_any, bound_long_names_only, #1464) and the words a
 pair writes second and joins from, and the pairs those list
-(bound_seconds, bound_second_phrases, #1072) and the titles a
+(bound_seconds, bound_second_phrases, bound_seconds_listed, #1072)
+and the titles a
 run of single letters may spell (dotted_titles, rules/H10, #490) and
 the saint particles a word glued at its full stop is cut behind (saint_particles, through
 `_vocab.glued_saint_cut`); and, since
@@ -211,7 +212,9 @@ _HAS_LETTER = re.compile(r"[^\W\d_]")
 # unambiguously; a single trailing period is the abbreviation shape
 # any word can wear and does not" -- and rules/S4: "a
 # bare ambiguous acronym is consumed only when the name has words to
-# spare"
+# spare" -- the tags those readings weigh: "vocab:suffix" on a word that
+# counts as written, the ambiguous class's tag on one the words-to-spare
+# guard weighs (decisions/S2, decisions/S3 (#516), decisions/S4)
 def _tags_for(token: WorkToken, n: str, state: ParseState,
               marker_tag: str | None, one_case_own: bool,
               one_case: bool, letter_one_case: bool) -> frozenset[str]:
@@ -233,12 +236,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     THIS, not `one_case_own`: a maiden clause's own words are outside
     `one_case_own`'s span by construction (`i < clause_at` fails for
     every one of them), so a token past the clause cut reads
-    `one_case_own` as False regardless of whether the WHOLE name is
-    written in one case -- 'JOHN SMITH NEE' flipped 'NEE' to a
-    credential reading with the switch on, one case and all, because
-    `not one_case_own` was true for it purely from being past the
-    clause cut, never from the name's own writing (#516 review round,
-    a second reviewer's finding). `single_letter_connective` below
+    `one_case_own` as False whatever the WHOLE name's case, and a
+    clause's word in capitals would read as a credential in a name
+    written wholly in them ('XYZ' in 'JOHN SMITH NEE JONES XYZ' under
+    CapsSuffixes.EVERYWHERE; decisions/S9 (#516)). `single_letter_connective` below
     keeps `one_case_own`: that fork is genuinely about the OWN-WORDS
     span, and reads a clause's word as no evidence on purpose.
 
@@ -248,7 +249,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     about the WHOLE name, since the own words' case says nothing
     about how the clause beside them was written: 'y' in 'MARIA
     GARCIA NEE LOPEZ y FERNANDEZ' is a lower-case letter among
-    capitals, which T4 reads as no initial (#723's review)."""
+    capitals, which T4 reads as no initial (decisions/T4 (#723))."""
     lex = state.lexicon
     tags = set(token.tags)
     if marker_tag is not None:
@@ -258,9 +259,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # rules/H5: "a title the vocabulary lists whole with a period
         # inside it chains without a final one" -- marked here, where
         # the listing is known whole; a period, since a hyphen alone
-        # joins whole words as often as abbreviations ('co-founder'), and
-        # the one hyphenated abbreviation ending a name in the corpora,
-        # 'д-р', is a credential there to CLDR (decisions/H5, #1104)
+        # joins whole words as often as abbreviations ('co-founder')
+        # (decisions/H5 (#1104))
         if "." in n and _JOINED_WORD.match(n):
             tags.add(JOINED_TITLE_TAG)
     # rules/H10: "a run of single letters joined by full stops whose
@@ -268,7 +268,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # that way" -- the tag; whether a title the run keeps follows it is
     # for the title runs to ask (`_pieces.leading_titles`, and H6's in
     # assign). The stop and set tests first, C-level, so a word with no
-    # interior stop, or one spelling no marked title, pays no frame.
+    # interior stop, or one spelling no marked title, pays no frame
+    # (decisions/H10 (#490)).
     elif ("." in n and n.replace(".", "") in lex._sets.dotted_titles
           and is_dotted_title(token.text, n, lex)):
         tags.add(DOTTED_TITLE_TAG)
@@ -276,12 +277,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:given-title")
     # rules/H5: "a title that may be a given name is title vocabulary
     # there where its title reading is written short" -- marked here,
-    # where the sets are at hand, so the chain reads a tag
+    # where the sets are at hand, so the chain reads a tag (decisions/H5
+    # (#999))
     if (n in lex._sets.title_abbreviations
             and n in lex._sets.titles_ambiguous):
         tags.add(TRAILING_TITLE_TAG)
     # rules/H8: "the word joins the title field" -- tagged only where the
     # word is a title too, so an entry outside `titles` is inert
+    # (decisions/H8 (#835))
     if n in lex._sets.after_given_titles and n in lex._sets.titles:
         tags.add("vocab:after-given-title")
     if suffix_as_written(n, token.text, lex):
@@ -290,7 +293,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # rules/S11: "it reads as the suffix only where the name has words
         # to spare" -- the ambiguous class's tag, so every site
         # that weighs a member weighs this one, and the cue tags that
-        # tell `_pieces.listed_lean` how its writing leans
+        # tell `_pieces.listed_lean` how its writing leans (decisions/S11)
         tags.add(AMBIGUOUS_ACRONYM_TAG)
         tags.add(AMBIGUOUS_WORD_TAG)
         if n in lex._sets.title_case_name_words:
@@ -298,8 +301,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         if n in lex._sets.agnomens:
             tags.add(AGNOMEN_TAG)
         # rules/R8: "The kind of a word listed as a suffix word is the
-        # lexicon's" -- a gated credential (`kc`, #965) reads as a
+        # lexicon's" -- a gated credential (`kc`) reads as a
         # credential, not the generation the class otherwise holds
+        # (decisions/S11 (#965))
         elif n in lex._sets.credential_words:
             tags.add(CREDENTIAL_WORD_TAG)
     elif n in lex._sets.suffix_words:
@@ -317,7 +321,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add(AMBIGUOUS_ACRONYM_TAG)
     # rules/P7: "A one-letter word written with its period is an
     # initial and not a particle" -- both particle tags, so 'Ó.' is
-    # neither half of the vocabulary
+    # neither half of the vocabulary (decisions/P7)
     if n in lex._sets.particles and not _spells_an_initial(n, token.text):
         tags.add("particle")
         if n in lex._sets.particles_ambiguous:
@@ -327,6 +331,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         if n in lex._sets.patronymic_particles:
             tags.add(PATRONYMIC_TAG)
     # rules/N4: "a recognized alias marker" -- group reads the tag
+    # (decisions/N4 (#1164))
     if n in lex._sets.alias_markers:
         tags.add(ALIAS_MARKER_TAG)
     # rules/P8: "a single-letter connective reads as an initial
@@ -362,20 +367,15 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the Spanish conjunction 'e'
         # rules/T4: "in a name written wholly in one case, which says
         # nothing about any letter in it, a bare letter is an initial
-        # wherever its capital would be" -- so every reader of the tag
-        # after classify reads 'j' as it reads 'J' (#723; the roman
-        # numerals first, #721). Readers that run before the tag
-        # exists, or ask the word's text rather than its tag -- the
-        # strict suffix test, which the honorific peel and
-        # `lenient_comma_suffixes=False` ask -- take the same fact as
-        # an argument (#727). `letter_one_case` is the own-words fact
-        # for an own word and the whole name's for a clause's
-        # (docstring). The capital is asked of the
-        # bare pattern at C level, no frame per one-letter word, and
-        # needs no script test: no capital `_INITIAL` matches is in a
-        # script without initials. 'é' and 'ж' stay as they were,
-        # their capitals being no initial either. A clause's letter
-        # asks the whole name's case (`letter_one_case`, docstring)
+        # wherever its capital would be" -- the tag, so every reader
+        # after classify reads 'j' as it reads 'J'; a reader that asks
+        # the word's text rather than its tag takes the same fact as an
+        # argument (decisions/T4 (#721, #723, #727)). A clause's letter
+        # asks the whole name's case (`letter_one_case`, docstring). The
+        # capital is asked of the bare pattern at C level, no frame per
+        # one-letter word, and needs no script test: no capital
+        # `_INITIAL` matches is in a script without initials. 'é' and 'ж'
+        # stay as they were, their capitals being no initial either
         initial = is_initial(token.text) or (
             letter_one_case and len(token.text) == 1
             and _INITIAL.fullmatch(token.text.upper()) is not None)
@@ -390,16 +390,17 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # weighs (`_pieces.is_leading_title`); a membership, so any spelling
     # carries it. Read too by rules/C13's given-name Except
     # (`_comma._given_name_written_short`) and rules/S8's one-case
-    # clause (`_pieces.short_given_name_in_one_case`, #1394)
+    # clause (`_pieces.short_given_name_in_one_case`) (decisions/H2
+    # (#789, #1394))
     if n in lex._sets.given_name_abbreviations:
         tags.add(GIVEN_ABBREVIATION_TAG)
     # rules/O6, O7 and P10 read this: a name a community gives every
     # member is neither taken nor completed by the two-name switches,
-    # nor completed by P10's particle phrase (#704)
+    # nor completed by P10's particle phrase (decisions/P10 (#704))
     if n in lex._sets.shared_names:
         tags.add(SHARED_NAME_TAG)
     # rules/P10 and O6 read this: a given name written behind a particle
-    # completes the given name it follows (#704)
+    # completes the given name it follows (decisions/P10 (#704))
     if n in lex._sets.particle_given_names:
         tags.add(PARTICLE_GIVEN_TAG)
     # maiden markers are NOT tagged here: an entry may be a phrase whose
@@ -636,7 +637,7 @@ def classify(state: ParseState) -> ParseState:
     # holding one, so that a name with neither pays no frame. A word read out of the title keeps no
     # title tag, and every later stage reads it as the name word it is;
     # a contested word keeps TITLE_AMBIGUOUS_TAG either way, for the
-    # report where it opens the name (assign)
+    # report where it opens the name (assign) (decisions/H9 (#752))
     # rules/H10: "a title that is also a given name reads it as the
     # title it spells when asking for a partner in its title phrase
     # (H9)" -- the run's spelling without stops goes to the phrase test
@@ -752,7 +753,7 @@ def classify(state: ParseState) -> ParseState:
     # comma's reading of its part (`_vocab.split_pair`). The shape and
     # the fold's membership are asked first, in C, so an ordinary pair
     # of words pays no frame; a token carrying a role is delimited
-    # content, which no pair reaches.
+    # content, which no pair reaches (decisions/S12 (#752)).
     split: dict[int, str] | None = None
     acronyms = sets.suffix_acronyms
     words = sets.suffix_words
@@ -808,7 +809,7 @@ def classify(state: ParseState) -> ParseState:
     # rules/H5: "successive single words that wear the abbreviation
     # shape and are title vocabulary chain into the title from the end"
     # -- which words those are, written once as CHAIN_TITLE_TAG for
-    # every reader of the chain (#1171). After H9's phrase test, which
+    # every reader of the chain (decisions/H5 (#1171)). After H9's phrase test, which
     # settles "vocab:title"; against the text as written, which the
     # readers saw before the tag ('Prof.;' wears no shape, C10's stem
     # notwithstanding). The tag tests first, in C, so only a title word

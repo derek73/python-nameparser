@@ -866,3 +866,21 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
     monkeypatch.setattr(_vocab, "_spells_an_initial",
                         lambda n, text: False)
     assert _surname_unit_disagreements() == ["Ó.", "ó.", "ณ."]
+
+
+@pytest.mark.parametrize("text,by_shape", [
+    # written wholly in capitals: the clause's word says nothing
+    ("JOHN SMITH NEE JONES XYZ", False),
+    # the contrast that admits it, the own words in mixed case
+    ("John Smith nee Jones XYZ", True),
+])
+def test_the_caps_half_reads_the_whole_names_case_for_a_clauses_word(
+        text: str, by_shape: bool) -> None:
+    # A maiden clause's words stand outside the own-words span, so asked
+    # of that span the clause's 'XYZ' would read as a word in a name of
+    # mixed case (decisions/S9, 2026-11-22)
+    tags = _tags_by_text(
+        text, Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+        Lexicon.default())
+    assert (SHAPE_ACRONYM_TAG in tags["XYZ"]) is by_shape
+    assert ("vocab:suffix-ambiguous" in tags["XYZ"]) is by_shape
