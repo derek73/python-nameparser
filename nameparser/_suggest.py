@@ -1311,7 +1311,8 @@ def _decide_order(tally: _Tally, base_order: tuple[Role, Role, Role],
                   trailing_note: str = ""
                   ) -> tuple[SettingEvidence, dict[str, object]]:
     """Decide ``name_order`` in either direction. A family-first answer
-    keeps the base's family-first spelling where the base has one. A
+    keeps the base's family-first spelling where the base has one,
+    unless an East Slavic rule is decided (below). A
     decided East Slavic rule decides the order as given-first, since
     the rule reorders each name and reorders none under a family-first
     order, unless the names' own votes decide family-first: a decided
@@ -1387,7 +1388,9 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
 
 def _quiet(parser: Parser, policy: Policy) -> Parser:
     """``parser`` reading under ``policy``, its construction warnings
-    silenced: the base's own reached its caller when it was built."""
+    silenced: a policy differing from the base's only in settings a
+    suggestion weighs raises none the base's own construction did not,
+    and those reached its caller when it was built."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return dataclasses.replace(parser, policy=policy)
@@ -1615,8 +1618,9 @@ def _trailing_initials_vote(
 def _two_family_note(base: Policy, rest: Policy) -> str:
     """Why ``two_family_names`` is not weighed under ``rest``, the policy
     the other settings suggest on ``base``, or "" where it is: it is
-    weighed only where the rest reads given-first with the East Slavic
-    rule off (decisions/group-suggestion, 2026-11-19 #1452)."""
+    weighed only where the base's switch is off and the rest reads
+    given-first with the East Slavic rule off (decisions/group-suggestion,
+    2026-11-19 #1452)."""
     if base.two_family_names:
         return "not read: the base reads two family names already"
     if PatronymicRule.EAST_SLAVIC in rest.patronymic_rules:
@@ -1687,7 +1691,8 @@ def _decide_two_family_names(
     _MIN_TWO_FAMILY_SHARE of the names the switch would move, and more
     than the names it would read a father's name in as a first surname.
     A group never decides it false. ``note`` says why it was not
-    weighed, if it was not."""
+    weighed, and is empty where it was, a group no name of which the
+    switch moves included."""
     # a name casts one vote at most, so the tally counts names
     tally = _Tally()
     for v in votes:
@@ -1799,7 +1804,8 @@ def suggest(parser: Parser, names: Iterable[str]) -> Suggestion:
         trailing_note)
     fields = {**order_fields, **patronymic_fields, **letter_fields,
               **capitals_fields}
-    # read under the parser the other settings suggest
+    # the policy the other settings suggest, which the switch's votes
+    # are read under
     rest = apply_patch(policy, PolicyPatch(**fields))  # type: ignore[arg-type]
     two_note = _two_family_note(policy, rest)
     if two_note:

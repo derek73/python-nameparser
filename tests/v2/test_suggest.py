@@ -3645,3 +3645,37 @@ def test_a_suggestion_holding_a_first_surname_vote_round_trips() -> None:
     assert any(Signal.FIRST_SURNAME in n.votes for n in s.names)
     again = pickle.loads(pickle.dumps(s))
     assert (again.names, again.patch) == (s.names, s.patch)
+
+
+#: Why the switch is not weighed, each reason in full, as str() prints it.
+_NOT_READ = {
+    "base": "not read: the base reads two family names already",
+    "east-slavic": ("not read: the East Slavic rule is on, and the switch "
+                    "would read a patronymic as a first surname"),
+    "family-first": ("not read: the order is family-first, and two family "
+                     "names are weighed under a given-first order alone"),
+}
+
+
+@pytest.mark.parametrize(("policy", "names", "reason"), [
+    (Policy(two_family_names=True), _TWO_FAMILY * 2, "base"),
+    # the base's own switch is asked first, before the rule and the order
+    (Policy(two_family_names=True, patronymic_rules=_EAST_SLAVIC_RULE),
+     _TWO_FAMILY * 2, "base"),
+    (Policy(two_family_names=True, name_order=FAMILY_FIRST),
+     _TWO_FAMILY * 2, "base"),
+    (Policy(), _TWO_FAMILY * 3 + [f"Ivan Petrovich Qq{c}ov" for c in "abcde"],
+     "east-slavic"),
+    (Policy(name_order=FAMILY_FIRST),
+     ["García Qqmoreno Zzana", "López Xxromero Qqluis",
+      "Pérez Vvnavarro Xxelena"] * 2, "family-first"),
+])
+def test_a_switch_not_weighed_says_why_and_casts_no_vote(
+        policy: Policy, names: list[str], reason: str) -> None:
+    s = Parser(policy=policy).suggest(names)
+    evidence = _two_family(s)
+    assert evidence.note == _NOT_READ[reason]
+    assert (evidence.decided, evidence.votes_for, evidence.votes_against,
+            evidence.contested, evidence.no_evidence, evidence.by_signal
+            ) == (False, 0, 0, 0, len(names), ())
+    assert not any(Signal.FIRST_SURNAME in name.votes for name in s.names)
