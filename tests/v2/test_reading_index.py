@@ -390,12 +390,13 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: file-strict entry measured 16 words, 27 word-and-tag pairs over 13
 #: tags on 2026-10-31; the strict-gap batches of 2026-11-03 moved it, and
 #: #345 added hi's sushri, its Odia given name in or.toml; #1483 my's
-#: ranks, whose given names only en.toml writes). A
+#: ranks, whose given names only en.toml writes; #1463 took off ar's cheikh
+#: and ms's sultan, each given a given reading in its file). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
-    "ar": {"ben", "cheikh"},
+    "ar": {"ben"},
     "ca": {"del", "la"},
     "cs": {"st"},
     "fil": {"del", "la", "san"},
@@ -405,7 +406,7 @@ STRICT_UNGATED = {
     "hi": {"sushri"},
     "hr": {"st"},
     "it": {"del", "la", "san", "santa"},
-    "ms": {"bin", "sultan"},
+    "ms": {"bin"},
     "my": {"brig", "gen", "maj", "major"},
     "nl": {"den", "ten", "tho"},
     "pt": {"da", "do", "santa"},
@@ -423,6 +424,46 @@ def test_the_words_strict_ungates_are_the_reviewed_set() -> None:
         if words:
             got[tag] = set(words)
     assert got == STRICT_UNGATED
+
+
+#: Names opening with, or holding, a word that left STRICT_UNGATED when
+#: its chosen file gained the name reading (#1463), in each comma shape
+#: and case, behind a salutation and before a credential.
+_REGATED = {
+    "ar": ("Cheikh Kaddari", "Kaddari, Cheikh", "Kaddari, Cheikh Amine",
+           ", Cheikh", "Cheikh", "CHEIKH KADDARI", "cheikh kaddari",
+           "Mr Cheikh Kaddari", "Cheikh Kaddari, PhD", "Amine Cheikh"),
+    "ms": ("Sultan Zulkarnain", "Zulkarnain, Sultan", "Zulkarnain, Sultan Ahmad",
+           ", Sultan", "Sultan", "SULTAN ZULKARNAIN", "sultan zulkarnain",
+           "Encik Sultan Zulkarnain", "Sultan bin Ahmad", "Ahmad bin Sultan",
+           "Aisha Sultan, DPT", "Sultan II"),
+}
+
+
+@pytest.mark.parametrize("order", ["GIVEN_FIRST", "FAMILY_FIRST",
+                                   "FAMILY_FIRST_GIVEN_LAST"])
+@pytest.mark.parametrize("tag", sorted(_REGATED))
+def test_a_strict_choice_reads_a_regated_word_as_its_plain_choice_does(
+        tag: str, order: str) -> None:
+    # strict drops the file holding the only name reading of `cheikh`
+    # (fr.toml) and of `sultan` (ar.toml, tr.toml), and read each as the
+    # title opening a name (rules/H9) until ar.toml and ms.toml wrote one
+    import nameparser as N
+    from nameparser import Lexicon, Locale, Parser, Policy, parser_for
+    choice = Locale(code="choice", lexicon=Lexicon.empty(),
+                    languages=frozenset({tag}))
+    policy = Policy(name_order=getattr(N, order))
+    plain, strict = (Parser(lexicon=parser_for(choice, strict=s).lexicon,
+                            policy=policy) for s in (False, True))
+    for name in _REGATED[tag]:
+        got, want = strict.parse(name), plain.parse(name)
+        assert got.as_dict() == want.as_dict(), name
+        # strict ms drops en.toml's DPT, so it reports the unlisted
+        # credential where the plain choice, listing it, reports nothing
+        if name != "Aisha Sultan, DPT":
+            assert ([a.kind for a in got.ambiguities]
+                    == [a.kind for a in want.ambiguities]), name
+        assert not got.title or name.startswith(("Mr", "Encik"))
 
 
 def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None:
