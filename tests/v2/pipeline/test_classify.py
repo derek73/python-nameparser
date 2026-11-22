@@ -899,8 +899,10 @@ def test_the_caps_half_asks_the_own_words_case_of_a_clauses_word(
     # `long_names_only` counts a bound given name after the pair as a
     # name word: four, so the first `abdul` pairs with `aziz`
     ("Ali abdul aziz abdul", 1, {BOUND_PHRASE_TAG}),
-    # under a caller's listing, a pair both walks read: the second's
-    # marks hold the first's
+    # a caller's listing makes the first walk mark this word too; the
+    # second walk's marks must stand over it (a first mark kept would
+    # drop BOUND_SECOND_TAG), which is all this row pins: the default
+    # lexicon reads it the same
     ("محمد ذو الغنى", 1, {BOUND_PHRASE_TAG, BOUND_SECOND_TAG}),
 ])
 def test_the_p12_walks_mark_the_first_word_of_each_pair(
