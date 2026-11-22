@@ -26,9 +26,10 @@
 
 **Accepted:**
 
-- A zero-width joiner or non-joiner stays inside the word even at its edge, where it joins nothing, since between letters it decides how they join.
+- A zero-width joiner or non-joiner stays inside the word even at its edge, where it joins nothing, since between letters it decides how they join; at the edge the word is looked up without it, so a listed word typed with one is still that word.
   ```
   "Antonio ‌Negri"  →  family="‌Negri"
+  "Dr‌ John Smith"  →  title="Dr‌"
   ```
 - A zero-width space, invisible separator or byte-order mark does not count as a space where a quote or a maiden marker is recognized, as the katakana middle dot does not (rules/T2): a marker glued to its name by one leaves the clause a nickname.
   ```
