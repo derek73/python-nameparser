@@ -100,16 +100,16 @@ def test_the_separator_classes_hold_their_parts_over_every_code_point() -> None:
     # #1436: the ignorable set is a regex class built from its parts, so
     # a region is scanned in C; held here, over every code point, to the
     # parts as their own predicates state them (str.isspace, the two
-    # sets, the emoji ranges, _BIDI), for each setting of the two strip
-    # switches, and the boundary class to the ignorable one plus the
-    # commas and transcription dots. Each class is matched whole, in C.
-    # It guards how the classes are ASSEMBLED, not which characters
-    # belong: _BIDI is compiled from the same string the classes are,
-    # so a mark dropped from it passes here.
+    # sets, the emoji ranges, _BIDI_CHARS), for each setting of the two
+    # strip switches, and the boundary class to the ignorable one plus
+    # the commas and transcription dots. Each class is matched whole, in
+    # C. It guards how the classes are ASSEMBLED, not which characters
+    # belong: the classes are built from _BIDI_CHARS too, so a mark
+    # dropped from it passes here.
     from nameparser._pipeline._state import COMMA_CHARS
     everything = "".join(map(chr, range(0x110000)))
     space = {c for c, ch in enumerate(everything) if ch.isspace()}
-    bidi = {m.start() for m in re.finditer(_tokenize._BIDI.pattern[:-1],
+    bidi = {m.start() for m in re.finditer(f"[{_tokenize._BIDI_CHARS}]",
                                            everything)}
     emoji = {c for lo, hi in _tokenize._EMOJI_RANGES
              for c in range(lo, hi + 1)}
@@ -537,3 +537,20 @@ def test_full_name_before_an_ethiopic_suffix_comma(
         order: tuple[Role, Role, Role], expect: dict[str, str]) -> None:
     name = Parser(policy=Policy(name_order=order)).parse("አበበ ከበደ፣ Jr.")
     assert {k: v for k, v in name.as_dict().items() if v} == expect
+
+
+@pytest.mark.parametrize("text, held", [
+    ('Jon "Nick Smith', ['"Nick']),    # the offset opens its token
+    ('"John Smith', ['"John']),        # offset 0, the first token
+    ("John Smith)", ["Smith)"]),       # the offset ends its token
+    ('John Smith "', ['"']),           # a lone delimiter, the last token
+])
+def test_a_stray_delimiters_report_points_at_the_token_holding_it(
+        text: str, held: list[str]) -> None:
+    # extract reports a stray delimiter by its character offset, and
+    # tokenize rewrites the offset to the index of the token holding the
+    # character, by bisecting the token starts: a row at each end of a
+    # token, and at each end of the name
+    out = _tokenized(text)
+    assert [out.tokens[i].text for a in out.ambiguities
+            for i in a.indices] == held

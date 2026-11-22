@@ -39,23 +39,23 @@ from nameparser._types import Role, Span
 
 # Ported from v1's "emoji" and "bidi" patterns (the 1.x and 2.x
 # nameparser.config.regexes, removed in 3.0, #1008); this is now the
-# only copy. Written as integer ranges, never as a literal regex class:
-# CodeQL's py/overly-large-range false-positives on literal astral
-# ranges (surrogate decomposition), so the class below is built from
-# the integers.
+# only copy. The emoji ranges are written as integers, never as a
+# literal regex class: CodeQL's py/overly-large-range false-positives on
+# literal astral ranges (surrogate decomposition), so their class,
+# _EMOJI_CHARS, is built from the integers. The bidi marks are all in
+# the BMP and stay a literal class body.
 _EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                  (0x2600, 0x26FF), (0x2700, 0x27BF))
 _BIDI_CHARS = '\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069'
-_BIDI = re.compile(f'[{_BIDI_CHARS}]+')
-# The same ranges as a character class, for the classes below
 _EMOJI_CHARS = ''.join(f'{chr(lo)}-{chr(hi)}' for lo, hi in _EMOJI_RANGES)
 
 # rules/T2: "the katakana middle dot, its halfwidth twin and the
-# Ethiopic wordspace divide a name like whitespace, always." They
-# record no offset: the nakaguro also divides kanji roster pairs
+# Ethiopic wordspace divide a name like whitespace, always." -- the
+# Then, for these three characters, in every context. They record no
+# offset: the nakaguro also divides kanji roster pairs
 # (高橋・一郎, read family-first by the script license, #272), so it is
-# not a transcription marker; only the Chinese 间隔号 is (#298). The
-# Ethiopic wordspace U+1361 joined them (decisions/T2, #1202).
+# not a transcription marker; _TRANSCRIPTION_DOTS below are
+# (decisions/T2 and T3, #298, #1202, #1312).
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65", "\u1361"})
 
 # rules/T6: "a narrow no-break space between two Mongolian letters
@@ -85,8 +85,9 @@ _INTERPUNCT = "\u00B7"
 _TRANSCRIPTION_DOTS = frozenset({_INTERPUNCT, "\uFF0E"})
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
-# part of the word" (history: decisions/T3). The flank guard asks
-# _policy._classified_char per CHAR: a one-char string is
+# part of the word" -- the Then, for both _TRANSCRIPTION_DOTS, whose
+# flank guard _tokenize_region applies (decisions/T3, #298, #1312). The
+# guard asks _policy._classified_char per CHAR: a one-char string is
 # wholly-classified iff the character is. Context-sensitivity is why the
 # guard lives in _tokenize_region (where the index exists) and not in
 # _ignorable.
@@ -105,11 +106,11 @@ def _chars(chars: frozenset[str]) -> str:
 # match against them, and the boundary pattern _tokenize_region scans
 # with is the ignorable class plus the characters that separate only by
 # context (the commas, which record an offset, and the transcription
-# dots, whose flanks decide). One ignorable character is context too:
-# U+202F, whitespace, which rules/T6 has join two Mongolian letters, so
-# the scan's three branches (comma, U+202F, dot) are the whole of
-# context. `\s` matches exactly the characters str.isspace() accepts
-# (checked over every code point).
+# dots, whose flanks decide); U+202F is whitespace, ignorable, save
+# where rules/T6 has it join two Mongolian letters. `\s` matches
+# exactly what str.isspace() accepts, which
+# test_the_separator_classes_hold_their_parts_over_every_code_point
+# holds over every code point.
 _ALWAYS = r'\s' + _chars(_NAME_DOT_SEPARATORS | _INVISIBLE_SEPARATORS)
 _SWITCHES = ((False, False), (False, True), (True, False), (True, True))
 
@@ -139,25 +140,25 @@ def _mongolian_letter(ch: str) -> bool:
 
 
 def _stripped(ch: str, policy: Policy) -> bool:
-    """True when the strip policy removes `ch` from the token stream:
-    the reader _flank asks of the set _strip_class defines, which also
-    feeds _IGNORABLE and _BOUNDARY. A character the strip policy removes
-    must not occupy a flank position either, so a new strip class added
-    to _strip_class stays transparent to the interpunct guard by
-    construction. The separators
-    (whitespace, the name dots and _INVISIBLE_SEPARATORS) are not in
-    this set and do occupy one."""
+    """True when the strip policy removes `ch` from the token stream.
+    It matches the class _strip_class builds, which _IGNORABLE and
+    _BOUNDARY are built from too. _flank skips what it matches, so a
+    stripped character never occupies a flank, and a strip class added
+    to _strip_class is transparent to the transcription-dot guard by
+    construction. The separators (whitespace, the name dots and
+    _INVISIBLE_SEPARATORS) are not stripped and do occupy one."""
     pattern = _STRIPPED[policy.strip_bidi, policy.strip_emoji]
     return pattern is not None and pattern.match(ch) is not None
 
 
 def _flank(text: str, indices: range, policy: Policy) -> str | None:
     """The nearest flank character the strip policy would keep, or
-    None if the range exhausts. Stripped invisibles are TRANSPARENT
+    None if the range exhausts. What the strip policy removes (the
+    bidi marks and the emoji, each under its switch) is TRANSPARENT
     here: an RTL document quoting a transcription puts U+200F beside
-    the dot in visually identical text. Whitespace and the other
-    separators stay guard-defeating: a dot beside a space is not
-    between characters."""
+    the dot in visually identical text. Whitespace, the name dots and
+    _INVISIBLE_SEPARATORS stay guard-defeating: a dot beside a space is
+    not between characters."""
     for i in indices:
         ch = text[i]
         if not _stripped(ch, policy):
@@ -168,10 +169,10 @@ def _flank(text: str, indices: range, policy: Policy) -> str | None:
 def _ignorable(ch: str, state: ParseState) -> bool:
     """True when `ch` separates the words beside it: whitespace, the
     name dots, _INVISIBLE_SEPARATORS (all unconditional, not
-    policy-gated: commas RECORD an offset and these must not, and only
-    the 间隔号 marks a transcription, #298), and what the strip policy
-    removes. The one exception is decided in _tokenize_region, by
-    context: U+202F between two Mongolian letters joins them (rules/T6)."""
+    policy-gated, and recording no offset, which the commas and the
+    transcription dots do), and what the strip policy removes. The
+    one exception is decided in _tokenize_region, by context: U+202F
+    between two Mongolian letters joins them (rules/T6)."""
     policy = state.policy
     return _IGNORABLE[policy.strip_bidi, policy.strip_emoji].match(
         ch) is not None
@@ -199,6 +200,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             # #653)
             if not record_offsets:
                 continue
+            commas.append(i)
         elif ch == _NARROW_NBSP:
             if (start < i < end - 1 and _mongolian_letter(text[i - 1])
                     and _mongolian_letter(text[i + 1])):
@@ -218,15 +220,12 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             right = _flank(text, range(i + 1, end), policy)
             if right is None or not _classified_char(right):
                 continue
+            if record_offsets:
+                interpuncts.append(i)
         if tok_start < i:
             tokens.append(WorkToken(text[tok_start:i],
                                     Span(tok_start, i), role=role))
         tok_start = i + 1
-        if record_offsets:
-            if ch in COMMA_CHARS:
-                commas.append(i)
-            elif ch in _TRANSCRIPTION_DOTS:
-                interpuncts.append(i)
     if tok_start < end:
         tokens.append(WorkToken(text[tok_start:end],
                                 Span(tok_start, end), role=role))
@@ -244,8 +243,9 @@ def tokenize(state: ParseState) -> ParseState:
     for start, end in zip(boundaries[::2], boundaries[1::2]):
         _tokenize_region(state, start, end, None, True, tokens, commas,
                          interpuncts)
-    # extracted regions: pre-set role; a comma is word text there and an
-    # interpunct a mere separator, neither recording an offset
+    # extracted regions: pre-set role; a comma is word text there, and a
+    # transcription dot divides where its flanks allow but records no
+    # offset
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas, interpuncts)
@@ -259,16 +259,16 @@ def tokenize(state: ParseState) -> ParseState:
     # offset back out of its detail string. An offset inside a masked
     # region belongs to no token; those keep an empty tuple, which the
     # kind's contract already allows.
-    # Bisect rather than rescan: the closer sweep can emit one
-    # ambiguity per delimiter character, so a linear scan per ambiguity
-    # is quadratic on pathological input (') ' * 1600 spent 180ms here,
-    # against 9ms before the sweep existed). Spans are non-overlapping
-    # and sorted just above, so the candidate is the last token whose
-    # start is <= the offset.
-    # Nothing to resolve on the overwhelmingly common no-ambiguity
-    # parse, and building starts + the closure is not free.
+    # Bisect rather than rescan: the closer sweep reports one ambiguity
+    # per stray closing delimiter, so a linear scan per ambiguity is
+    # quadratic in them (test_benchmark.py's `unmatched_closes` row;
+    # decisions/parse-cost, 2026-11-22 #1527). Spans are non-overlapping and
+    # sorted just above, so the candidate is the last token whose start
+    # is <= the offset.
+    # Nothing to resolve on the common parse with no ambiguity, which
+    # the empty-tuple test passes without the generator's frame.
     ambiguities = state.ambiguities
-    if any(a.origin is not None for a in ambiguities):
+    if ambiguities and any(a.origin is not None for a in ambiguities):
         starts = [t.span.start for t in tokens]
 
         def _containing(offset: int) -> tuple[int, ...]:

@@ -176,7 +176,6 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # #542: the name run after an Mc prefix, read on the word as
     # written once _MC has matched its composed spelling
     ("_render", "_NAME_RUN"): None,
-    ("_tokenize", "_BIDI"): None,
     # Mirrors _pipeline._state.COMMA_CHARS, a set rather than a
     # pattern -- pinned by its own test below
     ("_render", "_COMMA_CHAR"): None,
