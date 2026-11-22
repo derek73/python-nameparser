@@ -2483,10 +2483,11 @@ Ra as a Korean name
 ends or opens one, where 1.4.0 through 3.1.0 read it as the credential
 RA ending a name of three words and the title RA (Rechtsanwalt)
 opening one. Ending a name after a comma in a name of mixed case, or
-written ``R.A.``, it is still the credential. ``RA`` after a family
-comma in a name written wholly in capitals (``KING, RA``), ``RA``
-opening the given part after a family comma (``Smith, RA John``) and
-``RA`` opening a German name are now the given name:
+written ``R.A.``, it is still the credential. ``RA`` opening the part
+after a family comma in a name written wholly in capitals (``KING,
+RA``), ``RA`` opening the given part after a family comma ahead of a
+name word (``Smith, RA John``) and ``RA`` opening a German name are
+now the given name:
 
 .. doctest::
 
