@@ -871,14 +871,18 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
 @pytest.mark.parametrize("text,by_shape", [
     # written wholly in capitals: the clause's word says nothing
     ("JOHN SMITH NEE JONES XYZ", False),
+    # the own words in capitals, the clause not: the own words' case,
+    # not the whole name's
+    ("JOHN SMITH nee Jones XYZ", False),
     # the contrast that admits it, the own words in mixed case
     ("John Smith nee Jones XYZ", True),
 ])
-def test_the_caps_half_reads_the_whole_names_case_for_a_clauses_word(
+def test_the_caps_half_asks_the_own_words_case_of_a_clauses_word(
         text: str, by_shape: bool) -> None:
     # A maiden clause's words stand outside the own-words span, so asked
-    # of that span the clause's 'XYZ' would read as a word in a name of
-    # mixed case (decisions/S9, 2026-11-22)
+    # whether the token is itself an own word in a name of one case, the
+    # clause's 'XYZ' would read as a word in a name of mixed case
+    # (decisions/S9, 2026-09-18 #516)
     tags = _tags_by_text(
         text, Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
         Lexicon.default())

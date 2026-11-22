@@ -381,7 +381,8 @@ _SHAPES = {
     # pair, 18.4x at base 200 and 14.3x at 800, and the walk from a
     # second word tested a list by `in` once per token, 4.96x at 200 and
     # 7.51x at 800 (af58ca09, py3.11, 2026-11-22, load average 50-125);
-    # counted to four and kept in a dict, 4.61x and 4.88x at 800
+    # counted to four and kept in a dict, bound_pairs reads 4.61x and
+    # bound_seconds 4.88x at 800
     "bound_pairs": "abdul aziz ",
     "bound_seconds": "عز الدين ",
 }

@@ -214,7 +214,8 @@ _HAS_LETTER = re.compile(r"[^\W\d_]")
 # bare ambiguous acronym is consumed only when the name has words to
 # spare" -- the tags those readings weigh: "vocab:suffix" on a word that
 # counts as written, the ambiguous class's tag on one the words-to-spare
-# guard weighs (decisions/S2, decisions/S3 (#516), decisions/S4)
+# guard weighs (decisions/S2, decisions/S3, decisions/S4, decisions/S9
+# (#516))
 def _tags_for(token: WorkToken, n: str, state: ParseState,
               marker_tag: str | None, one_case_own: bool,
               one_case: bool, letter_one_case: bool) -> frozenset[str]:
@@ -231,14 +232,15 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     name's own words, and appending one must not change how THIS token
     reads.
 
-    `one_case` is the bare NAME-level fact alone -- P3's own-words
-    span is not this question's business. #516's caps branch reads
+    `one_case` is the own words' fact alone, asked of every token
+    whatever its position -- P3's own-words span is not this question's
+    business. #516's caps branch reads
     THIS, not `one_case_own`: a maiden clause's own words are outside
     `one_case_own`'s span by construction (`i < clause_at` fails for
     every one of them), so a token past the clause cut reads
-    `one_case_own` as False whatever the WHOLE name's case, and a
-    clause's word in capitals would read as a credential in a name
-    written wholly in them ('XYZ' in 'JOHN SMITH NEE JONES XYZ' under
+    `one_case_own` as False even where the own words are written in one
+    case, and a clause's word in capitals would read as a credential in
+    a name written in them ('XYZ' in 'JOHN SMITH NEE JONES XYZ' under
     CapsSuffixes.EVERYWHERE; decisions/S9 (#516)). `single_letter_connective` below
     keeps `one_case_own`: that fork is genuinely about the OWN-WORDS
     span, and reads a clause's word as no evidence on purpose.
@@ -370,7 +372,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # wherever its capital would be" -- the tag, so every reader
         # after classify reads 'j' as it reads 'J'; a reader that asks
         # the word's text rather than its tag takes the same fact as an
-        # argument (decisions/T4 (#721, #723, #727)). A clause's letter
+        # argument (decisions/T4 (#723, #727), decisions/S10 (#721)). A clause's letter
         # asks the whole name's case (`letter_one_case`, docstring). The
         # capital is asked of the bare pattern at C level, no frame per
         # one-letter word, and needs no script test: no capital
@@ -391,7 +393,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # carries it. Read too by rules/C13's given-name Except
     # (`_comma._given_name_written_short`) and rules/S8's one-case
     # clause (`_pieces.short_given_name_in_one_case`) (decisions/H2
-    # (#789, #1394))
+    # (#789), decisions/S8 (#1394))
     if n in lex._sets.given_name_abbreviations:
         tags.add(GIVEN_ABBREVIATION_TAG)
     # rules/O6, O7 and P10 read this: a name a community gives every
