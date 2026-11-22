@@ -61,7 +61,7 @@ proposed again.
 ~/.cache/nameparser-tools) under FETCH_DIR, named by the query's
 digest, and asks the query service again only for an answer it does
 not hold; `pairs` reads the kept answers alone, refusing to run on a
-missing one, and writes CANDIDATES_FILE beside them (a file of its own
+missing one, and writes CANDIDATES_FILE in the cache folder above them (a file of its own
 for `--country`). The requests name no person or project (USER_AGENT).
 The candidates hold given names, counts and country codes, no person.
 """

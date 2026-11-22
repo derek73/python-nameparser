@@ -989,9 +989,10 @@ class Policy:
     #: ``Carlos Pérez``), which is most English and Argentine names of
     #: three words or more and many Portuguese and Brazilian ones as
     #: filed: switched on for a mixed population it costs more names
-    #: than it mends, so it is off by default and reports nothing. Runs
-    #: before middle_as_family, which then folds whatever middles are
-    #: left.
+    #: than it mends, so it is off by default and reports nothing;
+    #: Parser.suggest may suggest it for a group written given name
+    #: first (Signal.FIRST_SURNAME). Runs before middle_as_family, which
+    #: then folds whatever middles are left.
     two_family_names: bool = False
     #: Reads the given name as two name units, for data where a person
     #: carries a compound given name and no middle name (rules/O7):

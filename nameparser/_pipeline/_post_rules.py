@@ -806,12 +806,11 @@ def _take_second_family_name(state: ParseState, tokens: list[WorkToken],
     if not any(ch.isalpha() for i in take for ch in tokens[i].text):
         return
     # rules/O6: "a listed given name stays where it is" -- the caller's
-    # Lexicon.given_names (empty by default; the es, es_ar, pt_br and
-    # pt_pt packs carry a list, with the switch on) names a word only a given name is, under
-    # either order. Only a unit of one token is asked: a word
-    # behind a particle ("de Miguel") is a unit of two, a surname taken
-    # as before. History: decisions/O6 (#959).
-    # A hyphenated word writing given names stays too (#959).
+    # Lexicon.given_names (empty by default; a pack turning O6 on may
+    # carry one) names a word only a given name is, under either order,
+    # and a hyphenated word writing given names stays too. Only a unit
+    # of one token is asked: a word behind a particle ("de Miguel") is a
+    # unit of two, a surname taken as before (decisions/O6 (#959)).
     if len(take) == 1 and (
             is_listed_given_name(tokens[take[0]].text, state.lexicon)
             or _hyphenated_given(tokens[take[0]].text, state.lexicon)):

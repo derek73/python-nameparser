@@ -314,8 +314,9 @@ class Parser:
         the base: a :class:`~nameparser.Suggestion` whose ``parser``
         reads the group. ``names`` is any iterable of str the caller
         declares to be one group (one source, one convention), read
-        once. Each name casts votes on its name order and its
-        patronymic shape, read with this parser's lexicon past the
+        once. Each name casts votes on its name order, its patronymic
+        shape and, where the switch would change it,
+        ``two_family_names``, read with this parser's lexicon past the
         titles it lists at the head and the post-nominals at the end; a
         name of fewer than two words once those are read past casts
         none, and so does a name with a comma, unless only

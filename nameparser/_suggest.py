@@ -608,6 +608,15 @@ def _order_ends(pairs: Iterable[tuple[Signal, Vote]]
                      if _SETTING_OF[signal] == _NAME_ORDER)
 
 
+def _offered(owner: str, signal: Signal, vote_code: str) -> str:
+    """The code a refused vote's message offers, in its owner's shape: a
+    NameEvidence vote is a mapping entry, a SettingEvidence row a
+    triple."""
+    return (f"{{Signal.{signal.name}: {vote_code}}}"
+            if owner == "NameEvidence"
+            else f"(Signal.{signal.name}, {vote_code}, 2)")
+
+
 def _checked_vote(signal: object, vote: object,
                   owner: str = "NameEvidence") -> tuple[Signal, Vote]:
     """One (signal, vote) pair, validated: an order signal votes
@@ -620,14 +629,14 @@ def _checked_vote(signal: object, vote: object,
         if not isinstance(vote, bool):
             raise TypeError(
                 f"{owner} vote for {signal.value!r} must be True or False, "
-                f"got {vote!r}; pass e.g. {{Signal.{signal.name}: True}}")
+                f"got {vote!r}; pass e.g. {_offered(owner, signal, 'True')}")
         return signal, vote
     if setting == _PATRONYMIC_RULES:
         if not isinstance(vote, PatronymicRule):
             raise TypeError(
                 f"{owner} vote for {signal.value!r} must be a "
                 f"PatronymicRule, got {vote!r}; pass e.g. "
-                f"{{Signal.PATRONYMIC: PatronymicRule.EAST_SLAVIC}}")
+                f"{_offered(owner, signal, 'PatronymicRule.EAST_SLAVIC')}")
         return signal, vote
     if not isinstance(vote, (tuple, list)):
         raise TypeError(

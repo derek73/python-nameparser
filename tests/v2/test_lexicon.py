@@ -2217,3 +2217,30 @@ def test_words_finds_a_spelling_of_several_by_any_word_it_names() -> None:
     assert "md" not in lexicon.words(kind="given",
                                      same_as=["muhammad", "mohamad"])
     assert lexicon.words(kind="given", same_as="charles") == ("chas",)
+
+
+@pytest.mark.parametrize("prop, kind, word", [
+    ("completes", "bound_second", "ذو"),
+    ("completed_by", "bound_given", "الله"),
+])
+def test_a_pair_list_given_a_bare_string_offers_a_list_that_runs(
+        prop: str, kind: str, word: str) -> None:
+    with pytest.raises(TypeError) as refused:
+        Lexicon.default().add("zzend", kind=kind, **{prop: word})
+    offered = str(refused.value).split(f"e.g. {prop}=", 1)[1].split(", got")[0]
+    added = Lexicon.default().add("zzend", kind=kind,
+                                  **{prop: eval(offered)})
+    assert [dict(r.properties)[prop] for r in added.readings_of("zzend")] == [
+        (word,)]
+
+
+def test_completed_by_none_clears_the_list_the_message_offers_to_clear() -> None:
+    # the empty-list refusal offers `completed_by=None` to clear a list
+    # the word's reading has; run it on a word that ships one
+    with pytest.raises(ValueError, match="completed_by=None"):
+        Lexicon.default().add("عبد", kind="bound_given", completed_by=[])
+    cleared = Lexicon.default().add("عبد", kind="bound_given",
+                                    completed_by=None)
+    assert all("completed_by" not in dict(r.properties)
+               or dict(r.properties)["completed_by"] is None
+               for r in cleared.readings_of("عبد"))

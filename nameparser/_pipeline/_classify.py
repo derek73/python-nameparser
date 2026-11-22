@@ -624,6 +624,7 @@ def classify(state: ParseState) -> ParseState:
     # vocabulary reading, not initial-shaped) and holding a letter, and
     # one written `long_names_only` too, which post_rules splits back in
     # a name of fewer than four name words (decisions/P12, #1464)
+    #
     # the marks each pair's first word takes, written in one pass after
     # both walks
     bound: dict[int, frozenset[str]] = {}

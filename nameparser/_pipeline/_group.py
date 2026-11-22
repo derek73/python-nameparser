@@ -1989,19 +1989,13 @@ def group(state: ParseState) -> ParseState:
     # invariant, and script_segment only ever splits a token into
     # sub-slices, so containment stays exact.
     #
-    # Bisect rather than scan the token list per clause: that is
-    # quadratic in the number of delimited pairs, and "(a) " * 3200 --
-    # 4x test_benchmark's base, NOT a doubling -- measured a 14.1x cost
-    # against the 4.1x the same shape holds under a policy with no
-    # maiden_delimiters. The control is what says which unit a ratio is
-    # in: linear is ~4 for 4x the input and ~2 for a doubling, so a 4.1x
-    # control cannot be per doubling. Re-measured 2026-08-03 at 11.2x
-    # against 4.2x (3.2x against 2.1x per doubling) -- the separation
-    # replicates, the exact ratio moves with the runner. Same idiom,
-    # and the same reason, as _extract._overlaps and _tokenize's origin
-    # resolution. test_benchmark's maiden_pairs shape is the guard.
+    # Bisect rather than scan the token list per clause, which is
+    # quadratic in the number of delimited pairs (decisions/parse-cost);
+    # the same idiom, and the same reason, as _extract._overlaps and
+    # _tokenize's origin resolution. test_benchmark's maiden_pairs shape
+    # is the guard.
     # rules/N4: "the marker dropped as M3 drops it" -- a nickname
-    # clause opening with an alias marker, by the same walk (#1164).
+    # clause opening with an alias marker, by the same walk (decisions/N4 (#1164)).
     # A plain loop over a map of a C getter, no frame: a name with no
     # clause pays nothing, and one with a clause no frame for the starts
     starts = list(map(_SPAN_START, tokens)) if state.extracted else []

@@ -87,8 +87,8 @@ _TATWEEL = "\u0640"
 # rules/T1: "at the edge the word is looked up without it"
 # The zero-width non-joiner and joiner shape the letters on either side
 # of them, so at a word's edge they shape nothing and are dropped when
-# the word is looked up (#1335: `مهندس` typed with a ZWNJ after it is
-# the title `مهندس`), with the edge full stops. Inside a word they stay
+# the word is looked up, with the edge full stops (decisions/T1,
+# #1335). Inside a word they stay
 # (`آیت‌الله` is listed with its ZWNJ). Token text is never rewritten,
 # which keeps the ZWJ Malayalam writes at a word's end.
 _EDGE_JOINERS = "\u200c\u200d"
@@ -1057,9 +1057,13 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
             # an empty list would leave `completes` unwritten, which
             # joins behind ANY plain word, the widest reading; the build
             # refuses it too (#1072)
+            cleared = ("joins it behind any plain word"
+                       if prop == "completes"
+                       else "leaves the word no phrase it completes")
             raise ValueError(f"{prop} must list at least one word, got "
-                             f"{value!r}; write {prop}=None to clear a "
-                             f"list the word's reading has")
+                             f"{value!r}; list the words it pairs with, or "
+                             f"write {prop}=None to clear the list, which "
+                             f"{cleared}")
         if prop in ("completed_by", "completes") and any(" " in w for w in folded):
             # rules/P12 joins two words: a bound word to the one word
             # after it (completed_by), a bound_second word to the one
@@ -1196,7 +1200,7 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
                 "write add(word, kind='given', after_particle=True)")
         if prop not in allowed:
             raise ValueError(
-                f"a {kind} reading takes "
+                f"{'an' if kind[:1] in 'aeiou' else 'a'} {kind} reading takes "
                 + (", ".join(sorted(allowed)) or "no properties")
                 + f"; got {prop!r}")
         out[prop] = _prop_value(kind, prop, value)
@@ -1985,7 +1989,7 @@ class LexiconReading:
     kind: str
     #: The kind's category (``"title"``, ``"suffix"``, ``"particle"``,
     #: ``"conjunction"``, ``"bound_given"``, ``"bound_second"``,
-    #: ``"relation"``, ``"name"``).
+    #: ``"relation"``, ``"name"``, ``"familiar"``, ``"spelling"``).
     category: str
     #: The behavioral properties as sorted ``(name, value)`` pairs,
     #: spelled as the files spell them (``("addresses", "given")``), a

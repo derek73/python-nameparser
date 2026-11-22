@@ -3682,3 +3682,27 @@ def test_a_switch_not_weighed_says_why_and_casts_no_vote(
             evidence.contested, evidence.no_evidence, evidence.by_signal
             ) == (False, 0, 0, 0, len(names), ())
     assert not any(Signal.FIRST_SURNAME in name.votes for name in s.names)
+
+
+@pytest.mark.parametrize("signal, bad, setting, value", [
+    (Signal.FIRST_SURNAME, 1, "two_family_names", True),
+    (Signal.PATRONYMIC, "east-slavic", "patronymic_rules",
+     frozenset({PatronymicRule.EAST_SLAVIC})),
+])
+def test_a_refused_vote_offers_its_owners_shape_and_the_code_runs(
+        signal: Signal, bad: object, setting: str, value: object) -> None:
+    # a NameEvidence vote is a mapping entry, a SettingEvidence row a
+    # triple: each refusal offers its own owner's spelling (the row's
+    # offered a mapping until the 3.2 prose sweep), and that spelling
+    # is accepted where the refused one was
+    names = {"Signal": Signal, "PatronymicRule": PatronymicRule}
+    with pytest.raises(TypeError) as name_refused:
+        NameEvidence("Zzana Qqmoreno", {signal: bad})  # type: ignore[dict-item]
+    entry = eval(str(name_refused.value).rsplit("pass e.g. ", 1)[1], names)
+    NameEvidence("Zzana Qqmoreno", entry)
+    with pytest.raises(TypeError) as row_refused:
+        SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
+                        ((signal, bad, 2),))  # type: ignore[arg-type]
+    row = eval(str(row_refused.value).rsplit("pass e.g. ", 1)[1], names)
+    SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
+                    (row,))

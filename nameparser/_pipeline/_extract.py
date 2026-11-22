@@ -214,9 +214,9 @@ def _overlaps(span: Span, taken: list[Span], starts: list[int]) -> bool:
     """`taken` sorted and non-overlapping (both hold by construction),
     `starts` its start offsets. Bisect rather than scan: the closer
     sweep tests one span per delimiter character found, so a linear
-    probe is quadratic in the number of matched pairs (400 pairs spent
-    5.4ms here, against 2.5ms before the sweep existed). Same idiom, and
-    the same reason, as the origin resolution in _tokenize."""
+    probe is quadratic in the number of matched pairs
+    (decisions/parse-cost). Same idiom, and the same reason, as the
+    origin resolution in _tokenize."""
     i = bisect.bisect_right(starts, span.start) - 1
     # the only candidates are the last span starting at or before us and
     # its successor -- anything earlier ends before it, anything later

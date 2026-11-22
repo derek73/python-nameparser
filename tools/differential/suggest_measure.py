@@ -5,14 +5,16 @@ one convention and suggests a `name_order` (and `patronymic_rules`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
 `_MIN_ORDER_GROUP_SHARE`, `_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
 signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`, and for
-`initials_as_family`, `_MIN_RUN_NAMES` and `_MIN_RUN_SHARE`) and its word tables
+`initials_as_family`, `_MIN_RUN_NAMES` and `_MIN_RUN_SHARE`, for
+`capitals_as_family`, `_MIN_CAPITALS_LETTERS`, and for `two_family_names`,
+`_MIN_TWO_FAMILY_VOTES` and `_MIN_TWO_FAMILY_SHARE`) and its word tables
 (`config/_order_names.py`, written by tools/vocab/order_names.py) were
 chosen with this tool, and the figures quoted for them in `suggest`'s
 docstring and docs/design/decisions/group-suggestion.md are its output.
 
     uv run python tools/differential/suggest_measure.py
     uv run python tools/differential/suggest_measure.py --sizes 5,10 --trials 100
-    uv run python tools/differential/suggest_measure.py --set _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000
+    uv run python tools/differential/suggest_measure.py --set _MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000 --set _MIN_RUN_NAMES=1000000 --set _MIN_TWO_FAMILY_VOTES=1000000
     uv run python tools/differential/suggest_measure.py --base <base checkout>
 
 THE POPULATIONS, from the local corpora in $NAMEPARSER_TOOLS_CACHE
@@ -45,7 +47,11 @@ Taiwan, Korea and Japan whose given box opens with a word the source's
 own boxes write as a family name at least as often (`Cruz`, `Moreno`;
 not a romanized surname, `Lee`, whose cost is as old as its table), and
 `pv-listed-given`, the same inventors whose given box opens with a word
-of the ORCID surname table, each read from this script's checkout and
+of the ORCID surname table, and `orcid-span-CC`, ORCID holders of each
+of SPAN_COUNTRIES (SPAN_FOR, the Spanish- and Portuguese-speaking
+countries `two_family_names` is for; SPAN_NOT, where it must not be
+suggested; SPAN_UNSEEN; and the US), both boxes filled and no comma in
+either (#1452), each read from this script's checkout and
 less a record whose family box opens with a listed given name (boxes
 likely swapped): the lists a surname table moves the wrong way (#1364; the
 Spanish- and Portuguese-speaking countries and filers, the Filipino,
@@ -83,7 +89,13 @@ order, base and size, where any group did, and over every group that
 decided it the share of its names whose family the suggested parser
 reads as the box (case folded), with the switch and with the same
 suggestion less it; `--base` lists every such cell that moved. `--set _MIN_CAPITALS_LETTERS=1000000` decides it in no
-group.
+group. Then the share of groups deciding `two_family_names` (rules/O6),
+where any group did, and for each `orcid-span-CC` population, written
+given first under the given-first base at each size up to SPAN_SCORED,
+the share of whole names read right against the boxes under the
+suggestion and under the base, and the bare switch off and on over
+SIGNAL_NAMES names; `--base` lists every such cell that moved. `--set
+_MIN_TWO_FAMILY_VOTES=1000000` decides it in no group.
 
 THE SIGNALS: per population and written order, over at most SIGNAL_NAMES
 names, the per-NAME order votes (`suggest`'s unit: right, wrong,
@@ -124,17 +136,22 @@ worker, so a rule can be tried without editing the module (a `--base`
 checkout without that threshold runs its own rule, and the comparison
 says so); it is also the
 harness's proof that it can report a difference: `--set
-_MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000` decides nothing
-(the first holds the order, the second the patronymic rule, which
-decides a given-first order of its own, save where #1356 keeps the
-family-first base's), so every family-first group under the given-first
+_MIN_VOTES=1000000 --set _MIN_PATRONYMIC_VOTES=1000000 --set
+_MIN_RUN_NAMES=1000000 --set _MIN_TWO_FAMILY_VOTES=1000000` decides
+nothing (the first holds the order and `capitals_as_family`, the second
+the patronymic rule, which decides a given-first order of its own, save
+where #1356 keeps the family-first base's, the third the letters
+signal's `initials_as_family`, the fourth `two_family_names`, #1452), so every family-first group under the given-first
 base must read 0% (and every given-first group under the family-first
 base). `--base` runs the same measurement against another
 checkout in a child process and lists every cell that moved, every
-population whose count of groups deciding the East Slavic rule moved,
-and every TURKIC row and parliament suggestion that moved.
+population whose count of groups deciding the East Slavic rule or
+`initials_as_family` moved, every `capitals_as_family` and
+`two_family_names` cell and span score that moved, and every TURKIC row
+and parliament suggestion that moved.
 
-Runtime, measured 2026-11-10 on a 12-CPU machine with every source
+Runtime, measured 2026-11-10 on a 12-CPU machine, before #1364's and
+#1452's populations and the whole-name scores joined, with every source
 fetched and the defaults (sizes 2-200, 300 trials, --jobs 12): 20s
 wall clock, 6s of it reading the corpora in one process; with --base,
 twice that.

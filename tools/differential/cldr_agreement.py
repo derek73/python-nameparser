@@ -160,7 +160,7 @@ _PARSERS = {None: Parser(),
 LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ja": "JA", "ne": "NE", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ",
                 "cs": "CS", "sk": "SK", "sl": "SL", "hr": "HR",
-                # CLDR's pt is Brazilian Portuguese (pt_PT is its own file)
+                # CLDR's pt is Brazilian Portuguese (CLDR 48 has no pt_PT file)
                 "ga": "GA", "gd": "GD", "pt": "PT_BR", "es": "ES",
                 # hi_Latn is the romanized Hindi the pack's Latin readings are for
                 "hi": "HI", "hi_Latn": "HI", "bn": "BN", "vi": "VI",
