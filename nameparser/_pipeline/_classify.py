@@ -741,8 +741,9 @@ def classify(state: ParseState) -> ParseState:
                     folded[i + 1] in listed or before.tags
                     or not _HAS_LETTER.search(before.text)):
                 continue
-            # a word heading both pairs carries both marks
-            bound[i] = bound.get(i, frozenset()) | _BOUND_SECOND_TAGS
+            # a superset of the phrase mark, so it overwrites one the first
+            # walk wrote
+            bound[i] = _BOUND_SECOND_TAGS
     if bound:
         # a loop, not a generator, which is a frame per token resumed
         written = list(tokens)
