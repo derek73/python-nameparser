@@ -2305,6 +2305,23 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
             assert str(name.capitalized(force=True)) == rendered, (setting, text)
 
 
+def test_the_cyrillic_doctorate_repairs_in_lower_case() -> None:
+    # #1128: д-р carries a lowercase mask, so repair writes it as it is
+    # written, as the title and as the credential; master wrote 'Д-Р'.
+    # д.м. carries none, rules/R4 writing a letter alone beside a full
+    # stop as an initial.
+    for text, rendered in (
+            ("Д-Р ІВАН ПЕТРЕНКО", "д-р Іван Петренко"),
+            ("ІВАН ПЕТРЕНКО Д-Р", "Іван Петренко д-р")):
+        assert str(parse(text).capitalized()) == rendered, text
+    for text, rendered in (
+            ("д-р Іван Петренко", "д-р Іван Петренко"),
+            ("Іван Петренко Д-Р", "Іван Петренко д-р")):
+        assert str(parse(text).capitalized(force=True)) == rendered, text
+    assert str(parse("Іван Петренко Д-Р").capitalized()) == (
+        "Іван Петренко Д-Р")
+
+
 def test_a_mixed_case_credential_is_kept_as_written_when_forced() -> None:
     # rules/R4 (#1517): a word the caps shape read after a comma in mixed
     # case ('MRes', 'AuD') keeps its writing, forced or not: no mask

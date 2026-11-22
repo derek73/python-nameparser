@@ -3835,6 +3835,7 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'vrd',
     'whnp',
     'whnp-bc',
+    'д-р',
 })
 
 CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
@@ -4021,6 +4022,7 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'thmgr': 'ThMgr',
     'ua': 'Ua',
     'ó': 'Ó',
+    'д-р': 'д-р',
 }
 
 GENERATION_WORDS: frozenset[str] = frozenset({
