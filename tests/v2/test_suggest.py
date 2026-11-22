@@ -3672,6 +3672,9 @@ _NOT_READ = {
 ])
 def test_a_switch_not_weighed_says_why_and_casts_no_vote(
         policy: Policy, names: list[str], reason: str) -> None:
+    # every row pins its note and the evidence; only the East Slavic row
+    # holds names that would cast a switch vote were it weighed, so it
+    # alone pins that none is cast
     s = Parser(policy=policy).suggest(names)
     evidence = _two_family(s)
     assert evidence.note == _NOT_READ[reason]

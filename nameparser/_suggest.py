@@ -1388,9 +1388,10 @@ def _texts(names: Iterable[str]) -> Iterator[str]:
 
 def _quiet(parser: Parser, policy: Policy) -> Parser:
     """``parser`` reading under ``policy``, its construction warnings
-    silenced: a policy differing from the base's only in settings a
-    suggestion weighs raises none the base's own construction did not,
-    and those reached its caller when it was built."""
+    silenced: they read only ``segment_scripts``, the lexicon and the
+    segmenter, which these policies never change from the base's, so
+    they are the base's own, which reached its caller when it was
+    built."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return dataclasses.replace(parser, policy=policy)
