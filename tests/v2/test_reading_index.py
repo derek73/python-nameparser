@@ -396,10 +396,11 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: en's ra, whose name readings only ko.toml writes, #1483 on
 #: 2026-11-21, a strict German or English choice reading the
 #: credential as master's default did, and a strict German one the
-#: title in front; ar's imam and tr's effendi, #1206 on 2026-11-21,
-#: whose given readings id.toml writes, a strict Arabic choice reading
-#: imam and a strict Turkish one effendi as the title opening a name
-#: again, as 1.4.0 through 3.1.0 read both by default). A
+#: title in front; en's ab, #1178, decisions/vocabulary-collisions'
+#: 2026-11-21 #1178 entry; ar's imam and tr's effendi, #1206 on
+#: 2026-11-21, whose given readings id.toml writes, a strict Arabic
+#: choice reading imam and a strict Turkish one effendi as the title
+#: opening a name again, as 1.4.0 through 3.1.0 read both by default). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
@@ -408,7 +409,7 @@ STRICT_UNGATED = {
     "ca": {"del", "la"},
     "cs": {"st"},
     "de": {"ra"},
-    "en": {"ra"},
+    "en": {"ab", "ra"},
     "fil": {"del", "la", "san"},
     "fr": {"la", "marquis", "marquise", "saint", "st"},
     "ga": {"mac"},

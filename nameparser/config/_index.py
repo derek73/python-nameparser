@@ -41,7 +41,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('a1c', (('en', 'military', ()),)),
     ('aan', (('nl', 'preposition', ()), ('nl', 'given', ()))),
     ('aas', (('en', 'credential', ()),)),
-    ('ab', (('en', 'military', ()),)),
+    ('ab', (('en', 'military', (('default', False),)), ('ms', 'given', (('same_as', 'abdul'),)), ('nl', 'given', ()))),
     ('aba', (('en', 'credential', ()), ('en', 'given', ()), ('en', 'family', ()))),
     ('abbess', (('en', 'religious', ()),)),
     ('abbey', (('en', 'familiar', (('short_for', ('abigail',)),)),)),

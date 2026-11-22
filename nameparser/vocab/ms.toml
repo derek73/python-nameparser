@@ -140,3 +140,7 @@ text = "bte"
 [word.excluded.patronymic]
 reason = "the abbreviation of binte, not reviewed"
 issue = 604
+
+[[word]]
+text = "ab"
+given = { wikidata = 1, as_of = 2026-11-21, same_as = "abdul", note = "decided 2026-11-21 (#1178): Abdul written short (Ab Hamid, Ab. Ghani), at the head of a name and in a father's name after bin; ORCID's given box 30 and family box 323 of 62,996 Malaysian holders (the family box holding the father's name, bin Ab Rahman), PatentsView's Malaysian inventors 3 and 4, against Abdul's 482 and 1,544 in ORCID; my-candidates writes it 12 times (tools/name_usage.py ab --boxes --country MY, 2026-11-21). Until #1178 en.toml's Airman Basic read it as a title opening a name or the part after a comma, and, written with its full stop (AB.), as the title ending one" }

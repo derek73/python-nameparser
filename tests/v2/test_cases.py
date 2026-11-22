@@ -533,16 +533,18 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # reporting rows; 2330 -> 2342 the same day, #1483's `ra` rows
     # reporting suffix-or-name; 2342 -> 2367 the same day, its review's
     # comma, order and spelling rows; 2367 -> 2373 the same day, its
-    # second review's 'SMITH, RA MD' and 'Smith, RA John'; 2373 -> 2388
-    # the same day, #1206's five Imam and Sheriff rows reporting
-    # title-or-name under three orders; 2388 -> 2410 the same day, its
-    # review's reporting rows (the word alone, in lower case, before
-    # another gated word and in a third comma part, and a family-first
-    # row under its declared policy); 2410 -> 2416 the same day, its
-    # second review's 'Imam Dr. Musa Bello' and 'Sheriff Deputy John
-    # Smith' under three orders.
-    assert claims == 2416, (
-        f"the field sweep checks {claims} claims, recorded as 2416 on "
+    # second review's 'SMITH, RA MD' and 'Smith, RA John'; 2373 -> 2382
+    # the same day, #1178's review's `ab` rows reporting suffix-or-name
+    # ('Ab. Smith, Ed', 'Vice Ab. Smith, Ed', 'Ali Budi Santoso.AB');
+    # 2382 -> 2397 the same day, #1206's five Imam and Sheriff rows
+    # reporting title-or-name under three orders; 2397 -> 2419 the same
+    # day, its review's reporting rows (the word alone, in lower case,
+    # before another gated word and in a third comma part, and a
+    # family-first row under its declared policy); 2419 -> 2425 the same
+    # day, its second review's 'Imam Dr. Musa Bello' and 'Sheriff Deputy
+    # John Smith' under three orders.
+    assert claims == 2425, (
+        f"the field sweep checks {claims} claims, recorded as 2425 on "
         f"2026-11-21")
 
 
@@ -1046,8 +1048,8 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Smith, M.B. ChB' being a stand-in reread; 647 -> 669 the same
     # day, its test review's rows; 669 -> 672 the same day, #1483's
     # `ra` rows reporting suffix-or-name; 672 -> 675 the same day, its
-    # review's rows
-    assert (checked, skipped) == (675, 512), (checked, skipped)
+    # review's rows; 675 -> 684 the same day, #1178's review's `ab` rows
+    assert (checked, skipped) == (684, 512), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

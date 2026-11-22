@@ -15,6 +15,7 @@
   "Lt.Gov.John Smith"         →  title="Lt.Gov."
   "Maj.Gen.John Smith"        →  title="Maj.Gen."
   "Ma.Refugio Torres Vitela"  →  given="Ma."
+  "Ab.Ghani Harun"            →  given="Ab."
   "Dr.Smith"                  →  family="Smith"
   "Dr.J. Smith"               →  given="J."
   "ศ.ดร.สุดา ใจดี"              →  title="ศ.ดร."
