@@ -3639,6 +3639,48 @@ def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
     assert got == fields
 
 
+@pytest.mark.parametrize("tags, strict, text, fields", [
+    # #1178: en.toml's Airman Basic is written default = false, so only a
+    # choice of English reads it; under a plain one ms.toml's and
+    # nl.toml's given readings gate it (rules/H9), as the default reads
+    (("en",), False, "Ab Hamid Mohd Nazahar",
+     {"given": "Ab", "middle": "Hamid Mohd", "family": "Nazahar"}),
+    (("en",), False, "Ab. Ghani Harun",
+     {"given": "Ab.", "middle": "Ghani", "family": "Harun"}),
+    (("en",), False, "Jansen, Ab", {"given": "Ab", "family": "Jansen"}),
+    (("en",), False, "AB John Smith",
+     {"given": "AB", "middle": "John", "family": "Smith"}),
+    # a strict choice reads no ms.toml or nl.toml: the rank, ungated, for
+    # a list of US military names (STRICT_UNGATED in test_reading_index)
+    (("en",), True, "AB John Smith",
+     {"title": "AB", "given": "John", "family": "Smith"}),
+    (("en",), True, "Ab Hamid Mohd Nazahar",
+     {"title": "Ab", "given": "Hamid", "middle": "Mohd",
+      "family": "Nazahar"}),
+    (("en",), True, "John Smith, AB",
+     {"title": "AB", "given": "John", "family": "Smith"}),
+    # a strict Malay choice keeps Abdul written short, its period too
+    (("ms",), True, "Ab. Ghani Harun",
+     {"given": "Ab.", "middle": "Ghani", "family": "Harun"}),
+    (("ms",), True, "AB John Smith",
+     {"given": "AB", "middle": "John", "family": "Smith"}),
+    # a strict Dutch choice reads the name of its own, not written short:
+    # its period is rules/H2's shape again, and T8 does not divide it
+    (("nl",), True, "Ab Jansen", {"given": "Ab", "family": "Jansen"}),
+    (("nl",), True, "Ab. Ghani Harun",
+     {"title": "Ab.", "given": "Ghani", "family": "Harun"}),
+    (("nl",), True, "Ab.Ghani Harun",
+     {"given": "Ab.Ghani", "family": "Harun"}),
+])
+def test_only_a_strict_english_choice_reads_ab_as_the_rank(
+        tags: tuple[str, ...], strict: bool, text: str,
+        fields: dict[str, str]) -> None:
+    name = parser_for(_choosing(*tags), strict=strict).parse(text)
+    got = {f: getattr(name, f) for f in
+           ("title", "given", "middle", "family", "suffix") if getattr(name, f)}
+    assert got == fields
+
+
 def test_a_packs_fragment_is_unioned_on_after_the_strict_compile() -> None:
     # a word no file holds, so only the fragment can read it ('ra' stood
     # here until #1483 gave it ko.toml's name readings, which gate it)

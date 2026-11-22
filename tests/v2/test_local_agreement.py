@@ -566,8 +566,10 @@ def test_a_box_the_parse_cuts_after_its_full_stops_agrees(given: str) -> None:
 
 
 @pytest.mark.parametrize(("given", "family", "got"), [
-    # The box's letters read as a title: no field holds them.
-    ("AB", "Lee", {"given+middle": ""}),
+    # The box's letters read as a title: no field holds them (`AB`
+    # stood here until #1178 made it a given name by default, Airman
+    # Basic read only under a choice of English).
+    ("LT", "Lee", {"given+middle": ""}),
     # A word of the family box read into the given box's field.
     ("K.S", "Perera Silva", {"given+middle": "K. S Perera", "family": "Silva"}),
     # A title glued before the box's letters or name, peeled to a field

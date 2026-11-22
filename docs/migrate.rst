@@ -910,7 +910,8 @@ list, with reasoning, is in each release's section of
      - :ref:`migrate-3-1`
    * - 3.2
      - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``,
-       religious titles before a name, Korean ``Ra``
+       religious titles before a name, Korean ``Ra``, Malay and Dutch
+       ``Ab``
      - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
@@ -2508,3 +2509,32 @@ To read it as 3.1 did, remove its two name readings:
     ...                .remove("ra", kind="given"))
     >>> as_31.parse("Sang Hak Ra").suffix
     'Ra'
+
+Ab as a given name
+^^^^^^^^^^^^^^^^^^
+
+``Ab``, Abdul written short in Malay names and a Dutch given name, reads
+as the given name where it opens a name, written bare, in capitals or
+with its full stop, where 1.4.0 through 3.1.0 read it as the title AB
+(Airman Basic). ``AB`` after a family comma is read as initials, and a
+pair of capitals ``AB`` alone after a full name and a comma reverses the
+name, as an unlisted pair of capitals does:
+
+.. doctest::
+
+    >>> parse("Ab. Ghani Harun").given
+    'Ab.'
+    >>> parse("Jansen, Ab").given
+    'Ab'
+    >>> parse("John Smith, AB").family
+    'John Smith'
+
+The rank is read only under a choice of English with ``strict=True``. To
+read it as 3.1 did, remove its given readings and add the rank:
+
+.. doctest::
+
+    >>> ab_31 = Parser(lexicon=Lexicon.default().remove("ab", kind="given")
+    ...                .add("ab", kind="military"))
+    >>> ab_31.parse("Ab Jansen").title
+    'Ab'

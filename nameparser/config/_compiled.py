@@ -325,7 +325,6 @@ TITLES: frozenset[str] = frozenset({
     '8th',
     '9th',
     'a1c',
-    'ab',
     'abbess',
     'abbot',
     'abolitionist',
@@ -1851,7 +1850,6 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'chief 2lt',
     'chief 2ndlt',
     'chief a1c',
-    'chief ab',
     'chief adjutant',
     'chief adm',
     'chief administrator',
@@ -2626,6 +2624,7 @@ BOUND_GIVEN_NAMES: frozenset[str] = frozenset({
 })
 
 GIVEN_NAME_ABBREVIATIONS: frozenset[str] = frozenset({
+    'ab',
     'ach',
     'benj',
     'chas',
@@ -4844,6 +4843,7 @@ SAME_AS: dict[str, dict[str, tuple[str, ...]]] = {
         '’t': ("'t",),
     },
     'given': {
+        'ab': ('abdul',),
         'abdal': ('abdul',),
         'abdel': ('abdul',),
         'abou': ('abu',),
@@ -5168,6 +5168,7 @@ SAME_AS_NAMED: dict[str, frozenset[str]] = {
     'family': frozenset({
     }),
     'given': frozenset({
+        'ab',
         'jas',
         'jo',
         'ma',

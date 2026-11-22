@@ -483,7 +483,7 @@ military = { expands = "Airman First Class" }
 
 [[word]]
 text = "ab"
-military = { expands = "Airman Basic" }
+military = { default = false, issue = 1178, decided = 2026-11-21, expands = "Airman Basic", note = "off by default, read only under a choice of English: Ab is Abdul written short in Malay (ms.toml) and a Dutch given name (nl.toml), whose name readings gate it under a plain choice of English, so only a strict one reads AB before a name as the rank (#1178). ORCID's given box holds it 332 times (Malaysia 30, India 25, Indonesia 13), PatentsView's 14, Wikidata 81 given names (the Netherlands 48); NPPES writes the A.B. degree 14 times, after the name (tools/name_usage.py ab --boxes, 2026-11-21)" }
 
 [[word]]
 text = "adjutant"

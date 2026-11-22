@@ -1659,8 +1659,10 @@ def _choice(languages: set[str], strict: bool) -> Parser:
 
 # measured 2026-11-08: the mark follows the chosen vocabulary
 @pytest.mark.parametrize("languages, strict, named, jo, jas", [
-    (None, False, {"jas", "jo", "ma"}, False, False),
-    ({"fil"}, False, {"jas", "jo", "ma"}, False, False),
+    # `ab` joined the default's mark with #1178: ms.toml's Abdul written
+    # short beside nl.toml's Dutch name; a plain choice keeps both
+    (None, False, {"ab", "jas", "jo", "ma"}, False, False),
+    ({"fil"}, False, {"ab", "jas", "jo", "ma"}, False, False),
     ({"en", "fil"}, True, {"jo", "ma"}, False, True),
     ({"en", "pa"}, True, {"jas"}, False, False),
     # Filipino alone: Jo has no reading as a name of its own (ruling)
@@ -4472,6 +4474,38 @@ def test_the_default_keys_hold_no_maiden_word(name: str) -> None:
     # names agree, and they are keyed (#1264)
     without = name.split(" (")[0]
     assert m.keys(name) == m.keys(without)
+
+
+# -- Abdul written short (#1178) ----------------------------------------------
+
+#: `ab` is Abdul written short in ms.toml and a Dutch name of its own in
+#: nl.toml (SAME_AS_NAMED), so its link to Abdul is followed only where
+#: it is written with its period, as `jo`'s to José is.
+_ABDUL: tuple[tuple[str, str, Outcome], ...] = (
+    ("Ab. Rahman", "Abdul Rahman", Outcome.LISTED_SPELLING),
+    ("Rahman, Ab.", "Abdul Rahman", Outcome.LISTED_SPELLING),
+    ("AB. RAHMAN", "ABDUL RAHMAN", Outcome.LISTED_SPELLING),
+    ("Ab.Rahman", "Abdul Rahman", Outcome.LISTED_SPELLING),
+    # written bare it is the Dutch name too, which is not Abdul
+    ("Ab Rahman", "Abdul Rahman", Outcome.CONFLICT),
+    ("Ab Jansen", "Abraham Jansen", Outcome.CONFLICT),
+    # Accepted: Abdul joins the word after it (rules/P5) and `ab` does
+    # not, so the given names compared are `Ab.` and `Abdul Hamid`
+    ("Ab. Hamid Rahman", "Abdul Hamid Rahman", Outcome.CONFLICT),
+)
+
+
+@pytest.mark.parametrize("a, b, outcome", _ABDUL)
+def test_abdul_written_short_matches_abdul_with_its_period(
+        a: str, b: str, outcome: Outcome) -> None:
+    # Negative control (2026-11-21): on master 6ff048fe every row but the
+    # last reads `given-one-side`, `Ab` and `Ab.` read as a title (en.toml's
+    # Airman Basic, rules/H2's shape), and the last reads `conflict`
+    for x, y in ((a, b), (b, a)):
+        r = m.check(x, y)
+        assert r["given"].outcome is outcome, (x, y)
+        assert r.consistent is (outcome in m.accept), (x, y)
+        assert m.keys(x) & m.keys(y), (x, y)
 
 
 # -- Muhammad written short (#1383) -------------------------------------------
