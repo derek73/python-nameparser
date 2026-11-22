@@ -374,6 +374,17 @@ _SHAPES = {
     # leading title run of a slice per marker measured 7.1x at base 800
     # (2026-11-20), the first build's quadratic
     "alias_markers": "a @ ",
+    # classify: rules/P12's pair walks, the bound word joining the plain
+    # word after it (#1464) and a second joining the word before it
+    # (#1072). Each arrived quadratic and was found by the 3.2 simplify
+    # pass: `long_names_only`'s count walked the whole name once per
+    # pair, 18.4x at base 200 and 14.3x at 800, and the walk from a
+    # second word tested a list by `in` once per token, 4.96x at 200 and
+    # 7.51x at 800 (af58ca09, py3.11, 2026-11-22, load average 50-125);
+    # counted to four and kept in a dict, bound_pairs reads 4.61x and
+    # bound_seconds 4.88x at 800
+    "bound_pairs": "abdul aziz ",
+    "bound_seconds": "عز الدين ",
 }
 
 _BASE = 800

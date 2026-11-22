@@ -12,7 +12,8 @@ from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
-    CHAIN_TITLE_TAG, SHAPE_ACRONYM_TAG, ParseState, WorkToken,
+    BOUND_PHRASE_TAG, BOUND_SECOND_TAG, CHAIN_TITLE_TAG, SHAPE_ACRONYM_TAG,
+    ParseState, WorkToken,
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
@@ -866,3 +867,54 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
     monkeypatch.setattr(_vocab, "_spells_an_initial",
                         lambda n, text: False)
     assert _surname_unit_disagreements() == ["Ó.", "ó.", "ณ."]
+
+
+@pytest.mark.parametrize("text,by_shape", [
+    # written wholly in capitals: the clause's word says nothing
+    ("JOHN SMITH NEE JONES XYZ", False),
+    # the own words in capitals, the clause not: the own words' case,
+    # not the whole name's
+    ("JOHN SMITH nee Jones XYZ", False),
+    # the contrast that admits it, the own words in mixed case
+    ("John Smith nee Jones XYZ", True),
+])
+def test_the_caps_half_asks_the_own_words_case_of_a_clauses_word(
+        text: str, by_shape: bool) -> None:
+    # A maiden clause's words stand outside the own-words span, so asked
+    # whether the token is itself an own word in a name of one case, the
+    # clause's 'XYZ' would read as a word in a name of mixed case
+    # (decisions/S9, 2026-09-18 #516)
+    tags = _tags_by_text(
+        text, Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+        Lexicon.default())
+    assert (SHAPE_ACRONYM_TAG in tags["XYZ"]) is by_shape
+    assert ("vocab:suffix-ambiguous" in tags["XYZ"]) is by_shape
+
+
+@pytest.mark.parametrize("text,at,marks", [
+    # rules/P12's walk from a second word marks the word before it
+    ("عز الدين", 0, {BOUND_PHRASE_TAG, BOUND_SECOND_TAG}),
+    # and no pair is written across a comma
+    ("عز, الدين", 0, set()),
+    # `long_names_only` counts a bound given name after the pair as a
+    # name word: four, so the first `abdul` pairs with `aziz`
+    ("Ali abdul aziz abdul", 1, {BOUND_PHRASE_TAG}),
+    # a caller's listing makes the first walk mark this word too; the
+    # second walk's marks must stand over it (a first mark kept would
+    # drop BOUND_SECOND_TAG), which is all this row pins: the default
+    # lexicon reads it the same
+    ("محمد ذو الغنى", 1, {BOUND_PHRASE_TAG, BOUND_SECOND_TAG}),
+])
+def test_the_p12_walks_mark_the_first_word_of_each_pair(
+        text: str, at: int, marks: set[str]) -> None:
+    lexicon = Lexicon.default().add("ذو", kind="bound_given",
+                                    completed_by=("الغنى",))
+    tags = _classified_with(text, lexicon).tokens[at].tags
+    assert tags & {BOUND_PHRASE_TAG, BOUND_SECOND_TAG} == marks
+
+
+def test_every_word_a_delimiter_is_glued_to_loses_its_joining_tags() -> None:
+    # rules/C10, for each stemmed word rather than the first
+    tokens = _classified_with("Doe, Jane de; van;", Lexicon.default()).tokens
+    assert [t.tags & {"particle", "vocab:particle-ambiguous"}
+            for t in tokens[2:]] == [set(), set()]
