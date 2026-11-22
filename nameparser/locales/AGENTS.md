@@ -69,7 +69,7 @@ The shipped packs are the rows of `_REGISTRY` in `nameparser/locales/__init__.py
 | Carries a vocabulary list, declared by codepoint range | `nameparser/locales/zh.py` |
 | Its main contribution is turning a stage on (segmentation, through an optional dependency) | `nameparser/locales/ja.py` |
 | Nothing but a choice of languages | `nameparser/locales/hi.py` (`nameparser/locales/my.py`, its language's file copying the English ranks a strict choice keeps) |
-| A choice of languages beside a `[rules]` table | `nameparser/locales/cs.py` |
+| A choice of languages beside a `[rules]` table | `nameparser/locales/hr.py` (`nameparser/locales/cs.py` carries a fragment beside the two, #1518) |
 | A choice that changes no word, beside a patch | `nameparser/locales/mn.py` |
 | A fragment that takes readings out | `nameparser/locales/vi.py` |
 | A country pack reading its language's `[rules]` table | `nameparser/locales/es_ar.py` |

@@ -33,7 +33,7 @@
 
 **Except:**
 
-- **A suffix word in front of the run, or credentials as the only other words of the part, make it the credential run**: a credential, a word of the ambiguous class, a title/suffix dual written in capitals (in a name written in one case, in either) or an unlisted capitals word C6 admits, the name carrying C6's contrast, behind the run speaks for it, a spaced delimiter counting as none, unlike a run spelling nothing, which C5's speaker reads only in front of it. The letters spell a listed credential, so a credential beside them is company; a generation is not, being a name's, nor a dual written as the title it also is.
+- **A suffix word in front of the run, or credentials as the only other words of the part, make it the credential run**: a credential, a word of the ambiguous class, a title/suffix dual written in capitals (in a name written in one case, in either) or an unlisted word in a shape C6 admits, the name carrying C6's contrast, behind the run speaks for it, a spaced delimiter counting as none, unlike a run spelling nothing, which C5's speaker reads only in front of it. The letters spell a listed credential, so a credential beside them is company; a generation is not, being a name's, nor a dual written as the title it also is.
   ```
   "Smith, M.D. Ph.D."         →  suffix="M.D. Ph.D."
   "Smith, M.D. MS"            →  suffix="M.D. MS"

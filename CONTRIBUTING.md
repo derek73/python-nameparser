@@ -16,7 +16,9 @@ want a reading often changes how it is built. Put that in an issue. A few
 real examples are worth more than a fix.
 
 Open issues are not a list of tasks waiting for a volunteer. Every issue is
-assigned to the maintainer, and most are already being worked on.
+assigned to the maintainer, who takes them up in turn. Add what you found to
+the issue, and if you have a fix, push it to a branch on your fork and link
+it there.
 
 Why the maintainer makes the changes
 --------------------------------------
