@@ -2826,6 +2826,33 @@ def test_the_compiled_fields_are_the_default_lexicons() -> None:
         assert getattr(default._sets, name) == words, name
 
 
+@pytest.mark.parametrize("strict", [False, True])
+def test_only_a_bulgarian_choice_reads_the_medical_degree(strict: bool) -> None:
+    # #1128: bg.toml lists д.м. as дм, written default = false, since
+    # Дм. (Дмитрий written short) and the initials Д.М. fold to it too
+    name = "доц. д-р Мария Петрова, д.м."
+    bg = parser_for(_choosing("bg"), strict=strict).parse(name)
+    assert (bg.title, bg.given, bg.family, bg.suffix) == (
+        "доц. д-р", "Мария", "Петрова", "д.м.")
+    # under the choice, the degree behind one word and initials ending a
+    # name read as md's do; in capitals behind one word and a comma,
+    # initials stay the given name (rules/C16)
+    one = parser_for(_choosing("bg"), strict=strict).parse("Петрова, д.м.")
+    assert (one.family, one.suffix) == ("Петрова", "д.м.")
+    pair = parser_for(_choosing("bg"), strict=strict).parse("Иванов Д.М.")
+    assert (pair.given, pair.suffix) == ("Иванов", "Д.М.")
+    assert parser_for(_choosing("bg"), strict=strict).parse(
+        "Петрова, Д.М.").given == "Д."
+    for parser in (Parser(), parser_for(_choosing("ru"), strict=strict),
+                   parser_for(_choosing("en"), strict=strict),
+                   parser_for(locales.RU)):
+        assert parser.parse(name).given == "д.м."
+        assert parser.parse("Петров Дм.").family == "Дм."
+    # the default family-first order keeps the initials, as master read
+    ff = Parser(policy=Policy(name_order=FAMILY_FIRST)).parse("Иванов Д.М.")
+    assert (ff.family, ff.given, ff.middle) == ("Иванов", "Д.", "М.")
+
+
 def test_a_pack_choosing_no_language_leaves_the_vocabulary_as_it_is() -> None:
     base = Parser(lexicon=Lexicon.default().add("zzq", kind="title"))
     assert parser_for(Locale(code="xx", lexicon=Lexicon.empty()),

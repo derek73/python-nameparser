@@ -529,9 +529,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # -> 2296 on 2026-11-21, #1517's six caps-shape rows reporting
     # suffix-or-name under three orders; 2296 -> 2321 the same day, its
     # test review's eight rows under three orders and its family-first
-    # row under its declared policy.
-    assert claims == 2321, (
-        f"the field sweep checks {claims} claims, recorded as 2321 on "
+    # row under its declared policy; 2321 -> 2330 the same day, #1128's
+    # reporting rows.
+    assert claims == 2330, (
+        f"the field sweep checks {claims} claims, recorded as 2330 on "
         f"2026-11-21")
 
 
