@@ -40,8 +40,8 @@ Czech, Slovak, Slovenian and Croatian names
 
 Turn on ``cs``, ``sk``, ``sl`` or ``hr`` when your data is names in
 that language. Each of the four languages is a pack of its own, which
-chooses that one language; the Czech and Slovak packs also read two
-family names (`Double surnames`_).
+chooses that one language, and reads two family names (`Double
+surnames`_).
 
 These four languages tell a father from a son of the same name with a
 word written after the name: ``ml.`` for the younger and ``st.`` for
@@ -87,7 +87,7 @@ So they wait for a pack:
      - ``ml.``, ``st.``; ``Mgr.`` read as the degree; two family names
        (``two_family_names``)
    * - ``locales.SL``, ``locales.HR``
-     - ``ml.``, ``st.``
+     - ``ml.``, ``st.``; two family names (``two_family_names``)
 
 .. doctest::
 
@@ -189,30 +189,37 @@ at the head of a name or of the part after a comma (see
 Double surnames
 ~~~~~~~~~~~~~~~
 
-A Czech or Slovak woman who keeps her own surname beside her
-husband's writes the two without a hyphen, ``Alena Pešová Řehořová``,
-which the default reads as a middle name and a family name. The two
-packs read two family names (``two_family_names``, see
+A Czech, Slovak, Slovenian or Croatian woman who keeps her own surname
+beside her husband's writes the two without a hyphen, ``Alena Pešová
+Řehořová``, which the default reads as a middle name and a family name.
+The four packs read two family names (``two_family_names``, see
 :ref:`two-family-names`), so the double surname stays whole, each
 name in its own view (``surname1`` ``Pešová``, ``surname2``
 ``Řehořová``).
 
-Two given names pay for it: with no Czech or Slovak given-name list to
-keep a given name out of the family (none is published for the whole
-population), ``Petr Pavel Novák`` reads family ``Pavel Novák``. A family
-comma keeps both as the default reads them:
+Two given names pay for it: with no given-name list in any of the four
+languages to keep a given name out of the family (none is published
+for the whole Czech or Slovak population, and none has been looked for
+in Slovenian or Croatian), ``Petr Pavel Novák`` reads family ``Pavel
+Novák``. A family comma keeps both as the default reads them, and an
+initial written between the given name and the surname stays the
+middle name:
 
 .. doctest::
 
     >>> czech.parse("Alena Pešová Řehořová").family
     'Pešová Řehořová'
+    >>> croatian = parser_for(locales.HR)
+    >>> croatian.parse("Ana Puž Kukuljan").family
+    'Puž Kukuljan'
     >>> czech.parse("Petr Pavel Novák").family
     'Pavel Novák'
     >>> czech.parse("Novák, Petr Pavel").middle
     'Pavel'
+    >>> croatian.parse("Ana M. Kukuljan").middle
+    'M.'
 
-The switch gains more names than it costs (`Measured effect: Czech and
-Slovak`_). To keep the packs' vocabulary and turn the switch off,
+The switch gains more names than it costs (`Measured effect`_). To keep the packs' vocabulary and turn the switch off,
 rebuild the policy:
 
 .. doctest::
@@ -286,8 +293,8 @@ Monsignor reading of ``en`` and ``fr``, which the default names:
     >>> czech.parse("Mgr. Jan Novák").tokens[0].reading.languages
     ('cs',)
 
-Measured effect: Czech and Slovak
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Measured effect
+~~~~~~~~~~~~~~~
 
 Among ORCID's researchers, who split their own names into a given and
 a family box, reading two family names raises the names agreeing in
@@ -297,7 +304,18 @@ elections, about 170,000 records, each a distinct set of the boxes the
 Czech registers file a name in, it raises them from 97.0% to 97.5%.
 The Spanish given-name list carried beside ``locales.CS`` moved fewer
 than two hundred of those register records, about seven in ten of them
-to agreeing. The
+to agreeing.
+
+For Croatian and Slovenian names it raises ORCID's agreeing names from
+88.4% to 98.5% in Croatia and from 90.4% to 97.6% in Slovenia, and the
+members of the Croatian Sabor and the Slovenian National Assembly whose
+family name it reads right from 140 to 148 of 149 and from 84 to 89 of
+90, the one loss in each a member with two given names. Among US
+patents' inventors, whose boxes a professional filer fills, it lowers
+them slightly, from 92.0% to 91.6% in Croatia and from 88.2% to 87.4%
+in Slovenia, and among the people with significant control of UK
+companies it moves Croatian nationals from 97.5% to 97.3% and
+Slovenian ones from 95.3% to 95.7%, a handful of records each way. The
 dated figures are in
 ``docs/design/decisions/O6-two-family-names.md`` and
 ``docs/design/decisions/vocabulary-model.md``.

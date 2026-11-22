@@ -138,8 +138,8 @@ Read that precisely: a shape is a pattern, not a language, so a pack
 can act on a name from a tradition it was not written for. A broad
 shape covers much:
 
-- ``es``, ``es_ar``, ``cs``, ``sk``, ``pt_br`` and ``pt_pt`` may read
-  any name of three words differently.
+- ``es``, ``es_ar``, ``cs``, ``sk``, ``hr``, ``sl``, ``pt_br`` and
+  ``pt_pt`` may read any name of three words differently.
 - ``vi``, whose name order is its shape, may read any name differently:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
@@ -242,8 +242,10 @@ says which parts each pack is made of.
    * - ``sl``, ``hr``
      - Slovenian and Croatian
      - Each chooses its one language, which turns on the generations
-       ``ml.`` and ``st.`` See :ref:`west-south-slavic-packs`.
-     - ``Ivan Horvat ml.`` → suffix ``ml.``
+       ``ml.`` and ``st.``, and reads two family names. See
+       :ref:`west-south-slavic-packs`.
+     - | ``Ivan Horvat ml.`` → suffix ``ml.``
+       | ``Ana Puž Kukuljan`` → family ``Puž Kukuljan``
    * - ``es``
      - Spanish
      - Chooses ``es``, which turns on the titles the default leaves off
@@ -402,8 +404,8 @@ says what it can change:
      - Chooses a language
      - Policy fields
      - Word list
-   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``hr``, ``ms``,
-       ``nl``, ``pt``, ``sl``
+   * - ``ar``, ``bn``, ``ga``, ``gd``, ``he``, ``hi``, ``ms``, ``nl``,
+       ``pt``
      - yes
      - none
      - none
@@ -411,7 +413,7 @@ says what it can change:
      - yes
      - ``two_family_names``
      - a removal: ``Ing``'s given-name reading
-   * - ``sk``
+   * - ``sk``, ``hr``, ``sl``
      - yes
      - ``two_family_names``
      - none
