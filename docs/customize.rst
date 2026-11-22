@@ -148,6 +148,28 @@ its category:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
+A remove that can take nothing, a kind the word does not hold or a word
+no vocabulary file lists, warns, naming the kinds the word does hold.
+``alhaj`` is a style, not a religious title:
+
+.. doctest::
+
+    >>> import warnings
+    >>> with warnings.catch_warnings(record=True) as caught:
+    ...     warnings.simplefilter("always")
+    ...     inert = Lexicon.default().remove("alhaj", kind="religious")
+    >>> print(caught[0].message)
+    'alhaj' has no 'religious' reading in any vocabulary file; its readings are: style. Did you mean remove('alhaj', kind='style')?
+    >>> Parser(lexicon=inert).parse("Alhaj Ahmed Khan").title
+    'Alhaj'
+
+A reading some file holds counts even where it is off by default, since
+a choice of languages may turn it on, and so does one the same lexicon
+added earlier. A fragment meant to remove a reading another lexicon
+adds when the two are joined cannot be checked that way; keep its
+remove quiet with ``warnings.catch_warnings()`` and
+``warnings.simplefilter("ignore", UserWarning)`` around the call.
+
 Seeing what the vocabulary says about a word
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

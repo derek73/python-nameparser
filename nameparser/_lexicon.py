@@ -2578,7 +2578,15 @@ class Lexicon:
         empty ``remove(*words, kind=...)`` never takes out a whole kind.
         Removing a reading the word does not hold changes nothing now,
         and is kept: a later choice of languages may turn that reading
-        on.
+        on. Where no vocabulary file holds the reading, on by default or
+        not, and no earlier :meth:`add` of this lexicon gave it, the
+        edit can never take effect, and the call warns with a
+        ``UserWarning`` naming the kinds the word does hold (#1535); a
+        remove of every word's readings and a ``familiar`` or
+        ``spelling`` pair remove are not judged. A fragment removing a
+        reading another lexicon adds when the two are joined warns too,
+        since this call cannot see that lexicon; filter the warning
+        around that call.
 
         A ``familiar`` or ``spelling`` reading is a pair of given names,
         stored on one of the two and read by name matching both ways, so
