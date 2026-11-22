@@ -100,16 +100,16 @@ def test_the_separator_classes_hold_their_parts_over_every_code_point() -> None:
     # #1436: the ignorable set is a regex class built from its parts, so
     # a region is scanned in C; held here, over every code point, to the
     # parts as their own predicates state them (str.isspace, the two
-    # sets, the emoji ranges, _BIDI), for each setting of the two strip
-    # switches, and the boundary class to the ignorable one plus the
-    # commas and transcription dots. Each class is matched whole, in C.
-    # It guards how the classes are ASSEMBLED, not which characters
-    # belong: _BIDI is compiled from the same string the classes are,
-    # so a mark dropped from it passes here.
+    # sets, the emoji ranges, _BIDI_CHARS), for each setting of the two
+    # strip switches, and the boundary class to the ignorable one plus
+    # the commas and transcription dots. Each class is matched whole, in
+    # C. It guards how the classes are ASSEMBLED, not which characters
+    # belong: the classes are built from _BIDI_CHARS too, so a mark
+    # dropped from it passes here.
     from nameparser._pipeline._state import COMMA_CHARS
     everything = "".join(map(chr, range(0x110000)))
     space = {c for c, ch in enumerate(everything) if ch.isspace()}
-    bidi = {m.start() for m in re.finditer(_tokenize._BIDI.pattern[:-1],
+    bidi = {m.start() for m in re.finditer(f"[{_tokenize._BIDI_CHARS}]",
                                            everything)}
     emoji = {c for lo, hi in _tokenize._EMOJI_RANGES
              for c in range(lo, hi + 1)}
