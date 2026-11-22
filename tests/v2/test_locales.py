@@ -3537,6 +3537,26 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("hr", None, "Puž Kukuljan, Ana",
      ("", "Ana", "", "Puž Kukuljan", "", "", ()),
      ("", "Ana", "", "Puž Kukuljan", "", "", ())),
+    # each order, a suffix comma, a credential after one, and an empty
+    # head, where O6 stands down (the #1190 review's grid)
+    ("hr", "FAMILY_FIRST", "Puž Kukuljan Ana",
+     ("", "Kukuljan", "Ana", "Puž", "", "", ()),
+     ("", "Ana", "", "Puž Kukuljan", "", "", ())),
+    ("hr", "FAMILY_FIRST_GIVEN_LAST", "Puž Kukuljan Ana",
+     ("", "Ana", "Kukuljan", "Puž", "", "", ()),
+     ("", "Ana", "", "Puž Kukuljan", "", "", ())),
+    ("sl", "FAMILY_FIRST_GIVEN_LAST", "Zavadlav Ušaj Elena Marija",
+     ("", "Marija", "Ušaj Elena", "Zavadlav", "", "", ()),
+     ("", "Marija", "Elena", "Zavadlav Ušaj", "", "", ())),
+    ("hr", None, "Ana Puž Kukuljan, ml.",
+     ("ml.", "Ana", "Puž", "Kukuljan", "", "", ()),
+     ("", "Ana", "", "Puž Kukuljan", "ml.", "", ())),
+    ("sl", None, "Elena Zavadlav Ušaj, dr. med.",
+     ("dr. med.", "Elena", "Zavadlav", "Ušaj", "", "", ()),
+     ("dr. med.", "Elena", "", "Zavadlav Ušaj", "", "", ())),
+    ("hr", None, ", Ana Puž Kukuljan",
+     ("", "Ana", "Puž Kukuljan", "", "", "", ()),
+     ("", "Ana", "Puž Kukuljan", "", "", "", ())),
     # Bc and Ing, the pack's titles since #970: Bc a reading off by
     # default, Ing the same with the fragment removing the given reading
     # that would make it a title only in a phrase (rules/H9), so both
