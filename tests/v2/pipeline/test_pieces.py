@@ -991,7 +991,7 @@ def _candidate_misses(monkeypatch: pytest.MonkeyPatch,
              tokens: Sequence[WorkToken], one_case: bool | None,
              site: _group.ClauseSite,
              ambiguities: list[PendingAmbiguity],
-             ) -> _group.MaidenIndices | None:
+             ) -> _group.ClauseIndices | None:
         seen.clear()
         answer = real_take(pieces, ptags, tokens, one_case, site,
                            ambiguities)
