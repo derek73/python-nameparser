@@ -6,10 +6,8 @@ smaller and more specific change than the one before:
 
 #. **Let the data choose.** If you have a list of names from one
    source, :meth:`Parser.suggest() <nameparser.Parser.suggest>` reads
-   the order it is written in, a patronymic rule, whether letters
-   ending a name are its family name and whether family names are
-   written in capitals, and returns a parser set for them
-   (:doc:`suggest`).
+   the settings its names show, the order they are written in among
+   them, and returns a parser set for them (:doc:`suggest`).
 #. **Choose the language.** If you know the data's language, a locale
    pack (:doc:`locales`) reads that language's words and conventions,
    such as Spanish double surnames or Russian patronymics. Call
@@ -68,6 +66,24 @@ it a title wherever it stands. Adding a title reading instead would
 change nothing outside a phrase, so ``add("dean", kind="title")`` warns
 and names the ``remove`` above.
 
+The opposite edit, a word your data bears as a given name that the
+defaults read as a title, adds the ``given`` reading. The word then
+reads as a title only inside a title phrase, and the parse reports a
+``title-or-name`` ambiguity where it opens a name:
+
+.. doctest::
+
+    >>> parse("Hon Chee Ming").title
+    'Hon'
+    >>> hon_given = Parser(lexicon=Lexicon.default().add("hon", kind="given"))
+    >>> hon_given.parse("Hon Chee Ming").given
+    'Hon'
+    >>> hon_given.parse("The Hon John Smith").title
+    'The Hon'
+
+Removing the title reading instead would cost the phrase as well:
+``The Hon John Smith`` would then read no title.
+
 Both calls return a new :class:`~nameparser.Lexicon`, the one you
 started from (here, ``Lexicon.default()``) never being mutated.
 
@@ -89,12 +105,17 @@ list is one reading per word:
     'LEED AP'
 
 To find the credentials your own data holds that the defaults do not
-list, see :ref:`finding-missing-credentials`.
+list, see :ref:`finding-missing-credentials`. A credential that is
+also a surname needs weighing first (`Mark a word, or leave it out`_),
+and an unlisted credential in mixed case after a comma, behind a full
+name holding a word in mixed case (``Jane Smith, MRes``), reads as one
+already (:ref:`unlisted-credentials`).
 
 A surname particle is added the same way. The defaults leave out the
 Dutch ``in`` of ``in 't Veld``, which as a default would take a middle
 name spelled like it into the surname of names in every language; add
-it when your data is Dutch:
+it when your data is Dutch (``locales.NL`` reads ``ten`` but not ``in``,
+:ref:`dutch-particles`):
 
 .. doctest::
 
@@ -334,6 +355,14 @@ arguments to ``add``:
      - bound_given
      - The words it joins past the first name word
        (`Bound given names`_).
+   * - ``completes_any=True``
+     - bound_given
+     - It joins any plain name word after it past the first
+       (`Bound given names`_).
+   * - ``long_names_only=True``
+     - bound_given
+     - With ``completes_any``, only in a name of four name words or more
+       (`Bound given names`_).
    * - ``completes=[...]``
      - bound_second
      - The only words it joins behind (`Bound given names`_).
@@ -493,20 +522,25 @@ Two rules follow for a given name written short:
 Phrases
 ^^^^^^^
 
-A reading is of one word, with two exceptions, so ``add`` refuses a
-phrase of any other kind: a title addressing the given name
-(``add("lt col", kind="title", addresses="given")``), matched against
-the space-joined run of words already read as titles or by that run's
-last word — several titles written together are one form of address
-and the last one does the addressing, so ``"Her Majesty Queen
-Elizabeth"`` is read by ``queen`` — and a birth marker, matched by
-lookahead over the words as written: ``add("z domu",
-kind="birth_marker")`` matches the pair and neither word alone, which
-is how the shipped Polish entry works. The words have to stand
-together — a bracketed clause or a comma between them ends the run, and
-the first word is then an ordinary name word. Where a phrase and a word
-starting it are both configured, the phrase wins where it matches and
-the word matches everywhere else.
+A reading is of one word, so ``add`` refuses a phrase, save of two
+kinds:
+
+- **A title addressing the given name**
+  (``add("lt col", kind="title", addresses="given")``), matched against
+  the space-joined run of words already read as titles or by that run's
+  last word. Several titles written together are one form of address
+  and the last one does the addressing, so ``"Her Majesty Queen
+  Elizabeth"`` is read by ``queen``.
+- **A birth marker**, matched by lookahead over the words as written:
+  ``add("z domu", kind="birth_marker")`` matches the pair and neither
+  word alone, which is how the shipped Polish entry works.
+
+The words have to stand together: a bracketed clause or a comma
+between them ends the run, and the first word is then an ordinary name
+word.
+
+Where a phrase and a word starting it are both configured, the phrase
+wins where it matches and the word matches everywhere else.
 
 The limit is on what a reading holds, not on the shape a name can have.
 Adjacent suffix words are reassembled after they match, so a multi-word
@@ -517,6 +551,8 @@ credential is reachable as its component words:
     >>> parse("John Smith, MD PhD").suffix
     'MD PhD'
 
+.. _alias-markers:
+
 Alias markers
 ^^^^^^^^^^^^^
 
@@ -525,19 +561,30 @@ person is known by, which is read as the nickname, the marker dropped.
 ``@`` written as a word of its own and ``urf`` are read so by default.
 The English ``alias`` and ``aka`` ship turned off, because each is a
 given name or a surname more often than a marker (``Aka`` is a Turkish
-and an Ivorian surname); a choice of English (``languages={"en"}``)
-turns them on with the rest of English's readings that are off by
-default. If your records write them as markers, add just them:
+and an Ivorian surname); a choice of English
+(``languages=frozenset({"en"})``, :ref:`choosing-languages`) turns them
+on with the rest of English's readings that are off by default. If your
+records write them as markers, add just them:
 
 .. doctest::
 
-    >>> fec = Parser(lexicon=Lexicon.default().add(
+    >>> aka = Parser(lexicon=Lexicon.default().add(
     ...     "aka", "alias", kind="alias_marker"))
-    >>> boscia = fec.parse("BOSCIA, FRANK AKA FRANCIS")
-    >>> boscia.given, boscia.nickname
+    >>> frank = aka.parse("QUELLWOOD, FRANK AKA FRANCIS")
+    >>> frank.given, frank.nickname
     ('FRANK', 'FRANCIS')
-    >>> parse("BOSCIA, FRANK AKA FRANCIS").middle
+    >>> parse("QUELLWOOD, FRANK AKA FRANCIS").middle
     'AKA FRANCIS'
+
+The cost is a name holding the word as a name: with the marker added,
+``Frank Aka Quellwood`` reads nickname ``Quellwood`` and no family:
+
+.. doctest::
+
+    >>> aka.parse("Frank Aka Quellwood").family
+    ''
+    >>> parse("Frank Aka Quellwood").family
+    'Quellwood'
 
 The alias runs to a patronymic particle (``bin``, ``a/l``), another
 marker or a comma, and otherwise to the end of the name, less any
@@ -880,6 +927,8 @@ falls through to nickname parsing (``"John Smith (Ba)"``,
 ``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
 ambiguity.
 
+.. _malay-bt:
+
 Malay names and bt
 ^^^^^^^^^^^^^^^^^^
 
@@ -903,7 +952,10 @@ then reads family ``Bt``, and ``Sir John Smith, Bt`` reads given
 ``Bt``, the name before the comma the family. The default keeps the
 reading because ``bt`` is rare on the lists measured, a Malaysian one
 included (:issue:`1467`), and ``Bt`` written in Title case reads as a
-name word already (``Nur Aina Bt Rosli``).
+name word already (``Nur Aina Bt Rosli``). ``locales.MS`` keeps the
+credential reading too: make the edit on the pack's parser
+(``dataclasses.replace(ms, lexicon=ms.lexicon.remove("bt",
+kind="credential"))`` for ``ms = parser_for(locales.MS)``).
 
 Generation words that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -995,13 +1047,17 @@ a title only inside a title phrase: behind a style
     'Major General'
 
 A language can run the other way, holding a given-name reading of a
-title that its file leaves off until the language is chosen. ``Lady``
-is a given name under a Spanish choice (``locales.ES``), ``Hon`` under
-a Chinese choice of languages (a :class:`~nameparser.Locale` with
-``languages=frozenset({"zh"})``; the ``zh`` pack makes none, so it
-leaves ``Hon`` a title), and ``Guru`` under ``locales.NE``, each staying a title
-inside a phrase; :ref:`choosing-languages` shows the first two, and the table of shipped
-packs in :doc:`locales` the third.
+title that its file leaves off until the language is chosen. Each
+stays a title inside a phrase:
+
+- **Lady** is a given name under a Spanish choice (``locales.ES``).
+- **Hon** is a given name under a Chinese choice of languages (a
+  :class:`~nameparser.Locale` with ``languages=frozenset({"zh"})``);
+  the ``zh`` pack makes no choice, so it leaves ``Hon`` a title.
+- **Guru** is a given name under ``locales.NE``.
+
+:ref:`choosing-languages` shows the first two, and the table of
+shipped packs in :doc:`locales` the third.
 
 Where such a word opens the name and a listed phrase could have held
 it, the parse reports a ``title-or-name`` ambiguity, its alternative
@@ -1093,8 +1149,7 @@ word out asserted (``Van`` standing alone is still a given name):
     'van Gogh'
 
 For particles the default runs the other way from credentials: a
-particle that is not borne as a given name holds no ``given`` reading,
-which is where ``mc`` and ``ste`` were moved (:issue:`360`).
+particle that is not borne as a given name holds no ``given`` reading.
 
 .. _connectives-also-initials:
 
@@ -1203,7 +1258,8 @@ shape. Arabic-script ``عبد``
 lists the names of God and the devotional names it completes, so the
 pair is one name wherever it stands. The Latin spellings name no word
 after them and complete with any, ``abdul`` only in a name of four
-words or more, titles and suffixes not counted (``long_names_only``),
+words or more, a title, a suffix, a nickname or a maiden name not
+counted (``long_names_only``),
 its three-word names being split
 both ways by the people who write them:
 
@@ -1222,10 +1278,14 @@ with the pair as the family, state ``abdul``'s reading without
 
 .. doctest::
 
-    >>> lex = (Lexicon.default().remove("abdul", kind="bound_given")
-    ...        .add("abdul", kind="bound_given", completes_any=True))
+    >>> lex = Lexicon.default().add("abdul", kind="bound_given",
+    ...                             long_names_only=False)
     >>> Parser(lexicon=lex).parse("Tariq Abdul Aziz").family
     'Abdul Aziz'
+
+``locales.MS`` does not make this change; build the pack's parser on a
+base holding the edit (``parser_for(locales.MS,
+base=Parser(lexicon=lex))``).
 
 A ``bound_second`` reading (3.2) is the other end of such a pair: the
 word written second, which joins the word before it. Arabic script

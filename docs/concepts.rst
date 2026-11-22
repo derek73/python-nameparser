@@ -149,8 +149,8 @@ Vocabulary: what a word may be
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vocabulary is consulted first. It lists what a word may be: a
-title, a particle, a conjunction, a maiden marker, a post-nominal
-suffix and, for some words, a given name or a surname, beside those
+title, a particle, a conjunction, a maiden marker, an alias marker, a
+post-nominal suffix and, for some words, a given name or a surname, beside those
 readings or alone. Before any of this,
 text set off by nickname or maiden delimiters (a ``Policy`` setting) is
 set aside (:ref:`nicknames-and-maiden-names`).
@@ -249,8 +249,9 @@ the word stands decides whether it lands. Two examples:
 - **An unlisted acronym.** One written in periods (``X.Y.Z.``) is a
   credential behind a name that can spare it. One written in capitals
   (``XYZ``) is too, by default only right after a comma behind a full
-  name that writes a word of its own in mixed case, as ``Quill`` is
-  (:ref:`unlisted-credentials` says exactly where).
+  name that writes a word of its own in mixed case, as ``Quill`` is, and
+  so is one in mixed case there (``MRes``; :ref:`unlisted-credentials`
+  says exactly where).
 
 .. doctest::
 

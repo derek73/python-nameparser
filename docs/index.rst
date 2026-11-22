@@ -22,8 +22,10 @@ New here? :doc:`getting-started` takes you through the three steps
 most people need:
 
 - **Parse one name** into its fields, as above.
-- **Have a list of names from one source?** :doc:`suggest` reads the
-  order it is written in and returns a parser configured for it.
+- **Have a list of names from one source?** :doc:`suggest` reads how
+  it is written (its order, patronymics, and family names written as
+  letters, in capitals or as two) and returns a parser configured for
+  it.
 - **Joining records from several sources?** :doc:`matching` groups the
   names and compares them field by field.
 

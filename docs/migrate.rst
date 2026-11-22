@@ -47,6 +47,10 @@ Which part is yours
        the attribute map and the ``Constants`` tables are not yours
    * - compares names with ``==``
      - :ref:`migrate-comparison`
+   * - is on 3.0 or 3.1 already
+     - :ref:`migrate-3-1` and :ref:`migrate-3-2` for the readings that
+       moved; the pickles table (:ref:`migrate-pickles`) for what loads
+       where
    * - pickles parsers, lexicons or parsed names
      - :ref:`migrate-pickles`
    * - has tests whose expected readings changed after upgrading
@@ -64,11 +68,11 @@ Upgrade steps
 3. Search your code for those: the ``grep`` under
    :ref:`migrate-finding-sites` finds the names, and a read of a
    ``Lexicon`` set field has to be found by hand.
-4. If you keep pickles, read :ref:`migrate-pickles` before leaving 3.0
-   behind: a ``Lexicon``, ``Parser`` or locale pack pickled by 2.7 or
-   2.8 loads under 3.0 and not under 3.1, so pickle it again under 3.0.
-   That load raises a ``DeprecationWarning``, so it stops a run that
-   turns warnings into errors.
+4. If you keep pickles of a ``Lexicon``, ``Parser`` or locale pack
+   written by 2.7 or 2.8, install 3.0 first, load them and pickle them
+   again there, then upgrade further: 3.1 and 3.2 refuse them
+   (:ref:`migrate-pickles`). That load raises a ``DeprecationWarning``,
+   so it stops a run that turns warnings into errors.
 5. Upgrade, and compare your fixtures with the lists under
    :ref:`migrate-behavior` for the releases between your old version
    and the new one.
@@ -687,15 +691,17 @@ that wrote it:
 
 .. list-table::
    :header-rows: 1
-   :widths: 22 14 18 18 28
+   :widths: 20 11 15 15 15 24
 
    * - Pickled object
      - Written by
      - Under 3.0
      - Under 3.1
+     - Under 3.2
      - What to do
    * - ``HumanName`` or ``Constants``
      - 1.x or 2.x
+     - does not load
      - does not load
      - does not load
      - Store ``parse(text).as_dict()`` or the original string; pickle
@@ -704,15 +710,18 @@ that wrote it:
      - 2.6 or earlier
      - ``ValueError``
      - ``ValueError``
+     - ``ValueError``
      - Build the object again
    * - ``Lexicon``, ``Parser`` or locale pack
      - 2.7 or 2.8
      - loads, with a ``DeprecationWarning``, unless edited in a way
        no readings express (below)
      - ``ValueError``
+     - ``ValueError``
      - Load it under 3.0 and pickle it again there
    * - ``Policy``
      - 2.5 or earlier
+     - ``ValueError``
      - ``ValueError``
      - ``ValueError``
      - Build the object again
@@ -720,14 +729,11 @@ that wrote it:
      - 2.6 to 2.8
      - loads
      - loads
-     - Nothing
-   * - ``Policy``, ``PolicyPatch``, and anything holding a ``Lexicon``
-     - 3.1
-     - ``ValueError``
      - loads
-     - Keep a 3.0 copy while 3.0 must read it (below)
+     - Nothing
    * - ``ParsedName``
      - 2.x
+     - loads, rendering as 2.x did
      - loads, rendering as 2.x did
      - loads, rendering as 2.x did
      - Parse the text again to render it as written
@@ -736,7 +742,30 @@ that wrote it:
      - loads
      - loads, keeping 3.0's vocabulary, save a caller's word written with a
        tatweel (below)
-     - Build a new ``Parser()`` for 3.1's readings
+     - loads, as under 3.1, save also a caller's word added with a
+       zero-width non-joiner or joiner at its edge (below)
+     - Build a new ``Parser()`` for the newer readings
+   * - ``Policy``, ``PolicyPatch``, and anything holding a ``Lexicon``
+     - 3.1
+     - ``ValueError``
+     - loads
+     - loads, keeping 3.1's vocabulary, save a caller's word added with a
+       zero-width non-joiner or joiner at its edge (below)
+     - Keep a 3.0 copy while 3.0 must read it; build a new
+       ``Parser()`` for 3.2's readings
+   * - ``Lexicon``, ``Parser`` (a ``parser_for`` one too) or matcher
+     - 3.2
+     - ``ValueError`` (a matcher: ``ModuleNotFoundError``, 3.0 having
+       none)
+     - ``ValueError``
+     - loads
+     - Keep a 3.1 copy while 3.1 must read it (below)
+   * - ``Policy``, ``PolicyPatch`` or locale pack
+     - 3.2
+     - ``ValueError``
+     - loads
+     - loads
+     - Nothing, unless 3.0 must read it
 
 A ``HumanName`` or a ``Constants``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -770,9 +799,10 @@ this release's; build a new ``Parser()`` for that.
 Between 3.0 and 3.1
 ~~~~~~~~~~~~~~~~~~~
 
-A pickle keeps the vocabulary of the release that wrote it. A
-``Parser`` or locale pack pickled by 3.0 loads under 3.1 and reads and
-matches as 3.0 did: it reads ``Md. Rahim Uddin`` with the title
+A pickle keeps the vocabulary of the release that wrote it, while what
+a later release changed in the parser itself reaches it. A ``Parser``
+or locale pack pickled by 3.0 loads under 3.1 with 3.0's vocabulary:
+it reads ``Md. Rahim Uddin`` with the title
 ``Md.``, does not split the Thai title off ``นายสมชาย``, finds no
 familiar form between ``Bill`` and ``William``, and a pickled
 ``locales.NE`` lacks the ``initials_as_family`` 3.1 gives it. Build the
@@ -789,6 +819,30 @@ The other way, 3.0.x refuses with ``ValueError`` anything holding a
 3.0 does not take, its ``Policy`` has two new fields, and
 ``Script.CYRILLIC`` is new. A ``ParsedName`` or ``Ambiguity`` loads
 both ways.
+
+Between 3.1 and 3.2
+~~~~~~~~~~~~~~~~~~~
+
+Anything 3.0 or 3.1 pickled that 3.1 loads, loads under 3.2, save a
+``Lexicon`` holding a
+word a caller added with a zero-width non-joiner or joiner at its edge,
+or a ``Parser`` holding one, which raises ``ValueError``: 3.2 drops the
+character when it normalizes a word (:issue:`1335`), so build it again
+with the same ``add()`` calls.
+
+A loaded pickle keeps 3.1's vocabulary:
+a ``Parser`` pickled by 3.1 reads ``Imam Taufik Sasongko`` with the
+title ``Imam`` and ``Datuk Ahmad bin Ali`` with the given name
+``Datuk``. What 3.2 changed in the parser itself reaches it all the
+same (``Jane Smith, MRes`` reads the suffix, ``Dr/ Jane Smith`` the
+title). Build the object again under 3.2 to read the 3.2 way.
+
+The other way, 3.1 refuses with ``ValueError`` a ``Lexicon`` pickled by
+3.2, and so a ``Parser``, one ``parser_for`` built included, and a
+matcher (``Parser.matching()``), each of which holds one: 3.2's
+vocabulary has a reading kind, ``alias_marker``, that 3.1 does not
+know. A ``Policy``, a ``PolicyPatch``, a locale pack, a ``ParsedName``
+and an ``Ambiguity`` pickled by 3.2 load under 3.1.
 
 Pickles between 2.x releases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -909,9 +963,10 @@ list, with reasoning, is in each release's section of
        ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
    * - 3.2
-     - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``,
-       religious titles before a name, Korean ``Ra``, Malay and Dutch
-       ``Ab``
+     - Titles and jobs after a comma, religious titles, ``Ra`` and ``Ab``,
+       credentials (mixed case, ``MD`` inside a name written in one
+       case, ``ud``), particles (``Oude``, ``aus``, ``Vanden``,
+       ``a/l``), Arabic-script names, two family names in more packs
      - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
@@ -2191,10 +2246,10 @@ To keep the 3.1 reading, turn the switch off on top of the pack:
     >>> as_31.parse("Ana Souza Lima").family
     'Lima'
 
-A ``locales.PT_BR``, or a parser built from it, pickled by 3.1 still
-loads, and reads as 3.1's pack did: a pickle holds the pack's values,
-not its name. Build the parser again from ``locales.PT_BR`` to read two
-family names.
+A ``locales.PT_BR``, or a parser built from it, pickled by 3.1 keeps
+the 3.1 pack's values, which leave ``two_family_names`` off: a pickle
+holds the pack's values, not its name (:ref:`migrate-pickles`). Build the parser again
+from ``locales.PT_BR`` to read two family names.
 
 Two family names under locales.HR and locales.SL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2217,8 +2272,8 @@ both as 3.1 read them:
     'Jože'
 
 To keep the 3.1 reading, turn the switch off on top of the pack, as for
-``locales.PT_BR`` above. A pack or parser pickled by 3.1 reads as 3.1's
-pack did.
+``locales.PT_BR`` above. A pack or parser pickled by 3.1 keeps the 3.1
+pack's values, which leave ``two_family_names`` off.
 
 Malaysian a/l, a/p and anak
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2304,9 +2359,13 @@ job's as ``kind="occupation"`` and a qualifier's as ``kind="modifier"``:
 
 .. doctest::
 
-    >>> as_31 = Parser(lexicon=Lexicon.default().remove("student", kind="occupation"))
-    >>> as_31.parse("Student Mary Jones").given
+    >>> student_as_name = Parser(
+    ...     lexicon=Lexicon.default().remove("student", kind="occupation"))
+    >>> student_as_name.parse("Student Mary Jones").given
     'Student'
+
+Each word is removed on its own: ``bachelor`` is an occupation and
+``medical`` a modifier.
 
 ud inside a compound name
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2384,7 +2443,7 @@ ranks ``اللواء`` (major general), ``المستشار`` (counsellor) and
 the given name. :meth:`~nameparser.ParsedName.initials` gives nothing
 for a word in Arabic script, where 1.4 through 3.1 gave its first
 letter, and the name match reads an Arabic letter with a full stop as
-a word, so ``م. علي`` no longer matches ``محمد علي``. There is no
+a word, so ``ع. حسن`` no longer matches ``علي حسن``. There is no
 setting to restore those initials; a caller wanting a letter per word
 takes it from the fields:
 
@@ -2431,13 +2490,16 @@ bear them as names (``locales.MS`` reads ``Haji`` as a title,
     >>> parse("Hafiz Ahmed Khan").given
     'Hafiz'
 
-To read one of the four as a name, remove its reading:
+To read them as names, remove their readings: ``qari`` and
+``moulana`` are religious titles, ``alhaj`` and ``alhajj`` styles:
 
 .. doctest::
 
-    >>> as_31 = Parser(lexicon=Lexicon.default().remove("qari", kind="religious"))
-    >>> as_31.parse("Qari Ahmed Khan").given
-    'Qari'
+    >>> as_31 = Parser(lexicon=Lexicon.default()
+    ...                .remove("qari", "moulana", kind="religious")
+    ...                .remove("alhaj", "alhajj", kind="style"))
+    >>> as_31.parse("Qari Ahmed Khan").given, as_31.parse("Alhaj Ahmed Khan").given
+    ('Qari', 'Alhaj')
 
 Imam, Timi, Sheriff and Effendi as given names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2458,14 +2520,27 @@ In a title phrase they stay titles (``Chief Imam``, ``Grand Imam``,
     >>> parse("Chief Imam Musa Bello").title
     'Chief Imam'
 
+English names move too: ``Sheriff John Smith`` gives the given name
+``Sheriff``, reporting ``title-or-name``, and ``John Smith, Sheriff``
+reverses the name:
+
+.. doctest::
+
+    >>> parse("Sheriff John Smith").given
+    'Sheriff'
+    >>> parse("John Smith, Sheriff").family
+    'John Smith'
+
 To read one of the four as a title wherever it opens a name, remove its
 given reading:
 
 .. doctest::
 
-    >>> as_31 = Parser(lexicon=Lexicon.default().remove("imam", kind="given"))
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("imam", "sheriff", kind="given"))
     >>> as_31.parse("Imam Taufik Sasongko").title
     'Imam'
+    >>> as_31.parse("Sheriff John Smith").title
+    'Sheriff'
 
 Alias markers: @ and urf
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2486,6 +2561,22 @@ word, as before:
     'Raju'
     >>> parse("Rahim Osman@Usman").family
     'Osman@Usman'
+
+With no particle after it the alias takes the rest of the name, up to
+any post-nominals or a comma, so a
+one-word alias before the family name takes the family name with it,
+and in ``Ravi Kumar urf Raju`` the word before ``urf`` is now the
+family name:
+
+.. doctest::
+
+    >>> parse("Rahim @ Jaki Osman").family
+    ''
+    >>> parse("Ravi Kumar urf Raju").family
+    'Kumar'
+
+``alias`` and ``aka`` are read so only where you add them or choose
+English (:ref:`alias-markers`).
 
 To read the two as name words again, remove their readings:
 
@@ -2535,13 +2626,15 @@ Ra as a Korean name
 ``Ra``, a Korean family name and given name, reads as a name where it
 ends or opens one, where 1.4.0 through 3.1.0 read it as the credential
 RA ending a name of three words (2.0 through 3.1 of two too) and the
-title RA (Rechtsanwalt) opening one. Written ``RA`` in a name of mixed
-case and ending it after a comma, or written ``R.A.``, it is still the
-credential. ``Ra`` alone after a family comma (``Kim, Ra``), ``RA``
-opening the part after a family comma in a name written wholly in
-capitals (``KING, RA``), ``RA`` in the given part after a family comma
-ahead of a name word (``Smith, RA John``) and ``RA`` opening a German
-name are now the given name:
+title RA (Rechtsanwalt) opening one.
+
+- **Still the credential:** ``RA`` in a name of mixed case ending it
+  after a comma, and ``R.A.``.
+- **Now the given name:** ``Ra`` alone after a family comma (``Kim,
+  Ra``); ``RA`` opening the part after a family comma in a name written
+  wholly in capitals (``KING, RA``); ``RA`` in the given part after a
+  family comma ahead of a name word (``Smith, RA John``); and ``RA``
+  opening a German name.
 
 .. doctest::
 
@@ -2594,3 +2687,309 @@ readings and add the rank:
     ...                .add("ab", kind="military"))
     >>> ab_31.parse("Ab Jansen").title
     'Ab'
+
+A title or suffix typed with a joiner at its edge
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A zero-width non-joiner or joiner (U+200C, U+200D) typed at the edge
+of a word no longer hides it from the vocabulary, so a title or suffix typed with one reads
+as the title or suffix, where 1.4 through 3.1 read it as a name word.
+The field keeps the character, and one inside a word is still part of
+its spelling:
+
+.. doctest::
+
+    >>> zwnj = parse("Dr‌ John Smith")
+    >>> zwnj.title == "Dr‌", zwnj.given
+    (True, 'John')
+
+A ``Lexicon`` pickled with a word added with one at its edge is refused
+on load (:ref:`migrate-pickles`).
+
+The Cyrillic doctorate д-р ending a name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``д-р`` ending a name is the credential, where 1.4 through 3.1 read
+it as the family name. After a comma it is the credential too, where
+3.1 read it as the title and 1.4 as the given name. In front of the
+name it is still the title, as in 3.1 (1.4 read the given name):
+
+.. doctest::
+
+    >>> dr_uk = parse("Іван Петренко д-р")
+    >>> dr_uk.family, dr_uk.suffix
+    ('Петренко', 'д-р')
+    >>> parse("д-р Іван Петренко").title
+    'д-р'
+
+To read it as 3.1 did, remove its credential reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("д-р", kind="credential"))
+    >>> as_31.parse("Іван Петренко д-р").family
+    'д-р'
+
+A credential in mixed case after a comma
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An unlisted credential written in mixed case after a full name and a
+comma (``MRes``, ``AuD``) is the suffix, where 1.4 through 3.1 read it
+as the given name and the name before the comma as the family. The word
+must open with two capitals or end in one, so ``LeBron`` and ``PhDc``
+stay given names, and behind a one-word family it stays the given name:
+
+.. doctest::
+
+    >>> mres = parse("Jane Smith, MRes")
+    >>> mres.family, mres.suffix
+    ('Smith', 'MRes')
+    >>> parse("Smith, MRes").given
+    'MRes'
+
+The rule reads the word's shape, not the vocabulary, so no vocabulary
+edit turns it off; a given name written so after a two-word surname
+reads as the credential (``García López, DAndre``).
+
+Czech and Slovak post-nominals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``DiS.``, ``DrSc.`` and ``ArtD.`` are credentials: after a full name
+and a comma ``DiS.`` is the suffix, where 1.4 through 3.1 read it as
+the title. ``DiS.`` is also a surname, so written without the comma at
+the end of a name of mixed case it stays a name word:
+
+.. doctest::
+
+    >>> dis = parse("Jan Novák, DiS.")
+    >>> dis.title, dis.suffix
+    ('', 'DiS.')
+    >>> parse("Jan Novák DiS.").family
+    'DiS.'
+
+To read it as 3.1 did, remove its credential reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("dis", kind="credential"))
+    >>> as_31.parse("Jan Novák, DiS.").title
+    'DiS.'
+
+Medical degrees and Nigerian and Hong Kong honours
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``BCh``, ``BChir`` and ``BMBCh``, the Nigerian marks ``mni``, ``fwc``,
+``fsi``, ``fnse``, ``psc`` and ``ndc``, and the Hong Kong and Singapore
+honours ``GBM``, ``GBS``, ``SBS``, ``BBS`` and ``BBM`` are credentials.
+After a one-word family name and a comma each reads as the suffix,
+where 1.4 through 3.1 read it as the given name, and ending a name,
+where they read it as the family name. After a full name and a comma
+each is the suffix too, where 1.4 read the given name, as 3.1 did save
+for those in capitals. ``BChir``, which is also a surname, stays a name
+word after a one-word name and a comma and ending a name; after a full
+name and a comma it is the suffix however it is written:
+
+.. doctest::
+
+    >>> bch = parse("Jane Doe, BCh")
+    >>> bch.family, bch.suffix
+    ('Doe', 'BCh')
+    >>> parse("Bello, MNI").suffix
+    'MNI'
+
+A word in mixed case such as ``BCh`` is also read by the shape the
+previous entry describes, so removing its credential reading leaves it
+the suffix after a full name and a comma.
+
+German aus
+^^^^^^^^^^
+
+``aus`` is a family-name particle, so ``aus der Fünten`` is one family
+name, where 1.4 through 3.1 read ``aus`` as a middle name. An ``Aus``
+written as a middle name before a surname is read into the family too:
+
+.. doctest::
+
+    >>> aus = parse("Karen aus der Fünten")
+    >>> aus.middle, aus.family
+    ('', 'aus der Fünten')
+    >>> parse("Kevin Aus Smith").family
+    'Aus Smith'
+
+To read it as 3.1 did, remove its particle reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("aus", kind="preposition"))
+    >>> as_31.parse("Karen aus der Fünten").middle
+    'aus'
+
+Vanden
+^^^^^^
+
+``Vanden``, the Dutch and Flemish *van den* written as one word, is a
+family-name particle as ``Vander`` is, where 1.4 through 3.1 read it as
+a middle name:
+
+.. doctest::
+
+    >>> vanden = parse("Pieter Vanden Broeck")
+    >>> vanden.middle, vanden.family
+    ('', 'Vanden Broeck')
+
+To read it as 3.1 did, remove its particle reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("vanden", kind="preposition"))
+    >>> as_31.parse("Pieter Vanden Broeck").middle
+    'Vanden'
+
+Korean surnames 어 and 라
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+어 and 라 are Korean surnames, so an unspaced name in hangul opening
+with one is split, where 1.4 through 3.1 kept it whole:
+
+.. doctest::
+
+    >>> eo = parse("어수선")
+    >>> eo.family, eo.given
+    ('어', '수선')
+
+A foreign name written in hangul that opens with 라 is split too; to
+keep such names whole, take the surname out of the list, as
+:ref:`teaching-the-splitter-a-surname` shows.
+
+عبد with a final ى
+^^^^^^^^^^^^^^^^^^
+
+A word completing ``عبد`` written with a final ``ى``, as Egyptian names
+write it, joins ``عبد`` as the same word written with ``ي`` does, where
+1.4 through 3.1 read it as a name of its own:
+
+.. doctest::
+
+    >>> abd = parse("سامر عبد القوى")
+    >>> abd.family
+    'عبد القوى'
+
+Malaysian honours
+^^^^^^^^^^^^^^^^^
+
+``Datuk``, ``Dato'``, ``Datin`` and ``Hajah`` opening a name are
+titles, where 1.4 through 3.1 read them as the given name; the
+``locales.MS`` pack reads more Malay titles (:ref:`malay-names`):
+
+.. doctest::
+
+    >>> datuk = parse("Datuk Ahmad bin Ali")
+    >>> datuk.title, datuk.given
+    ('Datuk', 'Ahmad')
+
+To read one as a name, remove its reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("datuk", kind="nobility"))
+    >>> as_31.parse("Datuk Ahmad bin Ali").given
+    'Datuk'
+
+Emeritus
+^^^^^^^^
+
+``Emeritus`` and ``Emerita`` after ``Professor`` or ``Prof``, or
+before it, join the title, where 1.4 through 3.1 read ``Emeritus`` as
+the given name. ``Emerita`` alone stays the given name, being a given
+name too, and a title other than ``Professor`` before ``Emeritus``
+still leaves it a name word:
+
+.. doctest::
+
+    >>> emeritus = parse("Professor Emeritus John Smith")
+    >>> emeritus.title, emeritus.given
+    ('Professor Emeritus', 'John')
+    >>> parse("Bishop Emeritus John Smith").given
+    'Emeritus'
+
+To read it as 3.1 did, remove its reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove(
+    ...     "emeritus", "emerita", kind="modifier"))
+    >>> as_31.parse("Professor Emeritus John Smith").given
+    'Emeritus'
+
+Military ranks written with a hyphen
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Thirteen ranks written with a hyphen, such as ``Vice-Admiral``,
+``Major-General`` and ``Air Vice-Marshal``, are titles. 3.1 read
+``Air Vice-Marshal Ann Reed`` with given ``Air``, and 1.4 with title
+``Air``; a hyphenated rank not listed, such as ``Squadron-Leader``,
+still reads as a name word:
+
+.. doctest::
+
+    >>> avm = parse("Air Vice-Marshal Ann Reed")
+    >>> avm.title, avm.given
+    ('Air Vice-Marshal', 'Ann')
+
+To read one as 3.1 did, remove its reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("vice-marshal", kind="military"))
+    >>> as_31.parse("Air Vice-Marshal Ann Reed").given
+    'Air'
+
+MD inside a name written in one case
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``MD`` with a name word after it, in a name written wholly in capitals
+or wholly in lower case, is read as a name word (Muhammad written
+short, as Malaysian names write it), where 2.4 through 3.1 read it as
+the degree and took the name behind it into the suffix; 1.4 through
+2.3 read it as 3.2 does. Both readings are reported as
+``suffix-or-name``. In a name of mixed case the degree stays:
+
+.. doctest::
+
+    >>> siti = parse("SITI NORA MD YUSRI")
+    >>> siti.middle, siti.family, siti.suffix
+    ('NORA MD', 'YUSRI', '')
+    >>> parse("JOHN SMITH MD JONES").family
+    'JONES'
+    >>> parse("John Smith MD Jones").suffix
+    'MD Jones'
+
+Under a pack
+^^^^^^^^^^^^
+
+Code already using a pack sees these too; each pack's own section has
+the rest:
+
+- **locales.CS** reads ``Bc`` and ``Ing`` as titles, so a name opening
+  with the given name Ing reads it as the title (``Ing Wei Lim`` gives
+  title ``Ing``, where 3.1 gave given ``Ing``,
+  :ref:`west-south-slavic-packs`).
+- **locales.HI** reads ``Shri`` as a title (``Shri Ravi Kumar Verma``
+  gives title ``Shri``, where 3.1 gave given ``Shri``).
+- **locales.ES** and **locales.ES_AR**: their given-name lists were
+  rewritten, so a few words read the other way (``Juan Gerhard Lopez``
+  gives family ``Gerhard Lopez`` under ``locales.ES_AR``, where 3.1
+  gave middle ``Gerhard``, :ref:`argentine-spanish-pack`).
+
+.. doctest::
+
+    >>> parser_for(locales.CS).parse("Ing Wei Lim").title
+    'Ing'
+    >>> parser_for(locales.HI).parse("Shri Ravi Kumar Verma").title
+    'Shri'
+
+This list covers parses only. 3.2 also changed what
+:meth:`Parser.suggest() <nameparser.Parser.suggest>` suggests for some
+lists, and a name vote (``NameEvidence.votes``) may now hold ``True``
+or ``False`` (:doc:`suggest`), and with ``familiar-form`` accepted the
+name match finds more familiar forms (:doc:`matching`).

@@ -97,7 +97,7 @@ order and the Korean split, can each be turned off
 Using a pack
 ------------
 
-Most packs carry one of two things: a *structural* rule, like reordering
+A pack carries one or both of two things: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express, or words that are
 right in one language and wrong as a default (`Packs that choose a
 language`_). Two packs, ``zh`` and ``ja``, also divide a name written
@@ -128,7 +128,7 @@ with different parsers rather than enabling a pack over all of it.
 What a pack costs
 ~~~~~~~~~~~~~~~~~
 
-Each pack declares a surface, the names it may read differently from
+Each pack declares a surface: the names it may read differently from
 the default. A rule's surface is a shape — a patronymic ending or marker for ``ru`` and
 ``tr_az``, a script for ``zh`` and ``ja``, three name words or more for
 the packs that read two family names — and a choice of languages
@@ -139,7 +139,10 @@ can act on a name from a tradition it was not written for. A broad
 shape covers much:
 
 - ``es``, ``es_ar``, ``cs``, ``sk``, ``hr``, ``sl``, ``pt_br`` and
-  ``pt_pt`` may read any name of three words differently.
+  ``pt_pt`` may read any name of three name words or more differently;
+  ``cs`` also any name holding ``Ing`` as a word (``Ing Lim``).
+- ``ne`` may read any name holding two single letters in a row
+  differently (``initials_as_family``), whatever its language.
 - ``vi``, whose name order is its shape, may read any name differently:
   the order moves every name a family comma does not fix, and its
   titles and removed readings reach the comma names too.
@@ -171,6 +174,25 @@ shape covers much:
    The default parser reads that as given ``David``, family
    ``Abramovich``. This is the trade the pack asks you to make, and it
    is why packs are opt-in rather than automatic.
+
+Checking a pack against your data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Parse a sample of your names under the default and under the pack, and
+read the names the two read differently before you choose it:
+
+.. doctest::
+
+    >>> spanish_check = parser_for(locales.ES)
+    >>> sample = ["Lucía Ferrando Quintela", "Mark Oduya Bell", "Ana Ruiz"]
+    >>> [(text, parse(text).family, spanish_check.parse(text).family)
+    ...  for text in sample
+    ...  if parse(text).as_dict() != spanish_check.parse(text).as_dict()]
+    [('Lucía Ferrando Quintela', 'Quintela', 'Ferrando Quintela'), ('Mark Oduya Bell', 'Bell', 'Oduya Bell')]
+
+Here the pack mends the Spanish name and costs the English one its
+middle name. For a list whose convention you do not know, ask
+:doc:`suggest` first.
 
 Every shipped pack is held to the same test: over the test corpus and
 the pack's own example names, every name it reads differently from the
@@ -328,7 +350,9 @@ says which parts each pack is made of.
    * - ``nl``
      - Dutch: family names opening with ``ten``
      - Chooses ``nl``, which reads ``ten`` inside a name as the particle
-       opening the family name. See :ref:`dutch-particles`.
+       opening the family name and drops ``VD``'s credential reading
+       (``John Smith VD`` gives family ``VD``). See
+       :ref:`dutch-particles`.
      - ``Jan ten Brink`` → family ``ten Brink``
    * - ``pt``
      - Portuguese, from any country
@@ -450,8 +474,10 @@ says what it can change:
      - ``segment_scripts``, for the script its list covers
      - a surname list
 
-``vi`` is the pack whose own fragment takes readings out rather than
-adding them (`What a pack's lexicon may hold`_).
+``vi`` and ``cs`` are the packs whose own fragments take readings out
+rather than adding them: ``cs`` removes ``Ing``'s given-name reading,
+``vi`` the particle, conjunction and credential readings of Vietnamese
+syllables (`What a pack's lexicon may hold`_).
 
 See :ref:`config-containers` for how that split (language vocabulary
 vs. behavior) is drawn. Which half a new naming rule belongs in is
@@ -736,6 +762,8 @@ settle:
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
 
+.. _stacking-packs:
+
 Stacking packs
 --------------
 
@@ -751,7 +779,9 @@ How each part combines:
 
 - **Languages union** into one choice, with the base's own, applied
   first (see `Choosing languages`_), so the order the packs are given
-  in does not change it.
+  in does not change it. Where two chosen languages read one word
+  differently, both readings stay and the name around the word
+  decides (`What a choice costs`_).
 - **Lexicons join in order**: the packs' lexicons in the order given,
   then the base's, each applied after the choice, so where two
   disagree the later wins and the base's own words win over every
@@ -930,7 +960,7 @@ A tag selects its own file and those of the languages it belongs to,
 never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
 leaves the Brazilian words alone. No other table of related languages
 is read, so a caller with Malay and Indonesian names chooses ``ms``
-and ``id``.
+(``locales.MS``) and ``id``.
 
 Tags are compared without regard to case, and a tag is checked in one
 of four ways:
@@ -1039,8 +1069,10 @@ of the others, and a strict one reads each as a name word:
     >>> korean.parse("Kim Min Ae").family
     'Ae'
 
-Chinese ``De`` is the same case under strict ``zh``: ``De Xu`` reads
-given ``De``, family ``Xu``.
+Chinese ``De`` is the same case under a strict choice of the language
+``zh`` (a :class:`~nameparser.Locale` with ``languages=frozenset({"zh"})``,
+not ``locales.ZH``, which chooses no language): ``De Xu`` reads given
+``De``, family ``Xu``.
 
 What a strict choice keeps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1132,7 +1164,10 @@ Creating your own Locale
 
 You don't need to touch nameparser's registry to use your own pack —
 :class:`~nameparser.Locale` is a plain, constructible value:
-``Locale(code=..., lexicon=..., policy=PolicyPatch(...))``. A
+``Locale(code=..., lexicon=..., policy=PolicyPatch(...),
+languages=frozenset({...}))``, ``languages`` choosing the vocabulary
+files of the languages it names (`Which tags are accepted`_; a word of
+a language with no file goes in the pack's own ``lexicon``). A
 :class:`~nameparser.PolicyPatch` is a :class:`~nameparser.Policy`-shaped
 patch: every field defaults to :data:`~nameparser.UNSET` (leave it
 alone) instead of to a concrete value, so a pack only ever states what
@@ -1179,7 +1214,9 @@ right, validated on its own, and it may hold any of these:
 - **A list and no reading.** ``zh`` is the shipped worked example: its
   ``Lexicon(surnames=...)`` holds a list and no reading.
 - **Removals.** A fragment's ``remove`` calls apply after the choice
-  too, as a caller's own do: ``vi``'s fragment,
+  too, as a caller's own do. ``cs``'s,
+  ``Lexicon.empty().remove("ing", kind="given")``, makes ``Ing`` a
+  title opening a name (``Ing Wei Lim`` gives title ``Ing``); ``vi``'s,
   ``Lexicon.empty().remove("van", ..., kind="particle")`` with a call
   each for ``kind="conjunction"`` and ``kind="credential"``, takes out
   those readings of the syllables it lists, and only those (``mac``

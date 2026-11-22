@@ -56,8 +56,10 @@ What the default reads and what waits for a pack
 
 The default reads the doctorates before the name (``MUDr.``,
 ``JUDr.``, ``PhDr.``, ``RNDr.`` and the rest), ``Mgr.``, which it
-lists as Monsignor, and the degrees after it, ``DiS.``, ``DrSc.`` and
-``ArtD.``. It cannot read the other words, each of which
+lists as Monsignor, and the degrees after it, ``DrSc.`` and ``ArtD.``,
+and ``DiS.`` after a comma (``Jan Novák, DiS.``); ``DiS.``, a surname
+too, ending a name without a comma stays a name word. It cannot read
+the other words, each of which
 another reading claims:
 
 - ``ml.`` is also a pair of initials.
@@ -197,10 +199,11 @@ The four packs read two family names (``two_family_names``, see
 name in its own view (``surname1`` ``Pešová``, ``surname2``
 ``Řehořová``).
 
-Two given names pay for it: with no given-name list in any of the four
+Two given names pay for it: no given-name list ships for these four
 languages to keep a given name out of the family (none is published
 for the whole Czech or Slovak population, and none has been looked for
-in Slovenian or Croatian), ``Petr Pavel Novák`` reads family ``Pavel
+in Slovenian or Croatian), so ``Petr Pavel
+Novák`` reads family ``Pavel
 Novák``. A family comma keeps both as the default reads them, and an
 initial written between the given name and the surname stays the
 middle name:
@@ -380,7 +383,7 @@ Two family names under ``es``
 
 ``es`` reads a name as Spanish names are written, with two family
 names, the father's and then the mother's (``two_family_names``, see
-:ref:`two-family-names`). It carries a list of 1,000 Spanish given
+:ref:`two-family-names`). It carries a list of about 1,000 Spanish given
 names, the ones INE's 2025 census tables count as given names in at
 least 90% of their uses, so a given name standing before the family
 stays out of it:
@@ -592,8 +595,8 @@ under ``pt_br``, while Portuguese inventors gain under ``pt_pt``
 (57.6% → 66.1%). Most of the Brazilian names it breaks hold a second
 surname among the given names (``Eder Ferreira`` / ``Rangel``, read
 family ``Ferreira Rangel``). So choose ``pt_br`` or ``pt_pt``, by
-country, for names whose family part is written whole, and keep ``pt`` for data
-filed with a single surname as the family name.
+country, for names whose family part is written whole, and keep ``pt`` for
+Brazilian data filed with a single surname as the family name.
 Among the UK company register's filers the switch gains for
 Portuguese (59.2% → 62.8%) and Brazilian (53.7% → 62.9%) nationals.
 
@@ -950,8 +953,8 @@ Initials
 
 :meth:`~nameparser.ParsedName.initials`, with its default ``spec``,
 gives an empty string for a name in Thai script (a ``spec`` of your
-own keeps its literal characters), as it does for Chinese, Japanese
-and Korean ones,
+own keeps its literal characters), as it does for Chinese, Japanese,
+Korean, Lao, Burmese and Arabic-script ones,
 since Thai does not write names as initials. A word in another script
 beside it still gives its own:
 
@@ -1581,10 +1584,10 @@ every name, so keep it to a list that is wholly Burmese:
     >>> burmese.parse("Jane Doe, PA").suffix
     'PA'
 
-On the committed test corpora and ClinicalTrials.gov's officials and
-site contacts, 660,410 distinct names that are mostly not Burmese, the
-strict choice reads 58,776 differently from the plain pack in their
-fields, 8.9% of them (measured 2026-11-19, :issue:`1483`).
+On some 660,000 distinct names that are mostly not Burmese, the strict
+choice reads about one in eleven differently from the plain pack in
+their fields (:issue:`1483`; the measurement is in the source
+repository's ``docs/design/decisions/vocabulary-collisions.md``).
 
 What the pack leaves as it is
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1607,7 +1610,8 @@ When not to use it
 The plain pack reads names that are not Burmese as the default does,
 save two words, ``U`` and ``Daw``, read as titles wherever a title is
 read (``Daw Smith`` gives title ``Daw``), and ``U`` as a letter of a
-word joined by full stops. ``U`` is the honorific however it is
+word joined by full stops (``J.U. Smith`` gives title ``J.U.``). ``U``
+is the honorific however it is
 written, so an initial ``U.`` can be read as the title. ``Smith, U.`` and ``Dr. U.
 Smith`` give no given name, though ``John U. Smith`` and ``Smith, John
 U.`` keep it an initial:
@@ -1620,9 +1624,12 @@ U.`` keep it an initial:
 
 A Korean name written with no comma and opening with the surname ``U``
 reads ``U`` as the title under the pack (``U Minjun``), where ``U,
-Minjun`` keeps it as the family name. Chosen strictly, the pack also
-reads a run of initials holding ``U`` as the title (``U.S. Grant``
-gives title ``U.S.``, family ``Grant``). Keep the pack to a parser of
+Minjun`` keeps it as the family name. Chosen strictly, the pack drops
+English's readings of runs opening with ``U``, the titles ``U.S.`` and
+``U.K.`` and credentials such as ``U.S.A.``, so they read as the title
+as an unlisted run does (``U.S. Grant`` gives title ``U.S.``,
+family ``Grant``), and the title after one no longer joins it
+(``U.S. Senator John Smith`` gives title ``U.S.``, given ``Senator``). Keep the pack to a parser of
 its own for the Burmese names in your data.
 
 .. _malay-names:
@@ -1688,23 +1695,24 @@ given name behind the surname ``Tan`` reads as the phrase
 (``Tan Sri Wahyuni`` gives title ``Tan Sri``), and so does either word
 behind a style (``Hon. Tan Ah Kow`` gives title ``Hon. Tan``).
 
-On Malaysia's election candidates, 3,077 distinct names written in
-capitals, the default reads an honour as the title in 174 names
-(``DATO'`` 103, ``DATUK`` 69, ``DATIN`` 1, ``HAJAH`` 1); the word behind
-it is then the given name, which for a qualifier of the honour (``DATO'
-SRI``, ``DATUK SERI``) or a title the default does not read (``HAJI``,
-``CIKGU``) is still not the person's. The pack reads 248 differently
-from the default. 197 of them read a title the default read as the
-given name: ``USTAZ`` 72, ``CIKGU`` 45, ``HAJI`` 37, ``DATO`` 29,
-``TAN SRI`` 6, ``USTAZAH`` 5, ``CIK`` 2 and ``PUAN SRI`` 1. The two
-``CIK`` are ``Cikgu`` written in two words (``CIK GU``), and read given
-``GU``. The other 51 read the same and add a report: 36 Chinese names
-written family first with ``TAN``, 14 ``DATO' SRI`` and 1 ``DATO'
-TAN``. Among the records
-ORCID, PatentsView and Companies House hold of Malaysians, Indonesians
-and Singaporeans, each split into boxes by the person or the filer, the
-share whose boxes the parse matches moves by at most 0.1 point under
-the pack (measured 2026-11-21, :issue:`1179`, :issue:`1180`).
+On Malaysia's election candidates, some 3,000 names written in
+capitals, the default reads an honour (``DATO'``, ``DATUK``) as the title
+in about 170 of them; the word behind it is then the given name, which
+for a qualifier of the honour (``DATO' SRI``, ``DATUK SERI``) or a title
+the default does not read (``HAJI``, ``CIKGU``) is still not the
+person's. The pack reads about 250 differently from the default:
+
+- **About 200 read a title the default read as the given name**, most
+  of them ``USTAZ``, ``CIKGU``, ``HAJI`` and ``DATO``. ``Cikgu`` written
+  in two words (``CIK GU``) reads given ``GU``.
+- **The rest read the same and add a report**, most of them Chinese
+  names written family first with ``TAN``.
+
+Among the records ORCID, PatentsView and Companies House hold of
+Malaysians, Indonesians and Singaporeans, each split into boxes by the
+person or the filer, the share whose boxes the parse matches moves by
+at most a tenth of a point under the pack (:issue:`1179`,
+:issue:`1180`).
 
 What the pack leaves as it is
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1724,8 +1732,9 @@ stay name words (``Datuk Seri Anwar Ibrahim`` gives title ``Datuk``,
 given ``Seri``), and so do ``YB``, ``YM`` and ``YA`` and the police
 ranks (:issue:`1180`). ``Haji`` inside the father's name is a name word
 (``Ahmad bin Haji Abdullah`` gives family ``bin Haji Abdullah``).
-``bt``, written short for ``binti``, stays a credential (Baronet), as
-by default; :doc:`customize` shows how to remove it.
+``bt``, written short for ``binti``, can still be read as a credential
+(Baronet), as by default (``Nur Aina bt Rosli``); :ref:`malay-bt`
+shows how to remove it.
 
 Plain, not strict
 ~~~~~~~~~~~~~~~~~
@@ -1733,7 +1742,8 @@ Plain, not strict
 Choose the pack plainly. Malaysian lists mix Malay, Chinese and Indian
 names with English and Arabic titles, and a strict choice of ``ms``
 reads only the words of ``ms`` and those shared by every language, so
-it drops ``Abdul``'s join and English titles such as ``Sir``: it matches the boxes of 76.16% of ORCID's
-Malaysian holders, against 76.72% for the plain choice (measured
-2026-11-19).
+it drops ``Abdul``'s join and English titles such as ``Sir``: on
+ORCID's Malaysian holders it matches about half a point fewer names'
+boxes than the plain choice (the measurement is in the source
+repository's ``docs/design/decisions/salutation-titles.md``).
 

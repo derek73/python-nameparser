@@ -493,7 +493,8 @@ read as the hyphen-minus wherever the parser reads the name alike,
 which it does not for a credential joined by one (``MD‐PhD``). A letter
 a keyboard lacks, written as one types it or as its standard
 transcription, reads ``folded`` too (``Łukasz`` / ``Lukasz``,
-``Müller`` / ``Mueller``).
+``Müller`` / ``Mueller``). A zero-width non-joiner or joiner typed at
+a word's edge is dropped too.
 
 The fold drops accents only from Latin, Greek and Cyrillic letters; a
 mark on another script's letter, such as a Devanagari vowel sign, is
@@ -510,6 +511,9 @@ In a family or maiden name, spaces and hyphens are set aside (``Jane
 Doe (née J.-P.)`` / ``Jane Doe (née J. P.)``), and a family or maiden
 name of initials alone on both sides reads no other leniency, so ``J.
 P., Ann`` / ``P. J., Ann`` and ``J., Ann`` / ``J. P., Ann`` conflict.
+A letter in a script that writes no initials (Han, Hangul, kana, Thai,
+Lao, Burmese, Arabic) is read as a word, not an initial, so ``ສ. ໃຈດີ``
+/ ``ສົມຊາຍ ໃຈດີ`` conflicts.
 
 Initials written joined into one word agree with the same letters
 written apart as ``joined`` (``JP Smith`` / ``J.-P. Smith``).
