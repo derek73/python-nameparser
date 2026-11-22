@@ -538,3 +538,19 @@ def test_same_as_compiles_for_readings_of_every_kind() -> None:
     # only a given reading's same_as makes an abbreviated given name
     assert "wm" in compiled["GIVEN_NAME_ABBREVIATIONS"]
     assert not {"junior", "capt"} & compiled["GIVEN_NAME_ABBREVIATIONS"]
+
+
+@pytest.mark.parametrize(("tag", "name", "word"), [
+    ("ar", "Cheikh Kaddari", "Cheikh"), ("ar", "Amine Cheikh", "Cheikh"),
+    ("ms", "Sultan Zulkarnain", "Sultan"), ("ms", "Aisha Sultan", "Sultan"),
+])
+def test_a_regated_word_names_its_chosen_file_in_either_name_role(
+        tag: str, name: str, word: str) -> None:
+    # ar.toml and ms.toml write both name readings (#1463): the given one
+    # keeps the gate, and the family one moves no role, but without it
+    # strict read a family Cheikh or Sultan naming no file
+    from nameparser import parser_for
+    strict = parser_for(_choice((tag,)), strict=True)
+    token = next(t for t in strict.parse(name).tokens if t.text == word)
+    assert token.reading is not None
+    assert tag in token.reading.languages
