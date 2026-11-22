@@ -242,8 +242,10 @@ says which parts each pack is made of.
    * - ``sl``, ``hr``
      - Slovenian and Croatian
      - Each chooses its one language, which turns on the generations
-       ``ml.`` and ``st.`` See :ref:`west-south-slavic-packs`.
-     - ``Ivan Horvat ml.`` → suffix ``ml.``
+       ``ml.`` and ``st.``, and reads two family names. See
+       :ref:`west-south-slavic-packs`.
+     - | ``Ivan Horvat ml.`` → suffix ``ml.``
+       | ``Ana Puž Kukuljan`` → family ``Puž Kukuljan``
    * - ``es``
      - Spanish
      - Chooses ``es``, which turns on the titles the default leaves off

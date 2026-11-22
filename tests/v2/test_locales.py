@@ -1389,22 +1389,24 @@ def test_mn_fills_no_patronymic() -> None:
 
 def test_cs_and_sk_pack_contents() -> None:
     # 3f, amended 2026-10-30: cs and sk are their choice plus rules/O6's
-    # patch; sl and hr stay nothing but their choice. cs's fragment,
-    # since #970, removes the given reading that gates its Ing, and
-    # keeps the family reading that gates mul.toml's credential
+    # patch, and hr and sl since #1190 (decisions/O6, 2026-11-21). cs's
+    # fragment, since #970, removes the given reading that gates its Ing,
+    # and keeps the family reading that gates mul.toml's credential
     from nameparser._locale import deviates_by_two_family_names
-    from nameparser.locales import cs as _cs, es as _es, sk as _sk
+    from nameparser.locales import (
+        cs as _cs, es as _es, hr as _hr, sk as _sk, sl as _sl)
     fragments = {"cs": Lexicon.empty().remove("ing", kind="given"),
-                 "sk": Lexicon.empty()}
-    for code, pack in (("cs", locales.CS), ("sk", locales.SK)):
+                 "sk": Lexicon.empty(), "hr": Lexicon.empty(),
+                 "sl": Lexicon.empty()}
+    for code, pack in (("cs", locales.CS), ("sk", locales.SK),
+                       ("hr", locales.HR), ("sl", locales.SL)):
         assert pack == Locale(code=code, lexicon=fragments[code],
                               policy=PolicyPatch(two_family_names=True),
                               languages=frozenset({code})), code
-    for code in ("sl", "hr"):
-        assert _is_vocabulary_pack(locales.get(code)), code
-    # the patch's declaration is rules/O6's, one predicate for the three
+        assert not _is_vocabulary_pack(pack), code
+    # the patch's declaration is rules/O6's, one predicate for the
     # packs that turn O6 on, so their declarations cannot drift apart
-    for module in (_cs, _sk, _es):
+    for module in (_cs, _sk, _es, _hr, _sl):
         for name in ("Alena Pešová Řehořová", "Novák, Petr Pavel",
                      "Mária-\u200bJana Kováčová", "Jan Novák", "Novák"):
             assert module.DEVIATES(name) == deviates_by_two_family_names(name)
@@ -2541,13 +2543,21 @@ _ROTATORS["sk"] = [
     "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
     "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
+# sl and hr turn rules/O6 on since #1190, so their ml rotator is a
+# name the patch alone leaves as the default reads it, as cs's is
 _ROTATORS["sl"] = [
-    "Janez Novak ml.",               # ml
+    "Novak ml.",                     # ml
     "Janez Novak st.",               # st
+    "Elena Zavadlav Ušaj",           # rules/O6, the patch
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 _ROTATORS["hr"] = [
-    "Ivan Horvat ml.",               # ml
+    "Horvat ml.",                    # ml
     "Ivan Horvat st.",               # st
+    "Ana Puž Kukuljan",              # rules/O6, the patch
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 # ar and he (#1257): ben mid-name, in each case and after a family comma;
 # ar also the credential ABD its choice drops for abd's bound given name
@@ -3483,6 +3493,40 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("cs", None, "Novák, Petr Pavel",
      ("", "Petr", "Pavel", "Novák", "", "", ()),
      ("", "Petr", "Pavel", "Novák", "", "", ())),
+    # hr and sl turn the patch on since #1190, as cs and sk do, with the
+    # same cost and no given-name list (decisions/O6, 2026-11-21): an
+    # initial before the surname stays the middle name, a hyphenated
+    # pair is one word already, a family comma stands O6 down
+    ("hr", None, "Ana Puž Kukuljan",
+     ("", "Ana", "Puž", "Kukuljan", "", "", ()),
+     ("", "Ana", "", "Puž Kukuljan", "", "", ())),
+    ("sl", None, "Elena Zavadlav Ušaj",
+     ("", "Elena", "Zavadlav", "Ušaj", "", "", ()),
+     ("", "Elena", "", "Zavadlav Ušaj", "", "", ())),
+    ("hr", None, "dr. Ana Puž Kukuljan ml.",
+     ("dr.", "Ana", "Puž Kukuljan", "ml.", "", "", ()),
+     ("dr.", "Ana", "", "Puž Kukuljan", "ml.", "", ())),
+    ("sl", "FAMILY_FIRST", "Zavadlav Ušaj Elena",
+     ("", "Ušaj", "Elena", "Zavadlav", "", "", ()),
+     ("", "Elena", "", "Zavadlav Ušaj", "", "", ())),
+    ("hr", None, "Ana M. Kukuljan",
+     ("", "Ana", "M.", "Kukuljan", "", "", ()),
+     ("", "Ana", "M.", "Kukuljan", "", "", ())),
+    ("hr", None, "Ana Puž-Kukuljan",
+     ("", "Ana", "", "Puž-Kukuljan", "", "", ()),
+     ("", "Ana", "", "Puž-Kukuljan", "", "", ())),
+    ("hr", None, "Ivan Marko Horvat",
+     ("", "Ivan", "Marko", "Horvat", "", "", ()),
+     ("", "Ivan", "", "Marko Horvat", "", "", ())),
+    ("sl", None, "Janez Jože Novak",
+     ("", "Janez", "Jože", "Novak", "", "", ()),
+     ("", "Janez", "", "Jože Novak", "", "", ())),
+    ("sl", None, "Novak, Janez Jože",
+     ("", "Janez", "Jože", "Novak", "", "", ()),
+     ("", "Janez", "Jože", "Novak", "", "", ())),
+    ("hr", None, "Puž Kukuljan, Ana",
+     ("", "Ana", "", "Puž Kukuljan", "", "", ()),
+     ("", "Ana", "", "Puž Kukuljan", "", "", ())),
     # Bc and Ing, the pack's titles since #970: Bc a reading off by
     # default, Ing the same with the fragment removing the given reading
     # that would make it a title only in a phrase (rules/H9), so both

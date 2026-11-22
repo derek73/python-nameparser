@@ -958,7 +958,57 @@
    "got": ""
   }
  },
+ "hr/foreignFull/givenFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "Martín von Brühl"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Martín Brühl"
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Ada Cornelia César"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Martín"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "",
+   "got": "von Brühl"
+  },
+  "text": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc"
+ },
+ "hr/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Hamish Stöber"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Zäzilia"
+  },
+  "text": "Zäzilia Hamish Stöber"
+ },
  "hr/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Marić",
+   "got": "Hrvoje Marić"
+  },
+  "family_base": {
+   "expected": "Marić",
+   "got": "Hrvoje Marić"
+  },
+  "given_names": {
+   "expected": "Branko Hrvoje",
+   "got": "Branko"
+  },
   "suffix": {
    "expected": "mlađi prof.",
    "got": "mlađi"
@@ -979,6 +1029,17 @@
    "expected": "dr. sc.",
    "got": "dr. sc. prof."
   }
+ },
+ "hr/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Babić",
+   "got": "Tomislav Babić"
+  },
+  "given_names": {
+   "expected": "Marijana Tomislav",
+   "got": "Marijana"
+  },
+  "text": "Marijana Tomislav Babić"
  },
  "ja/foreignFull/givenFirst": {
   "family": {
@@ -1979,9 +2040,33 @@
   "text": "Slovák Ján Matej"
  },
  "sl/foreignFull/givenFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "Martín von Brühl"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Martín Brühl"
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Ada Cornelia César"
+  },
   "suffix": {
    "expected": "ml. dr. med., dr. dent. med.",
    "got": "ml., dent. med."
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Martín"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "",
+   "got": "von Brühl"
   },
   "text": "prof. dr. Ada Cornelia César Martín von Brühl ml., dr. med., dr. dent. med.",
   "title": {
@@ -1990,9 +2075,25 @@
   }
  },
  "sl/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "von Brühl Ada"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Brühl Ada"
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Cornelia César Martín"
+  },
   "suffix": {
    "expected": "dr. med., dr. dent. med.",
    "got": "dent. med."
+  },
+  "surname2": {
+   "expected": "",
+   "got": "Ada"
   },
   "text": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.",
   "title": {
@@ -2000,10 +2101,40 @@
    "got": "prof. dr. dr. med. dr."
   }
  },
+ "sl/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Hamish Stöber"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Zäzilia"
+  },
+  "text": "Zäzilia Hamish Stöber"
+ },
+ "sl/foreignGGS/surnameFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Stöber Zäzilia"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Hamish"
+  },
+  "text": "Stöber Zäzilia Hamish"
+ },
  "sl/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Novak",
+   "got": "Peter Novak"
+  },
+  "family_base": {
+   "expected": "Novak",
+   "got": "Peter Novak"
+  },
   "given_names": {
    "expected": "Janez Peter",
-   "got": "g. Janez Peter"
+   "got": "g. Janez"
   },
   "suffix": {
    "expected": "ml. univ. dipl. inž.",
@@ -2018,15 +2149,11 @@
  "sl/nativeFull/surnameFirst": {
   "family": {
    "expected": "Novak",
-   "got": "g."
+   "got": "g. Novak"
   },
   "family_base": {
    "expected": "Novak",
-   "got": "g."
-  },
-  "given_names": {
-   "expected": "Janez Peter",
-   "got": "Novak Janez Peter"
+   "got": "g. Novak"
   },
   "suffix": {
    "expected": "univ. dipl. inž.",
@@ -2037,6 +2164,28 @@
    "expected": "g.",
    "got": "univ. dipl. inž."
   }
+ },
+ "sl/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Kovač",
+   "got": "Vera Kovač"
+  },
+  "given_names": {
+   "expected": "Ana Marija Vera",
+   "got": "Ana Marija"
+  },
+  "text": "Ana Marija Vera Kovač"
+ },
+ "sl/nativeGGS/surnameFirst": {
+  "family": {
+   "expected": "Kovač",
+   "got": "Kovač Ana"
+  },
+  "given_names": {
+   "expected": "Ana Marija Vera",
+   "got": "Marija Vera"
+  },
+  "text": "Kovač Ana Marija Vera"
  },
  "tr/foreignFull/givenFirst": {
   "given_names": {

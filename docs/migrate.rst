@@ -2195,6 +2195,30 @@ loads, and reads as 3.1's pack did: a pickle holds the pack's values,
 not its name. Build the parser again from ``locales.PT_BR`` to read two
 family names.
 
+Two family names under locales.HR and locales.SL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``locales.HR`` and ``locales.SL`` read two family names
+(``two_family_names``), as ``locales.CS`` and ``locales.SK`` do, where
+3.0 and 3.1 read the first as a middle name; with no given-name list,
+a second given name is read as a family name too. A family comma keeps
+both as 3.1 read them:
+
+.. doctest::
+
+    >>> slovenian = parser_for(locales.SL)
+    >>> zavadlav = slovenian.parse("Elena Zavadlav Ušaj")
+    >>> zavadlav.middle, zavadlav.family
+    ('', 'Zavadlav Ušaj')
+    >>> slovenian.parse("Janez Jože Novak").family
+    'Jože Novak'
+    >>> slovenian.parse("Novak, Janez Jože").middle
+    'Jože'
+
+To keep the 3.1 reading, turn the switch off on top of the pack, as for
+``locales.PT_BR`` above. A pack or parser pickled by 3.1 reads as 3.1's
+pack did.
+
 Malaysian a/l, a/p and anak
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
