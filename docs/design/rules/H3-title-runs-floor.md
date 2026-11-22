@@ -8,7 +8,7 @@
   ```
   "Dr Pope Jr"                →  family="Pope"
   "Dr Pope Jr"                →  suffix="Jr"
-  "RA DDS"                    →  family="DDS"
+  "VC DDS"                    →  family="DDS"
   ```
 
 **Because:** compound titles are written as a run of title words, connectives included; a title word standing inside the name is just a name word. And a title addresses somebody, so the run leaves somebody there to address: a post-nominal is written about a name rather than being one, so it cannot be the name the run left.

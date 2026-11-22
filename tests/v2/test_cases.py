@@ -530,9 +530,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name under three orders; 2296 -> 2321 the same day, its
     # test review's eight rows under three orders and its family-first
     # row under its declared policy; 2321 -> 2330 the same day, #1128's
-    # reporting rows.
-    assert claims == 2330, (
-        f"the field sweep checks {claims} claims, recorded as 2330 on "
+    # reporting rows; 2330 -> 2342 the same day, #1483's `ra` rows
+    # reporting suffix-or-name; 2342 -> 2367 the same day, its review's
+    # comma, order and spelling rows; 2367 -> 2373 the same day, its
+    # second review's 'SMITH, RA MD' and 'Smith, RA John'.
+    assert claims == 2373, (
+        f"the field sweep checks {claims} claims, recorded as 2373 on "
         f"2026-11-21")
 
 
@@ -1034,8 +1037,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # day, its review's 'PETR JAN DIS' under three orders; 632 -> 647 on
     # 2026-11-21, #1517's five caps-shape rows under three orders,
     # 'Smith, M.B. ChB' being a stand-in reread; 647 -> 669 the same
-    # day, its test review's rows
-    assert (checked, skipped) == (669, 512), (checked, skipped)
+    # day, its test review's rows; 669 -> 672 the same day, #1483's
+    # `ra` rows reporting suffix-or-name; 672 -> 675 the same day, its
+    # review's rows
+    assert (checked, skipped) == (675, 512), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

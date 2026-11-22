@@ -6862,6 +6862,10 @@
   "text": "фон Брюль Ада Корнелия Сезар Мартин, к. м. н."
  },
  "sc/foreignFull/givenFirst": {
+  "given_names": {
+   "expected": "Maria Giusepa Juana Teresa",
+   "got": "Dut.ra Prof.ra Maria Giusepa Juana Teresa"
+  },
   "surname1_base": {
    "expected": "Brühl",
    "got": "Brühl González Domingo"
@@ -6870,7 +6874,11 @@
    "expected": "González Domingo",
    "got": ""
   },
-  "text": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo"
+  "text": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo",
+  "title": {
+   "expected": "Dut.ra Prof.ra",
+   "got": ""
+  }
  },
  "sc/foreignFull/surnameFirst": {
   "family": {

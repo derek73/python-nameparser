@@ -470,7 +470,7 @@ _MAIDEN_AGREEMENT_DIGEST = (
 #: title/suffix duals, period-marked suffix words H2 reads as titles,
 #: and a plain name and a plain title beside them.
 _OPENERS = ("Md", "MD", "Cem", "JP", "A.M.", "M.S.", "Junior", "Jr", "PhD",
-            "II", "Mdiv", "Sr.", "Ms", "RA", "Jr.", "Esq.", "Md.", "Sam",
+            "II", "Mdiv", "Sr.", "Ms", "VC", "Jr.", "Esq.", "Md.", "Sam",
             "Dr.")
 _OPENED_BODIES = ("Rahman", "van der Berg", "Smith Jones", "(Bob) Rahman",
                   "Rahman nee Khan", "de la Vega")
@@ -489,7 +489,8 @@ def test_a_head_before_a_credential_reads_as_it_does_alone() -> None:
 
     Negative control, recorded 2026-11-02 on master at c1ceb3b3, before
     C3 counted an opening suffix word: 1,062 of the 2,052 rows differed
-    from the head alone."""
+    from the head alone; the same at c1ceb3b3 with 'VC' in the openers
+    in place of 'RA', re-taken 2026-11-21 (#1483)."""
     rows = 0
     differ = []
     for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):

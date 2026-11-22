@@ -1464,6 +1464,218 @@ CASES: tuple[Case, ...] = (
          "Syed Tahir Zaidan",
          {"given": "Syed", "middle": "Tahir", "family": "Zaidan"},
          notes="the given name its bearers file it as (#1469)"),
+    # #1483: `ra` is a Korean surname and given name as well as en.toml's
+    # credential and de.toml's title, so ko.toml's name readings gate both
+    # (rules/S4, rules/H9). Each row's notes checked against the wheels
+    # they name on 2026-11-21; the feat rows fail on master
+    Case("a_korean_surname_ra_ending_two_words_is_the_family",
+         "Kim Ra",
+         {"given": "Kim", "family": "Ra"},
+         ambiguities=("suffix-or-name",),
+         notes="the gated credential needs a word to spare (rules/S4); "
+               "1.4.0 read the same fields, 2.x through 3.1.0 suffix "
+               "'Ra' with no family"),
+    Case("a_korean_name_ending_in_ra_keeps_it_as_the_family",
+         "Sang Hak Ra",
+         {"given": "Sang", "middle": "Hak", "family": "Ra"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="three words in mixed case: Title case leans to the name "
+               "(rules/S6); 1.4.0 through 3.1.0 read family 'Hak', "
+               "suffix 'Ra'"),
+    Case("ra_opening_a_name_is_the_given_name",
+         "Ra Mi Kim",
+         {"given": "Ra", "middle": "Mi", "family": "Kim"},
+         classification="feat(#1483)",
+         notes="de.toml's title is a title only in a phrase now "
+               "(rules/H9); 1.4.0 through 3.1.0 read title 'Ra'"),
+    Case("ra_behind_a_salutation_is_the_given_name",
+         "Mr Ra Kumar",
+         {"title": "Mr", "given": "Ra", "family": "Kumar"},
+         classification="feat(#1483)",
+         notes="1.4.0 through 3.1.0 read title 'Mr Ra', family 'Kumar'"),
+    Case("ra_opening_a_family_first_name_is_the_family",
+         "Ra Kim",
+         {"given": "Kim", "family": "Ra"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#1483)",
+         notes="the Korean surname in its native order; 3.1.0 read "
+               "title 'Ra', family 'Kim'"),
+    Case("ra_keeps_the_credential_after_a_comma",
+         "John Smith, RA",
+         {"given": "John", "family": "Smith", "suffix": "RA"},
+         notes="boundary: capitals in a name of mixed case settle the "
+               "member as the credential (rules/S6), so the gate moves "
+               "nothing here"),
+    Case("ra_keeps_the_credential_after_a_second_comma",
+         "Jane Doe, PT, RA",
+         {"given": "Jane", "family": "Doe", "suffix": "PT, RA"},
+         notes="boundary: with the family reading alone de.toml's "
+               "title would stay ungated, only a given reading making a "
+               "title one inside a phrase (rules/H9), and rules/C2 would "
+               "read it as the title past the second comma"),
+    Case("ra_written_with_its_stops_keeps_the_credential",
+         "Jane Doe, R.A.",
+         {"given": "Jane", "family": "Doe", "suffix": "R.A."},
+         notes="boundary: an acronym written with a stop after each "
+               "letter is no name (rules/S3)"),
+    Case("ra_written_without_its_last_stop_after_a_comma_reverses",
+         "Jane Doe, R.A",
+         {"given": "R.", "middle": "A", "family": "Jane Doe"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost: the gated class written without its "
+               "last stop is no dotted acronym, and the one-word part "
+               "after a family comma is the given name, as 'Jane Doe, "
+               "M.A' reads on master (decisions/vocabulary-collisions, "
+               "2026-11-21 #1483); 1.4.0 through 3.1.0 read suffix 'R.A'"),
+    Case("ra_alone_after_a_family_comma_in_capitals_is_the_credential",
+         "Doe, RA",
+         {"family": "Doe", "suffix": "RA"},
+         classification="fix(#296)",
+         notes="boundary: in a name of mixed case the capitals settle "
+               "it; a name written wholly in capitals gives no case "
+               "signal and reads the given name ('KING, RA'). 1.4.0 "
+               "through 2.1.0 read title 'RA', 2.2.0 through 3.1.0 as "
+               "here"),
+    Case("ra_opening_a_german_name_is_the_given_name",
+         "RA Müller",
+         {"given": "RA", "family": "Müller"},
+         classification="feat(#1483)",
+         notes="an accepted cost: Rechtsanwalt in front is a title only "
+               "in a phrase now (rules/H9), and no choice of languages "
+               "drops ko.toml's name reading (a strict German choice "
+               "reads none and keeps the title); 1.4.0 through 3.1.0 "
+               "read title 'RA'"),
+    Case("ra_ending_a_name_in_capitals_stays_the_credential",
+         "KIM MI RA",
+         {"given": "KIM", "family": "MI", "suffix": "RA"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary, not fixed: a name written wholly in capitals "
+               "gives no case signal (rules/S6) and has a word to spare "
+               "(rules/S4); 1.4.0 read the same fields"),
+    Case("ra_alone_after_a_family_comma_is_the_given_name",
+         "Kim, Ra",
+         {"given": "Ra", "family": "Kim"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="Title case leans to the name (rules/S6); 1.4.0 read "
+               "title 'Ra', first 'Kim', 2.2.0 through 3.1.0 suffix 'Ra' "
+               "with no given name"),
+    Case("ra_alone_after_a_family_comma_in_capitals_is_the_given_name",
+         "KING, RA",
+         {"given": "RA", "family": "KING"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="a name wholly in capitals gives no case signal (rules/S6), "
+               "so the lone member after a family comma is the given name: "
+               "the initials such filers mean, the credential's cost "
+               "otherwise; 1.4.0 read title 'RA', 3.1.0 suffix 'RA'"),
+    Case("ra_opening_a_capitals_part_before_a_credential_is_the_given_name",
+         "SMITH, RA MD",
+         {"given": "RA", "family": "SMITH", "suffix": "MD"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost, as 'KING, RA' with a credential behind "
+               "it: no case signal in a name wholly in capitals "
+               "(rules/S6); 1.4.0 read title 'RA', first 'MD', 3.1.0 "
+               "suffix 'RA MD'"),
+    Case("ra_opening_the_given_part_ahead_of_a_name_is_the_given_name",
+         "Smith, RA John",
+         {"given": "RA", "middle": "John", "family": "Smith"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost: a title that is also a given name is a "
+               "title only inside a phrase (rules/H9), as 'Smith, Dean "
+               "John' reads on master; 1.4.0 through 3.1.0 read title "
+               "'RA', given 'John'"),
+    Case("ra_without_its_last_stop_ending_a_name_is_the_family",
+         "Jane Doe R.A",
+         {"given": "Jane", "middle": "Doe", "family": "R.A"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost, the no-comma twin of 'Jane Doe, R.A': "
+               "no dotted acronym (rules/S3), so the gate reads the name "
+               "word, as 'John Smith M.A' reads on master; 1.4.0 through "
+               "3.1.0 read suffix 'R.A'"),
+    Case("ra_in_capitals_before_a_generation_comma_leaves_a_lone_given",
+         "Kim RA, Jr.",
+         {"given": "Kim", "suffix": "RA, Jr."},
+         classification="feat(#1483)",
+         ambiguities=("given-or-family",),
+         notes="an accepted cost: capitals in a name of mixed case settle "
+               "the credential, leaving 'Kim' one name word, given by "
+               "default (rules/O5); 1.4.0 read last 'RA', 3.1.0 family "
+               "'Kim'"),
+    Case("ra_before_a_generation_comma_is_the_family",
+         "Kim Ra, Jr.",
+         {"given": "Kim", "family": "Ra", "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         notes="the Title-case twin of 'Kim RA, Jr.'; 1.4.0 read the same "
+               "fields, 2.0.0 through 2.3.0 given 'Kim', 2.4.0 through "
+               "3.1.0 family 'Kim', each suffix 'Ra, Jr.'"),
+    Case("ra_before_a_credential_comma_is_the_family",
+         "Kim Ra, PhD",
+         {"given": "Kim", "family": "Ra", "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 read the same fields, 3.1.0 family 'Kim', suffix "
+               "'Ra, PhD'"),
+    Case("ra_in_lower_case_ending_two_words_is_the_family",
+         "kim ra",
+         {"given": "kim", "family": "ra"},
+         ambiguities=("suffix-or-name",),
+         notes="a name wholly in one case, with no word to spare (rules/S4); "
+               "1.4.0 read the same fields, 3.1.0 suffix 'ra'"),
+    Case("ra_in_lower_case_ending_three_words_stays_the_credential",
+         "sang hak ra",
+         {"given": "sang", "family": "hak", "suffix": "ra"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary, the lower-case twin of 'KIM MI RA': no case "
+               "signal and a word to spare; 1.4.0 and 3.1.0 read the same "
+               "fields, unreported"),
+    Case("ra_before_a_family_comma_is_part_of_the_family",
+         "Ra Kim, Mi",
+         {"given": "Mi", "family": "Ra Kim"},
+         notes="rules/H6 peels a title before a family comma by "
+               "vocabulary, and 'ra' is a title only inside a phrase now; "
+               "1.4.0 read the same fields, 3.1.0 title 'Ra', family 'Kim'"),
+    Case("a_spaced_italian_sig_ra_no_longer_joins_the_title",
+         "Sig. ra Rossi",
+         {"title": "Sig.", "given": "ra", "family": "Rossi"},
+         classification="feat(#1483)",
+         notes="an accepted cost: the spaced ending of Signora is no title "
+               "run once 'ra' is a title only inside a phrase; the glued "
+               "'Sig.ra Rossi' is unchanged (decisions/R4's #840 entry); "
+               "1.4.0 through 3.1.0 read title 'Sig. ra'"),
+    Case("ra_opening_a_german_name_takes_the_next_title_into_the_middle",
+         "RA Dr. Hans Müller",
+         {"given": "RA", "middle": "Dr. Hans", "family": "Müller"},
+         classification="feat(#1483)",
+         notes="an accepted cost, cost 1's worst shape: 'Dr.' behind a "
+               "given name is no leading title, as 'Dean Dr. Hans Müller' "
+               "reads on master; 1.4.0 through 3.1.0 read title 'RA Dr.'"),
+    Case("ra_opening_a_family_first_given_last_name_is_the_family",
+         "Ra Mi Kim",
+         {"given": "Kim", "middle": "Mi", "family": "Ra"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#1483)",
+         notes="3.1.0 read title 'Ra', given 'Kim', family 'Mi'"),
+    Case("ra_ending_a_family_first_name_is_the_given_name",
+         "Kim Ra",
+         {"given": "Ra", "family": "Kim"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="the gated credential under a family-first order; 3.1.0 "
+               "read given 'Kim', suffix 'Ra'"),
+    Case("ra_after_a_birth_marker_is_the_maiden_name",
+         "Jane Doe née Ra",
+         {"given": "Jane", "family": "Doe", "maiden": "Ra"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="the suffix reading had taken the marker's name, leaving "
+               "'née' the family; 1.4.0 through 3.1.0 read middle 'Doe', "
+               "family 'née', suffix 'Ra'"),
     # #1231: the Burmese pack. Burmese names have no family name, so the
     # last word lands in family by position. Each row's notes checked
     # against the 1.4.0, 2.0.0, 2.4.0, 2.8.2 and 3.1.0 wheels on
@@ -4555,22 +4767,26 @@ CASES: tuple[Case, ...] = (
                "given name. 1.4.0 and 2.3.0 read the same",
          shape=2),
     Case("a_dual_opening_the_given_part_anchors_nothing",
-         "Smith, RA MEng",
-         {"title": "RA", "given": "MEng", "family": "Smith"},
+         "Smith, VC MEng",
+         {"title": "VC", "given": "MEng", "family": "Smith"},
          notes="the same exclusion for the other chunked member. "
-               "1.4.0 read the same; 2.3.0 read suffix 'RA MEng', "
-               "the reading #540's marking moved"),
+               "1.4.0 read the same; 2.3.0 read suffix 'VC MEng', "
+               "the reading #540's marking moved. "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'VC' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0"),
     Case("a_dual_opening_the_given_part_turns_the_anchor_off",
-         "Smith, Ms RA Ma",
-         {"title": "Ms RA", "given": "Ma", "family": "Smith"},
+         "Smith, Ms VC Ma",
+         {"title": "Ms VC", "given": "Ma", "family": "Smith"},
          notes="a dual opening the given part is a title there, and a "
                "part whose leading title run holds one is anchored by "
                "nothing, the second dual standing in that same run. "
-               "1.4.0 and 2.3.0 read the same",
+               "1.4.0 and 2.3.0 read the same. "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'VC' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0",
          shape=2),
     Case("a_dual_opening_the_given_part_silences_a_later_degree",
-         "Smith, RA PhD Ma",
-         {"title": "RA", "given": "PhD", "middle": "Ma",
+         "Smith, VC PhD Ma",
+         {"title": "VC", "given": "PhD", "middle": "Ma",
           "family": "Smith"},
          classification="fix(#296)",
          ambiguities=("suffix-or-name",),
@@ -4580,8 +4796,10 @@ CASES: tuple[Case, ...] = (
                "so 'PhD' speaks for nothing here and 'Ma' ends the "
                "given part as a middle name, reported by the given "
                "slot. 2.2.0 and 2.3.0 read the same fields; 1.4.0 "
-               "through 2.1.0 title 'RA PhD', first 'Ma', 'phd' being "
-               "title vocabulary until #296",
+               "through 2.1.0 title 'VC PhD', first 'Ma', 'phd' being "
+               "title vocabulary until #296. "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'VC' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0",
          shape=2),
     Case("a_numeral_in_front_anchors_nothing",
          "smith, v ed",
@@ -7463,10 +7681,12 @@ CASES: tuple[Case, ...] = (
          notes="#1323 boundary: 'Ms' written as a title is the given "
                "part's title, no company, so the part is the given part"),
     Case("two_caps_behind_a_title_dual_with_nothing_behind_stay_initials",
-         "John Smith, RA MJ",
-         {"title": "RA", "given": "MJ", "family": "John Smith"},
+         "John Smith, VC MJ",
+         {"title": "VC", "given": "MJ", "family": "John Smith"},
          notes="#1323 boundary: a word in front of the pair speaks for "
-               "nothing (rules/C5); only credentials behind it do"),
+               "nothing (rules/C5); only credentials behind it do. "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'VC' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0"),
     Case("two_caps_behind_a_member_with_nothing_behind_stay_initials",
          "John Smith, MA MJ",
          {"given": "MA", "middle": "MJ", "family": "John Smith"},
@@ -7499,10 +7719,12 @@ CASES: tuple[Case, ...] = (
                "part's, written in capitals too; only words behind the "
                "pair speak for it (rules/C5)"),
     Case("two_caps_behind_a_rank_dual_with_a_credential_stay_initials",
-         "Jane Doe, RA MJ PhD",
-         {"title": "RA", "given": "MJ", "family": "Jane Doe",
+         "Jane Doe, LT MJ PhD",
+         {"title": "LT", "given": "MJ", "family": "Jane Doe",
           "suffix": "PhD"},
-         notes="#1323 boundary: as 'MS BM PhD'"),
+         notes="#1323 boundary: as 'MS BM PhD'. "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'LT' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0"),
     Case("two_caps_before_a_capitals_dual_are_a_credential",
          "Jane Doe, MJ MS",
          {"given": "Jane", "family": "Doe", "suffix": "MJ MS"},
@@ -12911,8 +13133,8 @@ CASES: tuple[Case, ...] = (
                "#601; rules/C10's maiden-marker Accepted entry). 2.0.0 "
                "through 2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
-         "Smith, RA | PhD | FACS",
-         {"title": "RA", "given": "|", "family": "Smith",
+         "Smith, VC | PhD | FACS",
+         {"title": "VC", "given": "|", "family": "Smith",
           "suffix": "PhD | FACS"},
          policy=_SD,
          classification="fix(#602)",
@@ -12931,7 +13153,9 @@ CASES: tuple[Case, ...] = (
                "#436's predicate asks what stands between the two "
                "rather than only what was dropped. With ' - ' and no "
                "policy the string reads the same, the built-in hyphen "
-               "being no delimiter after a family comma either (#889)"),
+               "being no delimiter after a family comma either (#889). "
+               "Spelled with 'RA' until #1483 gave ra a name reading; "
+               "'VC' reads as 'RA' did under 1.4.0, 2.2.0 and 2.3.0"),
     Case("semicolon_glued_after_a_whole_name", "John Smith, MD; PhD",
          {"given": "John", "family": "Smith", "suffix": "MD; PhD"},
          classification="fix(semicolon-suffix-delimiter)",
@@ -15424,16 +15648,16 @@ CASES: tuple[Case, ...] = (
                "piece is ONE WORD: a joined unit led by a title is a "
                "title run, and handing it back would turn a title into "
                "a given name and leave the name with no title at all"),
-    Case("title_run_floor_declines_an_all_suffix_input", "RA DDS",
-         {"title": "RA", "family": "DDS"}, classification="parity",
+    Case("title_run_floor_declines_an_all_suffix_input", "VC DDS",
+         {"title": "VC", "family": "DDS"}, classification="parity",
          notes="negative control: the word the run would give back is "
-               "`RA`, which IS suffix vocabulary, so the floor "
-               "declines. `ra` is title vocabulary too, so the run is "
-               "`RA` and H1's fold claims `DDS` -- not the bare-suffix "
+               "`VC`, which IS suffix vocabulary, so the floor "
+               "declines. `vc` is title vocabulary too, so the run is "
+               "`VC` and H1's fold claims `DDS` -- not the bare-suffix "
                "carve-out, which reads the FIRST word as the name and "
-               "reports `suffix-or-name` (`DDS RA`). Nothing reports "
+               "reports `suffix-or-name` (`DDS VC`). Nothing reports "
                "here. Spelled with `MD` until #853 took md out of the "
-               "titles"),
+               "titles, and with `RA` until #1483 gave ra a name reading"),
     Case("title_run_floor_declines_a_split_credential", "Jr. Ph. D.",
          {"title": "Jr.", "suffix": "Ph. D."}, classification="parity",
          notes="negative control: `Jr.` is suffix vocabulary wearing "
@@ -16858,17 +17082,18 @@ CASES: tuple[Case, ...] = (
                "name word to the walk: with a name word in the letter's "
                "place the connective joins it as the middle name "
                "('Smith, Maria y Q' reads middle 'y Q')"),
-    Case("family_comma_title_resets_the_credential_run", "Smith, RA Dr. I",
-         {"title": "RA Dr.", "given": "I", "family": "Smith"},
+    Case("family_comma_title_resets_the_credential_run", "Smith, VC Dr. I",
+         {"title": "VC Dr.", "given": "I", "family": "Smith"},
          notes="THE RESET. A title ends the run: what follows a bare "
                "title is not continuing a credential, so the numeral "
                "behind it does not join and the segment is no run at "
                "all, leaving the walk to read the dual and the title as "
                "the given part's titles and 'I' as its given name. "
-               "Without the reset the numeral continues the 'RA' in "
+               "Without the reset the numeral continues the 'VC' in "
                "front of the title and the part reads title 'Dr.', "
-               "suffix 'RA I'. Spelled with a dual since #603, 'MD' "
-               "until #853 took md out of the titles and 'RA' since: "
+               "suffix 'VC I'. Spelled with a dual since #603, 'MD' "
+               "until #853 took md out of the titles, 'RA' until #1483 "
+               "gave ra a name reading, and 'VC' since: "
                "'Smith, PSM Dr. I', this row until then, is a part the "
                "credential 'PSM' OPENS, which reads as #602's run reads "
                "whatever stands behind it (rules/C13) -- title 'Dr.', "

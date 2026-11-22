@@ -93,8 +93,8 @@
   "Justin (JP/MD) Stearns"    →  nickname="JP/MD"
   "Justin (JP.MD) Stearns"    →  nickname="JP.MD"
   "John (MD-PhD) Smith"       →  nickname="MD-PhD"
-  "Robert (RA) Allen"         →  nickname="RA"
-  "ROBERT (RA) ALLEN"         →  suffix="RA"  · boundary
+  "Robert (VC) Allen"         →  nickname="VC"
+  "ROBERT (VC) ALLEN"         →  suffix="VC"  · boundary
   "John (Sr) Smith"           →  suffix="Sr"  · boundary
   "John (Jr/Sr) Smith"        →  suffix="Jr/Sr"  · boundary
   "John (NP-C) Smith"         →  suffix="NP-C"  · boundary

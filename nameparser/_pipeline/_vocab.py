@@ -636,7 +636,7 @@ def reads_as_initials(word: str, kind: SetApartKind,
     name word of its comma part, as the initials the person goes by: a
     credential written in their shape that is no generation word, and a
     word that is a title too only written with a period after each
-    letter ('R.A.') or in capitals in a name of mixed case ('RA'),
+    letter ('V.C.') or in capitals in a name of mixed case ('VC'),
     Title case reading as the title it also is and capitals in a name
     written in one case saying nothing (S6); a title alone never. A
     member of the ambiguous class counts as the credential it is

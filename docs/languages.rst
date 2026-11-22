@@ -1482,9 +1482,8 @@ Choose the pack strictly, ``parser_for(locales.MY, strict=True)``
 (:ref:`strict-choice`). Many Burmese syllables are spelled like
 another language's word: ``San``, ``La`` and the Chin ``Van`` like
 Spanish, Italian or Dutch particles, which take every word after them
-into the family name, and ``Pe``, ``Lat``, ``Ei``, ``Si`` and ``Pa``
-like English credentials, which end a name written in capitals, and
-``Ra`` like one that ends a name in any case.
+into the family name, and ``Pe``, ``Lat``, ``Ei``, ``Si``, ``Pa`` and
+``Ra`` like English credentials, which end a name written in capitals.
 A strict choice reads no other language's words, so each is a name
 word:
 

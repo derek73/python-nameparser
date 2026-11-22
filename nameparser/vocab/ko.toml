@@ -86,3 +86,8 @@ note = "teacher/respected elder"
 side = "after"
 issue = 308
 note = "longest-first peels 선생님 off 김선생님 whole, rather than leaving 김선생 to segment into family 김 and given 선생"
+
+[[word]]
+text = "ra"
+given = { us_ssa = 251, wikidata = 4, as_of = 2026-11-21, note = "decided 2026-11-21 (#1483): a Korean given name or its syllable, read so the credential en.toml lists and the title de.toml lists yield to it where it ends or opens a name (rules/S4, rules/H9); ORCID's given boxes hold it in Korea 25 times and Indonesia 23, PatentsView's Korean inventors 135; Burmese given names end in it too (ORCID Myanmar 2 of 1,755); nam_dict band 4 in Korea (tools/name_usage.py Ra --boxes, 2026-11-21)" }
+family = { us_census_2010 = 1458, wikidata = 4, as_of = 2026-11-21, note = "decided 2026-11-21 (#1483): the Korean surname 라/나 romanized; Census rank 18,793, asian/PI 72.5%; ORCID's family boxes hold it in Korea 37 times, PatentsView's Korean inventors 100 (tools/name_usage.py Ra --boxes, 2026-11-21)" }

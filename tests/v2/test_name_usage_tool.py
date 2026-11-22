@@ -1985,18 +1985,20 @@ def test_main_exits_2_on_an_unusable_tally_without_losing_the_other_sources(
 def test_main_rank_lists_credentials_with_vocabulary_and_readings(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    # Q-R-S still reverses after a comma: joined single letters are no
+    # VC is a title/suffix dual ('RA' stood here until #1483 gave ra a
+    # name reading, its vocabulary then 'ambiguous acronym'). Q-R-S
+    # still reverses after a comma: joined single letters are no
     # caps shape (rules/S9), so the given-name readout stays exercised
-    _cache_tally(monkeypatch, tmp_path, _tally(RA=50, **{"Q-R-S": 40}, ESQ=3))
+    _cache_tally(monkeypatch, tmp_path, _tally(VC=50, **{"Q-R-S": 40}, ESQ=3))
     assert tool.main(["--no-wikidata", "--json", "--rank", "5"]) == 0
     rows = {r["credential"]: r for r in json.loads(capsys.readouterr().out)["rows"]}
     assert [r["rank"] for r in rows.values()] == [1, 2, 3]
-    assert rows["RA"]["vocabulary"] == "acronym, title"
-    assert (rows["RA"]["after_comma"], rows["RA"]["bare"]) == ("suffix", "suffix")
+    assert rows["VC"]["vocabulary"] == "acronym, title"
+    assert (rows["VC"]["after_comma"], rows["VC"]["bare"]) == ("suffix", "suffix")
     assert rows["Q-R-S"]["vocabulary"] == "-"
     assert (rows["Q-R-S"]["after_comma"], rows["Q-R-S"]["bare"]) == ("given", "family")
     assert rows["ESQ"]["vocabulary"] == "suffix word"
-    assert rows["RA"]["census"] == "not downloaded"
+    assert rows["VC"]["census"] == "not downloaded"
 
 
 def test_main_rank_unlisted_keeps_each_credentials_overall_rank(

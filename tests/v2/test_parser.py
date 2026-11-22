@@ -3389,12 +3389,13 @@ def test_a_choice_that_changes_nothing_leaves_the_sets_as_they_are() -> None:
      {"middle": "Do", "family": "Hyun"}),
     (("ko",), "Kim Bin Hyun", {"family": "Bin Hyun"},  # ar's and ms's
      {"middle": "Bin", "family": "Hyun"}),
-    (("ko",), "Ra Min Jun", {"title": "Ra"},  # de's academic title
-     {"given": "Ra", "title": ""}),
-    (("ko",), "Kim Min Ra", {"suffix": "Ra"},  # en's credential
-     {"family": "Ra", "suffix": ""}),
+    # en's credential; 'Kim Min Ra' stood here, and 'Ra Min Jun' for
+    # de's academic title, until #1483 gave ra ko.toml's name readings,
+    # which read it as a name with no choice
+    (("ko",), "Kim Min Ae", {"suffix": "Ae"},
+     {"family": "Ae", "suffix": ""}),
     # what adding en costs: its credential is back
-    (("ko", "en"), "Kim Min Ra", {"suffix": "Ra"}, {"suffix": "Ra"}),
+    (("ko", "en"), "Kim Min Ae", {"suffix": "Ae"}, {"suffix": "Ae"}),
     # en's rank; 'Gen Hoshino' stood here until #999 made 'gen' a
     # title only in a phrase, which reads given 'Gen' with no choice
     (("ja",), "Capt Hoshino", {"title": "Capt"}, {"given": "Capt"}),
@@ -3589,9 +3590,62 @@ def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
             == parser_for(_choosing("ko", "en"), strict=True).lexicon)
 
 
+@pytest.mark.parametrize("strict,text,fields", [
+    # de.toml's own credential reading keeps RA the credential after the
+    # name, which a plain German choice would otherwise lose: choosing de
+    # turns en.toml's credential off, de.toml holding a vocabulary
+    # reading of the word, while ko.toml's name readings stay on, and a
+    # lone RA after a comma read as the given name, making the comma a
+    # family comma and reversing the name ('Hans Müller, RA' -> given
+    # 'RA', family 'Hans Müller') (#1483)
+    (False, "Hans Müller, RA",
+     {"given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (False, "Müller, RA", {"family": "Müller", "suffix": "RA"}),
+    (False, "Hans Müller, LL.M., RA",
+     {"given": "Hans", "family": "Müller", "suffix": "LL.M., RA"}),
+    (False, "Hans Müller RA",
+     {"given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (False, "Hans Müller, Dr., RA",
+     {"title": "Dr.", "given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (False, "Jane Doe, PT, RA",
+     {"given": "Jane", "family": "Doe", "suffix": "PT, RA"}),
+    # in front a plain choice reads the name reading, as the default does,
+    # a title behind it falling into the middle name; in capitals after a
+    # family comma it is the given name, no case speaking for the
+    # credential
+    (False, "RA Müller", {"given": "RA", "family": "Müller"}),
+    (False, "RA Dr. Hans Müller",
+     {"given": "RA", "middle": "Dr. Hans", "family": "Müller"}),
+    (False, "KING, RA", {"given": "RA", "family": "KING"}),
+    # a strict choice reads no ko.toml: the title in front, the
+    # credential behind
+    (True, "RA Müller", {"title": "RA", "family": "Müller"}),
+    (True, "RA Dr. Hans Müller",
+     {"title": "RA Dr.", "given": "Hans", "family": "Müller"}),
+    (True, "Hans Müller, RA",
+     {"given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (True, "Jane Doe, PT, RA",
+     {"given": "Jane", "family": "Doe", "suffix": "PT, RA"}),
+    (True, "KING, RA", {"family": "KING", "suffix": "RA"}),
+    # its cost: a Korean surname ending a name is the credential again,
+    # as the default read it before #1483
+    (True, "Kim Ra", {"given": "Kim", "suffix": "Ra"}),
+])
+def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
+        strict: bool, text: str, fields: dict[str, str]) -> None:
+    name = parser_for(_choosing("de"), strict=strict).parse(text)
+    got = {f: getattr(name, f) for f in
+           ("title", "given", "middle", "family", "suffix") if getattr(name, f)}
+    assert got == fields
+
+
 def test_a_packs_fragment_is_unioned_on_after_the_strict_compile() -> None:
-    pack = _choosing("ko", lexicon=Lexicon.empty().add("ra", kind="credential"))
-    assert parser_for(pack, strict=True).parse("Kim Min Ra").suffix == "Ra"
+    # a word no file holds, so only the fragment can read it ('ra' stood
+    # here until #1483 gave it ko.toml's name readings, which gate it)
+    pack = _choosing("ko", lexicon=Lexicon.empty().add("zzq", kind="credential"))
+    assert parser_for(pack, strict=True).parse("Kim Min Zzq").suffix == "Zzq"
+    assert parser_for(_choosing("ko"), strict=True).parse(
+        "Kim Min Zzq").suffix == ""
 
 
 def _choice_tags() -> list[tuple[str, bool]]:

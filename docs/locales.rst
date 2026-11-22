@@ -1018,10 +1018,10 @@ words its own language has a reading of. Names of a single origin
 written in Latin letters meet those words by accident. Many common
 Korean syllables, romanized, are spelled like another language's
 word: ``Do`` like the Portuguese particle, ``Bin`` like the Arabic
-and Malay one, ``Ra`` like an English credential and a German academic
-title. Korean's file holds no word written in Latin letters, so a
-``ko`` choice settles none of them, and a strict one reads each as a
-name word:
+and Malay one, ``Ae`` like an English credential. Korean's file holds
+one word written in Latin letters, ``Ra``, which it reads as a family
+name and a given name by default, so a ``ko`` choice settles none
+of the others, and a strict one reads each as a name word:
 
 .. doctest::
 
@@ -1032,10 +1032,10 @@ name word:
     'Do Hyun'
     >>> korean.parse("Kim Do Hyun").middle, korean.parse("Kim Do Hyun").family
     ('Do', 'Hyun')
-    >>> parse("Kim Min Ra").suffix
-    'Ra'
-    >>> korean.parse("Kim Min Ra").family
-    'Ra'
+    >>> parse("Kim Min Ae").suffix
+    'Ae'
+    >>> korean.parse("Kim Min Ae").family
+    'Ae'
 
 Chinese ``De`` is the same case under strict ``zh``: ``De Xu`` reads
 given ``De``, family ``Xu``.
@@ -1088,8 +1088,8 @@ What a strict choice drops it drops from every name:
 
       >>> korean.parse("Kim Min Jun, PhD, MSc").suffix
       'PhD, MSc'
-      >>> parser_for(ko, en, strict=True).parse("Kim Min Ra").suffix
-      'Ra'
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Ae").suffix
+      'Ae'
       >>> korean.parse("Kim Min Jun, RN").given
       'RN'
       >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, RN").suffix
