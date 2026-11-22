@@ -2708,7 +2708,7 @@ class Lexicon:
             if held:
                 messages.append(head + self._other_kinds(w, kind, held))
             else:
-                messages.append(head + self._no_reading(w, kind))
+                messages.append(head + self._no_reading(w, kind, added))
         return messages
 
     def _other_kinds(self, w: str, kind: str | None,
@@ -2732,7 +2732,8 @@ class Lexicon:
             text += f". Did you mean remove({w!r}, kind={offer!r})?"
         return text
 
-    def _no_reading(self, w: str, kind: str | None) -> str:
+    def _no_reading(self, w: str, kind: str | None,
+                    added: dict[str, set[str]]) -> str:
         """Cases (ii) and (iii) of #1535: the word holds no reading. It
         may stand in the two lists, which remove() does not edit, be
         only the other name of other words' familiar or spelling pairs,
@@ -2744,8 +2745,7 @@ class Lexicon:
         lists = {"surnames": ("family", "name"), "given_names": ("given", "name")}
         for list_field, kinds in lists.items():
             if w in getattr(self, list_field) and (
-                    kind is None or kind in kinds
-                    or ri.CATEGORY.get(kind) == kinds[0]):
+                    kind is None or kind in kinds):
                 return (f"{w!r} holds no reading, only an entry in this "
                         f"lexicon's {list_field} list, which remove() does "
                         f"not edit; drop it with dataclasses.replace("
@@ -2763,14 +2763,20 @@ class Lexicon:
         # a suffix acronym (M.D. as md) or a dotted title (U.S. as us),
         # and the bare word holds the kind asked
         bare = w.replace(".", "")
-        bare_kinds = {r.kind for r in ri.readings_of(bare)}
+        bare_kinds = ({r.kind for r in ri.readings_of(bare)}
+                      | added.get(bare, set()))
+        # the kind the dotted spelling is read by: a suffix acronym's
+        # suffix reading, a dotted title's title one (M.D. is md's
+        # credential, not its given reading, Muhammad written short)
+        read_as = {k for k in bare_kinds if ri.CATEGORY[k] == (
+            "suffix" if bare in self._sets.suffix_acronyms else "title")}
         if (bare != w and bare in (self._sets.suffix_acronyms
                                    | self._sets.dotted_titles)
-                and (kind is None or any(
+                and (kind is None and len(read_as) == 1 or any(
                     k == kind or ri.CATEGORY[k] == kind
-                    for k in bare_kinds))):
-            call = (f"remove({bare!r})" if kind is None
-                    else f"remove({bare!r}, kind={kind!r})")
+                    for k in read_as))):
+            offer = kind if kind is not None else next(iter(read_as))
+            call = f"remove({bare!r}, kind={offer!r})"
             return (f"the vocabulary writes {w!r} without its full stops, "
                     f"as {bare!r}: did you mean {call}?")
         return (f"{w!r} is in no vocabulary file and no earlier add() of "

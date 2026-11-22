@@ -2289,6 +2289,16 @@ _MESSAGE_CASES = [
     pytest.param(lambda L: L.remove("Ph.D.", kind="credential"),
                  "the vocabulary writes 'ph.d' without its full stops",
                  "remove('phd', kind='credential')", id="interior-stops"),
+    # with no kind, the kind the dotted spelling is read by: md's
+    # credential, not its given reading (Muhammad written short)
+    pytest.param(lambda L: L.remove("M.D."),
+                 "the vocabulary writes 'm.d' without its full stops",
+                 "remove('md', kind='credential')", id="stops-no-kind"),
+    # an acronym the lexicon's own earlier add gave
+    pytest.param(lambda L: L.add("xq", kind="credential", acronym=True)
+                 .remove("x.q.", kind="credential"),
+                 "the vocabulary writes 'x.q' without its full stops",
+                 "remove('xq', kind='credential')", id="stops-own-add"),
     # a suffix word with stops is no acronym (J.R. is not read as jr), and
     # a bare word not holding the kind asked offers nothing
     pytest.param(lambda L: L.remove("j.r."), "'j.r' is in no vocabulary file",
