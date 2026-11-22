@@ -736,6 +736,8 @@ settle:
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
 
+.. _stacking-packs:
+
 Stacking packs
 --------------
 
