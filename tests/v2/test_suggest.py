@@ -3433,8 +3433,13 @@ _TWO_FAMILY = ["Zzana García Qqmoreno", "Qqluis López Xxromero",
                "Xxelena Pérez Vvnavarro"]
 #: Three Russian names written given first, too few to decide the East
 #: Slavic rule, each a father's name where the switch would take a word.
-_RUSSIAN_GIVEN_FIRST = ["Ivan Petrovich Qqsidorov", "Anna Sergeevna Qqpetrova",
-            "Oleg Ivanovich Qqvolkov"]
+_RUSSIAN_GIVEN_FIRST = ["Ivan Petrovich Qqsidorov",
+                        "Anna Sergeevna Qqpetrova",
+                        "Oleg Ivanovich Qqvolkov"]
+
+
+def _two_family(s: Suggestion) -> SettingEvidence:
+    return [e for e in s.evidence if e.setting == "two_family_names"][0]
 
 
 @pytest.mark.parametrize("base_order", [
@@ -3449,14 +3454,9 @@ def test_a_list_of_two_family_names_gets_the_switch(
     assert s.parser.policy.name_order == GIVEN_FIRST
     assert s.parser.policy.two_family_names is True
     assert s.patch.two_family_names is True
-    evidence = [e for e in s.evidence if e.setting == "two_family_names"][0]
-    assert (Signal.FIRST_SURNAME, True, 6) in evidence.by_signal
+    assert (Signal.FIRST_SURNAME, True, 6) in _two_family(s).by_signal
     assert {s.parser.parse(n).surname2 for n in names} == {
         "Qqmoreno", "Xxromero", "Vvnavarro"}
-
-
-def _two_family(s: Suggestion) -> SettingEvidence:
-    return [e for e in s.evidence if e.setting == "two_family_names"][0]
 
 
 def test_the_switch_needs_three_votes() -> None:
