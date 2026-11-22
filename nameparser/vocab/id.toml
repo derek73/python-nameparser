@@ -98,6 +98,14 @@ text = "ach"
 given = { same_as = "achmad", note = "Achmad written short: ORCID given boxes 94 (Indonesia 48), family boxes 17 (2026-11-06); written with its period at the head of a name (Ach. Arfan Adinata), it read as a title by the leading-abbreviation shape (#1115)" }
 
 [[word]]
+text = "effendi"
+given = { note = "a given name in Indonesia and Malaysia, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes Indonesia 35, Malaysia 10 (family boxes Indonesia 122), PatentsView Malaysia 2, Wikidata 5 given (Indonesia 2). Without it tr.toml's style read it as the title opening a name (rules/H9): it fixes 1 ORCID record, 1 PatentsView record and 1 name of Indonesia's House of Representatives lists, and breaks none (measure.py against 6ff048fe) (#1206)" }
+
+[[word]]
+text = "imam"
+given = { note = "a given name in Indonesia, Bangladesh and Nigeria, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes 1,392, Indonesia 567, Bangladesh 52, Nigeria 19 (family boxes 641), PatentsView 14, US SSA 24, Wikidata 7 given. Without it ar.toml's religious title read it as the title opening a name (rules/H9): it fixes 19 PSC records, 36 ORCID, 1 PatentsView and 8 names of Indonesia's parliament lists, and breaks none (measure.py against 6ff048fe); the cost is a cleric written with the bare title in running text, which reads it as the given name (jrc-names 53 names, the committed corpora 2) (#1206)" }
+
+[[word]]
 text = "moch"
 given = { same_as = "muhammad", note = "Muhammad (Mochammad) written short: ORCID given boxes 462 (Indonesia 232), family boxes 46; US Census 2010 counts Moch 540 times as a surname, Wikidata 32 family bearers, none with Indonesian citizenship (2026-11-06); written with its period at the head of a name (Moch. Agus Choiron), it read as a title by the leading-abbreviation shape (#1115)" }
 

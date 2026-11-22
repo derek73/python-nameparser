@@ -43,6 +43,11 @@
   "Pope Saint John Paul II"   →  title="Pope Saint"
   "Cheikh Anta Diop"          →  given="Cheikh"
   "Queen Mother Elizabeth"    →  title="Queen Mother"
+  "Chief Imam Musa Bello"     →  title="Chief Imam"
+  "Sheriff Principal Jane Doe"  →  title="Sheriff Principal"
+  "Mr Imam Hidayat"           →  given="Imam"
+  "Sheriff Kanteh Jallow"     →  given="Sheriff"
+  "Effendi Purnomo Sitorus"   →  given="Effendi"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in a title before it that attaches to it, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -169,12 +174,13 @@
   "The Saint Thomas More"     →  given="The Saint"
   "The Marquis of Tavistock"  →  title="The Marquis of Tavistock"
   ```
-- A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the name data at hand writes the title there almost never.
+- A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the record data at hand writes the title there almost never, and clerics written that way are mostly in news text.
   ```
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   "The Rev. Deacon John Smith"  →  given="Deacon"
   "Saint Thomas More"         →  given="Saint"
+  "Imam Rasyid Hakim"         →  given="Imam"
   ```
 - A ruler, a royal or a noble written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers, royals and nobles that way mostly in news text.
   ```
@@ -186,6 +192,7 @@
   "Marquis de Lafayette"      →  given="Marquis"
   "Queen Elizabeth II"        →  given="Queen"
   "Pharaoh Ramesses II"       →  given="Pharaoh"
+  "Timi Oladele Akande"       →  given="Timi"
   "His Majesty King Charles"  →  title="His Majesty King"
   "Prince of Wales"           →  title="Prince of Wales"
   ```

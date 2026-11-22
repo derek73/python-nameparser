@@ -565,7 +565,7 @@ it:
    * - ``TITLE_PHRASES``
      - No call: each two-word phrase is compiled from a title reading's
        ``attaches`` property (``readings_of("chief")`` shows
-       ``properties=(('attaches', ('military', 'office')),)``), and the
+       ``properties=(('attaches', ('imam', 'military', 'office')),)``), and the
        phrases are not listed
    * - ``PARTICLES``
      - ``d.words(kind="particle")``
@@ -2438,6 +2438,34 @@ To read one of the four as a name, remove its reading:
     >>> as_31 = Parser(lexicon=Lexicon.default().remove("qari", kind="religious"))
     >>> as_31.parse("Qari Ahmed Khan").given
     'Qari'
+
+Imam, Timi, Sheriff and Effendi as given names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``Imam``, ``Timi``, ``Sheriff`` and ``Effendi`` opening a name are the
+given name, as they are in Indonesia, Nigeria and West Africa, where
+1.4 through 3.1 read them as the title. Written alone after a full
+name and a comma, the word is the given name and the name before the
+comma the family (``Kanteh Jallow, Sheriff``), as ``Dean`` reads there.
+In a title phrase they stay titles (``Chief Imam``, ``Grand Imam``,
+``High Sheriff``, ``Sheriff of Nottingham``):
+
+.. doctest::
+
+    >>> imam = parse("Imam Taufik Sasongko")
+    >>> imam.title, imam.given, imam.family
+    ('', 'Imam', 'Sasongko')
+    >>> parse("Chief Imam Musa Bello").title
+    'Chief Imam'
+
+To read one of the four as a title wherever it opens a name, remove its
+given reading:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("imam", kind="given"))
+    >>> as_31.parse("Imam Taufik Sasongko").title
+    'Imam'
 
 Alias markers: @ and urf
 ^^^^^^^^^^^^^^^^^^^^^^^^

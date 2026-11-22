@@ -7,6 +7,7 @@ nobility = { expands = "the ruler of Erunwon" }
 [[word]]
 text = "timi"
 nobility = { expands = "the ruler of Ede" }
+given = { note = "a Yoruba given name, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes 51, Nigeria 7, US SSA 654, Wikidata 24 given (Nigeria 4). Without it the ruler's title read it as the title opening a name (rules/H9): it fixes 8 PSC records and 8 ORCID, moves 13 FEC donors written after a comma and 7 jrc-names spellings, each a person named Timi, to the given name, and breaks none (measure.py against 6ff048fe); the ruler written with the bare title before his name reads it as the given name, a cost no corpus measured (#1206)" }
 
 [[word]]
 text = "ajala"

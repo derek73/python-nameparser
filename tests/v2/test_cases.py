@@ -535,9 +535,16 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # comma, order and spelling rows; 2367 -> 2373 the same day, its
     # second review's 'SMITH, RA MD' and 'Smith, RA John'; 2373 -> 2382
     # the same day, #1178's review's `ab` rows reporting suffix-or-name
-    # ('Ab. Smith, Ed', 'Vice Ab. Smith, Ed', 'Ali Budi Santoso.AB').
-    assert claims == 2382, (
-        f"the field sweep checks {claims} claims, recorded as 2382 on "
+    # ('Ab. Smith, Ed', 'Vice Ab. Smith, Ed', 'Ali Budi Santoso.AB');
+    # 2382 -> 2397 the same day, #1206's five Imam and Sheriff rows
+    # reporting title-or-name under three orders; 2397 -> 2419 the same
+    # day, its review's reporting rows (the word alone, in lower case,
+    # before another gated word and in a third comma part, and a
+    # family-first row under its declared policy); 2419 -> 2425 the same
+    # day, its second review's 'Imam Dr. Musa Bello' and 'Sheriff Deputy
+    # John Smith' under three orders.
+    assert claims == 2425, (
+        f"the field sweep checks {claims} claims, recorded as 2425 on "
         f"2026-11-21")
 
 

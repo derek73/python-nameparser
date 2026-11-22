@@ -1036,7 +1036,7 @@ Four things in the readings make this vocabulary:
     >>> parse("Chief Justice John Roberts").title
     'Chief Justice'
     >>> [r.properties for r in Lexicon.default().readings_of("chief")]
-    [(('attaches', ('military', 'office')),)]
+    [(('attaches', ('imam', 'military', 'office')),)]
     >>> chief = Lexicon.default().add("chief", kind="nobility",
     ...                               attaches=["military"])
     >>> Parser(lexicon=chief).parse("Chief Justice John Roberts").title

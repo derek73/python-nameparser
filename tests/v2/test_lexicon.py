@@ -753,11 +753,13 @@ def test_every_shipped_reading_holds_its_properties_canonical() -> None:
 
 
 def test_words_matches_a_list_property_whatever_its_order() -> None:
-    # `chief`'s nobility reading attaches to military and office titles;
-    # the asked list is folded and sorted as add folds it
-    lex = Lexicon.default()
+    # a reading attaching to two kinds; the asked list is folded and
+    # sorted as add folds it, so the order and case it is asked in do not
+    # matter (built here, so the shipped `chief`'s list may change freely)
+    lex = Lexicon.empty().add("chief", kind="nobility",
+                              attaches=["office", "military"])
     held = lex.words(kind="nobility", attaches=["military", "office"])
-    assert "chief" in held
+    assert held == ("chief",)
     assert lex.words(kind="nobility", attaches=["Office", "military"]) == held
 
 
