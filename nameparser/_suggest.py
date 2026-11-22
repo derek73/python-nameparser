@@ -135,36 +135,35 @@ class Signal(StrEnum):
     patronymic rule or ``two_family_names``."""
 
     #: A family name written in capitals at one end of a name in mixed
-    #: case (``Mary SMITH``).
+    #: case (``Mary SMITH``); votes on the order.
     CAPITALS = "capitals"
-    #: A trailing initial (``Smith J.``), counted only where enough of
-    #: the group's names end in initials.
+    #: Initials ending the name (``Smith J.``), counted only where enough
+    #: of the group's names end in them, as a bibliography's do; votes on
+    #: the order.
     TRAILING_INITIAL = "trailing-initial"
-    #: A lowercase particle first or before the last word.
+    #: A lowercase particle first or before the last word; votes on the
+    #: order.
     PARTICLE = "particle"
     #: A common surname as the first or last word: a romanized Chinese,
-    #: Korean or Vietnamese one, or one ORCID's holders rarely type as a
-    #: given name (``García``, #1364).
+    #: Korean or Vietnamese one, or one researchers rarely write as a
+    #: given name (``García``, ``Quispe``); votes on the order.
     SURNAME = "surname"
     #: A common given name that is rarely a surname (``Emily``, not
-    #: ``Taylor``) as the first or last word.
+    #: ``Taylor``) as the first or last word; votes on the order.
     GIVEN_NAME = "given-name"
-    #: A patronymic one rule reads (Russian ``Petrovich``, Azerbaijani
-    #: ``Huseyn oglu``), the evidence on ``patronymic_rules``.
+    #: A patronymic a rule reads (Russian ``Petrovich``, Azerbaijani
+    #: ``Huseyn oglu``); votes on ``patronymic_rules``.
     PATRONYMIC = "patronymic"
-    #: Where an East Slavic patronymic of three name words stands, read
-    #: where rules/O1 reads it, the evidence on ``name_order``: in the
-    #: middle (``Ivan Petrovich Sidorov``) the family is written last,
-    #: the middle word winning where the last ends as a patronymic too;
-    #: last (``Sidorov Ivan Petrovich``) it is written first. Cast only
-    #: beside an East Slavic ``PATRONYMIC`` vote.
+    #: Where a Russian-style patronymic stands in a name of three words:
+    #: last (``Sidorov Ivan Petrovich``), the family name is written
+    #: first; in the middle (``Ivan Petrovich Sidorov``), last. Cast only
+    #: beside a Russian-style ``PATRONYMIC`` vote; votes on the order.
     PATRONYMIC_POSITION = "patronymic-position"
-    #: The word ``two_family_names`` would take into a name's family
-    #: (rules/O6), voting the switch's value: True where it is a common
-    #: surname of the ORCID table (``COMMON_SURNAMES``, #1364), ``García``
-    #: in ``Gabriel García Márquez``, a first surname standing where a
-    #: second given name would; False where it is a father's name the
-    #: switch would read as a first surname (``Ivan Petrovich
+    #: The word ``two_family_names`` would take into a name's family,
+    #: voting the switch's value: True where it is a common surname
+    #: (``García`` in ``Gabriel García Márquez``, a first surname where
+    #: a second given name would stand), False where it is a father's
+    #: name the switch would read as a first surname (``Ivan Petrovich
     #: Sidorov``). A listed given name there casts no vote.
     FIRST_SURNAME = "first-surname"
 
@@ -732,7 +731,10 @@ class NameEvidence:
     Order votes are one per NAME: the end the name's order signals
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
-    ``votes`` keeps every signal's vote all the same, save a
+    ``votes`` holds the votes keyed by signal: an order vote is the
+    order it votes for (``GIVEN_FIRST`` or ``FAMILY_FIRST``), a
+    patronymic vote the ``PatronymicRule``, and a first-surname vote
+    ``True`` or ``False``. It keeps every signal's vote all the same, save a
     trailing-initial vote the group did not cast: too few of its names
     ending in initials (``Parser.suggest``), or its runs of letters
     decided ``initials_as_family``, whose letters are its family.

@@ -2274,3 +2274,30 @@ def test_a_refused_property_names_the_kind_with_its_article(
     with pytest.raises(ValueError,
                        match=f"^{article} {kind} reading takes "):
         Lexicon.empty().add("zzq", kind=kind, zzprop=True)  # type: ignore[call-arg]
+
+
+def _attached_and_phrase_rows() -> tuple[list[tuple[str, str]],
+                                         list[tuple[str, str]]]:
+    from nameparser._reading_index import CATEGORY
+    rows = _article_rows()
+    attached = [(k, a) for k, a in rows
+                if CATEGORY[k] in ("title", "suffix")]
+    phrase = [(k, a) for k, a in rows if k != "birth_marker"
+              and CATEGORY[k] not in ("familiar", "spelling")]
+    assert attached and phrase
+    return attached, phrase
+
+
+@pytest.mark.parametrize("kind, article", _attached_and_phrase_rows()[0])
+def test_an_attached_side_names_the_kind_with_its_article(
+        kind: str, article: str) -> None:
+    with pytest.raises(ValueError,
+                       match=f"^attached on {article} '{kind}' reading"):
+        Lexicon.empty().add("zzq", kind=kind, attached="sideways")
+
+
+@pytest.mark.parametrize("kind, article", _attached_and_phrase_rows()[1])
+def test_a_phrase_names_the_kind_with_its_article(
+        kind: str, article: str) -> None:
+    with pytest.raises(ValueError, match=f"match as {article} {kind}:"):
+        Lexicon.empty().add("zzq yyq", kind=kind)
