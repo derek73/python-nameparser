@@ -169,6 +169,41 @@ its category:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
+A remove that can take nothing warns. One naming a kind the word does
+not hold lists the kinds it does, one naming a word no vocabulary file
+and no earlier ``add`` lists asks you to check its spelling, and each
+opens with the call and "changes nothing". ``alhaj`` is a style, not a
+religious title:
+
+.. doctest::
+
+    >>> import warnings
+    >>> with warnings.catch_warnings(record=True) as caught:
+    ...     warnings.simplefilter("always")
+    ...     inert = Lexicon.default().remove("alhaj", kind="religious")
+    >>> print(caught[0].message)
+    remove('alhaj', kind='religious') changes nothing: 'alhaj' has no 'religious' reading in any vocabulary file or earlier add(); it holds: style. Did you mean remove('alhaj', kind='style')?
+    >>> Parser(lexicon=inert).parse("Alhaj Ahmed Khan").title
+    'Alhaj'
+
+A reading some file holds counts even where it is off by default, since
+a choice of languages may turn it on, and so does one the same lexicon
+added earlier. A fragment meant to remove a word another lexicon adds
+warns, since ``remove`` cannot see the lexicon it will be joined with.
+Do the remove on the joined lexicon, or filter that one warning by its
+message, never by its category, which would hide every other warning:
+
+.. doctest::
+
+    >>> with warnings.catch_warnings():
+    ...     warnings.filterwarnings("ignore", message=r"remove\('zzq'")
+    ...     fragment = Lexicon.empty().remove("zzq", kind="title")
+    >>> with_zzq = Lexicon.default().add("zzq", kind="title")
+    >>> Parser(lexicon=with_zzq).parse("Zzq Ana Smith").title
+    'Zzq'
+    >>> Parser(lexicon=with_zzq | fragment).parse("Zzq Ana Smith").title
+    ''
+
 Seeing what the vocabulary says about a word
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -286,6 +286,19 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
         )
 
 
+@functools.cache
+def _pair_names(category: str) -> frozenset[str]:
+    """Every name a shipped `category` reading (familiar or spelling)
+    lists as its pair's other name, `short_for` or `spelling_of`, read
+    from the reading index once: the names #1535's warning tells apart
+    from a word in no file, whatever pairs a lexicon has compiled."""
+    ri = _index_module()
+    prop = ri.MATCHING_LISTS[category]
+    return frozenset(
+        _normalize(name) for r in ri.index() if r.kind == category
+        for name in r.props.get(prop) or ())
+
+
 def _warn_at_caller(message: str) -> None:
     # A fixed stacklevel always lands on library internals: the call
     # depth differs per entry point (Lexicon(), add(), unpickle,
@@ -2588,7 +2601,23 @@ class Lexicon:
         empty ``remove(*words, kind=...)`` never takes out a whole kind.
         Removing a reading the word does not hold changes nothing now,
         and is kept: a later choice of languages may turn that reading
-        on.
+        on. Where no vocabulary file holds the reading, on by default or
+        not, and no :meth:`add` earlier in this lexicon's log (a joined
+        lexicon's included) gave it, the edit can never take effect, and
+        the call warns with a ``UserWarning`` (#1535); a remove of every
+        word's readings and a ``familiar`` or ``spelling`` pair remove
+        are not judged. The message opens with the call and "changes
+        nothing", and says which case it is: a word holding other kinds
+        (they are listed, and the call to paste offered where one is
+        plainly meant, never a pair kind); a word held only in the
+        ``surnames`` or ``given_names`` list, which ``remove`` does not
+        edit (the ``dataclasses.replace`` that drops it); a word held
+        only as the other name of other words' ``familiar`` or
+        ``spelling`` pairs (the pair remove that reaches them); or a
+        word in no file and no earlier add. A fragment meant to remove a word
+        another lexicon adds warns, since ``remove`` cannot see the
+        lexicon it will be joined with: filter that warning by its
+        message, or do the remove on the joined lexicon.
 
         A ``familiar`` or ``spelling`` reading is a pair of given names,
         stored on one of the two and read by name matching both ways, so
@@ -2637,9 +2666,131 @@ class Lexicon:
                 "word's readings of it, e.g. remove(kind='title', "
                 "every=True)")
         edit = _make_edit("remove", words, kind, pairs)
+        for message in self._inert_removes(edit):
+            _warn_at_caller(message)
         return dataclasses.replace(self, _edits=self._edits + (edit,))
 
     # -- private helpers --------------------------------------------------
+
+    def _inert_removes(self, edit: _Edit) -> list[str]:
+        """A warning for each word of a `remove` that no vocabulary file
+        and no `add` earlier in this lexicon's log (a joined lexicon's
+        included) gives a reading of the kind asked (any reading, with
+        no kind), so that the edit can take effect under no choice of
+        languages (#1535). A file's reading counts whether it is on by
+        default or not, since a choice may turn it on. Read at `remove`
+        alone, never when a constructor replays the log or a pickle
+        loads. A remove of every word's readings (no words) and the
+        familiar and spelling pair removes, which match names by their
+        folded forms, are not judged. Each message opens with the call
+        and "changes nothing", so a caller filters one by it."""
+        ri = _index_module()
+        kind = edit.kind
+        if not edit.words or (kind is not None and ri.CATEGORY.get(
+                kind, kind) in ri.MATCHING_ONLY):
+            return []
+        added: dict[str, set[str]] = {}
+        for earlier in self._edits:
+            if earlier.op == "add" and earlier.kind is not None:
+                for w in earlier.words:
+                    added.setdefault(w, set()).add(earlier.kind)
+        messages = []
+        for w in dict.fromkeys(edit.words):
+            held = {r.kind for r in ri.readings_of(w)} | added.get(w, set())
+            if kind is None and held:
+                continue
+            if kind is not None and any(
+                    k == kind or ri.CATEGORY[k] == kind for k in held):
+                continue
+            call = (f"remove({w!r})" if kind is None
+                    else f"remove({w!r}, kind={kind!r})")
+            head = f"{call} changes nothing: "
+            if held:
+                messages.append(head + self._other_kinds(w, kind, held))
+            else:
+                messages.append(head + self._no_reading(w, kind, added))
+        return messages
+
+    def _other_kinds(self, w: str, kind: str | None,
+                     held: set[str]) -> str:
+        """Case (i) of #1535: the word holds readings, none of `kind`.
+        The call to paste is offered only where one kind is plainly the
+        one meant: the single held kind of the asked kind's category,
+        else the single held kind of all; a familiar or spelling kind is
+        never offered, its remove reaching name matching's pairs."""
+        ri = _index_module()
+        kinds = sorted(held)
+        candidates = [k for k in kinds if ri.CATEGORY[k] not in
+                      ri.MATCHING_ONLY]
+        same = [k for k in candidates
+                if ri.CATEGORY[k] == ri.CATEGORY.get(kind or "", kind)]
+        offer = (same[0] if len(same) == 1 else
+                 candidates[0] if not same and len(candidates) == 1 else None)
+        text = (f"{w!r} has no {kind!r} reading in any vocabulary file or "
+                f"earlier add(); it holds: {', '.join(kinds)}")
+        if offer is not None:
+            text += f". Did you mean remove({w!r}, kind={offer!r})?"
+        return text
+
+    def _no_reading(self, w: str, kind: str | None,
+                    added: dict[str, set[str]]) -> str:
+        """Cases (ii) and (iii) of #1535: the word holds no reading. It
+        may stand in the two lists, which remove() does not edit, be
+        only the other name of other words' familiar or spelling pairs,
+        which a remove of the pair kind takes, or be a suffix acronym or
+        a dotted title written with its full stops (``ph.d``, held as
+        ``phd``), where the bare word holds the kind asked; else it is
+        in no file."""
+        ri = _index_module()
+        lists = {"surnames": ("family", "name"), "given_names": ("given", "name")}
+        for list_field, kinds in lists.items():
+            if w in getattr(self, list_field) and (
+                    kind is None or kind in kinds):
+                return (f"{w!r} holds no reading, only an entry in this "
+                        f"lexicon's {list_field} list, which remove() does "
+                        f"not edit; drop it with dataclasses.replace("
+                        f"lexicon, {list_field}=lexicon.{list_field} - "
+                        f"{{{w!r}}})")
+        pair_kind = ("familiar" if self._familiar_forms(w)
+                     or w in _pair_names("familiar") else
+                     "spelling" if self._alternate_spellings(w)
+                     or w in _pair_names("spelling") else None)
+        if pair_kind is not None:
+            return (f"{w!r} holds no reading of its own, only the other "
+                    f"name of {pair_kind} pairs other words hold; "
+                    f"remove({w!r}, kind={pair_kind!r}) takes those pairs")
+        # only where the parse reads the dotted spelling as the bare word:
+        # a suffix acronym (M.D. as md) or a dotted title (U.S. as us),
+        # and the bare word holds the kind asked
+        bare = w.replace(".", "")
+        bare_kinds = ({r.kind for r in ri.readings_of(bare)}
+                      | added.get(bare, set()))
+        # the kind the dotted spelling is read by: a suffix acronym's
+        # suffix reading, a dotted title's title one (M.D. is md's
+        # credential, not its given reading, Muhammad written short)
+        read_as = {k for k in bare_kinds if ri.CATEGORY[k] == (
+            "suffix" if bare in self._sets.suffix_acronyms else "title")}
+        if bare != w and bare in (self._sets.suffix_acronyms
+                                  | self._sets.dotted_titles):
+            text = (f"the vocabulary writes {w!r} without its full stops, "
+                    f"as {bare!r}")
+            asked = [k for k in read_as if kind is not None
+                     and (k == kind or ri.CATEGORY[k] == kind)]
+            if kind is None and len(read_as) == 1:
+                offer: str | None = next(iter(read_as))
+            elif len(asked) == 1:
+                offer = kind
+            else:
+                offer = None
+            if offer is not None:
+                return text + (f": did you mean remove({bare!r}, "
+                               f"kind={offer!r})?")
+            return text + (", read with its full stops as "
+                           + ", ".join(sorted(read_as)))
+        return (f"{w!r} is in no vocabulary file and no earlier add() of "
+                f"this lexicon; check its spelling, or, where a lexicon "
+                f"this one is joined with adds it, remove it from the "
+                f"joined lexicon")
 
     def _pool(self) -> Pool:
         return self._files.pool()
