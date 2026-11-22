@@ -411,7 +411,7 @@ class Parser:
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
         Measured on groups drawn from real names written in a known
-        order (docs/suggest.rst's limits; the dated tables are in the
+        order (:ref:`suggest-limits`; the dated tables are in the
         source repository's docs/design/decisions/group-suggestion.md),
         these figures give a general idea and will differ for every
         dataset. A group written in this parser's own order kept it in

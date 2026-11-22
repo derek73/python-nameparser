@@ -160,8 +160,9 @@ class Signal(StrEnum):
     #: beside a Russian-style ``PATRONYMIC`` vote; votes on the order.
     PATRONYMIC_POSITION = "patronymic-position"
     #: The word ``two_family_names`` would take into a name's family,
-    #: voting the switch's value: True where it is a common surname
-    #: (``García`` in ``Gabriel García Márquez``, a first surname where
+    #: voting the switch's value: True where it is a surname researchers
+    #: rarely write as a given name, the second of the tables ``SURNAME``
+    #: names (``García`` in ``Gabriel García Márquez``, a first surname where
     #: a second given name would stand), False where it is a father's
     #: name the switch would read as a first surname (``Ivan Petrovich
     #: Sidorov``). A listed given name there casts no vote.
@@ -734,7 +735,9 @@ class NameEvidence:
     ``votes`` holds the votes keyed by signal: an order vote is the
     order it votes for (``GIVEN_FIRST`` or ``FAMILY_FIRST``), a
     patronymic vote the ``PatronymicRule``, and a first-surname vote
-    ``True`` or ``False``. It keeps every signal's vote all the same, save a
+    ``True`` or ``False``, cast only where ``two_family_names`` is
+    weighed (not where the base has it on or an East Slavic rule is
+    decided). It keeps every signal's vote all the same, save a
     trailing-initial vote the group did not cast: too few of its names
     ending in initials (``Parser.suggest``), or its runs of letters
     decided ``initials_as_family``, whose letters are its family.
