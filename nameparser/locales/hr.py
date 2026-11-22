@@ -1,5 +1,5 @@
-"""The Croatian locale pack: a choice of languages, ``hr``, and nothing
-else -- no lexicon fragment and no policy patch (3.0, phase 3f, #753;
+"""The Croatian locale pack: a choice of languages, ``hr``, and a policy
+patch, no lexicon fragment (3.0, phase 3f, #753; the patch since #1190;
 mechanisms.md#LOCALE-PACKS-PURE-DATA). Choosing it turns on
 nameparser/vocab/hr.toml's readings written ``default = false``: the
 generations ``ml.`` (mlađi) and ``st.`` (stariji); on a word hr.toml
@@ -10,19 +10,38 @@ chooses ``fr`` too, a choice that changes no other
 word (decisions/vocabulary-model's 2026-10-30 phase 3f entry; ``père``,
 the one other word it named, is read by default since 2026-11-03).
 
+It reads two family names (``Policy.two_family_names``, rules/O6), its
+policy patch compiled from hr.toml's [rules] table by
+tools/vocab/build.py, so the married double surname written without a
+hyphen stays whole: ``Ana Puž Kukuljan`` gives family ``Puž Kukuljan``,
+where the default gives the first of them as a middle name. Two given
+names pay for it, with no given-name list to keep them out of the
+family, as under CS and SK: ``Ivan Marko Horvat`` gives family ``Marko Horvat``
+(decisions/O6's 2026-11-21 #1190 entry, which records the cost).
+
 Data sources: the readings' own entries in nameparser/vocab/hr.toml,
 each with its issue and the vetting on its note; nothing is listed
 here.
 
-Deviations: derived, not declared. The words a choice of ``hr``
-can move are ``_reading_index.changed_words``, which the
-non-interference gate in tests/v2/test_locales.py reads
-(decisions/deviates-registry), so this module carries no DEVIATES.
+Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the choice's
+are derived, not declared -- the words whose compiled readings it
+changes (``_reading_index.changed_words``), which the non-interference
+gate in tests/v2/test_locales.py ors in -- so DEVIATES below declares
+only what the patch changes.
 """
 from __future__ import annotations
 
 from nameparser._lexicon import Lexicon
-from nameparser._locale import Locale
+from nameparser._locale import Locale, deviates_by_two_family_names, rules_patch
 
-HR = Locale(code="hr", lexicon=Lexicon.empty(),
-            languages=frozenset({"hr"}))
+HR = Locale(
+    code="hr",
+    lexicon=Lexicon.empty(),
+    # nameparser/vocab/hr.toml's [rules], compiled by tools/vocab/build.py
+    policy=rules_patch("hr"),
+    languages=frozenset({"hr"}),
+)
+
+
+# rules/O6's declaration, which every pack turning O6 on shares
+DEVIATES = deviates_by_two_family_names
