@@ -84,6 +84,7 @@ FULL_STOPS = ".．。｡"
 # letter, so deleting it changes no word's identity (#1151: `الدكتــور`
 # is the title `الدكتور`). Token text is never rewritten.
 _TATWEEL = "\u0640"
+# rules/T1: "at the edge the word is looked up without it"
 # The zero-width non-joiner and joiner shape the letters on either side
 # of them, so at a word's edge they shape nothing and are dropped when
 # the word is looked up (#1335: `مهندس` typed with a ZWNJ after it is
@@ -96,7 +97,8 @@ _NON_ASCII_EDGES = FULL_STOPS + _EDGE_JOINERS
 
 def _normalize(word: str) -> str:
     """Lowercase, NFC-compose, strip whitespace and EDGE full stops
-    (FULL_STOPS, not the ASCII period alone -- #322). Interior periods
+    (FULL_STOPS, not the ASCII period alone -- #322), and in a non-ASCII
+    word an edge ZWNJ or ZWJ with them (#1335). Interior periods
     survive on purpose: 'J.R.' must not collapse to 'jr' and hit the
     periodless vocabulary (v1 parity, pinned live 2026-07-17).
     Suffix-ACRONYM membership alone uses the period-free form (see
@@ -732,13 +734,19 @@ SameAsNamed = Mapping[str, frozenset[str]]
 #: which `_normalize` deletes too (#1151), so a name's two spellings that
 #: differ by one fold alike where the vocabulary and the match meet.
 _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
-#: A ZWNJ or ZWJ at the edge of a word, which `_normalize` strips too
-#: (#1335); one inside a word is kept, as `_normalize` keeps it.
-_EDGE_JOINER = re.compile(r"(?<!\S)[\u200c\u200d]+|[\u200c\u200d]+(?!\S)")
 #: The hyphens the parser joins two names with (rules/O6), defined here,
 #: below the pipeline, so the match's forms and the lexicon's pair index
 #: (`_forms`) read them alike; `_pipeline._vocab` reads them from here.
 _HYPHEN_CHARS = "-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
+#: A ZWNJ or ZWJ beside whitespace, a hyphen or the text's edge, as
+#: `_normalize` strips one at a token's edge (#1335). The hyphen counts
+#: because the match cuts a family name at its hyphens and folds each
+#: half (`_match._family_words`), so `Smith-Jones` with a ZWNJ before
+#: its hyphen folds alike whole and by halves; one between letters is
+#: kept.
+_NOT_AN_EDGE = r"[^\s" + "".join(f"\\u{ord(c):04x}" for c in _HYPHEN_CHARS) + "]"
+_EDGE_JOINER = re.compile(
+    rf"(?<!{_NOT_AN_EDGE})[\u200c\u200d]+|[\u200c\u200d]+(?!{_NOT_AN_EDGE})")
 _TO_HYPHEN_MINUS = str.maketrans(dict.fromkeys(_HYPHEN_CHARS, "-"))
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
@@ -769,9 +777,9 @@ def _fold(text: str) -> str:
     the marks are read, a mark after one then attaching to the letter
     before it, and again after casefolding, which can write one (U+0149
     `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
-    other, so `ᾳ` folds to `α`. A ZWNJ or ZWJ at a word's edge is
-    dropped with the full stops (`_EDGE_JOINER`), as `_normalize` drops
-    it. Last, the letters a keyboard lacks are written as one types them
+    other, so `ᾳ` folds to `α`. A ZWNJ or ZWJ beside whitespace, a
+    hyphen or the text's edge is dropped with the full stops
+    (`_EDGE_JOINER`), as `_normalize` drops one at a token's edge. Last, the letters a keyboard lacks are written as one types them
     (`_KEYBOARD`)."""
     if text.isascii():
         # no accent, no composition, and no apostrophe but the typed

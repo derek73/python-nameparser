@@ -739,6 +739,14 @@ def test_capitalized_all_lower_input_v1_parity() -> None:
     assert [t.span for t in out.tokens] == [t.span for t in _lowercase_mac().tokens]
 
 
+def test_case_repair_reads_a_word_typed_with_an_edge_joiner() -> None:
+    # #1335: the mask and the particle lookups fold the joiner away, and
+    # the repaired text keeps it
+    assert parse("john smith phd\u200c").capitalized().suffix == "PhD\u200c"
+    assert parse("juan de\u200c la vega").capitalized().family == (
+        "de\u200c la Vega")
+
+
 def test_capitalized_all_upper_input() -> None:
     pn = _pn("JOHN SMITH", [
         Token("JOHN", Span(0, 4), Role.GIVEN),

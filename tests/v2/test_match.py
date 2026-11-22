@@ -365,6 +365,9 @@ def test_a_tatweel_stretching_a_name_is_no_difference() -> None:
     ("علی\u200c رضایی", "علی رضایی"),
     ("\u200dعلی رضایی", "علی رضایی"),
     ("Ali\u200c\u200d Rezaei", "Ali Rezaei"),
+    # a hyphen is an edge too, since the match folds a family name's
+    # halves apart (_family_words), and a given name's alike
+    ("Ali-\u200cReza Smith", "Ali-Reza Smith"),
 ])
 def test_a_joiner_at_a_words_edge_is_no_difference(
         left: str, right: str) -> None:
@@ -375,6 +378,25 @@ def test_a_joiner_at_a_words_edge_is_no_difference(
     assert result.consistent
     given = next(r for r in result.roles if r.role is Role.GIVEN)
     assert given.outcome is Outcome.FOLDED
+
+
+def test_a_joiner_before_a_hyphen_folds_alike_whole_and_by_halves() -> None:
+    result = Parser().matching().check("John Smith\u200c-Jones",
+                                       "John Smith-Jones")
+    family = next(r for r in result.roles if r.role is Role.FAMILY)
+    assert family.outcome is Outcome.FOLDED
+    assert _fold("smith\u200c-jones").split("-") == [
+        _fold(h) for h in "smith\u200c-jones".split("-")]
+
+
+def test_a_familiar_form_typed_with_an_edge_joiner_is_still_one() -> None:
+    """The familiar-form index files a name under its folded forms
+    (`_lexicon._forms`), so the joiner must fold away there too."""
+    matcher = Parser().matching(
+        accept=Parser().matching().accept | {"familiar-form"})
+    result = matcher.check("Max\u200c Smith", "Maximilian Smith")
+    given = next(r for r in result.roles if r.role is Role.GIVEN)
+    assert given.outcome is Outcome.FAMILIAR_FORM
 
 
 def test_fold_drops_a_joiner_at_a_words_edge_and_keeps_one_inside() -> None:

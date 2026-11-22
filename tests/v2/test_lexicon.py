@@ -221,19 +221,21 @@ def test_an_edge_joiner_strips_on_a_latin_and_a_decomposed_word() -> None:
 def test_a_joiner_inside_a_word_is_kept_and_a_lone_one_folds_away() -> None:
     """A joiner between letters decides how they join (`آیت‌الله` is
     listed with its ZWNJ), so it stays; a word that is nothing but
-    joiners folds to nothing, as a lone full stop does."""
+    joiners looks up as nothing, as a lone full stop does, though its
+    token still stands in the name (decisions/T1, 2026-11-21)."""
     assert _normalize("آیت" + _ZWNJ + "الله") == "آیت" + _ZWNJ + "الله"
     assert _normalize(_ZWNJ) == _normalize(_ZWJ + _ZWNJ) == ""
 
 
 def test_a_word_added_with_an_edge_joiner_is_stored_without_it() -> None:
-    """Storage and lookup share the fold, so a caller's title typed with
-    a ZWNJ after it is the title written either way, and the lexicon
-    round-trips through pickle."""
+    """Storage and lookup share the fold, so a caller's title added with
+    a ZWNJ after it is the title typed with or without a joiner, and the
+    lexicon round-trips through pickle."""
     lexicon = Lexicon.default().add("Xyzt" + _ZWNJ, kind="title")
     assert "xyzt" in lexicon.words(kind="title")
     parser = Parser(lexicon=lexicon)
-    for text in ("Xyzt John Smith", "Xyzt" + _ZWJ + " John Smith"):
+    for text in ("Xyzt John Smith", "Xyzt" + _ZWNJ + " John Smith",
+                 "Xyzt" + _ZWJ + " John Smith"):
         assert parser.parse(text).given == "John"
     assert pickle.loads(pickle.dumps(lexicon)) == lexicon
 

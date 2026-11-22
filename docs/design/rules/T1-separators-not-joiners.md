@@ -42,4 +42,4 @@
 
 ---
 **Signal:** character: whitespace, and characters that carry no name content
-**history:** decisions/T1 · **implemented:** nameparser/_pipeline/_tokenize.py
+**history:** decisions/T1 · **implemented:** nameparser/_lexicon.py, nameparser/_pipeline/_tokenize.py
