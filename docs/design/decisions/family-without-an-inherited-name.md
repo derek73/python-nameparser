@@ -6,7 +6,7 @@
 - The patronymic view keeps rules/R9's basis, filled only by a word or a rule that says patronymic, never by a position; it may overlap the family or be a part of it, and a father's name nothing in the text marks (Ethiopia) fills no view — 2026-11-12 #1253.
 - An Ethiopian or Eritrean name stays positional, its family under the default given-first order the grandfather's name where it is written and the father's where it is not; a caller matching such a list builds the matcher from a parser with `middle_as_family`, keeping the default parser for the fields (docs/matching.rst) — 2026-11-12 #1253.
 
-Open: #1188 (Kazakh), #1155 (`بن` chain), #1231 (Burma), each a value question under the two statements; #1165 (`S/O`, `W/O`), a decision of its own.
+Open: #1188 (Kazakh), #1155 (`بن` chain), each a value question under the two statements; #1165 (`S/O`, `W/O`), a decision of its own.
 
 ## Log
 

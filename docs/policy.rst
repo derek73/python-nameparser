@@ -44,6 +44,25 @@ locale pack -- call :meth:`Policy.patched()
     >>> Policy().patched(PolicyPatch(middle_as_family=True))
     Policy(middle_as_family=True)
 
+On top of a locale pack
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A field the pack leaves alone goes in the base parser's policy
+(``parser_for(pack, base=Parser(policy=...))``). A field the pack sets
+wins over the base's value (:ref:`stacking-packs`), so change it on the
+parser the pack built:
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> czech = parser_for(locales.CS)
+    >>> czech.parse("Petr Pavel Novák").family
+    'Pavel Novák'
+    >>> one_family = dataclasses.replace(
+    ...     czech, policy=dataclasses.replace(czech.policy, two_family_names=False))
+    >>> one_family.parse("Petr Pavel Novák").family
+    'Novák'
+
 The fields
 ----------
 
@@ -81,13 +100,11 @@ Order and name structure
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - empty
-     - Reorders patronymic-shaped names via opt-in detectors — East
-       Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
-       (``TURKIC``) — but stands down under a declared
-       ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST`` ``name_order``.
-       Each rule also fills ``ParsedName.patronymic``. The ``ru`` and
-       ``tr_az`` rows of :ref:`shipped-packs` describe what each rule
-       detects.
+     - Reorders patronymic-shaped names, East Slavic (``EAST_SLAVIC``)
+       or Turkic (``TURKIC``); the reordering stands down under a
+       family-first ``name_order``, while ``ParsedName.patronymic`` is
+       still filled under ``FAMILY_FIRST``. See the ``ru`` and
+       ``tr_az`` rows of :ref:`shipped-packs`.
    * - ``middle_as_family``
      - ``bool``
      - ``False``
@@ -98,8 +115,8 @@ Order and name structure
      - ``False``
      - Reads the last two name words as the family name (the first
        two under a family-first order), for data where people carry
-       two family names (Spain, most of Latin America). See
-       :ref:`two-family-names`.
+       two family names (Spain, most of Latin America); several packs
+       turn it on. See :ref:`two-family-names`.
    * - ``two_given_names``
      - ``bool``
      - ``False``
@@ -536,13 +553,27 @@ Turn on ``two_family_names`` when the people in your data carry two
 family names and write both together, after the given names (or first,
 under a family-first order), and only then:
 :ref:`What it costs <two-family-names-cost>` shows what it does to
-other names. ``locales.ES``, ``locales.ES_AR``, ``locales.PT_BR`` and
-``locales.PT_PT`` turn it on together with a list of given names that it holds back (see
-`Keeping a given name out of the family`_). For a list of names,
-``Parser.suggest()`` turns the bare switch on where enough of the names
-write a common surname where the switch would take a word into the
-family (:ref:`suggest-two-family`); where you know the list is Spanish
-or Portuguese, the pack reads it better.
+other names.
+
+For a list of names, ``Parser.suggest()`` turns the bare switch on
+where enough of the names write a common surname where the switch would
+take a word into the family (:ref:`suggest-two-family`); where you know
+the list is Spanish, Brazilian or from Portugal, its pack reads it
+better (below).
+
+Packs that turn it on
+~~~~~~~~~~~~~~~~~~~~~
+
+- **locales.ES** and **locales.ES_AR**, with a list of about 1,000 and
+  about 5,000 given names that the switch leaves where they stand
+  (`Keeping a given name out of the family`_).
+- **locales.PT_BR** and **locales.PT_PT**, with about 700 Portuguese
+  given names (:ref:`portuguese-two-family-names`). ``locales.PT``
+  leaves the switch off.
+- **locales.CS**, **locales.SK**, **locales.HR** and **locales.SL**,
+  with no list, so a second given name is read into the family too
+  (``Janez Jože Novak`` gives family ``Jože Novak`` under
+  ``locales.SL``, :ref:`west-south-slavic-packs`).
 
 In Spain and most of Latin America a person carries two family names,
 the father's first and then the mother's, and writes both after the
@@ -615,6 +646,9 @@ What it leaves alone
   Ana"`` needs no switch for its ``family``; the switch divides it into
   ``surname1`` and ``surname2``.
 - **Kaur and Singh** stay where they stand (see :ref:`kaur-singh`).
+- **A lone particle and the word after it** under a family-first order
+  stay one surname (``Van Gogh Vincent`` gives ``surname1`` ``Van
+  Gogh`` and no ``surname2``).
 
 .. _two-family-names-cost:
 
@@ -625,15 +659,15 @@ Turn it on only for data written this way:
 
 - **One family name behind two given names.** ``"Juan Carlos Pérez"``
   loses ``Carlos`` to the family under the switch, and Argentine names,
-  which carry one family name, are mostly that shape.
-- **Portuguese and Brazilian names.** They carry two family names too,
-  the mother's first, but the people who write them often give the last
-  one alone as their family name. Among the UK company register's
-  Portuguese filers the switch breaks about six names for every five it
-  mends, while among ORCID's researchers working or living in Portugal,
-  who split their own names into its boxes, it mends about twice what
-  it breaks: the two populations disagree, so measure the data you have
-  before switching it on.
+  which carry one family name, are mostly that shape, which is why
+  ``locales.ES_AR`` holds back about 5,000 given names.
+- **Portuguese-speaking names from elsewhere.** For Brazil and
+  Portugal choose ``locales.PT_BR`` or ``locales.PT_PT``, whose
+  given-name list holds back most of the cost on names written whole,
+  though not on Brazilian data filed with a single surname as the
+  family name, where ``locales.PT`` is the better choice
+  (:ref:`portuguese-two-family-names`); Angolan and Mozambican names
+  lose under the switch even with the list.
 - **Filipino names.** They often carry a middle name between the given
   name and the family name, traditionally the mother's maiden surname,
   and their bearers count it with their given names: ``"Maria Santos
@@ -641,7 +675,7 @@ Turn it on only for data written this way:
   Reyes``. Among ORCID's researchers in the Philippines it breaks about
   four names in ten and mends about one in a hundred.
 
-The counts behind the last two are in
+The counts behind these are in
 ``docs/design/decisions/O6-two-family-names.md``.
 
 What it reports
@@ -660,8 +694,8 @@ listed in the lexicon's ``given_names`` where it stands, under any
 ``name_order``.
 
 The field is empty by default, so you supply the list for your data,
-or choose ``locales.ES``, which turns the switch on and carries 1,000
-Spanish given names, a name written with ñ listed with n too
+or choose ``locales.ES``, which turns the switch on and carries about
+1,000 Spanish given names, a name written with ñ listed with n too
 (``locales.ES_AR``, for Argentine names, carries about 5,000; see
 :ref:`spanish-portuguese-titles`), or ``locales.PT_BR`` or
 ``locales.PT_PT``, which carry about 700 Portuguese ones, a name
@@ -1012,6 +1046,16 @@ What it leaves alone
     >>> chan = capitals.parse("Hon CHAN Kin-por, GBS, JP")
     >>> chan.family, chan.suffix
     ('CHAN', 'GBS, JP')
+
+With ``two_family_names`` on too, a family of two words in capitals is
+divided into ``surname1`` and ``surname2``:
+
+.. doctest::
+
+    >>> both = Parser(policy=Policy(capitals_as_family=True, two_family_names=True))
+    >>> aksoy = both.parse("Ayla BURSALI AKSOY")
+    >>> aksoy.surname1, aksoy.surname2
+    ('BURSALI', 'AKSOY')
 
 .. _capitals-as-family-cost:
 
@@ -1460,15 +1504,20 @@ way:
 All-caps words
 ~~~~~~~~~~~~~~
 
-``unlisted_caps_suffixes`` reads an unlisted word of two or more
-capital letters, with no period in it, and since 2.7 one of capitals
-joined by a hyphen or a slash (``PU-PH``, ``MS-OMPT``) with a part of
-two or more letters. After a comma it also reads a word of letters in
-mixed case that opens with two capitals or ends in one (``MRes``,
-``DClinPsy``, ``AuD``), the way degrees are written. A capital only
-inside a word (``LeBron``, ``McKenzie``) is a name's writing, and a word
-in mixed case holding a hyphen (``Pharm-D``) is left alone, since given
-names are written so (``Jay-R``). Its value is a
+``unlisted_caps_suffixes`` reads an unlisted word in one of these
+shapes:
+
+- **Two or more capital letters**, with no period in it.
+- **Capitals joined by a hyphen or a slash** (``PU-PH``, ``MS-OMPT``)
+  with a part of two or more letters, since 2.7.
+- **After a comma, mixed case** opening with two capitals or ending in
+  one (``MRes``, ``DClinPsy``, ``AuD``), the way degrees are written.
+
+A capital only inside a word (``LeBron``, ``McKenzie``) is a name's
+writing, and a word in mixed case holding a hyphen (``Pharm-D``) is
+left alone, since given names are written so (``Jay-R``).
+
+Its value is a
 :class:`~nameparser.CapsSuffixes`, because where capitals mean a
 credential depends on a second convention: many records write the
 SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).
@@ -1537,8 +1586,9 @@ capitals there, since a surname typed without its apostrophe
 ^^^^^^^
 
 ``CapsSuffixes.OFF`` reads none of them and reports nothing, as 2.3
-did. It is the way to keep a given name written in capitals after a
-two-word surname, which the default reads as a credential:
+did. It is the way to keep a given name written in capitals, or in
+mixed case opening with two capitals (``DAndre``), after a two-word
+surname, which the default reads as a credential:
 
 .. doctest::
 
@@ -1548,6 +1598,8 @@ two-word surname, which the default reads as a credential:
     ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF))
     >>> caps_off.parse("García Márquez, GABRIEL").given
     'GABRIEL'
+    >>> caps_off.parse("García López, DAndre").given
+    'DAndre'
 
 .. _finding-missing-credentials:
 

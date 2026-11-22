@@ -147,7 +147,8 @@ romanized Chinese, Korean or Vietnamese one, or one rarely written as
 a given name, ``Garcia``), or a common given name that is rarely a
 surname (``Mary``, not ``James``), at one end; a
 family name written in capitals; a lowercase particle; initials after
-the name, as a bibliography writes them (:ref:`suggest-evidence`).
+the name, as a bibliography writes them; where a Russian-style
+patronymic stands (:ref:`suggest-evidence`).
 
 ``suggest`` decides five settings from it, each only where enough of
 the list's names carry its evidence, and leaves every other one as the

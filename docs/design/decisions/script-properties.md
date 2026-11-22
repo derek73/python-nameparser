@@ -16,7 +16,7 @@
 
 - The Lao script (U+0E80–0EFF) writes no initials, decided by the CLDR count (`lo` 0 of 37 locale-authored patterns produce one, its block its own), and writes period abbreviations, so a Lao title written short (`ດຣ.`) reads as before — 2026-11-20 #1380.
 
-Open: Persian and Urdu. The Arabic row covers them because a row is per script, on thin evidence for both: the Wikidata native corpus holds 30 Persian and 32 Urdu names, none with an initial, CLDR's `fa` block is mostly `en`'s (6 of its 7 patterns with an initial equal) and `ur`'s half its own (4 of 8), and no measured list of either language's names written by their bearers has been read — #1149.
+Open: Persian and Urdu. The Arabic row covers them because a row is per script, on thin evidence for both: the Wikidata native corpus holds 30 Persian and 32 Urdu names, none with an initial, CLDR's `fa` block is mostly `en`'s (6 of its 7 patterns with an initial equal) and `ur`'s half its own (4 of 8), and no measured list of either language's names written by their bearers has been read — raised by #1149 (closed 2026-11-20); no issue filed.
 
 Open: [#1273](https://github.com/derek73/python-nameparser/issues/1273) — what an initial looks like in the Brahmic scripts, the brahmic row's own question (`initials()` gives a vowel sign's base, not the syllable written). [#1274](https://github.com/derek73/python-nameparser/issues/1274) — the Uzbek apostrophe in case repair, a language question beside #1214. [#1242](https://github.com/derek73/python-nameparser/issues/1242) — the Dutch `IJ`, a language question, out of the table by the decision.
 
