@@ -40,7 +40,8 @@ Policy.script_orders for the part before a family comma, through
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
-(O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
+(O6's veto), Lexicon.bound_long_names_only (P12's split of a pair in a
+name of fewer than four name words, #1464), Lexicon.saint_particles (P10's saint clause; P10 runs
 under every policy and reads Policy.patronymic_rules for its Turkic
 guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
@@ -53,7 +54,7 @@ and honorific_words, the suffix words that do not settle a member
 (`_vocab.settles_a_member`).
 
 Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, P11,
-O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's surname pair of
+P12's two splits, O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's surname pair of
 docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out

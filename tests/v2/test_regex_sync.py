@@ -166,10 +166,11 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_render", "_INITIAL"): ("_vocab", "_INITIAL"),
     # SAME object, imported for the one-case letter initial (#723)
     ("_classify", "_INITIAL"): ("_vocab", "_INITIAL"),
-    # SAME object, imported for rules/P12's four-word count (#1464)
-    ("_classify", "_ROMAN"): ("_vocab", "_ROMAN"),
     # rules/P12's letter test (#1464), its own only copy
     ("_classify", "_HAS_LETTER"): None,
+    # rules/P12's four-word count (#1464), compiled from `_vocab._LETTER`,
+    # a pattern string no module compiles alone
+    ("_post_rules", "_HAS_LETTER"): None,
     # Deliberately NOT a straight copy -- _INITIAL's period
     # alternative, pinned by the dedicated test above:
     ("_render", "_DOTTED_INITIAL"): None,
