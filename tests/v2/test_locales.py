@@ -3647,8 +3647,11 @@ def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
     (locales.CS, "Ing Jan Novák", ("Ing", "Jan", "", "Novák")),
     (locales.CS, "Mr Tom Ing", ("Mr", "Tom", "", "Ing")),
     (locales.CS, "Tom Ing, MD PhD", ("", "Tom", "", "Ing")),
-    # Slovak is left as it was: sk.toml lists neither Bc nor Ing
+    # Slovak is left as it was: sk.toml lists neither Bc nor Ing, so its
+    # et joins their pair into the given name, as plain sk reads it
+    # through fr.toml's (strict sk read title 'Ing.', given 'et')
     (locales.SK, "Ing Ján Kováč", ("", "Ing", "", "Ján Kováč")),
+    (locales.SK, "Ing. et Ing. Jan Novák", ("", "Ing. et Ing.", "", "Jan Novák")),
 ])
 def test_a_strict_cs_or_sk_choice_keeps_et_and_reads_ing_as_the_pack(
         pack: Locale, name: str, fields: tuple[str, ...]) -> None:
