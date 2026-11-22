@@ -64,7 +64,7 @@
   ```
   "Lloret Palol II, JA"       →  suffix="II, JA"
   ```
-- A name written in one case, or in a script without case, has no contrast to read and keeps the listing form, as C6's unlisted all-caps word does.
+- A name written in one case, or in a script without case, has no contrast to read and keeps the listing form, as C6's unlisted word in the caps shape does.
   ```
   "JOHN SMITH JR, AD"         →  given="AD"  · boundary
   ```

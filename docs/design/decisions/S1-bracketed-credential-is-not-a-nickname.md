@@ -11,7 +11,7 @@
 
 Elsewhere: an ambiguous member alone in the brackets staying a nickname, reported, is decided under decisions/suffix-acronym-collisions (its Standing line ending 2026-09-25 #540; 2026-10-21) and decisions/ma-do's 2026-07-17 entry; a member after the name whose writing settles it reading as the suffix is decisions/S13 (2026-10-26 #810).
 
-Open: [#1268](https://github.com/derek73/python-nameparser/issues/1268) — whether a comma glued between two words of a clause should part them; this file's 2026-11-11 entry records the two designs declined.
+Open: none in this file. Whether a comma glued between two words of a clause should part them was closed as an accepted limit on 2026-11-17 ([#1268](https://github.com/derek73/python-nameparser/issues/1268)), the glued comma left in the word's text (the Standing line above; the 2026-11-11 entry records the two designs declined).
 
 ## Log
 
