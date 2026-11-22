@@ -752,8 +752,9 @@ among those it would change:
     ['3 of the 3 names two_family_names would change carry a common surname where it would take a first surname']
 
 The names the note counts as holding a common given name there are
-read wrong under the switch, as is a name whose word there neither
-table lists (``Mark Oduya Bell`` gives family ``Oduya Bell``);
+read wrong under the switch, and a name whose word there neither table
+lists may be (``Mark Oduya Bell`` gives family ``Oduya Bell``, where
+``Pedro Zubizarreta Olano`` is read right);
 ``disagreeing()`` lists none of them, since they cast no vote. Check
 them by hand, or choose the pack:
 

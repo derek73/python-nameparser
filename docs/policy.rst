@@ -664,8 +664,8 @@ Turn it on only for data written this way:
 - **Portuguese-speaking names from elsewhere.** For Brazil and
   Portugal choose ``locales.PT_BR`` or ``locales.PT_PT``, whose
   given-name list holds back most of the cost on names written whole,
-  though not on data filed with a single surname as the family name,
-  where ``locales.PT`` is the better choice
+  though not on Brazilian data filed with a single surname as the
+  family name, where ``locales.PT`` is the better choice
   (:ref:`portuguese-two-family-names`); Angolan and Mozambican names
   lose under the switch even with the list.
 - **Filipino names.** They often carry a middle name between the given

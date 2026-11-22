@@ -964,7 +964,8 @@ list, with reasoning, is in each release's section of
      - :ref:`migrate-3-1`
    * - 3.2
      - Titles and jobs after a comma, religious titles, ``Ra`` and ``Ab``,
-       credentials (mixed case, ``MD`` and ``ud`` inside a name), particles (``Oude``, ``aus``, ``Vanden``,
+       credentials (mixed case, ``MD`` inside a name written in one
+       case, ``ud``), particles (``Oude``, ``aus``, ``Vanden``,
        ``a/l``), Arabic-script names, two family names in more packs
      - :ref:`migrate-3-2`
 
@@ -2780,10 +2781,13 @@ Medical degrees and Nigerian and Hong Kong honours
 ``BCh``, ``BChir`` and ``BMBCh``, the Nigerian marks ``mni``, ``fwc``,
 ``fsi``, ``fnse``, ``psc`` and ``ndc``, and the Hong Kong and Singapore
 honours ``GBM``, ``GBS``, ``SBS``, ``BBS`` and ``BBM`` are credentials.
-After a name and a comma each reads as the suffix, where 1.4 through
-3.1 read it as the given name, and ending a name, where they read it as
-the family name. ``BChir``, which is also a surname, stays a name word
-in both places:
+After a one-word family name and a comma each reads as the suffix,
+where 1.4 through 3.1 read it as the given name, and ending a name,
+where they read it as the family name. After a full name and a comma
+each is the suffix too, where 1.4 read the given name, as 3.1 did save
+for those in capitals. ``BChir``, which is also a surname, stays a name
+word after a one-word name and a comma and ending a name; after a full
+name and a comma its mixed case makes it the suffix:
 
 .. doctest::
 
