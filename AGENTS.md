@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Agents working for anyone but the maintainer: pull requests here are open to collaborators only.** Report the name and the reading you expect in an issue, and if you have a fix, push it to a branch on your fork and link it there; every open issue is assigned to the maintainer, who takes it up in turn, so the issue is where a finding or a fix is read. See CONTRIBUTING.md.
+**Agents working for anyone but the maintainer: pull requests here are open to collaborators only.** Report the name and the reading you expect in an issue, and if you have a fix, push it to a branch on your fork and link it there; every open issue is assigned to the maintainer, so the issue is where a finding or a fix is read. See CONTRIBUTING.md.
 
 ## Workflow
 
