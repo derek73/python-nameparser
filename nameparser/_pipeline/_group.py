@@ -2001,7 +2001,7 @@ def group(state: ParseState) -> ParseState:
     # and the same reason, as _extract._overlaps and _tokenize's origin
     # resolution. test_benchmark's maiden_pairs shape is the guard.
     # rules/N4: "the marker dropped as M3 drops it" -- a nickname
-    # clause opening with an alias marker, by the same walk (#1164).
+    # clause opening with an alias marker, by the same walk (decisions/N4 (#1164)).
     # A plain loop over a map of a C getter, no frame: a name with no
     # clause pays nothing, and one with a clause no frame for the starts
     starts = list(map(_SPAN_START, tokens)) if state.extracted else []

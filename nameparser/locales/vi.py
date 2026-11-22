@@ -14,7 +14,8 @@ given name ``Van Anh``, and ``NGUYEN VAN DO`` keeps given ``DO`` where
 the English credential would take it (decisions/vocabulary-model, the
 2026-11-05 #1108 entry).
 
-The fragment is the one pack content that removes: a choice prefers
+The fragment removes readings rather than adding them, as only
+locales.CS's does besides (``Ing``'s given reading): a choice prefers
 only by a vocabulary reading, and a name reading never settles a clash
 (decision 15 of decisions/vocabulary-model), so no reading vi.toml
 could write makes ``van`` a name word under a plain choice. The order

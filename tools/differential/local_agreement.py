@@ -6,7 +6,8 @@ each record's display name is parsed with the tree,
 and each field is compared with the box the filer typed it into
 (`psc-individuals`' title, forename, middle name and surname boxes;
 `orcid-researchers`' given-names box, holding the middle names too, and
-family-name box, typed by the holder; `cz-candidates`' title before the
+family-name box, typed by the holder; `patentsview-inventors`' first-name
+and last-name boxes, split by the applicant's filer; `cz-candidates`' title before the
 name, given names, surname and title after it; and the two Vietnamese
 corpora, whose family, middle and given names no one filed: `uit-vinames`
 and `vn-assembly` state a name whole, in the Vietnamese order, and their

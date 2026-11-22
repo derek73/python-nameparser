@@ -87,12 +87,18 @@ _TATWEEL = "\u0640"
 # rules/T1: "at the edge the word is looked up without it"
 # The zero-width non-joiner and joiner shape the letters on either side
 # of them, so at a word's edge they shape nothing and are dropped when
-# the word is looked up (#1335: `مهندس` typed with a ZWNJ after it is
-# the title `مهندس`), with the edge full stops. Inside a word they stay
+# the word is looked up, with the edge full stops (decisions/T1,
+# #1335). Inside a word they stay
 # (`آیت‌الله` is listed with its ZWNJ). Token text is never rewritten,
 # which keeps the ZWJ Malayalam writes at a word's end.
 _EDGE_JOINERS = "\u200c\u200d"
 _NON_ASCII_EDGES = FULL_STOPS + _EDGE_JOINERS
+
+
+def _a(kind: str) -> str:
+    """The article a message writes before a reading's kind: ``an``
+    before a vowel and before ``honorific``, whose h is silent."""
+    return "an" if kind[:1] in "aeiou" or kind == "honorific" else "a"
 
 
 def _normalize(word: str) -> str:
@@ -1027,7 +1033,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
         side = ("before" if _index_module().CATEGORY.get(kind) == "title"
                 else "after")
         if value != side:
-            raise ValueError(f"attached on a {kind!r} reading must be "
+            raise ValueError(f"attached on {_a(kind)} {kind!r} reading must be "
                              f"{side!r} (a {'title peeled off the start' if side == 'before' else 'tail peeled off the end'} "
                              f"of a name token) or None, got {value!r}")
         return value
@@ -1057,9 +1063,13 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
             # an empty list would leave `completes` unwritten, which
             # joins behind ANY plain word, the widest reading; the build
             # refuses it too (#1072)
+            cleared = ("joins it behind any plain word"
+                       if prop == "completes"
+                       else "leaves no listed word completing it")
             raise ValueError(f"{prop} must list at least one word, got "
-                             f"{value!r}; write {prop}=None to clear a "
-                             f"list the word's reading has")
+                             f"{value!r}; list the words it pairs with, or "
+                             f"write {prop}=None to clear the list, which "
+                             f"{cleared}")
         if prop in ("completed_by", "completes") and any(" " in w for w in folded):
             # rules/P12 joins two words: a bound word to the one word
             # after it (completed_by), a bound_second word to the one
@@ -1196,7 +1206,7 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
                 "write add(word, kind='given', after_particle=True)")
         if prop not in allowed:
             raise ValueError(
-                f"a {kind} reading takes "
+                f"{_a(kind)} {kind} reading takes "
                 + (", ".join(sorted(allowed)) or "no properties")
                 + f"; got {prop!r}")
         out[prop] = _prop_value(kind, prop, value)
@@ -1241,7 +1251,7 @@ def _make_edit(op: object, words: object, kind: object,
         if " " in w and not (k == "birth_marker" or (
                 category == "title" and ("addresses", "given") in p)):
             raise ValueError(
-                f"{w!r} is a phrase, which can never match as a {k}: only "
+                f"{w!r} is a phrase, which can never match as {_a(k)} {k}: only "
                 f"a birth_marker and a title with addresses='given' are "
                 f"matched as a whole run; add its words one by one")
         # the build refuses attached on a title phrase: the glued-title
@@ -1782,7 +1792,7 @@ def _check_base(base: object) -> object:
                 if name not in ri.indexed(kind):
                     raise ValueError(
                         f"a Lexicon snapshot gives {word!r}'s {kind} reading "
-                        f"the property {name!r}, which a {kind} reading "
+                        f"the property {name!r}, which {_a(kind)} {kind} reading "
                         f"does not take in this release")
                 try:
                     hash(value)
@@ -1985,7 +1995,7 @@ class LexiconReading:
     kind: str
     #: The kind's category (``"title"``, ``"suffix"``, ``"particle"``,
     #: ``"conjunction"``, ``"bound_given"``, ``"bound_second"``,
-    #: ``"relation"``, ``"name"``).
+    #: ``"relation"``, ``"name"``, ``"familiar"``, ``"spelling"``).
     category: str
     #: The behavioral properties as sorted ``(name, value)`` pairs,
     #: spelled as the files spell them (``("addresses", "given")``), a
@@ -2006,7 +2016,7 @@ class LexiconReading:
                              f"kinds are {', '.join(ri.CATEGORY)}")
         if self.category != ri.CATEGORY[self.kind]:
             raise ValueError(
-                f"a {self.kind} reading's category is "
+                f"{_a(self.kind)} {self.kind} reading's category is "
                 f"{ri.CATEGORY[self.kind]!r}, got {self.category!r}")
         for name in ("properties", "languages"):
             if not isinstance(getattr(self, name), tuple):

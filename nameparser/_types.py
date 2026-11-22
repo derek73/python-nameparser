@@ -47,7 +47,8 @@ class Role(StrEnum):
     FAMILY = "family"
     #: Post-nominal pieces ("III", "Jr.", "PhD").
     SUFFIX = "suffix"
-    #: Delimited nickname content ("Jonathan 'Jack' Kennedy" -> "Jack").
+    #: Delimited nickname content ("Jonathan 'Jack' Kennedy" -> "Jack"),
+    #: or the words after an alias marker ("Ali @ Abu bin Ahmad" -> "Abu").
     NICKNAME = "nickname"
     #: A birth surname, from a marker word ("Jane Smith née Jones" ->
     #: "Jones") or a delimiter pair routed via Policy.maiden_delimiters.
@@ -968,7 +969,9 @@ class ReadingSource(StrEnum):
     #: another category: "Ma" as a surname, "Dean" as a given name.
     DECLARED = "declared"
     #: The word's shape, not a list: a roman numeral, letters run
-    #: together with periods ("X.Y.Z."), a word in capitals.
+    #: together with periods ("X.Y.Z."), a word in capitals, or after a
+    #: comma, in a name written in mixed case, a word that opens with two
+    #: capitals or ends in one ("MRes").
     SHAPE = "shape"
     #: Nothing lists or shapes the word into this reading; it is the
     #: reading any word has where it stands, an ordinary name word. A
@@ -1488,9 +1491,12 @@ class ParsedName:
     def nickname(self) -> str:
         """The words written inside nickname delimiters (quotes,
         parentheses; :attr:`Policy.nickname_delimiters
-        <nameparser.Policy.nickname_delimiters>`), space-joined in
-        written order, the delimiters dropped; ``''`` for a name with
-        none."""
+        <nameparser.Policy.nickname_delimiters>`), the delimiters
+        dropped, and the words after a listed alias marker (by default
+        ``@`` or ``urf`` written as a word of its own: ``Ali @ Abu bin
+        Ahmad`` gives ``Abu``), the marker dropped, space-joined in
+        written order;
+        ``''`` for a name with none."""
         return self._text_for(Role.NICKNAME)
 
     @property
@@ -1637,9 +1643,11 @@ class ParsedName:
     @property
     def surname1(self) -> str:
         """The family's first name unit where the parse read the family
-        as two (``García`` in ``Gabriel García Márquez`` under
-        ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
-        Valle`` under it too), :attr:`surname2` being the other;
+        as two (``García`` in ``Gabriel García Márquez`` and in ``García
+        Márquez, Gabriel`` under ``two_family_names``, ``de la Vega`` in
+        ``Juan de la Vega del Valle`` under it too, ``王``
+        in ``王李小明`` under ``locales.ZH``), :attr:`surname2` being the
+        other;
         elsewhere the whole :attr:`family`. A middle name
         ``middle_as_family`` folds into the family is in neither
         (``María García`` in ``Ana María García López`` under
@@ -1870,6 +1878,8 @@ class ParsedName:
         outside the suffix are written in more than one case, and in a
         name it does repair keeps a suffix written in more than one
         case as written ('EdD'), repairing only one written in a
-        single case (rules/R5). Idempotent."""
+        single case (rules/R5); force=True repairs that suffix too, save
+        an unlisted credential read by its mixed case after a comma
+        ('MRes'), which it keeps as written. Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)

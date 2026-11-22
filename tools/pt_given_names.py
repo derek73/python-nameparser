@@ -37,7 +37,8 @@ words of one letter, which write an initial. The floor and SHARE are
 measured choices (decisions/O6, 2026-11-19): a change to either is a
 cutoff change, decided against the same per-country measurement.
 Every word the cut keeps was read by hand before the list shipped;
-REMOVED holds each word that reading took out, with why.
+REMOVED holds each word that reading took out, with why (none on
+2026-11-19).
 
 Each listed word written with ç is also listed with c where that
 spelling passes the same share test over every use the c stands for,
@@ -208,7 +209,8 @@ def particles() -> set[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser = argparse.ArgumentParser(
+        description=" ".join(__doc__.split("\n\n")[0].split()))
     parser.add_argument("--write", action="store_true",
                         help="rewrite the generated block in the list's module")
     parser.add_argument("--min-uses", type=int, default=MIN_USES)

@@ -56,7 +56,7 @@ CONTACT_FIELDS = "NCTId,LocationCountry,LocationContactName,LocationContactRole"
 #: The version of how a record is built from what the API gives (the
 #: country rule, ctgov-contacts' repeat key and CTGOV_COUNTRIES's
 #: codes), stored in meta.json and
-#: required on load: bump it with any change to either, so a corpus read
+#: required on load: bump it with any change to any of them, so a corpus read
 #: the old way is refused rather than read. 1: the country (#1451); a
 #: corpus fetched before it holds no "country" and is refused too.
 CTGOV_READ_VERSION = 1

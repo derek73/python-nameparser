@@ -5,7 +5,7 @@ suggests a name order from each name's own evidence: a known East Asian
 surname at one end of the name and not at the other says the family name
 is written at that end, and a common given name at one end and not the
 other says the given name is. The tables, in
-``nameparser/config/_order_names.py``, hold folded spellings: the generated block is the Hanyu Pinyin of every
+``nameparser/config/_order_names.py``, hold folded spellings: the first generated block, ``PINYIN``, is the Hanyu Pinyin of every
 single-character surname ``locales.ZH`` lists, from Wikidata (CC0): of
 each family-name item labelled with the character, every reading a
 Hanyu Pinyin statement gives (a transliteration, P2440, qualified as
@@ -16,12 +16,12 @@ gives a reading for is left out, and the run names it. Until 3.1 the
 block read Unihan's first ``kMandarin`` reading (Unicode License v3),
 which is the character's commonest reading rather than its surname's
 (曾 ceng for the surname Zeng). The Wade-Giles, Korean and
-Vietnamese lists are kept by hand above the generated block, hand-curated
+Vietnamese lists are kept by hand above the generated blocks, hand-curated
 and unchecked against any ranking (see the note in
 nameparser/config/_order_names.py).
 
-    uv run python tools/vocab/order_names.py           # print the block
-    uv run python tools/vocab/order_names.py --write   # rewrite it
+    uv run python tools/vocab/order_names.py           # print the blocks
+    uv run python tools/vocab/order_names.py --write   # rewrite them
     uv run python tools/vocab/order_names.py --refresh # ask Wikidata again
 
 The second generated block, ``COMMON_GIVEN``, is the given names the
@@ -48,7 +48,7 @@ MEASURE). It needs the ORCID local corpus cached
 (tools/differential/local_corpora.py), checked whole against its
 recorded sha256, and it writes
 nothing where a block falls below its floor (``MIN_PINYIN``,
-``MIN_GIVEN``) or a word lands in both tables.
+``MIN_GIVEN``) or a word lands in two tables.
 
 The third generated block, ``COMMON_SURNAMES``, is the mirror of the
 second (#1364): every word ORCID's holders typed in the family-name box
@@ -455,7 +455,7 @@ def check_tables(pinyin: set[str], given: set[str],
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
     parser.add_argument("--write", action="store_true",
-                        help="rewrite the generated block")
+                        help="rewrite the generated blocks")
     parser.add_argument("--refresh", action="store_true",
                         help="ask Wikidata again")
     args = parser.parse_args(argv)

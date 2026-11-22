@@ -1594,7 +1594,7 @@ CASES: tuple[Case, ...] = (
          notes="an accepted cost: the gated class written without its "
                "last stop is no dotted acronym, and the one-word part "
                "after a family comma is the given name, as 'Jane Doe, "
-               "M.A' reads on master (decisions/vocabulary-collisions, "
+               "M.A' reads (decisions/vocabulary-collisions, "
                "2026-11-21 #1483); 1.4.0 through 3.1.0 read suffix 'R.A'"),
     Case("ra_alone_after_a_family_comma_in_capitals_is_the_credential",
          "Doe, RA",
@@ -1654,7 +1654,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="an accepted cost: a title that is also a given name is a "
                "title only inside a phrase (rules/H9), as 'Smith, Dean "
-               "John' reads on master; 1.4.0 through 3.1.0 read title "
+               "John' reads; 1.4.0 through 3.1.0 read title "
                "'RA', given 'John'"),
     Case("ra_without_its_last_stop_ending_a_name_is_the_family",
          "Jane Doe R.A",
@@ -1663,7 +1663,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="an accepted cost, the no-comma twin of 'Jane Doe, R.A': "
                "no dotted acronym (rules/S3), so the gate reads the name "
-               "word, as 'John Smith M.A' reads on master; 1.4.0 through "
+               "word, as 'John Smith M.A' reads; 1.4.0 through "
                "3.1.0 read suffix 'R.A'"),
     Case("ra_in_capitals_before_a_generation_comma_leaves_a_lone_given",
          "Kim RA, Jr.",
@@ -1720,7 +1720,7 @@ CASES: tuple[Case, ...] = (
          classification="feat(#1483)",
          notes="an accepted cost, cost 1's worst shape: 'Dr.' behind a "
                "given name is no leading title, as 'Dean Dr. Hans Müller' "
-               "reads on master; 1.4.0 through 3.1.0 read title 'RA Dr.'"),
+               "reads; 1.4.0 through 3.1.0 read title 'RA Dr.'"),
     Case("ra_opening_a_family_first_given_last_name_is_the_family",
          "Ra Mi Kim",
          {"given": "Kim", "middle": "Mi", "family": "Ra"},
@@ -7783,7 +7783,7 @@ CASES: tuple[Case, ...] = (
          "Іван Петренко д-р",
          {"given": "Іван", "family": "Петренко", "suffix": "д-р"},
          classification="fix(#1128)",
-         notes="master read middle 'Петренко', family 'д-р'"),
+         notes="1.4.0 through 3.1.0 read middle 'Петренко', family 'д-р'"),
     Case("a_cyrillic_doctorate_after_a_comma_is_a_credential",
          "Іван Петренко, д-р",
          {"given": "Іван", "family": "Петренко", "suffix": "д-р"},
@@ -7836,7 +7836,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Иван", "middle": "Петрович", "family": "Сидоров", "suffix": "д-р"},
          classification="fix(#1128)",
          locale="ru",
-         notes="master read given 'Сидоров', family 'д-р'"),
+         notes="2.0.0 through 3.1.0 read given 'Сидоров', middle 'Иван Петрович', family 'д-р'"),
     Case("a_professor_before_a_trailing_doctorate_stays_the_title",
          "Іван Петренко, проф. д-р",
          {"title": "проф.", "given": "Іван", "family": "Петренко", "suffix": "д-р"},
@@ -7853,8 +7853,9 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1128)",
          ambiguities=("suffix-or-name",),
          notes="accepted (decisions/H5, 2026-11-21 #1128): the shape of the "
-               "one ORCID record holding д-р; master read family 'доц. "
-               "д-р Мария Петрова', and a Bulgarian choice reads it whole"),
+               "one ORCID record holding д-р; 1.4.0 through 3.1.0 read "
+               "family 'доц. д-р Мария Петрова', and a Bulgarian choice "
+               "reads it whole"),
     Case("cyrillic_initials_spelling_the_degree_behind_one_word",
          "Петрова, Д.М.",
          {"given": "Д.", "middle": "М.", "family": "Петрова"},
@@ -13404,7 +13405,7 @@ CASES: tuple[Case, ...] = (
                "credential run now, one entry 'PhD | FACS'. The parting "
                "half it pinned is held by test_post_rules' "
                "test_a_surviving_name_word_parts_two_entries on a name "
-               "word that survives ('Smith, Jane abd Jones PhD'). As "
+               "word that survives ('Smith, Jane abd de Jones PhD'). As "
                "pinned under #436/#437: "
                "the other half, and the one a dropped-core test alone "
                "would miss. After a FAMILY comma segment 1 is not a "
@@ -14180,8 +14181,10 @@ CASES: tuple[Case, ...] = (
                "(decisions/P12)"),
     Case("bound_given_latin_past_the_start_stays_apart", "Tariq Abdul Aziz",
          {"given": "Tariq", "middle": "Abdul", "family": "Aziz"},
-         notes="#694's Latin half: abdul lists no completed_by, the pair "
-               "being a middle name as often as a family (decisions/P12)"),
+         notes="#694's Latin half: abdul lists no completed_by, and its "
+               "completes_any reading is long_names_only (#1464), so in a "
+               "name of three words the pair stays apart, a middle name "
+               "as often as a family (decisions/P12)"),
     Case("mr_and_mrs", "Mr. and Mrs. John Smith",
          {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"}),
     Case("roman_suffix", "John Smith V",
@@ -17361,8 +17364,8 @@ CASES: tuple[Case, ...] = (
                "whatever stands behind it (rules/C13) -- title 'Dr.', "
                "suffix 'PSM I' -- so the reset no longer decides it. A "
                "dual opens nothing, and the reset is what is left "
-               "deciding this spelling. 1.4.0 read the "
-               "old spelling suffix 'Dr., I'"),
+               "deciding this spelling. 1.4.0 read 'Smith, PSM Dr. I' "
+               "given 'PSM', suffix 'Dr., I'"),
     Case("family_comma_run_numeral_after_a_split_credential",
          "Smith, Ph. D. I",
          {"family": "Smith", "suffix": "Ph. D. I"},
@@ -17956,8 +17959,9 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1394)",
          ambiguities=("suffix-or-name",),
          notes="Accepted (rules/S8): a title behind it is a name word, as "
-               "behind a Title-case acronym ('John Smith Md Dr'); 3175314d "
-               "read title 'PROF', suffix 'MD'"),
+               "behind a Title-case acronym ('John Smith Md Dr'); 2.4.0 "
+               "through 3.1.0 read title 'PROF', suffix 'MD', 1.4.0 "
+               "through 2.3.0 these fields"),
     Case("md_in_capitals_before_a_dotted_title_keeps_the_title",
          "JOHN SMITH MD PROF.",
          {"given": "JOHN", "family": "SMITH", "title": "PROF.",
@@ -17979,8 +17983,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1394)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="S8 (#1394's review): the same predicate for the Title-case "
-               "acronym; 3175314d read middle 'Smith', family 'Md', "
-               "suffix 'VI Jones'"),
+               "acronym; 3.0.0 through 3.1.0 read middle 'Smith', family "
+               "'Md', suffix 'VI Jones', 2.4.0 through 2.8.2 as here"),
     Case("md_in_capitals_before_a_nickname_and_a_shape_numeral",
          "JOHN SMITH MD (B) VI JONES",
          {"given": "JOHN", "family": "SMITH", "nickname": "B",
@@ -17997,7 +18001,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="S8 (#1394's review): a numeral S10 reads as the "
                "generation is no name word behind a settled member "
-               "either; 3175314d read family 'MA', suffix 'VI Jones'"),
+               "either; 2.7.0 through 3.1.0 read family 'MA', suffix 'VI Jones'"),
     Case("md_in_capitals_behind_a_particle_chain_still_reports",
          "JOHN VAN MD MA DE",
          {"given": "JOHN", "middle": "VAN MD MA", "family": "DE"},
@@ -18005,7 +18009,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="S8 (#1394's second review): the decline's report survives "
                "group's rebuilt read where the chain took a member the "
-               "read had picked; 3175314d read suffix 'MD MA DE'"),
+               "read had picked; 2.4.0 through 3.1.0 read family 'VAN', suffix 'MD MA DE'; 1.4.0 through 2.3.0 read these fields"),
     Case("md_in_a_mixed_case_maiden_clause_keeps_the_run",
          "JOHN SMITH née Ann Lee MD Jones",
          {"given": "JOHN", "family": "SMITH", "maiden": "Ann Lee",
@@ -18066,7 +18070,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#602)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="boundary: a maiden marker behind it is no name word; "
-               "read as on 3175314d"),
+               "read as 2.4.0 through 3.1.0 read it"),
     Case("md_in_capitals_before_a_caseless_word_starts_the_run",
          "محمد علي MD حسن",
          {"given": "محمد", "family": "علي", "suffix": "MD حسن"},
@@ -18074,7 +18078,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="boundary: a Latin MD in a name of a script with no case "
                "shares no case with it, so its capitals stay the "
-               "credential's; read as on 3175314d"),
+               "credential's; read as 2.4.0 through 3.1.0 read it"),
     Case("wm_dotted_trailing_is_a_name_word", "John Smith Wm.",
          {"given": "John", "middle": "Smith", "family": "Wm."},
          notes="H5 read a listed `wm` as a title here from 2.3.0 "
