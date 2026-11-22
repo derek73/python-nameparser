@@ -396,12 +396,15 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: en's ra, whose name readings only ko.toml writes, #1483 on
 #: 2026-11-21, a strict German or English choice reading the
 #: credential as master's default did, and a strict German one the
-#: title in front). A
+#: title in front; ar's imam and tr's effendi, #1206 on 2026-11-21,
+#: whose given readings id.toml writes, a strict Arabic choice reading
+#: imam and a strict Turkish one effendi as the title opening a name
+#: again, as 1.4.0 through 3.1.0 read both by default). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
-    "ar": {"ben"},
+    "ar": {"ben", "imam"},
     "ca": {"del", "la"},
     "cs": {"st"},
     "de": {"ra"},
@@ -421,6 +424,7 @@ STRICT_UNGATED = {
     "pt-PT": {"da", "do", "santa"},
     "sk": {"st"},
     "sl": {"st"},
+    "tr": {"effendi"},
 }
 
 
@@ -560,3 +564,31 @@ def test_a_regated_word_names_its_chosen_file_in_either_name_role(
     token = next(t for t in strict.parse(name).tokens if t.text == word)
     assert token.reading is not None
     assert tag in token.reading.languages
+
+
+#: The two titles #1206's batch gave a given reading in another file
+#: (id.toml), with a name each opens: a strict choice of the title's own
+#: tag drops id.toml and reads the word as the title again, as
+#: STRICT_UNGATED records, while the plain choice, the shipped pack, and
+#: a strict choice that keeps id.toml read the given name.
+_UNGATED_BY_ANOTHER_FILE = {
+    "ar": "Imam Taufik Sasongko",
+    "tr": "Effendi Purnomo Sitorus",
+}
+
+
+@pytest.mark.parametrize("tag", sorted(_UNGATED_BY_ANOTHER_FILE))
+def test_a_strict_choice_of_the_titles_own_tag_reads_it_as_the_title(
+        tag: str) -> None:
+    from nameparser import locales, parse, parser_for
+    name = _UNGATED_BY_ANOTHER_FILE[tag]
+    word = name.split()[0]
+    strict = parser_for(_choice((tag,)), strict=True).parse(name)
+    assert (strict.title, strict.given) == (word, name.split()[1])
+    gated = [parse, parser_for(_choice((tag,))).parse,
+             parser_for(_choice((tag, "id")), strict=True).parse]
+    if tag == "ar":
+        gated.append(parser_for(locales.AR).parse)
+    for read in gated:
+        got = read(name)
+        assert (got.title, got.given) == ("", word), read

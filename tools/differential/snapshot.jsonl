@@ -679,6 +679,7 @@
 {"name": "Cherice J. (Johnson) Williams", "given": "Cherice", "middle": "J.", "family": "Williams", "nickname": "Johnson", "initials": "C. J. W."}
 {"name": "Chibrikova, Yu. A.", "given": "Yu.", "middle": "A.", "family": "Chibrikova", "initials": "Y. A. C."}
 {"name": "Chief Dean and Mary Smith", "title": "Chief Dean and Mary", "family": "Smith", "initials": "S."}
+{"name": "Chief Imam Musa Bello", "title": "Chief Imam", "given": "Musa", "family": "Bello", "initials": "M. B."}
 {"name": "Chief Judge J. Leon Holmes", "title": "Chief Judge", "given": "J.", "middle": "Leon", "family": "Holmes", "initials": "J. L. H."}
 {"name": "Chief Judge Sharon Lovelace Blackburn", "title": "Chief Judge", "given": "Sharon", "middle": "Lovelace", "family": "Blackburn", "initials": "S. L. B."}
 {"name": "Chief Justice John Roberts", "title": "Chief Justice", "given": "John", "family": "Roberts", "initials": "J. R."}
@@ -1131,6 +1132,7 @@
 {"name": "Eemil", "given": "Eemil", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "E."}
 {"name": "Eemil", "order": "FAMILY_FIRST", "given": "Eemil", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "E."}
 {"name": "Efe ALA", "given": "Efe", "suffix": "ALA", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "E."}
+{"name": "Effendi Purnomo Sitorus", "given": "Effendi", "middle": "Purnomo", "family": "Sitorus", "initials": "E. P. S."}
 {"name": "Egbert van Heemskerck", "given": "Egbert", "family": "van Heemskerck", "initials": "E. H."}
 {"name": "Egill Eyjólfsson", "given": "Egill", "family": "Eyjólfsson", "initials": "E. E."}
 {"name": "Einar Arnórsson", "given": "Einar", "family": "Arnórsson", "initials": "E. A."}
@@ -1606,8 +1608,9 @@
 {"name": "Ilir Rustemi", "given": "Ilir", "family": "Rustemi", "initials": "I. R."}
 {"name": "Ilmarinen Seppo", "order": "FAMILY_FIRST", "given": "Seppo", "family": "Ilmarinen", "initials": "S. I."}
 {"name": "Ilmarinen, Seppo", "given": "Seppo", "family": "Ilmarinen", "initials": "S. I."}
-{"name": "Imam Bonjol", "title": "Imam", "family": "Bonjol", "initials": "B."}
-{"name": "Imam Khomeini", "title": "Imam", "family": "Khomeini", "initials": "K."}
+{"name": "Imam Bonjol", "given": "Imam", "family": "Bonjol", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "I. B."}
+{"name": "Imam Khomeini", "given": "Imam", "family": "Khomeini", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "I. K."}
+{"name": "Imam Rasyid Hakim", "given": "Imam", "middle": "Rasyid", "family": "Hakim", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "I. R. H."}
 {"name": "Imanishi, Kinji", "given": "Kinji", "family": "Imanishi", "initials": "K. I."}
 {"name": "Indalecio Soriano Fuertes", "given": "Indalecio", "middle": "Soriano", "family": "Fuertes", "initials": "I. S. F."}
 {"name": "Ing Jan Novák", "given": "Ing", "middle": "Jan", "family": "Novák", "initials": "I. J. N."}
@@ -3357,6 +3360,7 @@
 {"name": "Mr Buddha. Tamang", "title": "Mr Buddha.", "family": "Tamang", "initials": "T."}
 {"name": "Mr Deacon Smith", "title": "Mr", "given": "Deacon", "family": "Smith", "initials": "D. S."}
 {"name": "Mr Dean Smith", "title": "Mr", "given": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D. S."}
+{"name": "Mr Imam Hidayat", "title": "Mr", "given": "Imam", "family": "Hidayat", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "I. H."}
 {"name": "Mr Justice Smith", "title": "Mr", "given": "Justice", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "J. S."}
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
 {"name": "Mr Mahdi Karimi", "title": "Mr", "given": "Mahdi", "family": "Karimi", "initials": "M. K."}
@@ -4031,6 +4035,8 @@
 {"name": "Sheik abdul salam", "given": "Sheik", "middle": "abdul", "family": "salam", "initials": "S. a. s.", "capitalized_force": "Sheik Abdul Salam"}
 {"name": "Sheikh Mohammed bin Rashid", "given": "Sheikh", "middle": "Mohammed", "family": "bin Rashid", "initials": "S. M. R.", "patronymic": "bin Rashid"}
 {"name": "Shemuʾel ben Ḥofni", "given": "Shemuʾel", "middle": "ben", "family": "Ḥofni", "initials": "S. b. Ḥ.", "capitalized_force": "Shemuʾel Ben Ḥofni"}
+{"name": "Sheriff Kanteh Jallow", "given": "Sheriff", "middle": "Kanteh", "family": "Jallow", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. K. J."}
+{"name": "Sheriff Principal Jane Doe", "title": "Sheriff Principal", "given": "Jane", "family": "Doe", "initials": "J. D."}
 {"name": "Shin Ae-ra", "given": "Shin", "family": "Ae-ra", "initials": "S. A.", "capitalized_force": "Shin Ae-Ra"}
 {"name": "Shirley Maclaine", "given": "Shirley", "family": "Maclaine", "initials": "S. M."}
 {"name": "Shree Lalit Kumaar Bharati Jr, MP", "given": "Shree", "middle": "Lalit Kumaar", "family": "Bharati", "suffix": "Jr, MP", "initials": "S. L. K. B.", "generation": "Jr", "credentials": "MP"}
@@ -4464,6 +4470,7 @@
 {"name": "Thurn und Taxis, Mathilde Therese von", "given": "Mathilde", "middle": "Therese", "family": "von Thurn und Taxis", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. T. T. T."}
 {"name": "Théodore Agrippa d'Aubigné", "given": "Théodore", "middle": "Agrippa", "family": "d'Aubigné", "initials": "T. A. d.", "capitalized_force": "Théodore Agrippa D'Aubigné"}
 {"name": "Tiburcio Pérez Cuervo", "given": "Tiburcio", "middle": "Pérez", "family": "Cuervo", "initials": "T. P. C."}
+{"name": "Timi Oladele Akande", "given": "Timi", "middle": "Oladele", "family": "Akande", "initials": "T. O. A."}
 {"name": "Tisza, István", "given": "István", "family": "Tisza", "initials": "I. T."}
 {"name": "Title First Middle Middle Last, Jr.", "given": "Title", "middle": "First Middle Middle", "family": "Last", "suffix": "Jr.", "initials": "T. F. M. M. L.", "generation": "Jr."}
 {"name": "Tito, Santi di", "given": "Santi", "family": "di Tito", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "S. T."}

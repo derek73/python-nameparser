@@ -753,12 +753,14 @@ def test_every_shipped_reading_holds_its_properties_canonical() -> None:
 
 
 def test_words_matches_a_list_property_whatever_its_order() -> None:
-    # `chief`'s nobility reading attaches to military and office titles;
-    # the asked list is folded and sorted as add folds it
+    # `chief`'s nobility reading attaches to military and office titles
+    # and to the word imam (#1206); the asked list is folded and sorted
+    # as add folds it
     lex = Lexicon.default()
-    held = lex.words(kind="nobility", attaches=["military", "office"])
+    held = lex.words(kind="nobility", attaches=["imam", "military", "office"])
     assert "chief" in held
-    assert lex.words(kind="nobility", attaches=["Office", "military"]) == held
+    assert lex.words(kind="nobility",
+                     attaches=["Office", "military", "Imam"]) == held
 
 
 @pytest.mark.parametrize(("call", "error", "match"), [

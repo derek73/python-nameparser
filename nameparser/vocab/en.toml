@@ -335,7 +335,7 @@ nobility = { gender = "f" }
 
 [[word]]
 text = "chief"
-nobility = { expands = "a chief of a people or clan, 'Chief Obafemi Awolowo'", attaches = ["office", "military"], issue = 752, note = "attaches: Chief Justice, Chief Clerk (rules/H9)" }
+nobility = { expands = "a chief of a people or clan, 'Chief Obafemi Awolowo'", attaches = ["office", "military", "imam"], issue = 752, note = "attaches: Chief Justice, Chief Clerk, Chief Imam (rules/H9; imam since #1206, a title only in a phrase)" }
 
 [[word]]
 text = "chieftain"
@@ -1200,7 +1200,8 @@ office = {}
 
 [[word]]
 text = "sheriff"
-office = {}
+office = { attaches = ["principal"], note = "attaches: Sheriff Principal (rules/H9, #1206), a title only in a phrase" }
+given = { note = "a given name in West Africa, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes 129, Nigeria 25, Ghana 5, Sierra Leone 3, The Gambia 2, US SSA 102, Wikidata 6 given. Without it the office read it as the title opening a name (rules/H9): it fixes 14 PSC records and 8 ORCID, moves 2 ClinicalTrials.gov names and 2 FEC donors to the given name, and breaks none (measure.py against 6ff048fe); High Sheriff, Deputy Sheriff and Sheriff of Nottingham stay titles (#1206)" }
 
 [[word]]
 text = "speaker"

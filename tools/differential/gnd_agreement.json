@@ -1940,13 +1940,9 @@
   },
   "given_names": {
    "expected": "Imam Bonjol",
-   "got": ""
-  },
-  "text": "Imam Bonjol",
-  "title": {
-   "expected": "",
    "got": "Imam"
-  }
+  },
+  "text": "Imam Bonjol"
  },
  "142486175/direct-my-id/givenFirst": {
   "family": {
