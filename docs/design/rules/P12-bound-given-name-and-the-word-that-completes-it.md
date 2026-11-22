@@ -60,13 +60,15 @@
   ```
   "Tariq Umm Aziz"            →  middle="Umm"
   ```
-- **`abdul` in a name of three words stays apart** (`long_names_only` on its reading): the writers of `X Abdul Y` split it both ways by population, the pair the family in Malaysia and a middle name of its own in Bangladesh and in Britain, and the pair is joined only in a name of four name words or more, a title run at the head of a part counting as none, and after the pair only a plain name word, a bound given name or a pair of initials up to the next comma, a numeral written other than in Title case being no name word.
+- **`abdul` in a name of three words stays apart** (`long_names_only` on its reading): the writers of `X Abdul Y` split it both ways by population, the pair the family in Malaysia and a middle name of its own in Bangladesh and in Britain, so the pair is joined only in a name the parse reads as four name words or more: the words it reads as given, middle and family names that hold a letter, the two parts of a family comma counted together, so a title, a suffix, a nickname, a maiden name and a lone mark are no name words, and a word the parse reads as a name is one whatever else the vocabulary reads it as.
   ```
   "Tariq Abdul Aziz"          →  middle="Abdul"
   "Mr Tariq Abdul Aziz"       →  middle="Abdul"
   "Tariq Abdul Aziz Jr."      →  middle="Abdul"
   "The Rt Hon Nadia Abdul Rahim"  →  middle="Abdul"
   "Nadia Abdul Rahim, MA"     →  middle="Abdul"
+  "Tariq - Abdul Aziz"        →  middle="- Abdul"
+  "Ali Abdul Rahim VI Hassan" →  middle="Abdul"
   ```
 
 **Precedence:**

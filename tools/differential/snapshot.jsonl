@@ -233,6 +233,7 @@
 {"name": "Alfonso Reyes Echandía", "given": "Alfonso", "middle": "Reyes", "family": "Echandía", "initials": "A. R. E."}
 {"name": "Alfonsus Antonius de Sarasa", "given": "Alfonsus", "middle": "Antonius", "family": "de Sarasa", "initials": "A. A. S."}
 {"name": "Alfɔns MANƉELA Rolanɖ", "given": "Alfɔns", "middle": "MANƉELA", "family": "Rolanɖ", "initials": "A. M. R.", "capitalized_force": "Alfɔns Manɖela Rolanɖ"}
+{"name": "Ali Abdul Rahim VI Hassan", "given": "Ali", "middle": "Abdul", "family": "Rahim", "suffix": "VI Hassan", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "A. A. R.", "generation": "VI", "credentials": "Hassan"}
 {"name": "Ali Ahmad Oğlu", "given": "Ali", "middle": "Ahmad", "family": "Oğlu", "initials": "A. A. O."}
 {"name": "Ali Ahmad Vali Hasan oglu", "given": "Ali", "middle": "Ahmad Vali Hasan", "family": "oglu", "initials": "A. A. V. H. o.", "capitalized_force": "Ali Ahmad Vali Hasan Oglu"}
 {"name": "Ali Ahmad Vali oglu", "given": "Ali", "middle": "Ahmad Vali", "family": "oglu", "initials": "A. A. V. o.", "capitalized_force": "Ali Ahmad Vali Oglu"}
@@ -4434,6 +4435,7 @@
 {"name": "Tammik hr Mari-Ann Henri Roobert parlamendiliige", "order": "FAMILY_FIRST", "given": "hr", "middle": "Mari-Ann Henri Roobert parlamendiliige", "family": "Tammik", "initials": "h. M. H. R. p. T.", "capitalized_force": "Tammik Hr Mari-Ann Henri Roobert Parlamendiliige"}
 {"name": "Tammik, Mari-Ann Henri Roobert, parlamendiliige", "given": "Mari-Ann", "middle": "Henri Roobert", "family": "Tammik", "suffix": "parlamendiliige", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. H. R. T.", "capitalized_force": "Mari-Ann Henri Roobert Tammik Parlamendiliige"}
 {"name": "Tan Wei Keong @ Daniel Tan", "given": "Tan", "middle": "Wei", "family": "Keong", "nickname": "Daniel Tan", "initials": "T. W. K."}
+{"name": "Tariq - Abdul Aziz", "given": "Tariq", "middle": "- Abdul", "family": "Aziz", "initials": "T. -. A. A."}
 {"name": "Tariq Abdel Aziz", "given": "Tariq", "family": "Abdel Aziz", "initials": "T. A. A."}
 {"name": "Tariq Abdul Aziz", "given": "Tariq", "middle": "Abdul", "family": "Aziz", "initials": "T. A. A."}
 {"name": "Tariq Abdul Aziz Jr.", "given": "Tariq", "middle": "Abdul", "family": "Aziz", "suffix": "Jr.", "initials": "T. A. A.", "generation": "Jr."}

@@ -896,9 +896,10 @@ def test_the_caps_half_asks_the_own_words_case_of_a_clauses_word(
     ("عز الدين", 0, {BOUND_PHRASE_TAG, BOUND_SECOND_TAG}),
     # and no pair is written across a comma
     ("عز, الدين", 0, set()),
-    # `long_names_only` counts a bound given name after the pair as a
-    # name word: four, so the first `abdul` pairs with `aziz`
-    ("Ali abdul aziz abdul", 1, {BOUND_PHRASE_TAG}),
+    # a word written `long_names_only` pairs here whatever the name's
+    # length, post_rules splitting it back in a name of fewer than four
+    # name words
+    ("Ali abdul aziz", 1, {BOUND_PHRASE_TAG}),
     # a caller's listing makes the first walk mark this word too; the
     # second walk's marks must stand over it (a first mark kept would
     # drop BOUND_SECOND_TAG), which is all this row pins: the default
