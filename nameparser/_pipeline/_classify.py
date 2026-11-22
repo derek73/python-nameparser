@@ -28,9 +28,8 @@ titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
 written behind a particle (particle_given_names, #704) and the
 two-word given names a bound word completes into (bound_phrases,
-#694) and the bound words that complete with any plain name word, in
-any name or only in one of four name words or more
-(bound_completes_any, bound_long_names_only, #1464) and the words a
+#694) and the bound words that complete with any plain name word
+(bound_completes_any, #1464) and the words a
 pair writes second and joins from, and the pairs those list
 (bound_seconds, bound_second_phrases, bound_seconds_listed, #1072)
 and the titles a
@@ -102,7 +101,6 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
@@ -118,10 +116,10 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
-    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, _ROMAN,
+    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD,
     _TRAILING_TITLE_SHAPE, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_dotted_title, is_initial, is_one_case, is_title_shaped,
+    is_dotted_title, is_initial, is_one_case,
     period_joined_title, period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
@@ -129,77 +127,12 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import own_words
 
 
-def _name_words(tokens: Sequence[WorkToken], state: ParseState,
-                clause_at: int, partner: int) -> int:
-    """How many name words the name holds, for rules/P12's
-    `long_names_only`, part by part (the comma parts, before a maiden
-    clause, which changes nothing else in the name): words carrying no
-    role and holding a letter, save each part's leading title run (a
-    listed title, a title phrase H9 read, a dotted title, one H2's shape
-    reads, and a connective inside the run with the word it joins) and,
-    after `partner`, the word the bound word would join, anything but a
-    plain word, a bound given name or a pair of initials in a script
-    with case (a suffix, listed, by its shape or a numeral I to X
-    written other than in Title case, a lone capital being Title case),
-    and nothing past the next comma. It stops counting at four, which is
-    all its caller asks, so a long name is not walked once per pair.
-    A plain loop, a generator costing a frame per word."""
-    count = 0
-    for seg in state.segments:
-        if seg and seg[0] > partner:
-            break
-        leading = True
-        held = 0
-        titled = False
-        for i in seg:
-            if i >= clause_at:
-                break
-            t = tokens[i]
-            if t.role is not None or not _HAS_LETTER.search(t.text):
-                continue
-            tags = t.tags
-            if i > partner:
-                stem = t.text.rstrip(".")
-                if ((tags <= _BOUND_TAGS
-                     or is_cased_paired_initials(t.text))
-                        and (stem.istitle() or not _ROMAN.match(stem))):
-                    count += 1
-                    if count >= 4:
-                        return count
-                continue
-            if leading:
-                if (_LEADING_TITLE_TAGS & tags
-                        or is_title_shaped(t.text, state.lexicon)):
-                    held = 0
-                    titled = True
-                    continue
-                if "conjunction" in tags:
-                    held += 1
-                    continue
-                if titled and held:
-                    # the word a title's connective joins into the run
-                    # ('Dean of Students')
-                    held = 0
-                    continue
-                leading = False
-                count += held
-            count += 1
-            if count >= 4:
-                return count
-    return count
-
-
 #: The tag H9 leaves on a contested title it read as a name word.
 _CONTESTED_TAGS = frozenset({TITLE_AMBIGUOUS_TAG})
-#: A bound given name's own tags: one after the pair is a name word.
-_BOUND_TAGS = frozenset({"vocab:bound-given"})
 #: What rules/P12 writes on a bound word heading a pair, and on the word
 #: before a second it joins from.
 _BOUND_PHRASE_TAGS = frozenset({BOUND_PHRASE_TAG})
 _BOUND_SECOND_TAGS = frozenset({BOUND_PHRASE_TAG, BOUND_SECOND_TAG})
-#: The tags that mark a word of the leading title run: a title, listed
-#: or read in its phrase (H9), and a dotted title (H10).
-_LEADING_TITLE_TAGS = frozenset({"vocab:title", DOTTED_TITLE_TAG})
 #: A letter (a decomposed accent's base included): a search, not a
 #: loop over the word, so the test costs no frame.
 _HAS_LETTER = re.compile(r"[^\W\d_]")
@@ -689,8 +622,8 @@ def classify(state: ParseState) -> ParseState:
     # group joins the pair (decisions/P12, #694). A bound word written
     # `completes_any` pairs with a plain word, one carrying no tag (no
     # vocabulary reading, not initial-shaped) and holding a letter, and
-    # one written `long_names_only` only in a name of four name words
-    # or more (decisions/P12, #1464)
+    # one written `long_names_only` too, which post_rules splits back in
+    # a name of fewer than four name words (decisions/P12, #1464)
     # the marks each pair's first word takes, written in one pass after
     # both walks
     bound: dict[int, frozenset[str]] = {}
@@ -710,11 +643,9 @@ def classify(state: ParseState) -> ParseState:
             elif (i and folded[i] in open_bound
                   and tokens[i + 1].tags <= _CONTESTED_TAGS
                   and _HAS_LETTER.search(tokens[i + 1].text)):
-                # counted per pair, the count reading which words stand
-                # after the word it would join
-                if (folded[i] in sets.bound_long_names_only
-                        and _name_words(tokens, state, clause_at, i + 1) < 4):
-                    continue
+                # a word written `long_names_only` too: whether the name
+                # holds four name words is the parse's to count, so
+                # post_rules splits the pair where it does not
                 bound[i] = _BOUND_PHRASE_TAGS
     # rules/P12: "for a pair read from its second word, at it too" -- a word of
     # Lexicon.bound_seconds joins the plain word before it, and a pair of

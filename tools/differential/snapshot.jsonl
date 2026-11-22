@@ -1468,6 +1468,7 @@
 {"name": "HANS UNTER DER LINDE", "given": "HANS", "middle": "UNTER", "family": "DER LINDE", "initials": "H. U. L.", "capitalized": "Hans Unter Der Linde"}
 {"name": "Habib Pacha es-Saad", "given": "Habib", "middle": "Pacha", "family": "es-Saad", "initials": "H. P. e.", "capitalized_force": "Habib Pacha Es-Saad"}
 {"name": "Haddad, Nadia Abd Karim", "given": "Nadia", "middle": "Abd Karim", "family": "Haddad", "initials": "N. A. K. H."}
+{"name": "Haddad, Tariq Abdul Aziz", "given": "Tariq", "middle": "Abdul Aziz", "family": "Haddad", "initials": "T. A. A. H."}
 {"name": "Hafis al-Assad", "given": "Hafis", "family": "al-Assad", "initials": "H. a.", "capitalized_force": "Hafis Al-Assad"}
 {"name": "Hagen, Hermann von", "given": "Hermann", "family": "von Hagen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "H. H."}
 {"name": "Haider Hān ʿAmū-ūġlī", "given": "Haider", "middle": "Hān", "family": "ʿAmū-ūġlī", "initials": "H. H. ʿ.", "capitalized_force": "Haider Hān ʿAmū-Ūġlī"}
@@ -4434,6 +4435,7 @@
 {"name": "Tammik hr Mari-Ann Henri Roobert parlamendiliige", "order": "FAMILY_FIRST", "given": "hr", "middle": "Mari-Ann Henri Roobert parlamendiliige", "family": "Tammik", "initials": "h. M. H. R. p. T.", "capitalized_force": "Tammik Hr Mari-Ann Henri Roobert Parlamendiliige"}
 {"name": "Tammik, Mari-Ann Henri Roobert, parlamendiliige", "given": "Mari-Ann", "middle": "Henri Roobert", "family": "Tammik", "suffix": "parlamendiliige", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. H. R. T.", "capitalized_force": "Mari-Ann Henri Roobert Tammik Parlamendiliige"}
 {"name": "Tan Wei Keong @ Daniel Tan", "given": "Tan", "middle": "Wei", "family": "Keong", "nickname": "Daniel Tan", "initials": "T. W. K."}
+{"name": "Tariq - Abdul Aziz", "given": "Tariq", "middle": "- Abdul", "family": "Aziz", "initials": "T. -. A. A."}
 {"name": "Tariq Abdel Aziz", "given": "Tariq", "family": "Abdel Aziz", "initials": "T. A. A."}
 {"name": "Tariq Abdul Aziz", "given": "Tariq", "middle": "Abdul", "family": "Aziz", "initials": "T. A. A."}
 {"name": "Tariq Abdul Aziz Jr.", "given": "Tariq", "middle": "Abdul", "family": "Aziz", "suffix": "Jr.", "initials": "T. A. A.", "generation": "Jr."}

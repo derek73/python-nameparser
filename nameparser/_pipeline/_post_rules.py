@@ -64,6 +64,7 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
+import re
 from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
@@ -84,7 +85,7 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
+    _HYPHENS, _LETTER, SetApartKind, delimiter_cores, dotted_member,
     ROMAN, east_slavic_rotates, has_patronymic_ending, is_capitals_word,
     is_initial, is_listed_given_name,
     is_patronymic_marker, joined_member, member_word, period_member,
@@ -314,6 +315,50 @@ def _split_a_lone_backward_pair(state: ParseState, tokens: list[WorkToken],
                 ambiguities[k] = dataclasses.replace(
                     a, alternative=dataclasses.replace(alt, role=Role.MIDDLE))
     return True
+
+#: A letter, a decomposed accent's base included: a word holding none,
+#: a lone mark, is no name word to the count rules/P12 makes.
+_HAS_LETTER = re.compile(_LETTER)
+
+
+def _split_a_short_open_pair(state: ParseState, tokens: list[WorkToken],
+                             ambiguities: list[PendingAmbiguity],
+                             head: int) -> bool:
+    """A pair P12 joined behind a bound word written `long_names_only`,
+    in a name of fewer than four name words, is split back, in place, to the reading the name
+    has without the join. Where the bound word opens the name's pieces,
+    rules/P5 reads it: with no other name piece its reserve splits the
+    pair as a lone backward pair is split, and with one it joins the pair
+    as P12 did, so only the mark goes. A family comma moves no role
+    either: the part before it is the family whole, and in the part
+    after it P5 joins the pair opening it, the words behind the given
+    name being middle names however they are joined. Elsewhere the
+    pieces are laid out by the order again, the pair two pieces. True
+    where a role moved."""
+    tokens[head] = copy_with(tokens[head],
+                             tags=tokens[head].tags - {BOUND_PHRASE_TAG})
+    if state.structure is Structure.FAMILY_COMMA:
+        return False
+    pieces = _name_pieces(state, tokens, 0)
+    if pieces and head == pieces[0][0]:
+        return (len(pieces) == 1
+                and _split_a_lone_backward_pair(state, tokens, ambiguities))
+    units: list[tuple[int, ...]] = []
+    for piece in pieces:
+        if head in piece and head + 1 in piece:
+            cut = piece.index(head + 1)
+            units.append(piece[:cut])
+            units.append(piece[cut:])
+        else:
+            units.append(piece)
+    order = state.order or state.policy.name_order
+    moved = False
+    for unit, role in zip(units, _name_positions(order, len(units))):
+        for i in unit:
+            if tokens[i].role in NAME_ROLES and tokens[i].role is not role:
+                _retag(tokens, i, role)
+                moved = True
+    return moved
 
 
 # rules/P2: "a particle joins the words after it into one name
@@ -1393,6 +1438,29 @@ def post_rules(state: ParseState) -> ParseState:
             and BOUND_SECOND_TAG in tokens[min(names)].tags
             and _split_a_lone_backward_pair(state, tokens, ambiguities)):
         titles, givens, middles, families = _positions(tokens)
+    # rules/P12: "the pair is joined only in a name the parse reads as
+    # four name words or more" -- counted here, once roles are settled,
+    # so a word the trailing run or a title phrase takes counts as the
+    # parse reads it (decisions/P12, #1464); the tag tests inline, in C,
+    # so that a name with no such pair pays no frame for it
+    else:
+        for i in names:
+            if (BOUND_PHRASE_TAG in tokens[i].tags
+                    and BOUND_SECOND_TAG not in tokens[i].tags):
+                # name words hold a letter: a lone mark assign placed
+                # is none; a plain loop, where a generator cost a frame
+                # per word
+                letters = 0
+                for k in names:
+                    if _HAS_LETTER.search(tokens[k].text):
+                        letters += 1
+                if (letters < 4
+                        and _normalize(tokens[i].text)
+                        in state.lexicon._sets.bound_long_names_only
+                        and _split_a_short_open_pair(
+                            state, tokens, ambiguities, i)):
+                    titles, givens, middles, families = _positions(tokens)
+                break
 
     # rules/H1: "a title followed by exactly one name word makes
     # that word the family name, whatever suffix, nickname or maiden
