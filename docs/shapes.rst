@@ -263,6 +263,10 @@ Each row's reading kind is what :meth:`Lexicon.words(kind=...)
      - the following word
      - ``given``
      - ``abdul salam ahmed`` → ``abdul salam``
+   * - Bound seconds (``bound_second``)
+     - the word before it
+     - ``given``
+     - ``نور الدين سامر حداد`` → ``نور الدين``
    * - Particles (``particle``)
      - the following surname
      - ``family``
@@ -410,9 +414,10 @@ Nicknames and maiden names
 
 A second name written after ``@`` or ``urf`` is a nickname too, as
 Malaysian and Indian lists write one; it runs to a patronymic particle
-such as ``bin``, so the father's name after it stays the family name
-(``alias`` and ``aka`` are read so only where you add them, see
-:doc:`customize`):
+such as ``bin``, so the father's name after it stays the family name;
+with no particle it runs to the end of the name, so ``Rahim @ Jaki
+Osman`` has no family name (``alias`` and ``aka`` are read so only
+where you add them, see :ref:`alias-markers`):
 
 .. doctest::
 
@@ -615,7 +620,8 @@ The rule is bounded so it doesn't swallow ordinary names:
   ``Dr. Smith, John`` gives title ``Dr.``.
 - **A given name written short** is that given name: the
   traditional English abbreviations such as ``Chas.``, ``Geo.`` and
-  ``Wm.``, and the Filipino ``Ma.`` (María) and ``Jo.`` (José).
+  ``Wm.``, the Filipino ``Ma.`` (María) and ``Jo.`` (José), and the
+  Malay ``Ab.`` (Abdul).
   Each is a ``given`` reading carrying ``same_as``, the full name
   (``Lexicon.default().readings_of("chas")``); written bare, or
   anywhere else in the name, each word reads as it would unlisted.

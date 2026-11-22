@@ -369,6 +369,17 @@ the initials within one group (:ref:`rendering-arguments`):
     >>> name.initials(spec="{given}{middle}{family}", delimiter="", separator="")
     'JQXV'
 
+A word in a script that writes no initials, such as Han, Hangul, kana,
+Thai, Lao, Burmese or Arabic, gives none, and a word in another script
+beside it still gives its own:
+
+.. doctest::
+
+    >>> parse("김민준").initials(), parse("أحمد علي").initials()
+    ('', '')
+    >>> parse("Ahmed علي").initials()
+    'A.'
+
 Initials written together in the name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
