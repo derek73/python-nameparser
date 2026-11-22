@@ -1571,6 +1571,24 @@ CASES: tuple[Case, ...] = (
                "so the lone member after a family comma is the given name: "
                "the initials such filers mean, the credential's cost "
                "otherwise; 1.4.0 read title 'RA', 3.1.0 suffix 'RA'"),
+    Case("ra_opening_a_capitals_part_before_a_credential_is_the_given_name",
+         "SMITH, RA MD",
+         {"given": "RA", "family": "SMITH", "suffix": "MD"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost, as 'KING, RA' with a credential behind "
+               "it: no case signal in a name wholly in capitals "
+               "(rules/S6); 1.4.0 read title 'RA', first 'MD', 3.1.0 "
+               "suffix 'RA MD'"),
+    Case("ra_opening_the_given_part_ahead_of_a_name_is_the_given_name",
+         "Smith, RA John",
+         {"given": "RA", "middle": "John", "family": "Smith"},
+         classification="feat(#1483)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost: a title that is also a given name is a "
+               "title only inside a phrase (rules/H9), as 'Smith, Dean "
+               "John' reads on master; 1.4.0 through 3.1.0 read title "
+               "'RA', given 'John'"),
     Case("ra_without_its_last_stop_ending_a_name_is_the_family",
          "Jane Doe R.A",
          {"given": "Jane", "middle": "Doe", "family": "R.A"},
@@ -1594,7 +1612,8 @@ CASES: tuple[Case, ...] = (
          {"given": "Kim", "family": "Ra", "suffix": "Jr."},
          ambiguities=("suffix-or-name",),
          notes="the Title-case twin of 'Kim RA, Jr.'; 1.4.0 read the same "
-               "fields, 2.x through 3.1.0 family 'Kim', suffix 'Ra, Jr.'"),
+               "fields, 2.0.0 through 2.3.0 given 'Kim', 2.4.0 through "
+               "3.1.0 family 'Kim', each suffix 'Ra, Jr.'"),
     Case("ra_before_a_credential_comma_is_the_family",
          "Kim Ra, PhD",
          {"given": "Kim", "family": "Ra", "suffix": "PhD"},

@@ -2082,7 +2082,7 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
 #: credential settles the member in its clause (rules/S1), so the two
 #: spellings read alike in every shape. Fields only, as above.
 _MEMBERS = ("MA", "Ma", "M.A", "MBA", "Ed", "KC", "JD")
-_SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C", "MS", "RA")
+_SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C", "MS", "VC")
 
 #: How many rows' two spellings read differently with `set_apart_kind`
 #: reading a joined word holding a member as a plain suffix, the
@@ -2091,7 +2091,10 @@ _SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C", "MS", "RA")
 #: Each is a joined pair inside or before a name word, set apart where
 #: its spelling written apart stays the nickname. 'MS' and 'RA', words
 #: that are titles too, joined the settlers after the second review
-#: found them settling a joined member and not a clause one.
+#: found them settling a joined member and not a clause one; 'VC' took
+#: RA's place when #1483 made ra a title only inside a phrase, which had
+#: moved this control to 1632, unseen, and with VC it reads 1608 again
+#: (re-taken 2026-11-21).
 _UNGUARDED_MEMBER_PAIRS_1138 = 1608
 
 #: How many (pair, shape, order) rows the member invariant reads.

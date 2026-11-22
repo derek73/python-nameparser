@@ -532,9 +532,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # row under its declared policy; 2321 -> 2330 the same day, #1128's
     # reporting rows; 2330 -> 2342 the same day, #1483's `ra` rows
     # reporting suffix-or-name; 2342 -> 2367 the same day, its review's
-    # comma, order and spelling rows.
-    assert claims == 2367, (
-        f"the field sweep checks {claims} claims, recorded as 2367 on "
+    # comma, order and spelling rows; 2367 -> 2373 the same day, its
+    # second review's 'SMITH, RA MD' and 'Smith, RA John'.
+    assert claims == 2373, (
+        f"the field sweep checks {claims} claims, recorded as 2373 on "
         f"2026-11-21")
 
 

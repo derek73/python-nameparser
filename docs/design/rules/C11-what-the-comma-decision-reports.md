@@ -9,7 +9,7 @@
   "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
   "Jansen, Ir. J.P."          →  ambiguities=("suffix-or-name",)
   ```
-- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not, wherever it stands in the part (S6). So a run whose every such word is written in capitals reads whole in silence ('Doe, MA PhD', 'John Smith, MA MA', 'John Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms RA Ma').
+- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not, wherever it stands in the part (S6). So a run whose every such word is written in capitals reads whole in silence ('Doe, MA PhD', 'John Smith, MA MA', 'John Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms VC Ma').
   ```
   "Doe, MA PhD"               →  ambiguities=()
   "Doe, Ma PhD"               →  ambiguities=("suffix-or-name",)
