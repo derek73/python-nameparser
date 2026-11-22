@@ -3264,7 +3264,8 @@ def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
     first = _choosing("en", code="aa",
                       lexicon=Lexicon.empty().add("zzq", kind="title"))
     # the fragment's remove takes out a reading another lexicon adds, which
-    # remove() cannot see, so it warns that no file holds it (#1535)
+    # remove() cannot see, so it warns that no file and no earlier add
+    # of its own lexicon holds it (#1535)
     with pytest.warns(UserWarning, match="'zzq' is in no vocabulary file"):
         second = _choosing("en", code="bb",
                            lexicon=Lexicon.empty().remove("zzq", kind="title"))

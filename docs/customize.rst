@@ -169,9 +169,11 @@ its category:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
-A remove that can take nothing, a kind the word does not hold or a word
-no vocabulary file lists, warns, naming the kinds the word does hold.
-``alhaj`` is a style, not a religious title:
+A remove that can take nothing warns. One naming a kind the word does
+not hold lists the kinds it does, one naming a word no vocabulary file
+and no earlier ``add`` lists asks you to check its spelling, and each
+opens with the call and "changes nothing". ``alhaj`` is a style, not a
+religious title:
 
 .. doctest::
 
@@ -180,7 +182,7 @@ no vocabulary file lists, warns, naming the kinds the word does hold.
     ...     warnings.simplefilter("always")
     ...     inert = Lexicon.default().remove("alhaj", kind="religious")
     >>> print(caught[0].message)
-    'alhaj' has no 'religious' reading in any vocabulary file; its readings are: style. Did you mean remove('alhaj', kind='style')?
+    remove('alhaj', kind='religious') changes nothing: 'alhaj' has no 'religious' reading in any vocabulary file or earlier add(); it holds: style. Did you mean remove('alhaj', kind='style')?
     >>> Parser(lexicon=inert).parse("Alhaj Ahmed Khan").title
     'Alhaj'
 
