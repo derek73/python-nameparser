@@ -7,11 +7,11 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 3.2** adds new vocabulary and four locale packs (Malay,
+📣 **nameparser 3.2 adds new vocabulary, four locale packs (Malay,
 Burmese, Dutch, Portugal), and reads two family names under three more
-(Croatian, Slovenian, Brazilian Portuguese). It also reads a second name
-written after ``@`` as a nickname (``Rahim @ Jaki bin Osman``), and a
-parse makes about a third fewer Python function calls than in 3.1.
+(Croatian, Slovenian, Brazilian Portuguese).** It also reads a name
+written after ``@`` as a nickname, and a parse makes about a third
+fewer function calls than in 3.1.
 
 📣 **nameparser 3.0 removes HumanName and the rest of the 1.x
 compatibility layer:**
