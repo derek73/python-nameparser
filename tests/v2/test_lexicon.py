@@ -2289,6 +2289,13 @@ _MESSAGE_CASES = [
     pytest.param(lambda L: L.remove("Ph.D.", kind="credential"),
                  "the vocabulary writes 'ph.d' without its full stops",
                  "remove('phd', kind='credential')", id="interior-stops"),
+    # a suffix word with stops is no acronym (J.R. is not read as jr), and
+    # a bare word not holding the kind asked offers nothing
+    pytest.param(lambda L: L.remove("j.r."), "'j.r' is in no vocabulary file",
+                 None, id="stops-not-an-acronym"),
+    pytest.param(lambda L: L.remove("m.d.", kind="title"),
+                 "'m.d' is in no vocabulary file", None,
+                 id="stops-other-kind"),
     # a word in no file: the join remedy named beside the spelling one
     pytest.param(lambda L: L.remove("zzyzx", kind="title"),
                  "remove it from the joined lexicon", None, id="no-file"),

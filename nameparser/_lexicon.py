@@ -2736,11 +2736,16 @@ class Lexicon:
         """Cases (ii) and (iii) of #1535: the word holds no reading. It
         may stand in the two lists, which remove() does not edit, be
         only the other name of other words' familiar or spelling pairs,
-        which a remove of the pair kind takes, or be written with full
-        stops inside it where the vocabulary writes the word without
-        (``ph.d``, held as ``phd``); else it is in no file."""
-        for list_field in ("surnames", "given_names"):
-            if w in getattr(self, list_field):
+        which a remove of the pair kind takes, or be a suffix acronym or
+        a dotted title written with its full stops (``ph.d``, held as
+        ``phd``), where the bare word holds the kind asked; else it is
+        in no file."""
+        ri = _index_module()
+        lists = {"surnames": ("family", "name"), "given_names": ("given", "name")}
+        for list_field, kinds in lists.items():
+            if w in getattr(self, list_field) and (
+                    kind is None or kind in kinds
+                    or ri.CATEGORY.get(kind) == kinds[0]):
                 return (f"{w!r} holds no reading, only an entry in this "
                         f"lexicon's {list_field} list, which remove() does "
                         f"not edit; drop it with dataclasses.replace("
@@ -2754,8 +2759,16 @@ class Lexicon:
             return (f"{w!r} holds no reading of its own, only the other "
                     f"name of {pair_kind} pairs other words hold; "
                     f"remove({w!r}, kind={pair_kind!r}) takes those pairs")
+        # only where the parse reads the dotted spelling as the bare word:
+        # a suffix acronym (M.D. as md) or a dotted title (U.S. as us),
+        # and the bare word holds the kind asked
         bare = w.replace(".", "")
-        if bare != w and _index_module().readings_of(bare):
+        bare_kinds = {r.kind for r in ri.readings_of(bare)}
+        if (bare != w and bare in (self._sets.suffix_acronyms
+                                   | self._sets.dotted_titles)
+                and (kind is None or any(
+                    k == kind or ri.CATEGORY[k] == kind
+                    for k in bare_kinds))):
             call = (f"remove({bare!r})" if kind is None
                     else f"remove({bare!r}, kind={kind!r})")
             return (f"the vocabulary writes {w!r} without its full stops, "
