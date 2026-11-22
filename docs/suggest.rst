@@ -43,6 +43,11 @@ decided the same way, each by its own evidence: a patronymic rule
 (:ref:`suggest-two-family`). Every setting the votes do not decide keeps
 the base parser's value.
 
+Check the names ``suggestion.disagreeing()`` lists
+(:ref:`suggest-disagreeing`), then keep ``suggestion.patch`` with your
+data and parse with it, rather than asking again
+(:ref:`suggest-keeping`).
+
 .. _suggest-how-many:
 
 How many names to give it
@@ -78,16 +83,23 @@ order kept it as well at 2,000 names as at a few hundred.
 
 The other settings have no such floor. In a long list where almost no
 name carries their evidence, a handful of names can still decide
-``patronymic_rules``, ``initials_as_family`` or ``capitals_as_family``:
-five names written given name, patronymic, family name among a
-thousand written family first without one decide the East Slavic rule,
-and with it a given-first order for all of them. A sample of a few
-hundred names makes that rarer.
+``patronymic_rules``, ``initials_as_family``, ``capitals_as_family`` or
+``two_family_names``:
 
-The one kind of list measured that more names kept helping is bylines
-written initials first (``AM Hoy``) under a family-first base, where
-so few names vote that a sample of a few hundred often decides nothing.
-Where you know how such a list is written, set ``name_order`` yourself.
+- Five names written given name, patronymic, family name, among a
+  thousand that carry no evidence, decide the East Slavic rule, and
+  under a family-first base a given-first order with it for all of
+  them.
+- Three Spanish names of three words among a thousand of two words
+  decide ``two_family_names``: its share is taken of the names it would
+  change, so names it leaves alone never dilute it.
+
+A sample of a few hundred names makes that rarer.
+
+Bylines written initials first (``AM Hoy``) carry so little evidence
+that more names kept helping; :ref:`suggest-limits` gives the figures,
+and where you know how such a list is written, set ``name_order``
+yourself.
 
 A list that mixes sources written differently works against itself.
 Split it by source and ask once for each. :ref:`suggest-limits` gives
@@ -194,7 +206,7 @@ The report counts it as ``against`` and names it on its last line:
 
 .. _suggest-deciding:
 
-When the list decides the order
+When the list decides a setting
 -------------------------------
 
 Each setting is decided only where enough names carry its evidence
@@ -232,6 +244,9 @@ and enough of them agree:
        and more than the names voting against it
      - :ref:`suggest-two-family`
 
+The order
+~~~~~~~~~
+
 The group decides ``name_order`` when at least two names vote for one
 end and they are more than two thirds of the names that cast an order
 vote: a tie, or two names against one, decides nothing. A name with no
@@ -244,14 +259,12 @@ their own order. A list of 200 names or fewer needs no more than the
 two names it needs anyway; in a longer list where few names vote, it
 keeps a handful of stray votes (a surname that is also a given name,
 written first) from deciding the order for every name. Where this alone
-holds the order back, the order evidence's note says so, and it says
-so too where the votes it holds back are against the given-first order
-a decided East Slavic rule sets.
+holds the order back, the note under ``name_order`` says so.
 
 Two is the floor, not what a typical list needs. Two names decide a
 list only where no other name votes against them, and how many names a
 list needs before enough of them vote depends on what its names carry:
-:ref:`suggest-limits` gives the sizes measured, from 5 names to 50.
+:ref:`suggest-limits` gives the sizes measured, from 5 names to 200.
 
 When it suggests nothing
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -259,9 +272,25 @@ When it suggests nothing
 A setting whose votes fall short of its threshold above keeps the
 base parser's value rather than a guess, whatever the other settings
 decide. Where every setting falls short, or no name in the list
-carries evidence, the patch is empty. None of these
-names holds a listed surname, a given name that is rarely a
-surname, or any other evidence on the order:
+carries evidence, the patch is empty. The usual reasons:
+
+- **Too few names**: under five often decide nothing
+  (:ref:`suggest-how-many`).
+- **Names that carry no evidence**, as in the list below
+  (:ref:`suggest-evidence`).
+- **Names that do not vote**: a name with a comma states its own order,
+  and a name of one word shows none (:ref:`suggest-evidence`).
+- **Bylines**: initials ending the names vote only where most of the
+  list's names end in them (:ref:`suggest-evidence`).
+- **A long list whose order votes are under 1% of its names**
+  (:ref:`suggest-deciding`).
+- **A list mixing sources written differently**, whose votes cancel
+  out (:ref:`suggest-how-many`).
+- **A base that already reads the list right**: the setting is decided
+  and shown ``(as the base)``, and the patch holds no change.
+
+None of these names holds a listed surname, a given name that is rarely
+a surname, or any other evidence on the order:
 
 .. doctest::
 
@@ -301,6 +330,64 @@ Then, where you know how the list is written, set the order yourself
 
 What a name votes on
 --------------------
+
+Each kind of evidence is a :class:`~nameparser.Signal`, which names its
+row in the report and votes on one setting:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 22 22 26
+
+   * - Signal
+     - Report row
+     - Votes on
+     - Section
+   * - ``Signal.CAPITALS``
+     - ``capitals``
+     - ``name_order``
+     - below
+   * - ``Signal.TRAILING_INITIAL``
+     - ``trailing-initial``
+     - ``name_order``
+     - below
+   * - ``Signal.PARTICLE``
+     - ``particle``
+     - ``name_order``
+     - below
+   * - ``Signal.SURNAME``
+     - ``surname``
+     - ``name_order``
+     - below
+   * - ``Signal.GIVEN_NAME``
+     - ``given-name``
+     - ``name_order``
+     - below
+   * - ``Signal.PATRONYMIC_POSITION``
+     - ``patronymic-position``
+     - ``name_order``
+     - :ref:`suggest-patronymics`
+   * - ``Signal.PATRONYMIC``
+     - ``patronymic``
+     - ``patronymic_rules``
+     - :ref:`suggest-patronymics`
+   * - ``Signal.FIRST_SURNAME``
+     - ``first-surname``
+     - ``two_family_names``
+     - :ref:`suggest-two-family`
+
+A name's :class:`~nameparser.NameEvidence` holds its votes keyed by
+signal: an order vote is the order it votes for, a patronymic vote the
+rule, and a first-surname vote ``True`` or ``False``:
+
+.. doctest::
+
+    >>> from nameparser import Signal
+    >>> votes = Parser().suggest(["María García López", "Juan Pérez Ruiz",
+    ...                           "Ana Martínez Soto"]).names[0].votes
+    >>> sorted(signal.value for signal in votes)
+    ['first-surname', 'given-name', 'surname']
+    >>> votes[Signal.FIRST_SURNAME]
+    True
 
 Each name votes on its order from the evidence it carries:
 
@@ -437,11 +524,14 @@ list (``Sidorov Ivan``) is read in the order suggested.
 
 Where the names' votes decide no order (a list writing as many
 patronymics one way as the other, or too few one way, or other
-evidence contradicting them), the rule brings the given-first order it reorders each name
-under, save under a ``FAMILY_FIRST`` base whose list writes the
-patronymic last in more names than in the middle, which keeps its
-order; the note under ``patronymic_rules`` counts the names written the
-other way.
+evidence contradicting them):
+
+- the rule brings the given-first order it reorders each name under;
+- save under a ``FAMILY_FIRST`` base whose list writes the patronymic
+  last in more names than in the middle, which keeps its order.
+
+The note under ``patronymic_rules`` counts the names written the other
+way.
 
 What counts for and against
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -657,13 +747,29 @@ among those it would change:
     >>> [e.note for e in hispanic.evidence if e.setting == "two_family_names"]
     ['3 of the 3 names two_family_names would change carry a common surname where it would take a first surname']
 
+The names the note counts as holding a common given name there are the
+ones the switch reads wrong, and ``disagreeing()`` does not list them,
+since they cast no vote. Check them by hand, or choose the pack:
+
+.. doctest::
+
+    >>> with_given = Parser().suggest(["María García López", "Juan Pérez Ruiz",
+    ...                                "Ana Martínez Soto", "Maria Anna Berg",
+    ...                                "Mary Jane Smith"])
+    >>> with_given.patch, with_given.disagreeing()
+    (PolicyPatch(two_family_names=True), ())
+    >>> [e.note for e in with_given.evidence if e.setting == "two_family_names"]
+    ['3 of the 5 names two_family_names would change carry a common surname where it would take a first surname; 2 of them a common given name there, which casts no vote']
+
 Where you know the list
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The suggestion is the bare switch. Where you know a list is Spanish or
-Portuguese, choose the language pack instead (:ref:`suggest-packs`):
-it turns the switch on too, and its given names keep a compound given
-name whole, which the bare switch reads as a first surname:
+The suggestion is the bare switch. Where you know a list is Spanish,
+Brazilian or Portuguese, choose its pack instead (``locales.ES``,
+``locales.ES_AR``, ``locales.PT_BR`` or ``locales.PT_PT``;
+``locales.PT`` leaves the switch off, :ref:`suggest-packs`): it turns
+the switch on too, and its given names keep a compound given name
+whole, which the bare switch reads as a first surname:
 
 .. doctest::
 
@@ -707,6 +813,8 @@ order and not the second family name:
     'García López'
     >>> Parser().suggest(padron).parser.parse("García López María").family
     'García'
+
+.. _suggest-keeping:
 
 Keeping the settings you applied
 --------------------------------
@@ -763,9 +871,9 @@ The figures below were measured on groups drawn from real names
 written in a known order. They give a general idea of what to expect
 and how it varies, and will differ for every dataset.
 
-- **A list written in the base's own order** keeps it in at least 95%
-  of groups from 2 to 2,000 names, and 97% for nearly every kind, save
-  the three kinds of list below.
+- **A list written in the base's own order**, save the three kinds of
+  list below, keeps it in at least 95% of groups from 2 to 2,000 names,
+  and in 97% for nearly every kind.
 - **A list written the other way round** takes more names to move the
   base, from 5 for Chinese, Taiwanese, Korean, Czech, Polish, Italian
   and Russian names to 50 for Indian ones and 200 for Bangladeshi
@@ -797,8 +905,6 @@ surnames are no evidence. Of the lists measured that do not write
 their family names in capitals, only the one writing its given names
 so was suggested it; no other was, the bylines (``AM Hoy``) included.
 
-The parser never detects the language of a name; the suggester may,
-over a group you declare, says what it saw, and its answer is
-configuration you apply. The measurements, each with its date and its
-exact figures, the thresholds and the evidence declined are in
+The measurements behind these figures, the thresholds and the
+evidence declined are in the source repository's design record,
 ``docs/design/decisions/group-suggestion.md``.
