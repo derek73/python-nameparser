@@ -3642,9 +3642,10 @@ def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
 @pytest.mark.parametrize("tags, strict, text, fields", [
     # #1178: en.toml's Airman Basic is written default = false, so only a
     # choice of English reads it; under a plain one ms.toml's and
-    # nl.toml's given readings gate it (rules/H9), as the default reads
-    (("en",), False, "Ab Hamid Mohd Nazahar",
-     {"given": "Ab", "middle": "Hamid Mohd", "family": "Nazahar"}),
+    # nl.toml's given readings gate it (rules/H9), so a plain choice
+    # reads the fields as the default does
+    (("en",), False, "Ab Faizal Mohd Qirwan",
+     {"given": "Ab", "middle": "Faizal Mohd", "family": "Qirwan"}),
     (("en",), False, "Ab. Ghani Harun",
      {"given": "Ab.", "middle": "Ghani", "family": "Harun"}),
     (("en",), False, "Jansen, Ab", {"given": "Ab", "family": "Jansen"}),
@@ -3654,11 +3655,15 @@ def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
     # a list of US military names (STRICT_UNGATED in test_reading_index)
     (("en",), True, "AB John Smith",
      {"title": "AB", "given": "John", "family": "Smith"}),
-    (("en",), True, "Ab Hamid Mohd Nazahar",
-     {"title": "Ab", "given": "Hamid", "middle": "Mohd",
-      "family": "Nazahar"}),
+    (("en",), True, "Ab Faizal Mohd Qirwan",
+     {"title": "Ab", "given": "Faizal", "middle": "Mohd",
+      "family": "Qirwan"}),
     (("en",), True, "John Smith, AB",
      {"title": "AB", "given": "John", "family": "Smith"}),
+    # a strict choice of English that also chooses ms or nl reads their
+    # given reading, which gates the rank as a plain one does
+    (("en", "ms"), True, "AB John Smith",
+     {"given": "AB", "middle": "John", "family": "Smith"}),
     # a strict Malay choice keeps Abdul written short, its period too
     (("ms",), True, "Ab. Ghani Harun",
      {"given": "Ab.", "middle": "Ghani", "family": "Harun"}),
@@ -3679,6 +3684,25 @@ def test_only_a_strict_english_choice_reads_ab_as_the_rank(
     got = {f: getattr(name, f) for f in
            ("title", "given", "middle", "family", "suffix") if getattr(name, f)}
     assert got == fields
+
+
+@pytest.mark.parametrize("tags, strict, reported", [
+    # the gated rank is reported where a choice turns it on (rules/H9's
+    # title-or-name); the default reads no rank and reports nothing, and
+    # a strict English choice reads it ungated, deciding nothing
+    ((), False, False),
+    (("en",), False, True),
+    (("en", "ms"), True, True),
+    (("en",), True, False),
+])
+@pytest.mark.parametrize("text", [
+    "Ab Jansen", "Ab. Ghani Harun", "AB John Smith"])
+def test_the_gated_rank_is_reported_where_a_choice_turns_it_on(
+        tags: tuple[str, ...], strict: bool, reported: bool,
+        text: str) -> None:
+    parser = parser_for(_choosing(*tags), strict=strict) if tags else Parser()
+    kinds = [a.kind.value for a in parser.parse(text).ambiguities]
+    assert kinds == (["title-or-name"] if reported else []), kinds
 
 
 def test_a_packs_fragment_is_unioned_on_after_the_strict_compile() -> None:

@@ -2516,9 +2516,9 @@ Ab as a given name
 ``Ab``, Abdul written short in Malay names and a Dutch given name, reads
 as the given name where it opens a name, written bare, in capitals or
 with its full stop, where 1.4.0 through 3.1.0 read it as the title AB
-(Airman Basic). ``AB`` after a family comma is read as initials, and a
-pair of capitals ``AB`` alone after a full name and a comma reverses the
-name, as an unlisted pair of capitals does:
+(Airman Basic). After a family comma it is the given name Ab too, so
+``AB``, ``Ab`` or ``AB.`` alone after a full name and a comma reverses
+the name, as an unlisted pair of capitals does:
 
 .. doctest::
 
@@ -2529,8 +2529,11 @@ name, as an unlisted pair of capitals does:
     >>> parse("John Smith, AB").family
     'John Smith'
 
-The rank is read only under a choice of English with ``strict=True``. To
-read it as 3.1 did, remove its given readings and add the rank:
+The rank is read only under a choice of English with ``strict=True``
+that chooses neither ``ms`` nor ``nl``; a strict choice without ``ms``
+reads ``Ab.`` opening a name as a title by its shape, as it reads any
+unlisted abbreviation there. To read it as 3.1 did, remove its given
+readings and add the rank:
 
 .. doctest::
 

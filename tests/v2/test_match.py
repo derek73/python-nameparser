@@ -4488,6 +4488,8 @@ _ABDUL: tuple[tuple[str, str, Outcome], ...] = (
     ("Ab.Rahman", "Abdul Rahman", Outcome.LISTED_SPELLING),
     # written bare it is the Dutch name too, which is not Abdul
     ("Ab Rahman", "Abdul Rahman", Outcome.CONFLICT),
+    # Accepted: no familiar pair links the Dutch name to Abraham or
+    # Albert, its long forms
     ("Ab Jansen", "Abraham Jansen", Outcome.CONFLICT),
     # Accepted: Abdul joins the word after it (rules/P5) and `ab` does
     # not, so the given names compared are `Ab.` and `Abdul Hamid`
@@ -4500,12 +4502,30 @@ def test_abdul_written_short_matches_abdul_with_its_period(
         a: str, b: str, outcome: Outcome) -> None:
     # Negative control (2026-11-21): on master 6ff048fe every row but the
     # last reads `given-one-side`, `Ab` and `Ab.` read as a title (en.toml's
-    # Airman Basic, rules/H2's shape), and the last reads `conflict`
+    # Airman Basic, rules/H2's shape), and the last reads `conflict`; no
+    # row's two names share a key there
     for x, y in ((a, b), (b, a)):
         r = m.check(x, y)
         assert r["given"].outcome is outcome, (x, y)
         assert r.consistent is (outcome in m.accept), (x, y)
         assert m.keys(x) & m.keys(y), (x, y)
+
+
+@pytest.mark.parametrize("tags, bare, dotted", [
+    # a strict Malay choice reads no nl.toml, so `ab` is Abdul written
+    # short alone and its link is followed written bare too
+    (("ms",), Outcome.LISTED_SPELLING, Outcome.LISTED_SPELLING),
+    # a strict Dutch choice reads no ms.toml: no link, and `Ab.` is a
+    # title by rules/H2's shape
+    (("nl",), Outcome.CONFLICT, Outcome.GIVEN_ONE_SIDE),
+])
+def test_abdul_written_short_under_a_strict_choice(
+        tags: tuple[str, ...], bare: Outcome, dotted: Outcome) -> None:
+    parser = _choice(set(tags), True)
+    assert "ab" not in parser.lexicon._same_as_named["given"]
+    matching = parser.matching()
+    for a, outcome in (("Ab Rahman", bare), ("Ab. Rahman", dotted)):
+        assert matching.check(a, "Abdul Rahman")["given"].outcome is outcome, a
 
 
 # -- Muhammad written short (#1383) -------------------------------------------
