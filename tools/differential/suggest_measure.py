@@ -1,7 +1,8 @@
 """Measure Parser.suggest on groups of names whose written order is known.
 
 `Parser.suggest(names)` reads a group of names a caller declares to share
-one convention and suggests a `name_order` (and `patronymic_rules`). Its
+one convention and suggests a `name_order` (and `patronymic_rules`,
+`initials_as_family`, `capitals_as_family` and `two_family_names`). Its
 decision rule (`_suggest._MIN_VOTES`, `_MIN_SHARE`,
 `_MIN_ORDER_GROUP_SHARE`, `_MIN_PATRONYMIC_SHARE`, `_MIN_PATRONYMIC_VOTES`, the trailing-initial
 signal's `_MIN_TRAILING_NAMES` and `_MIN_TRAILING_SHARE`, and for

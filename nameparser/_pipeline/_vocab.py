@@ -104,9 +104,12 @@ SPLIT_PAIR_OPENS = _PH
 
 # The codepoint table lives in _policy beside Script -- one copy
 # importable from the pipeline and the locale packs alike; everything
-# here DERIVES from it. Each sweep is a compiled regex rather than a
-# per-character range test, as tokenize's separator scan is
-# (decisions/parse-cost).
+# here DERIVES from it. (single_script's sweep was first written
+# per-char on the _EMOJI_RANGES precedent in _tokenize.py, on the
+# theory that a range test needs no regex; measured at token scale the
+# compiled regex wins by 3-9x, and by roughly 70x on long tokens. The
+# precedent has since gone the same way: tokenize scans for its
+# separators with a compiled class, #1436.)
 # Derived, never hand-written -- even the class construction goes
 # through the shared factory: one wholly-of predicate per script, in
 # the table's key order -- the FIRST-covering-entry rule _classify

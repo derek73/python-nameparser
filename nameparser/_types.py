@@ -970,8 +970,8 @@ class ReadingSource(StrEnum):
     DECLARED = "declared"
     #: The word's shape, not a list: a roman numeral, letters run
     #: together with periods ("X.Y.Z."), a word in capitals, or after a
-    #: comma a word in mixed case that opens with two capitals or ends in
-    #: one ("MRes").
+    #: comma, in a name written in mixed case, a word that opens with two
+    #: capitals or ends in one ("MRes").
     SHAPE = "shape"
     #: Nothing lists or shapes the word into this reading; it is the
     #: reading any word has where it stands, an ordinary name word. A
@@ -1492,9 +1492,10 @@ class ParsedName:
         """The words written inside nickname delimiters (quotes,
         parentheses; :attr:`Policy.nickname_delimiters
         <nameparser.Policy.nickname_delimiters>`), the delimiters
-        dropped, and the words after an alias marker (``@`` or ``urf``
-        written as a word of its own: ``Ali @ Abu bin Ahmad`` gives
-        ``Abu``), the marker dropped, space-joined in written order;
+        dropped, and the words after a listed alias marker (by default
+        ``@`` or ``urf`` written as a word of its own: ``Ali @ Abu bin
+        Ahmad`` gives ``Abu``), the marker dropped, space-joined in
+        written order;
         ``''`` for a name with none."""
         return self._text_for(Role.NICKNAME)
 
@@ -1642,9 +1643,9 @@ class ParsedName:
     @property
     def surname1(self) -> str:
         """The family's first name unit where the parse read the family
-        as two (``García`` in ``Gabriel García Márquez`` under
-        ``two_family_names``, and in ``García Márquez, Gabriel``, ``de
-        la Vega`` in ``Juan de la Vega del Valle`` under it too, ``王``
+        as two (``García`` in ``Gabriel García Márquez`` and in ``García
+        Márquez, Gabriel`` under ``two_family_names``, ``de la Vega`` in
+        ``Juan de la Vega del Valle`` under it too, ``王``
         in ``王李小明`` under ``locales.ZH``), :attr:`surname2` being the
         other;
         elsewhere the whole :attr:`family`. A middle name

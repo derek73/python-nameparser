@@ -2231,16 +2231,37 @@ def test_a_pair_list_given_a_bare_string_offers_a_list_that_runs(
     added = Lexicon.default().add("zzend", kind=kind,
                                   **{prop: eval(offered)})
     assert [dict(r.properties)[prop] for r in added.readings_of("zzend")] == [
-        (word,)]
+        tuple(sorted(eval(offered)))]
 
 
 def test_completed_by_none_clears_the_list_the_message_offers_to_clear() -> None:
     # the empty-list refusal offers `completed_by=None` to clear a list
-    # the word's reading has; run it on a word that ships one
-    with pytest.raises(ValueError, match="completed_by=None"):
+    # the word's reading has; run what it offers on a word that ships
+    # one, and read the clearing in a parse (rules/P12)
+    with pytest.raises(ValueError, match="completed_by=None") as refused:
         Lexicon.default().add("عبد", kind="bound_given", completed_by=[])
+    offered = str(refused.value).split("write ", 1)[1].split(" to clear")[0]
+    assert offered == "completed_by=None"
+    shipped = [dict(r.properties) for r in
+               Lexicon.default().readings_of("عبد")
+               if r.kind == "bound_given"]
+    assert shipped and all(p.get("completed_by") for p in shipped)
+    assert Parser().parse("سامر نور عبد الله").family == "عبد الله"
     cleared = Lexicon.default().add("عبد", kind="bound_given",
                                     completed_by=None)
-    assert all("completed_by" not in dict(r.properties)
-               or dict(r.properties)["completed_by"] is None
-               for r in cleared.readings_of("عبد"))
+    assert [(r.kind, r.properties) for r in cleared.readings_of("عبد")] == [
+        ("bound_given", ())]
+    assert Parser(lexicon=cleared).parse("سامر نور عبد الله").family == "الله"
+
+
+@pytest.mark.parametrize("kind, article", [
+    ("academic", "an"), ("alias_marker", "an"), ("article", "an"),
+    ("honorific", "an"), ("occupation", "an"), ("title", "a"),
+    ("nobility", "a"), ("given", "a")])
+def test_a_refused_property_names_the_kind_with_its_article(
+        kind: str, article: str) -> None:
+    # every kind beginning with a vowel, and honorific, whose h is
+    # silent, reads "an"; the rest "a"
+    with pytest.raises(ValueError,
+                       match=f"^{article} {kind} reading takes "):
+        Lexicon.empty().add("zzq", kind=kind, zzprop=True)  # type: ignore[call-arg]

@@ -95,6 +95,12 @@ _EDGE_JOINERS = "\u200c\u200d"
 _NON_ASCII_EDGES = FULL_STOPS + _EDGE_JOINERS
 
 
+def _a(kind: str) -> str:
+    """The article a message writes before a reading's kind: ``an``
+    before a vowel and before ``honorific``, whose h is silent."""
+    return "an" if kind[:1] in "aeiou" or kind == "honorific" else "a"
+
+
 def _normalize(word: str) -> str:
     """Lowercase, NFC-compose, strip whitespace and EDGE full stops
     (FULL_STOPS, not the ASCII period alone -- #322), and in a non-ASCII
@@ -1059,7 +1065,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
             # refuses it too (#1072)
             cleared = ("joins it behind any plain word"
                        if prop == "completes"
-                       else "leaves the word no phrase it completes")
+                       else "leaves no listed word completing it")
             raise ValueError(f"{prop} must list at least one word, got "
                              f"{value!r}; list the words it pairs with, or "
                              f"write {prop}=None to clear the list, which "
@@ -1200,7 +1206,7 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
                 "write add(word, kind='given', after_particle=True)")
         if prop not in allowed:
             raise ValueError(
-                f"{'an' if kind[:1] in 'aeiou' else 'a'} {kind} reading takes "
+                f"{_a(kind)} {kind} reading takes "
                 + (", ".join(sorted(allowed)) or "no properties")
                 + f"; got {prop!r}")
         out[prop] = _prop_value(kind, prop, value)
@@ -1786,7 +1792,7 @@ def _check_base(base: object) -> object:
                 if name not in ri.indexed(kind):
                     raise ValueError(
                         f"a Lexicon snapshot gives {word!r}'s {kind} reading "
-                        f"the property {name!r}, which a {kind} reading "
+                        f"the property {name!r}, which {_a(kind)} {kind} reading "
                         f"does not take in this release")
                 try:
                     hash(value)
@@ -2010,7 +2016,7 @@ class LexiconReading:
                              f"kinds are {', '.join(ri.CATEGORY)}")
         if self.category != ri.CATEGORY[self.kind]:
             raise ValueError(
-                f"a {self.kind} reading's category is "
+                f"{_a(self.kind)} {self.kind} reading's category is "
                 f"{ri.CATEGORY[self.kind]!r}, got {self.category!r}")
         for name in ("properties", "languages"):
             if not isinstance(getattr(self, name), tuple):

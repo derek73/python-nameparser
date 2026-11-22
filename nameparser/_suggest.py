@@ -665,6 +665,15 @@ def _iterable(value: object, owner: str, form: str, example: str
     return tuple(value)
 
 
+#: A ``by_signal`` row each setting takes, which a refused row's message
+#: offers: one whose signal votes on that setting
+_ROW_EXAMPLE: Mapping[str, str] = MappingProxyType({
+    _NAME_ORDER: "(Signal.SURNAME, FAMILY_FIRST, 2)",
+    _PATRONYMIC_RULES: "(Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC, 2)",
+    _TWO_FAMILY_NAMES: "(Signal.FIRST_SURNAME, True, 2)",
+})
+
+
 def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
     """One ``by_signal`` row, validated: ``(signal, vote, count)``, its
     signal one that votes on ``setting``."""
@@ -673,7 +682,7 @@ def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
         raise TypeError(
             f"SettingEvidence by_signal rows must be (signal, vote, count) "
             f"triples, got {reprlib.repr(row)}; pass e.g. "
-            f"(Signal.SURNAME, FAMILY_FIRST, 2)")
+            f"{_ROW_EXAMPLE.get(setting, _ROW_EXAMPLE[_NAME_ORDER])}")
     signal, vote, count = row
     pair = _checked_vote(signal, vote, "SettingEvidence by_signal")
     if _SETTING_OF[pair[0]] != setting:
@@ -865,7 +874,8 @@ class SettingEvidence:
                 f"pass '' for no note")
         rows = _iterable(self.by_signal, "SettingEvidence by_signal",
                          "an iterable of (signal, vote, count) rows",
-                         "((Signal.SURNAME, FAMILY_FIRST, 2),) or ()")
+                         f"({_ROW_EXAMPLE.get(self.setting, _ROW_EXAMPLE[_NAME_ORDER])},)"
+                         " or ()")
         object.__setattr__(
             self, "by_signal",
             tuple(_checked_row(row, self.setting) for row in rows))
