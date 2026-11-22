@@ -1386,11 +1386,15 @@ def test_mn_fills_no_patronymic() -> None:
 
 def test_cs_and_sk_pack_contents() -> None:
     # 3f, amended 2026-10-30: cs and sk are their choice plus rules/O6's
-    # patch, no fragment; sl and hr stay nothing but their choice
+    # patch; sl and hr stay nothing but their choice. cs's fragment,
+    # since #970, removes the given reading that gates its Ing, and
+    # keeps the family reading that gates mul.toml's credential
     from nameparser._locale import deviates_by_two_family_names
     from nameparser.locales import cs as _cs, es as _es, sk as _sk
+    fragments = {"cs": Lexicon.empty().remove("ing", kind="given"),
+                 "sk": Lexicon.empty()}
     for code, pack in (("cs", locales.CS), ("sk", locales.SK)):
-        assert pack == Locale(code=code, lexicon=Lexicon.empty(),
+        assert pack == Locale(code=code, lexicon=fragments[code],
                               policy=PolicyPatch(two_family_names=True),
                               languages=frozenset({code})), code
     for code in ("sl", "hr"):
@@ -1406,6 +1410,12 @@ def test_cs_and_sk_pack_contents() -> None:
     # name words (the #973 review: these moved undeclared under all three)
     for name in ("김민준 1", "Jan\u200bPavel -"):
         assert deviates_by_two_family_names(name), name
+    # cs's fragment declares the word it changes, Ing, in any case and
+    # glued to a stop, and not a name that merely holds its letters
+    for name in ("Ing Novák", "ING NOVÁK", "Novák Ing.", "Ing.Novák"):
+        assert _cs.DEVIATES(name) and not deviates_by_two_family_names(name), name
+    for name in ("John King", "Wing Lau", "Ingrid Berg"):
+        assert not _cs.DEVIATES(name), name
 
 
 # rules/O6's declaration counts a run opening with a classified character twice
@@ -2507,6 +2517,8 @@ _ROTATORS["ja"] = _JA_SEGMENTATION_ROTATORS + _JA_CHOICE_ROTATORS
 # and the patch has rotators of its own.
 _ROTATORS["cs"] = [
     "BcA Krejčí",                    # bca
+    "Bc Krejčí",                     # bc (#970)
+    "Hon. Ing Krejčí",               # ing, a title the choice reads behind a style (rules/H9)
     "MgA Malá",                      # mga
     "Mjr Novák",                     # mjr, three initials elsewhere (#1129)
     "Chief Mjr Novák",               # chief mjr, the phrase chief makes
@@ -2515,7 +2527,7 @@ _ROTATORS["cs"] = [
     "Dienstbier ml.",                # ml
     "Jiří Dienstbier st.",           # st
     "Alena Pešová Řehořová",         # rules/O6, the patch
-    "Ing. Alena Pešová Řehořová",    # rules/O6 behind a title
+    "MUDr. Alena Pešová Řehořová",   # rules/O6 behind a title the choice leaves (Ing is its word since #970)
     "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
     "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
@@ -3468,22 +3480,141 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("cs", None, "Novák, Petr Pavel",
      ("", "Petr", "Pavel", "Novák", "", "", ()),
      ("", "Petr", "Pavel", "Novák", "", "", ())),
-    # left alone: a bare title ending the given part is a name word
-    # (rules/H5), the title Mgr was one already, and BC, excluded for
-    # the US credential it spells, stays one (cs.toml's bc)
+    # Bc and Ing, the pack's titles since #970: Bc a reading off by
+    # default, Ing the same with the fragment removing the given reading
+    # that would make it a title only in a phrase (rules/H9), so both
+    # read bare, in each comma shape and order, and a pair joined by et
+    # is one title run (rules/P3)
+    ("cs", None, "Ing Jan Novák",
+     ("", "Ing", "Jan", "Novák", "", "", ()),
+     ("Ing", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "ING JAN NOVÁK",
+     ("", "ING", "JAN", "NOVÁK", "", "", ()),
+     ("ING", "JAN", "", "NOVÁK", "", "", ())),
+    ("cs", None, "Ing Novák",
+     ("", "Ing", "", "Novák", "", "", ()),
+     ("Ing", "", "", "Novák", "", "", ())),
+    ("cs", None, "Novák, Ing Jan",
+     ("", "Ing", "Jan", "Novák", "", "", ("SUFFIX_OR_NAME",)),
+     ("Ing", "Jan", "", "Novák", "", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, ", Ing Jan",
+     ("", "Ing", "Jan", "", "", "", ("SUFFIX_OR_NAME",)),
+     ("Ing", "", "", "Jan", "", "", ("SUFFIX_OR_NAME",))),
+    ("cs", "FAMILY_FIRST", "Ing Novák Jan",
+     ("", "Novák", "Jan", "Ing", "", "", ()),
+     ("Ing", "Jan", "", "Novák", "", "", ())),
+    ("cs", "FAMILY_FIRST_GIVEN_LAST", "Ing Novák Jan",
+     ("", "Jan", "Novák", "Ing", "", "", ()),
+     ("Ing", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Ing. et Ing. Jan Novák",
+     ("", "Ing. et Ing.", "Jan", "Novák", "", "", ()),
+     ("Ing. et Ing.", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "doc. Ing. et Ing. Jan Novák",
+     ("doc.", "Ing. et Ing.", "Jan", "Novák", "", "", ()),
+     ("doc. Ing. et Ing.", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Bc. et Bc. Jana Malá",
+     ("", "Bc. et Bc.", "Jana", "Malá", "", "", ()),
+     ("Bc. et Bc.", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Mgr. Bc. et Bc. Jana Malá",
+     ("Mgr.", "Bc. et Bc.", "Jana", "Malá", "", "", ()),
+     ("Mgr. Bc. et Bc.", "Jana", "", "Malá", "", "", ())),
+    ("cs", "FAMILY_FIRST", "Bc. et Bc. Malá Jana",
+     ("", "Malá", "Jana", "Bc. et Bc.", "", "", ()),
+     ("Bc. et Bc.", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Bc Jana Malá",
+     ("", "Bc", "Jana", "Malá", "", "", ()),
+     ("Bc", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Jana Malá, Bc",
+     ("", "Bc", "", "Jana Malá", "", "", ()),
+     ("Bc", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Malá, Bc Jana",
+     ("", "Bc", "Jana", "Malá", "", "", ()),
+     ("Bc", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "ing jan novák",
+     ("", "ing", "jan", "novák", "", "", ()),
+     ("ing", "jan", "", "novák", "", "", ())),
+    # at the head of a family comma, by vocabulary (rules/H6)
+    ("cs", None, "Ing Novák, Jan",
+     ("", "Jan", "", "Ing Novák", "", "", ()),
+     ("Ing", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Bc Novák, Jan",
+     ("", "Jan", "", "Bc Novák", "", "", ()),
+     ("Bc", "Jan", "", "Novák", "", "", ())),
+    # dotted at the end, a listed title there (rules/H5), and past a
+    # second comma (rules/C2)
+    ("cs", None, "Jana Malá Bc.",
+     ("", "Jana", "Malá", "Bc.", "", "", ()),
+     ("Bc.", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Jan Novák Ing.",
+     ("", "Jan", "Novák", "Ing.", "", "", ("SUFFIX_OR_NAME",)),
+     ("Ing.", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Novák, Jan, Ing.",
+     ("", "Jan", "", "Novák", "Ing.", "", ("COMMA_STRUCTURE",)),
+     ("Ing.", "Jan", "", "Novák", "", "", ())),
+    # the costs, each a name the pack is not for: Ing the given name
+    # opening a name, or alone after a family comma, read as the title,
+    # and a lone Ing or Bc a title with no name; Ing the surname at the
+    # head of a family comma or first under a family-first order; a
+    # title chunk making a period-joined post-nominal a title (rules/S3),
+    # and ING past a second comma (rules/C2); BC the initials and the
+    # US nursing credential
+    ("cs", None, "Ing Wei Lim",
+     ("", "Ing", "Wei", "Lim", "", "", ()),
+     ("Ing", "Wei", "", "Lim", "", "", ())),
+    ("cs", None, "Lim, Ing",
+     ("", "Ing", "", "Lim", "", "", ("SUFFIX_OR_NAME",)),
+     ("Ing", "", "", "Lim", "", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, "Ing",
+     ("", "Ing", "", "", "", "", ("GIVEN_OR_FAMILY",)),
+     ("Ing", "", "", "", "", "", ())),
+    ("cs", None, "Bc",
+     ("", "Bc", "", "", "", "", ("GIVEN_OR_FAMILY",)),
+     ("Bc", "", "", "", "", "", ())),
+    ("cs", None, "Malá, Bc",
+     ("", "Bc", "", "Malá", "", "", ()),
+     ("Bc", "", "", "Malá", "", "", ())),
+    ("cs", None, "Ing Ho, Mei",
+     ("", "Mei", "", "Ing Ho", "", "", ()),
+     ("Ing", "Mei", "", "Ho", "", "", ())),
+    ("cs", "FAMILY_FIRST", "Ing Wei",
+     ("", "Wei", "", "Ing", "", "", ()),
+     ("Ing", "", "", "Wei", "", "", ())),
+    ("cs", None, "Jan Novák, MBA, EUR ING",
+     ("", "Jan", "", "Novák", "MBA, EUR ING", "", ("COMMA_STRUCTURE",)),
+     ("ING", "Jan", "", "Novák", "MBA, EUR", "", ("COMMA_STRUCTURE",))),
+    ("cs", None, "Jan Novák, Ph.D., Ing.Paed.IGIP",
+     ("", "Jan", "", "Novák", "Ph.D., Ing.Paed.IGIP", "", ()),
+     ("Ing.Paed.IGIP", "Jan", "", "Novák", "Ph.D.", "", ())),
+    ("cs", None, "MOSS, BC",
+     ("", "BC", "", "MOSS", "", "", ()),
+     ("BC", "", "", "MOSS", "", "", ())),
+    ("cs", None, "Jane Doe, APRN, BC",
+     ("", "Jane", "", "Doe", "APRN, BC", "", ("COMMA_STRUCTURE",)),
+     ("BC", "Jane", "", "Doe", "APRN", "", ())),
+    # left alone: the family reading the fragment keeps leaves the
+    # credential gated, so Ing the surname stays the family name at the
+    # end and before a comma, Ing after a full name and a comma stays
+    # the credential, and a family comma keeps the surname; and a bare
+    # title ending the given part is a name word (rules/H5), the title
+    # Mgr was one already
+    ("cs", None, "Mr Tom Ing",
+     ("Mr", "Tom", "", "Ing", "", "", ("SUFFIX_OR_NAME",)),
+     ("Mr", "Tom", "", "Ing", "", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, "Wei Ing, PhD",
+     ("", "Wei", "", "Ing", "PhD", "", ("SUFFIX_OR_NAME",)),
+     ("", "Wei", "", "Ing", "PhD", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, "Jan Novák, Ing",
+     ("", "Jan", "", "Novák", "Ing", "", ("SUFFIX_OR_NAME",)),
+     ("", "Jan", "", "Novák", "Ing", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, "Ing, Wei",
+     ("", "Wei", "", "Ing", "", "", ()),
+     ("", "Wei", "", "Ing", "", "", ())),
     ("cs", "FAMILY_FIRST_GIVEN_LAST", "Novák, Jan MUDr",
      ("", "Jan", "MUDr", "Novák", "", "", ()),
      ("", "Jan", "MUDr", "Novák", "", "", ())),
     ("cs", None, "Mgr Jana Nováková",
      ("Mgr", "Jana", "", "Nováková", "", "", ()),
      ("Mgr", "Jana", "", "Nováková", "", "", ())),
-    # PMHNP, listed since #993, no longer reports a comma structure of
-    # its own; BC's remains
-    ("cs", None, "Lora L. Beebe, PhD, PMHNP, BC",
-     ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
-      ("COMMA_STRUCTURE",)),
-     ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
-      ("COMMA_STRUCTURE",))),
 ])
 def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
         tags: str, order: str | None, name: str,
@@ -3504,6 +3635,30 @@ def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
         default, packed)
 
 
+@pytest.mark.parametrize("pack, name, fields", [
+    # a strict choice drops fr.toml, whose et was the only one until cs
+    # and sk wrote their own (#970), so the pair stays one title run
+    (locales.CS, "Ing. et Ing. Jan Novák", ("Ing. et Ing.", "Jan", "", "Novák")),
+    (locales.CS, "Mgr. et Mgr. Jana Malá", ("Mgr. et Mgr.", "Jana", "", "Malá")),
+    (locales.SK, "Mgr. et Mgr. Jana Malá", ("Mgr. et Mgr.", "Jana", "", "Malá")),
+    # and Ing reads under strict as under the plain pack: the fragment's
+    # removal is what makes it a title, strict keeping mul.toml's given
+    # reading, and the family reading it keeps leaves the surname placed
+    (locales.CS, "Ing Jan Novák", ("Ing", "Jan", "", "Novák")),
+    (locales.CS, "Mr Tom Ing", ("Mr", "Tom", "", "Ing")),
+    (locales.CS, "Tom Ing, MD PhD", ("", "Tom", "", "Ing")),
+    # Slovak is left as it was: sk.toml lists neither Bc nor Ing, so its
+    # et joins their pair into the given name, as plain sk reads it
+    # through fr.toml's (strict sk read title 'Ing.', given 'et')
+    (locales.SK, "Ing Ján Kováč", ("", "Ing", "", "Ján Kováč")),
+    (locales.SK, "Ing. et Ing. Jan Novák", ("", "Ing. et Ing.", "", "Jan Novák")),
+])
+def test_a_strict_cs_or_sk_choice_keeps_et_and_reads_ing_as_the_pack(
+        pack: Locale, name: str, fields: tuple[str, ...]) -> None:
+    n = parser_for(pack, strict=True).parse(name)
+    assert (n.title, n.given, n.middle, n.family) == fields
+
+
 def test_the_west_and_south_slavic_packs_repair_their_titles_case() -> None:
     # the readings' cased masks join with them, so capitalized() writes
     # the title as Czech does under the pack, and since #1115 by default
@@ -3516,6 +3671,11 @@ def test_the_west_and_south_slavic_packs_repair_their_titles_case() -> None:
     assert str(cs.capitalized(cs.parse("mga. jan novák"))) == (
         "MgA. Jan Novák")
     assert str(parse("mga. jan novák").capitalized()) == "Mga. Jan Novák"
+    # bc carries no mask (#970): title case writes Bc. as Czech does,
+    # and a mask would recase the nursing credential ACNP-BC
+    assert str(cs.capitalized(cs.parse("bc. jana malá"))) == "Bc. Jana Malá"
+    assert str(cs.capitalized(cs.parse("Jane Doe, ACNP-BC"), force=True)) == (
+        "Jane Doe, ACNP-BC")
 
 
 # -- 3h: the Irish, Scottish Gaelic and Brazilian Portuguese packs --

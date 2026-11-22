@@ -64,7 +64,11 @@ another reading claims:
 - ``st.`` is Saint in English and French.
 - ``Pan`` and ``Roz`` are names in other languages.
 - ``MgA.`` and the rank ``mjr.`` (major) are written as initials too.
-- ``BcA.`` is an English credential.
+- ``BcA.`` is an English credential, and ``Bc`` the US nursing
+  credential BC and a pair of initials.
+- ``Ing`` is a given name too (Chinese, Malaysian and Swedish). Written
+  with its period ``Ing.`` is a title before the name by its shape, as
+  ``Bc.`` is, but not two of them joined by ``et`` (``Ing. et Ing.``).
 
 So they wait for a pack:
 
@@ -74,8 +78,9 @@ So they wait for a pack:
    * - Pack
      - Turns on
    * - ``locales.CS``
-     - ``ml.``, ``st.``; the titles ``MgA.``, ``BcA.`` and ``mjr.``, and
-       ``Mgr.`` read as the degree; ``Pan`` (Mr.); ``roz.``, which routes a maiden
+     - ``ml.``, ``st.``; the titles ``MgA.``, ``BcA.``, ``Bc.``, ``Ing.``
+       and ``mjr.``, and ``Mgr.`` read as the degree, written bare or
+       joined by ``et``; ``Pan`` (Mr.); ``roz.``, which routes a maiden
        name as ``rozená`` does; two family names
        (``two_family_names``)
    * - ``locales.SK``
@@ -94,6 +99,20 @@ So they wait for a pack:
     'ml.'
     >>> czech.parse("Jana Nováková roz. Svobodová").maiden
     'Svobodová'
+    >>> parse("Ing. et Ing. Jan Novák").given
+    'Ing. et Ing.'
+    >>> czech.parse("Ing. et Ing. Jan Novák").title
+    'Ing. et Ing.'
+
+The Czech pack reads ``Ing`` as a title wherever a title is read
+before the name, so a name that opens with the given name Ing reads it
+as the title under the pack (``Ing Wei Lim`` gives title ``Ing``), as
+does Ing alone after a family comma (``Lim, Ing``) and Ing the surname
+at the head of one (``Ing Ho, Mei`` gives family ``Ho``); Ing the
+surname at the end keeps its place (``Tom Ing`` gives family ``Ing``),
+and after a full name and a comma Ing is still the credential. ``BC`` after a comma is
+the title too, so initials written there lose their given name
+(``MOSS, BC`` gives title ``BC``).
 
 Where a title is read, by spelling and position
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

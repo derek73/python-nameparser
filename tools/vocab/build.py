@@ -377,6 +377,14 @@ PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
 MUL_SHARED: dict[str, str] = {
     "i": "the numeral every language writes, beside the ca and pl "
          "conjunction and de's period-written numeral",
+    "ing": "mul.toml's credential written after the name and its name "
+           "readings, beside cs.toml's academic title written before it, "
+           "which a Czech choice turns on; the two are read in different "
+           "places, save past a second comma, where the title takes the "
+           "word (rules/C2), a cost the 2026-11-21 #970 decisions entry "
+           "records; locales.CS's fragment removes the given reading "
+           "that gates the title, the family reading keeping the "
+           "credential gated",
 }
 
 

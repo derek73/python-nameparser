@@ -118,7 +118,11 @@
   "Dean and Mary Smith"       →  given="Dean and Mary"
   "Dean. and Mary Smith"      →  given="Dean. and Mary"
   ```
-- **A title that may be a given name whose given reading a caller removes** is a title wherever it stands, since that is what removing it asks; a modifier is read by this rule unless a caller reads its word as another title kind, and leaving its word out of the modifiers turns the rule off for it.
+- **A title that may be a given name whose given reading a caller or a pack removes** is a title wherever it stands, since that is what removing it asks; a modifier is read by this rule unless a caller reads its word as another title kind, and leaving its word out of the modifiers turns the rule off for it. The Czech pack removes Ing's given reading, so its Ing is a title wherever a title is read before the name.
+  ```
+  "Ing Jan Novák"  [cs]  →  title="Ing"
+  "Ing. et Ing. Jan Novák"  [cs]  →  title="Ing. et Ing."
+  ```
 - **A title phrase written in capitals under capitals-as-family handling** ("Marie BARON GRAND"): the caller has said the capitals write the family name, so the words are the family name, not a title (O9).
   ```
   "Marie BARON GRAND"  capitals_as_family  →  family="BARON GRAND"

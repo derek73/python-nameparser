@@ -25,11 +25,15 @@ salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "bc"
-excluded = { academic = { reason = "bakalář, the Czech and Slovak Bachelor, but BC is the US nursing credential Board Certified, written after the name (APRN, BC; ACNP-BC): read as a title under a Czech choice it moved 23 of ClinicalTrials.gov's 536,981 officials, one a Czech Bc (Dagmar Koveslygetyova, Bc) and the rest that credential or initials (Lora L. Beebe, PhD, PMHNP, BC read title 'BC'; ACNP-BC recased 'ACNP-Bc'), measured 2026-10-30; written Bc. at the head of a name it reads as a title by its shape without a reading (rules/H2)", issue = 753, decided = 2026-10-30 } }
+academic = { default = false, issue = [753, 970], expands = "bakalář, Bachelor", note = "bakalář, the Czech and Slovak Bachelor. Excluded on 2026-10-30 because as a title under a Czech choice it moved 23 of ClinicalTrials.gov's 536,981 officials, one a Czech Bc and the rest the US nursing credential Board Certified (APRN, BC) or initials; re-weighed on 2026-11-21 by the rule that a choice is optimised for its language's names, those 23 being a US register read under a Czech choice. Under locales.CS it moves 51 of cz-candidates' 170,181 records to agreement and none away, the Bc. et Bc. pair most, and of every local corpus's names holding the word, 80 read differently (bc alone, measured 2026-11-21 against master 1e920d6f; recipe in the decisions entry): 59 Czech degrees now right, 5 names a trailing BC had reversed now right, and 16 costs, 9 initials B.C. (MOSS, BC reads title 'BC', no given name) and 7 the credential BC moved from suffix to title, 6 of them the nursing credential and 1 the BC of MB BC. No case mask: cased = 'Bc' recased ACNP-BC as ACNP-Bc under capitalized(force=True), and title case writes Bc. without one (decisions/vocabulary-model, the 2026-11-21 #970 entry)" }
 
 [[word]]
 text = "bca"
 academic = { default = false, cased = "BcA", issue = [753, 848], expands = "bakalář umění, Bachelor of Arts" }
+
+[[word]]
+text = "ing"
+academic = { default = false, issue = 970, expands = "inženýr, the engineering degree", note = "inženýr, the engineering degree, written before the name. Its given reading in mul.toml (Ing, a Chinese, Malaysian and Swedish given name) would make it a title only inside a title phrase (rules/H9), and a choice never drops a name reading, so locales.CS's fragment removes that reading; the family reading stays, keeping mul.toml's credential gated (Mr Tom Ing keeps family Ing). Under locales.CS, with bc, it moves 165 of cz-candidates' 170,181 records to agreement and 4 away (measured 2026-11-21 against master efdf0e16), the records whose Ing et Ing pair stood outside the title falling from 107 to 1, and the cost an Ing.Paed.IGIP or EUR ING written after the name read as a title. Among every local corpus's names holding the word, about 162 are the degree now read (140 written with its period or in a pair, about 22 bare) and about 19 open with Ing the given name, which reads title 'Ing' (Ing Wei Lim); Ing alone after a family comma (Lim, Ing) and Ing the surname at the head of a family comma (Ing Ho, Mei) read the title too (decisions/vocabulary-model, the 2026-11-21 #970 entry)" }
 
 [[word]]
 text = "judr"
@@ -134,6 +138,10 @@ credential = { cased = "DrSc", issue = [753, 848, 969], expands = "doktor věd, 
 [[word]]
 text = "ien"
 excluded = { credential = { reason = "IEn., written after the name by 3 Czech election candidates (cz-candidates, 2026-10-30), is the given name Ien: US SSA 16 births since 1880, a lower bound, years under 5 unrecorded (2026-11-20), so a credential reading would take a given name ending a name", issue = 969, decided = 2026-11-20 } }
+
+[[word]]
+text = "et"
+conjunction = { issue = 970, note = "Latin 'and', which Czech writes between two degrees of the same rank (Ing. et Ing., Mgr. et Mgr.); fr.toml's conjunction already reads it by default, so this copy moves no field but under a strict choice of cs, which drops fr.toml and read Ing. et Ing. Jan Novák as title 'Ing.', given 'et'; there et now joins any two words, as by default (Pierre et Marie Curie gives given 'Pierre et Marie'), and the word's Reading.languages gains cs (#970)" }
 
 [[word]]
 text = "roz"
