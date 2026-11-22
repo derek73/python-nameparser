@@ -8,7 +8,7 @@
   ```
   "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
   ```
-- **A word in the caps shape's mixed-case spelling (S9) reads here as an all-caps word does** ('MRes', 'DClinPsy', 'AuD'), the contrast gating it alike; S9 reads that spelling after the comma only.
+- **The mixed-case spelling is the caps shape's after the comma alone** (S9: 'MRes', 'DClinPsy', 'AuD'), the contrast gating it as it gates capitals, and a word the shape refuses stays a name word ('LeBron', 'PhDc', 'Pharm-D').
   ```
   "Jane Smith, MRes"          →  suffix="MRes"
   "Jane Smith, AuD"           →  suffix="AuD"
