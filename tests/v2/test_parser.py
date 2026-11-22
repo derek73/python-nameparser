@@ -3595,8 +3595,9 @@ def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
     # name, which a plain German choice would otherwise lose: choosing de
     # turns en.toml's credential off, de.toml holding a vocabulary
     # reading of the word, while ko.toml's name readings stay on, and a
-    # lone RA after a family comma read as the given name, the name
-    # reversed (#1483)
+    # lone RA after a comma read as the given name, making the comma a
+    # family comma and reversing the name ('Hans Müller, RA' -> given
+    # 'RA', family 'Hans Müller') (#1483)
     (False, "Hans Müller, RA",
      {"given": "Hans", "family": "Müller", "suffix": "RA"}),
     (False, "Müller, RA", {"family": "Müller", "suffix": "RA"}),
@@ -3604,8 +3605,18 @@ def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
      {"given": "Hans", "family": "Müller", "suffix": "LL.M., RA"}),
     (False, "Hans Müller RA",
      {"given": "Hans", "family": "Müller", "suffix": "RA"}),
-    # in front a plain choice reads the name reading, as the default does
+    (False, "Hans Müller, Dr., RA",
+     {"title": "Dr.", "given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (False, "Jane Doe, PT, RA",
+     {"given": "Jane", "family": "Doe", "suffix": "PT, RA"}),
+    # in front a plain choice reads the name reading, as the default does,
+    # a title behind it falling into the middle name; in capitals after a
+    # family comma it is the given name, no case speaking for the
+    # credential
     (False, "RA Müller", {"given": "RA", "family": "Müller"}),
+    (False, "RA Dr. Hans Müller",
+     {"given": "RA", "middle": "Dr. Hans", "family": "Müller"}),
+    (False, "KING, RA", {"given": "RA", "family": "KING"}),
     # a strict choice reads no ko.toml: the title in front, the
     # credential behind
     (True, "RA Müller", {"title": "RA", "family": "Müller"}),
@@ -3613,6 +3624,12 @@ def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
      {"title": "RA Dr.", "given": "Hans", "family": "Müller"}),
     (True, "Hans Müller, RA",
      {"given": "Hans", "family": "Müller", "suffix": "RA"}),
+    (True, "Jane Doe, PT, RA",
+     {"given": "Jane", "family": "Doe", "suffix": "PT, RA"}),
+    (True, "KING, RA", {"family": "KING", "suffix": "RA"}),
+    # its cost: a Korean surname ending a name is the credential again,
+    # as the default read it before #1483
+    (True, "Kim Ra", {"given": "Kim", "suffix": "Ra"}),
 ])
 def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
         strict: bool, text: str, fields: dict[str, str]) -> None:

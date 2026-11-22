@@ -223,7 +223,7 @@ def test_the_leading_run_declines_to_give_back_a_suffix_word() -> None:
     what leaves the whole-segment carve-out and the all-title inputs
     exactly as they were.
     """
-    assert _leading("VC DDS") == 1         # 'VC' is suffix vocabulary ('RA' until #1483 gave ra a name reading)
+    assert _leading("VC DDS") == 1         # 'VC' is suffix vocabulary ('RA' until #1483 took ra out of the titles)
     assert _leading("Jr. Ph. D.") == 1     # so is 'Jr.'
     assert _leading("Marquess of Bath") == 1   # nothing behind the run
     assert _leading("Dr.") == 1            # the whole-segment carve-out

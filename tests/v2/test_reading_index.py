@@ -393,7 +393,7 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: ranks, whose given names only en.toml writes; de's and en's ra,
 #: whose name readings only ko.toml writes, #1483 on 2026-11-21, a
 #: strict German or English choice reading the credential as master's
-#: default did). A
+#: default did, and a strict German one the title in front). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.

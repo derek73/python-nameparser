@@ -2242,8 +2242,8 @@
 {"name": "John Smith Jr. Jones", "given": "John", "middle": "Smith Jr.", "family": "Jones", "initials": "J. S. J. J."}
 {"name": "John Smith Jr. PhD Jones", "given": "John", "family": "Smith", "suffix": "Jr. PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "PhD Jones"}
 {"name": "John Smith Jr. Prof.", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
-{"name": "John Smith Jr., AD RA", "given": "John", "family": "Smith", "suffix": "Jr., AD RA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "AD RA"}
 {"name": "John Smith Jr., AD Sr. and Mr.", "title": "Sr. and Mr.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "AD"}
+{"name": "John Smith Jr., AD VC", "given": "John", "family": "Smith", "suffix": "Jr., AD VC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "AD VC"}
 {"name": "John Smith Jr., J.", "given": "J.", "family": "John Smith", "suffix": "Jr.", "initials": "J. J. S.", "generation": "Jr."}
 {"name": "John Smith Jr., M.J.", "given": "M.", "middle": "J.", "family": "John Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. J. S.", "generation": "Jr."}
 {"name": "John Smith Jr., MBChB PhD", "given": "John", "family": "Smith", "suffix": "Jr., MBChB PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "MBChB PhD"}

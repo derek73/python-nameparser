@@ -1019,9 +1019,9 @@ written in Latin letters meet those words by accident. Many common
 Korean syllables, romanized, are spelled like another language's
 word: ``Do`` like the Portuguese particle, ``Bin`` like the Arabic
 and Malay one, ``Ae`` like an English credential. Korean's file holds
-one word written in Latin letters, ``Ra``, a name it reads as one by
-default, so a ``ko`` choice settles none of the others, and a strict
-one reads each as a name word:
+one word written in Latin letters, ``Ra``, which it reads as a family
+name and a given name in every parse, so a ``ko`` choice settles none
+of the others, and a strict one reads each as a name word:
 
 .. doctest::
 
