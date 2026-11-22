@@ -2627,9 +2627,56 @@ class Lexicon:
                 "word's readings of it, e.g. remove(kind='title', "
                 "every=True)")
         edit = _make_edit("remove", words, kind, pairs)
+        for message in self._inert_removes(edit):
+            _warn_at_caller(message)
         return dataclasses.replace(self, _edits=self._edits + (edit,))
 
     # -- private helpers --------------------------------------------------
+
+    def _inert_removes(self, edit: _Edit) -> list[str]:
+        """A warning for each word of a `remove` that no vocabulary file
+        and no earlier `add` of this lexicon gives a reading of the kind
+        asked (any reading, with no kind), so that the edit can take
+        effect under no choice of languages (#1535). A file's reading
+        counts whether it is on by default or not, since a choice may
+        turn it on. Read at `remove` alone, never when a constructor
+        replays the log or a pickle loads. A remove of every word's
+        readings (no words) and the familiar and spelling pair removes,
+        which match names by their folded forms, are not judged."""
+        ri = _index_module()
+        kind = edit.kind
+        if not edit.words or (kind is not None and ri.CATEGORY.get(
+                kind, kind) in ri.MATCHING_ONLY):
+            return []
+        added: dict[str, set[str]] = {}
+        for earlier in self._edits:
+            if earlier.op == "add" and earlier.kind is not None:
+                for w in earlier.words:
+                    added.setdefault(w, set()).add(earlier.kind)
+        messages = []
+        for w in edit.words:
+            held = {r.kind for r in ri.readings_of(w)} | added.get(w, set())
+            if kind is None:
+                if not held:
+                    messages.append(
+                        f"remove({w!r}) changes nothing: {w!r} is in no "
+                        f"vocabulary file and no earlier add() of this "
+                        f"lexicon; check its spelling")
+                continue
+            if any(k == kind or ri.CATEGORY[k] == kind for k in held):
+                continue
+            if not held:
+                messages.append(
+                    f"remove({w!r}, kind={kind!r}) changes nothing: {w!r} "
+                    f"is in no vocabulary file and no earlier add() of "
+                    f"this lexicon; check its spelling")
+                continue
+            kinds = sorted(held)
+            messages.append(
+                f"{w!r} has no {kind!r} reading in any vocabulary file; "
+                f"its readings are: {', '.join(kinds)}. Did you mean "
+                f"remove({w!r}, kind={kinds[0]!r})?")
+        return messages
 
     def _pool(self) -> Pool:
         return self._files.pool()

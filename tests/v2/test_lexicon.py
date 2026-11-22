@@ -1407,7 +1407,10 @@ def test_two_lexicons_are_equal_when_their_logs_are_as_written() -> None:
 def test_a_later_edit_reads_after_an_earlier_one() -> None:
     lex = Lexicon.empty()
     assert lex.add("x", kind="title").remove("x")._sets.titles == frozenset()
-    assert lex.remove("x").add("x", kind="title")._sets.titles == {"x"}
+    # a remove before the add it would undo takes nothing, and warns (#1535)
+    with pytest.warns(UserWarning, match="'x' is in no vocabulary file"):
+        removed_first = lex.remove("x")
+    assert removed_first.add("x", kind="title")._sets.titles == {"x"}
 
 
 def test_replace_carries_the_base_and_the_log() -> None:
@@ -2217,3 +2220,141 @@ def test_words_finds_a_spelling_of_several_by_any_word_it_names() -> None:
     assert "md" not in lexicon.words(kind="given",
                                      same_as=["muhammad", "mohamad"])
     assert lexicon.words(kind="given", same_as="charles") == ("chas",)
+
+
+# -- a remove that takes nothing (#1535) ------------------------------------
+#
+# remove() warns where no vocabulary file and no earlier add() of the
+# lexicon gives the word a reading of the kind asked, since such an edit
+# takes effect under no choice of languages.
+
+_INERT_REMOVES = [
+    # a kind the word does not hold: the warning names the kinds it does
+    pytest.param(lambda L: L.remove("alhaj", kind="religious"),
+                 ["'alhaj' has no 'religious' reading", "style",
+                  "remove('alhaj', kind='style')"], id="wrong-kind"),
+    # a word in no file, with a kind and without one
+    pytest.param(lambda L: L.remove("zzyzx", kind="title"),
+                 ["remove('zzyzx', kind='title') changes nothing",
+                  "in no vocabulary file"], id="unknown-word"),
+    pytest.param(lambda L: L.remove("zzyzx"),
+                 ["remove('zzyzx') changes nothing",
+                  "in no vocabulary file"], id="unknown-word-no-kind"),
+    # a category none of whose kinds the word holds
+    pytest.param(lambda L: L.remove("alhaj", kind="name"),
+                 ["'alhaj' has no 'name' reading",
+                  "remove('alhaj', kind='style')"], id="category-none-held"),
+]
+
+
+@pytest.mark.parametrize("call, expected", _INERT_REMOVES)
+def test_a_remove_that_takes_nothing_warns(
+        call: Callable[[Lexicon], Lexicon], expected: list[str]) -> None:
+    with pytest.warns(UserWarning) as record:
+        removed = call(Lexicon.default())
+    assert len(record) == 1
+    message = str(record[0].message)
+    for part in expected:
+        assert part in message, message
+    # the edit is still logged, as before
+    assert len(removed._edits) == 1
+
+
+def test_a_remove_of_several_words_names_only_those_it_takes_nothing_from() -> None:
+    with pytest.warns(UserWarning) as record:
+        Lexicon.default().remove("alhaj", "qari", "zzyzx", kind="religious")
+    messages = [str(w.message) for w in record]
+    assert len(messages) == 2
+    assert any("'alhaj'" in m for m in messages)
+    assert any("'zzyzx'" in m for m in messages)
+    assert not any("'qari'" in m for m in messages)
+
+
+def test_the_remove_a_warning_offers_takes_the_reading() -> None:
+    # the offered call is code to paste: run it, on the default, and
+    # check that it takes the reading the inert one missed
+    with pytest.warns(UserWarning) as record:
+        Lexicon.default().remove("alhaj", kind="religious")
+    offered = re.search(r"remove\([^)]*\)", str(record[0].message))
+    assert offered is not None
+    fixed = eval("Lexicon.default()." + offered.group(0))  # noqa: S307
+    assert "style" in {r.kind for r in Lexicon.default().readings_of("alhaj")}
+    assert "style" not in {r.kind for r in fixed.readings_of("alhaj")}
+    assert Parser(lexicon=fixed).parse("Alhaj Ahmed Khan").title == ""
+
+
+@pytest.mark.parametrize("call", [
+    # a reading a file holds off by default, which a choice turns on
+    pytest.param(lambda L: L.remove("piedade", kind="given"),
+                 id="default-false"),
+    # a category one of whose kinds the word holds
+    pytest.param(lambda L: L.remove("dean", kind="title"), id="category"),
+    # the lexicon's own earlier add, and a second remove of a reading
+    pytest.param(lambda L: L.add("zzorvan", kind="family")
+                 .remove("zzorvan", kind="family"), id="own-add"),
+    pytest.param(lambda L: L.add("zzorvan", kind="family")
+                 .remove("zzorvan", kind="family")
+                 .remove("zzorvan", kind="family"), id="own-add-twice"),
+    pytest.param(lambda L: L.remove("phd", kind="credential")
+                 .remove("phd", kind="credential"), id="file-twice"),
+    # a remove of every word's readings of a kind names no word
+    pytest.param(lambda L: L.remove(kind="title", every=True), id="every"),
+    # the pair removes are judged by name matching's folded forms
+    pytest.param(lambda L: L.remove("zzbob", kind="familiar"),
+                 id="familiar"),
+    pytest.param(lambda L: L.remove("zzsara", kind="spelling",
+                                    spelling_of=["zzsarah"]),
+                 id="spelling"),
+])
+def test_a_remove_that_can_take_effect_is_silent(
+        call: Callable[[Lexicon], Lexicon]) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        call(Lexicon.default())
+
+
+def test_a_remove_warning_points_at_the_callers_line() -> None:
+    def line_of(make: Callable[[], object]) -> tuple[str, int]:
+        with pytest.warns(UserWarning) as record:
+            make()
+        return record[0].filename, record[0].lineno
+
+    def plain() -> object:
+        return Lexicon.default().remove("zzyzx")
+
+    def chained() -> object:
+        return Lexicon.default().remove("dean", kind="title").remove("zzyzx")
+
+    def in_a_parser() -> object:
+        return Parser(lexicon=Lexicon.default().remove("zzyzx"))
+
+    for make in (plain, chained, in_a_parser):
+        filename, lineno = line_of(make)
+        # the warning names this file and the remove's own line, the
+        # function's body, not a line inside the library
+        assert filename == __file__
+        assert lineno == make.__code__.co_firstlineno + 1, make.__name__
+
+
+def test_a_logged_remove_does_not_warn_again() -> None:
+    with pytest.warns(UserWarning):
+        inert = Lexicon.default().remove("zzyzx", kind="title")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        # replaying the log, by a copy and by a pickle, warns nothing
+        dataclasses.replace(inert, given_names=frozenset({"luis"}))
+        loaded = pickle.loads(pickle.dumps(inert))
+        assert loaded == inert
+        Parser(lexicon=inert).parse("Zzyzx Smith")
+
+
+def test_every_pack_builds_with_no_remove_warning() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        warnings.filterwarnings(
+            "ignore", message="Policy.segment_scripts activates")
+        for code in locales.available():
+            pack = locales.get(code)
+            parser_for(pack)
+            if pack.languages:
+                parser_for(pack, strict=True)

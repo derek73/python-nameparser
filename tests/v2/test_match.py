@@ -2803,7 +2803,10 @@ def test_a_remove_of_every_reading_of_a_word_keeps_the_pairs_other_words_hold() 
     # spelling ones among them; a pair another word holds with it is
     # that word's reading, and takes a remove of the kind (#1404)
     lexicon = _pairs("familiar", "short_for").add("zzbo", kind="title")
-    after = lexicon.remove("zzbo").remove("zzrobert")
+    # zzrobert holds no reading of its own, so the remove takes nothing
+    # and warns (#1535)
+    with pytest.warns(UserWarning, match="'zzrobert' is in no vocabulary"):
+        after = lexicon.remove("zzbo").remove("zzrobert")
     assert after.readings_of("zzbo") == ()
     assert after._familiar_forms("zzrobert") == {"zzrob"}
 
