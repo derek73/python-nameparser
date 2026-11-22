@@ -1338,6 +1338,25 @@ def test_post_rules_helpers_return_before_their_frames() -> None:
                        only="_leading_name_piece") >= 1
 
 
+def test_tokenize_asks_no_ambiguity_origin_of_a_parse_without_one() -> None:
+    """tokenize resolves a report's character offset only where extract
+    left a report, and tests the tuple before the `any()` generator
+    that looks for an offset, whose every resume is a frame
+    (decisions/parse-cost, 2026-11-22 #1527). The band cannot see the
+    generator put back. Recorded negative control (2026-11-22, py3.11,
+    on af58ca09, the tree before): the generator ran once on each name
+    below with no report."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("John Smith", "Smith, John", "John (Jack) Smith"):
+        assert _frames_for(text, only="<genexpr>", caller="tokenize") == 0, (
+            text)
+    # REACHABILITY: a stray delimiter leaves a report with an offset,
+    # and the generator runs to find it
+    assert _frames_for('John "Jack ) Smith', only="<genexpr>",
+                       caller="tokenize") >= 1
+
+
 def test_a_script_with_no_order_entry_stops_the_script_walk() -> None:
     """`_effective_order` asks one word's script and returns the
     declared order where that script, outside the kana license, has no

@@ -39,19 +39,20 @@ from nameparser._types import Role, Span
 
 # Ported from v1's "emoji" and "bidi" patterns (the 1.x and 2.x
 # nameparser.config.regexes, removed in 3.0, #1008); this is now the
-# only copy. Written as integer ranges, never as a literal regex class:
-# CodeQL's py/overly-large-range false-positives on literal astral
-# ranges (surrogate decomposition), so the class below is built from
-# the integers.
+# only copy. The emoji ranges are written as integers, never as a
+# literal regex class: CodeQL's py/overly-large-range false-positives on
+# literal astral ranges (surrogate decomposition), so their class,
+# _EMOJI_CHARS, is built from the integers. The bidi marks are all in
+# the BMP and stay a literal class body.
 _EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                  (0x2600, 0x26FF), (0x2700, 0x27BF))
 _BIDI_CHARS = '\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069'
-# The emoji ranges as a character class, for the classes below
 _EMOJI_CHARS = ''.join(f'{chr(lo)}-{chr(hi)}' for lo, hi in _EMOJI_RANGES)
 
 # rules/T2: "the katakana middle dot, its halfwidth twin and the
-# Ethiopic wordspace divide a name like whitespace, always." They
-# record no offset: the nakaguro also divides kanji roster pairs
+# Ethiopic wordspace divide a name like whitespace, always." -- the
+# Then, for these three characters, in every context. They record no
+# offset: the nakaguro also divides kanji roster pairs
 # (高橋・一郎, read family-first by the script license, #272), so it is
 # not a transcription marker; _TRANSCRIPTION_DOTS below are
 # (decisions/T2 and T3, #298, #1202, #1312).
@@ -84,8 +85,9 @@ _INTERPUNCT = "\u00B7"
 _TRANSCRIPTION_DOTS = frozenset({_INTERPUNCT, "\uFF0E"})
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
-# part of the word" (history: decisions/T3). The flank guard asks
-# _policy._classified_char per CHAR: a one-char string is
+# part of the word" -- the Then, for both _TRANSCRIPTION_DOTS, whose
+# flank guard _tokenize_region applies (decisions/T3, #298, #1312). The
+# guard asks _policy._classified_char per CHAR: a one-char string is
 # wholly-classified iff the character is. Context-sensitivity is why the
 # guard lives in _tokenize_region (where the index exists) and not in
 # _ignorable.
@@ -138,23 +140,25 @@ def _mongolian_letter(ch: str) -> bool:
 
 
 def _stripped(ch: str, policy: Policy) -> bool:
-    """True when the strip policy removes `ch` from the token stream,
-    the set _strip_class defines for _IGNORABLE and _BOUNDARY too, so a
-    stripped character never occupies a flank and a new strip class is
-    transparent to the transcription-dot guard by construction. The
-    separators (whitespace, the name dots and _INVISIBLE_SEPARATORS)
-    are not stripped and do occupy one."""
+    """True when the strip policy removes `ch` from the token stream.
+    It matches the class _strip_class builds, which _IGNORABLE and
+    _BOUNDARY are built from too. _flank skips what it matches, so a
+    stripped character never occupies a flank, and a strip class added
+    to _strip_class is transparent to the transcription-dot guard by
+    construction. The separators (whitespace, the name dots and
+    _INVISIBLE_SEPARATORS) are not stripped and do occupy one."""
     pattern = _STRIPPED[policy.strip_bidi, policy.strip_emoji]
     return pattern is not None and pattern.match(ch) is not None
 
 
 def _flank(text: str, indices: range, policy: Policy) -> str | None:
     """The nearest flank character the strip policy would keep, or
-    None if the range exhausts. Stripped invisibles are TRANSPARENT
+    None if the range exhausts. What the strip policy removes (the
+    bidi marks and the emoji, each under its switch) is TRANSPARENT
     here: an RTL document quoting a transcription puts U+200F beside
-    the dot in visually identical text. Whitespace and the other
-    separators stay guard-defeating: a dot beside a space is not
-    between characters."""
+    the dot in visually identical text. Whitespace, the name dots and
+    _INVISIBLE_SEPARATORS stay guard-defeating: a dot beside a space is
+    not between characters."""
     for i in indices:
         ch = text[i]
         if not _stripped(ch, policy):
@@ -166,8 +170,9 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     """True when `ch` separates the words beside it: whitespace, the
     name dots, _INVISIBLE_SEPARATORS (all unconditional, not
     policy-gated, and recording no offset, which the commas and the
-    transcription dots do), and what the strip policy removes. The one exception is decided in _tokenize_region, by
-    context: U+202F between two Mongolian letters joins them (rules/T6)."""
+    transcription dots do), and what the strip policy removes. The
+    one exception is decided in _tokenize_region, by context: U+202F
+    between two Mongolian letters joins them (rules/T6)."""
     policy = state.policy
     return _IGNORABLE[policy.strip_bidi, policy.strip_emoji].match(
         ch) is not None
@@ -238,8 +243,9 @@ def tokenize(state: ParseState) -> ParseState:
     for start, end in zip(boundaries[::2], boundaries[1::2]):
         _tokenize_region(state, start, end, None, True, tokens, commas,
                          interpuncts)
-    # extracted regions: pre-set role; a comma is word text there and an
-    # interpunct a mere separator, neither recording an offset
+    # extracted regions: pre-set role; a comma is word text there, and a
+    # transcription dot divides where its flanks allow but records no
+    # offset
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas, interpuncts)
@@ -253,10 +259,10 @@ def tokenize(state: ParseState) -> ParseState:
     # offset back out of its detail string. An offset inside a masked
     # region belongs to no token; those keep an empty tuple, which the
     # kind's contract already allows.
-    # Bisect rather than rescan: the closer sweep can emit one
-    # ambiguity per delimiter character, so a linear scan per ambiguity
-    # is quadratic (test_benchmark.py's `unmatched_closes` row;
-    # decisions/parse-cost, 2026-11-22). Spans are non-overlapping and
+    # Bisect rather than rescan: the closer sweep reports one ambiguity
+    # per stray closing delimiter, so a linear scan per ambiguity is
+    # quadratic in them (test_benchmark.py's `unmatched_closes` row;
+    # decisions/parse-cost, 2026-11-22 #1527). Spans are non-overlapping and
     # sorted just above, so the candidate is the last token whose start
     # is <= the offset.
     # Nothing to resolve on the common parse with no ambiguity, which
