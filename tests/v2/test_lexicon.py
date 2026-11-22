@@ -2242,6 +2242,10 @@ def test_completed_by_none_clears_the_list_the_message_offers_to_clear() -> None
         Lexicon.default().add("عبد", kind="bound_given", completed_by=[])
     offered = str(refused.value).split("write ", 1)[1].split(" to clear")[0]
     assert offered == "completed_by=None"
+    # what it clears to: the word keeps P5's join, but no listed word
+    # completes it any more
+    assert str(refused.value).endswith(
+        "which leaves no listed word completing it")
     shipped = [dict(r.properties) for r in
                Lexicon.default().readings_of("عبد")
                if r.kind == "bound_given"]
@@ -2254,10 +2258,15 @@ def test_completed_by_none_clears_the_list_the_message_offers_to_clear() -> None
     assert Parser(lexicon=cleared).parse("سامر نور عبد الله").family == "الله"
 
 
-@pytest.mark.parametrize("kind, article", [
-    ("academic", "an"), ("alias_marker", "an"), ("article", "an"),
-    ("honorific", "an"), ("occupation", "an"), ("title", "a"),
-    ("nobility", "a"), ("given", "a")])
+def _article_rows() -> list[tuple[str, str]]:
+    from nameparser._reading_index import CATEGORY
+    rows = [(kind, "an" if kind[:1] in "aeiou" or kind == "honorific"
+             else "a") for kind in sorted(CATEGORY)]
+    assert any(a == "an" for _, a in rows) and any(a == "a" for _, a in rows)
+    return rows
+
+
+@pytest.mark.parametrize("kind, article", _article_rows())
 def test_a_refused_property_names_the_kind_with_its_article(
         kind: str, article: str) -> None:
     # every kind beginning with a vowel, and honorific, whose h is

@@ -1033,7 +1033,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
         side = ("before" if _index_module().CATEGORY.get(kind) == "title"
                 else "after")
         if value != side:
-            raise ValueError(f"attached on a {kind!r} reading must be "
+            raise ValueError(f"attached on {_a(kind)} {kind!r} reading must be "
                              f"{side!r} (a {'title peeled off the start' if side == 'before' else 'tail peeled off the end'} "
                              f"of a name token) or None, got {value!r}")
         return value
@@ -1251,7 +1251,7 @@ def _make_edit(op: object, words: object, kind: object,
         if " " in w and not (k == "birth_marker" or (
                 category == "title" and ("addresses", "given") in p)):
             raise ValueError(
-                f"{w!r} is a phrase, which can never match as a {k}: only "
+                f"{w!r} is a phrase, which can never match as {_a(k)} {k}: only "
                 f"a birth_marker and a title with addresses='given' are "
                 f"matched as a whole run; add its words one by one")
         # the build refuses attached on a title phrase: the glued-title

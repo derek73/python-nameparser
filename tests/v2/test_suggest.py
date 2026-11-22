@@ -3693,9 +3693,11 @@ _SETTING_VALUES: dict[str, object] = {
 def _non_order_signals() -> list[tuple[Signal, object, str, object]]:
     from nameparser._suggest import _SETTING_OF
     bad = {"two_family_names": 1, "patronymic_rules": "east-slavic"}
-    return [(signal, bad[setting], setting, _SETTING_VALUES[setting])
+    rows = [(signal, bad[setting], setting, _SETTING_VALUES[setting])
             for signal, setting in _SETTING_OF.items()
             if setting != "name_order"]
+    assert rows
+    return rows
 
 
 @pytest.mark.parametrize("signal, bad, setting, value", _non_order_signals())
@@ -3718,24 +3720,43 @@ def test_a_refused_vote_offers_its_owners_shape_and_the_code_runs(
                     (row,))
 
 
-
 def _settings_voted_on() -> list[str]:
     from nameparser._suggest import _SETTING_OF
-    return sorted(set(_SETTING_OF.values()))
+    settings = sorted(set(_SETTING_OF.values()))
+    assert settings
+    return settings
 
 
-@pytest.mark.parametrize("setting", _settings_voted_on())
-def test_a_row_that_is_no_triple_is_offered_a_row_of_its_own_setting(
+#: The settings ``Parser.suggest`` returns evidence for: the three a
+#: signal votes on, and two it decides with no signal's row
+_EMITTED = (*_settings_voted_on(), "initials_as_family", "capitals_as_family")
+
+
+@pytest.mark.parametrize("setting", _EMITTED)
+def test_a_refused_by_signal_is_offered_code_its_own_setting_takes(
         setting: str) -> None:
-    # every setting a signal votes on is offered a row whose signal
-    # votes on it (the name_order row was offered for every setting
-    # until the 3.2 prose sweep), and the offered row is accepted
-    value = _SETTING_VALUES[setting]
+    # a row that is no triple, and a by_signal that is no iterable, are
+    # each offered code the evidence's own setting accepts: a row whose
+    # signal votes on it, or no row where no signal does (the name_order
+    # row was offered for every setting until the 3.2 prose sweep)
+    from nameparser._suggest import _SETTING_OF
+    value = _SETTING_VALUES.get(setting, True)
     names = {"Signal": Signal, "PatronymicRule": PatronymicRule,
              "FAMILY_FIRST": FAMILY_FIRST}
-    with pytest.raises(TypeError) as refused:
+    voted_on = setting in set(_SETTING_OF.values())
+    with pytest.raises(TypeError) as refused_row:
         SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
                         ("x",))  # type: ignore[arg-type]
-    row = eval(str(refused.value).rsplit("pass e.g. ", 1)[1], names)
-    SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
-                    (row,))
+    if voted_on:
+        row = eval(str(refused_row.value).rsplit("pass e.g. ", 1)[1], names)
+        SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
+                        (row,))
+    else:
+        assert str(refused_row.value).endswith("pass by_signal=()")
+    with pytest.raises(TypeError) as refused_rows:
+        SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
+                        5)  # type: ignore[arg-type]
+    offered = str(refused_rows.value).rsplit("pass e.g. ", 1)[1]
+    for code in offered.split(" or "):
+        SettingEvidence(setting, value, True, 2, 0, 0, 0,  # type: ignore[arg-type]
+                        eval(code, names))

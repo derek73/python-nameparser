@@ -681,8 +681,9 @@ def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
             or len(row) != 3:
         raise TypeError(
             f"SettingEvidence by_signal rows must be (signal, vote, count) "
-            f"triples, got {reprlib.repr(row)}; pass e.g. "
-            f"{_ROW_EXAMPLE.get(setting, _ROW_EXAMPLE[_NAME_ORDER])}")
+            f"triples, got {reprlib.repr(row)}; "
+            + (f"pass e.g. {_ROW_EXAMPLE[setting]}" if setting in _ROW_EXAMPLE
+               else f"no signal votes on {setting}, so pass by_signal=()"))
     signal, vote, count = row
     pair = _checked_vote(signal, vote, "SettingEvidence by_signal")
     if _SETTING_OF[pair[0]] != setting:
@@ -874,8 +875,8 @@ class SettingEvidence:
                 f"pass '' for no note")
         rows = _iterable(self.by_signal, "SettingEvidence by_signal",
                          "an iterable of (signal, vote, count) rows",
-                         f"({_ROW_EXAMPLE.get(self.setting, _ROW_EXAMPLE[_NAME_ORDER])},)"
-                         " or ()")
+                         (f"({_ROW_EXAMPLE[self.setting]},) or ()"
+                          if self.setting in _ROW_EXAMPLE else "()"))
         object.__setattr__(
             self, "by_signal",
             tuple(_checked_row(row, self.setting) for row in rows))
