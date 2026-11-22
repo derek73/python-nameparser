@@ -3660,6 +3660,11 @@ def test_a_german_choice_reads_ra_after_the_name_as_the_credential(
       "family": "Qirwan"}),
     (("en",), True, "John Smith, AB",
      {"title": "AB", "given": "John", "family": "Smith"}),
+    # inside a title phrase rules/H9 reads the gated rank as the title,
+    # under any choice of English
+    (("en",), False, "Chief Ab Smith", {"title": "Chief Ab", "family": "Smith"}),
+    (("en", "ms"), True, "Chief Ab Smith",
+     {"title": "Chief Ab", "family": "Smith"}),
     # a strict choice of English that also chooses ms or nl reads their
     # given reading, which gates the rank as a plain one does
     (("en", "ms"), True, "AB John Smith",

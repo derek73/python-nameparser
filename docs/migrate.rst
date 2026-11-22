@@ -2529,8 +2529,9 @@ the name, as an unlisted pair of capitals does:
     >>> parse("John Smith, AB").family
     'John Smith'
 
-The rank is read only under a choice of English with ``strict=True``
-that chooses neither ``ms`` nor ``nl``; a strict choice without ``ms``
+The rank is read alone only under a choice of English with
+``strict=True`` that chooses neither ``ms`` nor ``nl``; any choice of
+English reads it inside a title phrase (``Chief Ab Smith``). A strict choice without ``ms``
 reads ``Ab.`` opening a name as a title by its shape, as it reads any
 unlisted abbreviation there. To read it as 3.1 did, remove its given
 readings and add the rank:

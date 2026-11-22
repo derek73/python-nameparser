@@ -1890,7 +1890,7 @@ CASES: tuple[Case, ...] = (
          notes="Accepted (decisions/vocabulary-collisions, 2026-11-21 "
                "#1178): no trailing title (rules/H5); 1.4.0 read the same "
                "fields, 3.1.0 title 'AB.', family 'Siti'"),
-    Case("ab_glued_ending_a_word_of_three_chunks_is_read_by_shape",
+    Case("ab_ending_a_word_glued_at_its_stops_is_read_by_shape",
          "Ali Budi Santoso.AB",
          {"given": "Ali", "family": "Budi", "suffix": "Santoso.AB"},
          classification="feat(#1178)",
