@@ -2300,11 +2300,11 @@ _MESSAGE_CASES = [
                  "the vocabulary writes 'x.q' without its full stops",
                  "remove('xq', kind='credential')", id="stops-own-add"),
     # a suffix word with stops is no acronym (J.R. is not read as jr), and
-    # a bare word not holding the kind asked offers nothing
+    # a kind the dotted spelling is not read by names the one it is
     pytest.param(lambda L: L.remove("j.r."), "'j.r' is in no vocabulary file",
                  None, id="stops-not-an-acronym"),
     pytest.param(lambda L: L.remove("m.d.", kind="title"),
-                 "'m.d' is in no vocabulary file", None,
+                 "as 'md', read with its full stops as credential", None,
                  id="stops-other-kind"),
     # a word in no file: the join remedy named beside the spelling one
     pytest.param(lambda L: L.remove("zzyzx", kind="title"),
@@ -2327,6 +2327,41 @@ def test_a_remove_warning_names_its_case(
     found = re.findall(r"remove\('[^']+', kind='[a-z_]+'\)", message.split(
         "changes nothing: ", 1)[1])
     assert found == ([offered] if offered else []), message
+
+
+def test_a_dotted_spellings_offer_takes_only_the_reading_it_is_read_by() -> None:
+    # M.D. is md's credential, and md is also Muhammad written short: the
+    # offered call takes the credential and leaves the given name (#1535)
+    with pytest.warns(UserWarning) as record:
+        Lexicon.default().remove("M.D.")
+    offered = re.search(r"did you mean (remove\([^)]*\))",
+                        str(record[0].message))
+    assert offered is not None
+    taken = Parser(lexicon=eval("Lexicon.default()." + offered.group(1)))  # noqa: S307
+    assert Parser().parse("John Smith M.D.").suffix == "M.D."
+    assert taken.parse("John Smith M.D.").suffix == ""
+    assert taken.parse("Md. Ali Khan").given == "Md."
+    # an acronym the lexicon added itself, offered and taken the same way
+    added = Lexicon.default().add("xq", kind="credential", acronym=True)
+    with pytest.warns(UserWarning) as own:
+        added.remove("x.q.")
+    offered = re.search(r"did you mean (remove\([^)]*\))", str(own[0].message))
+    assert offered is not None
+    assert Parser(lexicon=added).parse("Jane Doe XQ").suffix == "XQ"
+    assert Parser(lexicon=eval("added." + offered.group(1))).parse(  # noqa: S307
+        "Jane Doe XQ").suffix == ""
+
+
+def test_a_dotted_spelling_read_by_two_kinds_lists_them() -> None:
+    # us is a dotted title read by two title kinds once a caller adds one,
+    # so no call is plainly meant: the kinds are listed, none offered
+    lexicon = Lexicon.default().add("us", kind="academic")
+    with pytest.warns(UserWarning) as record:
+        lexicon.remove("u.s.")
+    message = str(record[0].message)
+    assert "the vocabulary writes 'u.s' without its full stops" in message
+    assert "read with its full stops as academic, modifier" in message
+    assert "did you mean" not in message
 
 
 @pytest.mark.parametrize("field", ["surnames", "given_names"])

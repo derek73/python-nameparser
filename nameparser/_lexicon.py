@@ -2770,15 +2770,23 @@ class Lexicon:
         # credential, not its given reading, Muhammad written short)
         read_as = {k for k in bare_kinds if ri.CATEGORY[k] == (
             "suffix" if bare in self._sets.suffix_acronyms else "title")}
-        if (bare != w and bare in (self._sets.suffix_acronyms
-                                   | self._sets.dotted_titles)
-                and (kind is None and len(read_as) == 1 or any(
-                    k == kind or ri.CATEGORY[k] == kind
-                    for k in read_as))):
-            offer = kind if kind is not None else next(iter(read_as))
-            call = f"remove({bare!r}, kind={offer!r})"
-            return (f"the vocabulary writes {w!r} without its full stops, "
-                    f"as {bare!r}: did you mean {call}?")
+        if bare != w and bare in (self._sets.suffix_acronyms
+                                  | self._sets.dotted_titles):
+            text = (f"the vocabulary writes {w!r} without its full stops, "
+                    f"as {bare!r}")
+            asked = [k for k in read_as if kind is not None
+                     and (k == kind or ri.CATEGORY[k] == kind)]
+            if kind is None and len(read_as) == 1:
+                offer: str | None = next(iter(read_as))
+            elif len(asked) == 1:
+                offer = kind
+            else:
+                offer = None
+            if offer is not None:
+                return text + (f": did you mean remove({bare!r}, "
+                               f"kind={offer!r})?")
+            return text + (", read with its full stops as "
+                           + ", ".join(sorted(read_as)))
         return (f"{w!r} is in no vocabulary file and no earlier add() of "
                 f"this lexicon; check its spelling, or, where a lexicon "
                 f"this one is joined with adds it, remove it from the "
