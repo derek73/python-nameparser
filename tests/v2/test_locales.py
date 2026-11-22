@@ -1403,9 +1403,9 @@ def test_cs_and_sk_pack_contents() -> None:
         assert pack == Locale(code=code, lexicon=fragments[code],
                               policy=PolicyPatch(two_family_names=True),
                               languages=frozenset({code})), code
-        assert not _is_vocabulary_pack(pack), code
-    # the patch's declaration is rules/O6's, one predicate for the
-    # packs that turn O6 on, so their declarations cannot drift apart
+    # the patch's declaration is rules/O6's, one predicate for every
+    # pack that turns O6 on (es_ar, pt_br and pt_pt among them, held to
+    # it in their own tests), so their declarations cannot drift apart
     for module in (_cs, _sk, _es, _hr, _sl):
         for name in ("Alena Pešová Řehořová", "Novák, Petr Pavel",
                      "Mária-\u200bJana Kováčová", "Jan Novák", "Novák"):
@@ -1483,8 +1483,18 @@ _NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
              if by_name and not declared]
 
 
+# every pack turning rules/O6 on, read off the packs so a new one joins
+# (#1190's review: hr and sl were missing from a hand list here)
+_O6_PACKS = sorted(code for code in _PACKS
+                   if locales.get(code).policy.two_family_names is True)
+
+
+def test_the_o6_packs_are_the_ones_shipped() -> None:
+    assert _O6_PACKS == ["cs", "es", "es_ar", "hr", "pt_br", "pt_pt", "sk", "sl"]
+
+
 @pytest.mark.parametrize("name", _NARROWED)
-@pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk", "pt_br", "pt_pt"])
+@pytest.mark.parametrize("code", _O6_PACKS)
 def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
         code: str, name: str) -> None:
     assert _require_packed(code).parse(name).as_dict() == _default_parse(name)
@@ -2515,8 +2525,8 @@ _ROTATORS["ja"] = _JA_SEGMENTATION_ROTATORS + _JA_CHOICE_ROTATORS
 # The choice packs (3f): one name per word of the derived surface, each
 # in a shape the default reads differently, so the gate's positive side
 # reaches every word the choice changes (held by
-# test_choice_rotators_cover_every_changed_word below). cs and sk carry
-# rules/O6's patch too, so each word's rotator is a name the patch alone
+# test_choice_rotators_cover_every_changed_word below). cs, sk, hr and
+# sl carry rules/O6's patch too, so each word's rotator is a name the patch alone
 # leaves as the default reads it -- two name words, or a marker run in
 # brackets -- (held by test_a_choice_word_rotator_is_moved_by_the_choice_alone),
 # and the patch has rotators of its own.

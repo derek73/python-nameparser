@@ -2247,7 +2247,7 @@ The second surname under two family names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Under ``two_family_names``, as the ``es``, ``es_ar``, ``cs``, ``sk``,
-``pt_br`` and ``pt_pt`` packs turn it on, the ``surname1`` and ``surname2`` views divide a
+``hr``, ``sl``, ``pt_br`` and ``pt_pt`` packs turn it on, the ``surname1`` and ``surname2`` views divide a
 family of two surnames however the family was read, where 3.0 and 3.1
 left it whole: written before a family comma, opening with a particle,
 and behind a given name a particle completes. No field moves:

@@ -199,7 +199,8 @@ name in its own view (``surname1`` ``Pešová``, ``surname2``
 
 Two given names pay for it: with no given-name list in any of the four
 languages to keep a given name out of the family (none is published
-for the whole population), ``Petr Pavel Novák`` reads family ``Pavel
+for the whole Czech or Slovak population, and none has been looked for
+in Slovenian or Croatian), ``Petr Pavel Novák`` reads family ``Pavel
 Novák``. A family comma keeps both as the default reads them, and an
 initial written between the given name and the surname stays the
 middle name:
@@ -312,7 +313,9 @@ family name it reads right from 140 to 148 of 149 and from 84 to 89 of
 90, the one loss in each a member with two given names. Among US
 patents' inventors, whose boxes a professional filer fills, it lowers
 them slightly, from 92.0% to 91.6% in Croatia and from 88.2% to 87.4%
-in Slovenia. The
+in Slovenia, and among the people with significant control of UK
+companies it moves Croatian nationals from 97.5% to 97.3% and
+Slovenian ones from 95.3% to 95.7%, a handful of records each way. The
 dated figures are in
 ``docs/design/decisions/O6-two-family-names.md`` and
 ``docs/design/decisions/vocabulary-model.md``.

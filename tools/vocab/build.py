@@ -366,7 +366,8 @@ RULE_DEFAULTS: dict[str, object] = {
 #: does not: locales.PT, chosen for Portuguese names from any country,
 #: leaves O6 off (decisions/O6, 2026-11-19).
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
-                             "sk": "SK", "hr": "HR", "sl": "SL", "vi": "VI", "ne": "NE",
+                             "sk": "SK", "hr": "HR", "sl": "SL", "vi": "VI",
+                             "ne": "NE",
                              "pt-BR": "PT_BR", "pt-PT": "PT_PT"}
 
 #: The words check 13 lets hold a reading in another file beside their
