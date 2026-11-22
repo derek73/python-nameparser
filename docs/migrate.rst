@@ -2787,7 +2787,7 @@ where they read it as the family name. After a full name and a comma
 each is the suffix too, where 1.4 read the given name, as 3.1 did save
 for those in capitals. ``BChir``, which is also a surname, stays a name
 word after a one-word name and a comma and ending a name; after a full
-name and a comma its mixed case makes it the suffix:
+name and a comma it is the suffix however it is written:
 
 .. doctest::
 

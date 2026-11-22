@@ -595,8 +595,8 @@ under ``pt_br``, while Portuguese inventors gain under ``pt_pt``
 (57.6% → 66.1%). Most of the Brazilian names it breaks hold a second
 surname among the given names (``Eder Ferreira`` / ``Rangel``, read
 family ``Ferreira Rangel``). So choose ``pt_br`` or ``pt_pt``, by
-country, for names whose family part is written whole, and keep ``pt`` for data
-filed with a single surname as the family name.
+country, for names whose family part is written whole, and keep ``pt`` for
+Brazilian data filed with a single surname as the family name.
 Among the UK company register's filers the switch gains for
 Portuguese (59.2% → 62.8%) and Brazilian (53.7% → 62.9%) nationals.
 
@@ -1625,8 +1625,9 @@ U.`` keep it an initial:
 A Korean name written with no comma and opening with the surname ``U``
 reads ``U`` as the title under the pack (``U Minjun``), where ``U,
 Minjun`` keeps it as the family name. Chosen strictly, the pack drops
-English's ``U.S.`` and ``U.K.``, so they read as the title as any other
-run opening with ``U`` does (``U.S. Grant`` gives title ``U.S.``,
+English's readings of runs opening with ``U``, the titles ``U.S.`` and
+``U.K.`` and credentials such as ``U.S.A.``, so they read as the title
+as an unlisted run does (``U.S. Grant`` gives title ``U.S.``,
 family ``Grant``), and the title after one no longer joins it
 (``U.S. Senator John Smith`` gives title ``U.S.``, given ``Senator``). Keep the pack to a parser of
 its own for the Burmese names in your data.
