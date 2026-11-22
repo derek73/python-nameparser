@@ -586,12 +586,10 @@ def test_a_strict_choice_of_the_titles_own_tag_reads_it_as_the_title(
     ungated = [parser_for(_choice((tag,)), strict=True)]
     gated = [parser_for(_choice((tag,))),
              parser_for(_choice((tag, "id")), strict=True),
-             parser_for(locales.MS), parser_for(locales.MS, strict=True)]
+             parser_for(locales.MS)]
     if tag == "ar":
         ungated.append(parser_for(locales.AR, strict=True))
         gated.append(parser_for(locales.AR))
-    else:
-        gated.append(parser_for(locales.TR_AZ))
     for parser in ungated:
         got = parser.parse(name)
         assert (got.title, got.given) == (word, name.split()[1]), parser

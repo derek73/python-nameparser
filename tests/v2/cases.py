@@ -18693,7 +18693,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Deputy Imam", "given": "Musa", "family": "Bello"},
          notes="H9: 'deputy' attaches to 'imam' since #1206, so the phrase "
                "keeps the title, as 1.4.0 read it"),
-    Case("given_name_title_imam_before_a_plain_title",
+    Case("given_name_title_imam_before_another_gated_title",
          "Imam Mahdi Karimi",
          {"given": "Imam", "middle": "Mahdi", "family": "Karimi"},
          ambiguities=("title-or-name",),
@@ -18701,6 +18701,23 @@ CASES: tuple[Case, ...] = (
          notes="H9: two words that may be given names; neither is the "
                "other's partner; read title 'Imam', given 'Mahdi' 2.7.0 "
                "through 3.1.0, title 'Imam Mahdi' before"),
+    Case("given_name_title_imam_before_a_plain_title",
+         "Imam Dr. Musa Bello",
+         {"given": "Imam", "middle": "Dr. Musa", "family": "Bello"},
+         ambiguities=("title-or-name",),
+         classification="fix(#1206)",
+         notes="H9: a title after the word that it does not attach to is "
+               "no partner, so the word is a name word and the title "
+               "behind it joins the middle name; the accepted cost; read "
+               "title 'Imam Dr.' 1.4.0 through 3.1.0"),
+    Case("given_name_title_sheriff_before_a_title_it_does_not_attach_to",
+         "Sheriff Deputy John Smith",
+         {"given": "Sheriff", "middle": "Deputy John", "family": "Smith"},
+         ambiguities=("title-or-name",),
+         classification="fix(#1206)",
+         notes="H9: 'sheriff' attaches to clerk, officer and principal, "
+               "not deputy, so the word is a name word; the accepted cost; "
+               "read title 'Sheriff Deputy' 1.4.0 through 3.1.0"),
     Case("given_name_title_timi_alone",
          "Timi",
          {"given": "Timi"},

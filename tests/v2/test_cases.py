@@ -538,9 +538,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # title-or-name under three orders; 2388 -> 2410 the same day, its
     # review's reporting rows (the word alone, in lower case, before
     # another gated word and in a third comma part, and a family-first
-    # row under its declared policy).
-    assert claims == 2410, (
-        f"the field sweep checks {claims} claims, recorded as 2410 on "
+    # row under its declared policy); 2410 -> 2416 the same day, its
+    # second review's 'Imam Dr. Musa Bello' and 'Sheriff Deputy John
+    # Smith' under three orders.
+    assert claims == 2416, (
+        f"the field sweep checks {claims} claims, recorded as 2416 on "
         f"2026-11-21")
 
 
