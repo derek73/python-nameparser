@@ -23440,7 +23440,7 @@ CASES: tuple[Case, ...] = (
          "Tariq Abdul Aziz King",
          {"given": "Tariq", "family": "Abdul Aziz King"},
          policy=Policy(two_family_names=True),
-         classification="fix(#PRNUM)",
+         classification="fix(#1531)",
          notes="'King' is a name word to the parse, the family, so the "
                "name holds four; classify's count read it as none for its "
                "title-ambiguous tag, and 3.1.0 read middle 'Abdul Aziz', "
@@ -23449,13 +23449,13 @@ CASES: tuple[Case, ...] = (
          "Tariq Abdul Aziz King",
          {"given": "Abdul Aziz", "middle": "King", "family": "Tariq"},
          policy=Policy(name_order=FAMILY_FIRST),
-         classification="fix(#PRNUM)",
+         classification="fix(#1531)",
          notes="3.1.0 read given 'Abdul', middle 'Aziz King'"),
     Case("abdul_before_a_numeral_behind_an_initial_joins",
          "Tariq Abdul Aziz J. VI",
          {"given": "Abdul Aziz", "middle": "J. VI", "family": "Tariq"},
          policy=Policy(name_order=FAMILY_FIRST),
-         classification="fix(#PRNUM)",
+         classification="fix(#1531)",
          notes="the parse reads 'VI' behind the initial as a name word, "
                "which classify's count read as a numeral; 3.1.0 read given "
                "'Abdul', middle 'Aziz J. VI'"),
@@ -23463,7 +23463,7 @@ CASES: tuple[Case, ...] = (
          "Pope, Tariq Abdul Aziz",
          {"given": "Tariq Abdul Aziz", "family": "Pope"},
          policy=Policy(two_given_names=True),
-         classification="fix(#PRNUM)",
+         classification="fix(#1531)",
          notes="the family before the comma is a name word, though "
                "classify's count read it as the part's leading title; "
                "3.1.0 read given 'Tariq', middle 'Abdul Aziz'"),
