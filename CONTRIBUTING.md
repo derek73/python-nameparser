@@ -24,9 +24,9 @@ Why the maintainer makes the changes
 
 Most changes here also move documented rules, the design records and a
 snapshot of thousands of parsed names. The maintainer checks every change
-against about 9 million records of real names from sixteen sources
+against about 9.4 million records of real names from eighteen sources
 (election candidates, donors, researchers, patent inventors, company filings;
-counted 2026-11-16).
+counted 2026-11-22).
 The tools that fetch them are in this repository, but the names are not: the
 cache is about 12 GB, and one source alone takes about twelve hours to
 download. A change that passes the committed tests can still move thousands
