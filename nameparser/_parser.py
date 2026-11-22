@@ -314,8 +314,9 @@ class Parser:
         the base: a :class:`~nameparser.Suggestion` whose ``parser``
         reads the group. ``names`` is any iterable of str the caller
         declares to be one group (one source, one convention), read
-        once. Each name casts votes on its name order and its
-        patronymic shape, read with this parser's lexicon past the
+        once. Each name casts votes on its name order, its patronymic
+        shape and, where the switch is weighed (below),
+        ``two_family_names``, read with this parser's lexicon past the
         titles it lists at the head and the post-nominals at the end; a
         name of fewer than two words once those are read past casts
         none, and so does a name with a comma, unless only
@@ -409,48 +410,29 @@ class Parser:
         an empty group, or one with no votes, suggests no change. A
         bare str, bytes, a mapping or a non-str item raises TypeError.
 
-        Measured 2026-11-10, re-taken 2026-11-11, 2026-11-12,
-        2026-11-14, 2026-11-15, 2026-11-16 and 2026-11-19, with
-        tools/differential/suggest_measure.py on groups drawn from real
-        names written in a known order, 300 groups a size
-        (decisions/group-suggestion's 2026-11-19 #1364 and #1447
-        entries hold the sizes): a group written in this parser's own order kept it
-        in at least 97% of groups at every size from 2 to 2,000 names,
-        under either base order, save three lists. ORCID holders who
-        typed their given name in capitals (``ANNA Smith``), which the
-        capitals signal reads as a family name, kept their given-first
-        order in 52% of groups of two and 4% of five (why, in that
-        file's 2026-11-12 CAPITALS entry). A list of
-        nothing but bylines written two or three joined initials first
-        (``AM Hoy``) kept it in at least 97% of groups at every size
-        measured, to 500 names (it holds 644), but 50 and 100 names,
-        where it kept it in 94.7% and 93.3%, the name tables voting on
-        a few of its names. And a list of nothing but given names that
-        ORCID's holders type as surnames (``Cooper``, ``Burke``) fell
-        below 95% at every size and was read wrong in every group from
-        5 names, the surname table voting on each of them (that file's
-        2026-11-19 #1364 entry).
-        Moving the base takes more names, and
-        how many depends on what the names carry: groups of Chinese,
-        Taiwanese, Korean, Czech, Polish or Italian names (the romanized
-        surnames and the common given names) and of Russian ones (where
-        their patronymics stand) were read right in 95% of groups from 5
-        names; German, Dutch, Spanish, British, French,
-        Romanian, Vietnamese and Japanese from 10; US, Turkish,
-        Nigerian and Brazilian from 20; Indian from 50; and PSC's
-        Bangladeshi filers from 200 (PatentsView's Philippine inventors
-        from 20, through the Russian names among them). A group whose votes fall short of
-        the thresholds keeps the base rather than guess, so a smaller
-        group moves it in fewer of the draws. ``capitals_as_family``, measured 2026-11-12
-        (decisions/group-suggestion's CAPITALS entry): ORCID holders who
-        typed their family name in capitals were suggested it in at least
-        95% of groups from 4 names, and from 10 where many of the
-        surnames are two or three letters (holders in China, Korea,
-        Vietnam and Taiwan). Of the lists measured that do not write their
-        family names so, only ORCID holders who typed their given name in
-        capitals (``ANNA Smith``) were suggested it, which nothing in a
-        name tells apart; no other list was, ORCID's bylines (``AM Hoy``)
-        included. A name wholly in one case carries no evidence.
+        Measured on groups drawn from real names written in a known
+        order (:ref:`suggest-limits`; the dated tables are in the
+        source repository's docs/design/decisions/group-suggestion.md),
+        these figures give a general idea and will differ for every
+        dataset. A group written in this parser's own order kept it in
+        at least 95% of groups from 2 to 2,000 names, and in 97% for
+        nearly every kind, save three kinds of list: given names in
+        capitals (``ANNA Smith``), whose capitals read as a family name;
+        nothing but two or three joined initials (``AM Hoy``), which
+        kept it in just under 95% of groups of 50 and 93% of 100; and
+        nothing but given names that are common surnames elsewhere
+        (``Cooper``, ``Burke``), read the wrong way round. A group
+        written the other way round takes more names to move the base:
+        from 5 for Chinese, Taiwanese, Korean, Czech, Polish, Italian
+        and Russian names to 50 for Indian ones and 200 for Bangladeshi
+        ones. A group whose votes fall short of the thresholds keeps the
+        base rather than guess. ``capitals_as_family`` was suggested in
+        at least 95% of groups from 4 names for holders who typed their
+        family name in capitals, and from 10 where many of the surnames
+        are two or three letters (China, Korea, Vietnam and Taiwan); of
+        the lists that do not write their family names so, only the one
+        writing its given names in capitals was suggested it. A name
+        wholly in one case carries no evidence.
         """
         from nameparser._suggest import suggest
         return suggest(self, names)

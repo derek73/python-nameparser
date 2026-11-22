@@ -4,7 +4,7 @@ files' compiled [rules] tables, nameparser/config/_rules.py, beside it.
 
 Usage::
 
-    uv run python tools/vocab/build.py           # rewrite both modules
+    uv run python tools/vocab/build.py           # rewrite the three modules
     uv run python tools/vocab/build.py --check   # exit 1 if any is stale
 
 Either exits 2, printing the failed check, when the vocabulary fails one
@@ -1785,7 +1785,7 @@ def file_tags(pool: Pool) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true",
-                    help="exit 1 if the committed module is stale "
+                    help="exit 1 if a committed module is stale "
                          "(2 if the vocabulary fails a check, 3 on an "
                          "internal error)")
     args = ap.parse_args(argv)

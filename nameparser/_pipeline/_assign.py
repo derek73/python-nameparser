@@ -2060,23 +2060,19 @@ def assign(state: ParseState) -> ParseState:
         # rules/H6: "A run of title words opening the part before a
         # family comma is the title" -- by vocabulary only, never H2's
         # shape, leaving one piece for the family, and stopping at a
-        # word that is a particle too ('St Pierre', 'Freiherr von
-        # Berg'), or where everything behind it is post-nominal, which
-        # leaves no family word to address -- H3's concern, by a
-        # stricter test than H3's one-word give-back, so this is not
-        # `leading_titles` ('VC PhD Jr., John' keeps family 'VC', where
-        # 'VC PhD Jr. John' reads title 'VC'). A dual is a title wherever
-        # a name word follows it ('Rev. Sr. Smith, Mary').
-        # `is_title_piece` is H5's vocabulary read, so the two slots that
-        # refuse the shape agree on what a title word is, save H5's
-        # written-short clause, which this slot does not read
-        # (decisions/H9, #999: 'Maj. Smith, John' keeps family 'Maj. Smith').
+        # word that is a particle too, or where everything behind it is
+        # post-nominal, which leaves no family word to address -- H3's
+        # concern, by a stricter test than H3's one-word give-back, so
+        # this is not `leading_titles`. A dual is a title wherever a name
+        # word follows it. `is_title_piece` is H5's vocabulary read, so
+        # the two slots that refuse the shape agree on what a title word
+        # is, save H5's written-short clause, which this slot does not
+        # read (decisions/H6, decisions/H9 (#999)).
         #
         # rules/H10: "where a title the run keeps stands behind it" --
-        # a dotted run ('U.S. Senator Smith, John') counts as a title
-        # word here as in the leading run, and one the run ends on is
-        # given back ('U.S. Grant Smith, John' keeps family 'U.S. Grant
-        # Smith'), so the roles are set once the run is known.
+        # a dotted run counts as a title word here as in the leading
+        # run, and one the run ends on is given back, so the roles are
+        # set once the run is known (decisions/H10 (#490)).
         lead = 0
         floor = len(fam_pieces)
         # the length test and the tag test first, both C-level: a part

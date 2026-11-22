@@ -302,7 +302,8 @@ def load_surnames(refresh: bool) -> list[tuple[str, int]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser = argparse.ArgumentParser(
+        description=" ".join(__doc__.split("\n\n")[0].split()))
     parser.add_argument("--list", choices=sorted(LISTS), default="es",
                         help="the list to build, by its pack's language tag")
     parser.add_argument("--write", action="store_true",

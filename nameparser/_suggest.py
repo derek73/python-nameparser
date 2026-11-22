@@ -135,36 +135,36 @@ class Signal(StrEnum):
     patronymic rule or ``two_family_names``."""
 
     #: A family name written in capitals at one end of a name in mixed
-    #: case (``Mary SMITH``).
+    #: case (``Mary SMITH``); votes on the order.
     CAPITALS = "capitals"
-    #: A trailing initial (``Smith J.``), counted only where enough of
-    #: the group's names end in initials.
+    #: Initials ending the name (``Smith J.``), counted only where enough
+    #: of the group's names end in them, as a bibliography's do; votes on
+    #: the order.
     TRAILING_INITIAL = "trailing-initial"
-    #: A lowercase particle first or before the last word.
+    #: A lowercase particle first or before the last word; votes on the
+    #: order.
     PARTICLE = "particle"
     #: A common surname as the first or last word: a romanized Chinese,
-    #: Korean or Vietnamese one, or one ORCID's holders rarely type as a
-    #: given name (``García``, #1364).
+    #: Korean or Vietnamese one, or one researchers rarely write as a
+    #: given name (``García``, ``Quispe``); votes on the order.
     SURNAME = "surname"
     #: A common given name that is rarely a surname (``Emily``, not
-    #: ``Taylor``) as the first or last word.
+    #: ``Taylor``) as the first or last word; votes on the order.
     GIVEN_NAME = "given-name"
-    #: A patronymic one rule reads (Russian ``Petrovich``, Azerbaijani
-    #: ``Huseyn oglu``), the evidence on ``patronymic_rules``.
+    #: A patronymic a rule reads (Russian ``Petrovich``, Azerbaijani
+    #: ``Huseyn oglu``); votes on ``patronymic_rules``.
     PATRONYMIC = "patronymic"
-    #: Where an East Slavic patronymic of three name words stands, read
-    #: where rules/O1 reads it, the evidence on ``name_order``: in the
-    #: middle (``Ivan Petrovich Sidorov``) the family is written last,
-    #: the middle word winning where the last ends as a patronymic too;
-    #: last (``Sidorov Ivan Petrovich``) it is written first. Cast only
-    #: beside an East Slavic ``PATRONYMIC`` vote.
+    #: Where a Russian-style patronymic stands in a name of three words:
+    #: last (``Sidorov Ivan Petrovich``), the family name is written
+    #: first; in the middle (``Ivan Petrovich Sidorov``), last. Cast only
+    #: beside a Russian-style ``PATRONYMIC`` vote; votes on the order.
     PATRONYMIC_POSITION = "patronymic-position"
-    #: The word ``two_family_names`` would take into a name's family
-    #: (rules/O6), voting the switch's value: True where it is a common
-    #: surname of the ORCID table (``COMMON_SURNAMES``, #1364), ``García``
-    #: in ``Gabriel García Márquez``, a first surname standing where a
-    #: second given name would; False where it is a father's name the
-    #: switch would read as a first surname (``Ivan Petrovich
+    #: The word ``two_family_names`` would take into a name's family,
+    #: voting the switch's value: True where it is a surname researchers
+    #: rarely write as a given name, the second of the tables ``SURNAME``
+    #: names (``García`` in ``Gabriel García Márquez``, a first surname where
+    #: a second given name would stand), False where it is a father's
+    #: name the switch would read as a first surname (``Ivan Petrovich
     #: Sidorov``). A listed given name there casts no vote.
     FIRST_SURNAME = "first-surname"
 
@@ -608,6 +608,15 @@ def _order_ends(pairs: Iterable[tuple[Signal, Vote]]
                      if _SETTING_OF[signal] == _NAME_ORDER)
 
 
+def _offered(owner: str, signal: Signal, vote_code: str) -> str:
+    """The code a refused vote's message offers, in its owner's shape: a
+    NameEvidence vote is a mapping entry, a SettingEvidence row a
+    triple."""
+    return (f"{{Signal.{signal.name}: {vote_code}}}"
+            if owner == "NameEvidence"
+            else f"(Signal.{signal.name}, {vote_code}, 2)")
+
+
 def _checked_vote(signal: object, vote: object,
                   owner: str = "NameEvidence") -> tuple[Signal, Vote]:
     """One (signal, vote) pair, validated: an order signal votes
@@ -620,14 +629,14 @@ def _checked_vote(signal: object, vote: object,
         if not isinstance(vote, bool):
             raise TypeError(
                 f"{owner} vote for {signal.value!r} must be True or False, "
-                f"got {vote!r}; pass e.g. {{Signal.{signal.name}: True}}")
+                f"got {vote!r}; pass e.g. {_offered(owner, signal, 'True')}")
         return signal, vote
     if setting == _PATRONYMIC_RULES:
         if not isinstance(vote, PatronymicRule):
             raise TypeError(
                 f"{owner} vote for {signal.value!r} must be a "
                 f"PatronymicRule, got {vote!r}; pass e.g. "
-                f"{{Signal.PATRONYMIC: PatronymicRule.EAST_SLAVIC}}")
+                f"{_offered(owner, signal, 'PatronymicRule.EAST_SLAVIC')}")
         return signal, vote
     if not isinstance(vote, (tuple, list)):
         raise TypeError(
@@ -656,6 +665,15 @@ def _iterable(value: object, owner: str, form: str, example: str
     return tuple(value)
 
 
+#: A ``by_signal`` row each setting takes, which a refused row's message
+#: offers: one whose signal votes on that setting
+_ROW_EXAMPLE: Mapping[str, str] = MappingProxyType({
+    _NAME_ORDER: "(Signal.SURNAME, FAMILY_FIRST, 2)",
+    _PATRONYMIC_RULES: "(Signal.PATRONYMIC, PatronymicRule.EAST_SLAVIC, 2)",
+    _TWO_FAMILY_NAMES: "(Signal.FIRST_SURNAME, True, 2)",
+})
+
+
 def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
     """One ``by_signal`` row, validated: ``(signal, vote, count)``, its
     signal one that votes on ``setting``."""
@@ -663,8 +681,9 @@ def _checked_row(row: object, setting: str) -> tuple[Signal, Vote, int]:
             or len(row) != 3:
         raise TypeError(
             f"SettingEvidence by_signal rows must be (signal, vote, count) "
-            f"triples, got {reprlib.repr(row)}; pass e.g. "
-            f"(Signal.SURNAME, FAMILY_FIRST, 2)")
+            f"triples, got {reprlib.repr(row)}; "
+            + (f"pass e.g. {_ROW_EXAMPLE[setting]}" if setting in _ROW_EXAMPLE
+               else f"no signal votes on {setting}, so pass by_signal=()"))
     signal, vote, count = row
     pair = _checked_vote(signal, vote, "SettingEvidence by_signal")
     if _SETTING_OF[pair[0]] != setting:
@@ -713,7 +732,12 @@ class NameEvidence:
     Order votes are one per NAME: the end the name's order signals
     agree on. A name whose order signals point at both ends is
     contested, casts no order vote and never disagrees on order.
-    ``votes`` keeps every signal's vote all the same, save a
+    ``votes`` holds the votes keyed by signal: an order vote is the
+    order it votes for (``GIVEN_FIRST`` or ``FAMILY_FIRST``), a
+    patronymic vote the ``PatronymicRule``, and a first-surname vote
+    ``True`` or ``False``, cast only where ``two_family_names`` is
+    weighed (not where the base has it on or an East Slavic rule is
+    decided). It keeps every signal's vote all the same, save a
     trailing-initial vote the group did not cast: too few of its names
     ending in initials (``Parser.suggest``), or its runs of letters
     decided ``initials_as_family``, whose letters are its family.
@@ -856,7 +880,8 @@ class SettingEvidence:
                 f"pass '' for no note")
         rows = _iterable(self.by_signal, "SettingEvidence by_signal",
                          "an iterable of (signal, vote, count) rows",
-                         "((Signal.SURNAME, FAMILY_FIRST, 2),) or ()")
+                         (f"({_ROW_EXAMPLE[self.setting]},) or ()"
+                          if self.setting in _ROW_EXAMPLE else "()"))
         object.__setattr__(
             self, "by_signal",
             tuple(_checked_row(row, self.setting) for row in rows))
