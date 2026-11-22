@@ -374,6 +374,12 @@ _SHAPES = {
     # leading title run of a slice per marker measured 7.1x at base 800
     # (2026-11-20), the first build's quadratic
     "alias_markers": "a @ ",
+    # group: the same takes, each refused (a suffix word straight after
+    # the marker), where no earlier take bounded the leading title run
+    # and each marker sliced the part to ask it again: measured
+    # 2026-11-22, py3.11, best of seven at base 800, 7.22x on af58ca09
+    # against 4.39x once a refused marker that is no title bounds it
+    "refused_alias_markers": "a @ Jr ",
 }
 
 _BASE = 800
@@ -1170,6 +1176,37 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
         f"the input, where this tree measures 3.7x and the per-pair rescan "
         f"at 47fb2b21 measured 13.5x. _comma.py's paired-initials speaker "
         f"scan is running once per pair again (#563, #613)")
+
+
+# rules/N4's alias in the given part after a family comma stops before
+# a title opening the part's closing run of titles and post-nominals.
+# Asking that per title by scanning to the part's end made a run of
+# titles after an alias quadratic; the run's start is found once since.
+# Counted in `is_title_piece` calls, the one predicate both forms ask.
+# Recorded negative control (2026-11-22, py3.11): 49 calls at 8 titles
+# and 565 at 32 (11.5x) on af58ca09, against 14 and 38 (2.7x) here.
+_ALIAS_TITLES_SMALL = 8
+_ALIAS_TITLES_LARGE = 32
+_ALIAS_TITLES_MAX_RATIO = 6.0
+
+
+def test_titles_after_an_alias_in_the_given_part_cost_linearly() -> None:
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    texts = ["Smith, Jane @ Bob " + "Dr " * k + "Xavier"
+             for k in (_ALIAS_TITLES_SMALL, _ALIAS_TITLES_LARGE)]
+    # REACHABILITY: the alias keeps every title, the last word a name
+    # word, so each title is one the scan asks about and declines
+    for text in texts:
+        assert parse(text).nickname == text.split(" @ ")[1], text
+    small, large = (_frames_for(t, only="is_title_piece") for t in texts)
+    ratio = large / small
+    assert ratio < _ALIAS_TITLES_MAX_RATIO, (
+        f"{_ALIAS_TITLES_SMALL} titles after an alias cost {small} "
+        f"is_title_piece calls and {_ALIAS_TITLES_LARGE} cost {large} -- "
+        f"{ratio:.1f}x for 4x the input, where this tree measures 2.7x and "
+        f"af58ca09 measured 11.5x: _group._clause_take is scanning to the "
+        f"part's end once per title again")
 
 
 def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
