@@ -107,9 +107,9 @@ list is one reading per word:
 To find the credentials your own data holds that the defaults do not
 list, see :ref:`finding-missing-credentials`. A credential that is
 also a surname needs weighing first (`Mark a word, or leave it out`_),
-and an unlisted credential in mixed case after a full name and a comma
-(``Jane Smith, MRes``) reads as one already
-(:ref:`unlisted-credentials`).
+and an unlisted credential in mixed case after a comma, behind a full
+name holding a word in mixed case (``Jane Smith, MRes``), reads as one
+already (:ref:`unlisted-credentials`).
 
 A surname particle is added the same way. The defaults leave out the
 Dutch ``in`` of ``in 't Veld``, which as a default would take a middle

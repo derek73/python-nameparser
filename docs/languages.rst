@@ -200,7 +200,8 @@ name in its own view (``surname1`` ``Pešová``, ``surname2``
 ``Řehořová``).
 
 Two given names pay for it: no given-name list ships for these four
-languages to keep a given name out of the family, so ``Petr Pavel
+languages to keep a given name out of the family (none is published
+for the whole Czech or Slovak population), so ``Petr Pavel
 Novák`` reads family ``Pavel
 Novák``. A family comma keeps both as the default reads them, and an
 initial written between the given name and the surname stays the
@@ -1622,10 +1623,10 @@ U.`` keep it an initial:
 
 A Korean name written with no comma and opening with the surname ``U``
 reads ``U`` as the title under the pack (``U Minjun``), where ``U,
-Minjun`` keeps it as the family name. Chosen strictly, the pack reads
-a run of initials opening with ``U`` as the title too, which the plain
-pack leaves initials (``U.S. Grant`` gives title ``U.S.``, family
-``Grant``). Keep the pack to a parser of
+Minjun`` keeps it as the family name. Chosen strictly, the pack also
+reads as the title a run of initials that spells a listed title, which
+the plain pack leaves initials where no title follows it (``U.S.
+Grant`` gives title ``U.S.``, family ``Grant``). Keep the pack to a parser of
 its own for the Burmese names in your data.
 
 .. _malay-names:

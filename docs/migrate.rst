@@ -742,7 +742,8 @@ that wrote it:
      - loads
      - loads, keeping 3.0's vocabulary, save a caller's word written with a
        tatweel (below)
-     - loads, as under 3.1
+     - loads, as under 3.1, save also a caller's word added with a
+       zero-width non-joiner or joiner at its edge (below)
      - Build a new ``Parser()`` for the newer readings
    * - ``Policy``, ``PolicyPatch``, and anything holding a ``Lexicon``
      - 3.1
@@ -754,7 +755,8 @@ that wrote it:
        ``Parser()`` for 3.2's readings
    * - ``Lexicon``, ``Parser`` (a ``parser_for`` one too) or matcher
      - 3.2
-     - ``ValueError``
+     - ``ValueError`` (a matcher: ``ModuleNotFoundError``, 3.0 having
+       none)
      - ``ValueError``
      - loads
      - Keep a 3.1 copy while 3.1 must read it (below)
@@ -821,7 +823,8 @@ both ways.
 Between 3.1 and 3.2
 ~~~~~~~~~~~~~~~~~~~
 
-Anything 3.1 pickled loads under 3.2, save a ``Lexicon`` holding a
+Anything 3.0 or 3.1 pickled that 3.1 loads, loads under 3.2, save a
+``Lexicon`` holding a
 word a caller added with a zero-width non-joiner or joiner at its edge,
 or a ``Parser`` holding one, which raises ``ValueError``: 3.2 drops the
 character when it normalizes a word (:issue:`1335`), so build it again
@@ -960,8 +963,8 @@ list, with reasoning, is in each release's section of
        ``Md``, Thai names, credentials after a comma
      - :ref:`migrate-3-1`
    * - 3.2
-     - Titles and jobs after a comma, credentials (``MD`` in capitals,
-       mixed case, ``ud``), particles (``Oude``, ``aus``, ``Vanden``,
+     - Titles and jobs after a comma, religious titles, ``Ra`` and ``Ab``,
+       credentials (mixed case, ``MD`` and ``ud`` inside a name), particles (``Oude``, ``aus``, ``Vanden``,
        ``a/l``), Arabic-script names, two family names in more packs
      - :ref:`migrate-3-2`
 
@@ -2243,8 +2246,8 @@ To keep the 3.1 reading, turn the switch off on top of the pack:
     'Lima'
 
 A ``locales.PT_BR``, or a parser built from it, pickled by 3.1 keeps
-the 3.1 pack's ``two_family_names=False``: a pickle holds the pack's
-values, not its name (:ref:`migrate-pickles`). Build the parser again
+the 3.1 pack's values, which leave ``two_family_names`` off: a pickle
+holds the pack's values, not its name (:ref:`migrate-pickles`). Build the parser again
 from ``locales.PT_BR`` to read two family names.
 
 Two family names under locales.HR and locales.SL
@@ -2269,7 +2272,7 @@ both as 3.1 read them:
 
 To keep the 3.1 reading, turn the switch off on top of the pack, as for
 ``locales.PT_BR`` above. A pack or parser pickled by 3.1 keeps the 3.1
-pack's ``two_family_names=False``.
+pack's values, which leave ``two_family_names`` off.
 
 Malaysian a/l, a/p and anak
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2558,7 +2561,8 @@ word, as before:
     >>> parse("Rahim Osman@Usman").family
     'Osman@Usman'
 
-With no particle after it the alias runs to the end of the name, so a
+With no particle after it the alias takes the rest of the name, up to
+any post-nominals or a comma, so a
 one-word alias before the family name takes the family name with it,
 and in ``Ravi Kumar urf Raju`` the word before ``urf`` is now the
 family name:
@@ -2570,8 +2574,8 @@ family name:
     >>> parse("Ravi Kumar urf Raju").family
     'Kumar'
 
-``alias`` and ``aka`` are read so only where you add them
-(:ref:`alias-markers`).
+``alias`` and ``aka`` are read so only where you add them or choose
+English (:ref:`alias-markers`).
 
 To read the two as name words again, remove their readings:
 
@@ -2707,7 +2711,7 @@ The Cyrillic doctorate д-р ending a name
 ``д-р`` ending a name is the credential, where 1.4 through 3.1 read
 it as the family name. After a comma it is the credential too, where
 3.1 read it as the title and 1.4 as the given name. In front of the
-name it is still the title:
+name it is still the title, as in 3.1 (1.4 read the given name):
 
 .. doctest::
 
@@ -2776,8 +2780,10 @@ Medical degrees and Nigerian and Hong Kong honours
 ``BCh``, ``BChir`` and ``BMBCh``, the Nigerian marks ``mni``, ``fwc``,
 ``fsi``, ``fnse``, ``psc`` and ``ndc``, and the Hong Kong and Singapore
 honours ``GBM``, ``GBS``, ``SBS``, ``BBS`` and ``BBM`` are credentials.
-After a one-word family name and a comma, or ending a name, each reads
-as the suffix, where 1.4 through 3.1 read it as the given name:
+After a name and a comma each reads as the suffix, where 1.4 through
+3.1 read it as the given name, and ending a name, where they read it as
+the family name. ``BChir``, which is also a surname, stays a name word
+in both places:
 
 .. doctest::
 
@@ -2906,7 +2912,8 @@ To read it as 3.1 did, remove its reading:
 
 .. doctest::
 
-    >>> as_31 = Parser(lexicon=Lexicon.default().remove("emeritus", kind="modifier"))
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove(
+    ...     "emeritus", "emerita", kind="modifier"))
     >>> as_31.parse("Professor Emeritus John Smith").given
     'Emeritus'
 

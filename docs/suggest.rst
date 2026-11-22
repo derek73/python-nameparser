@@ -96,9 +96,10 @@ name carries their evidence, a handful of names can still decide
 
 A sample of a few hundred names makes that rarer.
 
-Bylines written initials first (``AM Hoy``) carry so little evidence
-that more names kept helping; :ref:`suggest-limits` gives the figures,
-and where you know how such a list is written, set ``name_order``
+Bylines written initials first (``AM Hoy``) under a family-first base
+are the one kind of list measured that more names kept helping: so few
+of them vote that a sample of a few hundred often decides nothing.
+Where you know how such a list is written, set ``name_order``
 yourself.
 
 A list that mixes sources written differently works against itself.
@@ -331,8 +332,11 @@ Then, where you know how the list is written, set the order yourself
 What a name votes on
 --------------------
 
-Each kind of evidence is a :class:`~nameparser.Signal`, which names its
-row in the report and votes on one setting:
+The evidence on the order, the patronymic rule and
+``two_family_names`` is a :class:`~nameparser.Signal`, which names its
+row in the report and votes on one setting (the evidence on
+``initials_as_family`` and ``capitals_as_family`` is no signal;
+``NameEvidence.family_in_capitals`` holds the second):
 
 .. list-table::
    :header-rows: 1
@@ -747,9 +751,11 @@ among those it would change:
     >>> [e.note for e in hispanic.evidence if e.setting == "two_family_names"]
     ['3 of the 3 names two_family_names would change carry a common surname where it would take a first surname']
 
-The names the note counts as holding a common given name there are the
-ones the switch reads wrong, and ``disagreeing()`` does not list them,
-since they cast no vote. Check them by hand, or choose the pack:
+The names the note counts as holding a common given name there are
+read wrong under the switch, as is a name whose word there neither
+table lists (``Mark Oduya Bell`` gives family ``Oduya Bell``);
+``disagreeing()`` lists none of them, since they cast no vote. Check
+them by hand, or choose the pack:
 
 .. doctest::
 

@@ -128,8 +128,8 @@ with different parsers rather than enabling a pack over all of it.
 What a pack costs
 ~~~~~~~~~~~~~~~~~
 
-Each pack can change only some names, and declares which: the names it
-may read differently from the default. A rule's surface is a shape — a patronymic ending or marker for ``ru`` and
+Each pack declares a surface: the names it may read differently from
+the default. A rule's surface is a shape — a patronymic ending or marker for ``ru`` and
 ``tr_az``, a script for ``zh`` and ``ja``, three name words or more for
 the packs that read two family names — and a choice of languages
 declares the words whose reading it changes.
@@ -350,7 +350,8 @@ says which parts each pack is made of.
    * - ``nl``
      - Dutch: family names opening with ``ten``
      - Chooses ``nl``, which reads ``ten`` inside a name as the particle
-       opening the family name, and ``VD`` as ``van der``. See
+       opening the family name and drops ``VD``'s credential reading
+       (``John Smith VD`` gives family ``VD``). See
        :ref:`dutch-particles`.
      - ``Jan ten Brink`` → family ``ten Brink``
    * - ``pt``

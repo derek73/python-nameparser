@@ -558,7 +558,8 @@ other names.
 For a list of names, ``Parser.suggest()`` turns the bare switch on
 where enough of the names write a common surname where the switch would
 take a word into the family (:ref:`suggest-two-family`); where you know
-the list's language, its pack reads it better.
+the list is Spanish, Brazilian or from Portugal, its pack reads it
+better (below).
 
 Packs that turn it on
 ~~~~~~~~~~~~~~~~~~~~~
@@ -662,7 +663,9 @@ Turn it on only for data written this way:
   ``locales.ES_AR`` holds back about 5,000 given names.
 - **Portuguese-speaking names from elsewhere.** For Brazil and
   Portugal choose ``locales.PT_BR`` or ``locales.PT_PT``, whose
-  given-name list holds most of the cost back
+  given-name list holds back most of the cost on names written whole,
+  though not on data filed with a single surname as the family name,
+  where ``locales.PT`` is the better choice
   (:ref:`portuguese-two-family-names`); Angolan and Mozambican names
   lose under the switch even with the list.
 - **Filipino names.** They often carry a middle name between the given
