@@ -537,3 +537,20 @@ def test_full_name_before_an_ethiopic_suffix_comma(
         order: tuple[Role, Role, Role], expect: dict[str, str]) -> None:
     name = Parser(policy=Policy(name_order=order)).parse("አበበ ከበደ፣ Jr.")
     assert {k: v for k, v in name.as_dict().items() if v} == expect
+
+
+@pytest.mark.parametrize("text, held", [
+    ('Jon "Nick Smith', ['"Nick']),    # the offset opens its token
+    ('"John Smith', ['"John']),        # offset 0, the first token
+    ("John Smith)", ["Smith)"]),       # the offset ends its token
+    ('John Smith "', ['"']),           # a lone delimiter, the last token
+])
+def test_a_stray_delimiters_report_points_at_the_token_holding_it(
+        text: str, held: list[str]) -> None:
+    # extract reports a stray delimiter by its character offset, and
+    # tokenize rewrites the offset to the index of the token holding the
+    # character, by bisecting the token starts: a row at each end of a
+    # token, and at each end of the name
+    out = _tokenized(text)
+    assert [out.tokens[i].text for a in out.ambiguities
+            for i in a.indices] == held
