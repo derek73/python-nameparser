@@ -27,14 +27,17 @@ records the cost and the list that could lift it).
 
 Its fragment removes ``ing``'s given-name reading, so ``Ing Jan Novák``
 gives title ``Ing``, and ``Ing. et Ing. Jan Novák`` the title ``Ing. et
-Ing.``, where the default gives the given name ``Ing``: a choice never
+Ing.``, where the default gives the given name ``Ing`` and ``Ing. et
+Ing.``: a choice never
 drops a name reading (decision 15 of decisions/vocabulary-model), and
 this one is mul.toml's, which a strict choice keeps too, so neither a
 reading cs.toml could write nor ``strict=True`` makes Ing a title
 outside a title phrase (rules/H9). The family reading stays, keeping
 the credential mul.toml lists gated, so ``Mr Tom Ing`` keeps family
-``Ing``. The cost is Ing the given name opening a name, Chinese,
-Malaysian or Swedish (``Ing Wei Lim`` gives title ``Ing``), and a
+``Ing``. The cost is Ing the given name opening a name or alone after
+a family comma, Chinese, Malaysian or Swedish (``Ing Wei Lim`` and
+``Lim, Ing`` give title ``Ing``), Ing the surname at the head of a
+family comma (``Ing Ho, Mei`` gives family ``Ho``), and a
 post-nominal glued to Ing.'s stop (``Ing.Paed.IGIP``) read as a title
 (decisions/vocabulary-model, the 2026-11-21 #970 entry).
 
@@ -68,7 +71,10 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes): rules/O6's declaration, which
-    every pack turning O6 on shares, or a name holding the letters
-    ``ing`` in any case, the word the fragment changes, which
-    over-declares (``King``), the safe direction."""
-    return deviates_by_two_family_names(name) or "ing" in name.casefold()
+    every pack turning O6 on shares, or a name holding the word the
+    fragment changes, ``Ing``, in any case and glued to a stop
+    (``Ing.Paed.IGIP``), but not a word that merely holds its letters
+    (``King``). The derived surface holds ``ing`` too while cs.toml
+    lists it; this keeps the fragment declared if that reading goes."""
+    letters = "".join(c if c.isalpha() else " " for c in name.casefold())
+    return deviates_by_two_family_names(name) or "ing" in letters.split()

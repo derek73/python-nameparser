@@ -410,7 +410,7 @@ says what it can change:
    * - ``cs``
      - yes
      - ``two_family_names``
-     - none; it takes ``Ing``'s given-name reading out
+     - a removal: ``Ing``'s given-name reading
    * - ``sk``
      - yes
      - ``two_family_names``

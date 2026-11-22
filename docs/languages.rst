@@ -104,10 +104,13 @@ So they wait for a pack:
     >>> czech.parse("Ing. et Ing. Jan Novák").title
     'Ing. et Ing.'
 
-The Czech pack reads ``Ing`` as a title wherever a title is read, so a
-name that opens with the given name Ing reads it as the title under
-the pack (``Ing Wei Lim`` gives title ``Ing``); Ing the surname keeps
-its place (``Tom Ing`` gives family ``Ing``). ``BC`` after a comma is
+The Czech pack reads ``Ing`` as a title wherever a title is read
+before the name, so a name that opens with the given name Ing reads it
+as the title under the pack (``Ing Wei Lim`` gives title ``Ing``), as
+does Ing alone after a family comma (``Lim, Ing``) and Ing the surname
+at the head of one (``Ing Ho, Mei`` gives family ``Ho``); Ing the
+surname at the end keeps its place (``Tom Ing`` gives family ``Ing``),
+and after a full name and a comma Ing is still the credential. ``BC`` after a comma is
 the title too, so initials written there lose their given name
 (``MOSS, BC`` gives title ``BC``).
 
