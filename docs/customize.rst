@@ -927,6 +927,8 @@ falls through to nickname parsing (``"John Smith (Ba)"``,
 ``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
 ambiguity.
 
+.. _malay-bt:
+
 Malay names and bt
 ^^^^^^^^^^^^^^^^^^
 

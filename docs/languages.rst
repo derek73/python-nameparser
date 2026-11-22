@@ -1729,7 +1729,7 @@ given ``Seri``), and so do ``YB``, ``YM`` and ``YA`` and the police
 ranks (:issue:`1180`). ``Haji`` inside the father's name is a name word
 (``Ahmad bin Haji Abdullah`` gives family ``bin Haji Abdullah``).
 ``bt``, written short for ``binti``, can still be read as a credential
-(Baronet), as by default (``Nur Aina bt Rosli``); :doc:`customize`
+(Baronet), as by default (``Nur Aina bt Rosli``); :ref:`malay-bt`
 shows how to remove it.
 
 Plain, not strict
