@@ -13,6 +13,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import itertools
+import re
 import sys
 import unicodedata
 import warnings
@@ -83,11 +84,21 @@ FULL_STOPS = ".．。｡"
 # letter, so deleting it changes no word's identity (#1151: `الدكتــور`
 # is the title `الدكتور`). Token text is never rewritten.
 _TATWEEL = "\u0640"
+# rules/T1: "at the edge the word is looked up without it"
+# The zero-width non-joiner and joiner shape the letters on either side
+# of them, so at a word's edge they shape nothing and are dropped when
+# the word is looked up (#1335: `مهندس` typed with a ZWNJ after it is
+# the title `مهندس`), with the edge full stops. Inside a word they stay
+# (`آیت‌الله` is listed with its ZWNJ). Token text is never rewritten,
+# which keeps the ZWJ Malayalam writes at a word's end.
+_EDGE_JOINERS = "\u200c\u200d"
+_NON_ASCII_EDGES = FULL_STOPS + _EDGE_JOINERS
 
 
 def _normalize(word: str) -> str:
     """Lowercase, NFC-compose, strip whitespace and EDGE full stops
-    (FULL_STOPS, not the ASCII period alone -- #322). Interior periods
+    (FULL_STOPS, not the ASCII period alone -- #322), and in a non-ASCII
+    word an edge ZWNJ or ZWJ with them (#1335). Interior periods
     survive on purpose: 'J.R.' must not collapse to 'jr' and hit the
     periodless vocabulary (v1 parity, pinned live 2026-07-17).
     Suffix-ACRONYM membership alone uses the period-free form (see
@@ -103,6 +114,8 @@ def _normalize(word: str) -> str:
     is what v1's lc() used, preserving which cross-spellings match.
 
     Tatweel (U+0640) is deleted, in a non-ASCII word only (#1151).
+    A ZWNJ or ZWJ at the word's edge is stripped with the edge full
+    stops, in a non-ASCII word only (#1335); one inside the word stays.
 
     NFC, since #322, and only for a non-ASCII word (ASCII is already
     NFC, and this runs per token on the parse path --
@@ -120,12 +133,14 @@ def _normalize(word: str) -> str:
     would change under its owner. v1 never re-normalized, so this only
     matters now that storage and match-time share one fold."""
     word = word.lower()
+    edges = FULL_STOPS
     if not word.isascii():
         word = unicodedata.normalize("NFC", word)
         if _TATWEEL in word:
             word = word.replace(_TATWEEL, "")
+        edges = _NON_ASCII_EDGES
     while True:
-        stripped = word.strip().strip(FULL_STOPS)
+        stripped = word.strip().strip(edges)
         if stripped == word:
             return word
         word = stripped
@@ -723,6 +738,15 @@ _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
 #: below the pipeline, so the match's forms and the lexicon's pair index
 #: (`_forms`) read them alike; `_pipeline._vocab` reads them from here.
 _HYPHEN_CHARS = "-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
+#: A ZWNJ or ZWJ beside whitespace, a hyphen or the text's edge, as
+#: `_normalize` strips one at a token's edge (#1335). The hyphen counts
+#: because the match cuts a family name at its hyphens and folds each
+#: half (`_match._family_words`), so `Smith-Jones` with a ZWNJ before
+#: its hyphen folds alike whole and by halves; one between letters is
+#: kept.
+_NOT_AN_EDGE = r"[^\s" + "".join(f"\\u{ord(c):04x}" for c in _HYPHEN_CHARS) + "]"
+_EDGE_JOINER = re.compile(
+    rf"(?<!{_NOT_AN_EDGE})[\u200c\u200d]+|[\u200c\u200d]+(?!{_NOT_AN_EDGE})")
 _TO_HYPHEN_MINUS = str.maketrans(dict.fromkeys(_HYPHEN_CHARS, "-"))
 #: The scripts whose combining marks `_fold` drops as accents.
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")
@@ -753,14 +777,18 @@ def _fold(text: str) -> str:
     the marks are read, a mark after one then attaching to the letter
     before it, and again after casefolding, which can write one (U+0149
     `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
-    other, so `ᾳ` folds to `α`. Last, the letters a keyboard lacks
-    are written as one types them (`_KEYBOARD`)."""
+    other, so `ᾳ` folds to `α`. A ZWNJ or ZWJ beside whitespace, a
+    hyphen or the text's edge is dropped with the full stops
+    (`_EDGE_JOINER`), as `_normalize` drops one at a token's edge. Last, the letters a keyboard lacks are written as one types them
+    (`_KEYBOARD`)."""
     if text.isascii():
         # no accent, no composition, and no apostrophe but the typed
         # one and the backtick
         return text.casefold().translate(_DROPPED)
-    decomposed = unicodedata.normalize(
-        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
+    dropped = unicodedata.normalize("NFC", text).translate(_DROPPED)
+    if "\u200c" in dropped or "\u200d" in dropped:
+        dropped = _EDGE_JOINER.sub("", dropped)
+    decomposed = unicodedata.normalize("NFD", dropped)
     kept = []
     accented = False
     for c in decomposed:
