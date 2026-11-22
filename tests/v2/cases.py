@@ -1036,6 +1036,32 @@ CASES: tuple[Case, ...] = (
          notes="a word before the father's name (a clan name, not read "
                "as one) leaves the given name last, the reason the pack "
                "declares FAMILY_FIRST_GIVEN_LAST rather than FAMILY_FIRST"),
+    # #1335: a ZWNJ or ZWJ at a word's edge is dropped when the word is
+    # looked up, and kept in the field; each row checked against the
+    # 1.4.0 and 3.1.0 wheels on 2026-11-21
+    Case("a_title_typed_with_a_zwnj_after_it_is_the_title",
+         "Dr\u200c John Smith",
+         {"title": "Dr\u200c", "given": "John", "family": "Smith"},
+         classification="fix(#1335)",
+         notes="1.4.0 through 3.1.0 read given 'Dr' with its ZWNJ"),
+    Case("a_persian_title_typed_with_a_zwnj_after_it_is_the_title",
+         "\u0645\u0647\u0646\u062f\u0633\u200c \u0639\u0644\u06cc "
+         "\u0631\u0636\u0627\u06cc\u06cc",
+         {"title": "\u0645\u0647\u0646\u062f\u0633\u200c",
+          "given": "\u0639\u0644\u06cc",
+          "family": "\u0631\u0636\u0627\u06cc\u06cc"},
+         classification="fix(#1335)",
+         notes="the issue's mohandes; 1.4.0 through 3.1.0 read it given"),
+    Case("a_suffix_typed_with_a_zwj_after_it_is_the_suffix",
+         "John Smith Jr\u200d",
+         {"given": "John", "family": "Smith", "suffix": "Jr\u200d"},
+         classification="fix(#1335)",
+         notes="1.4.0 through 3.1.0 read family 'Jr' with its ZWJ"),
+    Case("a_title_typed_with_a_zwnj_before_it_after_a_comma",
+         "Smith, \u200cMrs Jane",
+         {"title": "\u200cMrs", "given": "Jane", "family": "Smith"},
+         classification="fix(#1335)",
+         notes="1.4.0 through 3.1.0 read given 'Mrs'"),
     # #1455: the Dutch oude and ten, each row checked against the 1.4.0
     # and 3.1.0 wheels on 2026-11-18
     Case("a_dutch_oude_starts_the_family_name",

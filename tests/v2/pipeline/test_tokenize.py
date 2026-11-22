@@ -201,6 +201,18 @@ def test_joiners_and_soft_hyphen_stay_inside_the_word(ch: str) -> None:
         f"ab{ch}cd", "ef"]
 
 
+@pytest.mark.parametrize("text", [
+    "Dr\u200c John Smith",
+    # Malayalam writes a ZWJ at a word's end on purpose, an older
+    # spelling of its final consonants
+    "\u0d05\u0d28\u0d4d\u200d \u0d15\u0d41\u0d2e\u0d3e\u0d7c",
+])
+def test_an_edge_joiner_stays_in_the_token_text(text: str) -> None:
+    # #1335 drops an edge joiner where a word is LOOKED UP; the token
+    # still holds what the caller wrote
+    assert " ".join(t.text for t in _tokenized(text).tokens) == text
+
+
 def test_zero_width_space_defeats_the_flank_guard_like_a_space() -> None:
     # #851: a separator, not a stripped mark, so beside the interpunct
     # it reads as whitespace does, not as U+200F does

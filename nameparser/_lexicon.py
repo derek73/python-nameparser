@@ -13,6 +13,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import itertools
+import re
 import sys
 import unicodedata
 import warnings
@@ -83,6 +84,14 @@ FULL_STOPS = ".．。｡"
 # letter, so deleting it changes no word's identity (#1151: `الدكتــور`
 # is the title `الدكتور`). Token text is never rewritten.
 _TATWEEL = "\u0640"
+# The zero-width non-joiner and joiner shape the letters on either side
+# of them, so at a word's edge they shape nothing and are dropped when
+# the word is looked up (#1335: `مهندس` typed with a ZWNJ after it is
+# the title `مهندس`), with the edge full stops. Inside a word they stay
+# (`آیت‌الله` is listed with its ZWNJ). Token text is never rewritten,
+# which keeps the ZWJ Malayalam writes at a word's end.
+_EDGE_JOINERS = "\u200c\u200d"
+_NON_ASCII_EDGES = FULL_STOPS + _EDGE_JOINERS
 
 
 def _normalize(word: str) -> str:
@@ -103,6 +112,8 @@ def _normalize(word: str) -> str:
     is what v1's lc() used, preserving which cross-spellings match.
 
     Tatweel (U+0640) is deleted, in a non-ASCII word only (#1151).
+    A ZWNJ or ZWJ at the word's edge is stripped with the edge full
+    stops, in a non-ASCII word only (#1335); one inside the word stays.
 
     NFC, since #322, and only for a non-ASCII word (ASCII is already
     NFC, and this runs per token on the parse path --
@@ -120,12 +131,14 @@ def _normalize(word: str) -> str:
     would change under its owner. v1 never re-normalized, so this only
     matters now that storage and match-time share one fold."""
     word = word.lower()
+    edges = FULL_STOPS
     if not word.isascii():
         word = unicodedata.normalize("NFC", word)
         if _TATWEEL in word:
             word = word.replace(_TATWEEL, "")
+        edges = _NON_ASCII_EDGES
     while True:
-        stripped = word.strip().strip(FULL_STOPS)
+        stripped = word.strip().strip(edges)
         if stripped == word:
             return word
         word = stripped
@@ -719,6 +732,9 @@ SameAsNamed = Mapping[str, frozenset[str]]
 #: which `_normalize` deletes too (#1151), so a name's two spellings that
 #: differ by one fold alike where the vocabulary and the match meet.
 _DROPPED = str.maketrans("", "", ".'`\u2019\u02bc\u02bb\u2018\u0640")
+#: A ZWNJ or ZWJ at the edge of a word, which `_normalize` strips too
+#: (#1335); one inside a word is kept, as `_normalize` keeps it.
+_EDGE_JOINER = re.compile(r"(?<!\S)[\u200c\u200d]+|[\u200c\u200d]+(?!\S)")
 #: The hyphens the parser joins two names with (rules/O6), defined here,
 #: below the pipeline, so the match's forms and the lexicon's pair index
 #: (`_forms`) read them alike; `_pipeline._vocab` reads them from here.
@@ -753,14 +769,18 @@ def _fold(text: str) -> str:
     the marks are read, a mark after one then attaching to the letter
     before it, and again after casefolding, which can write one (U+0149
     `ŉ` casefolds to `ʼn`). The iota subscript U+0345 is a mark like any
-    other, so `ᾳ` folds to `α`. Last, the letters a keyboard lacks
-    are written as one types them (`_KEYBOARD`)."""
+    other, so `ᾳ` folds to `α`. A ZWNJ or ZWJ at a word's edge is
+    dropped with the full stops (`_EDGE_JOINER`), as `_normalize` drops
+    it. Last, the letters a keyboard lacks are written as one types them
+    (`_KEYBOARD`)."""
     if text.isascii():
         # no accent, no composition, and no apostrophe but the typed
         # one and the backtick
         return text.casefold().translate(_DROPPED)
-    decomposed = unicodedata.normalize(
-        "NFD", unicodedata.normalize("NFC", text).translate(_DROPPED))
+    dropped = unicodedata.normalize("NFC", text).translate(_DROPPED)
+    if "\u200c" in dropped or "\u200d" in dropped:
+        dropped = _EDGE_JOINER.sub("", dropped)
+    decomposed = unicodedata.normalize("NFD", dropped)
     kept = []
     accented = False
     for c in decomposed:

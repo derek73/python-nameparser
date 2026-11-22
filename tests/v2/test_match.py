@@ -361,6 +361,27 @@ def test_a_tatweel_stretching_a_name_is_no_difference() -> None:
     assert given.outcome is Outcome.FOLDED
 
 
+@pytest.mark.parametrize("left, right", [
+    ("علی\u200c رضایی", "علی رضایی"),
+    ("\u200dعلی رضایی", "علی رضایی"),
+    ("Ali\u200c\u200d Rezaei", "Ali Rezaei"),
+])
+def test_a_joiner_at_a_words_edge_is_no_difference(
+        left: str, right: str) -> None:
+    """#1335: `_normalize` strips a ZWNJ or ZWJ at a word's edge, so the
+    match's fold does too; otherwise the vocabulary would link the two
+    spellings as a listed one that no list holds, as the tatweel did."""
+    result = Parser().matching().check(left, right)
+    assert result.consistent
+    given = next(r for r in result.roles if r.role is Role.GIVEN)
+    assert given.outcome is Outcome.FOLDED
+
+
+def test_fold_drops_a_joiner_at_a_words_edge_and_keeps_one_inside() -> None:
+    assert _fold("\u200cAli\u200d Reza\u200c") == "ali reza"
+    assert _fold("آیت\u200cالله") == "آیت\u200cالله"
+
+
 def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
     assert _fold("J.-P. O'Mári\u0301a") == "j-p omaria"
     assert _fold("María") == _fold("Mari\u0301a") == "maria"

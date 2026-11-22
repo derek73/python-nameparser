@@ -196,6 +196,48 @@ def test_tatweel_is_deleted_when_a_word_is_normalized() -> None:
     assert _normalize("Müller") == "müller"
 
 
+_ZWNJ, _ZWJ = "\u200c", "\u200d"
+
+
+@pytest.mark.parametrize("written", [
+    "مهندس" + _ZWNJ, _ZWNJ + "مهندس", "مهندس" + _ZWJ, _ZWJ + "مهندس",
+    "مهندس" + _ZWNJ + _ZWJ, _ZWNJ + "مهندس" + _ZWNJ,
+    "مهندس" + _ZWNJ + ".", "مهندس." + _ZWNJ, ". " + _ZWNJ + "مهندس",
+])
+def test_an_edge_joiner_is_stripped_when_a_word_is_normalized(
+        written: str) -> None:
+    """#1335: a ZWNJ or ZWJ at a word's edge shapes nothing, so it is
+    stripped with the edge full stops, in any order, to a fixed point."""
+    assert _normalize(written) == "مهندس"
+    assert _normalize(_normalize(written)) == _normalize(written)
+
+
+def test_an_edge_joiner_strips_on_a_latin_and_a_decomposed_word() -> None:
+    assert _normalize("Dr" + _ZWNJ) == _normalize(_ZWJ + "Dr") == "dr"
+    nfd = unicodedata.normalize("NFD", "Müller")
+    assert _normalize(nfd + _ZWNJ) == _normalize("Müller") == "müller"
+
+
+def test_a_joiner_inside_a_word_is_kept_and_a_lone_one_folds_away() -> None:
+    """A joiner between letters decides how they join (`آیت‌الله` is
+    listed with its ZWNJ), so it stays; a word that is nothing but
+    joiners folds to nothing, as a lone full stop does."""
+    assert _normalize("آیت" + _ZWNJ + "الله") == "آیت" + _ZWNJ + "الله"
+    assert _normalize(_ZWNJ) == _normalize(_ZWJ + _ZWNJ) == ""
+
+
+def test_a_word_added_with_an_edge_joiner_is_stored_without_it() -> None:
+    """Storage and lookup share the fold, so a caller's title typed with
+    a ZWNJ after it is the title written either way, and the lexicon
+    round-trips through pickle."""
+    lexicon = Lexicon.default().add("Xyzt" + _ZWNJ, kind="title")
+    assert "xyzt" in lexicon.words(kind="title")
+    parser = Parser(lexicon=lexicon)
+    for text in ("Xyzt John Smith", "Xyzt" + _ZWJ + " John Smith"):
+        assert parser.parse(text).given == "John"
+    assert pickle.loads(pickle.dumps(lexicon)) == lexicon
+
+
 @pytest.mark.parametrize("key, value", [
     ("phd", "Ph.D."), ("md", "M.D."), ("hc", "h.c"), ("ph.d", "PhD"),
     ("phd", "P.H.D."), ("md", "M. D."), ("dphil", "DPhil"),
