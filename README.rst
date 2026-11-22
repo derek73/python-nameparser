@@ -161,6 +161,8 @@ parser splits it off, with no configuration (see `Thai names
     ('นาย', 'สมชาย', 'ใจดี')
     >>> parse("г-н Иван Петров").title             # Cyrillic title
     'г-н'
+    >>> parse("श्री रवि कुमार वर्मा").title          # Hindi: a Devanagari salutation
+    'श्री'
     >>> arabic = parse("محمد بن سلمان")            # Arabic: بن chains onto the family name
     >>> arabic.family, arabic.patronymic          # and marks it a patronymic
     ('بن سلمان', 'بن سلمان')
@@ -189,6 +191,11 @@ the patronymic in Russian. See `Locale packs
     >>> ivan = russian.parse("Сидоров Иван Петрович")
     >>> ivan.given, ivan.patronymic, ivan.family
     ('Иван', 'Петрович', 'Сидоров')
+    >>> parse("Shri Ravi Kumar Verma").given       # romanized, Shri may be a name
+    'Shri'
+    >>> hindi = parser_for(locales.HI)             # the Hindi pack reads the salutation
+    >>> hindi.parse("Shri Ravi Kumar Verma").title
+    'Shri'
     >>> locales.available()                        # every pack that ships
     ('ar', 'bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'he', 'hi', 'hr', 'ja', 'mn', 'ms', 'my', 'ne', 'nl', 'pt', 'pt_br', 'pt_pt', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
 
