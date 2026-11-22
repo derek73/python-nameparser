@@ -13,11 +13,11 @@ The 2026-08-31 entry's numbers were measured that date, on py3.11 wherever no ot
 - The stages copy their state with `_state.copy_with`, a field copy, rather than `dataclasses.replace`, for `WorkToken`, `PendingAmbiguity` and `ParseState` only, and mypy sees it as `replace` imported under that name, keeping the dataclass plugin's checks at every call site — 2026-09-26 #546.
 - The field copy is guarded by a list of conditions a class must meet (`_state._copy_refusals`), a tripwire for a realistic edit to those three classes and not a proof against any class; `_UNGUARDED_EFFECT` records what each refused shape would build, and each condition is the only refusal of some row — 2026-09-29 #561.
 - Group asks its piece predicates by direct call, with no one-line closure between, and skips the rootname count and the shared connective loop where its tag walk finds no connective free to join — 2026-10-06 #617; 2026-10-07 #619.
+- rules/N4's alias take finds the given part's closing run once per take, and asks the leading title run once per part, a refused marker the run stops at bounding it as a take does — 2026-11-22 #1529.
 
 Not standing: #475's pointer to #424's peel walks as where to recover the cycle's growth, taken up by #614's single read of the trailing run — 2026-08-31 #475, 2026-10-07 #614; #475's reverted collapse of `post_rules`' role-index scans, left to reconsider against the band, taken up by #1089's single walk — 2026-08-31 #475, 2026-11-05 #1089.
 
 Open: none in this file.
-- rules/N4's alias take finds the given part's closing run once per take, and asks the leading title run once per part, a refused marker the run stops at bounding it as a take does — 2026-11-22 #1529.
 
 ## Log
 

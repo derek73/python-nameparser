@@ -1180,10 +1180,13 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 # a change to what the scan calls must move `only=` with it, and
 # re-take this control. The text holds a closing run (the titles after
 # `Xavier`) as well as titles the alias keeps, so finding the run once
-# per title fails here too. Recorded negative control (2026-11-22,
+# per title costs here too. Recorded negative control (2026-11-22,
 # py3.11): 59 calls at 8 titles a side and 599 at 32 (10.2x) on
 # af58ca09, and 97 and 1,129 (11.6x) with the run's start found once
-# per title, against 25 and 73 (2.9x) here.
+# per title, against 25 and 73 (2.9x) here. Both fail the probe's
+# `_closing_run_start` count first (0 on af58ca09, 9 for the per-title
+# form); the ratio is the backstop for a rewrite that renames the
+# function, which must move the probe with it.
 _ALIAS_TITLES_SMALL = 8
 _ALIAS_TITLES_LARGE = 32
 _ALIAS_TITLES_MAX_RATIO = 6.0

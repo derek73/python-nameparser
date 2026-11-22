@@ -354,8 +354,9 @@ def _clause_take(pieces: Sequence[Sequence[int]],
     before = m - 1
     # where the run is known to end earlier, no title run can reach the
     # word before the marker: asking `leading_titles` of a slice per
-    # marker made a part of n markers quadratic (the `alias_markers` and
-    # `refused_alias_markers` rows of tests/v2/test_benchmark.py)
+    # marker made a part of n markers quadratic (the `alias_markers` row
+    # and `test_a_refused_alias_take_asks_the_title_run_once` in
+    # tests/v2/test_benchmark.py)
     lead = (0 if run_ended
             else 1 if m == 1 and is_title_piece(pieces[0], ptags[0], tokens)
             else leading_titles(pieces[:m], ptags[:m], tokens))
