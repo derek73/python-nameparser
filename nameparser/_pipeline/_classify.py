@@ -138,8 +138,10 @@ def _name_words(tokens: Sequence[WorkToken], state: ParseState,
     reads, and a connective inside the run with the word it joins) and,
     after `partner`, the word the bound word would join, anything but a
     plain word, a bound given name or a pair of initials in a script
-    with case (a suffix, listed, by its shape or a numeral VI to X
-    written other than in Title case), and nothing past the next comma.
+    with case (a suffix, listed, by its shape or a numeral I to X
+    written other than in Title case, a lone capital being Title case),
+    and nothing past the next comma. It stops counting at four, which is
+    all its caller asks, so a long name is not walked once per pair.
     A plain loop, a generator costing a frame per word."""
     count = 0
     for seg in state.segments:
@@ -157,11 +159,12 @@ def _name_words(tokens: Sequence[WorkToken], state: ParseState,
             tags = t.tags
             if i > partner:
                 stem = t.text.rstrip(".")
-                if ((not tags - _BOUND_TAGS
+                if ((tags <= _BOUND_TAGS
                      or is_cased_paired_initials(t.text))
-                        and not (stem and not stem.istitle()
-                                 and _ROMAN.match(stem))):
+                        and (stem.istitle() or not _ROMAN.match(stem))):
                     count += 1
+                    if count >= 4:
+                        return count
                 continue
             if leading:
                 if (_LEADING_TITLE_TAGS & tags
@@ -180,6 +183,8 @@ def _name_words(tokens: Sequence[WorkToken], state: ParseState,
                 leading = False
                 count += held
             count += 1
+            if count >= 4:
+                return count
     return count
 
 
@@ -187,6 +192,10 @@ def _name_words(tokens: Sequence[WorkToken], state: ParseState,
 _CONTESTED_TAGS = frozenset({TITLE_AMBIGUOUS_TAG})
 #: A bound given name's own tags: one after the pair is a name word.
 _BOUND_TAGS = frozenset({"vocab:bound-given"})
+#: What rules/P12 writes on a bound word heading a pair, and on the word
+#: before a second it joins from.
+_BOUND_PHRASE_TAGS = frozenset({BOUND_PHRASE_TAG})
+_BOUND_SECOND_TAGS = frozenset({BOUND_PHRASE_TAG, BOUND_SECOND_TAG})
 #: The tags that mark a word of the leading title run: a title, listed
 #: or read in its phrase (H9), and a dotted title (H10).
 _LEADING_TITLE_TAGS = frozenset({"vocab:title", DOTTED_TITLE_TAG})
@@ -524,9 +533,11 @@ def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
     # tags -- the shape suffix_as_written already asks for ("n is
     # _normalize(text), passed in so callers normalize once").
+    lex = state.lexicon
+    sets = lex._sets
     folded = [_normalize(t.text) for t in state.tokens]
     marker_tags = tag_marker_runs(state.tokens, state.comma_offsets,
-                                  state.lexicon._sets.maiden_markers, folded)
+                                  sets.maiden_markers, folded)
     # rules/P3 says a maiden marker, taken as one, and the words it
     # takes, are not among the name's own words -- so the span and its
     # clause cut are _pieces.own_words', shared with the site that
@@ -536,7 +547,7 @@ def classify(state: ParseState) -> ParseState:
     # walking the texts again, and classify's answer is the one it was
     # before the helper existed.
     own, clause_at = own_words(state.tokens, state.comma_offsets,
-                               state.lexicon._sets.maiden_markers, marker_tags)
+                               sets.maiden_markers, marker_tags)
     # ONE fact per parse, and it is recorded now (ParseState.one_case):
     # segment writes it first where C2's flag on a tail part asks, and
     # a fact two stages decide apart is what recording it prevents
@@ -594,7 +605,7 @@ def classify(state: ParseState) -> ParseState:
             if (t.role is not None and i not in marker_tags
                     and (bare := t.text.strip(COMMA_STRIP)) and bare != t.text):
                 fold = _normalize(bare)
-                if fold in state.lexicon._sets.alias_markers:
+                if fold in sets.alias_markers:
                     continue
                 readers[i] = copy_with(t, text=bare)
                 folded[i] = fold
@@ -614,9 +625,11 @@ def classify(state: ParseState) -> ParseState:
     # connective to the word after it (rules/C10: "no join, maiden
     # clause or connective reaches across it")
     if stemmed:
-        tokens = tuple(
-            copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
-            for i, t in enumerate(tokens))
+        # a loop, not a generator, which is a frame per token resumed
+        written = list(tokens)
+        for i in stemmed:
+            written[i] = copy_with(written[i], tags=written[i].tags - _JOINING_TAGS)
+        tokens = tuple(written)
     # rules/H9: "the word is a title only inside a title phrase, and
     # elsewhere a name word" -- the phrase test (_vocab.title_readings)
     # asked per part, of the words carrying no role, and only of a part
@@ -624,7 +637,6 @@ def classify(state: ParseState) -> ParseState:
     # title tag, and every later stage reads it as the name word it is;
     # a contested word keeps TITLE_AMBIGUOUS_TAG either way, for the
     # report where it opens the name (assign)
-    lex = state.lexicon
     # rules/H10: "a title that is also a given name reads it as the
     # title it spells when asking for a partner in its title phrase
     # (H9)" -- the run's spelling without stops goes to the phrase test
@@ -632,19 +644,20 @@ def classify(state: ParseState) -> ParseState:
     # holds a word that test reads, so a run alone ('U.S. Grant') runs
     # no phrase test; whether the run is kept as a title is the title
     # runs' question, not this one (decisions/H10)
-    if not (lex._sets.titles_ambiguous.isdisjoint(folded)
-            and lex._sets.title_modifiers.isdisjoint(folded)):
+    if not (sets.titles_ambiguous.isdisjoint(folded)
+            and sets.title_modifiers.isdisjoint(folded)):
         for i, t in enumerate(tokens):
             if DOTTED_TITLE_TAG in t.tags:
                 folded[i] = folded[i].replace(".", "")
-    if not (lex._sets.titles_ambiguous.isdisjoint(folded)
-            and lex._sets.title_modifiers.isdisjoint(folded)):
+    # asked again, of the folds the stops came off
+    if not (sets.titles_ambiguous.isdisjoint(folded)
+            and sets.title_modifiers.isdisjoint(folded)):
         written = list(tokens)
         for at, seg in enumerate(state.segments):
             own_part = [i for i in seg if written[i].role is None]
             norms = [folded[i] for i in own_part]
-            if (lex._sets.titles_ambiguous.isdisjoint(norms)
-                    and lex._sets.title_modifiers.isdisjoint(norms)):
+            if (sets.titles_ambiguous.isdisjoint(norms)
+                    and sets.title_modifiers.isdisjoint(norms)):
                 continue
             readings = title_readings(
                 [readers[i].text for i in own_part], norms, lex,
@@ -653,9 +666,9 @@ def classify(state: ParseState) -> ParseState:
             for i, title in zip(own_part, readings):
                 tags = written[i].tags
                 n = folded[i]
-                if n not in lex._sets.titles_ambiguous and n not in lex._sets.title_modifiers:
+                if n not in sets.titles_ambiguous and n not in sets.title_modifiers:
                     continue
-                if n in lex._sets.titles_ambiguous and n not in lex._sets.titles:
+                if n in sets.titles_ambiguous and n not in sets.titles:
                     tags = tags | {TITLE_AMBIGUOUS_TAG}
                     if title:
                         # in a title phrase: a title (its given-name title
@@ -675,34 +688,31 @@ def classify(state: ParseState) -> ParseState:
     # vocabulary reading, not initial-shaped) and holding a letter, and
     # one written `long_names_only` only in a name of four name words
     # or more (decisions/P12, #1464)
-    sets = state.lexicon._sets
+    # the marks each pair's first word takes, written in one pass after
+    # both walks
+    bound: dict[int, frozenset[str]] = {}
     phrases = sets.bound_phrases
     open_bound = sets.bound_completes_any
     if ((phrases or open_bound)
             and not sets.bound_given_names.isdisjoint(folded)):
-        heads = set()
         for i in range(len(folded) - 1):
             # rules/C10: "no join, maiden clause or connective reaches
             # across it", so a delimiter glued to the bound word ends it
             if i in stemmed:
                 continue
             if f"{folded[i]} {folded[i + 1]}" in phrases:
-                heads.add(i)
+                bound[i] = _BOUND_PHRASE_TAGS
             # the first word is P5's, which this join never reads
             # a contested title H9 read out of a title phrase is a name word
             elif (i and folded[i] in open_bound
-                  and not tokens[i + 1].tags - _CONTESTED_TAGS
+                  and tokens[i + 1].tags <= _CONTESTED_TAGS
                   and _HAS_LETTER.search(tokens[i + 1].text)):
                 # counted per pair, the count reading which words stand
                 # after the word it would join
                 if (folded[i] in sets.bound_long_names_only
                         and _name_words(tokens, state, clause_at, i + 1) < 4):
                     continue
-                heads.add(i)
-        if heads:
-            tokens = tuple(
-                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
-                if i in heads else t for i, t in enumerate(tokens))
+                bound[i] = _BOUND_PHRASE_TAGS
     # rules/P12: "for a pair read from its second word, at it too" -- a word of
     # Lexicon.bound_seconds joins the plain word before it, and a pair of
     # Lexicon.bound_second_phrases joins whole, wherever it stands, the
@@ -713,27 +723,29 @@ def classify(state: ParseState) -> ParseState:
     if not seconds.isdisjoint(folded):
         second_phrases = sets.bound_second_phrases
         listed = sets.bound_seconds_listed
-        back = []
         for i in range(len(folded) - 1):
             before, after = tokens[i], tokens[i + 1]
             # a word carrying a role (a delimited clause) is in no
             # piece group joins, so its tag would be read by nothing
             if (folded[i + 1] not in seconds or i in stemmed
-                    or after.tags - _CONTESTED_TAGS
+                    or not after.tags <= _CONTESTED_TAGS
                     # no pair is written across a comma
-                    or any(before.span.end <= c < after.span.start
-                           for c in state.comma_offsets)):
+                    or state.comma_offsets
+                    and any(before.span.end <= c < after.span.start
+                            for c in state.comma_offsets)):
                 continue
             if f"{folded[i]} {folded[i + 1]}" not in second_phrases and (
                     folded[i + 1] in listed or before.tags
                     or not _HAS_LETTER.search(before.text)):
                 continue
-            back.append(i)
-        if back:
-            tokens = tuple(
-                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG,
-                                             BOUND_SECOND_TAG})
-                if i in back else t for i, t in enumerate(tokens))
+            # a word heading both pairs carries both marks
+            bound[i] = bound.get(i, frozenset()) | _BOUND_SECOND_TAGS
+    if bound:
+        # a loop, not a generator, which is a frame per token resumed
+        written = list(tokens)
+        for i, extra in bound.items():
+            written[i] = copy_with(written[i], tags=written[i].tags | extra)
+        tokens = tuple(written)
     # rules/S12: "a credential written split across a space reads as one
     # word" -- each adjacent pair of a segment asked once, here, and
     # the answer written on its first word for group's merge and the
@@ -742,8 +754,8 @@ def classify(state: ParseState) -> ParseState:
     # of words pays no frame; a token carrying a role is delimited
     # content, which no pair reaches.
     split: dict[int, str] | None = None
-    acronyms = state.lexicon._sets.suffix_acronyms
-    words = state.lexicon._sets.suffix_words
+    acronyms = sets.suffix_acronyms
+    words = sets.suffix_words
     for seg in state.segments:
         for j in range(len(seg) - 1):
             a, b = tokens[seg[j]], tokens[seg[j + 1]]
@@ -770,8 +782,7 @@ def classify(state: ParseState) -> ParseState:
                               and ((nfc := unicodedata.normalize(
                                   "NFC", fold)) in acronyms
                                    or nfc in words)))
-                    and (kind := split_pair(a.text, b.text,
-                                            state.lexicon)) is not None
+                    and (kind := split_pair(a.text, b.text, lex)) is not None
                     # a member pair a connective borders is no credential:
                     # the connective joins the words beside it
                     and (kind == "suffix" or (
@@ -783,7 +794,7 @@ def classify(state: ParseState) -> ParseState:
                     # 'Dr. Ph. D.' is no 'Dr. Ph.' ('drph') and a 'D.'
                     and not (kind == "split" and j + 2 < len(seg)
                              and split_pair(b.text, tokens[seg[j + 2]].text,
-                                            state.lexicon) == "suffix")):
+                                            lex) == "suffix")):
                 if split is None:
                     split = {}
                 split[seg[j]] = (SPLIT_CREDENTIAL_TAG if kind == "suffix"
@@ -848,8 +859,8 @@ def classify(state: ParseState) -> ParseState:
         # token -- 'e and e e' emits twice; assemble withdraws the
         # report on a letter no name word follows (rules/P8, #721).
         if (one_case and "initial" in token.tags
-                and folded[i] in state.lexicon._sets.conjunctions_ambiguous
-                and folded[i] in state.lexicon._sets.conjunctions
+                and folded[i] in sets.conjunctions_ambiguous
+                and folded[i] in sets.conjunctions
                 and i < clause_at and token.role is None
                 and (len(token.text) == 1
                      or not token.text.isascii()
