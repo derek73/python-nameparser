@@ -16,6 +16,7 @@ academic = { issue = 269, expands = "academician" }
 [[word]]
 text = "д-р"
 academic = { issue = 269, expands = "doctor" }
+credential = { cased = "д-р", expands = "doctor", issue = 1128, note = "a title/suffix dual decided by position (decisions/H5, 2026-11-21 #1128): CLDR 48 writes it after the name in credentials in Belarusian, Ukrainian and Bulgarian; borne by no name in any local corpus or Wikidata (tools/name_usage.py, 2026-11-21), the one ORCID record holding it writing the degree" }
 
 [[word]]
 text = "проф"

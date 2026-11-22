@@ -680,11 +680,7 @@
  "be/foreignFull/givenFirst": {
   "family": {
    "expected": "фон Бруль",
-   "got": "д-р"
-  },
-  "family_base": {
-   "expected": "Бруль",
-   "got": "д-р"
+   "got": "Бруль"
   },
   "family_particles": {
    "expected": "фон",
@@ -692,15 +688,7 @@
   },
   "given_names": {
    "expected": "Ада Карнэлія Сесар Марцін",
-   "got": "Ада Карнэлія Сесар Марцін фон Бруль"
-  },
-  "suffix": {
-   "expected": "д-р",
-   "got": ""
-  },
-  "surname1_base": {
-   "expected": "Бруль",
-   "got": "д-р"
+   "got": "Ада Карнэлія Сесар Марцін фон"
   },
   "surname1_particles": {
    "expected": "фон",
@@ -742,11 +730,7 @@
   },
   "given_names": {
    "expected": "Ада Карнэлія Сесар Марцін",
-   "got": "Бруль Ада Карнэлія Сесар Марцін д-р"
-  },
-  "suffix": {
-   "expected": "д-р",
-   "got": ""
+   "got": "Бруль Ада Карнэлія Сесар Марцін"
   },
   "surname1_base": {
    "expected": "Бруль",
@@ -803,12 +787,12 @@
  "bg/nativeFull/givenFirst": {
   "suffix": {
    "expected": "проф. д-р",
-   "got": ""
+   "got": "д-р"
   },
   "text": "г-н Иван Асен Вернер, проф. д-р",
   "title": {
    "expected": "г-н",
-   "got": "г-н проф. д-р"
+   "got": "г-н проф."
   }
  },
  "bg/nativeFull/sorting": {
@@ -833,12 +817,12 @@
  "bg/nativeFull/surnameFirst": {
   "suffix": {
    "expected": "проф. д-р",
-   "got": ""
+   "got": "д-р"
   },
   "text": "г-н Вернер, Иван Асен, проф. д-р",
   "title": {
    "expected": "г-н",
-   "got": "г-н проф. д-р"
+   "got": "г-н проф."
   }
  },
  "blo/foreignFull/givenFirst": {
@@ -8975,10 +8959,6 @@
    "expected": "Анастасія Єва Софія",
    "got": "Анастасія Єва Софія фон Вольф Гонзалес"
   },
-  "suffix": {
-   "expected": "д-р",
-   "got": ""
-  },
   "surname1_base": {
    "expected": "Вольф",
    "got": "Домінго"
@@ -8991,11 +8971,7 @@
    "expected": "Гонзалес Домінго",
    "got": ""
   },
-  "text": "проф. Анастасія Єва Софія фон Вольф Гонзалес Домінго, д-р",
-  "title": {
-   "expected": "проф.",
-   "got": "проф. д-р"
-  }
+  "text": "проф. Анастасія Єва Софія фон Вольф Гонзалес Домінго, д-р"
  },
  "uk/foreignFull/sorting": {
   "family": {
@@ -9014,10 +8990,6 @@
    "expected": "Анастасія Єва Софія",
    "got": "фон Вольф Гонзалес Домінго Анастасія Єва"
   },
-  "suffix": {
-   "expected": "д-р",
-   "got": ""
-  },
   "surname1_base": {
    "expected": "Вольф",
    "got": "Софія"
@@ -9030,11 +9002,7 @@
    "expected": "Гонзалес Домінго",
    "got": ""
   },
-  "text": "фон Вольф Гонзалес Домінго Анастасія Єва Софія, д-р, проф.",
-  "title": {
-   "expected": "проф.",
-   "got": "д-р проф."
-  }
+  "text": "фон Вольф Гонзалес Домінго Анастасія Єва Софія, д-р, проф."
  },
  "uk/foreignFull/surnameFirst": {
   "family": {
@@ -9051,11 +9019,7 @@
   },
   "given_names": {
    "expected": "Анастасія Єва Софія",
-   "got": "Вольф Гонзалес Домінго Анастасія Єва Софія д-р"
-  },
-  "suffix": {
-   "expected": "д-р",
-   "got": ""
+   "got": "Вольф Гонзалес Домінго Анастасія Єва Софія"
   },
   "surname1_base": {
    "expected": "Вольф",
