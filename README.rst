@@ -36,7 +36,7 @@ fewer function calls than in 3.1.
 
 `Getting started
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
-takes you through both, and the `release log
+takes you through ``suggest`` and ``matching``, and the `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details. Please `open an issue
 <https://github.com/derek73/python-nameparser/issues>`__ for anything
