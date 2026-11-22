@@ -952,7 +952,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             # it stands behind that word, so one scan answers every
             # pair. Asked per pair, the scan re-walked every word in
             # front of each one, quadratic in the part ('John Smith, ' +
-            # 'RA '*k + 'G.J. '*k, the duals never ending it; #563's
+            # 'VC '*k + 'G.J. '*k, the duals never ending it; #563's
             # shape, back in #613 and caught in review)
             speaker = -1
             for k, p in enumerate(p1):

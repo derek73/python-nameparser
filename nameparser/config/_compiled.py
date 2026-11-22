@@ -967,7 +967,6 @@ TITLES: frozenset[str] = frozenset({
     'pvt',
     'qari',
     "queen's",
-    'ra',
     'rabbi',
     'radio',
     'radiologist',
@@ -1620,6 +1619,7 @@ TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'prince',
     'princess',
     'queen',
+    'ra',
     'ranger',
     'royal',
     'sailor',
@@ -2992,6 +2992,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'pa',
     'pac',
     'pe',
+    'ra',
     'se',
     'si',
 })

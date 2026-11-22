@@ -2923,7 +2923,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('quinca', (('pt-BR', 'familiar', (('short_for', ('joaquim',)),)),)),
     ('quinha', (('pt-BR', 'familiar', (('short_for', ('francisca',)),)),)),
     ('quinho', (('pt-BR', 'familiar', (('short_for', ('francisco',)),)),)),
-    ('ra', (('de', 'academic', ()), ('en', 'credential', ()))),
+    ('ra', (('de', 'academic', ()), ('de', 'credential', ()), ('en', 'credential', ()), ('ko', 'given', ()), ('ko', 'family', ()))),
     ('rabbi', (('he', 'religious', ()),)),
     ('radek', (('cs', 'familiar', (('short_for', ('radoslav',)),)), ('pl', 'familiar', (('short_for', ('radoslaw', 'radosław')),)), ('sk', 'familiar', (('short_for', ('radoslav',)),)))),
     ('radio', (('en', 'modifier', ()),)),

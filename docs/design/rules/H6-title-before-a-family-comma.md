@@ -40,7 +40,7 @@
   ```
 - **The run stops where nothing but post-nominals stands behind it** (H3).
   ```
-  "RA PhD Jr., John"          →  family="RA"  · boundary
+  "VC PhD Jr., John"          →  family="VC"  · boundary
   ```
 - **The run always leaves the family at least one word.**
   ```

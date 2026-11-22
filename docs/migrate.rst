@@ -910,7 +910,7 @@ list, with reasoning, is in each release's section of
      - :ref:`migrate-3-1`
    * - 3.2
      - Dutch ``Oude``, Malaysian ``a/l``, ``a/p`` and ``anak``,
-       religious titles before a name
+       religious titles before a name, Korean ``Ra``
      - :ref:`migrate-3-2`
 
 Each entry says what it compares with. The lists of readings through
@@ -2475,3 +2475,31 @@ patronymic as the family name. The default parse is unchanged:
     ('Олена', 'Коваленко', 'Петрівна')
     >>> parse("Коваленко Олена Петрівна").family
     'Петрівна'
+
+Ra as a Korean name
+^^^^^^^^^^^^^^^^^^^
+
+``Ra``, a Korean family name and given name, reads as a name where it
+ends or opens one, where 1.4.0 through 3.1.0 read it as the credential
+RA ending a name and the title RA (Rechtsanwalt) opening one. After a
+comma, or written ``R.A.``, it is still the credential, and ``RA``
+opening a German name is now the given name:
+
+.. doctest::
+
+    >>> sang_hak = parse("Sang Hak Ra")
+    >>> sang_hak.middle, sang_hak.family, sang_hak.suffix
+    ('Hak', 'Ra', '')
+    >>> parse("Ra Mi Kim").given
+    'Ra'
+    >>> parse("John Smith, RA").suffix
+    'RA'
+
+To read it as 3.1 did, remove its two name readings:
+
+.. doctest::
+
+    >>> as_31 = Parser(lexicon=Lexicon.default().remove("ra", kind="family")
+    ...                .remove("ra", kind="given"))
+    >>> as_31.parse("Sang Hak Ra").suffix
+    'Ra'

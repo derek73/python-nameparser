@@ -12,7 +12,7 @@
   "Jane Doe, BM Jr."          →  given="BM"  · boundary
   "Jane Doe, MJ Junior"       →  given="MJ"  · boundary
   "Jane Doe, MJ Ed"           →  given="MJ"  · boundary
-  "John Smith, RA MJ"         →  given="MJ"  · boundary
+  "John Smith, VC MJ"         →  given="MJ"  · boundary
   "Jane Doe, MS BM PhD"       →  given="BM"  · boundary
   "Jane Doe, MJ MS"           →  suffix="MJ MS"
   "Jane Doe, MJ MD/Jr."       →  given="MJ"  · boundary

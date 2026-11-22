@@ -50,6 +50,7 @@ academic = { same_as = "priv.-doz", dotted = true }
 [[word]]
 text = "ra"
 academic = { expands = "Rechtsanwalt, the address of a lawyer, 'RA Müller'" }
+credential = { issue = 1483, expands = "Rechtsanwalt written after the name, 'Hans Müller, RA'", note = "en.toml's credential, here so a plain German choice, which turns the other files' vocabulary readings of the word off, keeps one (#1483), gated as en.toml's is by ko.toml's name readings" }
 
 [[word]]
 text = "univ.prof"

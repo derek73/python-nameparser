@@ -988,7 +988,10 @@ def test_my_pack_contents() -> None:
     ("THEIN AUNG EI", "THEIN", "AUNG", "EI", ""),
     ("THEIN AUNG SI", "THEIN", "AUNG", "SI", ""),
     ("THEIN AUNG PA", "THEIN", "AUNG", "PA", ""),
-    ("Thein Aung Ra", "Thein", "Aung", "Ra", ""),
+    # 'Thein Aung Ra' stood here until #1483 gave ra a name reading,
+    # which reads it so with no choice; in capitals the default still
+    # reads the credential, no case speaking for the name
+    ("THEIN AUNG RA", "THEIN", "AUNG", "RA", ""),
     ("AUNG SAN WIN", "AUNG", "SAN", "WIN", ""),
     ("Win, Aung San", "Aung", "San", "Win", ""),
     (", AUNG PE", "AUNG", "PE", "", ""),

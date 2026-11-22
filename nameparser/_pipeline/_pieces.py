@@ -711,7 +711,7 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     retired single-character vocabulary matches for the same reason.
     Not because a numeral is no credential -- a multi-letter suffix
     word ('III', 'Jr') anchors like any other suffix piece
-    (`is_single_letter_numeral`). A title/suffix DUAL ('ms', 'ra',
+    (`is_single_letter_numeral`). A title/suffix DUAL ('ms', 'vc',
     'sr') does anchor, except in the given part's
     leading title run, where it stands in title position ('Smith, Ms
     Ma' is Ms. Ma Smith); that exclusion is the callers', which start

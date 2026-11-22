@@ -28,9 +28,9 @@
 
 **Except:**
 
-- **A title in front takes the input out of the suffix half**, which is reached only where no title was peeled first. What it does NOT do is take the input out of the rule: the title run leaves a name word standing (H3), and where that word is title vocabulary the TITLE half claims it — `Dr. Pope MD` reports `title-or-name` on `Pope`, while `RA DDS` reports nothing, `DDS` being no title.
+- **A title in front takes the input out of the suffix half**, which is reached only where no title was peeled first. What it does NOT do is take the input out of the rule: the title run leaves a name word standing (H3), and where that word is title vocabulary the TITLE half claims it — `Dr. Pope MD` reports `title-or-name` on `Pope`, while `VC DDS` reports nothing, `DDS` being no title.
   ```
-  "RA DDS"                    →  ambiguities=()
+  "VC DDS"                    →  ambiguities=()
   ```
 
 **Precedence:**

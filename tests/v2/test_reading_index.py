@@ -390,7 +390,10 @@ def test_a_file_holding_only_familiar_readings_is_chosen_only_strictly(
 #: file-strict entry measured 16 words, 27 word-and-tag pairs over 13
 #: tags on 2026-10-31; the strict-gap batches of 2026-11-03 moved it, and
 #: #345 added hi's sushri, its Odia given name in or.toml; #1483 my's
-#: ranks, whose given names only en.toml writes). A
+#: ranks, whose given names only en.toml writes; de's and en's ra,
+#: whose name readings only ko.toml writes, #1483 on 2026-11-21, a
+#: strict German or English choice reading the credential as master's
+#: default did). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
@@ -398,6 +401,8 @@ STRICT_UNGATED = {
     "ar": {"ben", "cheikh"},
     "ca": {"del", "la"},
     "cs": {"st"},
+    "de": {"ra"},
+    "en": {"ra"},
     "fil": {"del", "la", "san"},
     "fr": {"la", "marquis", "marquise", "saint", "st"},
     "ga": {"mac"},
