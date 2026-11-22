@@ -1394,7 +1394,8 @@ def test_cs_and_sk_pack_contents() -> None:
     # and keeps the family reading that gates mul.toml's credential
     from nameparser._locale import deviates_by_two_family_names
     from nameparser.locales import (
-        cs as _cs, es as _es, hr as _hr, sk as _sk, sl as _sl)
+        cs as _cs, es as _es, es_ar as _es_ar, hr as _hr, pt_br as _pt_br,
+        pt_pt as _pt_pt, sk as _sk, sl as _sl)
     fragments = {"cs": Lexicon.empty().remove("ing", kind="given"),
                  "sk": Lexicon.empty(), "hr": Lexicon.empty(),
                  "sl": Lexicon.empty()}
@@ -1404,9 +1405,8 @@ def test_cs_and_sk_pack_contents() -> None:
                               policy=PolicyPatch(two_family_names=True),
                               languages=frozenset({code})), code
     # the patch's declaration is rules/O6's, one predicate for every
-    # pack that turns O6 on (es_ar, pt_br and pt_pt among them, held to
-    # it in their own tests), so their declarations cannot drift apart
-    for module in (_cs, _sk, _es, _hr, _sl):
+    # pack that turns O6 on, so their declarations cannot drift apart
+    for module in (_cs, _sk, _es, _es_ar, _hr, _pt_br, _pt_pt, _sl):
         for name in ("Alena Pešová Řehořová", "Novák, Petr Pavel",
                      "Mária-\u200bJana Kováčová", "Jan Novák", "Novák"):
             assert module.DEVIATES(name) == deviates_by_two_family_names(name)
