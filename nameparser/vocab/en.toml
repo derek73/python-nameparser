@@ -1058,7 +1058,7 @@ office = {}
 
 [[word]]
 text = "deputy"
-office = { attaches = ["office"], issue = 913, note = "attaches: Deputy Chancellor, Deputy Judge (rules/H9), as chief does" }
+office = { attaches = ["office", "imam"], issue = 913, note = "attaches: Deputy Chancellor, Deputy Judge, Deputy Imam (rules/H9; imam since #1206, a title only in a phrase), as chief does" }
 
 [[word]]
 text = "dpty"
@@ -1200,7 +1200,7 @@ office = {}
 
 [[word]]
 text = "sheriff"
-office = { attaches = ["principal"], note = "attaches: Sheriff Principal (rules/H9, #1206), a title only in a phrase" }
+office = { attaches = ["clerk", "officer", "principal"], note = "attaches: Sheriff Clerk, Sheriff Officer, Sheriff Principal, the Scottish offices written with the qualifier after the head (rules/H9, #1206), a title only in a phrase" }
 given = { note = "a given name in West Africa, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes 129, Nigeria 25, Ghana 5, Sierra Leone 3, The Gambia 2, US SSA 102, Wikidata 6 given. Without it the office read it as the title opening a name (rules/H9): it fixes 14 PSC records and 8 ORCID, moves 2 ClinicalTrials.gov names and 2 FEC donors to the given name, and breaks none (measure.py against 6ff048fe); High Sheriff, Deputy Sheriff and Sheriff of Nottingham stay titles (#1206)" }
 
 [[word]]

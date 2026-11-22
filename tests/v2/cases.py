@@ -18591,7 +18591,6 @@ CASES: tuple[Case, ...] = (
          notes="H9: 'of' after the word is its partner"),
     Case("given_name_title_imam_ending_the_name", "Musa Bello Imam.",
          {"given": "Musa", "middle": "Bello", "family": "Imam."},
-         classification="fix(#1206)",
          notes="H9; 1.4.0's reading, which 2.3.0 through 3.1.0 read as "
                "title 'Imam.' (H5)"),
     Case("given_name_title_timi_at_the_head", "Timi Adebayo",
@@ -18609,9 +18608,10 @@ CASES: tuple[Case, ...] = (
     Case("given_name_title_sheriff_at_the_head", "Sheriff Kanteh Jallow",
          {"given": "Sheriff", "middle": "Kanteh", "family": "Jallow"},
          ambiguities=("title-or-name",), classification="fix(#1206)",
-         notes="H9: a West African given name; 'High Sheriff' and "
-               "'Deputy Sheriff' hold the word, so it reports; read "
-               "title 'Sheriff' before"),
+         notes="H9: a West African given name; the listed phrases "
+               "'Chief Sheriff', 'Deputy Sheriff' and 'Sheriff "
+               "Principal' hold the word, so it reports; read title "
+               "'Sheriff' before"),
     Case("given_name_title_sheriff_behind_a_salutation",
          "Mr Sheriff Jallow",
          {"title": "Mr", "given": "Sheriff", "family": "Jallow"},
@@ -18633,7 +18633,6 @@ CASES: tuple[Case, ...] = (
                "'principal' since #1206, so the phrase keeps the title"),
     Case("given_name_title_sheriff_ending_the_name", "Jane Smith Sheriff.",
          {"given": "Jane", "middle": "Smith", "family": "Sheriff."},
-         classification="fix(#1206)",
          notes="H9; 1.4.0's reading, which 2.3.0 through 3.1.0 read as "
                "title 'Sheriff.' (H5)"),
     Case("given_name_title_effendi_at_the_head", "Effendi Purnomo Sitorus",
@@ -18641,6 +18640,151 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1206)",
          notes="H9: an Indonesian given name; no listed phrase holds "
                "'effendi', so no report; read title 'Effendi' before"),
+    Case("given_name_title_imam_alone",
+         "Imam",
+         {"given": "Imam"},
+         ambiguities=("title-or-name", "given-or-family",),
+         classification="fix(#1206)",
+         notes="H9 and O5: a lone name word is the given name; read title "
+               "'Imam' before"),
+    Case("given_name_title_imam_in_lower_case",
+         "imam taufik sasongko",
+         {"given": "imam", "middle": "taufik", "family": "sasongko"},
+         ambiguities=("title-or-name",),
+         classification="fix(#1206)",
+         notes="H9, in lower case; read title 'imam' before"),
+    Case("given_name_title_imam_with_its_period_at_the_head",
+         "Imam. Taufik Sasongko",
+         {"title": "Imam.", "given": "Taufik", "family": "Sasongko"},
+         notes="H2: the abbreviation shape takes the period-marked word at "
+               "the head whatever the vocabulary says, as for 'Dean.'"),
+    Case("given_name_title_imam_under_family_first",
+         "Imam Taufik Sasongko",
+         {"given": "Taufik", "middle": "Sasongko", "family": "Imam"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("title-or-name",),
+         classification="fix(#1206)",
+         notes="H9 under a family-first order: the word is the family "
+               "name; read title 'Imam', family 'Taufik' before"),
+    Case("given_name_title_imam_opening_the_part_before_a_family_comma",
+         "Imam Sasongko, Taufik",
+         {"given": "Taufik", "family": "Imam Sasongko"},
+         notes="H9 and H6: a title that may be a given name is not peeled "
+               "before a family comma outside a phrase, 1.4.0's reading; "
+               "2.5.0 through 3.1.0 read title 'Imam', family 'Sasongko'"),
+    Case("given_name_title_imam_after_a_full_name_and_a_comma",
+         "Musa Bello, Imam",
+         {"given": "Imam", "family": "Musa Bello"},
+         classification="fix(#1206)",
+         notes="H9's Because: the word after a full name and a comma is "
+               "the listing form's given name, as 'John Smith, Dean' "
+               "reads; the accepted cost for an office written after the "
+               "name; read title 'Imam' before"),
+    Case("given_name_title_imam_in_a_third_comma_part",
+         "Sasongko, Taufik, Imam",
+         {"given": "Taufik", "family": "Sasongko", "suffix": "Imam"},
+         ambiguities=("comma-structure",),
+         notes="C2: a part past the second comma holds no name word, so "
+               "the unlisted word is a suffix, as 'Smith, John, Dean' "
+               "reads and 1.4.0 read it; 2.4.0 through 3.1.0 read title "
+               "'Imam'"),
+    Case("given_name_title_imam_behind_deputy",
+         "Deputy Imam Musa Bello",
+         {"title": "Deputy Imam", "given": "Musa", "family": "Bello"},
+         notes="H9: 'deputy' attaches to 'imam' since #1206, so the phrase "
+               "keeps the title, as 1.4.0 read it"),
+    Case("given_name_title_imam_before_a_plain_title",
+         "Imam Mahdi Karimi",
+         {"given": "Imam", "middle": "Mahdi", "family": "Karimi"},
+         ambiguities=("title-or-name",),
+         classification="fix(#1206)",
+         notes="H9: two words that may be given names; neither is the "
+               "other's partner; read title 'Imam', given 'Mahdi' 2.7.0 "
+               "through 3.1.0, title 'Imam Mahdi' before"),
+    Case("given_name_title_timi_alone",
+         "Timi",
+         {"given": "Timi"},
+         ambiguities=("given-or-family",),
+         classification="fix(#1206)",
+         notes="H9 and O5; no listed phrase holds 'timi', so only O5's "
+               "fork reports; read title 'Timi' before"),
+    Case("given_name_title_timi_after_an_empty_head",
+         ", Timi",
+         {"given": "Timi"},
+         classification="fix(#1206)",
+         notes="H9; read title 'Timi' before"),
+    Case("given_name_title_timi_ending_the_name",
+         "Taufik Sasongko Timi.",
+         {"given": "Taufik", "middle": "Sasongko", "family": "Timi."},
+         notes="H9; 1.4.0's reading, which 2.3.0 through 3.1.0 read as "
+               "title 'Timi.' (H5)"),
+    Case("given_name_title_timi_behind_chief",
+         "Chief Timi Adebayo",
+         {"title": "Chief", "given": "Timi", "family": "Adebayo"},
+         classification="fix(#1206)",
+         notes="H9: 'chief' attaches to office and military titles and to "
+               "'imam', not to a ruler's title, so a chief named Timi "
+               "reads the given name; read title 'Chief Timi' before"),
+    Case("given_name_title_sheriff_alone",
+         "Sheriff",
+         {"given": "Sheriff"},
+         ambiguities=("title-or-name", "given-or-family",),
+         classification="fix(#1206)",
+         notes="H9 and O5; read title 'Sheriff' before"),
+    Case("given_name_title_sheriff_after_a_family_comma",
+         "Jallow, Sheriff",
+         {"given": "Sheriff", "family": "Jallow"},
+         classification="fix(#1206)",
+         notes="H9: the comma marks the given name, so no report; read "
+               "title 'Sheriff' before"),
+    Case("given_name_title_sheriff_after_an_empty_head",
+         ", Sheriff",
+         {"given": "Sheriff"},
+         classification="fix(#1206)",
+         notes="H9; read title 'Sheriff' before"),
+    Case("given_name_title_sheriff_after_a_full_name_and_a_comma",
+         "Kanteh Jallow, Sheriff",
+         {"given": "Sheriff", "family": "Kanteh Jallow"},
+         classification="fix(#1206)",
+         notes="H9's Because, as 'John Smith, Dean' reads: the office "
+               "written after the name reverses it, an accepted cost; read "
+               "title 'Sheriff' before"),
+    Case("given_name_title_sheriff_before_clerk",
+         "Sheriff Clerk John Smith",
+         {"title": "Sheriff Clerk", "given": "John", "family": "Smith"},
+         notes="H9: 'sheriff' attaches to 'clerk' since #1206"),
+    Case("given_name_title_sheriff_before_officer",
+         "Sheriff Officer John Smith",
+         {"title": "Sheriff Officer", "given": "John", "family": "Smith"},
+         notes="H9: 'sheriff' attaches to 'officer' since #1206, as 1.4.0 "
+               "read it"),
+    Case("given_name_title_effendi_in_capitals",
+         "EFFENDI TAUFIK SASONGKO",
+         {"given": "EFFENDI", "middle": "TAUFIK", "family": "SASONGKO"},
+         classification="fix(#1206)",
+         notes="H9, in one case; read title 'EFFENDI' before"),
+    Case("given_name_title_effendi_after_a_family_comma",
+         "Sasongko, Effendi",
+         {"given": "Effendi", "family": "Sasongko"},
+         classification="fix(#1206)",
+         notes="H9; read title 'Effendi' before"),
+    Case("given_name_title_effendi_after_an_empty_head",
+         ", Effendi",
+         {"given": "Effendi"},
+         classification="fix(#1206)",
+         notes="H9; read title 'Effendi' before"),
+    Case("given_name_title_effendi_ending_the_name",
+         "Taufik Sasongko Effendi.",
+         {"given": "Taufik", "middle": "Sasongko", "family": "Effendi."},
+         notes="H9; 1.4.0's reading, which 2.3.0 through 3.1.0 read as "
+               "title 'Effendi.' (H5)"),
+    Case("given_name_title_effendi_before_another",
+         "Effendi Mahdi Karimi",
+         {"given": "Effendi", "middle": "Mahdi", "family": "Karimi"},
+         classification="fix(#1206)",
+         notes="H9: a style that may be a given name is no partner of the "
+               "word after it, the accepted cost of gating the style; read "
+               "title 'Effendi Mahdi' 1.4.0 through 3.1.0"),
     Case("given_name_title_maj_at_the_head", "Maj Sjöwall",
          {"given": "Maj", "family": "Sjöwall"},
          ambiguities=("title-or-name",), classification="fix(#999)",

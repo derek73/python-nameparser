@@ -2443,9 +2443,11 @@ Imam, Timi, Sheriff and Effendi as given names
 
 ``Imam``, ``Timi``, ``Sheriff`` and ``Effendi`` opening a name are the
 given name, as they are in Indonesia, Nigeria and West Africa, where
-1.4 through 3.1 read them as the title. In a title phrase they stay
-titles (``Chief Imam``, ``Grand Imam``, ``High Sheriff``, ``Sheriff of
-Nottingham``):
+1.4 through 3.1 read them as the title. Written alone after a full
+name and a comma, the word is the given name and the name before the
+comma the family (``Kanteh Jallow, Sheriff``), as ``Dean`` reads there.
+In a title phrase they stay titles (``Chief Imam``, ``Grand Imam``,
+``High Sheriff``, ``Sheriff of Nottingham``):
 
 .. doctest::
 

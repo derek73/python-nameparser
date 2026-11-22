@@ -583,12 +583,30 @@ def test_a_strict_choice_of_the_titles_own_tag_reads_it_as_the_title(
     from nameparser import locales, parse, parser_for
     name = _UNGATED_BY_ANOTHER_FILE[tag]
     word = name.split()[0]
-    strict = parser_for(_choice((tag,)), strict=True).parse(name)
-    assert (strict.title, strict.given) == (word, name.split()[1])
-    gated = [parse, parser_for(_choice((tag,))).parse,
-             parser_for(_choice((tag, "id")), strict=True).parse]
+    ungated = [parser_for(_choice((tag,)), strict=True)]
+    gated = [parser_for(_choice((tag,))),
+             parser_for(_choice((tag, "id")), strict=True),
+             parser_for(locales.MS), parser_for(locales.MS, strict=True)]
     if tag == "ar":
-        gated.append(parser_for(locales.AR).parse)
-    for read in gated:
+        ungated.append(parser_for(locales.AR, strict=True))
+        gated.append(parser_for(locales.AR))
+    else:
+        gated.append(parser_for(locales.TR_AZ))
+    for parser in ungated:
+        got = parser.parse(name)
+        assert (got.title, got.given) == (word, name.split()[1]), parser
+    for read in [parse, *(parser.parse for parser in gated)]:
         got = read(name)
         assert (got.title, got.given) == ("", word), read
+
+
+@pytest.mark.parametrize(("tag", "name"), [
+    ("yo", "Timi Adebayo"), ("en", "Sheriff Kanteh Jallow"),
+])
+def test_a_strict_choice_of_the_titles_own_file_keeps_its_gate(
+        tag: str, name: str) -> None:
+    # timi's and sheriff's given readings sit beside their titles (#1206),
+    # so a strict choice of that file keeps the word a name word
+    from nameparser import parser_for
+    got = parser_for(_choice((tag,)), strict=True).parse(name)
+    assert (got.title, got.given) == ("", name.split()[0])

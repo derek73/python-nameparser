@@ -174,7 +174,7 @@
   "The Saint Thomas More"     →  given="The Saint"
   "The Marquis of Tavistock"  →  title="The Marquis of Tavistock"
   ```
-- A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the name data at hand writes the title there almost never.
+- A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the record data at hand writes the title there almost never, and clerics written that way are mostly in news text.
   ```
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
