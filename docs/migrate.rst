@@ -2389,7 +2389,8 @@ A Latin bound given name past the first word
 
 ``Abdel``, ``Abd``, ``Abdal`` and ``Abou`` past the first word of a
 name now join the name word after them, and ``Abdul`` does too in a name
-of four words or more. Position places the pair: the family name where
+of four name words or more, a title, a suffix, a nickname or a maiden
+name not counted. Position places the pair: the family name where
 it ends the name, one middle name inside it. 1.4 through 3.1 read the
 bound word as a middle name of its own, or, for ``Abd`` in the given
 part after a family comma, as the credential ABD, and the word after it
