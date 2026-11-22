@@ -62,7 +62,8 @@ nobility = { default = false, addresses = "given", issue = 1180, decided = 2026-
 [[word]]
 text = "sultan"
 nobility = {}
-given = { note = "a given name in Malaysia, rarely, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes Malaysia 7, family boxes 19 (bin Sultan), PatentsView 1 each. Without it strict ms, which drops ar.toml's and tr.toml's given readings, read it as a title opening a name (rules/H9): against strict ms, the reading fixes 1 ORCID record of Malaysia and breaks none (config_diff.py score on 81a24221). A ruler's style opening a name (Sultan Rahmat ibni Sultan Kamil) then reads the given name under strict ms, as it does by default and under locales.MS (#1463)" }
+given = { note = "a given name in Malaysia, rarely, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes Malaysia 7, PatentsView 1. Without it strict ms, which drops ar.toml's and tr.toml's given readings, read it as a title opening a name (rules/H9): against strict ms, the reading fixes 1 ORCID record of Malaysia and breaks none (config_diff.py score on 81a24221). A ruler's style opening a name (Sultan Rahmat ibni Sultan Kamil) then reads the given name under strict ms, as it does by default and under locales.MS (#1463)" }
+family = { note = "a family name in Malaysia, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID family boxes 19, mostly written bin Sultan, PatentsView 1; it moves no role, and names ms in Reading.languages where strict ms read a family Sultan with no file (#1463)" }
 
 [[word]]
 text = "tan"

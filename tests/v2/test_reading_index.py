@@ -20,6 +20,7 @@ import pytest
 from tests.checkout import require_checkout
 from typing import Any
 
+from nameparser import Lexicon, Locale
 from nameparser import _reading_index as ri
 from nameparser.config import _compiled, _index
 
@@ -426,44 +427,79 @@ def test_the_words_strict_ungates_are_the_reviewed_set() -> None:
     assert got == STRICT_UNGATED
 
 
-#: Names opening with, or holding, a word that left STRICT_UNGATED when
-#: its chosen file gained the name reading (#1463), in each comma shape
-#: and case, behind a salutation and before a credential.
+#: Names holding a word that left STRICT_UNGATED when its chosen file
+#: gained the name reading (#1463): the word opening the name, in each
+#: comma shape (one word, a full name and nothing before a family comma,
+#: and a suffix comma) and case, behind a title of another kind, beside
+#: a nickname and a generation, and two rows with the word last, which
+#: the gate never reached, as edges.
 _REGATED = {
     "ar": ("Cheikh Kaddari", "Kaddari, Cheikh", "Kaddari, Cheikh Amine",
+           "Cheikh Kaddari, Amine", "Kaddari Amine, Cheikh",
            ", Cheikh", "Cheikh", "CHEIKH KADDARI", "cheikh kaddari",
-           "Mr Cheikh Kaddari", "Cheikh Kaddari, PhD", "Amine Cheikh"),
+           "Mr Cheikh Kaddari", "Dr. Cheikh Kaddari", "Cheikh Kaddari, PhD",
+           "(Bob), Cheikh", "Cheikh (Bob) Kaddari", "Cheikh Jr.",
+           "Amine Cheikh"),
     "ms": ("Sultan Zulkarnain", "Zulkarnain, Sultan", "Zulkarnain, Sultan Ahmad",
+           "Sultan Zulkarnain, Ahmad", "Zulkarnain Ahmad, Sultan",
            ", Sultan", "Sultan", "SULTAN ZULKARNAIN", "sultan zulkarnain",
-           "Encik Sultan Zulkarnain", "Sultan bin Ahmad", "Ahmad bin Sultan",
-           "Aisha Sultan, DPT", "Sultan II"),
+           "Encik Sultan Zulkarnain", "Haji Sultan Ahmad",
+           "Sultan bin Ahmad", "(Bob), Sultan", "Sultan (Bob) Ahmad",
+           "Aisha Sultan, DPT", "Sultan II", "Sultan Jr.",
+           "Ahmad bin Sultan"),
 }
+
+#: The title the strict choice reads in a row, where it reads one.
+_REGATED_TITLES = {"Mr Cheikh Kaddari": "Mr", "Dr. Cheikh Kaddari": "Dr.",
+                   "Encik Sultan Zulkarnain": "Encik",
+                   "Haji Sultan Ahmad": "Haji"}
+
+#: Rows the gate's other half reads: the word inside a title phrase, a
+#: title under a strict choice as by default, where en.toml is chosen
+#: beside the language (its style words and `of`).
+_REGATED_PHRASES = {
+    "ar": (("Grand Cheikh Ahmed", "Grand Cheikh"),),
+    "ms": (("His Majesty Sultan Rahmat", "His Majesty Sultan"),
+           ("Sultan of Johor Ibrahim", "Sultan of Johor")),
+}
+
+
+def _choice(tags: tuple[str, ...]) -> Locale:
+    return Locale(code="choice", lexicon=Lexicon.empty(),
+                  languages=frozenset(tags))
 
 
 @pytest.mark.parametrize("order", ["GIVEN_FIRST", "FAMILY_FIRST",
                                    "FAMILY_FIRST_GIVEN_LAST"])
-@pytest.mark.parametrize("tag", sorted(_REGATED))
+@pytest.mark.parametrize("tags", [("ar",), ("ms",), ("ar", "en"), ("ms", "en"),
+                                  ("MS",)])
 def test_a_strict_choice_reads_a_regated_word_as_its_plain_choice_does(
-        tag: str, order: str) -> None:
-    # strict drops the file holding the only name reading of `cheikh`
-    # (fr.toml) and of `sultan` (ar.toml, tr.toml), and read each as the
-    # title opening a name (rules/H9) until ar.toml and ms.toml wrote one
+        tags: tuple[str, ...], order: str) -> None:
+    # strict drops every file holding a name reading of `cheikh` (fr.toml)
+    # and of `sultan` (ar.toml and tr.toml), and read each as the title
+    # opening a name (rules/H9) until ar.toml and ms.toml wrote one; "MS"
+    # is the shipped pack, the others a bare choice of those tags
     import nameparser as N
-    from nameparser import Lexicon, Locale, Parser, Policy, parser_for
-    choice = Locale(code="choice", lexicon=Lexicon.empty(),
-                    languages=frozenset({tag}))
+    from nameparser import Parser, Policy, locales, parser_for
+    choice = locales.MS if tags == ("MS",) else _choice(tags)
+    tag = tags[0].lower()
     policy = Policy(name_order=getattr(N, order))
     plain, strict = (Parser(lexicon=parser_for(choice, strict=s).lexicon,
                             policy=policy) for s in (False, True))
     for name in _REGATED[tag]:
         got, want = strict.parse(name), plain.parse(name)
         assert got.as_dict() == want.as_dict(), name
-        # strict ms drops en.toml's DPT, so it reports the unlisted
-        # credential where the plain choice, listing it, reports nothing
-        if name != "Aisha Sultan, DPT":
-            assert ([a.kind for a in got.ambiguities]
-                    == [a.kind for a in want.ambiguities]), name
-        assert not got.title or name.startswith(("Mr", "Encik"))
+        assert got.title == _REGATED_TITLES.get(name, ""), name
+        kinds = [a.kind.value for a in got.ambiguities]
+        if name == "Aisha Sultan, DPT" and "en" not in tags:
+            # strict drops en.toml's DPT, so it reports the credential
+            # the plain choice lists
+            assert [a.kind.value for a in want.ambiguities] == []
+            assert kinds == ["suffix-or-name"], name
+        else:
+            assert kinds == [a.kind.value for a in want.ambiguities], name
+    for name, title in _REGATED_PHRASES[tag] if "en" in tags else ():
+        assert strict.parse(name).title == title, name
 
 
 def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None:

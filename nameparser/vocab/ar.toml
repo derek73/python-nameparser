@@ -21,7 +21,8 @@ family = { us_census_2010 = 6462, wikidata = 60, as_of = 2026-10-27, note = "US 
 [[word]]
 text = "cheikh"
 style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'" }
-given = { note = "a given name in the Maghreb and Mauritania, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes Mauritania 13 (3.79%), Algeria 9, Morocco 4, Tunisia 1, family boxes Tunisia 17, Algeria 14, Morocco 11, Mauritania 7; fr.toml's readings carry the Senegalese and Wikidata totals. Without it strict ar, which drops fr.toml's given reading, read it as a title opening a name (rules/H9): against strict ar, the reading fixes 12 ORCID records of Algeria, Morocco and Mauritania and breaks none (config_diff.py score on 81a24221) (#1463)" }
+given = { note = "a given name in the Maghreb and Mauritania, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID given boxes Mauritania 13 (3.79%), Algeria 9, Morocco 4, Tunisia 1; fr.toml's readings carry the Senegalese and Wikidata totals. Without it strict ar, which drops fr.toml's given reading, read it as a title opening a name (rules/H9): against strict ar, the reading fixes 12 ORCID records of Algeria, Morocco and Mauritania and breaks none (config_diff.py score on 81a24221) (#1463)" }
+family = { note = "a family name in the Maghreb and Mauritania, counted 2026-11-21 (tools/name_usage.py --boxes): ORCID family boxes Tunisia 17, Algeria 14, Morocco 11, Mauritania 7; it moves no role, and names ar in Reading.languages where strict ar read a family Cheikh with no file (#1463)" }
 
 [[word]]
 text = "shaik"
