@@ -2805,10 +2805,30 @@ def test_a_remove_of_every_reading_of_a_word_keeps_the_pairs_other_words_hold() 
     lexicon = _pairs("familiar", "short_for").add("zzbo", kind="title")
     # zzrobert holds no reading of its own, so the remove takes nothing
     # and warns (#1535)
-    with pytest.warns(UserWarning, match="'zzrobert' is in no vocabulary"):
+    with pytest.warns(UserWarning,
+                      match="'zzrobert' holds no reading of its own"):
         after = lexicon.remove("zzbo").remove("zzrobert")
     assert after.readings_of("zzbo") == ()
     assert after._familiar_forms("zzrobert") == {"zzrob"}
+
+
+@_pair_kinds
+def test_a_no_kind_remove_of_a_name_held_only_in_pairs_offers_the_pair_remove(
+        kind: str, prop: str, outcome: Outcome,
+        paired: Callable[..., frozenset[str]]) -> None:
+    # zzsho is the other name of a pair zzlong holds: a remove with no
+    # kind takes nothing, and the warning offers the remove that takes
+    # the pair, which this runs (#1535)
+    lexicon = _pairs(kind, prop)
+    with pytest.warns(UserWarning) as record:
+        lexicon.remove("zzsho")
+    message = str(record[0].message)
+    assert "'zzsho' holds no reading of its own" in message
+    offered = re.search(r"remove\('zzsho', kind='[a-z]+'\)", message)
+    assert offered is not None
+    taken = eval("lexicon." + offered.group(0))  # noqa: S307
+    assert paired(lexicon, "zzsho") == {"zzlong"}
+    assert paired(taken, "zzsho") == frozenset()
 
 
 @_pair_kinds

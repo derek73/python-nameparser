@@ -186,10 +186,21 @@ no vocabulary file lists, warns, naming the kinds the word does hold.
 
 A reading some file holds counts even where it is off by default, since
 a choice of languages may turn it on, and so does one the same lexicon
-added earlier. A fragment meant to remove a reading another lexicon
-adds when the two are joined cannot be checked that way; keep its
-remove quiet with ``warnings.catch_warnings()`` and
-``warnings.simplefilter("ignore", UserWarning)`` around the call.
+added earlier. A fragment meant to remove a word another lexicon adds
+warns, since ``remove`` cannot see the lexicon it will be joined with.
+Do the remove on the joined lexicon, or filter that one warning by its
+message, never by its category, which would hide every other warning:
+
+.. doctest::
+
+    >>> with warnings.catch_warnings():
+    ...     warnings.filterwarnings("ignore", message=r"remove\('zzq'")
+    ...     fragment = Lexicon.empty().remove("zzq", kind="title")
+    >>> with_zzq = Lexicon.default().add("zzq", kind="title")
+    >>> Parser(lexicon=with_zzq).parse("Zzq Ana Smith").title
+    'Zzq'
+    >>> Parser(lexicon=with_zzq | fragment).parse("Zzq Ana Smith").title
+    ''
 
 Seeing what the vocabulary says about a word
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

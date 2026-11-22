@@ -2583,10 +2583,15 @@ class Lexicon:
         edit can never take effect, and the call warns with a
         ``UserWarning`` naming the kinds the word does hold (#1535); a
         remove of every word's readings and a ``familiar`` or
-        ``spelling`` pair remove are not judged. A fragment removing a
-        reading another lexicon adds when the two are joined warns too,
-        since this call cannot see that lexicon; filter the warning
-        around that call.
+        ``spelling`` pair remove are not judged. The message says which
+        case it is: a word in the vocabulary without that kind (its
+        kinds and the call that takes one), a word in no file and no
+        earlier add, or, with no kind, a word held only as the other
+        name of another word's ``familiar`` or ``spelling`` pair (the
+        pair remove that reaches it). A fragment meant to remove a word
+        another lexicon adds warns, since ``remove`` cannot see the
+        lexicon it will be joined with: filter that warning by its
+        message, or do the remove on the joined lexicon.
 
         A ``familiar`` or ``spelling`` reading is a pair of given names,
         stored on one of the two and read by name matching both ways, so
@@ -2665,7 +2670,21 @@ class Lexicon:
         for w in edit.words:
             held = {r.kind for r in ri.readings_of(w)} | added.get(w, set())
             if kind is None:
-                if not held:
+                if held:
+                    continue
+                pair_kind = ("familiar" if self._familiar_forms(w)
+                             else "spelling" if self._alternate_spellings(w)
+                             else None)
+                if pair_kind is not None:
+                    # held only as the other name of another word's pair,
+                    # which a remove with no kind leaves to that word
+                    messages.append(
+                        f"remove({w!r}) changes nothing: {w!r} holds no "
+                        f"reading of its own, only the other name of "
+                        f"{pair_kind} pairs other words hold; "
+                        f"remove({w!r}, kind={pair_kind!r}) takes those "
+                        f"pairs")
+                else:
                     messages.append(
                         f"remove({w!r}) changes nothing: {w!r} is in no "
                         f"vocabulary file and no earlier add() of this "
