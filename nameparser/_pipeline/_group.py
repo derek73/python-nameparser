@@ -69,8 +69,9 @@ with them. is_prefix_piece and is_conj_piece followed in #617, with
 the merge and rules/P3's connective joins (join_connectives), when
 the comma decision's own copy of those joins was folded into them.
 What remains defined here is group's own: the piece predicates
-_is_rootname, _is_maiden_marker_piece, _closing_run_start, _is_lone_letter
-and _is_name_word, beside the helpers of its joins and its marker takes
+_is_rootname, _is_maiden_marker_piece, _bounds_the_title_run,
+_is_lone_letter and _is_name_word, beside the helpers of its joins and
+its marker takes, `_closing_run_start` among them
 (maiden and alias, rules/M2 and N4).
 """
 from __future__ import annotations
@@ -93,7 +94,7 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    ALIAS_MARKER_TAG, AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, PATRONYMIC_TAG, BOUND_SECOND_TAG, SPLIT_CREDENTIAL_TAG,
+    ALIAS_MARKER_TAG, AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, DOTTED_TITLE_TAG, PATRONYMIC_TAG, BOUND_SECOND_TAG, SPLIT_CREDENTIAL_TAG,
     SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
@@ -118,8 +119,8 @@ from nameparser._types import AmbiguityKind, Role
 Piece = list[int]
 _SPAN_START = operator.attrgetter("span.start")
 _MARKER_TAGS = frozenset({ALIAS_MARKER_TAG, "vocab:maiden-marker"})
-#: rules/N4's boundaries inside a part: a word with a patronymic
-#: reading, or another marker of either kind
+#: rules/N4's boundaries inside a part: a patronymic particle (`bin`,
+#: `a/l`), or another marker of either kind
 _ALIAS_ENDS = _MARKER_TAGS | {PATRONYMIC_TAG}
 #: What the marker passes took out of a segment: the markers' TOKEN
 #: indices (a maiden marker's more than one where the entry is a
@@ -340,11 +341,11 @@ def _clause_take(pieces: Sequence[Sequence[int]],
     the clause's words take; `skip` holds the piece indices an earlier
     take in the same part has already taken, which the clause-free
     reading of the trailing run does not count. `run_ended` says the
-    leading title run ends before pieces[m - 1], an earlier take or a
-    word that is no title standing between them: the word before the
-    marker is past the run, the suffix-word test applying to it and S2's
-    opening-suffix allowance not. None where the marker is an ordinary
-    word.
+    leading title run ends before pieces[m - 1], because an earlier
+    take, or a refused marker the run stops at, stands before it: the
+    word before the marker is past the run, the suffix-word test
+    applying to it and S2's opening-suffix allowance not. None where the
+    marker is an ordinary word.
     """
     if site is ClauseSite.TAIL:
         return None
@@ -377,7 +378,7 @@ def _clause_take(pieces: Sequence[Sequence[int]],
             or stop < len(pieces)):
         end = stop
         # where the given part's closing run of titles and post-nominals
-        # starts, found once on the first title the walk meets
+        # starts, found once on the first title this loop meets
         closing: int | None = None
         for j in range(lo + 1, stop):
             if "suffix" in ptags[j] or is_suffix_piece(pieces[j], ptags[j],
@@ -503,15 +504,16 @@ def _closing_run_start(pieces: Sequence[Sequence[int]],
                        tokens: Sequence[WorkToken]) -> int:
     """Where the given part's closing run starts: the first piece from
     which, to the part's end, every piece is a title, a post-nominal or
-    a member of the ambiguous credential class. A title inside the part
-    is the walk's name word, and only one at or after the piece before
-    this opens the part's trailing run of titles and post-nominals (a
-    trailing title, H8's salutation), so an alias there stops before it
-    (rules/N4). Found once, walking back from the end, so a run of
-    titles after an alias costs a linear walk. A lone roman numeral
-    ending the alias is not asked: it is shaped like an initial, which
-    the alias takes, and a report naming its initial reading would name
-    a field the alias denies it (`test_cases`' alternative check)."""
+    a member of the ambiguous credential class, and `len(pieces)` where
+    the last piece is none of them. A title inside the part is assign's
+    walk's name word, and only a title in this run opens the part's
+    trailing run of titles and post-nominals (a trailing title, H8's
+    salutation), so an alias in the given part after a family comma
+    stops before it (rules/N4). Found once, walking back from the end,
+    so a run of titles after an alias costs a linear walk. A lone roman
+    numeral is no member: it is shaped like an initial, which the alias
+    takes, and a report naming its initial reading would name a field
+    the alias denies it (`test_cases`' alternative check)."""
     k = len(pieces)
     while k > 0 and (is_title_piece(pieces[k - 1], ptags[k - 1], tokens)
                      or "suffix" in ptags[k - 1]
@@ -520,6 +522,17 @@ def _closing_run_start(pieces: Sequence[Sequence[int]],
                          _AMBIGUOUS_CREDENTIAL_TAGS)):
         k -= 1
     return k
+
+
+def _bounds_the_title_run(piece: Sequence[int], ptags: Set[str],
+                          tokens: Sequence[WorkToken]) -> bool:
+    """Whether `_pieces.leading_titles` stops at this one-word piece, so
+    the run ends before it: the run's own test, a leading title (H2's
+    shape included) or a dotted title, negated. Its give-back only
+    shortens the run, so where this holds the run ends at or before the
+    piece."""
+    return not (is_leading_title(piece, ptags, tokens)
+                or DOTTED_TITLE_TAG in tokens[piece[0]].tags)
 
 
 # rules/N4: "a marker that counts takes the words after it as the
@@ -544,12 +557,13 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
     (`_ALIAS_ENDS`) or, with none, as far as M2's clause would.
     """
     n = len(pieces)
-    if n < 3 or site is ClauseSite.TAIL:
+    # a tail part is refused in `_clause_take`
+    if n < 3:
         return None
     markers: list[int] = []
     taken: list[tuple[int, Role]] = []
     skip: set[int] = set()
-    # the first refused alias marker that is no title: the leading title
+    # the first refused alias marker the leading title run stops at: the
     # run ends before it, as it ends before a take
     refused: int | None = None
     m = 1
@@ -564,8 +578,8 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
         behind = pieces[m - 1]
         if len(behind) == 1 and not tokens[behind[0]].tags.isdisjoint(
                 _MARKER_TAGS):
-            if refused is None and not is_title_piece(piece, ptags[m],
-                                                      tokens):
+            if refused is None and _bounds_the_title_run(piece, ptags[m],
+                                                         tokens):
                 refused = m
             m += 1
             continue
@@ -620,8 +634,8 @@ def _alias_takes(pieces: Sequence[Sequence[int]],
             Role.NICKNAME, view_skip,
             bool(markers) or (refused is not None and refused < m - 1))
         if take is None:
-            if refused is None and not is_title_piece(piece, ptags[m],
-                                                      tokens):
+            if refused is None and _bounds_the_title_run(piece, ptags[m],
+                                                         tokens):
                 refused = m
             m += 1
             continue
@@ -1986,10 +2000,9 @@ def group(state: ParseState) -> ParseState:
     # and the same reason, as _extract._overlaps and _tokenize's origin
     # resolution. test_benchmark's maiden_pairs shape is the guard.
     # rules/N4: "the marker dropped as M3 drops it" -- a nickname
-    # clause opening with an alias marker, by the same walk (#1164);
-    # a plain loop, no frame, for a name with no clause
-    # map over a C getter, no frame: a name with a nickname clause pays
-    # none for this (decisions/parse-cost)
+    # clause opening with an alias marker, by the same walk (#1164).
+    # A plain loop over a map of a C getter, no frame: a name with no
+    # clause pays nothing, and one with a clause no frame for the starts
     starts = list(map(_SPAN_START, tokens)) if state.extracted else []
     for role, clause in state.extracted:
         # extract gives a clause one of the two roles

@@ -2164,3 +2164,37 @@ def test_a_connective_steps_over_every_title_the_trailing_run_takes(
     misses, titled = _p13_misses()
     assert misses == []
     assert titled == 78, titled
+
+
+# rules/N4's alias in the given part after a family comma stops before
+# a word that part's own reading may take out of the name: a title
+# opening its closing run, a member of the ambiguous credential class;
+# a title with a name word behind it stays the alias's word. And a
+# refused marker bounds the leading title run only where the run would
+# stop at it: a marker written in rules/H2's period shape (`Urf.`) is a
+# title to the run, so the take behind it reads as it did before the
+# bound (#1529's review). Each row reads as on af58ca09.
+@pytest.mark.parametrize("text, fields", [
+    ("Smith, Jane @ Bob Dr", {"given": "Jane", "middle": "Dr",
+                              "family": "Smith", "nickname": "Bob"}),
+    ("Smith, Jane @ Bob Dr Xavier", {"given": "Jane", "family": "Smith",
+                                     "nickname": "Bob Dr Xavier"}),
+    ("Smith, John @ Jack MA Jones", {"given": "John", "family": "Smith",
+                                     "suffix": "MA Jones",
+                                     "nickname": "Jack"}),
+    ("Dr. Urf. Sr. Jr. @ Bob Smith", {"title": "Dr. Urf. Sr.",
+                                      "family": "Jr.",
+                                      "nickname": "Bob Smith"}),
+    ("Smith, Dr. Urf. Sr. Jr. @ Bob", {"title": "Dr. Urf. Sr.",
+                                       "given": "Jr.", "family": "Smith",
+                                       "nickname": "Bob"}),
+    ("a @ Jr a @ Bob Smith", {"given": "a", "family": "@",
+                              "suffix": "Jr a", "nickname": "Bob Smith"}),
+])
+def test_where_an_alias_stops_and_what_bounds_the_title_run(
+        text: str, fields: dict[str, str]) -> None:
+    name = parse(text)
+    got = {f: getattr(name, f) for f in
+           ("title", "given", "middle", "family", "suffix", "nickname")
+           if getattr(name, f)}
+    assert got == fields

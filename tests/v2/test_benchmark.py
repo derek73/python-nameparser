@@ -374,12 +374,6 @@ _SHAPES = {
     # leading title run of a slice per marker measured 7.1x at base 800
     # (2026-11-20), the first build's quadratic
     "alias_markers": "a @ ",
-    # group: the same takes, each refused (a suffix word straight after
-    # the marker), where no earlier take bounded the leading title run
-    # and each marker sliced the part to ask it again: measured
-    # 2026-11-22, py3.11, best of seven at base 800, 7.22x on af58ca09
-    # against 4.39x once a refused marker that is no title bounds it
-    "refused_alias_markers": "a @ Jr ",
 }
 
 _BASE = 800
@@ -1182,9 +1176,14 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 # a title opening the part's closing run of titles and post-nominals.
 # Asking that per title by scanning to the part's end made a run of
 # titles after an alias quadratic; the run's start is found once since.
-# Counted in `is_title_piece` calls, the one predicate both forms ask.
-# Recorded negative control (2026-11-22, py3.11): 49 calls at 8 titles
-# and 565 at 32 (11.5x) on af58ca09, against 14 and 38 (2.7x) here.
+# Counted in `is_title_piece` calls, the one predicate both forms ask;
+# a change to what the scan calls must move `only=` with it, and
+# re-take this control. The text holds a closing run (the titles after
+# `Xavier`) as well as titles the alias keeps, so finding the run once
+# per title fails here too. Recorded negative control (2026-11-22,
+# py3.11): 59 calls at 8 titles a side and 599 at 32 (10.2x) on
+# af58ca09, and 97 and 1,129 (11.6x) with the run's start found once
+# per title, against 25 and 73 (2.9x) here.
 _ALIAS_TITLES_SMALL = 8
 _ALIAS_TITLES_LARGE = 32
 _ALIAS_TITLES_MAX_RATIO = 6.0
@@ -1193,20 +1192,46 @@ _ALIAS_TITLES_MAX_RATIO = 6.0
 def test_titles_after_an_alias_in_the_given_part_cost_linearly() -> None:
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
-    texts = ["Smith, Jane @ Bob " + "Dr " * k + "Xavier"
-             for k in (_ALIAS_TITLES_SMALL, _ALIAS_TITLES_LARGE)]
-    # REACHABILITY: the alias keeps every title, the last word a name
-    # word, so each title is one the scan asks about and declines
-    for text in texts:
-        assert parse(text).nickname == text.split(" @ ")[1], text
+    sizes = (_ALIAS_TITLES_SMALL, _ALIAS_TITLES_LARGE)
+    texts = ["Smith, Jane @ Bob " + "Dr " * k + "Xavier " + "Dr " * k
+             for k in sizes]
+    # REACHABILITY: the alias keeps the titles before `Xavier` and stops
+    # at the closing run after it, which the given part reads, so the
+    # walk ran and found the run, once
+    for text, k in zip(texts, sizes):
+        name = parse(text)
+        assert name.nickname.endswith(" Xavier"), text
+        assert name.middle == ("Dr " * k).strip(), text
+        assert _frames_for(text, only="_closing_run_start") == 1, text
     small, large = (_frames_for(t, only="is_title_piece") for t in texts)
     ratio = large / small
     assert ratio < _ALIAS_TITLES_MAX_RATIO, (
         f"{_ALIAS_TITLES_SMALL} titles after an alias cost {small} "
         f"is_title_piece calls and {_ALIAS_TITLES_LARGE} cost {large} -- "
-        f"{ratio:.1f}x for 4x the input, where this tree measures 2.7x and "
-        f"af58ca09 measured 11.5x: _group._clause_take is scanning to the "
+        f"{ratio:.1f}x for 4x the input, where this tree measures 2.9x and "
+        f"af58ca09 measured 10.2x: _group._clause_take is scanning to the "
         f"part's end once per title again")
+
+
+def test_a_refused_alias_take_asks_the_title_run_once() -> None:
+    """rules/N4's take refused at each marker (a suffix word straight
+    after it) asked `leading_titles` of a slice of the part per marker,
+    C-level work a frame ratio cannot see; a refused marker the run
+    stops at bounds it as a take does, so the run is asked once. Counted
+    in `leading_titles` calls `_clause_take` makes, a number rather than
+    a clock. Recorded negative control (2026-11-22, py3.11): 2, 8 and 32
+    calls at 2, 8 and 32 markers on af58ca09, against 1 each here; on
+    the CPU clock at base 800 the shape read 7.2x to 8.5x for 4x the
+    input there and 4.3x to 6.0x here, too close to `_MAX_RATIO` for a
+    `_SHAPES` row on a loaded host."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for k in (2, 8, 32):
+        text = "a @ Jr " * k
+        # REACHABILITY: every take is refused, so no marker is dropped
+        assert parse(text).nickname == "", text
+        assert _frames_for(text, only="leading_titles",
+                           caller="_clause_take") == 1, text
 
 
 def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
