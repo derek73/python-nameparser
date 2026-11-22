@@ -2826,6 +2826,20 @@ def test_the_compiled_fields_are_the_default_lexicons() -> None:
         assert getattr(default._sets, name) == words, name
 
 
+@pytest.mark.parametrize("strict", [False, True])
+def test_only_a_bulgarian_choice_reads_the_medical_degree(strict: bool) -> None:
+    # #1128: bg.toml lists д.м. as дм, written default = false, since
+    # Дм. (Дмитрий written short) and the initials Д.М. fold to it too
+    name = "доц. д-р Мария Петрова, д.м."
+    bg = parser_for(_choosing("bg"), strict=strict).parse(name)
+    assert (bg.title, bg.given, bg.family, bg.suffix) == (
+        "доц. д-р", "Мария", "Петрова", "д.м.")
+    for parser in (Parser(), parser_for(_choosing("ru"), strict=strict),
+                   parser_for(locales.RU)):
+        assert parser.parse(name).given == "д.м."
+        assert parser.parse("Петров Дм.").family == "Дм."
+
+
 def test_a_pack_choosing_no_language_leaves_the_vocabulary_as_it_is() -> None:
     base = Parser(lexicon=Lexicon.default().add("zzq", kind="title"))
     assert parser_for(Locale(code="xx", lexicon=Lexicon.empty()),

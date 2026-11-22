@@ -3836,7 +3836,6 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'whnp',
     'whnp-bc',
     'д-р',
-    'дм',
 })
 
 CAPITALIZATION_EXCEPTIONS: dict[str, str] = {

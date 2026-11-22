@@ -3773,7 +3773,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('г-н', (('bg', 'salutation', (('after_given', True),)), ('ru', 'salutation', (('after_given', True),)))),
     ('д-р', (('bg', 'academic', ()), ('bg', 'credential', (('cased', 'д-р'),)), ('ru', 'academic', ()), ('ru', 'credential', (('cased', 'д-р'),)), ('uk', 'academic', ()), ('uk', 'credential', (('cased', 'д-р'),)))),
     ('даша', (('ru', 'familiar', (('short_for', ('дарья',)),)),)),
-    ('дм', (('bg', 'credential', ()),)),
+    ('дм', (('bg', 'credential', (('default', False),)),)),
     ('женя', (('ru', 'familiar', (('short_for', ('евгений',)),)),)),
     ('жика', (('sr', 'familiar', (('short_for', ('живорад',)),)),)),
     ('и', (('bg', 'conjunction', ()), ('ru', 'conjunction', ()))),
