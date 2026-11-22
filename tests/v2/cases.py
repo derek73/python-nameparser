@@ -1743,6 +1743,201 @@ CASES: tuple[Case, ...] = (
          notes="the suffix reading had taken the marker's name, leaving "
                "'née' the family; 1.4.0 through 3.1.0 read middle 'Doe', "
                "family 'née', suffix 'Ra'"),
+    # #1178: `ab` is Abdul written short (ms.toml) and a Dutch given name
+    # (nl.toml), and en.toml's Airman Basic is read only under a choice of
+    # English, so `Ab` opening a name is the given name (rules/H2's given
+    # name written short, rules/H9). Each row's notes checked against the
+    # 1.4.0 and 3.1.0 wheels, and the 2.x ones where a note names them, on
+    # 2026-11-21 (master 6ff048fe reads as 3.1.0 here); the feat rows fail
+    # on master
+    Case("ab_opening_a_malay_name_is_the_given_name",
+         "Ab Faizal Mohd Qirwan",
+         {"given": "Ab", "middle": "Faizal Mohd", "family": "Qirwan"},
+         classification="feat(#1178)",
+         notes="Abdul written short; not joined to the next word as "
+               "Abdul is (rules/P5), its reading being a given one, not a "
+               "bound_given one; 1.4.0 and 3.1.0 read title 'Ab', given "
+               "'Faizal'"),
+    Case("ab_written_short_with_its_period_is_the_given_name",
+         "Ab. Ghani Harun",
+         {"given": "Ab.", "middle": "Ghani", "family": "Harun"},
+         classification="feat(#1178)",
+         notes="a given name written short outranks rules/H2's shape; "
+               "1.4.0 through 3.1.0 read title 'Ab.'"),
+    Case("ab_glued_at_its_period_divides_there",
+         "Ab.Ghani Harun",
+         {"given": "Ab.", "middle": "Ghani", "family": "Harun"},
+         classification="feat(#1178)",
+         notes="rules/T8 divides a listed given name written short; 1.4.0 "
+               "read title 'Ab.Ghani', 3.1.0 title 'Ab.', given 'Ghani'"),
+    Case("ab_behind_a_malay_salutation_is_the_given_name",
+         "Encik Ab. Ghani Harun",
+         {"title": "Encik", "given": "Ab.", "middle": "Ghani",
+          "family": "Harun"},
+         classification="feat(#1178)",
+         notes="1.4.0 read given 'Encik', middle 'Ab. Ghani'; 3.1.0 title "
+               "'Encik Ab.', given 'Ghani'"),
+    Case("a_dutch_ab_is_the_given_name",
+         "Ab Jansen",
+         {"given": "Ab", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="1.4.0 through 3.1.0 read title 'Ab', no given name"),
+    Case("a_dutch_ab_before_a_particle_is_the_given_name",
+         "Ab van Qelder",
+         {"given": "Ab", "family": "van Qelder"},
+         classification="feat(#1178)",
+         notes="1.4.0 read title 'Ab', family 'van Qelder'; 3.1.0 title "
+               "'Ab', given 'van', family 'Qelder'"),
+    Case("ab_after_a_family_comma_is_the_given_name",
+         "Jansen, Ab",
+         {"given": "Ab", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="1.4.0 read title 'Ab', given 'Jansen'; 3.1.0 title 'Ab'"),
+    Case("ab_behind_a_salutation_is_the_given_name",
+         "Mr Ab Jansen",
+         {"title": "Mr", "given": "Ab", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="1.4.0 through 3.1.0 read title 'Mr Ab'"),
+    Case("undotted_capital_initials_ab_are_the_given_name",
+         "AB Jansen",
+         {"given": "AB", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="initials written without stops, as older Tweede Kamer "
+               "records write them; 1.4.0 through 3.1.0 read title 'AB'"),
+    Case("undotted_initials_ab_after_a_family_comma_are_the_given_name",
+         "Jansen, AB",
+         {"given": "AB", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="1.4.0 read title 'AB', given 'Jansen'; 3.1.0 title 'AB'"),
+    Case("ab_in_lower_case_is_the_given_name",
+         "ab jansen",
+         {"given": "ab", "family": "jansen"},
+         classification="feat(#1178)",
+         notes="1.4.0 through 3.1.0 read title 'ab'"),
+    Case("ab_opening_the_family_before_a_comma_joins_the_family",
+         "Ab Rahman, Siti",
+         {"given": "Siti", "family": "Ab Rahman"},
+         notes="no title reading for rules/H6 to peel; 1.4.0 read the same "
+               "fields, 3.1.0 title 'Ab', family 'Rahman'"),
+    Case("ab_inside_a_name_stays_a_name_word",
+         "Siti Ab Rahman",
+         {"given": "Siti", "middle": "Ab", "family": "Rahman"},
+         notes="boundary: the title claim acted only at the head, so "
+               "nothing moved here"),
+    Case("ab_ending_a_name_stays_the_family",
+         "John Smith AB",
+         {"given": "John", "middle": "Smith", "family": "AB"},
+         notes="boundary: no credential reading, the A.B. degree being "
+               "unlisted; unchanged"),
+    Case("ab_in_a_credential_run_joins_the_run",
+         "John Smith, MD, AB",
+         {"given": "John", "family": "Smith", "suffix": "MD, AB"},
+         ambiguities=("comma-structure",),
+         notes="the A.B. degree as the run's last word, rules/C2 reading the "
+               "part after the second comma; 1.4.0 through 2.3.0 read the "
+               "same fields, 2.4.0 through 3.1.0 title 'AB', suffix 'MD'"),
+    Case("ab_alone_after_a_comma_reverses_the_name",
+         "John Smith, AB",
+         {"given": "AB", "family": "John Smith"},
+         classification="feat(#1178)",
+         notes="Accepted (decisions/vocabulary-collisions, 2026-11-21 "
+               "#1178): the A.B. degree alone after a full name is the "
+               "given name Ab, the fields an unlisted pair of capitals "
+               "gives; 1.4.0 read title 'AB', given 'John Smith'; 2.0.0 "
+               "and 2.1.0 title 'AB', family 'John Smith'; 2.2.0 through "
+               "3.1.0 title 'AB', given 'John', family 'Smith'"),
+    Case("ab_written_short_alone_after_a_comma_reverses_the_name",
+         "John Smith, AB.",
+         {"given": "AB.", "family": "John Smith"},
+         classification="feat(#1178)",
+         notes="Accepted with the row above: the shape no longer reads it "
+               "as a title, where an unlisted `XY.` still is one (rules/"
+               "H2); 1.4.0 read title 'AB.', given 'John Smith', 3.1.0 "
+               "title 'AB.', given 'John', family 'Smith'"),
+    Case("ab_in_capitals_after_three_commas_parts_is_the_suffix",
+         "Smith, John, AB",
+         {"given": "John", "family": "Smith", "suffix": "AB"},
+         ambiguities=("comma-structure",),
+         notes="the part past the second comma holds no name word (rules/"
+               "C2); 1.4.0 read the same fields, 3.1.0 title 'AB'"),
+    Case("ab_written_short_counts_as_one_name_word_before_a_comma",
+         "Ab. Smith, Ed",
+         {"given": "Ab.", "family": "Smith", "suffix": "Ed"},
+         classification="feat(#1178)",
+         ambiguities=("suffix-or-name",),
+         notes="C4's count asks rules/H2's shape, which yields to a given "
+               "name written short, as `Chas. Smith, Ed` reads (#789); "
+               "1.4.0 read title 'Ab.', given 'Smith', suffix 'Ed', 3.1.0 "
+               "title 'Ab.', given 'Ed', family 'Smith'"),
+    Case("a_title_modifier_before_ab_written_short_is_a_name_word",
+         "Vice Ab. Smith, Ed",
+         {"given": "Vice", "middle": "Ab.", "family": "Smith",
+          "suffix": "Ed"},
+         classification="feat(#1178)",
+         ambiguities=("suffix-or-name",),
+         notes="Accepted: a modifier with no title after it is a name "
+               "word (rules/H9); 1.4.0 read title 'Vice Ab.', given "
+               "'Smith', 3.1.0 title 'Vice Ab.', given 'Ed', family "
+               "'Smith'"),
+    Case("ab_written_short_ending_the_given_part_is_a_middle_name",
+         "Smith, John Ab.",
+         {"given": "John", "middle": "Ab.", "family": "Smith"},
+         notes="a given name, so no trailing title (rules/H5); 1.4.0 read "
+               "the same fields, 3.1.0 title 'Ab.'"),
+    Case("ab_written_short_ending_a_name_is_the_family",
+         "Aminah Siti AB.",
+         {"given": "Aminah", "middle": "Siti", "family": "AB."},
+         notes="Accepted (decisions/vocabulary-collisions, 2026-11-21 "
+               "#1178): no trailing title (rules/H5); 1.4.0 read the same "
+               "fields, 3.1.0 title 'AB.', family 'Siti'"),
+    Case("ab_ending_a_word_glued_at_its_stops_is_read_by_shape",
+         "Ali Budi Santoso.AB",
+         {"given": "Ali", "family": "Budi", "suffix": "Santoso.AB"},
+         classification="feat(#1178)",
+         ambiguities=("suffix-or-name",),
+         notes="Accepted (decisions/vocabulary-collisions, 2026-11-21 "
+               "#1178): with no title chunk the word is rules/S3's "
+               "unlisted dotted suffix; 1.4.0 and 3.1.0 read middle "
+               "'Budi', family 'Santoso.AB'"),
+    Case("ab_before_a_malay_patronymic_is_the_given_name",
+         "Ab bin Hassan",
+         {"given": "Ab", "family": "bin Hassan"},
+         classification="feat(#1178)",
+         notes="1.4.0 read title 'Ab', family 'bin Hassan'; 3.1.0 title "
+               "'Ab', given 'bin', family 'Hassan'"),
+    Case("a_dutch_ab_before_a_second_given_name_keeps_it_apart",
+         "Ab Pieter Jansen",
+         {"given": "Ab", "middle": "Pieter", "family": "Jansen"},
+         classification="feat(#1178)",
+         notes="boundary: no bound_given reading (decisions/vocabulary-"
+               "collisions, 2026-11-21 #1178); 1.4.0 and 3.1.0 read title "
+               "'Ab', given 'Pieter'"),
+    Case("ab_after_chief_is_the_given_name",
+         "Chief Ab Smith",
+         {"title": "Chief", "given": "Ab", "family": "Smith"},
+         classification="feat(#1178)",
+         notes="the phrase `chief ab` (Chief Airman Basic) is read only "
+               "where Airman Basic is; 1.4.0 and 3.1.0 read title 'Chief "
+               "Ab', family 'Smith'"),
+    Case("ab_opening_a_family_first_name_is_the_family",
+         "Ab Jansen",
+         {"given": "Jansen", "family": "Ab"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#1178)",
+         notes="placed by the order once no title takes it; 3.1.0 read "
+               "title 'Ab', family 'Jansen'"),
+    Case("ab_opening_a_family_first_given_last_name_is_the_family",
+         "Ab Faizal Mohd Qirwan",
+         {"given": "Qirwan", "middle": "Faizal Mohd", "family": "Ab"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#1178)",
+         notes="placed by the order once no title takes it; 3.1.0 read "
+               "title 'Ab'"),
+    Case("ab_after_the_family_in_family_first_order_is_the_given_name",
+         "Qirwan Ab Faizal",
+         {"given": "Ab", "middle": "Faizal", "family": "Qirwan"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="boundary: no title claim after the head; unchanged"),
     # #1231: the Burmese pack. Burmese names have no family name, so the
     # last word lands in family by position. Each row's notes checked
     # against the 1.4.0, 2.0.0, 2.4.0, 2.8.2 and 3.1.0 wheels on
