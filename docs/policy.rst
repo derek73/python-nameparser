@@ -100,13 +100,11 @@ Order and name structure
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - empty
-     - Reorders patronymic-shaped names via opt-in detectors — East
-       Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
-       (``TURKIC``). The reordering stands down under a declared
-       family-first ``name_order``; each rule also fills
-       ``ParsedName.patronymic``, under ``FAMILY_FIRST`` too. The
-       ``ru`` and ``tr_az`` rows of :ref:`shipped-packs` describe what
-       each rule detects.
+     - Reorders patronymic-shaped names, East Slavic (``EAST_SLAVIC``)
+       or Turkic (``TURKIC``); the reordering stands down under a
+       family-first ``name_order``, while ``ParsedName.patronymic`` is
+       still filled under ``FAMILY_FIRST``. See the ``ru`` and
+       ``tr_az`` rows of :ref:`shipped-packs`.
    * - ``middle_as_family``
      - ``bool``
      - ``False``
@@ -1503,15 +1501,20 @@ way:
 All-caps words
 ~~~~~~~~~~~~~~
 
-``unlisted_caps_suffixes`` reads an unlisted word of two or more
-capital letters, with no period in it, and since 2.7 one of capitals
-joined by a hyphen or a slash (``PU-PH``, ``MS-OMPT``) with a part of
-two or more letters. After a comma it also reads a word of letters in
-mixed case that opens with two capitals or ends in one (``MRes``,
-``DClinPsy``, ``AuD``), the way degrees are written. A capital only
-inside a word (``LeBron``, ``McKenzie``) is a name's writing, and a word
-in mixed case holding a hyphen (``Pharm-D``) is left alone, since given
-names are written so (``Jay-R``). Its value is a
+``unlisted_caps_suffixes`` reads an unlisted word in one of these
+shapes:
+
+- **Two or more capital letters**, with no period in it.
+- **Capitals joined by a hyphen or a slash** (``PU-PH``, ``MS-OMPT``)
+  with a part of two or more letters, since 2.7.
+- **After a comma, mixed case** opening with two capitals or ending in
+  one (``MRes``, ``DClinPsy``, ``AuD``), the way degrees are written.
+
+A capital only inside a word (``LeBron``, ``McKenzie``) is a name's
+writing, and a word in mixed case holding a hyphen (``Pharm-D``) is
+left alone, since given names are written so (``Jay-R``).
+
+Its value is a
 :class:`~nameparser.CapsSuffixes`, because where capitals mean a
 credential depends on a second convention: many records write the
 SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).

@@ -825,7 +825,9 @@ Anything 3.1 pickled loads under 3.2, save a ``Lexicon`` holding a
 word a caller added with a zero-width non-joiner or joiner at its edge,
 or a ``Parser`` holding one, which raises ``ValueError``: 3.2 drops the
 character when it normalizes a word (:issue:`1335`), so build it again
-with the same ``add()`` calls. A loaded pickle keeps 3.1's vocabulary:
+with the same ``add()`` calls.
+
+A loaded pickle keeps 3.1's vocabulary:
 a ``Parser`` pickled by 3.1 reads ``Imam Taufik Sasongko`` with the
 title ``Imam`` and ``Datuk Ahmad bin Ali`` with the given name
 ``Datuk``. What 3.2 changed in the parser itself reaches it all the
@@ -2619,13 +2621,15 @@ Ra as a Korean name
 ``Ra``, a Korean family name and given name, reads as a name where it
 ends or opens one, where 1.4.0 through 3.1.0 read it as the credential
 RA ending a name of three words (2.0 through 3.1 of two too) and the
-title RA (Rechtsanwalt) opening one. Written ``RA`` in a name of mixed
-case and ending it after a comma, or written ``R.A.``, it is still the
-credential. ``Ra`` alone after a family comma (``Kim, Ra``), ``RA``
-opening the part after a family comma in a name written wholly in
-capitals (``KING, RA``), ``RA`` in the given part after a family comma
-ahead of a name word (``Smith, RA John``) and ``RA`` opening a German
-name are now the given name:
+title RA (Rechtsanwalt) opening one.
+
+- **Still the credential:** ``RA`` in a name of mixed case ending it
+  after a comma, and ``R.A.``.
+- **Now the given name:** ``Ra`` alone after a family comma (``Kim,
+  Ra``); ``RA`` opening the part after a family comma in a name written
+  wholly in capitals (``KING, RA``); ``RA`` in the given part after a
+  family comma ahead of a name word (``Smith, RA John``); and ``RA``
+  opening a German name.
 
 .. doctest::
 
