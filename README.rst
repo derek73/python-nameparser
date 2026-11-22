@@ -28,11 +28,11 @@ compatibility layer:**
   patronymics, and family names written as letters or in capitals.
 * ``Parser.matching()`` groups and compares names from several sources.
 
-📣 **nameparser 3.2 adds new vocabulary, four locale packs (Malay,
-Burmese, Dutch, Portugal), and reads two family names under three more
-(Croatian, Slovenian, Brazilian Portuguese).** It also reads a name
-written after ``@`` as a nickname, and a parse makes about a third
-fewer function calls than in 3.1.
+📣 **nameparser 3.2 adds new vocabulary and locale packs.** Four packs
+are new (Malay, Burmese, Dutch, Portugal), and three more now read two
+family names (Croatian, Slovenian, Brazilian Portuguese). It also reads
+a name written after ``@`` as a nickname, and a parse makes about a
+third fewer function calls than in 3.1.
 
 `Getting started
 <https://nameparser.readthedocs.io/en/latest/getting-started.html>`__
