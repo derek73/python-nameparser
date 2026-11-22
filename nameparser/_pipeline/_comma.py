@@ -891,8 +891,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                                 letters_one_case=state.one_case,
                                 members=split_at)
     if names >= 2:
-        # rules/C6: "An unlisted all-caps word joins the ambiguous
-        # credential class [...] only where the name carries the contrast"
+        # rules/C6: "an unlisted word in the caps shape (S9), written in
+        # capitals or in a credential's mixed case, joins the ambiguous
+        # credential class (C4, S9) in the part after the comma only where
+        # the name carries the contrast" -- the part after the comma's
+        # half, read once two name words stand before it (decisions/C6
+        # (#564, #1517))
         for i in maybe:
             text = texts[i]
             if SHAPE_ACRONYM_TAG in tokens[i].tags:
