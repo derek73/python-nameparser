@@ -23480,6 +23480,14 @@ CASES: tuple[Case, ...] = (
          notes="boundary: three name words with a letter, so the pair is "
                "split back, and behind the given name both words are "
                "middle names, joined or not"),
+    Case("abdul_split_back_leaves_no_pair_for_two_given_names",
+         ", Tariq Abdul Aziz",
+         {"given": "Tariq", "middle": "Abdul Aziz"},
+         policy=Policy(two_given_names=True),
+         notes="boundary: the split takes the pair's tag off, so "
+               "rules/O7 reads two words where a kept tag reads one unit "
+               "and takes the pair into the given name (test review of "
+               "#1531)"),
     Case("abdul_behind_a_mark_after_a_title_stays_apart",
          "Dr - Abdul Aziz",
          {"title": "Dr", "given": "-", "middle": "Abdul", "family": "Aziz"},
