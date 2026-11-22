@@ -40,10 +40,10 @@ Policy.script_orders for the part before a family comma, through
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
-(O6's veto), Lexicon.bound_long_names_only (P12's split of a pair in a
-name of fewer than four name words, #1464), Lexicon.saint_particles (P10's saint clause; P10 runs
-under every policy and reads Policy.patronymic_rules for its Turkic
-guard), and
+(O6's veto), Lexicon.bound_long_names_only (P12's split of a pair
+in a name of fewer than four name words, #1464),
+Lexicon.saint_particles (P10's saint clause; P10 runs under every
+policy and reads Policy.patronymic_rules for its Turkic guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13, through `_vocab.dotted_member`), and for S1's set-apart clause
 Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
@@ -54,8 +54,8 @@ and honorific_words, the suffix words that do not settle a member
 (`_vocab.settles_a_member`).
 
 Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, P11,
-P12's two splits, O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's surname pair of
-docs/design/rules/; each is cited at its code below, and
+P12's two splits, O1, O2, O6, O7, O8, O9, O3, R1, R10, R11 and W5's
+surname pair of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -322,36 +322,48 @@ def _split_a_lone_backward_pair(state: ParseState, tokens: list[WorkToken],
 _HAS_LETTER = re.compile(_LETTER)
 
 
+def _cut_pair(state: ParseState, head: int) -> ParseState:
+    """`state` with the piece holding the pair at `head` cut in two
+    before its second word, its piece tags given to both halves, for
+    the readers of pieces after the pair is split (rules/O9's layout,
+    P1's opening piece). Group builds the pieces and their tags in step,
+    segment by segment."""
+    segs: list[tuple[tuple[int, ...], ...]] = []
+    tag_segs: list[tuple[frozenset[str], ...]] = []
+    for seg, ptags in zip(state.pieces, state.piece_tags):
+        out: list[tuple[int, ...]] = []
+        out_tags: list[frozenset[str]] = []
+        for piece, tag in zip(seg, ptags):
+            if head in piece and head + 1 in piece:
+                cut = piece.index(head + 1)
+                out += [piece[:cut], piece[cut:]]
+                out_tags += [tag, tag]
+            else:
+                out.append(piece)
+                out_tags.append(tag)
+        segs.append(tuple(out))
+        tag_segs.append(tuple(out_tags))
+    return copy_with(state, pieces=tuple(segs), piece_tags=tuple(tag_segs))
+
+
 def _split_a_short_open_pair(state: ParseState, tokens: list[WorkToken],
-                             ambiguities: list[PendingAmbiguity],
-                             head: int) -> bool:
+                             head: int) -> tuple[bool, ParseState]:
     """A pair P12 joined behind a bound word written `long_names_only`,
-    in a name of fewer than four name words, is split back, in place, to the reading the name
-    has without the join. Where the bound word opens the name's pieces,
-    rules/P5 reads it: with no other name piece its reserve splits the
-    pair as a lone backward pair is split, and with one it joins the pair
-    as P12 did, so only the mark goes. A family comma moves no role
-    either: the part before it is the family whole, and in the part
-    after it P5 joins the pair opening it, the words behind the given
-    name being middle names however they are joined. Elsewhere the
-    pieces are laid out by the order again, the pair two pieces. True
-    where a role moved."""
+    in a name of fewer than four name words, is split back, in place, to
+    the reading the name has without the join, and the state handed
+    back holds the pieces that reading has, the pair two of them. A
+    pair opening the name's pieces is P5's, which group leaves without
+    the pair's tag, so it is never split here. Behind a family comma no
+    role moves: the part before it is the family whole, and in the part
+    after it the pair stands behind the given name, among the middle
+    names. Elsewhere the pieces are laid out by the order again. The
+    pair's tag goes in every case; True where a role moved too."""
     tokens[head] = copy_with(tokens[head],
                              tags=tokens[head].tags - {BOUND_PHRASE_TAG})
+    state = _cut_pair(state, head)
     if state.structure is Structure.FAMILY_COMMA:
-        return False
-    pieces = _name_pieces(state, tokens, 0)
-    if pieces and head == pieces[0][0]:
-        return (len(pieces) == 1
-                and _split_a_lone_backward_pair(state, tokens, ambiguities))
-    units: list[tuple[int, ...]] = []
-    for piece in pieces:
-        if head in piece and head + 1 in piece:
-            cut = piece.index(head + 1)
-            units.append(piece[:cut])
-            units.append(piece[cut:])
-        else:
-            units.append(piece)
+        return False, state
+    units = _name_pieces(state, tokens, 0)
     order = state.order or state.policy.name_order
     moved = False
     for unit, role in zip(units, _name_positions(order, len(units))):
@@ -359,7 +371,7 @@ def _split_a_short_open_pair(state: ParseState, tokens: list[WorkToken],
             if tokens[i].role in NAME_ROLES and tokens[i].role is not role:
                 _retag(tokens, i, role)
                 moved = True
-    return moved
+    return moved, state
 
 
 # rules/P2: "a particle joins the words after it into one name
@@ -1423,6 +1435,9 @@ def _unattached(state: ParseState, tokens: list[WorkToken],
 
 
 def post_rules(state: ParseState) -> ParseState:
+    # rules/P12's split hands its readers the pieces cut, and the stage
+    # hands on group's, pieces being no field it writes
+    grouped = (state.pieces, state.piece_tags)
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
     if state.extracted:
@@ -1440,10 +1455,11 @@ def post_rules(state: ParseState) -> ParseState:
             and _split_a_lone_backward_pair(state, tokens, ambiguities)):
         titles, givens, middles, families = _positions(tokens)
     # rules/P12: "the pair is joined only in a name the parse reads as
-    # four name words or more" -- counted here, once roles are settled,
-    # so a word the trailing run or a title phrase takes counts as the
-    # parse reads it (decisions/P12, #1464); the tag tests inline, in C,
-    # so that a name with no such pair pays no frame for it
+    # four name words or more" -- the `long_names_only` Except, counted
+    # here once roles are settled, so a word the trailing run or a title
+    # phrase takes counts as the parse reads it (decisions/P12 (#1464,
+    # #1531)); the tag tests inline, in C, so that a name with no such
+    # pair pays no frame for it
     else:
         for i in names:
             if (BOUND_PHRASE_TAG in tokens[i].tags
@@ -1455,12 +1471,13 @@ def post_rules(state: ParseState) -> ParseState:
                 for k in names:
                     if _HAS_LETTER.search(tokens[k].text):
                         letters += 1
-                if (letters < 4
-                        and _normalize(tokens[i].text)
-                        in state.lexicon._sets.bound_long_names_only
-                        and _split_a_short_open_pair(
-                            state, tokens, ambiguities, i)):
-                    titles, givens, middles, families = _positions(tokens)
+                if (letters < 4 and _normalize(tokens[i].text)
+                        in state.lexicon._sets.bound_long_names_only):
+                    moved, state = _split_a_short_open_pair(
+                        state, tokens, i)
+                    if moved:
+                        titles, givens, middles, families = _positions(
+                            tokens)
                 break
 
     # rules/H1: "a title followed by exactly one name word makes
@@ -1895,4 +1912,5 @@ def post_rules(state: ParseState) -> ParseState:
                     tags=tokens[i].tags | {UNJOINED_CONJUNCTION_TAG})
     _mark_suffix_entries(tokens, state)
     return copy_with(state, tokens=tuple(tokens),
-                     ambiguities=tuple(ambiguities))
+                     ambiguities=tuple(ambiguities),
+                     pieces=grouped[0], piece_tags=grouped[1])

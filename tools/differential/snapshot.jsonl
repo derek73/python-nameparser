@@ -233,6 +233,7 @@
 {"name": "Alfonso Reyes Echandía", "given": "Alfonso", "middle": "Reyes", "family": "Echandía", "initials": "A. R. E."}
 {"name": "Alfonsus Antonius de Sarasa", "given": "Alfonsus", "middle": "Antonius", "family": "de Sarasa", "initials": "A. A. S."}
 {"name": "Alfɔns MANƉELA Rolanɖ", "given": "Alfɔns", "middle": "MANƉELA", "family": "Rolanɖ", "initials": "A. M. R.", "capitalized_force": "Alfɔns Manɖela Rolanɖ"}
+{"name": "Ali Abdul Rahim VI Hassan", "given": "Ali", "middle": "Abdul", "family": "Rahim", "suffix": "VI Hassan", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "A. A. R.", "generation": "VI", "credentials": "Hassan"}
 {"name": "Ali Ahmad Oğlu", "given": "Ali", "middle": "Ahmad", "family": "Oğlu", "initials": "A. A. O."}
 {"name": "Ali Ahmad Vali Hasan oglu", "given": "Ali", "middle": "Ahmad Vali Hasan", "family": "oglu", "initials": "A. A. V. H. o.", "capitalized_force": "Ali Ahmad Vali Hasan Oglu"}
 {"name": "Ali Ahmad Vali oglu", "given": "Ali", "middle": "Ahmad Vali", "family": "oglu", "initials": "A. A. V. o.", "capitalized_force": "Ali Ahmad Vali Oglu"}
@@ -1468,7 +1469,6 @@
 {"name": "HANS UNTER DER LINDE", "given": "HANS", "middle": "UNTER", "family": "DER LINDE", "initials": "H. U. L.", "capitalized": "Hans Unter Der Linde"}
 {"name": "Habib Pacha es-Saad", "given": "Habib", "middle": "Pacha", "family": "es-Saad", "initials": "H. P. e.", "capitalized_force": "Habib Pacha Es-Saad"}
 {"name": "Haddad, Nadia Abd Karim", "given": "Nadia", "middle": "Abd Karim", "family": "Haddad", "initials": "N. A. K. H."}
-{"name": "Haddad, Tariq Abdul Aziz", "given": "Tariq", "middle": "Abdul Aziz", "family": "Haddad", "initials": "T. A. A. H."}
 {"name": "Hafis al-Assad", "given": "Hafis", "family": "al-Assad", "initials": "H. a.", "capitalized_force": "Hafis Al-Assad"}
 {"name": "Hagen, Hermann von", "given": "Hermann", "family": "von Hagen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "H. H."}
 {"name": "Haider Hān ʿAmū-ūġlī", "given": "Haider", "middle": "Hān", "family": "ʿAmū-ūġlī", "initials": "H. H. ʿ.", "capitalized_force": "Haider Hān ʿAmū-Ūġlī"}

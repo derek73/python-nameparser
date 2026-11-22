@@ -166,7 +166,7 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_render", "_INITIAL"): ("_vocab", "_INITIAL"),
     # SAME object, imported for the one-case letter initial (#723)
     ("_classify", "_INITIAL"): ("_vocab", "_INITIAL"),
-    # rules/P12's letter test (#1464), its own only copy
+    # rules/P12's plain-word letter test (#1464), its own only copy
     ("_classify", "_HAS_LETTER"): None,
     # rules/P12's four-word count (#1464), compiled from `_vocab._LETTER`,
     # a pattern string no module compiles alone

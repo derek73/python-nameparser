@@ -265,9 +265,10 @@ PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
 #: On a bound given name whose word and the word after it are a phrase
 #: of `Lexicon.bound_phrases` ('عبد' before 'الله'), or one of
-#: `Lexicon.bound_completes_any` before a plain name word, one of
-#: `Lexicon.bound_long_names_only` only in a name of four name words or
-#: more (#1464), which rules/P12 joins past the first name word
+#: `Lexicon.bound_completes_any` before a plain name word (#1464; one
+#: of `Lexicon.bound_long_names_only` post_rules strips again in a name
+#: of fewer than four name words), which rules/P12 joins past the first
+#: name word
 #: (`_group._join_bound_phrases`), and group leaves it only on a pair
 #: it joined. Dropped from the published token like the kind tags
 #: above (#694).

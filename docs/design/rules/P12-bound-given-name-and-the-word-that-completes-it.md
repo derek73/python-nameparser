@@ -68,7 +68,7 @@
   "The Rt Hon Nadia Abdul Rahim"  →  middle="Abdul"
   "Nadia Abdul Rahim, MA"     →  middle="Abdul"
   "Tariq - Abdul Aziz"        →  middle="- Abdul"
-  "Haddad, Tariq Abdul Aziz"  →  middle="Abdul Aziz"
+  "Ali Abdul Rahim VI Hassan" →  middle="Abdul"
   ```
 
 **Precedence:**

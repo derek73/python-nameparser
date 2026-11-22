@@ -23467,6 +23467,19 @@ CASES: tuple[Case, ...] = (
          notes="the family before the comma is a name word, though "
                "classify's count read it as the part's leading title; "
                "3.1.0 read given 'Tariq', middle 'Abdul Aziz'"),
+    Case("abdul_split_back_is_two_pieces_to_the_capitals_layout",
+         "TARIQ Abdul Aziz",
+         {"given": "Abdul", "middle": "Aziz", "family": "TARIQ"},
+         policy=Policy(capitals_as_family=True),
+         notes="boundary: a pair split in post_rules is cut in the "
+               "pieces too, which rules/O9's layout reads (code review "
+               "of #1531, which first read given 'Abdul Aziz')"),
+    Case("abdul_behind_a_mark_after_a_family_comma_stays_apart",
+         "Hassan, - abdul aziz",
+         {"given": "-", "middle": "abdul aziz", "family": "Hassan"},
+         notes="boundary: three name words with a letter, so the pair is "
+               "split back, and behind the given name both words are "
+               "middle names, joined or not"),
     Case("abdul_behind_a_mark_after_a_title_stays_apart",
          "Dr - Abdul Aziz",
          {"title": "Dr", "given": "-", "middle": "Abdul", "family": "Aziz"},
