@@ -34,7 +34,7 @@ from collections.abc import Mapping
 from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_BASELINE = "3.1.0"
+DEFAULT_BASELINE = "3.2.0"
 REPO_ROOT = HERE.parents[1]
 
 
