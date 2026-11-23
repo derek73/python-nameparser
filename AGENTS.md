@@ -209,10 +209,13 @@ uv run sphinx-build -b html docs dist/docs
 # 4. git commit + git tag -a vX.Y.Z -m "Release X.Y.Z"
 # 5. git push origin master && git push origin vX.Y.Z  ← tag must be pushed separately before gh release create
 # 6. gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
-# 7. Close the vX.Y.Z milestone and create a new "Next Release" one:
-#    MILESTONE=$(gh api repos/derek73/python-nameparser/milestones --jq '.[] | select(.title=="vX.Y.Z") | .number')
+# 7. Close the milestone of the minor just shipped and open one named for
+#    the next minor. Milestones are titled by minor, "X.Y" (3.2, 3.3), never
+#    "Next Release" (decided 2026-11-22), so the PRs of a cycle carry its
+#    number from the start. For 3.2.0:
+#    MILESTONE=$(gh api repos/derek73/python-nameparser/milestones --jq '.[] | select(.title=="3.2") | .number')
 #    gh api -X PATCH repos/derek73/python-nameparser/milestones/$MILESTONE -f state=closed
-#    gh api -X POST repos/derek73/python-nameparser/milestones -f title="Next Release"
+#    gh api -X POST repos/derek73/python-nameparser/milestones -f title="3.3"
 # 8. Set DEFAULT_BASELINE in tools/differential/compare.py to the version
 #    just released, so a bare compare.py measures against it. This runs
 #    on the branch released from, so a release cut from a maintenance

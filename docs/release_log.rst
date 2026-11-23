@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 3.3.0 - Unreleased
+
+    nameparser 3.3 is under development.
+
 * 3.2.0 - November 22, 2026
 
     **nameparser 3.2** adds four locale packs: ``locales.MS`` for Malay names, ``locales.MY`` for Burmese names, ``locales.NL`` for Dutch names and ``locales.PT_PT`` for names from Portugal. A second name written after ``@`` or ``urf`` is read as the nickname (``Rahim @ Jaki bin Osman``), ``a/l``, ``a/p`` and ``anak`` as patronymic particles, a job or degree written after a name and a comma as the title, and an Arabic title written short as the title. ``locales.HR``, ``locales.SL`` and ``locales.PT_BR`` now read two family names, and ``Parser.suggest()`` can suggest ``two_family_names`` for a list. A parse makes about a third fewer Python function calls than in 3.1, with no reading moved, and ``Lexicon.remove`` warns where an edit can take nothing. :doc:`migrate` lists the names whose reading moved, and which pickles load where.
